@@ -1,0 +1,669 @@
+{
+  "accepted_at": "2026-09-14T04:35:05Z",
+  "changed_files": [
+    {
+      "additions": 11,
+      "deletions": 3,
+      "path": "backend/.env.example",
+      "status": "M"
+    },
+    {
+      "additions": 162,
+      "deletions": 0,
+      "path": "backend/app/api/authorization.py",
+      "status": "A"
+    },
+    {
+      "additions": 28,
+      "deletions": 5,
+      "path": "backend/app/api/logical_services.py",
+      "status": "M"
+    },
+    {
+      "additions": 41,
+      "deletions": 8,
+      "path": "backend/app/api/tenants.py",
+      "status": "M"
+    },
+    {
+      "additions": 23,
+      "deletions": 0,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "backend/app/schemas/schemas.py",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": "backend/conftest.py",
+      "status": "M"
+    },
+    {
+      "additions": 347,
+      "deletions": 0,
+      "path": "backend/test_chg13_authorization_security.py",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,130p' backend/test_settings_workflows.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,240p' backend/test_tenant_workflows.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,90p' backend/app/models/config.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '220,280p' backend/app/main.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,120p' backend/test_production_startup_policy.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,80p' backend/.env\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' backend/test_cross_module_integrations.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '120,165p' backend/app/api/devices.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"ServiceSecret(Base|Create|Response)|LogicalServiceResponse|ServiceSecret\\\" backend/app | sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"include_secret_values|password|logical-services|service.*secret\\\" frontend/src frontend 2>/dev/null | sed -n '1,360p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,70p' backend/alembic/versions/8596642f109d_initial_schema.py && rtk tail -20 backend/alembic/versions/*.py | sed -n '1,100p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk python -m compileall -q backend/app backend/test_chg13_authorization_security.py && rtk git diff --stat && rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q test_chg13_authorization_security.py'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 91,
+        "output_sha256": "585ac2171dd50c48f9b1f9f2e610326e8ec9ca0cdab2c1661440e961499c3d12",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -la && rtk ls -la backend | sed -n '1,100p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files -g '*/bin/pytest' -g '*/bin/python' -g 'venv/**' -g '.venv/**' | sed -n '1,80p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk --version && rtk gain'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python --version && rtk python -m pytest --version'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 13,
+        "output_sha256": "685b9763c7c58cdbc18e815709783c8df7d25180b45147d87452e201d5532e49",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m pytest -q test_chg13_authorization_security.py'",
+      "exit_code": 127,
+      "test_result": {
+        "exit_code": 127,
+        "framework": "pytest",
+        "outcome": "nonzero",
+        "output_bytes": 46,
+        "output_sha256": "6c090b183e1e990e6df7b8391fba17d728ce6bd899c7c9c109979cdbb96b1c9d",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m pytest -q backend/test_chg13_authorization_security.py'",
+      "exit_code": 4,
+      "test_result": {
+        "exit_code": 4,
+        "framework": "pytest",
+        "outcome": "usage_error",
+        "output_bytes": 1228,
+        "output_sha256": "3281d2e3e22ede967056ef4d24f188e8a1739488a6e64d9277bf3148bb3ae345",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,90p' backend/app/database.py && rtk sed -n '1,80p' backend/pytest.ini && rtk env | rg 'DATABASE|ENVIRONMENT|TESTING|SQLALCHEMY'\"",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 3830,
+        "output_sha256": "b0c0bc38643f02f1395b5653e72a9e7f3cf5e1ed75fc5bb08d312f9f0c0c06c2",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show e15dc975cc62c6f808a253ca83bef95aa6db8f3a:backend/app/database.py | sed -n '1,55p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --hidden --files -g '*/bin/python' -g '*/bin/pytest' -g '*/pyvenv.cfg' -g '\"'!**/.git/**'\"' /Users/haewonkim/.codex-fabric/worktrees/CF-a7fbf976156c7e57ad0c1212 2>/dev/null | sed -n '1,120p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,120p' backend/requirements.txt && rtk rg -n \\\"SQLAlchemy|sqlalchemy|pytest\\\" backend/requirements.lock | head -30\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 372,
+        "output_sha256": "cc16385d1588ff3fccbbdc4c9108353806fe62020a107c5b5984f7e5c6ab5e0d",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -m pip show SQLAlchemy aiosqlite pytest | sed -n '1,100p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 957,
+        "output_sha256": "a02e942348dc32eb305eb4e0182d1ebe9c63660e7b48e9bc5b1feb18a8eb8a12",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,280p' backend/app/api/authorization.py && rtk sed -n '1,95p' backend/app/api/logical_services.py && rtk rg -n '\"'^@router.*admin'\"' backend/app/api/tenants.py && rtk git diff -- backend/app/api/tenants.py backend/app/core/config.py backend/.env.example backend/conftest.py | sed -n '1,360p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m pip install --disable-pip-version-check --quiet --target=/tmp/sysgrid-chg13-deps SQLAlchemy==2.0.51'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import sys, pytest; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_chg13_authorization_security.py']))\\\"\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "errors": 18,
+          "passed": 4,
+          "warnings": 1
+        },
+        "error_test_ids": [
+          "backend/test_chg13_authorization_security.py::test_tenant_roles_cannot_access_global_control_plane[param]",
+          "backend/test_chg13_authorization_security.py::test_explicit_control_plane_admin_succeeds[param]",
+          "backend/test_chg13_authorization_security.py::test_missing_trusted_identity_fails_closed[param]",
+          "backend/test_chg13_authorization_security.py::test_capability_dependency_denies_missing_operator[param]",
+          "backend/test_chg13_authorization_security.py::test_logical_service_reads_never_return_legacy_passwords[param]",
+          "backend/test_chg13_authorization_security.py::test_viewer_and_editor_cannot_reveal_legacy_service_secret[param]",
+          "backend/test_chg13_authorization_security.py::test_new_plaintext_service_secret_write_fails_closed[param]",
+          "backend/test_chg13_authorization_security.py::test_editor_cannot_mutate_service_secrets_without_manage_capability[param]"
+        ],
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 208074,
+        "output_sha256": "d193c1e48a5f3713d848bd720ea229fa317d1dc1d07ee389a7b6569b97cc7ee5",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_chg13_authorization_security.py']))\\\"\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 22,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 600,
+        "output_sha256": "ddc300eaa2192f7c1deeb1bd1f06fdb99d08cdb7d3a272860aabfde9c7ed2cfd",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_production_startup_policy.py']))\\\"\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 4,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 598,
+        "output_sha256": "488a69508da8528669c3c288338d8938499ba1ca104a7601394e1c06fba0e71a",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_service_workflows.py']))\\\"\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 6,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 598,
+        "output_sha256": "6235805933d5282b91f288205de2686c36adfba20856d52b8bb8bc089a9e1b15",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_settings_workflows.py']))\\\"\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 8,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 598,
+        "output_sha256": "9fe8bc870639b21776319b447b429a227ec000264115b958571d0c765d7484b5",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_main.py']))\\\"\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 14,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 599,
+        "output_sha256": "d2a13389dce1cba0cd18f60cd26416a005ec46ddcf8c9e0093f68ff30cba1cdb",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_tenant_workflows.py']))\\\"\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 12,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 600,
+        "output_sha256": "61c3dc86d11b9aba0c69098fe7488135a2a84c7621eb2ee1eb8ad8c8b9dacd8a",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend']))\\\"\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "errors": 129,
+          "failed": 12,
+          "passed": 209,
+          "warnings": 2
+        },
+        "error_test_ids": [
+          "backend/test_monitoring_restore_edges.py::test_monitoring_restore_history_handles_missing_owner_and_noop_restore[param]",
+          "backend/test_monitoring_workflows.py::test_monitoring_bulk_actions_create_history_entries[param]",
+          "backend/test_monitoring_workflows.py::test_monitoring_purge_revert_restores_deleted_row_from_backend_snapshot[param]",
+          "backend/test_monitoring_workflows.py::test_monitoring_enforces_guardrails_and_security_rules[param]",
+          "backend/test_monitoring_workflows.py::test_monitoring_allows_optional_and_combined_ownership[param]",
+          "backend/test_monitoring_workflows.py::test_monitoring_rejects_active_duplicates_and_allows_recreate_after_archive[param]",
+          "backend/test_network_workflows.py::test_network_connections_are_unique_and_edit_validation_is_enforced[param]",
+          "backend/test_network_workflows.py::test_network_edit_persists_unit_and_bulk_delete_is_atomic[param]",
+          "backend/test_network_workflows.py::test_network_restore_purge_and_validation_rules[param]",
+          "backend/test_p04_creation_portfolio_home.py::test_server_draft_resumes_idempotently_and_materializes_accepted_template_data",
+          "backend/test_p04_creation_portfolio_home.py::test_readiness_returns_structured_gaps_without_inventing_project_facts",
+          "backend/test_p04_creation_portfolio_home.py::test_only_durable_approved_records_satisfy_readiness_exceptions",
+          "backend/test_p04_creation_portfolio_home.py::test_story_projection_marks_project_target_miss_and_never_returns_past_next_measurement",
+          "backend/test_p04_creation_portfolio_home.py::test_portfolio_rollups_are_exclusive_top_level_and_attention_is_overlapping",
+          "backend/test_p04_creation_portfolio_home.py::test_lifecycle_capabilities_are_enforced_by_the_owning_domain",
+          "backend/test_p05_my_day_work_plan.py::test_focus_preferences_and_same_engine_project_scope",
+          "backend/test_p05_my_day_work_plan.py::test_done_blocked_and_bulk_are_server_enforced_and_atomic",
+          "backend/test_p05_my_day_work_plan.py::test_import_preview_and_plan_have_one_graph_and_typed_records",
+          "backend/test_p05_my_day_work_plan.py::test_undo_redo_is_revision_checked_and_does_not_overwrite_newer_edit",
+          "backend/test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization",
+          "backend/test_p06_timeline_scheduling.py::test_journey_3_preview_is_zero_write_apply_is_atomic_idempotent_and_undoable",
+          "backend/test_p06_timeline_scheduling.py::test_stale_preview_and_competing_graph_revision_reject_before_mutation",
+          "backend/test_p06_timeline_scheduling.py::test_dependency_validation_retention_baselines_and_schedule_permissions",
+          "backend/test_p06_timeline_scheduling.py::test_calendar_change_requires_explicit_normalization_and_baseline_variance_is_durable",
+          "backend/test_p06_timeline_scheduling.py::test_external_milestone_constraint_requires_confirmation_and_remote_revision_creates_attention"
+        ],
+        "exit_code": 1,
+        "failing_test_ids": [
+          "backend/test_tenant_workflows.py::test_create_tenant_grants_selected_admin_access_and_returns_serializable_payload[param]",
+          "backend/test_tenant_workflows.py::test_create_tenant_accepts_custom_parent_folder_and_db_name[param]",
+          "backend/test_tenant_workflows.py::test_attach_tenant_registers_existing_db_and_selects_it_for_request_user[param]",
+          "backend/test_tenant_workflows.py::test_select_tenant_switches_selection_without_validation_errors[param]",
+          "backend/test_tenant_workflows.py::test_create_tenant_provisions_far_and_rca_runtime_schema[param]",
+          "backend/test_tenant_workflows.py::test_inactive_tenant_is_hidden_unselectable_and_unroutable[param]"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 1048604,
+        "output_sha256": "410ec398ff6b2f2a006a98457ce390a6fe5b4a095b1b11d4e085ad4264ba0eed",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -c \"import resource; print(resource.getrlimit(resource.RLIMIT_NOFILE))\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, resource, sys, pytest; soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE); resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard)); os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend']))\\\"\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "passed": 349,
+          "warnings": 5
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "backend/test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 7163,
+        "output_sha256": "3bae3173d130fa997a51ae4ed33a2f80d800f183674f1d415104d5aaad41ebfa",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 2 '\"'^@router.*\"/admin'\"' backend/app/api/tenants.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -i \\\"password|include_secret_values|secret\\\" backend/app/api/logical_services.py backend/app/schemas/schemas.py backend/app/api/authorization.py | sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,280p' backend/app/api/authorization.py && rtk sed -n '1,420p' backend/test_chg13_authorization_security.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff -- backend/.env.example backend/app/core/config.py backend/app/api/tenants.py backend/app/api/logical_services.py backend/app/schemas/schemas.py backend/conftest.py | sed -n '1,520p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-only && rtk git ls-files --others --exclude-standard'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk python -m compileall -q backend/app backend/test_chg13_authorization_security.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse main && rtk git rev-parse origin/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba backend/app/schemas/schemas.py | sed -n '238,270p' && rtk git diff -- backend/app/schemas/schemas.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse main && rtk git rev-parse origin/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import sys; sys.path.insert(0, 'backend'); from app.core.config import Settings; configured = Settings(ENVIRONMENT='production', CONTROL_PLANE_ADMIN_USER_IDS=''); errors = configured.production_guard_errors(); assert any('CONTROL_PLANE_ADMIN_USER_IDS' in error for error in errors); configured = Settings(ENVIRONMENT='production', CONTROL_PLANE_ADMIN_USER_IDS='deployment-admin', CONTROL_PLANE_BOOTSTRAP_ENABLED=True, CONTROL_PLANE_BOOTSTRAP_USER_ID='bootstrap'); errors = configured.production_guard_errors(); assert any('CONTROL_PLANE_BOOTSTRAP_ENABLED' in error for error in errors); assert any('CONTROL_PLANE_BOOTSTRAP_USER_ID' in error for error in errors); print('production control-plane guards verified')\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys; os.environ['TESTING']='1'; os.environ['ENVIRONMENT']='test'; os.environ['CONFIG_DATABASE_URL']='sqlite+aiosqlite:////tmp/sysgrid-chg13-route-check.db'; os.environ['DATABASE_URL']='sqlite+aiosqlite:////tmp/sysgrid-chg13-tenant-check.db'; os.environ['TENANT_STORAGE_ROOT']='/tmp/sysgrid-chg13-tenants'; os.environ['CONTROL_PLANE_ADMIN_USER_IDS']='route-check'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); sys.path.insert(0, 'backend'); from app.main import app; from app.api.authorization import require_control_plane_admin; routes = [route for route in app.routes if route.path.startswith('/api/v1/tenants/admin/')]; assert routes and all(any(dep.call is require_control_plane_admin for dep in route.dependant.dependencies) for route in routes); print(f'{len(routes)} control-plane routes protected')\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba backend/app/api/authorization.py | sed -n '1,190p' && rtk nl -ba backend/app/api/logical_services.py | sed -n '25,235p' && rtk nl -ba backend/app/core/config.py | sed -n '28,55p;145,180p;218,245p' && rtk nl -ba backend/app/api/tenants.py | sed -n '136,160p;180,205p;258,275p;308,322p;446,460p;522,532p;590,605p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import os, sys, pytest; os.environ['PYTHONPATH'] = '/tmp/sysgrid-chg13-deps'; sys.path.insert(0, '/tmp/sysgrid-chg13-deps'); raise SystemExit(pytest.main(['-q', 'backend/test_chg13_authorization_security.py']))\\\"\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 23,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 600,
+        "output_sha256": "cbf1682ebe6f4ee809f7c4e045d5e401f28a1e6f4de49b0f001f3a88c8d49d42",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk git status --short --branch && rtk git branch --show-current && rtk git rev-parse HEAD && rtk git rev-parse main && rtk git rev-parse origin/main && rtk git diff --stat && rtk wc -l backend/app/api/authorization.py backend/test_chg13_authorization_security.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 247,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.72,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 10285568,
+      "fresh_input_tokens": 240077,
+      "input_tokens": 10525645,
+      "non_reasoning_output_tokens": 19341,
+      "output_tokens": 47032,
+      "reasoning_output_tokens": 27691,
+      "total_processed_tokens": 10572677
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "b83e29afe83f3fb36dffd8e4f788d260a9f9b095",
+      "subject": "fabric: capture completed model changes [CF-a7fbf976156c7e57ad0c1212]"
+    }
+  ],
+  "diff": {
+    "additions": 616,
+    "changed_files": 8,
+    "commit_count": 1,
+    "deletions": 17
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-a7fbf976156c7e57ad0c1212]",
+    "commit_sha": "b83e29afe83f3fb36dffd8e4f788d260a9f9b095",
+    "paths_before": 8,
+    "status_before": [
+      " M backend/.env.example",
+      " M backend/app/api/logical_services.py",
+      " M backend/app/api/tenants.py",
+      " M backend/app/core/config.py",
+      " M backend/app/schemas/schemas.py",
+      " M backend/conftest.py",
+      "?? backend/app/api/authorization.py",
+      "?? backend/test_chg13_authorization_security.py"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.0",
+  "failure_class": null,
+  "finished_at": "2026-09-14T05:15:56Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "e15dc975cc62c6f808a253ca83bef95aa6db8f3a",
+    "branch": "build/sysgrid-authz-security-foundation",
+    "head_sha": "b83e29afe83f3fb36dffd8e4f788d260a9f9b095",
+    "remote_exact_head": true,
+    "remote_head_sha": "b83e29afe83f3fb36dffd8e4f788d260a9f9b095",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "e15dc975cc62c6f808a253ca83bef95aa6db8f3a",
+    "work_branch": "build/sysgrid-authz-security-foundation",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-a7fbf976156c7e57ad0c1212",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-authz-security-foundation-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-authz-security-foundation-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.0",
+    "policy_sha256": "3778fba0755dd2f6b00268f73b7a589f93317203cc0603df2feff4e6d9c759f6",
+    "registry_sha256": "26e0365e08a0d6f8ba1d9f92d40fc3fec07ae0710d7a1d240a18c93232e91630"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": false
+  },
+  "request": "sysgrid-authz-security-foundation-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-14T04:35:05Z",
+  "status": "EXECUTED_WITH_WARNINGS",
+  "timing": {
+    "execution_seconds": 2451,
+    "queue_seconds": 0,
+    "total_seconds": 2451
+  },
+  "transport": {
+    "bytes": 8932,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 8608,
+    "prompt_sha256": "1db09ac2c86365508f6633dee72491e4541cef85a2c773d577fdddef602ae86b",
+    "sha256": "a7fbf976156c7e57ad0c121254d50495bd2fe2f21c5d15ef5695696d95bcb736"
+  }
+}
