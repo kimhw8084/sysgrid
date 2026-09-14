@@ -21,7 +21,7 @@ from .api import (
     audit, dashboard, data_flows, devices, far, import_engine, intelligence,
     investigations, knowledge, logical_services, maintenance, monitoring, networks,
     projects, pv1, racks, rca, security, settings as settings_api, sites, tenants, workspaces,
-    troubleshoot, vendors, pv1_communication,
+    troubleshoot, vendors, pv1_communication, operational_actions,
 )
 from .api.error_utils import standardize_validation_errors
 from .api.import_engine import ROUND_TRIP_EXPOSE_HEADER_NAMES, ROUND_TRIP_EXPOSE_HEADERS
@@ -252,6 +252,7 @@ for router in (
     logical_services.router, settings_api.router, monitoring.router, troubleshoot.router,
     data_flows.router, intelligence.router, rca.router, investigations.router, far.router,
     projects.router, vendors.router, knowledge.router, workspaces.router,
+    operational_actions.router,
 ):
     app.include_router(router, prefix=settings.API_V1_STR)
 
