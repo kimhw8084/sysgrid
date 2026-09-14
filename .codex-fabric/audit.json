@@ -1,0 +1,674 @@
+{
+  "accepted_at": "2026-09-14T17:49:27Z",
+  "changed_files": [
+    {
+      "additions": 183,
+      "deletions": 0,
+      "path": "backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py",
+      "status": "A"
+    },
+    {
+      "additions": 21,
+      "deletions": 0,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 116,
+      "deletions": 1,
+      "path": "backend/app/architecture/api.py",
+      "status": "M"
+    },
+    {
+      "additions": 8,
+      "deletions": 3,
+      "path": "backend/app/architecture/domain.py",
+      "status": "M"
+    },
+    {
+      "additions": 43,
+      "deletions": 0,
+      "path": "backend/app/architecture/models.py",
+      "status": "M"
+    },
+    {
+      "additions": 652,
+      "deletions": 0,
+      "path": "backend/app/architecture/traceability.py",
+      "status": "A"
+    },
+    {
+      "additions": 31,
+      "deletions": 0,
+      "path": "backend/app/pv1/models.py",
+      "status": "M"
+    },
+    {
+      "additions": 278,
+      "deletions": 0,
+      "path": "backend/test_asset_architecture_traceability.py",
+      "status": "A"
+    },
+    {
+      "additions": 64,
+      "deletions": 0,
+      "path": "docs/SYSGRID-TRACEABILITY-EVIDENCE.md",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,65p' backend/app/models/models.py && rtk sed -n '1,75p' backend/alembic/versions/c6d7e8f9a0b1_add_pv1_architecture_engine.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"class PV1DomainError|async def require_project_role|def require_project_role\\\" backend/app/pv1/domain.py && rtk sed -n '70,145p' backend/app/pv1/domain.py && rtk rg -n \\\"def _error|PV1DomainError\\\" backend/app/architecture/api.py backend/app/pv1/api.py backend/app/api | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '45,75p' backend/app/architecture/api.py && rtk sed -n '230,365p' backend/app/architecture/api.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba backend/app/architecture/api.py | sed -n '250,365p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba backend/app/architecture/api.py | sed -n '245,330p' && rtk /opt/anaconda3/bin/python -m py_compile backend/app/architecture/api.py\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba backend/app/architecture/api.py | sed -n '185,245p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba backend/app/architecture/api.py | sed -n '188,355p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python -m py_compile backend/app/architecture/api.py backend/app/architecture/traceability.py && rtk nl -ba backend/app/architecture/api.py | sed -n '185,350p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,90p' backend/alembic/versions/a1b2c3d4e5f6_add_pv1_domain_foundation.py && rtk sed -n '30,75p' backend/app/architecture/models.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py'\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "passed": 2,
+          "warnings": 1
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_asset_architecture_traceability.py::test_traceability_migration_backfills_valid_selections_and_preserves_invalid_source"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 21736,
+        "output_sha256": "143a520c96df433affc36bbaf61fefb3fc54c53623120c038e1b9828a006cd87",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py'\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "passed": 2,
+          "warnings": 1
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_asset_architecture_traceability.py::test_traceability_migration_backfills_valid_selections_and_preserves_invalid_source"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 16422,
+        "output_sha256": "ab4d8631d746f748a4be4f61dfdd3d5d99277204cfe551bedc500613d011ba56",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 3,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 590,
+        "output_sha256": "a9feb31a83b3d9d79feeec7a6fbaad329c1d82332dac2c1e743cee55cb84203b",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\"'^def seeded|''^async def seeded|fixture.*tenant|tenant_b|second'\"' backend/conftest.py | tail -80 && rtk sed -n '300,430p' backend/conftest.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 8,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 590,
+        "output_sha256": "e14e8e2e2e96f8784042ae2f79643d21bf53214b7f688bc2e376d352fb7643b9",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_p07_architecture_engine.py test_asset_architecture_traceability.py test_pv1_domain_foundation.py test_p06_timeline_scheduling.py test_p09_outcomes_delivery_value.py test_p11_project_portfolio_contract.py test_p13_audit_remediation.py test_startup_migrations.py'\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "passed": 38,
+          "warnings": 2
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 5962,
+        "output_sha256": "6670d7c94341dc249bb1ecac39fa61521174397adc9daf856300d2947fade474",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files backend | rg 'test_.*(p12|p13|p14|qualification|contract)' | sort\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk /opt/anaconda3/bin/python -m compileall -q backend/app backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_p07_architecture_engine.py test_asset_architecture_traceability.py test_pv1_domain_foundation.py test_p06_timeline_scheduling.py test_p11_project_portfolio_contract.py test_p13_audit_remediation.py test_startup_migrations.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 34,
+          "warnings": 2
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 981,
+        "output_sha256": "a0d8e5fac259e6bbe4b754adcf5d03a6abf0a79f21c8e4ff8150cce2a26c554b",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -i 'P12|P13|P14|qualification' backend docs .github 2>/dev/null | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'Traceability|ArchitectureDeviceLink|PV1Traceability|project_architecture_object_ids|sync_project' backend/app backend/alembic backend/test_asset_architecture_traceability.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --numstat && rtk wc -l backend/app/architecture/traceability.py backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff -- backend/app/architecture/domain.py backend/app/architecture/api.py | sed -n '1,280p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff -- backend/app/architecture/api.py | sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q'\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "errors": 121,
+          "failed": 12,
+          "passed": 198,
+          "warnings": 2
+        },
+        "error_test_ids": [
+          "test_monitoring_workflows.py::test_monitoring_enforces_guardrails_and_security_rules[param]",
+          "test_monitoring_workflows.py::test_monitoring_allows_optional_and_combined_ownership[param]",
+          "test_monitoring_workflows.py::test_monitoring_rejects_active_duplicates_and_allows_recreate_after_archive[param]",
+          "test_network_workflows.py::test_network_connections_are_unique_and_edit_validation_is_enforced[param]",
+          "test_network_workflows.py::test_network_edit_persists_unit_and_bulk_delete_is_atomic[param]",
+          "test_network_workflows.py::test_network_restore_purge_and_validation_rules[param]",
+          "test_p04_creation_portfolio_home.py::test_server_draft_resumes_idempotently_and_materializes_accepted_template_data",
+          "test_p04_creation_portfolio_home.py::test_readiness_returns_structured_gaps_without_inventing_project_facts",
+          "test_p04_creation_portfolio_home.py::test_only_durable_approved_records_satisfy_readiness_exceptions",
+          "test_p04_creation_portfolio_home.py::test_story_projection_marks_project_target_miss_and_never_returns_past_next_measurement",
+          "test_p04_creation_portfolio_home.py::test_portfolio_rollups_are_exclusive_top_level_and_attention_is_overlapping",
+          "test_p04_creation_portfolio_home.py::test_lifecycle_capabilities_are_enforced_by_the_owning_domain",
+          "test_p05_my_day_work_plan.py::test_focus_preferences_and_same_engine_project_scope",
+          "test_p05_my_day_work_plan.py::test_done_blocked_and_bulk_are_server_enforced_and_atomic",
+          "test_p05_my_day_work_plan.py::test_import_preview_and_plan_have_one_graph_and_typed_records",
+          "test_p05_my_day_work_plan.py::test_undo_redo_is_revision_checked_and_does_not_overwrite_newer_edit",
+          "test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization",
+          "test_p06_timeline_scheduling.py::test_journey_3_preview_is_zero_write_apply_is_atomic_idempotent_and_undoable",
+          "test_p06_timeline_scheduling.py::test_stale_preview_and_competing_graph_revision_reject_before_mutation",
+          "test_p06_timeline_scheduling.py::test_dependency_validation_retention_baselines_and_schedule_permissions",
+          "test_p06_timeline_scheduling.py::test_calendar_change_requires_explicit_normalization_and_baseline_variance_is_durable",
+          "test_p06_timeline_scheduling.py::test_external_milestone_constraint_requires_confirmation_and_remote_revision_creates_attention",
+          "test_p06_timeline_scheduling.py::test_two_competing_schedule_applies_allow_exactly_one_atomic_winner",
+          "test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation",
+          "test_p07_architecture_engine.py::test_canonical_model_object_relation_identity_and_idempotency"
+        ],
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_tenant_workflows.py::test_create_tenant_grants_selected_admin_access_and_returns_serializable_payload[param]",
+          "test_tenant_workflows.py::test_create_tenant_accepts_custom_parent_folder_and_db_name[param]",
+          "test_tenant_workflows.py::test_attach_tenant_registers_existing_db_and_selects_it_for_request_user[param]",
+          "test_tenant_workflows.py::test_select_tenant_switches_selection_without_validation_errors[param]",
+          "test_tenant_workflows.py::test_create_tenant_provisions_far_and_rca_runtime_schema[param]",
+          "test_tenant_workflows.py::test_inactive_tenant_is_hidden_unselectable_and_unroutable[param]"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 966082,
+        "output_sha256": "dbacec5a79a3e2099a89e55dd7d3256e14ba4bc6cd96b4ed6076f5d0c194b654",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 8,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 590,
+        "output_sha256": "5e7e96b78cbde0e706e8c98d32f1341edee836730a4c598cdaa1dc0aebe677a6",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"purge|bulk.*delete|is_deleted\\\" backend/app/api/devices.py backend/app/services -g '*.py' | head -120 && rtk sed -n '380,520p' backend/app/api/devices.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '520,610p' backend/app/api/devices.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,80p' backend/app/api/devices.py && rtk rg -n 'def build_operational_bulk_summary|require_executable_operational_bulk' backend/app/api/devices.py backend/app -g '*.py'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,120p' backend/app/api/operational_bulk.py && rtk rg -n 'purge|blocked_count|blockers' backend/test* | head -120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py test_devices_api_edges.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 16,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 592,
+        "output_sha256": "1bb28ddf99c8c49d1a15dfd948fd711a0840d83794918b8f9b633991e00931cb",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-only && rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk /opt/anaconda3/bin/python -m compileall -q backend/app backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m alembic -c alembic.ini heads'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py test_pv1_domain_foundation.py test_p06_timeline_scheduling.py test_p11_project_portfolio_contract.py test_p13_audit_remediation.py test_startup_migrations.py test_devices_api_edges.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 42,
+          "warnings": 2
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 981,
+        "output_sha256": "c48a65328c7ad7d40c47b55ceb3797be09f19a86fc5eef7ee774955dbaf1353b",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'AI|agent|codex|opencode|chatgpt|llm|model cli' backend/app/api/devices.py backend/app/architecture/api.py backend/app/architecture/domain.py backend/app/architecture/models.py backend/app/architecture/traceability.py backend/app/pv1/models.py backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py docs/SYSGRID-TRACEABILITY-EVIDENCE.md || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 backend/app/api/devices.py backend/app/architecture/api.py backend/app/architecture/domain.py backend/app/architecture/models.py backend/app/architecture/traceability.py backend/app/pv1/models.py backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py docs/SYSGRID-TRACEABILITY-EVIDENCE.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /opt/anaconda3/bin/python -m compileall -q backend/app backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py && rtk /opt/anaconda3/bin/python -m py_compile backend/app/api/devices.py backend/app/architecture/api.py backend/app/architecture/domain.py backend/app/architecture/models.py backend/app/architecture/traceability.py backend/app/pv1/models.py backend/test_asset_architecture_traceability.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse --abbrev-ref HEAD && rtk git rev-parse HEAD && rtk git status --short && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py test_devices_api_edges.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 16,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 592,
+        "output_sha256": "24d88eb0d68e437a91ae04d28f5007a3b15fc373b9414f5c5a9cf9575ac74c9f",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py test_pv1_domain_foundation.py test_p06_timeline_scheduling.py test_p11_project_portfolio_contract.py test_p13_audit_remediation.py test_startup_migrations.py test_devices_api_edges.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 42,
+          "warnings": 2
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 981,
+        "output_sha256": "b68e85244caf04982f4a9e4f37fdb0cc67d284f7979dba773a8befc5da50f2ad",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '640,720p' backend/app/architecture/domain.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py test_devices_api_edges.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 16,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 592,
+        "output_sha256": "5b55ab34a05db99acfb5028a3ea9403f023714bc52fedb2d23ddadd10c14899e",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m pytest -q test_asset_architecture_traceability.py test_p07_architecture_engine.py test_pv1_domain_foundation.py test_p06_timeline_scheduling.py test_p11_project_portfolio_contract.py test_p13_audit_remediation.py test_startup_migrations.py test_devices_api_edges.py'\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 42,
+          "warnings": 2
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 981,
+        "output_sha256": "f61fbd7a45cc24a52cda1b59402fdf51a4851474f326197b096cd3e429f0ed37",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -i '\\\\b(codex|opencode|chatgpt|llm|openai)\\\\b|agent[[:space:]]+loop|model[[:space:]]+cli' backend/app/api/devices.py backend/app/architecture/api.py backend/app/architecture/domain.py backend/app/architecture/models.py backend/app/architecture/traceability.py backend/app/pv1/models.py backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py docs/SYSGRID-TRACEABILITY-EVIDENCE.md || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 backend/app/api/devices.py backend/app/architecture/api.py backend/app/architecture/domain.py backend/app/architecture/models.py backend/app/architecture/traceability.py backend/app/pv1/models.py backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /opt/anaconda3/bin/python -m compileall -q backend/app backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py && rtk /opt/anaconda3/bin/python -m py_compile backend/app/api/devices.py backend/app/architecture/api.py backend/app/architecture/domain.py backend/app/architecture/models.py backend/app/architecture/traceability.py backend/app/pv1/models.py backend/test_asset_architecture_traceability.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git rev-parse --abbrev-ref HEAD && rtk git rev-parse HEAD && rtk git status --short && rtk git diff --check && rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m alembic -c alembic.ini heads'\"",
+      "exit_code": 255,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short && rtk git diff --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk /opt/anaconda3/bin/python -m compileall -q backend/app backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py backend/test_asset_architecture_traceability.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /bin/zsh -lc 'PYTHONPATH=/tmp/sysgrid-sqlalchemy /opt/anaconda3/bin/python -m alembic -c alembic.ini heads'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 328,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.88,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 24788480,
+      "fresh_input_tokens": 536602,
+      "input_tokens": 25325082,
+      "non_reasoning_output_tokens": 63410,
+      "output_tokens": 105955,
+      "reasoning_output_tokens": 42545,
+      "total_processed_tokens": 25431037
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "3fdbe3f54d189e23666ffb70b4f99b473fc38a4c",
+      "subject": "fabric: capture completed model changes [CF-04527f4d19ab55766d6e158f]"
+    }
+  ],
+  "diff": {
+    "additions": 1396,
+    "changed_files": 9,
+    "commit_count": 1,
+    "deletions": 4
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 4,
+    "items": [
+      {
+        "bytes": 13431,
+        "path": "backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py",
+        "sha256": "876d850c7e8f69740e2412f9530e8b8238af2d83e1b66fa2145aa64c1dff4a4f"
+      },
+      {
+        "bytes": 53836,
+        "path": "backend/app/architecture/traceability.py",
+        "sha256": "75dc999925556f5a9eaf50fc6aa2019c7f35436af0f7b463a298b9428051d76d"
+      },
+      {
+        "bytes": 18905,
+        "path": "backend/test_asset_architecture_traceability.py",
+        "sha256": "e4f0c97a072a38e23533730df4e2660e6944477ab1beee022284fd26d5b2cddd"
+      },
+      {
+        "bytes": 5411,
+        "path": "docs/SYSGRID-TRACEABILITY-EVIDENCE.md",
+        "sha256": "d510bd9cdcc890b4d04d3c423f5a5a78fd7c41086ac2e2b21c70621a07021bcb"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-04527f4d19ab55766d6e158f]",
+    "commit_sha": "3fdbe3f54d189e23666ffb70b4f99b473fc38a4c",
+    "paths_before": 9,
+    "status_before": [
+      " M backend/app/api/devices.py",
+      " M backend/app/architecture/api.py",
+      " M backend/app/architecture/domain.py",
+      " M backend/app/architecture/models.py",
+      " M backend/app/pv1/models.py",
+      "?? backend/alembic/versions/9a7b6c5d4e3f_add_normalized_asset_architecture_traceability.py",
+      "?? backend/app/architecture/traceability.py",
+      "?? backend/test_asset_architecture_traceability.py",
+      "?? docs/SYSGRID-TRACEABILITY-EVIDENCE.md"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.2-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-14T18:34:20Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "e15dc975cc62c6f808a253ca83bef95aa6db8f3a",
+    "branch": "build/sysgrid-asset-architecture-traceability",
+    "head_sha": "3fdbe3f54d189e23666ffb70b4f99b473fc38a4c",
+    "remote_exact_head": true,
+    "remote_head_sha": "3fdbe3f54d189e23666ffb70b4f99b473fc38a4c",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "e15dc975cc62c6f808a253ca83bef95aa6db8f3a",
+    "work_branch": "build/sysgrid-asset-architecture-traceability",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-04527f4d19ab55766d6e158f",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-asset-architecture-traceability-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-asset-architecture-traceability-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2-candidate",
+    "policy_sha256": "3778fba0755dd2f6b00268f73b7a589f93317203cc0603df2feff4e6d9c759f6",
+    "registry_sha256": "d7cbfa70a30e73c4ac4e86908b0b4a033207285aafb3320d1817e67803f6cc10"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-asset-architecture-traceability-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-14T17:49:27Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2693,
+    "queue_seconds": 0,
+    "total_seconds": 2693
+  },
+  "transport": {
+    "bytes": 4695,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 4359,
+    "prompt_sha256": "52a96af25472b1c149f39003b951de2ad073413a62c3b907232fc61f65f06f1c",
+    "sha256": "04527f4d19ab55766d6e158fcaa65c38d73390600c5be08dd82b97681cc271f8"
+  }
+}
