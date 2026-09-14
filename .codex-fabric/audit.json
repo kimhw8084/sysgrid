@@ -1,0 +1,710 @@
+{
+  "accepted_at": "2026-09-14T23:19:13Z",
+  "changed_files": [
+    {
+      "additions": 146,
+      "deletions": 0,
+      "path": "backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py",
+      "status": "A"
+    },
+    {
+      "additions": 325,
+      "deletions": 0,
+      "path": "backend/app/api/operational_actions.py",
+      "status": "A"
+    },
+    {
+      "additions": 8,
+      "deletions": 1,
+      "path": "backend/app/database.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "backend/app/main.py",
+      "status": "M"
+    },
+    {
+      "additions": 123,
+      "deletions": 0,
+      "path": "backend/app/models/models.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "backend/app/operational_actions/__init__.py",
+      "status": "A"
+    },
+    {
+      "additions": 302,
+      "deletions": 0,
+      "path": "backend/app/operational_actions/domain.py",
+      "status": "A"
+    },
+    {
+      "additions": 1238,
+      "deletions": 0,
+      "path": "backend/app/operational_actions/service.py",
+      "status": "A"
+    },
+    {
+      "additions": 205,
+      "deletions": 0,
+      "path": "backend/app/schemas/operational_actions.py",
+      "status": "A"
+    },
+    {
+      "additions": 409,
+      "deletions": 0,
+      "path": "backend/test_operational_actions.py",
+      "status": "A"
+    },
+    {
+      "additions": 34,
+      "deletions": 0,
+      "path": "docs/CHG-17-operational-action-foundation-evidence.md",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '292,332p' backend/app/operational_actions/service.py; rtk proxy sed -n '532,562p' backend/app/operational_actions/service.py; rtk rg -n 'recovery_facts' backend/app/models/models.py backend/app/schemas/operational_actions.py backend/app/operational_actions/domain.py | sed -n '1,120p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy nl -ba backend/app/operational_actions/service.py | sed -n '520,570p'; rtk proxy nl -ba backend/app/operational_actions/service.py | sed -n '1128,1152p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -m compileall -q backend/app backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py; printf 'compile_status=%s\\\\n' \\\"\"'$?\"; rtk git diff --check; printf '\"'%s\\\\n' '--- changed files ---'; rtk git status --short\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q backend/test_startup_migrations.py'",
+      "exit_code": 4,
+      "test_result": {
+        "exit_code": 4,
+        "framework": "pytest",
+        "outcome": "usage_error",
+        "output_bytes": 102,
+        "output_sha256": "5dea1f37fddc69dbac99f5740b52726de09c4003a0aefce8c2d8e85ff761e816",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '1,160p' backend/pytest.ini; rtk pytest -q -c backend/pytest.ini backend/test_startup_migrations.py\"",
+      "exit_code": 4,
+      "test_result": {
+        "exit_code": 4,
+        "framework": "pytest",
+        "outcome": "usage_error",
+        "output_bytes": 102,
+        "output_sha256": "d6eecdd62d30c77c935946479f6aa416b3a6ab51beb8d6d7b3101adcace2bef6",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python -m pytest --collect-only -q backend/test_startup_migrations.py -o python_files='test_*.py' -o testpaths='' 2>&1 | sed -n '1,160p'; rtk rg -n 'python_files|norecursedirs|collect_ignore|testpaths' . -g 'pyproject.toml' -g 'pytest.ini' -g 'setup.cfg' -g 'tox.ini' -g 'conftest.py' | sed -n '1,160p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1228,
+        "output_sha256": "b76fe9c92ef7087ab13717a24e088f19baffdd3d8a40bdaafa305b770b5bf5aa",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nfrom sqlalchemy.ext.asyncio import create_async_engine\nfrom sqlalchemy.pool import AsyncAdaptedQueuePool\nengine = create_async_engine('sqlite+aiosqlite:////tmp/sysgrid-pool-check.db', poolclass=AsyncAdaptedQueuePool, pool_size=2, max_overflow=0, connect_args={'check_same_thread': False, 'timeout': 60})\nprint(type(engine.sync_engine.pool).__name__)\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_startup_migrations.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 17,
+        "output_sha256": "b36cf227096d970c3553fb28bf979ae1ed9170b1fb13f72baba5d484d31e53f6",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_operational_actions.py'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 861,
+        "output_sha256": "68906ca0463d2c4677c3c5cdbfabc5fa84de3515cdd5ab5aa97683da6e2e7e38",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat \"$HOME/Library/Application Support/rtk/tee/1789429030_pytest.log\" | sed -n '\"'1,360p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 25121,
+        "output_sha256": "2b46735e0423720a6feb82cc874f202cbae55ef8f56275fd6ada671998592d5c",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_operational_actions.py'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 493,
+        "output_sha256": "62485c644245abaa6f34ca822ed37b12f1d9396039f5babc05f617a42c631bd4",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat \"$HOME/Library/Application Support/rtk/tee/1789429055_pytest.log\" | sed -n '\"'1,260p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18871,
+        "output_sha256": "7af84209f1e3425d910d860afb24d73bd6defd6ce9715a6da2f592ac7b435fca",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 10 'def run_alembic_upgrade' backend/app/api/tenants.py; rtk proxy sed -n '1,100p' backend/app/api/tenants.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '336,385p' backend/app/api/tenants.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_operational_actions.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 17,
+        "output_sha256": "aed3c723f9fa8536e3ec4525e99e58e75bbe27f8df112f492d948f5067465235",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_main.py backend/test_devices_api_edges.py backend/test_asset_vendor_bulk_workflows.py backend/test_tenant_isolation.py backend/test_p13_audit_remediation.py backend/test_startup_migrations.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18,
+        "output_sha256": "e1230bc6bc43dc5fc2f4173bc9b1cbc607bfdbaf0f2b996af18c22556888ceb4",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc '\nset -e\ntmpdir=\\\"\"'$(mktemp -d)\"\ndb=\"${tmpdir}/roundtrip.db\"\nexport CONFIG_DATABASE_URL=\"sqlite+aiosqlite:///${tmpdir}/config.db\"\nexport DATABASE_URL=\"sqlite+aiosqlite:///${db}\"\nexport SQLALCHEMY_DATABASE_URL=\"sqlite:///${db}\"\ncd backend\nalembic upgrade f1a2b3c4d5e6\nalembic upgrade head\npython - <<PY\nimport sqlite3\nconnection = sqlite3.connect(\"${db}\")\ntables = {row[0] for row in connection.execute(\"select name from sqlite_master where type='\"\\\\\\\"table\\\\\\\"\\\")}\nrequired = {\\\"operational_actions\\\", \\\"operational_action_targets\\\", \\\"operational_action_events\\\", \\\"operational_action_evidence\\\"}\nassert required <= tables, (required - tables)\nprint(\\\"upgrade_head_tables=ok\\\")\nPY\nalembic downgrade f1a2b3c4d5e6\npython - <<PY\nimport sqlite3\nconnection = sqlite3.connect(\\\"\"'${db}\")\ntables = {row[0] for row in connection.execute(\"select name from sqlite_master where type='\"\\\\\\\"table\\\\\\\"\\\")}\nassert not {\\\"operational_actions\\\", \\\"operational_action_targets\\\", \\\"operational_action_events\\\", \\\"operational_action_evidence\\\"} & tables\nprint(\\\"downgrade_foundation=ok\\\")\nPY\nalembic upgrade head\npython - <<PY\nimport sqlite3\nconnection = sqlite3.connect(\\\"\"'${db}\")\nversion = connection.execute(\"select version_num from alembic_version\").fetchall()\nassert version == [(\"c17a9e5b2f01\",)], version\nprint(\"roundtrip_head=c17a9e5b2f01\")\nPY\n'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps -o pid,etime,stat,command -ax | rtk rg 'pytest|python.*pytest' | sed -n '1,80p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -axo pid,etime,stat,command | rtk rg 'pytest|python.*pytest' | sed -n '1,80p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 369,
+        "output_sha256": "f29b014554786dc5047a410d86773ff6390b5218a37a7d505924fb2022778172",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ps -p 30474 -o pid,etime,%cpu,%mem,stat,command'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 3309,
+        "output_sha256": "72f2c9e7adec8235f4be55e7aa4fad03beea2cebdf5be738cf1e585f8a38592f",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat \"$HOME/Library/Application Support/rtk/tee/1789429288_pytest.log\" | sed -n '\"'1,520p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 30141,
+        "output_sha256": "78754a4243528d58d89055fb659f86928b530556399bcc7a2e28221655305c64",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat \"$HOME/Library/Application Support/rtk/tee/1789429288_pytest.log\" | tail -260'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "errors": 124,
+          "failed": 12,
+          "passed": 199,
+          "warnings": 2
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 17513,
+        "output_sha256": "3bfc8fef64870ccccb5ac4d263c99d60849f7f95feea8f9b6fa500d8d94a43e8",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_operational_actions.py backend/test_startup_migrations.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18,
+        "output_sha256": "bc83edee2071b71884c43fabeb59314c9198dc3c277245b5054c08218e4b41bd",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -p 33734,33736 -o pid,etime,%cpu,stat,command 2>/dev/null || rtk proxy ps -axo pid,etime,%cpu,stat,command | rtk rg 'pytest -q -c backend/pytest.ini backend'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 394,
+        "output_sha256": "43aa0733501c4d7844b7d0f4d825f0ae88bac675d8b7e169aef0eba0178dac7a",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -axo pid,etime,%cpu,stat,command | rtk rg 'python.*pytest' | sed -n '1,40p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 311,
+        "output_sha256": "ea07180e2ddc171cd221c11ac9f58539737a1216bf8868d8e7085945c34a2050",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ps -p 31631 -o pid,etime,%cpu,%mem,stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ps -p 31631 -o pid,etime,%cpu,stat,command; rtk proxy lsof -p 31631 2>/dev/null | rtk wc -l'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -axo pid,ppid,etime,%cpu,stat,command | rtk rg '31631|alembic|pytest' | sed -n '1,120p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 426,
+        "output_sha256": "6bcff078ed27da6ce0bd7350a48b3a7908359187d18fdc32753cfeeb75ee8070",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ls -l \"$HOME/Library/Application Support/rtk/tee\" | tail -5; rtk proxy find \"$HOME/Library/Application Support/rtk/tee\" -type f -mmin -5 -print | tail -10'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sample 31631 1 1 2>/dev/null | sed -n '1,160p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -M 31631 | sed -n '1,80p'; rtk proxy lsof -p 31631 | sed -n '1,120p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 378,
+        "output_sha256": "dbf99526eaea6463f1353c3676bc2fc0c97992163dd55eac05076f1d6f690d33",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 376,
+        "output_sha256": "680b233064faec393b05da4a7ae0de213ae88c16c484c4f62b38e5007b82e097",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat \"$HOME/Library/Application Support/rtk/tee/1789429587_pytest.log\" | sed -n '\"'1,220p'; rtk proxy sed -n '1,180p' backend/test_p09_outcomes_delivery_value.py\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18998,
+        "output_sha256": "58a2948abadc9a5148c290b3cba0fab75352a42469e8aedfb20cd301c9628d7d",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --check; printf '%s\\\\n' '--- diff stat ---'; rtk git diff --stat; printf '%s\\\\n' '--- diff names ---'; rtk git status --short; printf '%s\\\\n' '--- forbidden AI/agent command scan in changed source ---'; rtk rg -n -i 'codex|opencode|chatgpt|openai|llm|agent loop|subprocess|shell|paramiko|winrm|ansible|redfish|kubectl|ssh|powershell|remote session|production_capable' backend/app/api/operational_actions.py backend/app/operational_actions backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py backend/test_operational_actions.py | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff -- backend/app/main.py backend/app/database.py backend/app/models/models.py; printf '%s\\\\n' '--- new module line counts ---'; rtk wc -l backend/app/operational_actions/domain.py backend/app/operational_actions/service.py backend/app/api/operational_actions.py backend/app/schemas/operational_actions.py backend/test_operational_actions.py backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_operational_actions.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 17,
+        "output_sha256": "aed3c723f9fa8536e3ec4525e99e58e75bbe27f8df112f492d948f5067465235",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_operational_actions.py backend/test_main.py backend/test_devices_api_edges.py backend/test_asset_vendor_bulk_workflows.py backend/test_tenant_isolation.py backend/test_p13_audit_remediation.py backend/test_startup_migrations.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18,
+        "output_sha256": "dcac1dca2c6d27f66c8f66e1d7b207ffc2cdfad781966d84e131b6b94c0c2d1d",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_operational_actions.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 17,
+        "output_sha256": "e83509209d3d50155e762d6fd67d64c98a41b5136a1495c56215685a05dc0603",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ruff check backend/app/operational_actions backend/app/api/operational_actions.py backend/app/schemas/operational_actions.py backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py backend/test_operational_actions.py backend/app/database.py backend/app/main.py backend/app/models/models.py'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -m compileall -q backend/app backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py backend/test_operational_actions.py; printf 'compile_status=%s\\\\n' \\\"\"'$?\"; rtk git diff --check; printf '\"'diff_check_status=%s\\\\n' \\\"\"'$?\"; rtk rg -n -i '\"'subprocess|os\\\\.system|popen|codex|opencode|chatgpt|openai|llm|agent loop' backend/app/operational_actions backend/app/api/operational_actions.py backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py | sed -n '1,120p'; printf '%s\\\\n' '--- branch/head/status ---'; rtk git branch --show-current; rtk git rev-parse HEAD; rtk git status --short\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -axo pid,etime,%cpu,stat,command | rtk rg 'pytest.*backend --ignore' | sed -n '1,20p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 510,
+        "output_sha256": "ba86cb669078a04e58345eddda181b0522688525aecf58ecb3117dc5bbeafdaa",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ps -p 34380 -o pid,etime,%cpu,stat; rtk proxy lsof -p 34380 2>/dev/null | rtk wc -l'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend --ignore=backend/test_p09_outcomes_delivery_value.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 19,
+        "output_sha256": "06dee97b5f07bc92f06d7a3290370e089f1638a1355d2d460502f58cd2be6854",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest --collect-only -q -c backend/pytest.ini backend/test_operational_actions.py backend/test_p09_outcomes_delivery_value.py | tail -12'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 27,
+        "output_sha256": "4dd52546f9627882f0f0474cc8074ac2df19d8642d2365f456b8115674527036",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest --collect-only -q -c backend/pytest.ini backend/test_operational_actions.py 2>&1 | tail -20'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1261,
+        "output_sha256": "2a8173eb35e8cc4b0a2ca41c2b0850a00a52f8ed3319b1c9426323daff2aa07b",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest --collect-only -q -c backend/pytest.ini backend/test_p09_outcomes_delivery_value.py 2>&1 | tail -10'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 742,
+        "output_sha256": "7cdb79cc06142537fea4c13d406ff629516ff3df1d28ff128502a421f4e7fbdc",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q -c backend/pytest.ini backend/test_p09_outcomes_delivery_value.py'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 376,
+        "output_sha256": "7220c0ac97a4513e24ec8f61df75f43af62b6541a100507c6ac1f655f15c5dcb",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --check; rtk python -m compileall -q backend/app backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py backend/test_operational_actions.py; printf '%s\\\\n' '--- final status ---'; rtk git status --short; printf '%s\\\\n' '--- final line counts ---'; rtk wc -l backend/app/api/operational_actions.py backend/app/operational_actions/domain.py backend/app/operational_actions/service.py backend/app/schemas/operational_actions.py backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py backend/test_operational_actions.py docs/CHG-17-operational-action-foundation-evidence.md; printf '%s\\\\n' '--- no qualification edits ---'; rtk git status --short -- backend/test_p06* backend/test_p09* backend/test_pv1* backend/alembic/versions/a1b2c3d4e5f6_add_pv1_domain_foundation.py backend/alembic/versions/b2c3d4e5f6a7_add_pv1_work_plan_records.py backend/alembic/versions/c5d6e7f8a9b0_add_pv1_schedule_authority.py backend/alembic/versions/c6d7e8f9a0b1_add_pv1_architecture_engine.py backend/alembic/versions/f1a2b3c4d5e6_add_pv1_legacy_migration_ledger.py; printf '%s\\\\n' '--- base/head ---'; rtk git branch --show-current; rtk git rev-parse HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 168,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.92,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 28116480,
+      "fresh_input_tokens": 308315,
+      "input_tokens": 28424795,
+      "non_reasoning_output_tokens": 50942,
+      "output_tokens": 82517,
+      "reasoning_output_tokens": 31575,
+      "total_processed_tokens": 28507312
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "0d159d5595d06b6349340486c3aeccb8cb63b08c",
+      "subject": "fabric: capture completed model changes [CF-f5da275b35f4ee8c6f82d98d]"
+    }
+  ],
+  "diff": {
+    "additions": 2794,
+    "changed_files": 11,
+    "commit_count": 1,
+    "deletions": 2
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 1,
+    "items": [
+      {
+        "bytes": 2129,
+        "path": "docs/CHG-17-operational-action-foundation-evidence.md",
+        "sha256": "c22582d301126a89d29c56d5fe92b0cb7440587cc223d6a70af94199aaf8e0a6"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-f5da275b35f4ee8c6f82d98d]",
+    "commit_sha": "0d159d5595d06b6349340486c3aeccb8cb63b08c",
+    "paths_before": 9,
+    "status_before": [
+      " M backend/app/database.py",
+      " M backend/app/main.py",
+      " M backend/app/models/models.py",
+      "?? backend/alembic/versions/c17a9e5b2f01_add_operational_action_foundation.py",
+      "?? backend/app/api/operational_actions.py",
+      "?? backend/app/operational_actions/",
+      "?? backend/app/schemas/operational_actions.py",
+      "?? backend/test_operational_actions.py",
+      "?? docs/CHG-17-operational-action-foundation-evidence.md"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.2",
+  "failure_class": null,
+  "finished_at": "2026-09-14T23:55:14Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "e15dc975cc62c6f808a253ca83bef95aa6db8f3a",
+    "branch": "build/sysgrid-operational-action-foundation",
+    "head_sha": "0d159d5595d06b6349340486c3aeccb8cb63b08c",
+    "remote_exact_head": true,
+    "remote_head_sha": "0d159d5595d06b6349340486c3aeccb8cb63b08c",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "e15dc975cc62c6f808a253ca83bef95aa6db8f3a",
+    "work_branch": "build/sysgrid-operational-action-foundation",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-f5da275b35f4ee8c6f82d98d",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-operational-action-foundation-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-operational-action-foundation-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2",
+    "policy_sha256": "3778fba0755dd2f6b00268f73b7a589f93317203cc0603df2feff4e6d9c759f6",
+    "registry_sha256": "d7cbfa70a30e73c4ac4e86908b0b4a033207285aafb3320d1817e67803f6cc10"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-operational-action-foundation-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-14T23:19:13Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2161,
+    "queue_seconds": 0,
+    "total_seconds": 2161
+  },
+  "transport": {
+    "bytes": 8227,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7895,
+    "prompt_sha256": "ff8fbd41eb02fd9a1c8b99bde87baff13d2da7de33fec7f28a5bb70e4ac611bf",
+    "sha256": "f5da275b35f4ee8c6f82d98de2cac31eade618b07cafc7220d80e8adaa68fbeb"
+  }
+}
