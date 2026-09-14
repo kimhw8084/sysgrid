@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     DEFAULT_USER_ID: str = "admin_root"
     AUTO_ADMIN_USER_IDS: str = "admin_root"
     ALLOW_AUTO_ADMIN_IN_PRODUCTION: bool = False
+    # Global control-plane administration is intentionally separate from
+    # tenant ADMIN access. Production must configure this explicitly.
+    CONTROL_PLANE_ADMIN_USER_IDS: str = ""
+    CONTROL_PLANE_BOOTSTRAP_ENABLED: bool = False
+    CONTROL_PLANE_BOOTSTRAP_USER_ID: str = ""
     SCHEDULE_PREVIEW_SIGNING_KEY: str = "development-only-schedule-preview-key"
     # Trusted deployment identity for release field evidence. Browser hints
     # are never authoritative for this value.
@@ -159,6 +164,12 @@ class Settings(BaseSettings):
             errors.append("PUBLIC_READONLY_ENABLED must be false in production unless explicitly acknowledged.")
         if self.auto_admin_user_ids and not self.ALLOW_AUTO_ADMIN_IN_PRODUCTION:
             errors.append("AUTO_ADMIN_USER_IDS must be empty in production unless explicitly acknowledged.")
+        if not self.control_plane_admin_user_ids:
+            errors.append("CONTROL_PLANE_ADMIN_USER_IDS must contain explicit global administrator identities in production.")
+        if self.CONTROL_PLANE_BOOTSTRAP_ENABLED:
+            errors.append("CONTROL_PLANE_BOOTSTRAP_ENABLED must be false in production.")
+        if self.CONTROL_PLANE_BOOTSTRAP_USER_ID.strip():
+            errors.append("CONTROL_PLANE_BOOTSTRAP_USER_ID must be empty in production.")
         if self.DEFAULT_USER_ID.strip().lower() == "admin_root":
             errors.append("DEFAULT_USER_ID must not remain admin_root in production.")
         if len(self.SCHEDULE_PREVIEW_SIGNING_KEY.strip()) < 32 or self.SCHEDULE_PREVIEW_SIGNING_KEY == "development-only-schedule-preview-key":
@@ -215,6 +226,18 @@ class Settings(BaseSettings):
 
     def is_auto_admin_user(self, user_id: str | None) -> bool:
         return bool(user_id and user_id in self.auto_admin_user_ids)
+
+    @property
+    def control_plane_admin_user_ids(self) -> set[str]:
+        return {
+            user_id.strip()
+            for user_id in self.CONTROL_PLANE_ADMIN_USER_IDS.split(",")
+            if user_id.strip()
+        }
+
+    @property
+    def control_plane_bootstrap_user_id(self) -> str:
+        return self.CONTROL_PLANE_BOOTSTRAP_USER_ID.strip()
 
 
 settings = Settings()
