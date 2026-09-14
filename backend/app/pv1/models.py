@@ -111,6 +111,37 @@ class PV1Task(Base, PV1TimestampMixin):
     revision = Column(Integer, nullable=False, default=1)
 
 
+class PV1TraceabilityLink(Base, PV1TimestampMixin):
+    """Normalized link from a canonical PV1/Architecture work entity to a target."""
+
+    __tablename__ = "pv1_traceability_links"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "entity_kind", "entity_id", "target_kind", "target_key", "relationship_type", name="uq_pv1_traceability_link_target"),
+        Index("ix_pv1_traceability_links_entity", "tenant_id", "entity_kind", "entity_id", "lifecycle"),
+        Index("ix_pv1_traceability_links_project", "tenant_id", "project_id", "lifecycle"),
+        Index("ix_pv1_traceability_links_device", "tenant_id", "device_id", "lifecycle"),
+        Index("ix_pv1_traceability_links_object", "tenant_id", "architecture_object_id", "lifecycle"),
+        CheckConstraint("revision >= 1", name="pv1_traceability_link_revision_positive"),
+        CheckConstraint("lifecycle IN ('Active', 'Retired')", name="pv1_traceability_link_lifecycle"),
+        CheckConstraint("target_kind IN ('device', 'architecture_object')", name="pv1_traceability_link_target_kind"),
+        CheckConstraint("(target_kind = 'device' AND device_id IS NOT NULL AND architecture_object_id IS NULL) OR (target_kind = 'architecture_object' AND device_id IS NULL AND architecture_object_id IS NOT NULL)", name="pv1_traceability_link_one_target"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    entity_kind = Column(String(32), nullable=False)
+    entity_id = Column(String(80), nullable=False)
+    project_id = Column(String(80), ForeignKey("pv1_projects.id", ondelete="CASCADE"), nullable=True)
+    target_kind = Column(String(32), nullable=False)
+    target_key = Column(String(80), nullable=False)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="RESTRICT"), nullable=True)
+    architecture_object_id = Column(String(80), ForeignKey("pv1_architecture_objects.id", ondelete="RESTRICT"), nullable=True)
+    relationship_type = Column(String(40), nullable=False, default="Affected")
+    lifecycle = Column(String(24), nullable=False, default="Active")
+    retired_at = Column(DateTime(timezone=True), nullable=True)
+    revision = Column(Integer, nullable=False, default=1)
+
+
 class PV1ProjectMember(Base, PV1TimestampMixin):
     __tablename__ = "pv1_project_members"
     __table_args__ = (

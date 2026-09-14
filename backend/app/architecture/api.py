@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +13,7 @@ from ..pv1 import domain as pv1_domain
 from ..pv1 import models as pv1_models
 from . import domain
 from . import models
+from . import traceability
 
 
 router = APIRouter(prefix="/architecture", tags=["PV1 Architecture"])
@@ -61,6 +62,17 @@ def _error(request: Request, error: domain.ArchitectureDomainError) -> JSONRespo
     }, headers={"X-Request-ID": request_id})
 
 
+def _traceability_error(request: Request, error: Exception) -> JSONResponse:
+    if isinstance(error, pv1_domain.PV1DomainError):
+        request_id = getattr(request.state, "request_id", "architecture-request")
+        return JSONResponse(status_code=error.http_status, content={
+            "code": error.code, "message": error.message, "request_id": request_id,
+            "retryable": error.retryable, "details": error.details,
+            "current_revisions": error.details.get("current_revisions"),
+        }, headers={"X-Request-ID": request_id})
+    return _error(request, error)
+
+
 async def _run(request: Request, operation):
     try:
         result = await operation()
@@ -87,6 +99,7 @@ async def capabilities(request: Request, db: AsyncSession = Depends(get_db)):
         "architecture_edit": {"supported": True, "scope": "model_access", "reason": "Typed revisioned Architecture commands."},
         "architecture_change_sets": {"supported": True, "scope": "model_access", "reason": "Draft, review, apply and rebase workflow."},
         "architecture_assessment": {"supported": True, "scope": "project_access", "reason": "Evidence-backed assessment states."},
+        "asset_architecture_traceability": {"supported": True, "scope": "tenant_and_project_or_model_access", "reason": "Normalized Device, ArchitectureObject, and PV1 work links with historical projections."},
         "tenant_role": role,
     }}
 
@@ -228,6 +241,108 @@ async def project_architecture(project_id: str, request: Request, mode: str = "i
         if isinstance(exc, pv1_domain.PV1DomainError) and not isinstance(exc, domain.ArchitectureDomainError):
             return JSONResponse(status_code=exc.http_status, content={"code": exc.code, "message": exc.message, "details": exc.details})
         return _error(request, exc)
+
+
+@router.post("/traceability/device-links", status_code=status.HTTP_201_CREATED)
+async def create_device_architecture_link(request: Request, db: AsyncSession = Depends(get_db)):
+    raw = await request.json()
+    payload = raw.get("payload") if isinstance(raw.get("payload"), dict) else raw
+    try:
+        result = await traceability.create_device_link(db, tenant_id=_tenant_id(request), actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), command_id=_command_id(request, raw), payload=payload)
+        await db.commit()
+        return result
+    except domain.ArchitectureDomainError as exc:
+        await db.rollback()
+        return _error(request, exc)
+
+
+@router.put("/traceability/device-links/{link_id}")
+async def update_device_architecture_link(link_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+    raw = await request.json()
+    payload = raw.get("payload") if isinstance(raw.get("payload"), dict) else raw
+    try:
+        result = await traceability.update_device_link(db, tenant_id=_tenant_id(request), actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), link_id=link_id, command_id=_command_id(request, raw), payload=payload)
+        await db.commit()
+        return result
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        await db.rollback()
+        return _traceability_error(request, exc)
+
+
+@router.delete("/traceability/device-links/{link_id}")
+async def retire_device_architecture_link(link_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+    raw = await request.json() if request.headers.get("content-length") not in {None, "0"} else {}
+    payload = raw.get("payload") if isinstance(raw.get("payload"), dict) else raw
+    try:
+        result = await traceability.retire_device_link(db, tenant_id=_tenant_id(request), actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), link_id=link_id, command_id=_command_id(request, raw), payload=payload)
+        await db.commit()
+        return result
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        await db.rollback()
+        return _traceability_error(request, exc)
+
+
+@router.post("/traceability/work-links", status_code=status.HTTP_201_CREATED)
+async def create_work_traceability_link(request: Request, db: AsyncSession = Depends(get_db)):
+    raw = await request.json()
+    payload = raw.get("payload") if isinstance(raw.get("payload"), dict) else raw
+    try:
+        result = await traceability.create_work_link(db, tenant_id=_tenant_id(request), actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), command_id=_command_id(request, raw), payload=payload)
+        await db.commit()
+        return result
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        await db.rollback()
+        return _traceability_error(request, exc)
+
+
+@router.put("/traceability/work-links/{link_id}")
+async def update_work_traceability_link(link_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+    raw = await request.json()
+    payload = raw.get("payload") if isinstance(raw.get("payload"), dict) else raw
+    try:
+        result = await traceability.update_work_link(db, tenant_id=_tenant_id(request), actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), link_id=link_id, command_id=_command_id(request, raw), payload=payload)
+        await db.commit()
+        return result
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        await db.rollback()
+        return _traceability_error(request, exc)
+
+
+@router.delete("/traceability/work-links/{link_id}")
+async def retire_work_traceability_link(link_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+    raw = await request.json() if request.headers.get("content-length") not in {None, "0"} else {}
+    payload = raw.get("payload") if isinstance(raw.get("payload"), dict) else raw
+    try:
+        result = await traceability.retire_work_link(db, tenant_id=_tenant_id(request), actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), link_id=link_id, command_id=_command_id(request, raw), payload=payload)
+        await db.commit()
+        return result
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        await db.rollback()
+        return _traceability_error(request, exc)
+
+
+@router.get("/traceability/devices/{device_id}")
+async def get_device_traceability(device_id: int, request: Request, include_retired: bool = Query(default=False), db: AsyncSession = Depends(get_db)):
+    try:
+        return await traceability.device_projection(db, tenant_id=_tenant_id(request), device_id=device_id, actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), include_retired=include_retired)
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        return _traceability_error(request, exc)
+
+
+@router.get("/traceability/architecture-objects/{object_id}")
+async def get_object_traceability(object_id: str, request: Request, include_retired: bool = Query(default=False), db: AsyncSession = Depends(get_db)):
+    try:
+        return await traceability.object_projection(db, tenant_id=_tenant_id(request), object_id=object_id, actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), include_retired=include_retired)
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        return _traceability_error(request, exc)
+
+
+@router.get("/traceability/work/{entity_kind}/{entity_id}")
+async def get_work_traceability(entity_kind: str, entity_id: str, request: Request, include_retired: bool = Query(default=False), db: AsyncSession = Depends(get_db)):
+    try:
+        return await traceability.work_projection(db, tenant_id=_tenant_id(request), entity_kind=entity_kind, entity_id=entity_id, actor_id=_actor(request), request_role=getattr(request.state, "sysgrid_access_role", None), include_retired=include_retired)
+    except (domain.ArchitectureDomainError, pv1_domain.PV1DomainError) as exc:
+        return _traceability_error(request, exc)
 
 
 @router.post("/projects/{project_id}/architecture/assessment")
