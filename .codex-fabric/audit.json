@@ -1,0 +1,333 @@
+{
+  "accepted_at": "2026-09-15T16:10:55Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && printf '%s\\\\n' '--- RTK ---' && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && printf '%s\\\\n' '--- LAW ---' && sed -n '1,320p' /Users/haewonkim/.codex/law.md && printf '%s\\\\n' '--- ROOT FILES ---' && rg --files -g 'AGENTS.md' -g '\"'!node_modules'\"' -g '\"'!vendor'\"' | sort | head -80 && printf '%s\\\\n' '--- GIT ---' && git status --short --branch && git rev-parse --verify HEAD && git rev-parse --verify HEAD\"'^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n --hidden -S \\\"P12|P13|P14|canonical|release gate|release_gate|136|124|NOT_EVALUATED|archived_data|task-1001|Journey 3|Large 10k|20k|qualification\\\" -g '\"'!node_modules'\"' -g '\"'!vendor'\"' -g '\"'!dist'\"' -g '\"'!build'\"' . | head -1200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find scripts/pv1 -maxdepth 2 -type f -print | sort && printf '%s\\\\n' '--- root manifests ---' && rtk find . -maxdepth 2 \\\\( -name package.json -o -name Makefile -o -name 'run*.sh' -o -name '*.mjs' \\\\) -print | sort | head -300 && printf '%s\\\\n' '--- relevant docs ---' && rtk rg --files docs scripts/pv1 | sort | rg 'P1[234]|p12|P12|qualification|release|canonical|runbook|evidence' | head -300\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files -g 'package.json' -g 'Makefile' -g '*.md' -g '*.sh' -g '*.mjs' -g '*.py' | rg '(\"'^|/)(package'\"\\\\.json|Makefile|scripts/pv1/|docs/|README|AGENTS)' | sort | head -500 && printf '%s\\\\n' '--- package scripts ---' && rtk sed -n '1,240p' package.json && printf '%s\\\\n' '--- gate ---' && rtk sed -n '1,680p' scripts/pv1/gate.mjs\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- gate 1 ---' && rtk sed -n '1,260p' scripts/pv1/gate.mjs && printf '%s\\\\n' '--- gate 2 ---' && rtk sed -n '261,620p' scripts/pv1/gate.mjs && printf '%s\\\\n' '--- runner ---' && rtk sed -n '1,360p' scripts/pv1/runner.mjs\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- entrypoints ---' && rtk rg -n \\\"runProductionGate|gate\\\\.mjs|P12_AUTOMATED_PRODUCTION_GATE|profile.*release|phase result|qualification\\\" README.md scripts docs frontend/package.json .github 2>/dev/null | head -500 && printf '%s\\\\n' '--- gate main ---' && rtk nl -ba scripts/pv1/gate.mjs | sed -n '250,590p' && printf '%s\\\\n' '--- runner exports/orchestration ---' && rtk nl -ba scripts/pv1/runner.mjs | sed -n '1,240p' && rtk nl -ba scripts/pv1/runner.mjs | sed -n '240,560p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba scripts/pv1/gate.mjs | sed -n '379,570p' && printf '%s\\\\n' '--- production wrapper ---' && rtk sed -n '1,160p' scripts/run-project-view-production-gate.mjs && printf '%s\\\\n' '--- candidate identity ---' && rtk sed -n '1,320p' scripts/pv1/candidate-identity.mjs && printf '%s\\\\n' '--- gap matrix ---' && rtk sed -n '1,220p' scripts/pv1/gap-matrix.mjs\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- ignored/runtime evidence dirs ---' && rtk find artifacts -maxdepth 4 -type f 2>/dev/null | sort | tail -200 && printf '%s\\\\n' '--- history and branch context ---' && rtk git log -12 --oneline --decorate && printf '%s\\\\n' '--- design package ---' && rtk sed -n '1,220p' scripts/pv1/design-package.mjs && printf '%s\\\\n' '--- coverage ---' && rtk nl -ba scripts/pv1/coverage.mjs | sed -n '1,290p' && printf '%s\\\\n' '--- gate contract references ---' && rtk rg -n \\\"gateContract|P12|P14|P13|NOT_EVALUATED|PV-.*001|requirements\\\" docs scripts frontend backend | head -700\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk --version; rtk which node; rtk which npm; rtk which python; rtk git status --short --branch; rtk proxy sh -c 'echo proxy-ok'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy node -e 'console.log(\\\"node-ok\\\")' && rtk ls -la /Users/haewonkim/Library/Mobile\\\\ Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design 2>&1 || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sha256sum \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/PV1-Project-View-Production-Design.md\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/requirements.json\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/evidence-record.schema.json\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\" && printf '%s\\\\n' '--- contract head ---' && rtk proxy sed -n '1,260p' \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy stat -f '%N %z %Sm' \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/PV1-Project-View-Production-Design.md\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/requirements.json\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/evidence-record.schema.json\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy head -c 1200 \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy file \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\"; rtk proxy xattr -l \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\" 2>&1 || true; rtk which brctl || true; rtk proxy brctl status 2>&1 | head -80 || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy brctl help 2>&1 | head -120'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"c58a764e3ffbadd21640a205697f446683245b0b8a4ee244fc74ad5d9a68915c|production-gate-contract|PV1_Project_View_Production_Design|PV-PERF-003\\\" -g '\"'!backend/venv/**'\"' -g '\"'!frontend/node_modules/**'\"' -g '\"'!sysgrid-machine-snapshot-20260817-212222/**'\"' -g '\"'!sysgrid-machine-deep-snapshot-20260817-212833/**'\"' . | head -500\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ls -lO@ \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design\" 2>&1 | head -80; rtk proxy mdls -name kMDItemFSSize -name kMDItemFSContentChangeDate -name kMDItemDownloadingStatus -name kMDItemUbiquitousItemIsDownloaded -name kMDItemFSName \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\" 2>&1 || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -c 'for p in \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/PV1-Project-View-Production-Design.md\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/requirements.json\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/evidence-record.schema.json\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"; do if test -f \\\"\"'$p\"; then echo \"FOUND $p\"; else echo \"MISSING $p\"; fi; done'\"' && printf '%s\\\\n' '--- embedded design references ---' && rtk rg --files /Users/haewonkim 2>/dev/null | rg 'PV1-Project-View-Production-Design\\\\.md|production-gate-contract\\\\.json|requirements\\\\.json\"'$'\"' | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- ignore ---' && rtk sed -n '1,220p' .gitignore && printf '%s\\\\n' '--- durable evidence language ---' && rtk rg -n \\\"durable|Fabric|fabric|UPLOAD_THIS_TO_CHATGPT|outbox|phase result|run directory|AI_ROOT|SYSGRID_AI_ROOT\\\" README.md docs scripts .github SysGrid COMMAND_OUTPUTS -g '\"'!*.log'\"' | head -800 && printf '%s\\\\n' '--- test assumptions ---' && rtk nl -ba scripts/tests/pv1-gate.test.mjs | sed -n '1,150p' && rtk nl -ba scripts/tests/pv1-gate.test.mjs | sed -n '330,540p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba README.md | sed -n '250,330p' && printf '%s\\\\n' '--- relay docs ---' && rtk sed -n '1,160p' docs/SYSGRID_PUBLIC_GITHUB_RELAY.md && printf '%s\\\\n' '--- production package scripts ---' && rtk rg -n \\\"P12_AUTOMATED_PRODUCTION_GATE|UPLOAD_THIS_TO_CHATGPT|codex/runs|phase.*run|output-dir\\\" scripts -g '*.sh' -g '*.mjs' -g '*.py' | head -800\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy brctl help 2>&1 | rtk rg -n -i \"download|evict|document|material|apply\" | head -80'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy lsof -n -c bird 2>/dev/null | head -120; printf '%s\\\\n' '--- dir metadata ---'; rtk proxy stat -f '%N mode=%Sp type=%HT size=%z' \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk which swiftc || true; rtk proxy swift -e 'import Foundation; let url=URL(fileURLWithPath:\\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"); let c=NSFileCoordinator(); var err:NSError?; c.coordinate(readingItemAt:url, options:[], error:&err) { u in do { let d=try Data(contentsOf:u); print(\\\"READ\\\",d.count,String(data:d.prefix(100),encoding:.utf8) ?? \\\"\\\") } catch { print(\\\"READERR\\\",error) } }; print(\\\"COORDERR\\\",err?.localizedDescription ?? \\\"none\\\")'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files /Users/haewonkim/.codex-fabric /Users/haewonkim/.codex 2>/dev/null | rg 'PV1-Project-View-Production-Design\\\\.md|production-gate-contract\\\\.json|evidence-record\\\\.schema\\\\.json|requirements\\\\.json\"'$'\"' | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -c 'set -o pipefail; rm -f /tmp/sysgrid-contract-copy.json; timeout 20 cp \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\" /tmp/sysgrid-contract-copy.json; rc=\"'$?; echo cp_rc:$rc; if test -f /tmp/sysgrid-contract-copy.json; then /opt/anaconda3/bin/python -c \"import os; print(os.path.getsize('\"\\\\\\\"/tmp/sysgrid-contract-copy.json\\\\\\\"))\\\"; fi'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy brctl status 2>&1 | rtk rg -n -i \"PV1|production|requirements|sysgrid/design|sysgrid\" | head -120'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy strings \\\"/Users/haewonkim/Library/Application Support/CloudDocs/session/db/server.db\\\" | rtk rg -m 40 -i \\\"PV1_Project|production-gate|requirements\\\\.json|sysgrid/design\\\" || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ls -la /Users/haewonkim/Library/CloudStorage 2>&1 | head -80; rtk proxy ls -la /Users/haewonkim/Library/Mobile\\\\ Documents 2>&1 | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy sleep 60'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy node -e 'const fs=require(\\\"fs\\\"); const p=\\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"; console.log(\\\"before\\\"); try { const b=fs.readFileSync(p); console.log(\\\"after\\\",b.length,b.slice(0,60).toString()); } catch(e) { console.error(\\\"caught\\\",e.code,e.message); } console.log(\\\"done\\\")'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy open -g \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\"; echo open_rc:$?'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk which fileproviderctl || true; rtk proxy ls /usr/bin 2>/dev/null | rtk rg -i 'fileprovider|icloud|ubiquity|bird' | head -80; rtk proxy find /System/Library/PrivateFrameworks -maxdepth 2 -iname '*fileprovider*' -o -iname '*ubiquit*' 2>/dev/null | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy fileproviderctl help 2>&1 | head -160'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy fileproviderctl evaluate \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\" 2>&1 | head -200'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy fileproviderctl dump --limit-dump-size 2>&1 | rtk rg -n -C 3 \"production-gate-contract|PV1_Project|f134d2|n7761\" | head -200'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy swift -e 'import Foundation; let p=\\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"; let u=URL(fileURLWithPath:p); print(\\\"before\\\"); do { try FileManager.default.startDownloadingUbiquitousItem(at:u); print(\\\"requested\\\") } catch { print(\\\"err\\\",error) }; print(\\\"values\\\",try? u.resourceValues(forKeys:[.isUbiquitousItemKey,.ubiquitousItemIsDownloadedKey,.ubiquitousItemIsDownloadingKey,.fileSizeKey]))'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy swift -e 'import Foundation; let p=\\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\\\"; let u=URL(fileURLWithPath:p); print(\\\"before\\\"); do { try FileManager.default.startDownloadingUbiquitousItem(at:u); print(\\\"requested\\\") } catch { print(\\\"err\\\",error) }; print(\\\"done\\\")'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy sudo -n /bin/cat \"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/design/PV1_Project_View_Production_Design/production-gate-contract.json\" | rtk head -c 300; echo rc:${pipestatus[0]}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy fileproviderctl dump -l -P 2>&1 | head -240'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env PAGER=cat fileproviderctl dump --limit-dump-size 2>&1 | head -320'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy mdfind -onlyin \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid\\\" \\\"kMDItemFSName == 'production-gate-contract.json'\\\" 2>&1 | head -50\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -c 'for p in \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/SysGrid-Control/Outbox/UPLOAD_THIS_TO_CHATGPT.zip\\\" \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/gpt/sysgrid/codex/runs/P12_AUTOMATED_PRODUCTION_GATE/20260911T025820Z/PHASE_RESULT.md\\\"; do test -f \\\"\"'$p\"; echo \"$? $p\"; done'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy stat -f '%N %z' \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/SysGrid-Control/Outbox/UPLOAD_THIS_TO_CHATGPT.zip\\\"; rtk proxy unzip -l \\\"/Users/haewonkim/Library/Mobile Documents/com~apple~CloudDocs/SysGrid-Control/Outbox/UPLOAD_THIS_TO_CHATGPT.zip\\\" 2>&1 | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --branch && printf '%s\\\\n' 'HEAD:' && rtk git rev-parse HEAD && printf '%s\\\\n' 'TREE:' && rtk git rev-parse HEAD\"'^{tree} && printf '\"'%s\\\\n' 'DIFF_CHECK:' && rtk git diff --check && printf '%s\\\\n' 'P12/P13/P14 runtime paths:' && rtk proxy find artifacts -maxdepth 3 -type f 2>/dev/null | sort | head -100 && printf '%s\\\\n' 'candidate source hashes:' && rtk sha256sum scripts/pv1/gate.mjs scripts/pv1/runner.mjs scripts/pv1/coverage.mjs scripts/pv1/design-package.mjs\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 109,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 96.21,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 5461760,
+      "fresh_input_tokens": 215362,
+      "input_tokens": 5677122,
+      "non_reasoning_output_tokens": 11021,
+      "output_tokens": 20479,
+      "reasoning_output_tokens": 9458,
+      "total_processed_tokens": 5697601
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.2",
+  "failure_class": null,
+  "finished_at": "2026-09-15T16:26:58Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "branch": "verify/sysgrid-p12-canonical-rerun",
+    "head_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "remote_exact_head": true,
+    "remote_head_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "work_branch": "verify/sysgrid-p12-canonical-rerun",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-94c86f4c6172abac80be495c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-p12-canonical-rerun-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-p12-canonical-rerun-v1"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2",
+    "policy_sha256": "3778fba0755dd2f6b00268f73b7a589f93317203cc0603df2feff4e6d9c759f6",
+    "registry_sha256": "17d7db01a654a693b57af2b6fce2f676b1f883ea97564a690894b5f96df49aaa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-p12-canonical-rerun-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-15T16:10:55Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 963,
+    "queue_seconds": 0,
+    "total_seconds": 963
+  },
+  "transport": {
+    "bytes": 1998,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 1684,
+    "prompt_sha256": "c467e0e93f026ecc184ce9668c3a7e2d17958d5a10ccfad58bd9abfa61d1d369",
+    "sha256": "94c86f4c6172abac80be495ccf09334796e7ebed169e034a9833dd0e2c420915"
+  }
+}
