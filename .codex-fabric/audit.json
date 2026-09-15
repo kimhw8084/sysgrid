@@ -1,0 +1,478 @@
+{
+  "accepted_at": "2026-09-15T22:18:29Z",
+  "changed_files": [
+    {
+      "additions": 161,
+      "deletions": 295,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 7,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 18,
+      "path": "frontend/src/components/shared/ErrorConsole.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 14,
+      "deletions": 5,
+      "path": "frontend/src/components/shared/ErrorSentinel.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 24,
+      "deletions": 16,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 31,
+      "deletions": 25,
+      "path": "frontend/src/components/shared/LayoutPrimitives.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 75,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellHeaderTools.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellNavigation.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 183,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellNavigation.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 33,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellStates.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 90,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellStates.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 23,
+      "deletions": 11,
+      "path": "frontend/src/components/shared/TenantSelector.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 12,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/theme.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 14,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/theme.ts",
+      "status": "A"
+    },
+    {
+      "additions": 74,
+      "deletions": 0,
+      "path": "frontend/src/index.css",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 254,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx vitest run src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx vitest run src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx vitest run src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx vitest run src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run verify:operational-contracts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba frontend/playwright.config.ts | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba frontend/tests/helpers/sysgrid-test.ts | sed -n '1,220p'; nl -ba frontend/tests/helpers/sysgrid.ts | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -i \\\"segfault|sector-01|neutral zone|security clearance|matrix ui|neural index|terminate|hydrating environment|active operating system parameters|Buganizer Terminal|RUNTIME: MATRIX\\\" frontend/src/App.tsx frontend/src/main.tsx frontend/src/components/shared -g '*.tsx' -g '*.ts' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --name-only | rg -v '\"'^frontend/'\"' || true; git diff -- frontend/src/api frontend/src/utils frontend/src/components/ProjectsNavigation.ts frontend/src/components/ProjectsWorkspaceLayout.tsx || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-only; git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const p=require('./frontend/package.json'); console.log(p.devDependencies && p.devDependencies['@playwright/test']); console.log(p.scripts)\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba frontend/tests/settings-and-audit.spec.ts | sed -n '1,80p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"Active Database|Default Engine|Switch Environment|Manage Databases|Switch tenant|Current tenant|Light Mode|Dark Mode|Use Light|Open settings|Open error console\\\" frontend/tests frontend/src -g '*.spec.ts' -g '*.test.*' -g '*.tsx' | head -n 200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk curl -sS -I --max-time 2 http://127.0.0.1:5173/ || true; rtk curl -sS -I --max-time 2 http://127.0.0.1:8000/api/v1/health || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"Assets|asset-real\" frontend/src/components/shared/ShellNavigation.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' frontend/src/components/shared/ShellStates.tsx && rtk rg -n -C 8 \\\"function PatchNotesModal|const PatchNotesModal|function LinuxEnvModal|const LinuxEnvModal\\\" frontend/src/App.tsx && rtk sed -n '1,220p' frontend/src/components/shared/ShellHeaderTools.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '185,315p' frontend/src/App.tsx && rtk rg -n \\\"ShellHeaderTools|FatalErrorState|PermissionDeniedState|SHELL_NAV_GROUPS|sg-main-content|routeLocation\\\" frontend/src/App.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,90p' frontend/src/App.tsx && rtk sed -n '330,680p' frontend/src/App.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk git status --short'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx vitest run src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n -i \"segfault|sector-01|neutral zone|security clearance|matrix ui|neural index|hydrating environment|active operating system parameters|runtime: matrix|return to neutral zone\" frontend/src/App.tsx frontend/src/main.tsx frontend/src/components/shared || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git branch --show-current && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff -- frontend/src/App.tsx frontend/src/components/shared/LayoutPrimitives.tsx frontend/src/index.css | sed -n '1,420p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"ErrorDetailModal|TenantSelector|Buganizer Terminal|RUNTIME: MATRIX|Matrix UI|Local Environment|Forensics|Hydrating|Systems are running|degraded mode|security clearance|Neutral Zone|Sector-01|matrix\\\" frontend/src/App.tsx frontend/src/main.tsx frontend/src/components/shared frontend/src/components/Settings.tsx || true && rtk rg -n \\\"path: '/|path=\\\\\\\"/|to=\\\\\\\"/\\\" frontend/src/components/shared/ShellNavigation.tsx frontend/src/App.tsx | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' frontend/src/components/shared/ShellNavigation.tsx && rtk sed -n '1,260p' frontend/src/components/shared/ShellNavigation.test.tsx && rtk sed -n '1,220p' frontend/src/components/shared/ShellStates.test.tsx && rtk sed -n '1,160p' frontend/src/components/shared/theme.test.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx vitest run src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git branch --show-current'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk curl -sS -I --max-time 2 http://127.0.0.1:8000/api/v1/health || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk curl -sS -I --max-time 2 http://127.0.0.1:5173/ || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 378,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.73,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 16136192,
+      "fresh_input_tokens": 374228,
+      "input_tokens": 16510420,
+      "non_reasoning_output_tokens": 48666,
+      "output_tokens": 75747,
+      "reasoning_output_tokens": 27081,
+      "total_processed_tokens": 16586167
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "7e8283333ae6bb2e93aedcb93d664b581643581e",
+      "subject": "fabric: capture completed model changes [CF-3a59757985a8c4dee1df0303]"
+    }
+  ],
+  "diff": {
+    "additions": 806,
+    "changed_files": 15,
+    "commit_count": 1,
+    "deletions": 377
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-3a59757985a8c4dee1df0303]",
+    "commit_sha": "7e8283333ae6bb2e93aedcb93d664b581643581e",
+    "paths_before": 15,
+    "status_before": [
+      " M frontend/src/App.tsx",
+      " M frontend/src/components/Settings.tsx",
+      " M frontend/src/components/shared/ErrorConsole.tsx",
+      " M frontend/src/components/shared/ErrorSentinel.tsx",
+      " M frontend/src/components/shared/GlobalSearch.tsx",
+      " M frontend/src/components/shared/LayoutPrimitives.tsx",
+      " M frontend/src/components/shared/TenantSelector.tsx",
+      " M frontend/src/index.css",
+      "?? frontend/src/components/shared/ShellHeaderTools.tsx",
+      "?? frontend/src/components/shared/ShellNavigation.test.tsx",
+      "?? frontend/src/components/shared/ShellNavigation.tsx",
+      "?? frontend/src/components/shared/ShellStates.test.tsx",
+      "?? frontend/src/components/shared/ShellStates.tsx",
+      "?? frontend/src/components/shared/theme.test.ts",
+      "?? frontend/src/components/shared/theme.ts"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.2",
+  "failure_class": null,
+  "finished_at": "2026-09-15T22:54:01Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "branch": "build/sysgrid-product-ux-shell-foundation-v2",
+    "head_sha": "7e8283333ae6bb2e93aedcb93d664b581643581e",
+    "remote_exact_head": true,
+    "remote_head_sha": "7e8283333ae6bb2e93aedcb93d664b581643581e",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "work_branch": "build/sysgrid-product-ux-shell-foundation-v2",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-3a59757985a8c4dee1df0303",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "ac9bd8dedb364d22fc9c0fc6a50334cbf5b7f53a5a0602aa17553d680a87690e"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-product-ux-shell-foundation-v2",
+  "schema_version": 1,
+  "started_at": "2026-09-15T22:18:29Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2132,
+    "queue_seconds": 0,
+    "total_seconds": 2132
+  },
+  "transport": {
+    "bytes": 12870,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 12538,
+    "prompt_sha256": "39aa350cdf453c66f685b37b85b8f0922e5edbfe29364a7d16b7e195d1cc18f9",
+    "sha256": "3a59757985a8c4dee1df030303ae5d236dd7193c7c3276553be8e0d45921d733"
+  }
+}
