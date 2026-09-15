@@ -577,8 +577,13 @@ async def create_action(
             )
         )
         existing = retry.scalar_one_or_none()
-        if existing and existing.request_hash == request_hash:
-            return existing
+        if existing:
+            if existing.request_hash == request_hash:
+                return existing
+            raise OperationalActionError(
+                "The idempotency key is already bound to a different request",
+                code="IDEMPOTENCY_KEY_REUSE",
+            )
         raise OperationalActionError("The action request could not be recorded safely", code="ACTION_RECORD_CONFLICT")
     await db.refresh(action)
     return action

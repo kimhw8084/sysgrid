@@ -492,53 +492,96 @@ async def test_concurrent_idempotent_creates_converge_and_conflicts_fail_determi
     tenant_id = seeded_admin_tenant["tenant_id"]
     device_id = await _device(client, tenant_id, name="OPS-ACTION-CREATE-CONCURRENT")
     original_append_event = service._append_event
+    original_rollback = service.AsyncSession.rollback
+    recovery_rollbacks = []
 
-    async def run_race(payloads):
+    async def record_recovery_rollback(db):
+        recovery_rollbacks.append(db)
+        await original_rollback(db)
+
+    monkeypatch.setattr(service.AsyncSession, "rollback", record_recovery_rollback)
+
+    async def run_race(payloads, *, idempotency_key):
         barrier = asyncio.Barrier(2)
-        arrivals = 0
+        persistence_arrivals = 0
+        rollback_start = len(recovery_rollbacks)
+
+        actions = await client.get("/api/v1/operational-actions", headers=_headers(tenant_id))
+        assert actions.status_code == 200, actions.text
+        assert all(item["idempotency_key"] != idempotency_key for item in actions.json())
 
         async def synchronize_requested(*args, **kwargs):
-            nonlocal arrivals
-            if kwargs.get("event_type") == "requested" and arrivals < 2:
-                arrivals += 1
+            nonlocal persistence_arrivals
+            if kwargs.get("event_type") == "requested" and persistence_arrivals < 2:
+                persistence_arrivals += 1
                 await barrier.wait()
             return await original_append_event(*args, **kwargs)
 
         monkeypatch.setattr(service, "_append_event", synchronize_requested)
-        return await asyncio.gather(
+        responses = await asyncio.gather(
             *[
                 client.post(
                     "/api/v1/operational-actions",
-                    headers=_headers(tenant_id, idempotency_key="race-key"),
+                    headers=_headers(tenant_id, idempotency_key=idempotency_key),
                     json=payload,
                 )
                 for payload in payloads
             ]
         )
+        return responses, persistence_arrivals, len(recovery_rollbacks) - rollback_start
 
     payload = {
         "target_device_ids": [device_id],
         "action_key": "telemetry.snapshot",
         "parameters": {"observation": "concurrent-identical"},
     }
-    identical = await run_race([payload, payload])
+    identical, identical_arrivals, identical_recovery_rollbacks = await run_race(
+        [payload, payload],
+        idempotency_key="race-identical-key",
+    )
     assert [response.status_code for response in identical] == [200, 200]
     assert identical[0].json()["id"] == identical[1].json()["id"]
     assert len(identical[0].json()["history"]) == 1
+    assert identical_arrivals == 2
+    assert identical_recovery_rollbacks == 1
 
-    conflicting = await run_race([
-        payload,
-        {
-            **payload,
-            "parameters": {"observation": "concurrent-conflict"},
-        },
-    ])
+    conflicting_payload = {
+        **payload,
+        "parameters": {"observation": "concurrent-conflict"},
+    }
+    conflicting, conflicting_arrivals, conflicting_recovery_rollbacks = await run_race(
+        [payload, conflicting_payload],
+        idempotency_key="race-conflicting-key",
+    )
     assert sorted(response.status_code for response in conflicting) == [200, 409]
     conflict = next(response for response in conflicting if response.status_code == 409)
     assert conflict.json()["detail"]["code"] == "IDEMPOTENCY_KEY_REUSE"
+    assert conflicting_arrivals == 2
+    assert conflicting_recovery_rollbacks == 1
+    winner = next(response for response in conflicting if response.status_code == 200)
+    winner_payload = payload if winner.json()["normalized_parameters"] == payload["parameters"] else conflicting_payload
+    persisted = await client.get(
+        f"/api/v1/operational-actions/{winner.json()['id']}",
+        headers=_headers(tenant_id),
+    )
+    assert persisted.status_code == 200, persisted.text
+    assert persisted.json()["idempotency_key"] == "race-conflicting-key"
+    assert persisted.json()["request_hash"] == winner.json()["request_hash"]
+    assert persisted.json()["normalized_parameters"] == winner_payload["parameters"]
+    assert len(persisted.json()["history"]) == 1
+    audit = await client.get(
+        "/api/v1/audit",
+        headers=_headers(tenant_id),
+        params={"target_table": "operational_actions", "target_id": winner.json()["id"]},
+    )
+    assert audit.status_code == 200, audit.text
+    assert len(audit.json()) == 1
+    assert audit.json()[0]["action"] == "REQUEST"
+    assert audit.json()[0]["changes"]["request_hash"] == winner.json()["request_hash"]
     actions = await client.get("/api/v1/operational-actions", headers=_headers(tenant_id))
     assert actions.status_code == 200
-    assert len([item for item in actions.json() if item["idempotency_key"] == "race-key"]) == 1
+    assert len([item for item in actions.json() if item["idempotency_key"] == "race-identical-key"]) == 1
+    assert len([item for item in actions.json() if item["idempotency_key"] == "race-conflicting-key"]) == 1
 
 
 @pytest.mark.asyncio
