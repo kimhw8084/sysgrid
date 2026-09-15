@@ -2,6 +2,7 @@ from fastapi import HTTPException, Request, status
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import event, MetaData, select
+from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 from .core.config import settings
 import os
 from .database_base import Base, ConfigBase
@@ -31,7 +32,13 @@ def build_engine(db_url: str):
         # serialized otherwise independent reads before they reached the
         # bounded WAL database.  Keep a bounded pool sized to the declared
         # local concurrency; SQLite still serializes writers through WAL.
-        engine_args.update({"pool_size": 50, "max_overflow": 0})
+        # aiosqlite defaults to NullPool. Production uses the existing bounded
+        # local-concurrency profile; disposable test databases use NullPool so
+        # the fixture's many short-lived tenant engines do not retain FDs.
+        if os.getenv("TESTING") == "1":
+            engine_args["poolclass"] = NullPool
+        else:
+            engine_args.update({"poolclass": AsyncAdaptedQueuePool, "pool_size": 50, "max_overflow": 0})
         engine_args["connect_args"] = {"check_same_thread": False, "timeout": 60}
     return create_async_engine(db_url, **engine_args)
 

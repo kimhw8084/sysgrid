@@ -280,6 +280,157 @@ class MaintenanceWindow(Base, BaseMixin):
     status = Column(String)
     device = relationship("Device", back_populates="maintenance_windows")
 
+
+class OperationalAction(Base):
+    """Durable, tenant-scoped lineage for an operator action request."""
+
+    __tablename__ = "operational_actions"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "actor_id", "idempotency_key", name="uq_operational_actions_idempotency"),
+        Index("ix_operational_actions_tenant_status", "tenant_id", "status"),
+        Index("ix_operational_actions_tenant_created", "tenant_id", "created_at"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    actor_id = Column(String(200), nullable=False, index=True)
+    action_key = Column(String(120), nullable=False, index=True)
+    capability_key = Column(String(120), nullable=False, index=True)
+    adapter_id = Column(String(120), nullable=False)
+    adapter_capability = Column(String(120), nullable=False)
+    normalized_parameters = Column(JSON, nullable=False, default=dict)
+    parameters_hash = Column(String(64), nullable=False)
+    target_set_hash = Column(String(64), nullable=True)
+    risk_tier = Column(String(32), nullable=False)
+    risk_facts = Column(JSON, nullable=False, default=dict)
+    precondition_snapshot = Column(JSON, nullable=False, default=dict)
+    precondition_hash = Column(String(64), nullable=True)
+    preview_token = Column(String(64), nullable=True)
+    preview_expires_at = Column(DateTime(timezone=True), nullable=True)
+    authorization_facts = Column(JSON, nullable=False, default=dict)
+    approval_facts = Column(JSON, nullable=False, default=dict)
+    recovery_facts = Column(JSON, nullable=False, default=dict)
+    confirmation_facts = Column(JSON, nullable=False, default=dict)
+    rollback_plan = Column(JSON, nullable=False, default=dict)
+    execution_result = Column(JSON, nullable=False, default=dict)
+    verification_summary = Column(Text, nullable=True)
+    verification_evidence = Column(JSON, nullable=False, default=list)
+    rollback_outcome = Column(JSON, nullable=False, default=dict)
+    request_hash = Column(String(64), nullable=False)
+    idempotency_key = Column(String(200), nullable=False)
+    request_id = Column(String(128), nullable=False)
+    maintenance_window_id = Column(
+        Integer,
+        ForeignKey("maintenance_windows.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    change_context = Column(JSON, nullable=False, default=dict)
+    status = Column(String(32), nullable=False, index=True)
+    execution_attempt_id = Column(String(80), nullable=True)
+    rollback_attempt_id = Column(String(80), nullable=True)
+    progress_percent = Column(Integer, nullable=False, default=0)
+    progress_message = Column(String(500), nullable=True)
+    requested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    previewed_at = Column(DateTime(timezone=True), nullable=True)
+    authorized_at = Column(DateTime(timezone=True), nullable=True)
+    confirmed_at = Column(DateTime(timezone=True), nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+    verified_at = Column(DateTime(timezone=True), nullable=True)
+    rolled_back_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class OperationalActionAttempt(Base):
+    """Durable ownership and reconciliation record for one adapter attempt."""
+
+    __tablename__ = "operational_action_attempts"
+    __table_args__ = (
+        Index("ix_operational_action_attempts_tenant_action", "tenant_id", "action_id"),
+        Index("ix_operational_action_attempts_action_phase", "action_id", "phase"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    action_id = Column(String(80), ForeignKey("operational_actions.id", ondelete="CASCADE"), nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    actor_id = Column(String(200), nullable=False)
+    phase = Column(String(24), nullable=False)
+    status = Column(String(32), nullable=False, index=True)
+    request_id = Column(String(128), nullable=False)
+    success = Column(Boolean, nullable=True)
+    progress_percent = Column(Integer, nullable=False, default=0)
+    progress_message = Column(String(500), nullable=True)
+    result = Column(JSON, nullable=False, default=dict)
+    started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class OperationalActionTarget(Base):
+    """Snapshot-backed target reference; intentionally not an FK to Device.
+
+    Device purge must not erase historical action lineage. The device ID and
+    safe snapshot remain durable even when the current asset row is gone.
+    """
+
+    __tablename__ = "operational_action_targets"
+    __table_args__ = (
+        UniqueConstraint("action_id", "device_id", name="uq_operational_action_target_device"),
+        Index("ix_operational_action_targets_tenant_device", "tenant_id", "device_id"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    action_id = Column(String(80), ForeignKey("operational_actions.id", ondelete="CASCADE"), nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    device_id = Column(Integer, nullable=False, index=True)
+    target_revision = Column(String(64), nullable=False)
+    target_snapshot = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class OperationalActionEvent(Base):
+    """Append-only state/progress history for an operational action."""
+
+    __tablename__ = "operational_action_events"
+    __table_args__ = (
+        UniqueConstraint("action_id", "sequence", name="uq_operational_action_event_sequence"),
+        Index("ix_operational_action_events_tenant_action", "tenant_id", "action_id"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    action_id = Column(String(80), ForeignKey("operational_actions.id", ondelete="CASCADE"), nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    sequence = Column(Integer, nullable=False)
+    event_type = Column(String(48), nullable=False)
+    from_status = Column(String(32), nullable=True)
+    to_status = Column(String(32), nullable=False)
+    actor_id = Column(String(200), nullable=False)
+    message = Column(String(500), nullable=True)
+    details = Column(JSON, nullable=False, default=dict)
+    occurred_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class OperationalActionEvidence(Base):
+    """Small, typed evidence records; arbitrary secret-bearing blobs are excluded."""
+
+    __tablename__ = "operational_action_evidence"
+    __table_args__ = (
+        Index("ix_operational_action_evidence_tenant_action", "tenant_id", "action_id"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    action_id = Column(String(80), ForeignKey("operational_actions.id", ondelete="CASCADE"), nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    evidence_type = Column(String(48), nullable=False)
+    success = Column(Boolean, nullable=True)
+    summary = Column(Text, nullable=False)
+    reference = Column(String(500), nullable=True)
+    metadata_json = Column(JSON, nullable=False, default=dict)
+    recorded_by = Column(String(200), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
 class MonitoringItem(Base, BaseMixin):
     __tablename__ = "monitoring_items"
     device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=True)
