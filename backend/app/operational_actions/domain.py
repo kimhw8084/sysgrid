@@ -70,13 +70,25 @@ class ActionStatus:
     RECOVERED = "RECOVERED"
 
 
+class ActionAttemptPhase:
+    EXECUTION = "EXECUTION"
+    ROLLBACK = "ROLLBACK"
+
+
+class ActionAttemptStatus:
+    REQUESTED = "REQUESTED"
+    CLAIMED = "CLAIMED"
+    COMPLETED = "COMPLETED"
+    OUTCOME_UNKNOWN = "OUTCOME_UNKNOWN"
+
+
 ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     ActionStatus.CREATED: {ActionStatus.PREVIEWED, ActionStatus.STALE},
     ActionStatus.PREVIEWED: {ActionStatus.PREVIEWED, ActionStatus.AUTHORIZED, ActionStatus.CONFIRMED, ActionStatus.STALE},
     ActionStatus.STALE: {ActionStatus.PREVIEWED},
     ActionStatus.AUTHORIZED: {ActionStatus.AUTHORIZED, ActionStatus.CONFIRMED, ActionStatus.STALE},
     ActionStatus.CONFIRMED: {ActionStatus.EXECUTING, ActionStatus.STALE},
-    ActionStatus.EXECUTING: {ActionStatus.SUCCEEDED, ActionStatus.FAILED},
+    ActionStatus.EXECUTING: {ActionStatus.SUCCEEDED, ActionStatus.FAILED, ActionStatus.RECOVERY_REQUIRED},
     ActionStatus.SUCCEEDED: {ActionStatus.VERIFIED, ActionStatus.VERIFICATION_FAILED, ActionStatus.ROLLBACK_REQUESTED},
     ActionStatus.FAILED: {ActionStatus.ROLLBACK_REQUESTED, ActionStatus.RECOVERY_REQUIRED},
     ActionStatus.VERIFIED: {ActionStatus.ROLLBACK_REQUESTED},

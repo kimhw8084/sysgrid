@@ -18,6 +18,7 @@ from ..schemas.operational_actions import (
     ExecuteRequest,
     OperationalActionRead,
     PreviewRequest,
+    ReconcileRequest,
     RecoveryRequest,
     RollbackRequest,
     VerificationRequest,
@@ -204,6 +205,7 @@ async def execute_operational_action(
             access_role=access_role,
             action_id=action_id,
             preview_token=payload.preview_token,
+            request_id=getattr(request.state, "request_id", "api-request"),
         )
         return await _view(db, tenant_id, action_id)
     except service.OperationalActionError as error:
@@ -294,6 +296,32 @@ async def rollback_operational_action(
             reason=payload.reason,
             recovery_facts=payload.recovery_facts,
             evidence=[item.model_dump() for item in payload.evidence],
+            attempt_id=payload.attempt_id,
+            request_id=getattr(request.state, "request_id", "api-request"),
+        )
+        return await _view(db, tenant_id, action_id)
+    except service.OperationalActionError as error:
+        _raise(error)
+
+
+@router.post("/{action_id}/reconcile", response_model=OperationalActionRead)
+async def reconcile_operational_action(
+    action_id: str,
+    payload: ReconcileRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    tenant_id, actor_id, access_role = _context(request)
+    try:
+        await service.reconcile_action_attempt(
+            db,
+            tenant_id=tenant_id,
+            actor_id=actor_id,
+            access_role=access_role,
+            action_id=action_id,
+            attempt_id=payload.attempt_id,
+            phase=payload.phase,
+            summary=payload.summary,
         )
         return await _view(db, tenant_id, action_id)
     except service.OperationalActionError as error:

@@ -326,6 +326,8 @@ class OperationalAction(Base):
     )
     change_context = Column(JSON, nullable=False, default=dict)
     status = Column(String(32), nullable=False, index=True)
+    execution_attempt_id = Column(String(80), nullable=True)
+    rollback_attempt_id = Column(String(80), nullable=True)
     progress_percent = Column(Integer, nullable=False, default=0)
     progress_message = Column(String(500), nullable=True)
     requested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -336,6 +338,32 @@ class OperationalAction(Base):
     finished_at = Column(DateTime(timezone=True), nullable=True)
     verified_at = Column(DateTime(timezone=True), nullable=True)
     rolled_back_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class OperationalActionAttempt(Base):
+    """Durable ownership and reconciliation record for one adapter attempt."""
+
+    __tablename__ = "operational_action_attempts"
+    __table_args__ = (
+        Index("ix_operational_action_attempts_tenant_action", "tenant_id", "action_id"),
+        Index("ix_operational_action_attempts_action_phase", "action_id", "phase"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    action_id = Column(String(80), ForeignKey("operational_actions.id", ondelete="CASCADE"), nullable=False)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    actor_id = Column(String(200), nullable=False)
+    phase = Column(String(24), nullable=False)
+    status = Column(String(32), nullable=False, index=True)
+    request_id = Column(String(128), nullable=False)
+    success = Column(Boolean, nullable=True)
+    progress_percent = Column(Integer, nullable=False, default=0)
+    progress_message = Column(String(500), nullable=True)
+    result = Column(JSON, nullable=False, default=dict)
+    started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

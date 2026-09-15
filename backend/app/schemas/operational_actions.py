@@ -102,6 +102,7 @@ class VerificationRequest(BaseModel):
 
 class RollbackRequest(BaseModel):
     execute: bool = True
+    attempt_id: str | None = Field(default=None, min_length=1, max_length=80)
     reason: str = Field(min_length=1, max_length=2000)
     recovery_facts: dict[str, Any] = Field(default_factory=dict)
     evidence: list[EvidenceInput] = Field(default_factory=list, max_length=50)
@@ -110,6 +111,22 @@ class RollbackRequest(BaseModel):
     @classmethod
     def normalize_recovery_facts(cls, value: Any) -> dict[str, Any]:
         return _safe_object(value, "recovery_facts")
+
+    @field_validator("attempt_id")
+    @classmethod
+    def strip_attempt_id(cls, value: str | None) -> str | None:
+        return value.strip() if isinstance(value, str) else value
+
+
+class ReconcileRequest(BaseModel):
+    attempt_id: str = Field(min_length=1, max_length=80)
+    phase: Literal["EXECUTION", "ROLLBACK"] | None = None
+    summary: str = Field(default="Outcome could not be determined from the interrupted attempt", min_length=1, max_length=2000)
+
+    @field_validator("attempt_id", "summary")
+    @classmethod
+    def strip_reconciliation_text(cls, value: str) -> str:
+        return value.strip()
 
 
 class RecoveryRequest(BaseModel):
@@ -154,6 +171,24 @@ class ActionEvidenceRead(BaseModel):
     created_at: datetime | None
 
 
+class ActionAttemptRead(BaseModel):
+    id: str
+    action_id: str
+    tenant_id: int
+    actor_id: str
+    phase: str
+    status: str
+    request_id: str
+    success: bool | None
+    progress_percent: int
+    progress_message: str | None
+    result: dict[str, Any]
+    started_at: datetime | None
+    finished_at: datetime | None
+    created_at: datetime | None
+    updated_at: datetime | None
+
+
 class OperationalActionRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -188,6 +223,8 @@ class OperationalActionRead(BaseModel):
     maintenance_window_id: int | None
     change_context: dict[str, Any]
     status: str
+    execution_attempt_id: str | None
+    rollback_attempt_id: str | None
     progress_percent: int
     progress_message: str | None
     requested_at: datetime | None
@@ -203,3 +240,4 @@ class OperationalActionRead(BaseModel):
     targets: list[ActionTargetRead] = Field(default_factory=list)
     history: list[ActionEventRead] = Field(default_factory=list)
     evidence: list[ActionEvidenceRead] = Field(default_factory=list)
+    attempts: list[ActionAttemptRead] = Field(default_factory=list)

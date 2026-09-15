@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import asyncio
 from uuid import uuid4
 
 import pytest
 from sqlalchemy import inspect, select
 
 from app.models import models
+from app.operational_actions import service
 from app.operational_actions.domain import (
+    AdapterExecution,
+    AdapterProgress,
     ActionStatus,
     OperationalActionDomainError,
     REGISTRY,
@@ -50,6 +54,34 @@ async def _create_and_preview(client, tenant_id: int, device_id: int, *, action_
     )
     assert preview.status_code == 200, preview.text
     return created.json(), preview.json()
+
+
+async def _confirmed_action(client, tenant_id: int, device_id: int, *, parameters: dict | None = None):
+    created, preview = await _create_and_preview(client, tenant_id, device_id, parameters=parameters)
+    confirmed = await client.post(
+        f"/api/v1/operational-actions/{created['id']}/confirm",
+        headers=_headers(tenant_id),
+        json={"preview_token": preview["preview_token"], "confirmation": True},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    return created["id"], preview["preview_token"]
+
+
+async def _succeeded_action(client, tenant_id: int, device_id: int, *, parameters: dict | None = None):
+    action_id, preview_token = await _confirmed_action(
+        client,
+        tenant_id,
+        device_id,
+        parameters=parameters,
+    )
+    executed = await client.post(
+        f"/api/v1/operational-actions/{action_id}/execute",
+        headers=_headers(tenant_id),
+        json={"preview_token": preview_token},
+    )
+    assert executed.status_code == 200, executed.text
+    assert executed.json()["status"] == ActionStatus.SUCCEEDED
+    return action_id
 
 
 def test_state_machine_rejects_illegal_transitions():
@@ -167,6 +199,346 @@ async def test_simulation_lifecycle_progress_verification_history_and_asset_proj
         assert stored is not None
         assert len(events) >= 8
         assert audit
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("interrupt_after_progress", [False, True])
+async def test_forward_interruption_is_reconciled_without_adapter_replay(
+    client,
+    seeded_admin_tenant,
+    monkeypatch,
+    interrupt_after_progress,
+):
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    device_id = await _device(client, tenant_id, name=f"OPS-ACTION-FORWARD-{interrupt_after_progress}")
+    action_id, preview_token = await _confirmed_action(client, tenant_id, device_id)
+    adapter = REGISTRY._adapter
+    calls = 0
+
+    def interrupted_execute(*, action_id, target_ids, parameters):
+        nonlocal calls
+        calls += 1
+        if not interrupt_after_progress:
+            return AdapterExecution(
+                progress=(),
+                success=True,
+                result={"performed": False, "external_side_effect": False, "mode": "test"},
+            )
+        return AdapterExecution(
+            progress=(AdapterProgress(35, "Test progress was durably recorded."),),
+            success=True,
+            result={"performed": False, "external_side_effect": False, "mode": "test"},
+        )
+
+    monkeypatch.setattr(adapter, "execute", interrupted_execute)
+    original_record_progress = service._record_adapter_progress
+
+    async def interrupt_after_claim_or_progress(*args, **kwargs):
+        if interrupt_after_progress:
+            await original_record_progress(*args, **kwargs)
+        raise service.OperationalActionError("simulated process interruption", code="SIMULATED_INTERRUPTION")
+
+    monkeypatch.setattr(service, "_record_adapter_progress", interrupt_after_claim_or_progress)
+    interrupted_response = await client.post(
+        f"/api/v1/operational-actions/{action_id}/execute",
+        headers=_headers(tenant_id),
+        json={"preview_token": preview_token},
+    )
+    assert interrupted_response.status_code == 409
+    assert interrupted_response.json()["detail"]["code"] == "SIMULATED_INTERRUPTION"
+
+    interrupted = await client.get(f"/api/v1/operational-actions/{action_id}", headers=_headers(tenant_id))
+    assert interrupted.status_code == 200
+    body = interrupted.json()
+    attempt_id = body["execution_attempt_id"]
+    assert body["status"] == ActionStatus.EXECUTING
+    assert body["attempts"][-1]["id"] == attempt_id
+    assert body["attempts"][-1]["status"] == "CLAIMED"
+    assert body["attempts"][-1]["progress_percent"] == (35 if interrupt_after_progress else 0)
+    assert body["execution_result"] == {}
+
+    replay = await client.post(
+        f"/api/v1/operational-actions/{action_id}/execute",
+        headers=_headers(tenant_id),
+        json={"preview_token": preview_token},
+    )
+    assert replay.status_code == 409
+    assert replay.json()["detail"]["code"] == "EXECUTION_IN_PROGRESS"
+    assert calls == 1
+
+    reconciled = await client.post(
+        f"/api/v1/operational-actions/{action_id}/reconcile",
+        headers=_headers(tenant_id),
+        json={"attempt_id": attempt_id, "phase": "EXECUTION", "summary": "Operator closed the interrupted attempt"},
+    )
+    assert reconciled.status_code == 200, reconciled.text
+    assert reconciled.json()["status"] == ActionStatus.RECOVERY_REQUIRED
+    assert reconciled.json()["attempts"][-1]["status"] == "OUTCOME_UNKNOWN"
+
+    refused = await client.post(
+        f"/api/v1/operational-actions/{action_id}/execute",
+        headers=_headers(tenant_id),
+        json={"preview_token": preview_token},
+    )
+    assert refused.status_code == 409
+    assert refused.json()["detail"]["code"] == "EXECUTION_OUTCOME_UNKNOWN"
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("interrupt_after_progress", [False, True])
+async def test_rollback_interruption_is_reconciled_without_adapter_replay(
+    client,
+    seeded_admin_tenant,
+    monkeypatch,
+    interrupt_after_progress,
+):
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    device_id = await _device(client, tenant_id, name=f"OPS-ACTION-ROLLBACK-{interrupt_after_progress}")
+    action_id = await _succeeded_action(client, tenant_id, device_id)
+    adapter = REGISTRY._adapter
+    calls = 0
+
+    def interrupted_rollback(*, action_id, target_ids, parameters):
+        nonlocal calls
+        calls += 1
+        if not interrupt_after_progress:
+            return AdapterExecution(
+                progress=(),
+                success=True,
+                result={"performed": False, "external_side_effect": False, "mode": "test"},
+            )
+        return AdapterExecution(
+            progress=(AdapterProgress(45, "Test rollback progress was durably recorded."),),
+            success=True,
+            result={"performed": False, "external_side_effect": False, "mode": "test"},
+        )
+
+    monkeypatch.setattr(adapter, "rollback", interrupted_rollback)
+    original_record_progress = service._record_adapter_progress
+
+    async def interrupt_after_claim_or_progress(*args, **kwargs):
+        if interrupt_after_progress:
+            await original_record_progress(*args, **kwargs)
+        raise service.OperationalActionError("simulated process interruption", code="SIMULATED_INTERRUPTION")
+
+    monkeypatch.setattr(service, "_record_adapter_progress", interrupt_after_claim_or_progress)
+    interrupted_response = await client.post(
+        f"/api/v1/operational-actions/{action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "reason": "Test interrupted rollback"},
+    )
+    assert interrupted_response.status_code == 409
+    assert interrupted_response.json()["detail"]["code"] == "SIMULATED_INTERRUPTION"
+
+    interrupted = await client.get(f"/api/v1/operational-actions/{action_id}", headers=_headers(tenant_id))
+    assert interrupted.status_code == 200
+    body = interrupted.json()
+    attempt_id = body["rollback_attempt_id"]
+    assert body["status"] == ActionStatus.ROLLING_BACK
+    assert body["attempts"][-1]["phase"] == "ROLLBACK"
+    assert body["attempts"][-1]["status"] == "CLAIMED"
+    assert body["attempts"][-1]["progress_percent"] == (45 if interrupt_after_progress else 0)
+
+    replay = await client.post(
+        f"/api/v1/operational-actions/{action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "attempt_id": attempt_id, "reason": "Replay interrupted rollback"},
+    )
+    assert replay.status_code == 200
+    assert replay.json()["status"] == ActionStatus.ROLLING_BACK
+    assert calls == 1
+
+    reconciled = await client.post(
+        f"/api/v1/operational-actions/{action_id}/reconcile",
+        headers=_headers(tenant_id),
+        json={"attempt_id": attempt_id, "phase": "ROLLBACK", "summary": "Operator closed the interrupted rollback"},
+    )
+    assert reconciled.status_code == 200, reconciled.text
+    assert reconciled.json()["status"] == ActionStatus.RECOVERY_REQUIRED
+    assert reconciled.json()["attempts"][-1]["status"] == "OUTCOME_UNKNOWN"
+
+    refused = await client.post(
+        f"/api/v1/operational-actions/{action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "attempt_id": attempt_id, "reason": "Replay reconciled rollback"},
+    )
+    assert refused.status_code == 400
+    assert refused.json()["detail"]["code"] == "ACTION_INVALID_REQUEST"
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_completed_rollback_replay_and_explicit_new_attempt_after_failure(client, seeded_admin_tenant, monkeypatch):
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    device_id = await _device(client, tenant_id, name="OPS-ACTION-ROLLBACK-REPLAY")
+    adapter = REGISTRY._adapter
+    calls = 0
+    original_rollback = adapter.rollback
+
+    def counted_rollback(*, action_id, target_ids, parameters):
+        nonlocal calls
+        calls += 1
+        return original_rollback(action_id=action_id, target_ids=target_ids, parameters=parameters)
+
+    monkeypatch.setattr(adapter, "rollback", counted_rollback)
+    action_id = await _succeeded_action(client, tenant_id, device_id)
+    first_id = str(uuid4())
+    first = await client.post(
+        f"/api/v1/operational-actions/{action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "attempt_id": first_id, "reason": "Complete simulated rollback"},
+    )
+    assert first.status_code == 200
+    assert first.json()["status"] == ActionStatus.ROLLED_BACK
+    replay = await client.post(
+        f"/api/v1/operational-actions/{action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "attempt_id": first_id, "reason": "Replay completed rollback"},
+    )
+    assert replay.status_code == 200
+    assert replay.json()["status"] == ActionStatus.ROLLED_BACK
+    assert calls == 1
+
+    failed_action_id = await _succeeded_action(
+        client,
+        tenant_id,
+        await _device(client, tenant_id, name="OPS-ACTION-ROLLBACK-FAILED"),
+        parameters={"simulation_rollback_outcome": "failure"},
+    )
+    failed_id = str(uuid4())
+    failed = await client.post(
+        f"/api/v1/operational-actions/{failed_action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "attempt_id": failed_id, "reason": "Record failed simulated rollback"},
+    )
+    assert failed.status_code == 200
+    assert failed.json()["status"] == ActionStatus.ROLLBACK_FAILED
+    missing_new_id = await client.post(
+        f"/api/v1/operational-actions/{failed_action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "reason": "Must not replay failed attempt"},
+    )
+    assert missing_new_id.status_code == 400
+    assert missing_new_id.json()["detail"]["code"] == "ACTION_INVALID_REQUEST"
+    second_id = str(uuid4())
+    second = await client.post(
+        f"/api/v1/operational-actions/{failed_action_id}/rollback",
+        headers=_headers(tenant_id),
+        json={"execute": True, "attempt_id": second_id, "reason": "Explicitly authorize a new simulated attempt"},
+    )
+    assert second.status_code == 200
+    assert second.json()["status"] == ActionStatus.ROLLBACK_FAILED
+    assert calls == 3
+    assert len([item for item in second.json()["attempts"] if item["phase"] == "ROLLBACK"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_concurrent_same_attempt_rollback_has_one_adapter_invocation(client, seeded_admin_tenant, monkeypatch):
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    device_id = await _device(client, tenant_id, name="OPS-ACTION-ROLLBACK-CONCURRENT")
+    action_id = await _succeeded_action(client, tenant_id, device_id)
+    adapter = REGISTRY._adapter
+    calls = 0
+    original_rollback = adapter.rollback
+
+    def counted_rollback(*, action_id, target_ids, parameters):
+        nonlocal calls
+        calls += 1
+        return original_rollback(action_id=action_id, target_ids=target_ids, parameters=parameters)
+
+    monkeypatch.setattr(adapter, "rollback", counted_rollback)
+    original_get_action = service._get_action
+    barrier = asyncio.Barrier(2)
+    initial_gets = 0
+
+    async def synchronize_initial_reads(db, *, tenant_id, action_id):
+        nonlocal initial_gets
+        if action_id == action_id_for_test and initial_gets < 2:
+            initial_gets += 1
+            await barrier.wait()
+        return await original_get_action(db, tenant_id=tenant_id, action_id=action_id)
+
+    action_id_for_test = action_id
+    monkeypatch.setattr(service, "_get_action", synchronize_initial_reads)
+    attempt_id = str(uuid4())
+    responses = await asyncio.gather(
+        client.post(
+            f"/api/v1/operational-actions/{action_id}/rollback",
+            headers=_headers(tenant_id),
+            json={"execute": True, "attempt_id": attempt_id, "reason": "Concurrent same-attempt rollback"},
+        ),
+        client.post(
+            f"/api/v1/operational-actions/{action_id}/rollback",
+            headers=_headers(tenant_id),
+            json={"execute": True, "attempt_id": attempt_id, "reason": "Concurrent same-attempt rollback"},
+        ),
+    )
+    assert all(response.status_code == 200 for response in responses), [response.text for response in responses]
+    assert all(response.json()["id"] == action_id for response in responses)
+    assert calls == 1
+    current = await client.get(f"/api/v1/operational-actions/{action_id}", headers=_headers(tenant_id))
+    assert current.json()["status"] == ActionStatus.ROLLED_BACK
+    assert len([item for item in current.json()["attempts"] if item["phase"] == "ROLLBACK"]) == 1
+    assert [item for item in current.json()["attempts"] if item["phase"] == "ROLLBACK"][0]["status"] == "COMPLETED"
+
+
+@pytest.mark.asyncio
+async def test_concurrent_idempotent_creates_converge_and_conflicts_fail_deterministically(
+    client,
+    seeded_admin_tenant,
+    monkeypatch,
+):
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    device_id = await _device(client, tenant_id, name="OPS-ACTION-CREATE-CONCURRENT")
+    original_append_event = service._append_event
+
+    async def run_race(payloads):
+        barrier = asyncio.Barrier(2)
+        arrivals = 0
+
+        async def synchronize_requested(*args, **kwargs):
+            nonlocal arrivals
+            if kwargs.get("event_type") == "requested" and arrivals < 2:
+                arrivals += 1
+                await barrier.wait()
+            return await original_append_event(*args, **kwargs)
+
+        monkeypatch.setattr(service, "_append_event", synchronize_requested)
+        return await asyncio.gather(
+            *[
+                client.post(
+                    "/api/v1/operational-actions",
+                    headers=_headers(tenant_id, idempotency_key="race-key"),
+                    json=payload,
+                )
+                for payload in payloads
+            ]
+        )
+
+    payload = {
+        "target_device_ids": [device_id],
+        "action_key": "telemetry.snapshot",
+        "parameters": {"observation": "concurrent-identical"},
+    }
+    identical = await run_race([payload, payload])
+    assert [response.status_code for response in identical] == [200, 200]
+    assert identical[0].json()["id"] == identical[1].json()["id"]
+    assert len(identical[0].json()["history"]) == 1
+
+    conflicting = await run_race([
+        payload,
+        {
+            **payload,
+            "parameters": {"observation": "concurrent-conflict"},
+        },
+    ])
+    assert sorted(response.status_code for response in conflicting) == [200, 409]
+    conflict = next(response for response in conflicting if response.status_code == 409)
+    assert conflict.json()["detail"]["code"] == "IDEMPOTENCY_KEY_REUSE"
+    actions = await client.get("/api/v1/operational-actions", headers=_headers(tenant_id))
+    assert actions.status_code == 200
+    assert len([item for item in actions.json() if item["idempotency_key"] == "race-key"]) == 1
 
 
 @pytest.mark.asyncio
@@ -396,7 +768,18 @@ async def test_migration_registers_all_operational_tables_and_viewer_cannot_muta
         engine = get_tenant_engine(tenant.db_url)
     async with engine.connect() as connection:
         table_names = await connection.run_sync(lambda sync_connection: set(inspect(sync_connection).get_table_names()))
-    assert {"operational_actions", "operational_action_targets", "operational_action_events", "operational_action_evidence"}.issubset(table_names)
+    assert {
+        "operational_actions",
+        "operational_action_targets",
+        "operational_action_events",
+        "operational_action_evidence",
+        "operational_action_attempts",
+    }.issubset(table_names)
+    async with engine.connect() as connection:
+        action_columns = await connection.run_sync(
+            lambda sync_connection: {column["name"] for column in inspect(sync_connection).get_columns("operational_actions")}
+        )
+    assert {"execution_attempt_id", "rollback_attempt_id"}.issubset(action_columns)
 
     async with setup_db[1]() as config_session:
         config_session.add(__import__("app.models.config", fromlist=["UserTenantAccess"]).UserTenantAccess(user_id="viewer-action", tenant_id=tenant_id, role="VIEWER", is_selected=False))

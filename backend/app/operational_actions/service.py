@@ -13,6 +13,8 @@ from ..api.utils import normalize_json_object
 from ..models import models
 from .domain import (
     ActionDefinition,
+    ActionAttemptPhase,
+    ActionAttemptStatus,
     ActionStatus,
     AdapterExecution,
     OperationalActionDomainError,
@@ -124,6 +126,53 @@ async def _get_action(db: AsyncSession, *, tenant_id: int, action_id: str) -> mo
     if action is None:
         raise ActionNotFound()
     return action
+
+
+async def _get_attempt(
+    db: AsyncSession,
+    *,
+    tenant_id: int,
+    action_id: str,
+    attempt_id: str,
+) -> models.OperationalActionAttempt | None:
+    result = await db.execute(
+        select(models.OperationalActionAttempt).where(
+            models.OperationalActionAttempt.id == attempt_id,
+            models.OperationalActionAttempt.action_id == action_id,
+            models.OperationalActionAttempt.tenant_id == tenant_id,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def _get_action_attempts(
+    db: AsyncSession,
+    *,
+    tenant_id: int,
+    action_id: str,
+) -> list[models.OperationalActionAttempt]:
+    result = await db.execute(
+        select(models.OperationalActionAttempt)
+        .where(
+            models.OperationalActionAttempt.action_id == action_id,
+            models.OperationalActionAttempt.tenant_id == tenant_id,
+        )
+        .order_by(models.OperationalActionAttempt.created_at.asc(), models.OperationalActionAttempt.id.asc())
+    )
+    return list(result.scalars().all())
+
+
+def _normalize_attempt_id(value: str | None, *, required: bool = False) -> str | None:
+    clean = value.strip() if isinstance(value, str) else None
+    if required and not clean:
+        raise ActionBadRequest("An explicit attempt_id is required for a new rollback attempt")
+    if clean is not None and not 1 <= len(clean) <= 80:
+        raise ActionBadRequest("attempt_id must contain between 1 and 80 characters")
+    return clean
+
+
+def _attempt_request_id(request_id: str | None) -> str:
+    return (request_id or "api-request")[:128]
 
 
 async def _get_target_rows(db: AsyncSession, action_id: str) -> list[models.OperationalActionTarget]:
@@ -496,24 +545,27 @@ async def create_action(
                 created_at=_now(),
             )
         )
-    await _append_event(
-        db,
-        action=action,
-        event_type="requested",
-        from_status=None,
-        to_status=ActionStatus.CREATED,
-        actor_id=actor_id,
-        message="Operational action request recorded; no execution occurred.",
-        details={"request_hash": request_hash, "target_count": len(snapshots)},
-    )
-    await _audit(
-        db,
-        actor_id=actor_id,
-        action="REQUEST",
-        action_id=action_id,
-        details={"request_hash": request_hash, "action_key": action_key, "target_count": len(snapshots)},
-    )
     try:
+        # _append_event flushes pending rows to allocate the next sequence.
+        # Keep that flush, the action/target rows, and commit inside the same
+        # deliberate idempotency conflict boundary.
+        await _append_event(
+            db,
+            action=action,
+            event_type="requested",
+            from_status=None,
+            to_status=ActionStatus.CREATED,
+            actor_id=actor_id,
+            message="Operational action request recorded; no execution occurred.",
+            details={"request_hash": request_hash, "target_count": len(snapshots)},
+        )
+        await _audit(
+            db,
+            actor_id=actor_id,
+            action="REQUEST",
+            action_id=action_id,
+            details={"request_hash": request_hash, "action_key": action_key, "target_count": len(snapshots)},
+        )
         await db.commit()
     except IntegrityError:
         await db.rollback()
@@ -762,10 +814,14 @@ async def _record_adapter_progress(
     actor_id: str,
     execution: AdapterExecution,
     event_prefix: str,
+    attempt: models.OperationalActionAttempt | None = None,
 ) -> None:
     for progress in execution.progress:
         action.progress_percent = max(0, min(100, progress.percent))
         action.progress_message = progress.message
+        if attempt is not None:
+            attempt.progress_percent = action.progress_percent
+            attempt.progress_message = progress.message
         await _append_event(
             db,
             action=action,
@@ -787,6 +843,7 @@ async def execute_action(
     access_role: str | None,
     action_id: str,
     preview_token: str,
+    request_id: str = "api-request",
 ) -> models.OperationalAction:
     _policy_check(actor_id=actor_id, access_role=access_role, phase="execute")
     action = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
@@ -802,9 +859,17 @@ async def execute_action(
         return action
     if action.status == ActionStatus.EXECUTING:
         raise OperationalActionError("Execution is already in progress", code="EXECUTION_IN_PROGRESS")
+    if action.status == ActionStatus.RECOVERY_REQUIRED and action.execution_attempt_id:
+        raise OperationalActionError(
+            "The execution attempt outcome is unknown and must be reconciled before another attempt",
+            code="EXECUTION_OUTCOME_UNKNOWN",
+        )
     if action.status != ActionStatus.CONFIRMED:
         raise OperationalActionError("Execution requires authorization and explicit confirmation", code="CONFIRMATION_REQUIRED")
     definition = _definition(action)
+    adapter = REGISTRY.get_adapter(action.adapter_id)
+    if not adapter or not adapter.supports(definition):
+        raise OperationalActionError("The selected adapter is unsupported", code="UNSUPPORTED_CAPABILITY_OR_ADAPTER")
     await _ensure_fresh_preview(
         db,
         action=action,
@@ -815,23 +880,50 @@ async def execute_action(
     if not action.authorization_facts or not action.confirmation_facts:
         raise OperationalActionError("Authorization and confirmation facts are required", code="AUTHORIZATION_FACTS_REQUIRED")
 
+    attempt_id = str(uuid4())
+    started_at = _now()
     claimed = await db.execute(
         update(models.OperationalAction)
         .where(
             models.OperationalAction.id == action.id,
             models.OperationalAction.tenant_id == tenant_id,
             models.OperationalAction.status == ActionStatus.CONFIRMED,
+            models.OperationalAction.execution_attempt_id.is_(None),
         )
-        .values(status=ActionStatus.EXECUTING, started_at=_now(), progress_percent=0)
+        .values(
+            status=ActionStatus.EXECUTING,
+            execution_attempt_id=attempt_id,
+            started_at=started_at,
+            progress_percent=0,
+            progress_message=None,
+        )
     )
     if claimed.rowcount != 1:
         await db.rollback()
         current = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
         if current.status in {ActionStatus.SUCCEEDED, ActionStatus.FAILED, ActionStatus.VERIFIED, ActionStatus.VERIFICATION_FAILED}:
             return current
+        if current.status == ActionStatus.EXECUTING:
+            raise OperationalActionError("Execution is already in progress", code="EXECUTION_IN_PROGRESS")
         raise OperationalActionError("Execution could not claim the confirmed action safely", code="EXECUTION_CONFLICT")
     action.status = ActionStatus.EXECUTING
-    action.started_at = _now()
+    action.execution_attempt_id = attempt_id
+    action.started_at = started_at
+    attempt = models.OperationalActionAttempt(
+        id=attempt_id,
+        action_id=action.id,
+        tenant_id=tenant_id,
+        actor_id=actor_id,
+        phase=ActionAttemptPhase.EXECUTION,
+        status=ActionAttemptStatus.CLAIMED,
+        request_id=_attempt_request_id(request_id),
+        progress_percent=0,
+        result={},
+        started_at=started_at,
+        created_at=started_at,
+        updated_at=started_at,
+    )
+    db.add(attempt)
     await _append_event(
         db,
         action=action,
@@ -840,15 +932,18 @@ async def execute_action(
         to_status=ActionStatus.EXECUTING,
         actor_id=actor_id,
         message="Selected adapter entered synchronous simulation; no external system was contacted.",
-        details={"adapter_id": action.adapter_id, "production_capable": False},
+        details={"adapter_id": action.adapter_id, "production_capable": False, "attempt_id": attempt_id},
     )
-    await _audit(db, actor_id=actor_id, action="EXECUTE", action_id=action.id, details={"adapter_id": action.adapter_id})
+    await _audit(
+        db,
+        actor_id=actor_id,
+        action="EXECUTE",
+        action_id=action.id,
+        details={"adapter_id": action.adapter_id, "attempt_id": attempt_id},
+    )
     await db.commit()
     await db.refresh(action)
 
-    adapter = REGISTRY.get_adapter(action.adapter_id)
-    if not adapter or not adapter.supports(definition):
-        raise OperationalActionError("The selected adapter is unsupported", code="UNSUPPORTED_CAPABILITY_OR_ADAPTER")
     target_rows = await _get_target_rows(db, action.id)
     target_ids = [row.device_id for row in target_rows]
     try:
@@ -859,10 +954,23 @@ async def execute_action(
             success=False,
             result={"mode": "deterministic_recording_simulation", "performed": False, "error": "adapter_failure"},
         )
-    await _record_adapter_progress(db, action=action, actor_id=actor_id, execution=execution, event_prefix="execution")
+    await _record_adapter_progress(
+        db,
+        action=action,
+        actor_id=actor_id,
+        execution=execution,
+        event_prefix="execution",
+        attempt=attempt,
+    )
     action.execution_result = normalize_json_object(execution.result)
     action.finished_at = _now()
     action.progress_percent = 100 if execution.success else action.progress_percent
+    attempt.status = ActionAttemptStatus.COMPLETED
+    attempt.success = execution.success
+    attempt.result = normalize_json_object(execution.result)
+    attempt.finished_at = action.finished_at
+    attempt.progress_percent = action.progress_percent
+    attempt.progress_message = action.progress_message
     await _transition(
         db,
         action=action,
@@ -870,7 +978,7 @@ async def execute_action(
         actor_id=actor_id,
         event_type="execution_result",
         message="Simulation result recorded; no external system was changed.",
-        details={"success": execution.success, "external_side_effect": False},
+        details={"success": execution.success, "external_side_effect": False, "attempt_id": attempt_id},
     )
     await db.commit()
     await db.refresh(action)
@@ -924,6 +1032,8 @@ async def request_or_execute_rollback(
     reason: str,
     recovery_facts: dict[str, Any],
     evidence: list[dict[str, Any]],
+    attempt_id: str | None = None,
+    request_id: str = "api-request",
 ) -> models.OperationalAction:
     _policy_check(actor_id=actor_id, access_role=access_role, phase="rollback")
     action = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
@@ -943,47 +1053,282 @@ async def request_or_execute_rollback(
         ActionStatus.RECOVERY_REQUIRED,
     }
     if action.status not in allowed:
+        if action.status == ActionStatus.ROLLING_BACK:
+            if attempt_id and attempt_id != action.rollback_attempt_id:
+                raise OperationalActionError("A different rollback attempt is already in progress", code="ROLLBACK_IN_PROGRESS")
+            return action
         raise OperationalActionError("Rollback is not legal in the current action state")
     clean_recovery = _ensure_safe_object(recovery_facts, "recovery_facts")
     if definition.requires_recovery_facts and not (clean_recovery or action.recovery_facts):
         raise OperationalActionError("This risk tier requires recovery facts before rollback", code="RECOVERY_FACTS_REQUIRED")
     action.recovery_facts = clean_recovery or action.recovery_facts or {}
-    action.rollback_outcome = {
-        "requested": True,
-        "requested_by": actor_id,
-        "reason": reason.strip(),
-        "recovery_facts_hash": sha256_json(action.recovery_facts),
-        "external_side_effect": False,
-    }
-    if evidence:
-        await _add_evidence(db, action=action, actor_id=actor_id, evidence=evidence, evidence_type_prefix="rollback")
-    if action.status != ActionStatus.ROLLBACK_REQUESTED:
-        await _transition(
+
+    requested_attempt_id = _normalize_attempt_id(attempt_id)
+    reason_text = reason.strip()
+    request_attempt_id = requested_attempt_id
+    prior_attempt_id = action.rollback_attempt_id
+
+    if action.status in {ActionStatus.ROLLBACK_FAILED, ActionStatus.RECOVERY_REQUIRED}:
+        if not request_attempt_id or request_attempt_id == prior_attempt_id:
+            raise ActionBadRequest(
+                "A new explicit attempt_id is required after a failed or outcome-unknown rollback attempt"
+            )
+
+        # Establish a new request lineage before any adapter claim. A replay
+        # with the same explicit ID converges on the already-established
+        # request rather than creating another attempt.
+        previous_status = action.status
+        requested = await db.execute(
+            update(models.OperationalAction)
+            .where(
+                models.OperationalAction.id == action.id,
+                models.OperationalAction.tenant_id == tenant_id,
+                models.OperationalAction.status.in_({ActionStatus.ROLLBACK_FAILED, ActionStatus.RECOVERY_REQUIRED}),
+                models.OperationalAction.rollback_attempt_id == prior_attempt_id,
+            )
+            .values(status=ActionStatus.ROLLBACK_REQUESTED, rollback_attempt_id=request_attempt_id)
+        )
+        if requested.rowcount != 1:
+            await db.rollback()
+            current = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
+            if current.rollback_attempt_id != request_attempt_id:
+                raise OperationalActionError("Rollback request could not establish its attempt identity", code="ROLLBACK_ATTEMPT_CONFLICT")
+            action = current
+        else:
+            action.status = ActionStatus.ROLLBACK_REQUESTED
+            action.rollback_attempt_id = request_attempt_id
+            action.rollback_outcome = {
+                **(action.rollback_outcome or {}),
+                "requested": True,
+                "requested_by": actor_id,
+                "reason": reason_text,
+                "attempt_id": request_attempt_id,
+                "attempt_status": ActionAttemptStatus.REQUESTED,
+                "recovery_facts_hash": sha256_json(action.recovery_facts),
+                "external_side_effect": False,
+            }
+            db.add(
+                models.OperationalActionAttempt(
+                    id=request_attempt_id,
+                    action_id=action.id,
+                    tenant_id=tenant_id,
+                    actor_id=actor_id,
+                    phase=ActionAttemptPhase.ROLLBACK,
+                    status=ActionAttemptStatus.REQUESTED,
+                    request_id=_attempt_request_id(request_id),
+                    progress_percent=0,
+                    result={},
+                    started_at=_now(),
+                    created_at=_now(),
+                    updated_at=_now(),
+                )
+            )
+            if evidence:
+                await _add_evidence(db, action=action, actor_id=actor_id, evidence=evidence, evidence_type_prefix="rollback")
+            await _append_event(
+                db,
+                action=action,
+                event_type="rollback_requested",
+                from_status=previous_status,
+                to_status=ActionStatus.ROLLBACK_REQUESTED,
+                actor_id=actor_id,
+                message="A new explicit rollback attempt was requested; adapter execution remains simulation-only.",
+                details={"reason": reason_text, "attempt_id": request_attempt_id},
+            )
+            await _audit(
+                db,
+                actor_id=actor_id,
+                action="ROLLBACK_REQUEST",
+                action_id=action.id,
+                details={"reason": reason_text, "attempt_id": request_attempt_id},
+            )
+            await db.commit()
+            await db.refresh(action)
+
+        if not execute:
+            return action
+
+    if action.status in {ActionStatus.SUCCEEDED, ActionStatus.VERIFIED, ActionStatus.FAILED, ActionStatus.VERIFICATION_FAILED}:
+        previous_status = action.status
+        if action.rollback_attempt_id:
+            request_attempt_id = action.rollback_attempt_id
+        else:
+            request_attempt_id = request_attempt_id or str(uuid4())
+        target_status = ActionStatus.ROLLING_BACK if execute else ActionStatus.ROLLBACK_REQUESTED
+        claimed = await db.execute(
+            update(models.OperationalAction)
+            .where(
+                models.OperationalAction.id == action.id,
+                models.OperationalAction.tenant_id == tenant_id,
+                models.OperationalAction.status.in_({
+                    ActionStatus.SUCCEEDED,
+                    ActionStatus.VERIFIED,
+                    ActionStatus.FAILED,
+                    ActionStatus.VERIFICATION_FAILED,
+                }),
+                models.OperationalAction.rollback_attempt_id.is_(None),
+            )
+            .values(status=target_status, rollback_attempt_id=request_attempt_id)
+        )
+        if claimed.rowcount != 1:
+            await db.rollback()
+            current = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
+            if current.status in {ActionStatus.ROLLED_BACK, ActionStatus.RECOVERED}:
+                return current
+            if current.rollback_attempt_id != request_attempt_id:
+                if current.status in {ActionStatus.ROLLBACK_REQUESTED, ActionStatus.ROLLING_BACK}:
+                    return current
+                raise OperationalActionError("Rollback request could not establish its attempt identity", code="ROLLBACK_ATTEMPT_CONFLICT")
+            if current.status in {ActionStatus.ROLLBACK_REQUESTED, ActionStatus.ROLLING_BACK}:
+                return current
+            action = current
+        else:
+            action.status = target_status
+            action.rollback_attempt_id = request_attempt_id
+            attempt_status = ActionAttemptStatus.CLAIMED if execute else ActionAttemptStatus.REQUESTED
+            action.rollback_outcome = {
+                "requested": True,
+                "requested_by": actor_id,
+                "reason": reason_text,
+                "attempt_id": request_attempt_id,
+                "attempt_status": attempt_status,
+                "recovery_facts_hash": sha256_json(action.recovery_facts),
+                "external_side_effect": False,
+            }
+            db.add(
+                models.OperationalActionAttempt(
+                    id=request_attempt_id,
+                    action_id=action.id,
+                    tenant_id=tenant_id,
+                    actor_id=actor_id,
+                    phase=ActionAttemptPhase.ROLLBACK,
+                    status=attempt_status,
+                    request_id=_attempt_request_id(request_id),
+                    progress_percent=0,
+                    result={},
+                    started_at=_now(),
+                    created_at=_now(),
+                    updated_at=_now(),
+                )
+            )
+            if evidence:
+                await _add_evidence(db, action=action, actor_id=actor_id, evidence=evidence, evidence_type_prefix="rollback")
+            await _append_event(
+                db,
+                action=action,
+                event_type="rollback_started" if execute else "rollback_requested",
+                from_status=previous_status,
+                to_status=target_status,
+                actor_id=actor_id,
+                message=(
+                    "Selected adapter entered synchronous simulation rollback; no external system was contacted."
+                    if execute
+                    else "Rollback/recovery request recorded; execution is optional and remains simulation-only."
+                ),
+                details={"adapter_id": action.adapter_id, "production_capable": False, "attempt_id": request_attempt_id},
+            )
+            await _audit(
+                db,
+                actor_id=actor_id,
+                action="ROLLBACK" if execute else "ROLLBACK_REQUEST",
+                action_id=action.id,
+                details={"reason": reason_text, "attempt_id": request_attempt_id},
+            )
+            await db.commit()
+            await db.refresh(action)
+            if not execute:
+                return action
+
+    if action.status == ActionStatus.ROLLBACK_REQUESTED:
+        request_attempt_id = action.rollback_attempt_id or request_attempt_id or str(uuid4())
+        claimed = await db.execute(
+            update(models.OperationalAction)
+            .where(
+                models.OperationalAction.id == action.id,
+                models.OperationalAction.tenant_id == tenant_id,
+                models.OperationalAction.status == ActionStatus.ROLLBACK_REQUESTED,
+                models.OperationalAction.rollback_attempt_id == request_attempt_id,
+            )
+            .values(status=ActionStatus.ROLLING_BACK)
+        )
+        if claimed.rowcount != 1:
+            await db.rollback()
+            current = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
+            if current.status in {ActionStatus.ROLLED_BACK, ActionStatus.RECOVERED, ActionStatus.ROLLBACK_FAILED, ActionStatus.RECOVERY_REQUIRED}:
+                return current
+            if current.status == ActionStatus.ROLLING_BACK and current.rollback_attempt_id == request_attempt_id:
+                return current
+            raise OperationalActionError("Rollback could not claim its attempt safely", code="ROLLBACK_CONFLICT")
+        action.status = ActionStatus.ROLLING_BACK
+        action.rollback_attempt_id = request_attempt_id
+        attempt = await _get_attempt(
+            db,
+            tenant_id=tenant_id,
+            action_id=action.id,
+            attempt_id=request_attempt_id,
+        )
+        started_at = _now()
+        if attempt is None:
+            attempt = models.OperationalActionAttempt(
+                id=request_attempt_id,
+                action_id=action.id,
+                tenant_id=tenant_id,
+                actor_id=actor_id,
+                phase=ActionAttemptPhase.ROLLBACK,
+                status=ActionAttemptStatus.CLAIMED,
+                request_id=_attempt_request_id(request_id),
+                progress_percent=0,
+                result={},
+                started_at=started_at,
+                created_at=started_at,
+                updated_at=started_at,
+            )
+            db.add(attempt)
+        else:
+            attempt.status = ActionAttemptStatus.CLAIMED
+            attempt.started_at = started_at
+        action.rollback_outcome = {
+            **(action.rollback_outcome or {}),
+            "attempt_id": request_attempt_id,
+            "attempt_status": ActionAttemptStatus.CLAIMED,
+        }
+        await _append_event(
             db,
             action=action,
-            target_status=ActionStatus.ROLLBACK_REQUESTED,
+            event_type="rollback_started",
+            from_status=ActionStatus.ROLLBACK_REQUESTED,
+            to_status=ActionStatus.ROLLING_BACK,
             actor_id=actor_id,
-            event_type="rollback_requested",
-            message="Rollback/recovery request recorded; execution is optional and remains simulation-only.",
-            details={"reason": reason.strip()},
+            message="Selected adapter entered synchronous simulation rollback; no external system was contacted.",
+            details={"adapter_id": action.adapter_id, "production_capable": False, "attempt_id": request_attempt_id},
         )
-    if not execute:
-        await _audit(db, actor_id=actor_id, action="ROLLBACK_REQUEST", action_id=action.id, details={"reason": reason.strip()})
+        await _audit(
+            db,
+            actor_id=actor_id,
+            action="ROLLBACK",
+            action_id=action.id,
+            details={"attempt_id": request_attempt_id},
+        )
         await db.commit()
         await db.refresh(action)
+
+    if action.status != ActionStatus.ROLLING_BACK:
         return action
 
-    await _transition(
+    request_attempt_id = action.rollback_attempt_id
+    attempt = await _get_attempt(
         db,
-        action=action,
-        target_status=ActionStatus.ROLLING_BACK,
-        actor_id=actor_id,
-        event_type="rollback_started",
-        message="Selected adapter entered synchronous simulation rollback; no external system was contacted.",
-        details={"adapter_id": action.adapter_id, "production_capable": False},
-    )
-    await db.commit()
-    await db.refresh(action)
+        tenant_id=tenant_id,
+        action_id=action.id,
+        attempt_id=request_attempt_id,
+    ) if request_attempt_id else None
+    if attempt is None:
+        raise OperationalActionError("Rollback attempt identity is missing", code="ROLLBACK_ATTEMPT_CONFLICT")
+    if attempt.status == ActionAttemptStatus.OUTCOME_UNKNOWN:
+        raise OperationalActionError("The rollback attempt outcome is unknown and must be reconciled", code="ROLLBACK_OUTCOME_UNKNOWN")
+    if attempt.status == ActionAttemptStatus.COMPLETED:
+        return action
+
     adapter = REGISTRY.get_adapter(action.adapter_id)
     target_rows = await _get_target_rows(db, action.id)
     target_ids = [row.device_id for row in target_rows]
@@ -991,15 +1336,30 @@ async def request_or_execute_rollback(
         execution = adapter.rollback(action_id=action.id, target_ids=target_ids, parameters=action.normalized_parameters) if adapter else AdapterExecution((), False, {"error": "adapter_missing"})
     except Exception:
         execution = AdapterExecution((), False, {"error": "adapter_failure", "performed": False})
-    await _record_adapter_progress(db, action=action, actor_id=actor_id, execution=execution, event_prefix="rollback")
+    await _record_adapter_progress(
+        db,
+        action=action,
+        actor_id=actor_id,
+        execution=execution,
+        event_prefix="rollback",
+        attempt=attempt,
+    )
     action.rollback_outcome = {
-        **action.rollback_outcome,
+        **(action.rollback_outcome or {}),
         "completed": True,
         "success": execution.success,
+        "attempt_id": request_attempt_id,
+        "attempt_status": ActionAttemptStatus.COMPLETED,
         "result": normalize_json_object(execution.result),
     }
+    attempt.status = ActionAttemptStatus.COMPLETED
+    attempt.success = execution.success
+    attempt.result = normalize_json_object(execution.result)
+    attempt.finished_at = _now()
+    attempt.progress_percent = action.progress_percent
+    attempt.progress_message = action.progress_message
     if execution.success:
-        action.rolled_back_at = _now()
+        action.rolled_back_at = attempt.finished_at
     await _transition(
         db,
         action=action,
@@ -1007,9 +1367,136 @@ async def request_or_execute_rollback(
         actor_id=actor_id,
         event_type="rollback_result",
         message="Rollback simulation result recorded; no external system was changed.",
-        details={"success": execution.success, "external_side_effect": False},
+        details={"success": execution.success, "external_side_effect": False, "attempt_id": request_attempt_id},
     )
-    await _audit(db, actor_id=actor_id, action="ROLLBACK", action_id=action.id, details={"success": execution.success})
+    await _audit(
+        db,
+        actor_id=actor_id,
+        action="ROLLBACK",
+        action_id=action.id,
+        details={"success": execution.success, "attempt_id": request_attempt_id},
+    )
+    await db.commit()
+    await db.refresh(action)
+    return action
+
+
+async def reconcile_action_attempt(
+    db: AsyncSession,
+    *,
+    tenant_id: int,
+    actor_id: str,
+    access_role: str | None,
+    action_id: str,
+    attempt_id: str,
+    phase: str | None,
+    summary: str,
+) -> models.OperationalAction:
+    _policy_check(actor_id=actor_id, access_role=access_role, phase="reconcile")
+    normalized_attempt_id = _normalize_attempt_id(attempt_id, required=True)
+    action = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
+    _require_action_actor(action, actor_id)
+    attempt = await _get_attempt(
+        db,
+        tenant_id=tenant_id,
+        action_id=action.id,
+        attempt_id=normalized_attempt_id,
+    )
+    if attempt is None:
+        raise OperationalActionError("The requested attempt does not belong to this tenant action", code="ATTEMPT_NOT_FOUND")
+
+    expected_phase = (
+        ActionAttemptPhase.EXECUTION if action.status == ActionStatus.EXECUTING
+        else ActionAttemptPhase.ROLLBACK if action.status == ActionStatus.ROLLING_BACK
+        else attempt.phase
+    )
+    if phase and phase != expected_phase:
+        raise OperationalActionError("The attempt phase does not match the current action state", code="ATTEMPT_PHASE_MISMATCH")
+    if attempt.phase != expected_phase:
+        raise OperationalActionError("The attempt phase does not match the current action state", code="ATTEMPT_PHASE_MISMATCH")
+    if attempt.status == ActionAttemptStatus.OUTCOME_UNKNOWN and action.status == ActionStatus.RECOVERY_REQUIRED:
+        return action
+    if attempt.status == ActionAttemptStatus.COMPLETED:
+        raise OperationalActionError("The completed attempt cannot be reconciled", code="ATTEMPT_ALREADY_COMPLETED")
+    if action.status not in {ActionStatus.EXECUTING, ActionStatus.ROLLING_BACK}:
+        raise OperationalActionError("Only an executing or rolling-back action can be reconciled", code="ATTEMPT_NOT_ACTIVE")
+    pointer = action.execution_attempt_id if expected_phase == ActionAttemptPhase.EXECUTION else action.rollback_attempt_id
+    if pointer != normalized_attempt_id:
+        raise OperationalActionError("The attempt is not the current durable action attempt", code="ATTEMPT_NOT_CURRENT")
+
+    changed = await db.execute(
+        update(models.OperationalActionAttempt)
+        .where(
+            models.OperationalActionAttempt.id == normalized_attempt_id,
+            models.OperationalActionAttempt.action_id == action.id,
+            models.OperationalActionAttempt.tenant_id == tenant_id,
+            models.OperationalActionAttempt.status == ActionAttemptStatus.CLAIMED,
+        )
+        .values(
+            status=ActionAttemptStatus.OUTCOME_UNKNOWN,
+            success=None,
+            result={"outcome": "unknown", "external_side_effect": False},
+            finished_at=_now(),
+        )
+    )
+    if changed.rowcount != 1:
+        await db.rollback()
+        current = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
+        current_attempt = await _get_attempt(
+            db,
+            tenant_id=tenant_id,
+            action_id=action_id,
+            attempt_id=normalized_attempt_id,
+        )
+        if current.status == ActionStatus.RECOVERY_REQUIRED and current_attempt and current_attempt.status == ActionAttemptStatus.OUTCOME_UNKNOWN:
+            return current
+        raise OperationalActionError("The attempt was changed by another reconciliation", code="ATTEMPT_RECONCILIATION_CONFLICT")
+
+    attempt.status = ActionAttemptStatus.OUTCOME_UNKNOWN
+    attempt.success = None
+    attempt.result = {"outcome": "unknown", "external_side_effect": False}
+    attempt.finished_at = _now()
+    if expected_phase == ActionAttemptPhase.EXECUTION:
+        action.execution_result = {
+            **(action.execution_result or {}),
+            "outcome": "unknown",
+            "attempt_id": normalized_attempt_id,
+            "external_side_effect": False,
+        }
+        event_type = "execution_reconciled"
+        message = "Interrupted execution was marked outcome-unknown; the adapter was not replayed."
+    else:
+        action.rollback_outcome = {
+            **(action.rollback_outcome or {}),
+            "outcome": "unknown",
+            "attempt_id": normalized_attempt_id,
+            "attempt_status": ActionAttemptStatus.OUTCOME_UNKNOWN,
+            "external_side_effect": False,
+        }
+        event_type = "rollback_reconciled"
+        message = "Interrupted rollback was marked outcome-unknown; the adapter was not replayed."
+    await _transition(
+        db,
+        action=action,
+        target_status=ActionStatus.RECOVERY_REQUIRED,
+        actor_id=actor_id,
+        event_type=event_type,
+        message=message,
+        details={
+            "attempt_id": normalized_attempt_id,
+            "phase": expected_phase,
+            "outcome": "unknown",
+            "summary": summary.strip(),
+            "external_side_effect": False,
+        },
+    )
+    await _audit(
+        db,
+        actor_id=actor_id,
+        action="RECONCILE",
+        action_id=action.id,
+        details={"attempt_id": normalized_attempt_id, "phase": expected_phase, "outcome": "unknown"},
+    )
     await db.commit()
     await db.refresh(action)
     return action
@@ -1119,6 +1606,26 @@ def _evidence_dict(evidence: models.OperationalActionEvidence) -> dict[str, Any]
     }
 
 
+def _attempt_dict(attempt: models.OperationalActionAttempt) -> dict[str, Any]:
+    return {
+        "id": attempt.id,
+        "action_id": attempt.action_id,
+        "tenant_id": attempt.tenant_id,
+        "actor_id": attempt.actor_id,
+        "phase": attempt.phase,
+        "status": attempt.status,
+        "request_id": attempt.request_id,
+        "success": attempt.success,
+        "progress_percent": attempt.progress_percent,
+        "progress_message": attempt.progress_message,
+        "result": attempt.result or {},
+        "started_at": attempt.started_at,
+        "finished_at": attempt.finished_at,
+        "created_at": attempt.created_at,
+        "updated_at": attempt.updated_at,
+    }
+
+
 async def action_view(db: AsyncSession, *, tenant_id: int, action_id: str) -> dict[str, Any]:
     action = await _get_action(db, tenant_id=tenant_id, action_id=action_id)
     target_rows = await _get_target_rows(db, action.id)
@@ -1132,6 +1639,7 @@ async def action_view(db: AsyncSession, *, tenant_id: int, action_id: str) -> di
         .where(models.OperationalActionEvidence.action_id == action.id)
         .order_by(models.OperationalActionEvidence.created_at.asc(), models.OperationalActionEvidence.id.asc())
     )
+    attempts = await _get_action_attempts(db, tenant_id=tenant_id, action_id=action.id)
     return {
         "id": action.id,
         "tenant_id": action.tenant_id,
@@ -1164,6 +1672,8 @@ async def action_view(db: AsyncSession, *, tenant_id: int, action_id: str) -> di
         "maintenance_window_id": action.maintenance_window_id,
         "change_context": action.change_context or {},
         "status": action.status,
+        "execution_attempt_id": action.execution_attempt_id,
+        "rollback_attempt_id": action.rollback_attempt_id,
         "progress_percent": action.progress_percent,
         "progress_message": action.progress_message,
         "requested_at": action.requested_at,
@@ -1187,6 +1697,7 @@ async def action_view(db: AsyncSession, *, tenant_id: int, action_id: str) -> di
         ],
         "history": [_event_dict(event) for event in event_result.scalars().all()],
         "evidence": [_evidence_dict(item) for item in evidence_result.scalars().all()],
+        "attempts": [_attempt_dict(item) for item in attempts],
     }
 
 
