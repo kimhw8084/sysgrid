@@ -1,0 +1,68 @@
+{
+  "accepted_at": "2026-09-15T19:45:48Z",
+  "changed_files": [],
+  "checks": [],
+  "codex": {
+    "cli_version": null,
+    "configured_model": "gpt-5.6-luna",
+    "event_count": null,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": null,
+    "usage": {},
+    "warnings": []
+  },
+  "commits": [],
+  "diff": null,
+  "error_code": "POLICY_DRIFT",
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2",
+  "fabric_capture": null,
+  "fabric_release": "1.2.2",
+  "failure_class": "CONTROL_PLANE",
+  "finished_at": "2026-09-15T19:58:20Z",
+  "git": {},
+  "instructions": null,
+  "job_id": "CF-20758a4920c4b36038569431",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2",
+    "policy_sha256": "3778fba0755dd2f6b00268f73b7a589f93317203cc0603df2feff4e6d9c759f6",
+    "registry_sha256": "ac9bd8dedb364d22fc9c0fc6a50334cbf5b7f53a5a0602aa17553d680a87690e"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": false
+  },
+  "request": "sysgrid-product-ux-shell-foundation-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-15T19:58:20Z",
+  "status": "FAILED_INFRA",
+  "timing": {
+    "execution_seconds": 0,
+    "queue_seconds": 752,
+    "total_seconds": 752
+  },
+  "transport": {
+    "bytes": 12506,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 12177,
+    "prompt_sha256": "fc24b046f1171a5cea6ec2a76d7bef541ed8c3e8c29a30d5b0bd633dbb299245",
+    "sha256": "20758a4920c4b360385694312146609aa17e757169d6024757351221556313a1"
+  }
+}
