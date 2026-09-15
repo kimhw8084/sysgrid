@@ -252,7 +252,6 @@ class MonitoringHistoryResponse(BaseSchema):
 
 class ServiceSecretBase(BaseModel):
     username: Optional[str] = None
-    password: Optional[str] = None
     note: Optional[str] = None
 
 class ServiceSecretCreate(ServiceSecretBase):
@@ -260,6 +259,7 @@ class ServiceSecretCreate(ServiceSecretBase):
 
 class ServiceSecretResponse(ServiceSecretBase, BaseSchema):
     service_id: int
+    has_password: bool = False
 
 class LogicalServiceBase(BaseModel):
     device_id: Optional[int] = None

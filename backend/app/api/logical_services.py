@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from typing import List, Optional
 from ..database import get_db
 from ..models import models
+from .authorization import require_capability
 from .utils import build_audit_log, filter_valid_columns, normalize_json_list, normalize_json_object, parse_iso_date
 from .operational_bulk import (
     build_operational_bulk_summary,
@@ -34,7 +35,9 @@ def serialize_service_secret(secret: models.ServiceSecret, *, include_secret_val
         "id": secret.id,
         "service_id": secret.service_id,
         "username": secret.username,
-        "password": secret.password if include_secret_values else None,
+        # ``include_secret_values`` is retained for request compatibility, but
+        # legacy reusable credentials are never serialized by this API.
+        "password": None,
         "has_password": bool(secret.password),
         "note": secret.note,
     }
@@ -177,7 +180,22 @@ async def get_services_summary(
     return await get_services(device_id=device_id, include_deleted=include_deleted, projection="summary", db=db)
 
 @router.post("/{service_id}/secrets")
-async def add_service_secret(service_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def add_service_secret(
+    service_id: int,
+    data: dict,
+    request: Request,
+    _secret_admin: models.Operator = Depends(require_capability("secrets", 3)),
+    db: AsyncSession = Depends(get_db),
+):
+    if "password" in data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Reusable secret material cannot be accepted as plaintext. "
+                "Use the approved future secret-provider boundary."
+            ),
+        )
+
     svc_res = await db.execute(select(models.LogicalService).filter(models.LogicalService.id == service_id))
     svc = svc_res.scalar_one_or_none()
     if not svc: raise HTTPException(404, "Service not found")
@@ -185,7 +203,6 @@ async def add_service_secret(service_id: int, data: dict, request: Request, db: 
     secret = models.ServiceSecret(
         service_id=service_id,
         username=data.get("username"),
-        password=data.get("password"),
         note=data.get("note")
     )
     db.add(secret)
@@ -199,10 +216,16 @@ async def add_service_secret(service_id: int, data: dict, request: Request, db: 
     ))
     await db.commit()
     await db.refresh(secret)
-    return secret
+    return serialize_service_secret(secret)
 
 @router.delete("/{service_id}/secrets/{secret_id}")
-async def delete_service_secret(service_id: int, secret_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_service_secret(
+    service_id: int,
+    secret_id: int,
+    request: Request,
+    _secret_admin: models.Operator = Depends(require_capability("secrets", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     res = await db.execute(select(models.ServiceSecret).filter(
         models.ServiceSecret.id == secret_id,
         models.ServiceSecret.service_id == service_id

@@ -99,6 +99,9 @@ os.environ["ENVIRONMENT"] = "test"
 os.environ["CONFIG_DATABASE_URL"] = f"sqlite+aiosqlite:///{_TEST_CONFIG_PATH}"
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_TEST_DATABASE_PATH}"
 os.environ["TENANT_STORAGE_ROOT"] = str(_TEST_TENANT_ROOT)
+# Test-only explicit control-plane identity. Production configuration is
+# required to provide its own deployment-specific allow-list.
+os.environ["CONTROL_PLANE_ADMIN_USER_IDS"] = "admin_root"
 
 import pytest_asyncio
 import pytest

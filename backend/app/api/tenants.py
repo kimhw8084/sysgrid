@@ -9,6 +9,7 @@ from ..database import get_config_db, get_db, ConfigSessionLocal, get_tenant_eng
 from ..models.config import Tenant, UserTenantAccess, MasterSystemSetting
 from ..schemas.config import TenantCreate, TenantResponse, MasterSettingBase, UserTenantSelection, UserTenantResponse, TenantAttach, PreflightRequest, PreflightResponse
 from ..core.config import settings
+from .authorization import require_control_plane_admin
 from .utils import get_current_user_id
 
 router = APIRouter(prefix="/tenants", tags=["Multi-Tenancy"])
@@ -137,12 +138,19 @@ def serialize_tenant_response(
     })
 
 @router.get("/admin/settings", response_model=List[MasterSettingBase])
-async def get_master_settings(db: AsyncSession = Depends(get_config_db)):
+async def get_master_settings(
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+    db: AsyncSession = Depends(get_config_db),
+):
     result = await db.execute(select(MasterSystemSetting))
     return result.scalars().all()
 
 @router.post("/admin/settings", response_model=MasterSettingBase)
-async def update_master_setting(setting: MasterSettingBase, db: AsyncSession = Depends(get_config_db)):
+async def update_master_setting(
+    setting: MasterSettingBase,
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+    db: AsyncSession = Depends(get_config_db),
+):
     # Verify path if key is tenant_storage_root
     if setting.key == "tenant_storage_root":
         if not os.path.exists(setting.value):
@@ -177,7 +185,12 @@ async def update_master_setting(setting: MasterSettingBase, db: AsyncSession = D
     return result.scalar_one()
 
 @router.get("/admin/storage-explorer")
-async def browse_storage_locations(path: Optional[str] = Query(default=None), db: AsyncSession = Depends(get_config_db), request: Request = None):
+async def browse_storage_locations(
+    path: Optional[str] = Query(default=None),
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+    db: AsyncSession = Depends(get_config_db),
+    request: Request = None,
+):
     # Fetch current storage root from DB to ensure it's always considered a root
     res = await db.execute(select(MasterSystemSetting).filter(MasterSystemSetting.key == "tenant_storage_root"))
     db_root_setting = res.scalar_one_or_none()
@@ -247,7 +260,11 @@ async def browse_storage_locations(path: Optional[str] = Query(default=None), db
     }
 
 @router.post("/admin/backup/{tenant_id}")
-async def backup_tenant(tenant_id: int, db: AsyncSession = Depends(get_config_db)):
+async def backup_tenant(
+    tenant_id: int,
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+    db: AsyncSession = Depends(get_config_db),
+):
     """Triggers a manual backup of the tenant database."""
     res = await db.execute(select(Tenant).filter(Tenant.id == tenant_id))
     tenant = res.scalar_one_or_none()
@@ -293,7 +310,10 @@ async def backup_tenant(tenant_id: int, db: AsyncSession = Depends(get_config_db
             raise HTTPException(500, detail=f"Backup failed: {str(e)} | Fallback failed: {str(copy_err)}")
 
 @router.get("/admin/all", response_model=List[TenantResponse])
-async def list_all_tenants(db: AsyncSession = Depends(get_config_db)):
+async def list_all_tenants(
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+    db: AsyncSession = Depends(get_config_db),
+):
     result = await db.execute(select(Tenant))
     tenants = result.scalars().all()
     
@@ -426,7 +446,12 @@ async def ensure_tenant_runtime_schema(db_url: str) -> None:
         await conn.execute(text("UPDATE rca_records SET version = 1 WHERE version IS NULL"))
 
 @router.post("/admin/create", response_model=TenantResponse)
-async def create_tenant(tenant_in: TenantCreate, db: AsyncSession = Depends(get_config_db), request: Request = None):
+async def create_tenant(
+    tenant_in: TenantCreate,
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+    db: AsyncSession = Depends(get_config_db),
+    request: Request = None,
+):
     # 1. Get storage root
     res = await db.execute(select(MasterSystemSetting).filter(MasterSystemSetting.key == "tenant_storage_root"))
     storage_root_setting = res.scalar_one_or_none()
@@ -497,7 +522,10 @@ async def create_tenant(tenant_in: TenantCreate, db: AsyncSession = Depends(get_
     return serialize_tenant_response(new_tenant, is_online=await tenant_online_status(new_tenant.db_url))
 
 @router.post("/admin/preflight", response_model=PreflightResponse)
-async def preflight_check(req: PreflightRequest):
+async def preflight_check(
+    req: PreflightRequest,
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+):
     """
     Checks if a database file exists and validates its schema compatibility.
     """
@@ -562,7 +590,12 @@ async def preflight_check(req: PreflightRequest):
         }
 
 @router.post("/admin/attach", response_model=TenantResponse)
-async def attach_tenant(tenant_in: TenantAttach, db: AsyncSession = Depends(get_config_db), request: Request = None):
+async def attach_tenant(
+    tenant_in: TenantAttach,
+    _control_plane_admin: str = Depends(require_control_plane_admin),
+    db: AsyncSession = Depends(get_config_db),
+    request: Request = None,
+):
     """
     Links an existing database file on disk to the registry.
     """
