@@ -457,6 +457,27 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
                 changed_ids.append(record_id)
     else:  # purge
         changed_ids.extend(matched_ids)
+        # Normalized traceability is historical record, so a hard purge is
+        # blocked even when the link itself is retired. Soft delete remains
+        # the lifecycle operation for an asset with traceability history.
+        from ..architecture.models import ArchitectureDeviceLink
+        from ..pv1.models import PV1TraceabilityLink
+        architecture_link_ids = set((await db.execute(
+            select(ArchitectureDeviceLink.device_id).where(
+                ArchitectureDeviceLink.tenant_id == tenant_id,
+                ArchitectureDeviceLink.device_id.in_(matched_ids),
+            )
+        )).scalars().all())
+        work_link_ids = set((await db.execute(
+            select(PV1TraceabilityLink.device_id).where(
+                PV1TraceabilityLink.tenant_id == tenant_id,
+                PV1TraceabilityLink.device_id.in_(matched_ids),
+            )
+        )).scalars().all())
+        protected_ids = architecture_link_ids | work_link_ids
+        if protected_ids:
+            blockers.extend({"id": record_id, "name": by_id[record_id].name, "reason": "Hard purge would destroy normalized traceability history"} for record_id in matched_ids if record_id in protected_ids)
+            changed_ids = [record_id for record_id in changed_ids if record_id not in protected_ids]
 
     summary = build_operational_bulk_summary(
         action=action,

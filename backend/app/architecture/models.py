@@ -184,6 +184,49 @@ class ArchitectureAssociation(Base, ArchitectureTimestampMixin):
     revision = Column(Integer, nullable=False, default=1)
 
 
+class ArchitectureDeviceLink(Base, ArchitectureTimestampMixin):
+    """Normalized tenant-scoped link between an operational Device and v2 object."""
+
+    __tablename__ = "pv1_architecture_device_links"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "device_id", "architecture_object_id", name="uq_pv1_arch_device_link_target"),
+        Index("ix_pv1_arch_device_links_device", "tenant_id", "device_id", "lifecycle"),
+        Index("ix_pv1_arch_device_links_object", "tenant_id", "architecture_object_id", "lifecycle"),
+        CheckConstraint("revision >= 1", name="pv1_arch_device_link_revision_positive"),
+        CheckConstraint("lifecycle IN ('Active', 'Retired')", name="pv1_arch_device_link_lifecycle"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="RESTRICT"), nullable=False)
+    architecture_object_id = Column(String(80), ForeignKey("pv1_architecture_objects.id", ondelete="RESTRICT"), nullable=False)
+    relationship_type = Column(String(40), nullable=False, default="Represents")
+    lifecycle = Column(String(24), nullable=False, default="Active")
+    retired_at = Column(DateTime(timezone=True), nullable=True)
+    revision = Column(Integer, nullable=False, default=1)
+
+
+class PV1TraceabilityBackfillIssue(Base):
+    """Durable record of legacy association selections not safely normalizable."""
+
+    __tablename__ = "pv1_traceability_backfill_issues"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "association_id", "source_field", "source_value", name="uq_pv1_traceability_backfill_issue"),
+        Index("ix_pv1_traceability_backfill_issues_tenant", "tenant_id", "association_id"),
+    )
+
+    id = Column(String(80), primary_key=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    association_id = Column(String(80), ForeignKey("pv1_project_architecture_associations.id", ondelete="SET NULL"), nullable=True)
+    project_id = Column(String(80), nullable=True)
+    model_id = Column(String(80), nullable=True)
+    source_field = Column(String(32), nullable=False)
+    source_value = Column(String(160), nullable=False)
+    reason = Column(Text, nullable=False)
+    source_snapshot = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class ArchitectureAssessment(Base, ArchitectureTimestampMixin):
     __tablename__ = "pv1_project_architecture_assessments"
     __table_args__ = (

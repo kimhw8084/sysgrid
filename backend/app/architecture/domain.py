@@ -358,7 +358,8 @@ async def model_projection(session: AsyncSession, *, tenant_id: int, model_id: s
     if mode == "impact" and project_id:
         association_result = await session.execute(select(models.ArchitectureAssociation).where(models.ArchitectureAssociation.tenant_id == tenant_id, models.ArchitectureAssociation.project_id == project_id, models.ArchitectureAssociation.model_id == model_id))
         association = association_result.scalar_one_or_none()
-        selected = set((association.object_ids if association else []) or [])
+        from . import traceability
+        selected = set(await traceability.project_architecture_object_ids(session, tenant_id=tenant_id, project_id=project_id, model_id=model_id))
         selected_relations = set((association.relation_ids if association else []) or [])
         for relation in relation_items:
             if relation["source_id"] in selected or relation["target_id"] in selected:
@@ -689,13 +690,15 @@ async def associate_project(session: AsyncSession, *, tenant_id: int, actor_id: 
     association.changeset_id = payload.get("changeset_id")
     association.revision += 1
     association.updated_by = actor_id
+    from . import traceability
+    await traceability.sync_project_association_links(session, tenant_id=tenant_id, project_id=project_id, model_id=model_id, object_ids=object_ids, actor_id=actor_id)
     project = await pv1_domain.get_pv1_project(session, tenant_id, project_id)
     if project:
         project.revision += 1
         project.updated_by = actor_id
         await pv1_domain.append_event(session, tenant_id=tenant_id, project_id=project_id, actor_id=actor_id, command_id=command_id, event_type="architecture.associated", aggregate_type="project", aggregate_id=project_id, aggregate_revision=project.revision, delta={"model_id": model_id, "object_ids": object_ids, "relation_ids": relation_ids})
     await session.flush()
-    return {"status": "applied", "association": {"id": association.id, "project_id": project_id, "model_id": model_id, "diagram_id": association.diagram_id, "object_ids": object_ids, "relation_ids": relation_ids, "impact_tags": impact_tags, "changeset_id": association.changeset_id, "revision": association.revision}}
+    return {"status": "applied", "association": {"id": association.id, "project_id": project_id, "model_id": model_id, "diagram_id": association.diagram_id, "object_ids": object_ids, "relation_ids": relation_ids, "impact_tags": impact_tags, "changeset_id": association.changeset_id, "revision": association.revision, "legacy_projection": {"object_ids": association.object_ids or [], "relation_ids": association.relation_ids or []}}}
 
 
 async def project_architecture(session: AsyncSession, *, tenant_id: int, actor_id: str, request_role: str | None, project_id: str, mode: str = "impact", change_set_id: str | None = None) -> dict[str, Any]:
@@ -705,7 +708,9 @@ async def project_architecture(session: AsyncSession, *, tenant_id: int, actor_i
     projections = []
     for association in associations:
         projection = await model_projection(session, tenant_id=tenant_id, model_id=association.model_id, actor_id=actor_id, request_role=request_role, mode=mode, change_set_id=change_set_id, project_id=project_id)
-        projection["association"] = {"id": association.id, "model_id": association.model_id, "diagram_id": association.diagram_id, "object_ids": association.object_ids or [], "relation_ids": association.relation_ids or [], "impact_tags": association.impact_tags or [], "changeset_id": association.changeset_id, "revision": association.revision}
+        from . import traceability
+        normalized_object_ids = await traceability.project_architecture_object_ids(session, tenant_id=tenant_id, project_id=project_id, model_id=association.model_id)
+        projection["association"] = {"id": association.id, "model_id": association.model_id, "diagram_id": association.diagram_id, "object_ids": normalized_object_ids, "relation_ids": association.relation_ids or [], "impact_tags": association.impact_tags or [], "changeset_id": association.changeset_id, "revision": association.revision, "legacy_projection": {"object_ids": association.object_ids or [], "relation_ids": association.relation_ids or []}}
         projections.append(projection)
     return {"project_id": project_id, "mode": mode, "models": projections, "authority": "pv1_architecture", "source": "canonical-association"}
 
