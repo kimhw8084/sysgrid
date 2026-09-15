@@ -1,0 +1,363 @@
+{
+  "accepted_at": "2026-09-15T23:08:00Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"/usr/bin/git grep -n -i -E 'segfault|security clearance|neutral zone|neutral-zone|matrix|sector[- ]?01' 7e8283333ae6bb2e93aedcb93d664b581643581e -- frontend/src/App.tsx frontend/src/components/shared/ErrorConsole.tsx frontend/src/components/shared/ErrorSentinel.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/components/shared/LayoutPrimitives.tsx frontend/src/components/shared/ShellHeaderTools.tsx frontend/src/components/shared/ShellNavigation.tsx frontend/src/components/shared/ShellStates.tsx frontend/src/components/shared/TenantSelector.tsx frontend/src/index.css || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree list --porcelain'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /Users/haewonkim/.codex-fabric/worktrees/CF-b485e445162cf106aaea42ee status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..HEAD; rtk git diff --quiet'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"/bin/zsh -o pipefail -c 'rtk rg -n -i \\\"openai|chatgpt|opencode|llm|agent loop|model cli|generated prompt|autonomous\\\" /tmp/sysgrid-chg43-verify.yl5SGF/evidence -g \\\"*.log\\\" 2>&1 | tee /tmp/sysgrid-chg43-verify.yl5SGF/evidence/15-forbidden-command-scan.log'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"/bin/zsh -o pipefail -c 'rtk rg --pcre2 -n -i \\\"\\\\b(openai|chatgpt|opencode|llm|agent|model cli|generated prompt|autonomous)\\\\b\\\" /tmp/sysgrid-chg43-verify.yl5SGF/evidence -g \\\"*.log\\\" 2>&1 | tee /tmp/sysgrid-chg43-verify.yl5SGF/evidence/15-forbidden-command-scan.log'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"/bin/zsh -o pipefail -c 'rtk rg --pcre2 -n -i \\\"\\\\b(openai|chatgpt|opencode|llm|agent loop|coding agent|ai agent|model cli|generated prompt|autonomous)\\\\b\\\" /tmp/sysgrid-chg43-verify.yl5SGF/evidence -g \\\"*.log\\\" 2>&1 | tee /tmp/sysgrid-chg43-verify.yl5SGF/evidence/15-forbidden-command-scan.log'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -lh /tmp/sysgrid-chg43-verify.yl5SGF/evidence'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,100p' evidence/13-settings-browser.log\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' evidence/12-shell-search-browser.log\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"/usr/bin/git diff --name-status 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e | /usr/bin/awk -F '\\\\t' '{print \"'$2}'\"' | /usr/bin/rg -n '(\"'^|/)(backend|migrations|package|package-lock|'\"\\\\.github/|pv1|p06|p12)' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'GOLDEN_PAGE_TOOLBAR_CLASS|locks the accepted frame' frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba frontend/src/App.tsx | rtk sed -n '332,342p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"/bin/zsh -o pipefail -c '/usr/bin/git status --short --branch; /usr/bin/git rev-parse HEAD; /usr/bin/git rev-parse HEAD\"'^{tree}; /usr/bin/git rev-parse HEAD''^; /usr/bin/git diff --quiet; /usr/bin/git diff --name-only 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e | while IFS= read -r p; do /bin/printf \"%s \" \"$p\"; /usr/bin/git hash-object \"$p\"; done; /usr/bin/git ls-remote origin refs/heads/main refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2'\"' 2>&1 | tee /tmp/sysgrid-chg43-verify.yl5SGF/evidence/16-final-identity-and-file-hashes.log'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/bin/zsh -o pipefail -c \"/usr/bin/git status --short --branch; /usr/bin/git rev-parse HEAD; /usr/bin/git rev-parse HEAD''^{tree}; /usr/bin/git rev-parse HEAD''^; /usr/bin/git diff --quiet; /usr/bin/git ls-remote origin refs/heads/main refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2\" 2>&1 | tee /tmp/sysgrid-chg43-verify.yl5SGF/evidence/16-final-identity.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import { readdir, readFile, writeFile } from \\\"node:fs/promises\\\"; import { createHash } from \\\"node:crypto\\\"; import { join } from \\\"node:path\\\"; const root=\\\"/tmp/sysgrid-chg43-verify.yl5SGF\\\"; const m={\\\"schema_version\\\":\\\"sysgrid.verify.v1\\\",\\\"request\\\":\\\"CHG-43\\\",\\\"verify_request\\\":\\\"sysgrid-product-ux-shell-foundation-v2\\\",\\\"operation\\\":\\\"VERIFY\\\",\\\"conclusion\\\":\\\"VERIFY_FAIL_FIX_REQUIRED\\\",\\\"scope\\\":\\\"Bounded no-source-change independent verification of the exact predecessor candidate\\\",\\\"target\\\":{\\\"branch\\\":\\\"main\\\",\\\"commit\\\":\\\"9359fec3dfa2cc8a011bf56448f2c6419e7aa462\\\",\\\"tree\\\":\\\"ee4c471ded3f05dbb4c79e3fc9d7f449e95b3f1f\\\"},\\\"candidate\\\":{\\\"remote_branch\\\":\\\"build/sysgrid-product-ux-shell-foundation-v2\\\",\\\"commit\\\":\\\"7e8283333ae6bb2e93aedcb93d664b581643581e\\\",\\\"tree\\\":\\\"4b85a9b8ad0a85bc89aeb8bd0b819ec413fec29e\\\",\\\"sole_parent\\\":\\\"9359fec3dfa2cc8a011bf56448f2c6419e7aa462\\\",\\\"commit_count_ahead_of_base\\\":1,\\\"remote_head_exact\\\":true,\\\"detached_worktree\\\":\\\"/tmp/sysgrid-chg43-verify.yl5SGF\\\",\\\"status_before\\\":\\\"clean\\\",\\\"status_after\\\":\\\"clean\\\",\\\"source_unchanged_after_checks\\\":true},\\\"predecessor_build_evidence\\\":{\\\"commit\\\":\\\"f1a2759e40a0e69c21791f25be47e4b9d50177a4\\\",\\\"remote_ref\\\":\\\"refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2\\\",\\\"build_request\\\":\\\"sysgrid-product-ux-shell-foundation-v2\\\",\\\"fabric_job\\\":\\\"CF-3a59757985a8c4dee1df0303\\\",\\\"binding_verified_from_audit_json\\\":true},\\\"source_delta\\\":{\\\"changed_file_count\\\":15,\\\"changed_files\\\":[\\\"frontend/src/App.tsx\\\",\\\"frontend/src/components/Settings.tsx\\\",\\\"frontend/src/components/shared/ErrorConsole.tsx\\\",\\\"frontend/src/components/shared/ErrorSentinel.tsx\\\",\\\"frontend/src/components/shared/GlobalSearch.tsx\\\",\\\"frontend/src/components/shared/LayoutPrimitives.tsx\\\",\\\"frontend/src/components/shared/ShellHeaderTools.tsx\\\",\\\"frontend/src/components/shared/ShellNavigation.test.tsx\\\",\\\"frontend/src/components/shared/ShellNavigation.tsx\\\",\\\"frontend/src/components/shared/ShellStates.test.tsx\\\",\\\"frontend/src/components/shared/ShellStates.tsx\\\",\\\"frontend/src/components/shared/TenantSelector.tsx\\\",\\\"frontend/src/components/shared/theme.test.ts\\\",\\\"frontend/src/components/shared/theme.ts\\\",\\\"frontend/src/index.css\\\"],\\\"stat\\\":\\\"15 files changed, 806 insertions(+), 377 deletions(-)\\\",\\\"backend_domain_pv1_p06_p12_changes\\\":false,\\\"package_or_lockfile_changes\\\":false,\\\"later_cornerstone_absorption\\\":false},\\\"source_review\\\":{\\\"routes_and_aliases\\\":\\\"PASS by source inspection: canonical routes plus /asset-real, /network-real, /vendors-real aliases are wired; nested active matching uses segment boundary and focused tests pass\\\",\\\"shell_wiring\\\":\\\"PASS by source inspection: shell header, navigation, global search, tenant selector, status, settings, and error console hooks are wired\\\",\\\"accessible_navigation\\\":\\\"PASS by focused suite: collapsed names, aria-current, group aria-expanded, and keyboard reachability\\\",\\\"states_language\\\":\\\"PASS for changed shell/shared files: factual FatalErrorState and PermissionDeniedState; no shell-level fake segfault, clearance, neutral-zone, or matrix roleplay strings\\\",\\\"broad_touched_file_note\\\":\\\"Pre-existing Sector-01 literal remains in Settings.tsx:1408 as operator department seed; Settings.tsx changed only by normalizeTheme extraction and this is outside shell state presentation\\\",\\\"themes\\\":\\\"PASS by focused suite: nordic-frost-v1 and pure-clarity plus legacy dark/light aliases\\\",\\\"focus_and_motion\\\":\\\"Focus-visible CSS and reduced-motion rules are present; modal/search restoration review found GlobalSearch and the two new App modals restore prior focus; ErrorConsole has no candidate-caused focus change\\\",\\\"route_focus_finding\\\":{\\\"status\\\":\\\"FAIL\\\",\\\"location\\\":\\\"frontend/src/App.tsx:336-338\\\",\\\"behavior\\\":\\\"MainLayout calls mainContentRef.current.focus on every location.pathname or location.search change\\\",\\\"impact\\\":\\\"Query-only navigation can steal focus from an active input or button during same-route search/deep-link workflows\\\",\\\"evidence\\\":\\\"Source-proven candidate behavior; Projects and shared operational code consume query parameters and perform same-route query navigation\\\",\\\"repair\\\":\\\"Do not repair during VERIFY; bind a separate FIX\\\"}},\\\"checks\\\":[{\\\"name\\\":\\\"candidate dependency installation\\\",\\\"command\\\":\\\"npm ci\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/01-npm-ci.log\\\"},{\\\"name\\\":\\\"operational contracts\\\",\\\"command\\\":\\\"npm run check:operational-contracts\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/02-operational-contracts.log\\\"},{\\\"name\\\":\\\"typecheck\\\",\\\"command\\\":\\\"npm run typecheck\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/03-typecheck.log\\\"},{\\\"name\\\":\\\"focused shell suite\\\",\\\"command\\\":\\\"npm run test:unit -- src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS: 4 files, 7 tests\\\",\\\"log\\\":\\\"evidence/04-focused-shell.log\\\"},{\\\"name\\\":\\\"full unit suite candidate\\\",\\\"command\\\":\\\"npm run test:unit\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"FAIL: 6 files, 16 failed, 663 passed, 679 total\\\",\\\"log\\\":\\\"evidence/05-test-unit-full.log\\\"},{\\\"name\\\":\\\"base dependency installation\\\",\\\"command\\\":\\\"npm ci\\\",\\\"cwd\\\":\\\"base/frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/06-base-npm-ci.log\\\"},{\\\"name\\\":\\\"base disputed unit comparison\\\",\\\"command\\\":\\\"npm run test:unit -- src/api/apiClient.test.ts src/components/shared/FARGoldenStructuralContract.test.ts src/components/shared/OperationalBulkContract.test.ts src/components/shared/FARResearchGoldenPresentationContract.test.ts src/components/shared/GoldenWorkspaceGeometryContract.test.ts src/components/shared/FARLifecycleBackendContract.test.ts\\\",\\\"cwd\\\":\\\"base/frontend\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"FAIL: 5 files, 15 failed, 46 passed, 61 total; geometry contract file passed\\\",\\\"log\\\":\\\"evidence/07-base-disputed-unit-files.log\\\"},{\\\"name\\\":\\\"candidate geometry diagnostic\\\",\\\"command\\\":\\\"npm run test:unit -- src/components/shared/GoldenWorkspaceGeometryContract.test.ts\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"FAIL: 1 file, 1 failed, 8 passed, 9 total\\\",\\\"log\\\":\\\"evidence/08-candidate-geometry-diagnostic.log\\\"},{\\\"name\\\":\\\"production build\\\",\\\"command\\\":\\\"npm run build\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS: 4346 modules transformed\\\",\\\"log\\\":\\\"evidence/09-build.log\\\"},{\\\"name\\\":\\\"direct committed delta whitespace check\\\",\\\"command\\\":\\\"/usr/bin/git diff --check 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e\\\",\\\"cwd\\\":\\\"candidate repository\\\",\\\"exit_code\\\":2,\\\"result\\\":\\\"FAIL: trailing whitespace at frontend/src/components/shared/LayoutPrimitives.tsx:184\\\",\\\"log\\\":\\\"evidence/10-direct-diff-check.log\\\"},{\\\"name\\\":\\\"forbidden terminal-side AI or agent scan\\\",\\\"command\\\":\\\"rg --pcre2 -n -i '\\\\\\\\b(openai|chatgpt|opencode|llm|agent loop|coding agent|ai agent|model cli|generated prompt|autonomous)\\\\\\\\b' evidence -g '*.log'\\\",\\\"cwd\\\":\\\"verification workspace\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"PASS: no forbidden execution token matches\\\",\\\"log\\\":\\\"evidence/15-forbidden-command-scan.log\\\"},{\\\"name\\\":\\\"final identity and cleanliness\\\",\\\"command\\\":\\\"git status --short --branch; git rev-parse HEAD; git rev-parse HEAD\"'^{tree}; git rev-parse HEAD''^; git diff --quiet; git ls-remote origin refs/heads/main refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2\",\"cwd\":\"candidate repository\",\"exit_code\":0,\"result\":\"PASS: exact candidate/base/evidence refs and clean source\",\"log\":\"evidence/16-final-identity.log\"}],\"full_unit_classification\":{\"candidate_red_files\":[\"src/api/apiClient.test.ts\",\"src/components/shared/FARGoldenStructuralContract.test.ts\",\"src/components/shared/OperationalBulkContract.test.ts\",\"src/components/shared/FARResearchGoldenPresentationContract.test.ts\",\"src/components/shared/GoldenWorkspaceGeometryContract.test.ts\",\"src/components/shared/FARLifecycleBackendContract.test.ts\"],\"base_reproduced_outside_delta\":[\"src/api/apiClient.test.ts: 8 failures, TypeError at apiClient.ts:302:48 reading response.headers.get\",\"src/components/shared/FARGoldenStructuralContract.test.ts: 3 stale structural assertions\",\"src/components/shared/OperationalBulkContract.test.ts: 1 stale structural assertion\",\"src/components/shared/FARResearchGoldenPresentationContract.test.ts: 2 stale structural assertions\",\"src/components/shared/FARLifecycleBackendContract.test.ts: 1 stale backend structural assertion\"],\"candidate_only_changed_surface\":{\"file\":\"src/components/shared/GoldenWorkspaceGeometryContract.test.ts\",\"test\":\"locks the accepted frame, toolbar, and grid geometry in shared owners\",\"candidate_failure\":\"expected old literal border-white/5 bg-black/20 GOLDEN_PAGE_TOOLBAR_CLASS; candidate contains semantic-token border and surface classes\",\"base_result\":\"8 passed, 0 failed\",\"classification\":\"candidate acceptance defect in changed shared shell contract surface\"}},\"findings\":[{\"id\":\"CHG43-FIX-001\",\"severity\":\"high\",\"category\":\"keyboard focus\",\"location\":\"frontend/src/App.tsx:336-338\",\"reproducer\":\"On any route, focus an active control that updates only URL search parameters, then trigger the query update\",\"observed\":\"MainLayout effect runs on location.search change and moves focus to #sg-main-content\",\"evidence\":\"Source inspection; browser runtime was blocked by missing API service\",\"classification\":\"candidate-caused defect; separate FIX required\"},{\"id\":\"CHG43-FIX-002\",\"severity\":\"medium\",\"category\":\"unit acceptance contract\",\"location\":\"frontend/src/components/shared/LayoutPrimitives.tsx:8 and frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts:32\",\"reproducer\":\"Run the candidate-only geometry contract test\",\"observed\":\"The test fails on the candidate and passes on exact base because the shared toolbar class literal changed\",\"evidence\":\"candidate diagnostic exit 1; base comparison shows geometry contract passes\",\"classification\":\"candidate-caused changed-shell acceptance defect; separate FIX required\"},{\"id\":\"CHG43-FIX-003\",\"severity\":\"low\",\"category\":\"committed whitespace\",\"location\":\"frontend/src/components/shared/LayoutPrimitives.tsx:184\",\"reproducer\":\"Run the required direct git diff check\",\"observed\":\"Trailing whitespace in added line `}>(({ `\",\"evidence\":\"direct diff check exit 2\",\"classification\":\"candidate-caused defect; separate FIX required\"}],\"browser\":{\"projects_navigation\":{\"command\":\"npx playwright test tests/projects-navigation.spec.ts --config=playwright.projects-golden.config.ts --reporter=line\",\"exit_code\":0,\"result\":\"PASS (7) FAIL (0)\",\"log\":\"evidence/11-projects-navigation-browser.log\"},\"shell_search\":{\"command\":\"npx playwright test tests/shell-and-search.spec.ts --config=playwright.projects-golden.config.ts --reporter=line\",\"exit_code\":1,\"result\":\"FAIL (5); not classified as product failure\",\"blocker\":\"Existing fixture starts Vite on 43177 but no API/backend service is listening on 127.0.0.1:8000; seed request fails with ECONNREFUSED, and app route assertions do not render\",\"log\":\"evidence/12-shell-search-browser.log\"},\"settings\":{\"command\":\"npx playwright test tests/settings-and-audit.spec.ts --grep '\"\\\\\\\"persists theme and loads major settings sections\\\\\\\" --config=playwright.projects-golden.config.ts --reporter=line\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"FAIL (1); not classified as product failure\\\",\\\"blocker\\\":\\\"Same bounded repository fixture blocker: no backend on 127.0.0.1:8000, settings route cannot render Infrastructure Domain\\\",\\\"log\\\":\\\"evidence/13-settings-browser.log\\\"},\\\"configured_runtime\\\":{\\\"web_server\\\":\\\"npm run dev -- --host 127.0.0.1 --port 43177 --strictPort\\\",\\\"web_server_config\\\":\\\"frontend/playwright.projects-golden.config.ts\\\",\\\"api_listener_check\\\":\\\"lsof -nP -iTCP:8000 -sTCP:LISTEN returned no listener\\\"}},\\\"artifacts\\\":[]}; const dir=join(root,\\\"evidence\\\"); const names=(await readdir(dir)).filter((name)=>name.endsWith(\\\".log\\\")).sort(); m.artifacts=[]; for (const name of names) { const bytes=await readFile(join(dir,name)); m.artifacts.push({path:\\\"evidence/\\\"+name, bytes:bytes.byteLength, sha256:createHash(\\\"sha256\\\").update(bytes).digest(\\\"hex\\\")}); } const files=m.source_delta.changed_files; m.source_delta.target_file_hashes=[]; for (const file of files) { const bytes=await readFile(join(root,file)); m.source_delta.target_file_hashes.push({path:file,sha256:createHash(\\\"sha256\\\").update(bytes).digest(\\\"hex\\\")}); } await writeFile(join(dir,\\\"VERIFY_MANIFEST.json\\\"),JSON.stringify(m,null,2)+\\\"\\\\n\\\");'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import { readdir, readFile, writeFile } from \\\"node:fs/promises\\\"; import { createHash } from \\\"node:crypto\\\"; import { join } from \\\"node:path\\\"; const root=\\\"/tmp/sysgrid-chg43-verify.yl5SGF\\\"; const m={\\\"schema_version\\\":\\\"sysgrid.verify.v1\\\",\\\"request\\\":\\\"CHG-43\\\",\\\"verify_request\\\":\\\"sysgrid-product-ux-shell-foundation-v2\\\",\\\"operation\\\":\\\"VERIFY\\\",\\\"conclusion\\\":\\\"VERIFY_FAIL_FIX_REQUIRED\\\",\\\"scope\\\":\\\"Bounded no-source-change independent verification of the exact predecessor candidate\\\",\\\"target\\\":{\\\"branch\\\":\\\"main\\\",\\\"commit\\\":\\\"9359fec3dfa2cc8a011bf56448f2c6419e7aa462\\\",\\\"tree\\\":\\\"ee4c471ded3f05dbb4c79e3fc9d7f449e95b3f1f\\\"},\\\"candidate\\\":{\\\"remote_branch\\\":\\\"build/sysgrid-product-ux-shell-foundation-v2\\\",\\\"commit\\\":\\\"7e8283333ae6bb2e93aedcb93d664b581643581e\\\",\\\"tree\\\":\\\"4b85a9b8ad0a85bc89aeb8bd0b819ec413fec29e\\\",\\\"sole_parent\\\":\\\"9359fec3dfa2cc8a011bf56448f2c6419e7aa462\\\",\\\"commit_count_ahead_of_base\\\":1,\\\"remote_head_exact\\\":true,\\\"detached_worktree\\\":\\\"/tmp/sysgrid-chg43-verify.yl5SGF\\\",\\\"status_before\\\":\\\"clean\\\",\\\"status_after\\\":\\\"clean\\\",\\\"source_unchanged_after_checks\\\":true},\\\"predecessor_build_evidence\\\":{\\\"commit\\\":\\\"f1a2759e40a0e69c21791f25be47e4b9d50177a4\\\",\\\"remote_ref\\\":\\\"refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2\\\",\\\"build_request\\\":\\\"sysgrid-product-ux-shell-foundation-v2\\\",\\\"fabric_job\\\":\\\"CF-3a59757985a8c4dee1df0303\\\",\\\"binding_verified_from_audit_json\\\":true},\\\"source_delta\\\":{\\\"changed_file_count\\\":15,\\\"changed_files\\\":[\\\"frontend/src/App.tsx\\\",\\\"frontend/src/components/Settings.tsx\\\",\\\"frontend/src/components/shared/ErrorConsole.tsx\\\",\\\"frontend/src/components/shared/ErrorSentinel.tsx\\\",\\\"frontend/src/components/shared/GlobalSearch.tsx\\\",\\\"frontend/src/components/shared/LayoutPrimitives.tsx\\\",\\\"frontend/src/components/shared/ShellHeaderTools.tsx\\\",\\\"frontend/src/components/shared/ShellNavigation.test.tsx\\\",\\\"frontend/src/components/shared/ShellNavigation.tsx\\\",\\\"frontend/src/components/shared/ShellStates.test.tsx\\\",\\\"frontend/src/components/shared/ShellStates.tsx\\\",\\\"frontend/src/components/shared/TenantSelector.tsx\\\",\\\"frontend/src/components/shared/theme.test.ts\\\",\\\"frontend/src/components/shared/theme.ts\\\",\\\"frontend/src/index.css\\\"],\\\"stat\\\":\\\"15 files changed, 806 insertions(+), 377 deletions(-)\\\",\\\"backend_domain_pv1_p06_p12_changes\\\":false,\\\"package_or_lockfile_changes\\\":false,\\\"later_cornerstone_absorption\\\":false},\\\"source_review\\\":{\\\"routes_and_aliases\\\":\\\"PASS by source inspection: canonical routes plus /asset-real, /network-real, /vendors-real aliases are wired; nested active matching uses segment boundary and focused tests pass\\\",\\\"shell_wiring\\\":\\\"PASS by source inspection: shell header, navigation, global search, tenant selector, status, settings, and error console hooks are wired\\\",\\\"accessible_navigation\\\":\\\"PASS by focused suite: collapsed names, aria-current, group aria-expanded, and keyboard reachability\\\",\\\"states_language\\\":\\\"PASS for changed shell/shared files: factual FatalErrorState and PermissionDeniedState; no shell-level fake segfault, clearance, neutral-zone, or matrix roleplay strings\\\",\\\"broad_touched_file_note\\\":\\\"Pre-existing Sector-01 literal remains in Settings.tsx:1408 as operator department seed; Settings.tsx changed only by normalizeTheme extraction and this is outside shell state presentation\\\",\\\"themes\\\":\\\"PASS by focused suite: nordic-frost-v1 and pure-clarity plus legacy dark/light aliases\\\",\\\"focus_and_motion\\\":\\\"Focus-visible CSS and reduced-motion rules are present; modal/search restoration review found GlobalSearch and the two new App modals restore prior focus; ErrorConsole has no candidate-caused focus change\\\",\\\"route_focus_finding\\\":{\\\"status\\\":\\\"FAIL\\\",\\\"location\\\":\\\"frontend/src/App.tsx:336-338\\\",\\\"behavior\\\":\\\"MainLayout calls mainContentRef.current.focus on every location.pathname or location.search change\\\",\\\"impact\\\":\\\"Query-only navigation can steal focus from an active input or button during same-route search/deep-link workflows\\\",\\\"evidence\\\":\\\"Source-proven candidate behavior; Projects and shared operational code consume query parameters and perform same-route query navigation\\\",\\\"repair\\\":\\\"Do not repair during VERIFY; bind a separate FIX\\\"}},\\\"checks\\\":[{\\\"name\\\":\\\"candidate dependency installation\\\",\\\"command\\\":\\\"npm ci\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/01-npm-ci.log\\\"},{\\\"name\\\":\\\"operational contracts\\\",\\\"command\\\":\\\"npm run check:operational-contracts\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/02-operational-contracts.log\\\"},{\\\"name\\\":\\\"typecheck\\\",\\\"command\\\":\\\"npm run typecheck\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/03-typecheck.log\\\"},{\\\"name\\\":\\\"focused shell suite\\\",\\\"command\\\":\\\"npm run test:unit -- src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS: 4 files, 7 tests\\\",\\\"log\\\":\\\"evidence/04-focused-shell.log\\\"},{\\\"name\\\":\\\"full unit suite candidate\\\",\\\"command\\\":\\\"npm run test:unit\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"FAIL: 6 files, 16 failed, 663 passed, 679 total\\\",\\\"log\\\":\\\"evidence/05-test-unit-full.log\\\"},{\\\"name\\\":\\\"base dependency installation\\\",\\\"command\\\":\\\"npm ci\\\",\\\"cwd\\\":\\\"base/frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS\\\",\\\"log\\\":\\\"evidence/06-base-npm-ci.log\\\"},{\\\"name\\\":\\\"base disputed unit comparison\\\",\\\"command\\\":\\\"npm run test:unit -- src/api/apiClient.test.ts src/components/shared/FARGoldenStructuralContract.test.ts src/components/shared/OperationalBulkContract.test.ts src/components/shared/FARResearchGoldenPresentationContract.test.ts src/components/shared/GoldenWorkspaceGeometryContract.test.ts src/components/shared/FARLifecycleBackendContract.test.ts\\\",\\\"cwd\\\":\\\"base/frontend\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"FAIL: 5 files, 15 failed, 46 passed, 61 total; geometry contract file passed\\\",\\\"log\\\":\\\"evidence/07-base-disputed-unit-files.log\\\"},{\\\"name\\\":\\\"candidate geometry diagnostic\\\",\\\"command\\\":\\\"npm run test:unit -- src/components/shared/GoldenWorkspaceGeometryContract.test.ts\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"FAIL: 1 file, 1 failed, 8 passed, 9 total\\\",\\\"log\\\":\\\"evidence/08-candidate-geometry-diagnostic.log\\\"},{\\\"name\\\":\\\"production build\\\",\\\"command\\\":\\\"npm run build\\\",\\\"cwd\\\":\\\"frontend\\\",\\\"exit_code\\\":0,\\\"result\\\":\\\"PASS: 4346 modules transformed\\\",\\\"log\\\":\\\"evidence/09-build.log\\\"},{\\\"name\\\":\\\"direct committed delta whitespace check\\\",\\\"command\\\":\\\"/usr/bin/git diff --check 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e\\\",\\\"cwd\\\":\\\"candidate repository\\\",\\\"exit_code\\\":2,\\\"result\\\":\\\"FAIL: trailing whitespace at frontend/src/components/shared/LayoutPrimitives.tsx:184\\\",\\\"log\\\":\\\"evidence/10-direct-diff-check.log\\\"},{\\\"name\\\":\\\"forbidden terminal-side AI or agent scan\\\",\\\"command\\\":\\\"rg --pcre2 -n -i boundary scan over evidence log files\\\",\\\"cwd\\\":\\\"verification workspace\\\",\\\"exit_code\\\":1,\\\"result\\\":\\\"PASS: no forbidden execution token matches\\\",\\\"log\\\":\\\"evidence/15-forbidden-command-scan.log\\\"},{\\\"name\\\":\\\"final identity and cleanliness\\\",\\\"command\\\":\\\"git status --short --branch; git rev-parse HEAD; git rev-parse HEAD\"'^{tree}; git rev-parse HEAD''^; git diff --quiet; git ls-remote origin refs/heads/main refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2\",\"cwd\":\"candidate repository\",\"exit_code\":0,\"result\":\"PASS: exact candidate/base/evidence refs and clean source\",\"log\":\"evidence/16-final-identity.log\"}],\"full_unit_classification\":{\"candidate_red_files\":[\"src/api/apiClient.test.ts\",\"src/components/shared/FARGoldenStructuralContract.test.ts\",\"src/components/shared/OperationalBulkContract.test.ts\",\"src/components/shared/FARResearchGoldenPresentationContract.test.ts\",\"src/components/shared/GoldenWorkspaceGeometryContract.test.ts\",\"src/components/shared/FARLifecycleBackendContract.test.ts\"],\"base_reproduced_outside_delta\":[\"src/api/apiClient.test.ts: 8 failures, TypeError at apiClient.ts:302:48 reading response.headers.get\",\"src/components/shared/FARGoldenStructuralContract.test.ts: 3 stale structural assertions\",\"src/components/shared/OperationalBulkContract.test.ts: 1 stale structural assertion\",\"src/components/shared/FARResearchGoldenPresentationContract.test.ts: 2 stale structural assertions\",\"src/components/shared/FARLifecycleBackendContract.test.ts: 1 stale backend structural assertion\"],\"candidate_only_changed_surface\":{\"file\":\"src/components/shared/GoldenWorkspaceGeometryContract.test.ts\",\"test\":\"locks the accepted frame, toolbar, and grid geometry in shared owners\",\"candidate_failure\":\"expected old literal border-white/5 bg-black/20 GOLDEN_PAGE_TOOLBAR_CLASS; candidate contains semantic-token border and surface classes\",\"base_result\":\"8 passed, 0 failed\",\"classification\":\"candidate acceptance defect in changed shared shell contract surface\"}},\"findings\":[{\"id\":\"CHG43-FIX-001\",\"severity\":\"high\",\"category\":\"keyboard focus\",\"location\":\"frontend/src/App.tsx:336-338\",\"reproducer\":\"Focus an active control that updates only URL search parameters, then trigger the query update\",\"observed\":\"MainLayout effect runs on location.search change and moves focus to #sg-main-content\",\"evidence\":\"Source inspection; browser runtime was blocked by missing API service\",\"classification\":\"candidate-caused defect; separate FIX required\"},{\"id\":\"CHG43-FIX-002\",\"severity\":\"medium\",\"category\":\"unit acceptance contract\",\"location\":\"frontend/src/components/shared/LayoutPrimitives.tsx:8 and frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts:32\",\"reproducer\":\"Run the candidate-only geometry contract test\",\"observed\":\"The test fails on the candidate and passes on exact base because the shared toolbar class literal changed\",\"evidence\":\"candidate diagnostic exit 1; base comparison shows geometry contract passes\",\"classification\":\"candidate-caused changed-shell acceptance defect; separate FIX required\"},{\"id\":\"CHG43-FIX-003\",\"severity\":\"low\",\"category\":\"committed whitespace\",\"location\":\"frontend/src/components/shared/LayoutPrimitives.tsx:184\",\"reproducer\":\"Run the required direct git diff check\",\"observed\":\"Trailing whitespace in added line\",\"evidence\":\"direct diff check exit 2\",\"classification\":\"candidate-caused defect; separate FIX required\"}],\"browser\":{\"projects_navigation\":{\"command\":\"npx playwright test tests/projects-navigation.spec.ts --config=playwright.projects-golden.config.ts --reporter=line\",\"exit_code\":0,\"result\":\"PASS (7) FAIL (0)\",\"log\":\"evidence/11-projects-navigation-browser.log\"},\"shell_search\":{\"command\":\"npx playwright test tests/shell-and-search.spec.ts --config=playwright.projects-golden.config.ts --reporter=line\",\"exit_code\":1,\"result\":\"FAIL (5); not classified as product failure\",\"blocker\":\"Existing fixture starts Vite on 43177 but no API/backend service is listening on 127.0.0.1:8000; seed request fails with ECONNREFUSED, and app route assertions do not render\",\"log\":\"evidence/12-shell-search-browser.log\"},\"settings\":{\"command\":\"npx playwright test tests/settings-and-audit.spec.ts --grep persists-theme-route --config=playwright.projects-golden.config.ts --reporter=line\",\"exit_code\":1,\"result\":\"FAIL (1); not classified as product failure\",\"blocker\":\"Same bounded repository fixture blocker: no backend on 127.0.0.1:8000, settings route cannot render Infrastructure Domain\",\"log\":\"evidence/13-settings-browser.log\"},\"configured_runtime\":{\"web_server\":\"npm run dev -- --host 127.0.0.1 --port 43177 --strictPort\",\"web_server_config\":\"frontend/playwright.projects-golden.config.ts\",\"api_listener_check\":\"lsof -nP -iTCP:8000 -sTCP:LISTEN returned no listener\"}},\"artifacts\":[]}; const dir=join(root,\"evidence\"); const names=(await readdir(dir)).filter((name)=>name.endsWith(\".log\")).sort(); m.artifacts=[]; for (const name of names) { const bytes=await readFile(join(dir,name)); m.artifacts.push({path:\"evidence/\"+name, bytes:bytes.byteLength, sha256:createHash(\"sha256\").update(bytes).digest(\"hex\")}); } const files=m.source_delta.changed_files; m.source_delta.target_file_hashes=[]; for (const file of files) { const bytes=await readFile(join(root,file)); m.source_delta.target_file_hashes.push({path:file,sha256:createHash(\"sha256\").update(bytes).digest(\"hex\")}); } await writeFile(join(dir,\"VERIFY_MANIFEST.json\"),JSON.stringify(m,null,2)+\"'\"\\\\n\\\");'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find evidence -maxdepth 1 -type f | rtk wc -l'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '/\\\"artifacts\\\": \\\\[/,\"'$p'\"' evidence/VERIFY_MANIFEST.json | rtk head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\\\"schema_version\\\"|\\\"conclusion\\\"|\\\"commit\\\"|\\\"tree\\\"|\\\"status_before\\\"|\\\"status_after\\\"|\\\"target_file_hashes\\\"|\\\"artifacts\\\"|CHG43-FIX' evidence/VERIFY_MANIFEST.json | rtk head -120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import { readFile } from \\\"node:fs/promises\\\"; JSON.parse(await readFile(\\\"evidence/VERIFY_MANIFEST.json\\\",\\\"utf8\\\")); console.log(\\\"manifest JSON valid\\\")'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import { readFile, writeFile } from \\\"node:fs/promises\\\"; const path=\\\"evidence/VERIFY_MANIFEST.json\\\"; const manifest=JSON.parse(await readFile(path,\\\"utf8\\\")); manifest.browser.settings.command=\\\"npx playwright test tests/settings-and-audit.spec.ts --grep \\\\\\\"persists theme and loads major settings sections\\\\\\\" --config=playwright.projects-golden.config.ts --reporter=line\\\"; await writeFile(path,JSON.stringify(manifest,null,2)+\\\"\\\\n\\\")'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import { readFile } from \\\"node:fs/promises\\\"; import { createHash } from \\\"node:crypto\\\"; import { join } from \\\"node:path\\\"; const root=\\\"/tmp/sysgrid-chg43-verify.yl5SGF\\\"; const m=JSON.parse(await readFile(join(root,\\\"evidence/VERIFY_MANIFEST.json\\\"),\\\"utf8\\\")); for (const item of m.artifacts) { const b=await readFile(join(root,item.path)); const h=createHash(\\\"sha256\\\").update(b).digest(\\\"hex\\\"); if (h\"'!==item.sha256 || b.byteLength!==item.bytes) throw new Error(\"artifact mismatch: \"+item.path); } for (const item of m.source_delta.target_file_hashes) { const b=await readFile(join(root,item.path)); const h=createHash(\"sha256\").update(b).digest(\"hex\"); if (h!==item.sha256) throw new Error(\"source hash mismatch: \"+item.path); } console.log(\"manifest artifacts and target-file hashes verified: \"+m.artifacts.length+\" logs, \"+m.source_delta.target_file_hashes.length+\" source files\")'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/usr/bin/zip -q -r /tmp/sysgrid-chg43-verify.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip evidence && /usr/bin/unzip -t /tmp/sysgrid-chg43-verify.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"/usr/bin/unzip -p /tmp/sysgrid-chg43-verify.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip evidence/VERIFY_MANIFEST.json | rtk rg -n '\\\"conclusion\\\"|\\\"commit\\\"|\\\"tree\\\"|\\\"route_focus_finding\\\"|CHG43-FIX-00' | rtk head -40\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -lh UPLOAD_THIS_TO_CHATGPT.zip && rtk shasum -a 256 UPLOAD_THIS_TO_CHATGPT.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk mkdir -p /tmp/sysgrid-chg43-verify-evidence.yl5SGF && rtk mv /tmp/sysgrid-chg43-verify.yl5SGF/evidence /tmp/sysgrid-chg43-verify-evidence.yl5SGF/evidence && rtk mv /tmp/sysgrid-chg43-verify.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-chg43-verify-evidence.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -lh /tmp/sysgrid-chg43-verify-evidence.yl5SGF/evidence /tmp/sysgrid-chg43-verify-evidence.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/usr/bin/unzip -t /tmp/sysgrid-chg43-verify-evidence.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 /tmp/sysgrid-chg43-verify-evidence.yl5SGF/UPLOAD_THIS_TO_CHATGPT.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /Users/haewonkim/.codex-fabric/worktrees/CF-b485e445162cf106aaea42ee status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\\\"conclusion\\\"|\\\"command\\\": \\\"npx playwright test tests/settings' /tmp/sysgrid-chg43-verify-evidence.yl5SGF/evidence/VERIFY_MANIFEST.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 3 ':focus-visible|skip-link' frontend/src/index.css\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 4 'prefers-reduced-motion|transition-duration|animation-duration' frontend/src/index.css\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/usr/bin/git -C /Users/haewonkim/.codex-fabric/worktrees/CF-b485e445162cf106aaea42ee status --porcelain=v1 --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/usr/bin/git status --porcelain=v1 --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 407,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.69,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 12775168,
+      "fresh_input_tokens": 301531,
+      "input_tokens": 13076699,
+      "non_reasoning_output_tokens": 23833,
+      "output_tokens": 47851,
+      "reasoning_output_tokens": 24018,
+      "total_processed_tokens": 13124550
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.2",
+  "failure_class": null,
+  "finished_at": "2026-09-15T23:29:10Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "branch": "verify/sysgrid-product-ux-shell-foundation-audit-v1",
+    "head_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "remote_exact_head": true,
+    "remote_head_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "work_branch": "verify/sysgrid-product-ux-shell-foundation-audit-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-b485e445162cf106aaea42ee",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-verify-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-verify-v1"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "ac9bd8dedb364d22fc9c0fc6a50334cbf5b7f53a5a0602aa17553d680a87690e"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-product-ux-shell-foundation-verify-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-15T23:08:00Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 1270,
+    "queue_seconds": 0,
+    "total_seconds": 1270
+  },
+  "transport": {
+    "bytes": 11029,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 10682,
+    "prompt_sha256": "cc33736cd8de5034863ad3e6a9ad1937e8d1ca5d8edda6b8615c176f0cb2b06e",
+    "sha256": "b485e445162cf106aaea42eef3d629f928d6c75f3178c629124a728cca12d76e"
+  }
+}
