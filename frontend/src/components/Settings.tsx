@@ -26,15 +26,9 @@ import { WorkspaceFlyoutActionCard, WorkspaceFlyoutDropdownEditor } from "./shar
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { WorkspaceHistoryShell } from "./shared/WorkspaceModalShells"
 import { SystemDiagnosticsPanel } from "./settings/SystemDiagnosticsPanel"
+import { normalizeTheme } from './shared/theme'
 
 const PERMISSION_COMMIT_DEBOUNCE_MS = 900
-
-const normalizeTheme = (theme?: string | null) => {
-  if (theme === 'dark') return 'nordic-frost-v1'
-  if (theme === 'light') return 'pure-clarity'
-  if (theme === 'pure-clarity' || theme === 'nordic-frost-v1') return theme
-  return 'nordic-frost-v1'
-}
 
 const SettingField = ({ label, description, children, icon: Icon, onHistory, isEditable, onEdit, isPending, absPath, isModified, paramName }: any) => {
   return (

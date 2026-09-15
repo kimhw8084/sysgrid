@@ -6,6 +6,7 @@ import { apiFetch } from "../../api/apiClient"
 import toast from "react-hot-toast"
 import {
   getWorkspaceFloatingPanelClass,
+  useEscapeDismiss,
   useWorkspaceAnchoredLayer,
 } from "./OperationalWorkspacePrimitives"
 
@@ -13,6 +14,10 @@ export function TenantSelector() {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 256 })
+  useEscapeDismiss(() => {
+    setIsOpen(false)
+    requestAnimationFrame(() => triggerRef.current?.focus())
+  }, isOpen)
   const getTenantLabel = (tenant: any) => {
     if (tenant?.name?.trim()) return tenant.name
     const dbUrl = tenant?.db_url || ""
@@ -75,18 +80,21 @@ export function TenantSelector() {
           triggerRef.current = node
         }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-all group"
+        className="flex min-h-10 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 hover:bg-[var(--surface-hover)]"
+        aria-label="Switch tenant"
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
       >
-        <div className="p-1.5 bg-blue-600 rounded-lg text-white shadow-lg shadow-blue-500/20">
-           <Database size={14} />
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--action-primary)] text-white">
+           <Database size={14} aria-hidden="true" />
         </div>
         <div className="flex flex-col items-start min-w-[120px]">
-           <span className="text-[8px] font-black uppercase text-blue-400 tracking-widest leading-none">Active Database</span>
-           <span className="text-[10px] font-black text-white truncate max-w-[150px]">
-             {isLoading ? 'Loading...' : (activeTenant ? getTenantLabel(activeTenant) : 'Default Engine')}
+           <span className="text-[10px] font-medium text-[var(--text-muted)]">Current tenant</span>
+           <span className="max-w-[150px] truncate text-sm font-medium text-[var(--text-primary)]">
+             {isLoading ? 'Loading...' : (activeTenant ? getTenantLabel(activeTenant) : 'Default tenant')}
            </span>
         </div>
-        <ChevronDown size={14} className={`text-blue-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} aria-hidden="true" className={`text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && typeof document !== "undefined" && createPortal(
@@ -94,17 +102,20 @@ export function TenantSelector() {
               ref={panelRef}
               style={panelStyle}
               data-workspace-panel="true"
+              role="menu"
+              aria-label="Available tenants"
               onMouseDown={(e) => e.stopPropagation()}
               className={`${getWorkspaceFloatingPanelClass('menu')} overflow-hidden backdrop-blur-xl`}
             >
               <div className="p-4 border-b border-white/5 bg-white/2">
-                 <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Switch Environment</h4>
+                 <h4 className="text-sm font-semibold text-[var(--text-primary)]">Switch tenant</h4>
               </div>
               
               <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-2 space-y-1">
                 {tenants?.map((tenant: any) => (
                   <button
                     key={tenant.id}
+                    type="button"
                     onClick={() => {
                       if (tenant.is_selected) {
                         toast("This database is already active", { icon: "ℹ️" })
@@ -116,6 +127,7 @@ export function TenantSelector() {
                       setIsOpen(false)
                     }}
                     disabled={!tenant.is_online}
+                    role="menuitem"
                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${tenant.is_selected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : tenant.is_online ? 'hover:bg-white/5 text-slate-400 hover:text-white' : 'opacity-40 cursor-not-allowed'}`}
                   >
                     <div className="flex items-center gap-3">
@@ -124,7 +136,7 @@ export function TenantSelector() {
                           <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border-2 border-[#0f172a] ${tenant.is_online ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                        </div>
                        <div className="flex flex-col items-start">
-                          <span className="text-[11px] font-black tracking-[0.04em]">{getTenantLabel(tenant)}</span>
+                    <span className="text-[11px] font-black tracking-[0.04em]">{getTenantLabel(tenant)}</span>
                           <div className="flex items-center gap-2">
                              <span className="text-[8px] font-bold uppercase opacity-60">{tenant.role}</span>
                              {!tenant.is_online && <span className="text-[7px] font-black text-rose-500 uppercase">Offline</span>}
@@ -137,7 +149,7 @@ export function TenantSelector() {
 
                 {(!tenants || tenants.length === 0) && !isLoading && (
                    <div className="p-4 text-center">
-                      <p className="text-[10px] font-black uppercase text-slate-600 italic">No alternative databases found</p>
+                      <p className="text-[10px] font-semibold text-[var(--text-muted)]">No other tenants available</p>
                    </div>
                 )}
               </div>
@@ -151,7 +163,7 @@ export function TenantSelector() {
                     }}
                     className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-white/5 text-[9px] font-black uppercase text-slate-500 hover:text-white hover:bg-white/5 transition-all"
                  >
-                    <Plus size={12} /> Manage Databases
+                    <Plus size={12} /> Manage tenants
                  </button>
               </div>
             </div>,
