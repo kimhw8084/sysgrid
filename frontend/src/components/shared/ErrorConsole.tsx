@@ -28,7 +28,7 @@ export function ErrorConsole() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    toast.success('Traceback copied to matrix')
+    toast.success('Technical details copied')
   }
 
   const buganizerUrl = (
@@ -63,7 +63,7 @@ export function ErrorConsole() {
 
   const copyBugReport = async (error: SysError) => {
     await navigator.clipboard.writeText(buildSelectedErrorReport(error))
-    toast.success('Sanitized Buganizer report copied')
+    toast.success('Sanitized error report copied')
   }
 
   const openBuganizer = async (error: SysError) => {
@@ -76,13 +76,13 @@ export function ErrorConsole() {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
+    <div className="sg-error-console fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-md p-6" role="dialog" aria-modal="true" aria-labelledby="sysgrid-error-console-title">
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }} 
         animate={{ scale: 1, opacity: 1 }} 
         exit={{ scale: 0.95, opacity: 0 }}
         onMouseDown={(e) => e.stopPropagation()}
-        className="bg-[#020617] w-full max-w-[1400px] h-[85vh] rounded-lg border border-rose-500/20 shadow-[0_0_100px_rgba(244,63,94,0.15)] flex flex-col overflow-hidden"
+        className="flex h-[85vh] w-full max-w-[1400px] flex-col overflow-hidden rounded-lg border border-[var(--state-danger-border)] bg-[var(--surface-base)] shadow-2xl"
       >
         {/* Header */}
         <div className="px-8 py-5 border-b border-white/10 bg-white/5 flex items-center justify-between">
@@ -92,14 +92,14 @@ export function ErrorConsole() {
                   <Bug size={20} />
                </div>
                <div>
-                  <h2 className="text-xl font-black uppercase tracking-tighter text-white">Buganizer Terminal</h2>
-                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">System Kernel & API Traceback Console</p>
+                  <h2 id="sysgrid-error-console-title" className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">Error console</h2>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">Frontend and API diagnostics</p>
                </div>
             </div>
             <div className="h-8 w-px bg-white/10" />
             <div className="flex items-center gap-4">
                <div className="flex flex-col">
-                  <span className="text-[8px] font-bold text-slate-600 uppercase">Total Faults</span>
+                  <span className="text-[8px] font-bold uppercase text-slate-600">Total errors</span>
                   <span className="text-[12px] font-black text-rose-500">{errors.length}</span>
                </div>
                <div className="flex flex-col">
@@ -121,6 +121,7 @@ export function ErrorConsole() {
                    <button 
                      key={type}
                      onClick={() => setFilterType(type as any)}
+                     aria-pressed={filterType === type}
                      className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterType === type ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'}`}
                    >
                       {type}
@@ -131,13 +132,14 @@ export function ErrorConsole() {
                onClick={clearErrors}
                className="px-4 py-2 bg-rose-600/10 text-rose-500 border border-rose-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-rose-600/20 transition-all flex items-center gap-2"
              >
-                <Trash2 size={14} /> Purge Console
+                <Trash2 size={14} /> Clear console
              </button>
              <button 
                onClick={() => setOpen(false)}
+               aria-label="Close error console"
                className="p-2 text-slate-500 hover:text-white transition-all"
              >
-                <X size={24} />
+               <X size={24} aria-hidden="true" />
              </button>
           </div>
         </div>
@@ -169,6 +171,15 @@ export function ErrorConsole() {
                 <div 
                   key={error.id}
                   onClick={() => setSelectedErrorId(error.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setSelectedErrorId(error.id)
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Inspect error: ${error.message}`}
                   className={`px-6 py-4 border-b border-white/5 cursor-pointer transition-all hover:bg-white/[0.03] group relative ${selectedErrorId === error.id ? 'bg-rose-500/5 border-l-4 border-l-rose-500' : ''} ${error.acknowledged ? 'opacity-50 grayscale' : ''}`}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -201,8 +212,8 @@ export function ErrorConsole() {
               {filteredErrors.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center p-12 text-center">
                    <CheckCircle2 size={48} className="text-emerald-500/20 mb-4" />
-                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">No Faults Detected</h3>
-                   <p className="text-[10px] text-slate-600 mt-2">All systems operational in the current context</p>
+                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">No errors found</h3>
+                   <p className="text-[10px] text-slate-600 mt-2">No matching errors in the current view</p>
                 </div>
               )}
             </div>
@@ -224,7 +235,7 @@ export function ErrorConsole() {
                              disabled={selectedError.acknowledged}
                              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedError.acknowledged ? 'bg-emerald-500/20 text-emerald-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-500 active:scale-95'}`}
                            >
-                              {selectedError.acknowledged ? 'Verified' : 'Verify Exception'}
+                              {selectedError.acknowledged ? 'Acknowledged' : 'Acknowledge error'}
                            </button>
                            <button 
                              onClick={() => copyBugReport(selectedError)}
@@ -278,11 +289,11 @@ export function ErrorConsole() {
                   {selectedError.stack && (
                     <div className="space-y-3">
                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                          <Terminal size={14} /> Kernel Traceback
+                          <Terminal size={14} /> Technical details
                        </h4>
                        <div className="bg-[#020617] border border-rose-500/20 rounded-lg p-6 font-mono text-[11px] leading-relaxed relative group shadow-2xl">
                           <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button onClick={() => copyToClipboard(selectedError.stack || '')} className="text-slate-600 hover:text-white"><Copy size={16}/></button>
+                             <button type="button" onClick={() => copyToClipboard(selectedError.stack || '')} aria-label="Copy technical details" className="text-slate-600 hover:text-white"><Copy size={16} aria-hidden="true" /></button>
                           </div>
                           <pre className="text-rose-400/80 whitespace-pre-wrap overflow-x-auto custom-scrollbar max-h-[400px]">
                              {selectedError.stack}
@@ -310,9 +321,9 @@ export function ErrorConsole() {
                      <TerminalSquare size={48} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-slate-400 uppercase tracking-tighter">Selection Required</h3>
+                    <h3 className="text-lg font-black text-slate-400 uppercase tracking-tighter">Select an error</h3>
                     <p className="text-[10px] text-slate-600 max-w-xs mt-2 mx-auto leading-relaxed uppercase font-bold">
-                       Select a temporal trace from the vector list on the left to inspect its kernel state and payload.
+                       Select an error from the list to inspect its request context and captured details.
                     </p>
                   </div>
                </div>
@@ -322,11 +333,11 @@ export function ErrorConsole() {
                 <div className="flex items-center gap-6 text-[8px] font-black text-slate-500 uppercase tracking-widest">
                    <div className="flex items-center gap-2">
                       <Cpu size={12} className="text-slate-600" />
-                      <span>RUNTIME: MATRIX_V8</span>
+                      <span>ERROR RETENTION: 100 RECORDS</span>
                    </div>
                    <div className="flex items-center gap-2">
                       <span className="w-1 h-1 rounded-full bg-slate-800" />
-                      <span>LOG RETENTION: 100 RECORDS</span>
+                      <span>LOCAL DIAGNOSTICS</span>
                    </div>
                    <div className="flex items-center gap-2">
                       <span className="text-rose-500">SYSGRID BUGANIZER</span>

@@ -23,10 +23,14 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-      setQuery('');
-      setResults([]);
+    if (!isOpen) return
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const focusTimeout = window.setTimeout(() => inputRef.current?.focus(), 100)
+    setQuery('');
+    setResults([]);
+    return () => {
+      window.clearTimeout(focusTimeout)
+      previousFocus?.focus()
     }
   }, [isOpen]);
 
@@ -117,36 +121,39 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[15vh]" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            aria-hidden="true"
           />
           
           <motion.div
             initial={{ scale: 0.98, opacity: 0, y: -10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.98, opacity: 0, y: -10 }}
-            className="w-full max-w-2xl bg-[#1e293b]/95 border border-white/10 rounded-lg shadow-2xl overflow-hidden relative z-10 backdrop-blur-xl"
+            onKeyDown={(event) => { if (event.key === 'Escape') handleKeyDown(event) }}
+            className="relative z-10 w-full max-w-2xl overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-overlay)] shadow-2xl backdrop-blur-xl"
           >
-            <div className="flex items-center p-5 border-b border-white/5 bg-white/5">
-              <Search size={20} className="text-slate-500 mr-4" />
+            <div className="flex items-center border-b border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-5">
+              <Search size={20} aria-hidden="true" className="mr-4 text-[var(--text-muted)]" />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search Assets, Projects, FAR, Services, Monitoring..."
-                className="flex-1 bg-transparent border-none outline-none text-[13px] font-bold tracking-[0.02em] text-white placeholder:text-slate-600"
+                aria-label="Search assets, projects, FAR, services, and monitoring"
+                className="flex-1 border-none bg-transparent text-sm font-medium tracking-[0.02em] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
               />
               {isLoading ? (
                 <Loader2 size={18} className="text-blue-500 animate-spin" />
               ) : (
-                <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
-                  <X size={18} />
+                <button type="button" onClick={onClose} aria-label="Close search" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                  <X size={18} aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -167,6 +174,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                             key={`${result.type}-${result.id}`}
                             onMouseEnter={() => setSelectedIndex(globalIndex)}
                             onClick={() => handleSelect(result)}
+                            aria-pressed={isSelected}
                             className={`w-full flex items-center justify-between p-3.5 rounded-lg transition-all ${
                               isSelected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'hover:bg-white/5 text-slate-300'
                             }`}
@@ -209,8 +217,8 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                       <Search size={24} className="text-slate-500" />
                    </div>
                    <div className="text-center">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Neural Index Ready</p>
-                      <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-1">Input at least 2 characters to initiate scan</p>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Search index ready</p>
+                      <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-1">Enter at least 2 characters to search</p>
                    </div>
                 </div>
               )}
@@ -224,16 +232,16 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                   </div>
                   <div className="flex items-center gap-2">
                      <kbd className="px-1.5 py-0.5 bg-white/10 rounded-lg text-[9px] text-slate-400 font-mono font-bold border border-white/10">ENTER</kbd>
-                     <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Execute</span>
+                     <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Open</span>
                   </div>
                   <div className="flex items-center gap-2">
                      <kbd className="px-1.5 py-0.5 bg-white/10 rounded-lg text-[9px] text-slate-400 font-mono font-bold border border-white/10">ESC</kbd>
-                     <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Terminate</span>
+                     <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Close</span>
                   </div>
                </div>
                <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">SYSGRID GLOBAL INDEX v{metadata.version}</p>
+                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">SYSGRID GLOBAL SEARCH v{metadata.version}</p>
                </div>
             </div>
           </motion.div>
