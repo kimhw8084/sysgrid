@@ -1,0 +1,178 @@
+{
+  "accepted_at": "2026-09-16T03:23:23Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && printf '%s\\\\n' '--- repo instructions ---' && if command -v rg >/dev/null 2>&1; then rg --files -g 'AGENTS.md' -g '\"'!node_modules'\"' -g '\"'!frontend/node_modules'\"' | sort; else find . -name AGENTS.md -print; fi && printf '%s\\\\n' '--- required global instructions ---' && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && printf '%s\\\\n' '--- law ---' && sed -n '1,280p' /Users/haewonkim/.codex/law.md && printf '%s\\\\n' '--- root listing ---' && ls -la\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' AGENTS.md && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse HEAD\"'^{tree} && rtk git rev-parse origin/main && rtk git remote -v && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk printf '%s\\\\n' '--- repo files matching runtime/evidence/fabric ---' && rtk rg --files | rtk rg -i '(\"'^|/)(fabric|evidence|capture|manifest|playwright|seed|fixture|test)'\"' | rtk head -240 && rtk printf '%s\\\\n' '--- textual references in repo ---' && rtk rg -n -i 'fabric_capture|capture[-_ ](receipt|manifest|evidence)|evidence manifest|artifact.*(capture|evidence)|UPLOAD_THIS|artifact marker|capture root' --glob '\"'!frontend/node_modules/**'\"' --glob '\"'!**/.git/**'\"' | rtk head -260 && rtk printf '%s\\\\n' '--- local fabric-related paths ---' && rtk find /Users/haewonkim/.codex-fabric -maxdepth 4 \\\\( -iname '*fabric*' -o -iname '*evidence*' -o -iname '*capture*' \\\\) -print | rtk head -240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk printf '%s\\\\n' '--- installed commands ---' && (rtk which fabric || true) && (rtk which sgd || true) && (rtk which sg || true) && (rtk which sysgrid || true) && (rtk which fabricctl || true) && rtk --version && rtk printf '%s\\\\n' '--- relevant local executables ---' && rtk sh -lc 'for d in /Users/haewonkim/.local/bin /Users/haewonkim/.codex/bin /Users/haewonkim/.codex-fabric/bin /opt/homebrew/bin /usr/local/bin; do [ -d \\\"\"'$d\" ] && find \"$d\" -maxdepth 1 -type f -perm -111 -print; done'\"' && rtk printf '%s\\\\n' '--- repo scripts top-level ---' && rtk find scripts -maxdepth 3 -type f -print | rtk sort | rtk head -260 && rtk printf '%s\\\\n' '--- fabric/evidence mentions excluding snapshots ---' && rtk rg -n -i 'fabric_capture|capture.*artifact|artifact.*kind|evidence.*manifest|capture root|capture-list|capture list|evidence capture|durable.*artifact' --glob '\"'!sysgrid-machine-*/**'\"' --glob '\"'!**/node_modules/**'\"' . /Users/haewonkim/.codex 2>/dev/null | rtk head -300\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk printf '%s\\\\n' '--- sgd help ---' && rtk sgd --help 2>&1 | rtk head -240 && rtk printf '%s\\\\n' '--- sg help ---' && rtk sg --help 2>&1 | rtk head -240 && rtk printf '%s\\\\n' '--- sgd launcher ---' && rtk sed -n '1,240p' /Users/haewonkim/.local/bin/sgd && rtk printf '%s\\\\n' '--- sg launcher ---' && rtk sed -n '1,240p' /Users/haewonkim/.local/bin/sg\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sgd verify --help 2>&1 | rtk head -260 && rtk printf '%s\\\\n' '--- audit help ---' && rtk sgd audit --help 2>&1 | rtk head -320 && rtk printf '%s\\\\n' '--- stage capture help ---' && rtk sgd _capture-stage-evidence --help 2>&1 | rtk head -260 && rtk printf '%s\\\\n' '--- finalize help ---' && rtk sgd _finalize-audit --help 2>&1 | rtk head -260 && rtk printf '%s\\\\n' '--- evidence implementation symbols ---' && rtk rg -n '\"'^def |fabric|capture|evidence|manifest|artifact|audit'\"' /Users/haewonkim/.local/bin/sgd | rtk head -420\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk printf '%s\\\\n' '--- codex-fabric root ---' && rtk ls -la /Users/haewonkim/.codex-fabric && rtk printf '%s\\\\n' '--- codex-fabric files (shallow) ---' && rtk find /Users/haewonkim/.codex-fabric -maxdepth 3 -type f | rtk rg -i 'fabric|manifest|evidence|capture|contract|artifact' | rtk head -240 && rtk printf '%s\\\\n' '--- nearby CLI help/version ---' && rtk sgd --version && rtk sh -lc 'for x in /Users/haewonkim/.local/bin/sgd /Users/haewonkim/.local/bin/sgs /Users/haewonkim/.local/bin/sgwatch /Users/haewonkim/.codex-fabric/bin/projectos-integrate-stdin; do if [ -f \\\"\"'$x\" ]; then echo \"--- $x\"; sed -n \"1,80p\" \"$x\"; fi; done'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk printf '%s\\\\n' '--- fabricctl help ---' && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl --help 2>&1 | rtk head -320 && rtk printf '%s\\\\n' '--- receive-stdin help ---' && rtk /Users/haewonkim/.codex-fabric/bin/receive-stdin --help 2>&1 | rtk head -240 && rtk printf '%s\\\\n' '--- current release files ---' && rtk find /Users/haewonkim/.codex-fabric/releases/1.2.2 -maxdepth 4 -type f | rtk sort | rtk head -300 && rtk printf '%s\\\\n' '--- current release docs/text containing capture/artifact ---' && rtk rg -n -i 'capture|artifact|evidence|manifest|locator|sha256|binary|transient|durable|register' /Users/haewonkim/.codex-fabric/releases/1.2.2 /Users/haewonkim/.codex-fabric/libexec /Users/haewonkim/.codex-fabric/config --glob '\"'!*.pyc'\"' | rtk head -420\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' /Users/haewonkim/.codex-fabric/releases/1.2.2/README.md && rtk printf '%s\\\\n' '--- execution policy ---' && rtk sed -n '1,220p' /Users/haewonkim/.codex-fabric/releases/1.2.2/execution.toml.qualified && rtk printf '%s\\\\n' '--- Fabric status ---' && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl status 2>&1 | rtk head -320 && rtk printf '%s\\\\n' '--- Fabric doctor ---' && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl doctor 2>&1 | rtk head -320 && rtk printf '%s\\\\n' '--- evidence manifest/publication code ---' && rtk sed -n '1930,2295p' /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py && rtk printf '%s\\\\n' '--- worker result/evidence handling ---' && rtk sed -n '2820,3010p' /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1960,2145p' /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py && rtk sed -n '2300,2348p' /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py && rtk sed -n '1,140p' /Users/haewonkim/.codex-fabric/bin/fabricctl && rtk printf '%s\\\\n' '--- registry sysgrid route ---' && rtk rg -n -C 5 'sysgrid' /Users/haewonkim/.codex-fabric/config/projects.yaml /Users/haewonkim/.codex-fabric/projects.yaml /Users/haewonkim/.codex-fabric/state 2>/dev/null | rtk head -220 && rtk printf '%s\\\\n' '--- job result paths for current job ---' && rtk find /Users/haewonkim/.codex-fabric/jobs -maxdepth 2 -type f | rtk rg 'CF-9277e7656cbc8bc85243568b' | rtk head -100 && rtk find /Users/haewonkim/.codex-fabric/results -maxdepth 2 -type f | rtk rg 'CF-9277e7656cbc8bc85243568b' | rtk head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk printf '%s\\\\n' '--- current Fabric job directory ---' && rtk ls -la /Users/haewonkim/.codex-fabric/jobs | rtk rg 'CF-9277e7656cbc8bc85243568b' && rtk find /Users/haewonkim/.codex-fabric/jobs -maxdepth 2 -type f | rtk rg 'CF-9277e7656cbc8bc85243568b' || true && rtk printf '%s\\\\n' '--- current job dirs ---' && rtk find /Users/haewonkim/.codex-fabric/jobs -maxdepth 2 -type d | rtk rg 'CF-9277e7656cbc8bc85243568b' && rtk printf '%s\\\\n' '--- current job state if present ---' && rtk sh -lc 'j=\"'$(find /Users/haewonkim/.codex-fabric/jobs -maxdepth 1 -type d -name \"CF-9277e7656cbc8bc85243568b.*\" -print -quit); if [ -n \"$j\" ]; then find \"$j\" -maxdepth 2 -type f -print | sort; fi'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1180,1335p' /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py && rtk sed -n '1335,1515p' /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py && rtk sed -n '2310,2340p' /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py && rtk printf '%s\\\\n' '--- current job metadata ---' && rtk sed -n '1,240p' /Users/haewonkim/.codex-fabric/jobs/CF-9277e7656cbc8bc85243568b.running/job.json && rtk printf '%s\\\\n' '--- current runner worktree ---' && rtk ls -la /Users/haewonkim/.codex-fabric/worktrees/CF-9277e7656cbc8bc85243568b && rtk git -C /Users/haewonkim/.codex-fabric/repos/sysgrid status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk printf '%s\\\\n' '--- exact job status ---' && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-9277e7656cbc8bc85243568b 2>&1 | rtk head -220 && rtk printf '%s\\\\n' '--- final source identity ---' && rtk git rev-parse --abbrev-ref HEAD && rtk git rev-parse HEAD && rtk git rev-parse HEAD\"'^{tree} && rtk git rev-parse origin/main && rtk printf '\"'%s\\\\n' '--- final worktree checks ---' && rtk git status --short --branch && rtk git diff --check && rtk git log -1 --format='%H %D %s' && rtk printf '%s\\\\n' '--- qualified release identity ---' && rtk sha256sum /Users/haewonkim/.codex-fabric/releases/1.2.2/fabric.py /Users/haewonkim/.codex-fabric/releases/1.2.2/README.md && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl doctor 2>&1 | rtk rg 'fabric_release|healthy|current_release_path|routes|project|sysgrid' | rtk head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 34,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 88.12,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 760320,
+      "fresh_input_tokens": 102492,
+      "input_tokens": 862812,
+      "non_reasoning_output_tokens": 4480,
+      "output_tokens": 8116,
+      "reasoning_output_tokens": 3636,
+      "total_processed_tokens": 870928
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.2",
+  "failure_class": null,
+  "finished_at": "2026-09-16T03:26:42Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "verify/sysgrid-visual-atlas-capture-v1",
+    "head_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "remote_exact_head": true,
+    "remote_head_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "verify/sysgrid-visual-atlas-capture-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-9277e7656cbc8bc85243568b",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-visual-atlas-capture-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-visual-atlas-capture-v1"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "6316fd785c456db605cb8cd3f359ac0b65cfd957f2546ebe5d596f3115bd2a61"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-visual-atlas-capture-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-16T03:23:23Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 199,
+    "queue_seconds": 0,
+    "total_seconds": 199
+  },
+  "transport": {
+    "bytes": 19281,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 18961,
+    "prompt_sha256": "da5e0f52c770a058e68644c4d5095a30a7a3ca263638230582d71a3f23cffd83",
+    "sha256": "9277e7656cbc8bc85243568bdc9ce873eb866e4753e8d5dcd690fd4b69f169dc"
+  }
+}
