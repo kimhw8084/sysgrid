@@ -1,0 +1,366 @@
+{
+  "accepted_at": "2026-09-16T01:52:44Z",
+  "changed_files": [
+    {
+      "additions": 160,
+      "deletions": 295,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 7,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 18,
+      "path": "frontend/src/components/shared/ErrorConsole.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 14,
+      "deletions": 5,
+      "path": "frontend/src/components/shared/ErrorSentinel.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 24,
+      "deletions": 16,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 23,
+      "path": "frontend/src/components/shared/LayoutPrimitives.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 75,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellHeaderTools.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellNavigation.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 183,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellNavigation.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 33,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellStates.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 90,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ShellStates.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 23,
+      "deletions": 11,
+      "path": "frontend/src/components/shared/TenantSelector.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 39,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/routeFocus.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 16,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/routeFocus.ts",
+      "status": "A"
+    },
+    {
+      "additions": 12,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/theme.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 14,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/theme.ts",
+      "status": "A"
+    },
+    {
+      "additions": 74,
+      "deletions": 0,
+      "path": "frontend/src/index.css",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'pwd && /bin/ls -la && /bin/cat /Users/haewonkim/.codex/RTK.md && /bin/cat /Users/haewonkim/.codex/law.md && git status --short --branch && git rev-parse HEAD && git rev-parse HEAD''^{tree} && git branch --show-current && git log -1 --oneline --decorate'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show-ref --heads --tags | rtk rg 'sysgrid-product-ux-shell-foundation|9359fec|7e828333' || true\nrtk git rev-parse build/sysgrid-product-ux-shell-foundation-v2\nrtk git rev-parse build/sysgrid-product-ux-shell-foundation-v2\"'^{tree}\nrtk git rev-parse 7e8283333ae6bb2e93aedcb93d664b581643581e''^{tree}\nrtk git merge-base --is-ancestor 9359fec3dfa2cc8a011bf56448f2c6419e7aa462 7e8283333ae6bb2e93aedcb93d664b581643581e; echo \"ancestor_exit=$?\"\nrtk git diff --stat 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e\nrtk git diff --name-status 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e\nrtk git cat-file -t f1a2759e40a0e69c21791f25be47e4b9d50177a4 2>&1 || true\nrtk git cat-file -t 027dfb97ef175a4dcb8f177bba62838dd3a2c652 2>&1 || true\nrtk git cat-file -t ee4c471ded3f05dbb4c79e3fc9d7f449e95b3f1f\nrtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show --no-patch --pretty=fuller f1a2759e40a0e69c21791f25be47e4b9d50177a4\nrtk git show --no-patch --pretty=fuller 027dfb97ef175a4dcb8f177bba62838dd3a2c652\nrtk git show --stat --oneline --decorate f1a2759e40a0e69c21791f25be47e4b9d50177a4\nrtk git show --stat --oneline --decorate 027dfb97ef175a4dcb8f177bba62838dd3a2c652\nrtk git log --oneline --decorate --all --graph --max-count=20 --simplify-by-decoration\nrtk git diff 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e -- frontend/src/App.tsx frontend/src/components/shared/LayoutPrimitives.tsx | rtk sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show f1a2759e40a0e69c21791f25be47e4b9d50177a4:.codex-fabric/audit.json | rtk jq '{job_id, conclusion, candidate_commit, candidate_tree, base_commit, base_tree, changed_files, findings: (.findings // .checks // .results)}'\nrtk git show 027dfb97ef175a4dcb8f177bba62838dd3a2c652:.codex-fabric/audit.json | rtk jq '{job_id, conclusion, candidate_commit, candidate_tree, base_commit, base_tree, changed_files, findings: (.findings // .checks // .results)}'\nrtk git show 7e8283333ae6bb2e93aedcb93d664b581643581e:frontend/src/App.tsx | rtk rg -n -C 14 'mainContentRef|pathname|location.search|focus\\\\(\\\\{ preventScroll'\nrtk git show 7e8283333ae6bb2e93aedcb93d664b581643581e:frontend/src/components/shared/LayoutPrimitives.tsx | rtk rg -n -C 4 'GOLDEN_PAGE_TOOLBAR_CLASS|ToolbarIconButton|React.forwardRef'\nrtk git show 7e8283333ae6bb2e93aedcb93d664b581643581e:frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts | rtk sed -n '1,240p'\nrtk rg -n -C 8 'mainContentRef|location\\\\.search|focus\\\\(\\\\{ preventScroll' frontend/src/App.tsx frontend/src --glob '*test*' --glob '*spec*'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show f1a2759e40a0e69c21791f25be47e4b9d50177a4:.codex-fabric/audit.json | rtk jq 'keys'\nrtk git show f1a2759e40a0e69c21791f25be47e4b9d50177a4:.codex-fabric/audit.json | rtk rg -n 'CHG43|candidate|base|conclusion|VERIFY|BUILD|7e828|9359fec|tree|status|result' | rtk sed -n '1,220p'\nrtk git show 027dfb97ef175a4dcb8f177bba62838dd3a2c652:.codex-fabric/audit.json | rtk rg -n 'CHG43|FIX-00|candidate|base|conclusion|VERIFY|FAIL|7e828|9359fec|tree|status|result' | rtk sed -n '1,320p'\nrtk git show 7e8283333ae6bb2e93aedcb93d664b581643581e:frontend/src/components/shared/LayoutPrimitives.tsx | rtk sed -n '1,240p'\nrtk git show 7e8283333ae6bb2e93aedcb93d664b581643581e:frontend/package.json | rtk sed -n '1,200p' 2>/dev/null || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --binary 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e | rtk git apply --check\ncheck_exit=$?\necho \"git_apply_check_exit=$check_exit\"\nif [ \"$check_exit\" -ne 0 ]; then exit \"$check_exit\"; fi\nrtk git diff --binary 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..7e8283333ae6bb2e93aedcb93d664b581643581e | rtk git apply\nrtk git status --short\nrtk git diff --stat 9359fec3dfa2cc8a011bf56448f2c6419e7aa462\nrtk git diff --name-status 9359fec3dfa2cc8a011bf56448f2c6419e7aa462'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' frontend/src/components/shared/LayoutPrimitives.test.tsx\nrtk sed -n '1,200p' frontend/src/components/shared/ShellNavigation.test.tsx\nrtk sed -n '1,160p' frontend/src/components/shared/ShellStates.test.tsx\nrtk rg -n \\\"vi\\\\.spyOn\\\\(.*focus|document\\\\.activeElement|render\\\\(.*rerender|@testing-library/react\\\" frontend/src --glob '*.test.*' | rtk head -160\nrtk sed -n '1,220p' frontend/vitest.config.* 2>/dev/null || true\nrtk sed -n '1,220p' frontend/src/test* 2>/dev/null || true\nrtk sed -n '1,220p' frontend/tsconfig.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,55p' frontend/src/App.tsx\nrtk sed -n '326,344l' frontend/src/App.tsx\nrtk sed -n '1,18p' frontend/src/components/shared/LayoutPrimitives.tsx\nrtk sed -n '174,190l' frontend/src/components/shared/LayoutPrimitives.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check; echo \"diff_check_exit=$?\"\nrtk sed -n '\"'35,48p' frontend/src/App.tsx\nrtk sed -n '332,343p' frontend/src/App.tsx\nrtk sed -n '1,20p' frontend/src/components/shared/LayoutPrimitives.tsx\nrtk sed -n '178,188l' frontend/src/components/shared/LayoutPrimitives.tsx\nrtk sed -n '1,200p' frontend/src/components/shared/routeFocus.ts\nrtk sed -n '1,240p' frontend/src/components/shared/routeFocus.test.tsx\nrtk git status --short\nrtk git diff --stat 9359fec3dfa2cc8a011bf56448f2c6419e7aa462\nrtk git diff --name-status 9359fec3dfa2cc8a011bf56448f2c6419e7aa462\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '182,187l' frontend/src/components/shared/LayoutPrimitives.tsx\nrtk git diff --check 9359fec3dfa2cc8a011bf56448f2c6419e7aa462; echo \\\"working_tree_diff_check_exit=\"'$?\"\nrtk git diff --numstat 9359fec3dfa2cc8a011bf56448f2c6419e7aa462 -- frontend/src/App.tsx frontend/src/components/shared/LayoutPrimitives.tsx\nrtk git diff -- frontend/src/components/shared/LayoutPrimitives.tsx | rtk sed -n '\"'1,180p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit -- src/components/shared/ShellNavigation.test.tsx src/components/shared/ShellStates.test.tsx src/components/shared/theme.test.ts src/components/shared/LayoutPrimitives.test.tsx src/components/shared/routeFocus.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit -- src/components/shared/GoldenWorkspaceGeometryContract.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add frontend/src/App.tsx frontend/src/components/Settings.tsx frontend/src/components/shared/ErrorConsole.tsx frontend/src/components/shared/ErrorSentinel.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/components/shared/LayoutPrimitives.tsx frontend/src/components/shared/ShellHeaderTools.tsx frontend/src/components/shared/ShellNavigation.test.tsx frontend/src/components/shared/ShellNavigation.tsx frontend/src/components/shared/ShellStates.test.tsx frontend/src/components/shared/ShellStates.tsx frontend/src/components/shared/TenantSelector.tsx frontend/src/components/shared/theme.test.ts frontend/src/components/shared/theme.ts frontend/src/index.css frontend/src/components/shared/routeFocus.ts frontend/src/components/shared/routeFocus.test.tsx\nrtk git diff --cached --check; echo \"staged_diff_check_exit=$?\"\nrtk git diff --cached --stat\nrtk git diff --cached --name-status 9359fec3dfa2cc8a011bf56448f2c6419e7aa462\nrtk git diff --cached --name-status 7e8283333ae6bb2e93aedcb93d664b581643581e\nrtk git diff --cached -- frontend/src/App.tsx frontend/src/components/shared/LayoutPrimitives.tsx frontend/src/components/shared/routeFocus.ts frontend/src/components/shared/routeFocus.test.tsx | rtk sed -n '\"'1,360p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git grep -n -i -E 'segfault|security clearance|neutral zone|neutral-zone|matrix|sector[- ]?01' -- frontend/src/App.tsx frontend/src/components/Settings.tsx frontend/src/components/shared/ErrorConsole.tsx frontend/src/components/shared/ErrorSentinel.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/components/shared/LayoutPrimitives.tsx frontend/src/components/shared/ShellHeaderTools.tsx frontend/src/components/shared/ShellNavigation.tsx frontend/src/components/shared/ShellStates.tsx frontend/src/components/shared/TenantSelector.tsx frontend/src/components/shared/routeFocus.ts frontend/src/index.css || true\nrtk git diff --cached 7e8283333ae6bb2e93aedcb93d664b581643581e -- frontend/src/components/Settings.tsx\nrtk git diff --cached -- frontend/src/components/shared/routeFocus.ts frontend/src/components/shared/routeFocus.test.tsx | rtk sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --cached 7e8283333ae6bb2e93aedcb93d664b581643581e -- frontend/src/App.tsx frontend/src/components/shared/LayoutPrimitives.tsx | rtk sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git commit -m \"fix(sysgrid): repair CHG-43 shell foundation defects\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/usr/bin/git diff --check 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..HEAD; diff_check_exit=$?; echo \"direct_base_to_final_diff_check_exit=$diff_check_exit\"\nrtk git status --short --branch\nrtk git rev-parse HEAD\nrtk git rev-parse HEAD''^{tree}\nrtk git rev-parse HEAD''^1\nrtk git branch --show-current\nrtk git merge-base --is-ancestor 9359fec3dfa2cc8a011bf56448f2c6419e7aa462 HEAD; echo \"base_ancestry_exit=$?\"\nrtk git diff --stat 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..HEAD\nrtk git diff --name-status 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..HEAD\nrtk git diff --stat 7e8283333ae6bb2e93aedcb93d664b581643581e..HEAD\nrtk git diff --name-status 7e8283333ae6bb2e93aedcb93d664b581643581e..HEAD\nrtk git ls-remote origin refs/heads/main refs/heads/fix/sysgrid-product-ux-shell-foundation-v1 refs/heads/build/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-verify-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx playwright test tests/projects-navigation.spec.ts --config=playwright.projects-golden.config.ts --reporter=line'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx playwright test tests/shell-and-search.spec.ts --config=playwright.projects-golden.config.ts --reporter=line'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,240p' commit-push-zip.sh\nrtk rg --files . | rtk rg 'UPLOAD_THIS_TO_CHATGPT|audit|evidence|manifest|fabric' | rtk head -160\nrtk rg -n 'UPLOAD_THIS_TO_CHATGPT|VERIFY_MANIFEST|Fabric evidence|forbidden-command|immutable patch' --glob '*.sh' --glob '*.md' --glob '*.json' . | rtk head -220\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk mkdir -p /tmp/sysgrid-chg43-fix-evidence-80ede329\n/usr/bin/git diff --binary 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..80ede32966f5acf24c1dbabd5665a3742c7c2621 > /tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\nrtk shasum -a 256 /tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\nrtk wc -c /tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\nrtk git diff --name-only 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..80ede32966f5acf24c1dbabd5665a3742c7c2621\nrtk git diff --name-only 80ede32966f5acf24c1dbabd5665a3742c7c2621''^..80ede32966f5acf24c1dbabd5665a3742c7c2621 | while IFS= read -r p; do /usr/bin/git hash-object \"$p\" | rtk sed \"s#''^#$p #\"; done\nrtk git ls-tree -r --full-tree 80ede32966f5acf24c1dbabd5665a3742c7c2621 -- frontend/src/App.tsx frontend/src/components/shared/LayoutPrimitives.tsx frontend/src/components/shared/routeFocus.ts frontend/src/components/shared/routeFocus.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e \\\"import { readFile } from 'node:fs/promises'; JSON.parse(await readFile('/tmp/sysgrid-chg43-fix-evidence-80ede329/FIX_MANIFEST.json', 'utf8')); console.log('manifest JSON valid')\\\"\nrtk shasum -a 256 /tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\nrtk zip -j /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-chg43-fix-evidence-80ede329/FIX_MANIFEST.json /tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\nrtk unzip -l /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip\nrtk unzip -p /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip base-to-final.patch | rtk shasum -a 256\nrtk unzip -p /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip FIX_MANIFEST.json | rtk node --input-type=module -e \\\"import { readFileSync } from 'node:fs'; let data=''; process.stdin.on('data', c => data += c); process.stdin.on('end', () => { const m=JSON.parse(data); console.log(m.conclusion, m.candidate.commit, m.patch.sha256); })\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import { readFile } from \\\"node:fs/promises\\\"; import { createHash } from \\\"node:crypto\\\"; const m=JSON.parse(await readFile(\\\"/tmp/sysgrid-chg43-fix-evidence-80ede329/FIX_MANIFEST.json\\\", \\\"utf8\\\")); for (const [path, expected] of Object.entries(m.source_delta.target_file_hashes)) { const actual=createHash(\\\"sha1\\\").update(await readFile(path)).digest(\\\"hex\\\"); if (actual \"'!== expected) throw new Error(`${path}: ${actual} != ${expected}`); } const patch=createHash(\"sha256\").update(await readFile(\"/tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\")).digest(\"hex\"); if (patch !== m.patch.sha256) throw new Error(`patch: ${patch} != ${m.patch.sha256}`); console.log(`manifest target hashes verified: ${Object.keys(m.source_delta.target_file_hashes).length} files; patch hash verified`);'\"'\n/usr/bin/git diff --check 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..80ede32966f5acf24c1dbabd5665a3742c7c2621; echo \\\"final_direct_diff_check_exit=\"'$?\"\nrtk git status --short --branch\nrtk git branch --show-current\nrtk git rev-parse HEAD\nrtk git rev-parse HEAD''^{tree}\nrtk git rev-parse HEAD''^1\nrtk git rev-parse origin/main\nrtk git diff --name-only 9359fec3dfa2cc8a011bf56448f2c6419e7aa462..80ede32966f5acf24c1dbabd5665a3742c7c2621 | rtk wc -l\nrtk git diff --name-only 7e8283333ae6bb2e93aedcb93d664b581643581e..80ede32966f5acf24c1dbabd5665a3742c7c2621 | rtk wc -l\nrtk git grep -n -i -E '\"'segfault|security clearance|neutral zone|neutral-zone|matrix|sector[- ]?01' 80ede32966f5acf24c1dbabd5665a3742c7c2621 -- frontend/src/App.tsx frontend/src/components/shared/ErrorConsole.tsx frontend/src/components/shared/ErrorSentinel.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/components/shared/LayoutPrimitives.tsx frontend/src/components/shared/ShellHeaderTools.tsx frontend/src/components/shared/ShellNavigation.tsx frontend/src/components/shared/ShellStates.tsx frontend/src/components/shared/TenantSelector.tsx frontend/src/components/shared/routeFocus.ts frontend/src/index.css || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import { readFile } from \\\"node:fs/promises\\\"; import { execFileSync } from \\\"node:child_process\\\"; const m=JSON.parse(await readFile(\\\"/tmp/sysgrid-chg43-fix-evidence-80ede329/FIX_MANIFEST.json\\\", \\\"utf8\\\")); for (const [path, expected] of Object.entries(m.source_delta.target_file_hashes)) { const actual=execFileSync(\\\"/usr/bin/git\\\", [\\\"hash-object\\\", path], {encoding:\\\"utf8\\\"}).trim(); if (actual \"'!== expected) throw new Error(`${path}: ${actual} != ${expected}`); } const patch=execFileSync(\"/usr/bin/shasum\", [\"-a\", \"256\", \"/tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\"], {encoding:\"utf8\"}).split(\" \")[0]; if (patch !== m.patch.sha256) throw new Error(`patch: ${patch} != ${m.patch.sha256}`); console.log(`manifest target hashes verified: ${Object.keys(m.source_delta.target_file_hashes).length} files; patch hash verified`);'\"'\nrtk rm -f /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip\nrtk zip -j /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-chg43-fix-evidence-80ede329/FIX_MANIFEST.json /tmp/sysgrid-chg43-fix-evidence-80ede329/base-to-final.patch\nrtk unzip -l /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip\nrtk unzip -p /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip base-to-final.patch | rtk shasum -a 256\nrtk unzip -p /tmp/sysgrid-chg43-fix-evidence-80ede329/UPLOAD_THIS_TO_CHATGPT.zip FIX_MANIFEST.json | rtk node --input-type=module -e \\\"let data=''; process.stdin.on('data', c => data += c); process.stdin.on('end', () => { const m=JSON.parse(data); console.log(m.conclusion, m.candidate.commit, m.candidate.tree, m.patch.sha256, m.target_file_hash_algorithm || m.source_delta.target_file_hash_algorithm); })\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 83,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 96.36,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 4094464,
+      "fresh_input_tokens": 154456,
+      "input_tokens": 4248920,
+      "non_reasoning_output_tokens": 14629,
+      "output_tokens": 29955,
+      "reasoning_output_tokens": 15326,
+      "total_processed_tokens": 4278875
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "80ede32966f5acf24c1dbabd5665a3742c7c2621",
+      "subject": "fix(sysgrid): repair CHG-43 shell foundation defects"
+    }
+  ],
+  "diff": {
+    "additions": 858,
+    "changed_files": 17,
+    "commit_count": 1,
+    "deletions": 375
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.2",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.2",
+  "failure_class": null,
+  "finished_at": "2026-09-16T02:04:36Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "branch": "fix/sysgrid-product-ux-shell-foundation-v1",
+    "head_sha": "80ede32966f5acf24c1dbabd5665a3742c7c2621",
+    "remote_exact_head": true,
+    "remote_head_sha": "80ede32966f5acf24c1dbabd5665a3742c7c2621",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "9359fec3dfa2cc8a011bf56448f2c6419e7aa462",
+    "work_branch": "fix/sysgrid-product-ux-shell-foundation-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-e932d977a29c92f7d0d49006",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-fix-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-product-ux-shell-foundation-fix-v1"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.2",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "ac9bd8dedb364d22fc9c0fc6a50334cbf5b7f53a5a0602aa17553d680a87690e"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-product-ux-shell-foundation-fix-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-16T01:52:45Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 711,
+    "queue_seconds": 1,
+    "total_seconds": 712
+  },
+  "transport": {
+    "bytes": 13276,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 12944,
+    "prompt_sha256": "dc987aa7545afb53841982e97913c349ae5f0e41da6266508edd8574cfefd9f8",
+    "sha256": "e932d977a29c92f7d0d49006b7a16f1d73520c0a5cd5dbd125caa5dbe601739b"
+  }
+}
