@@ -1,0 +1,363 @@
+{
+  "accepted_at": "2026-09-18T02:57:29Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk ls -ld venv && rtk rm venv && rtk python3 -m venv venv'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ./venv/bin/pip install -r requirements.txt'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash ./scripts/start-local.sh --backend-port 18171 --frontend-port 15171 --seed-data --profile-name sysgrid-visual-atlas-capture-v3 --runtime-log-dir /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime --runtime-report-file /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json --strict-checks'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' seed.py && rtk sed -n '1550,1685p' seed.py && printf '\\\\n--- alembic heads/config ---\\\\n' && rtk find backend/alembic -maxdepth 2 -type f -print | sort | head -160 && rtk rg -n 'upgrade\\\\(|command\\\\.upgrade|heads|head|far_failure_modes' backend seed.py scripts | head -260\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ./venv/bin/python -m alembic heads && rtk ./venv/bin/python -m alembic history --verbose | head -140'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rm -f config.local.db\nrtk rm -rf tenants/local-demo\nrtk mkdir -p tenants/local-demo\nrtk env SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:////private/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo/backend/tenants/local-demo/local_demo.db ./venv/bin/python -m alembic upgrade heads'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk env CONFIG_DATABASE_URL=sqlite+aiosqlite:////private/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo/backend/config.local.db DATABASE_URL=sqlite+aiosqlite:////private/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo/backend/tenants/local-demo/local_demo.db TENANT_STORAGE_ROOT=/private/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo/backend/tenants DEFAULT_TENANT_NAME='Local Demo' DEFAULT_USER_ID=haewon.kim AUTO_ADMIN_USER_IDS=haewon.kim ./venv/bin/python ../seed.py --tenant-name 'Local Demo' --tenant-db tenants/local-demo/local_demo.db --admin-user haewon.kim --admin-full-name 'Haewon Kim' --admin-email haewon.kim@sysgrid.local --admin-department Infrastructure --seed-data\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk tail -80 /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/backend.log 2>/dev/null || true\nrtk ps -p 48969 -o pid=,stat=,etime=,command= 2>/dev/null || true\nrtk curl -sS -o /tmp/sysgrid-health.out -w '%{http_code}\\\\n' -H 'Host: 127.0.0.1' -H 'Origin: http://127.0.0.1:15171' http://127.0.0.1:18171/api/v1/health 2>/dev/null || true\nrtk tail -20 /tmp/sysgrid-health.out 2>/dev/null || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps -axo pid,ppid,stat,etime,command | rg '48969|uvicorn|alembic|start-local' || true\nrtk lsof -nP -iTCP:18171 -sTCP:LISTEN 2>/dev/null || true\nrtk ls -l /tmp/sysgrid-visual-atlas-r3.kbUbB8/repo/backend/tenants/local-demo/local_demo.db*\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'Checking database migrations|upgrade\\\\(' backend/app backend | head -120 && rtk sed -n '1,220p' backend/app/main.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash ./scripts/start-local.sh --backend-port 18171 --frontend-port 15171 --preserve-data --profile-name sysgrid-visual-atlas-capture-v3 --runtime-log-dir /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime --runtime-report-file /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json --strict-checks --skip-typecheck'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -axo pid,ppid,stat,etime,command | rg '48969|uvicorn|alembic|start-local' || true\nrtk proxy lsof -nP -iTCP:18171 -sTCP:LISTEN 2>/dev/null || true\nrtk ./venv/bin/python - <<'PY'\nimport sqlite3\np='tenants/local-demo/local_demo.db'\ncon=sqlite3.connect(p)\nprint(con.execute('select * from alembic_version').fetchall())\nprint(con.execute('pragma journal_mode').fetchall())\ncon.close()\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'startup_schema|SCHEMA|MIGRAT|AUTO' backend/app/core/config.py backend/.env* backend/app | head -220 && rtk sed -n '1,300p' backend/app/core/config.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nconst browser = await chromium.launch({headless:true})\nconst context = await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\nconst page = await context.newPage()\nconst errors=[]\npage.on('console',m=>{if(m.type()==='error') errors.push(\"'`console:${m.text()}`)})\npage.on('\"'pageerror',e=>errors.push(\"'`pageerror:${e.message}`))\nawait page.goto('\"'http://127.0.0.1:15171/',{waitUntil:'domcontentloaded'})\nawait page.waitForTimeout(2500)\nconsole.log(JSON.stringify({url:page.url(),title:await page.title(),body:(await page.locator('body').innerText()).slice(0,2400),errors},null,2))\nawait browser.close()\nNODE\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nconst browser = await chromium.launch({headless:true})\nconst context = await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\nconst page = await context.newPage()\nconst errors=[]\npage.on('console',m=>{if(m.type()==='error') errors.push(\"'`console:${m.text()}`)})\npage.on('\"'pageerror',e=>errors.push(\"'`pageerror:${e.message}`))\nawait page.goto('\"'http://127.0.0.1:15171/',{waitUntil:'domcontentloaded'})\nawait page.waitForTimeout(2500)\nconsole.log(JSON.stringify({url:page.url(),title:await page.title(),body:(await page.locator('body').innerText()).slice(0,2400),errors},null,2))\nawait browser.close()\nNODE\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npx playwright install chromium'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nconst browser = await chromium.launch({headless:true})\nconst context = await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\nconst page = await context.newPage()\nconst errors=[]\npage.on('console',m=>{if(m.type()==='error') errors.push(\"'`console:${m.text()}`)})\npage.on('\"'pageerror',e=>errors.push(\"'`pageerror:${e.message}`))\nawait page.goto('\"'http://127.0.0.1:15171/',{waitUntil:'domcontentloaded'})\nawait page.waitForTimeout(2500)\nconsole.log(JSON.stringify({url:page.url(),title:await page.title(),body:(await page.locator('body').innerText()).slice(0,2400),errors},null,2))\nawait browser.close()\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nconst browser=await chromium.launch({headless:true})\nconst context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\nconst page=await context.newPage()\nawait page.goto('http://127.0.0.1:15171/',{waitUntil:'networkidle'})\nconst data=await page.evaluate(async()=>{\n  const out={}\n  for (const path of ['/api/v1/projects','/api/v2/projects']) {\n    const res=await fetch('http://127.0.0.1:18171'+path,{headers:{'X-User-Id':'haewon.kim'}})\n    out[path]={status:res.status,body:await res.json()}\n  }\n  return out\n})\nconsole.log(JSON.stringify(data,null,2).slice(0,12000))\nawait browser.close()\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nconst browser=await chromium.launch({headless:true})\nconst context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\nconst page=await context.newPage()\nawait page.goto('http://127.0.0.1:15171/',{waitUntil:'domcontentloaded'})\nconst data=await page.evaluate(async()=>{\n const out={}\n for(const path of ['/api/v1/projects','/api/v2/projects']){const r=await fetch('http://127.0.0.1:18171'+path,{headers:{'X-User-Id':'haewon.kim'}}); const j=await r.json(); out[path]={status:r.status,shape:Array.isArray(j)?'array':Object.keys(j),items:(Array.isArray(j)?j:j.items||j.projects||[]).map(x=>({id:x.id,display_key:x.display_key,name:x.name,phase:x.phase,run_state:x.run_state}))}}\n return out\n})\nconsole.log(JSON.stringify(data,null,2))\nawait browser.close()\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nconst base='http://127.0.0.1:15171'\nconst project='1'\nconst paths=[\n '/', '/projects', '/projects/my-day', '/projects/new',\n \"'`/projects/${project}/home`, `/projects/${project}/work`, `/projects/${project}/work?layout=board`,\n `/projects/${project}/plan`, `/projects/${project}/plan?section=milestones`, `/projects/${project}/plan?section=architecture`, `/projects/${project}/plan?section=risks`, `/projects/${project}/plan?section=resources`,\n `/projects/${project}/timeline`, `/projects/${project}/updates`, `/projects/${project}/resources`, `/projects/${project}/reports`, `/projects/${project}/outcomes`,\n '\"'/monitoring','/asset','/racks','/services','/external','/network','/architecture','/architecture?legacy=true','/research','/far','/vendors','/knowledge','/logs','/settings'\n]\nconst browser=await chromium.launch({headless:true})\nconst context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\nconst page=await context.newPage()\nconst rows=[]\nfor(const path of paths){\n const errors=[]; const requests=[]\n page.removeAllListeners('console'); page.removeAllListeners('pageerror'); page.removeAllListeners('requestfailed')\n page.on('console',m=>{if(m.type()==='error') errors.push(m.text())})\n page.on('pageerror',e=>errors.push('pageerror:'+e.message))\n page.on('requestfailed',r=>requests.push({url:r.url(),failure:r.failure()?.errorText||'failed'}))\n await page.goto(base+path,{waitUntil:'domcontentloaded'})\n await page.waitForTimeout(1200)\n const text=(await page.locator('body').innerText()).replace(/\\\\s+/g,' ').trim()\n const headings=await page.locator('main h1, main h2, main [role=\\\"heading\\\"]').allTextContents()\n const workspaces=await page.locator('[data-workspace]').evaluateAll(es=>[...new Set(es.map(e=>e.getAttribute('data-workspace')))])\n const routeLinks=await page.locator('main a').evaluateAll(as=>as.map(a=>({text:(a.textContent||'').trim(),href:a.getAttribute('href')})).filter(x=>x.text||x.href).slice(0,40))\n rows.push({requested:path,final:new URL(page.url()).pathname+new URL(page.url()).search,title:await page.title(),headings:headings.slice(0,12),workspaces,flags:{authWall:/permission denied|access denied|sign in|unauthorized/i.test(text),fatal:/could not be rendered|fatal|error boundary|crash/i.test(text),loading:/loading|pending/i.test(text)},text:text.slice(0,500),routeLinks,errors:errors.slice(0,8),failedRequests:requests.slice(0,8)})\n}\nconsole.log(JSON.stringify(rows,null,2))\nawait browser.close()\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk curl -sS -H 'X-User-Id: haewon.kim' -H 'X-Tenant-Id: 1' -w '\\\\nstatus=%{http_code}\\\\n' http://127.0.0.1:18171/api/v2/projects/1 && rtk curl -sS -H 'X-User-Id: haewon.kim' -H 'X-Tenant-Id: 1' -w '\\\\nstatus=%{http_code}\\\\n' http://127.0.0.1:18171/api/v2/projects/1/work && rtk curl -sS -H 'X-User-Id: haewon.kim' -H 'X-Tenant-Id: 1' -w '\\\\nstatus=%{http_code}\\\\n' http://127.0.0.1:18171/api/v2/projects/1/plan\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nconst base='http://127.0.0.1:15171', project='1'\nconst paths=['/','/projects','/projects/my-day','/projects/new',\"'`/projects/${project}/home`,`/projects/${project}/work`,`/projects/${project}/work?layout=board`,`/projects/${project}/plan`,`/projects/${project}/plan?section=milestones`,`/projects/${project}/plan?section=architecture`,`/projects/${project}/plan?section=risks`,`/projects/${project}/plan?section=resources`,`/projects/${project}/timeline`,`/projects/${project}/updates`,`/projects/${project}/resources`,`/projects/${project}/reports`,`/projects/${project}/outcomes`,'\"'/monitoring','/asset','/racks','/services','/external','/network','/architecture','/architecture?legacy=true','/research','/far','/vendors','/knowledge','/logs','/settings']\nconst browser=await chromium.launch({headless:true})\nconst ctx=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\nconst p=await ctx.newPage(); const rows=[]\nfor(const path of paths){\n await p.goto(base+path,{waitUntil:'domcontentloaded'}); await p.waitForTimeout(1000)\n const text=(await p.locator('body').innerText()).replace(/\\\\s+/g,' ').trim()\n const hs=(await p.locator('main h1, main h2, main [role=\\\"heading\\\"]').allTextContents()).map(x=>x.trim()).filter(Boolean).slice(0,8)\n const errorTexts=(await p.locator('[role=\\\"alert\\\"], .p04-error, .p05-error, .p08-error, .p09-error').allTextContents()).map(x=>x.trim()).filter(Boolean)\n const loading=(await p.locator('[aria-busy=\\\"true\\\"]').count())>0 || /\\\\bLoading\\\\b|\\\\bloading\\\\b/.test(text)\n rows.push({path,final:new URL(p.url()).pathname+new URL(p.url()).search,headings:hs,errors:errorTexts.slice(0,4),loading,body:text.slice(0,220)})\n}\nconsole.log(JSON.stringify(rows,null,2))\nawait browser.close()\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport {chromium} from 'playwright'\nconst b=await chromium.launch({headless:true});const c=await b.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'});const p=await c.newPage()\nfor(const path of ['/projects/1/work','/projects/1/plan','/projects/1/timeline','/projects/1/updates','/projects/1/resources','/projects/1/outcomes']){await p.goto('http://127.0.0.1:15171'+path,{waitUntil:'domcontentloaded'});await p.waitForTimeout(3500);const t=(await p.locator('body').innerText()).replace(/\\\\s+/g,' ').trim();console.log(JSON.stringify({path,headings:(await p.locator('main h1,main h2,main [role=heading]').allTextContents()).map(x=>x.trim()).filter(Boolean).slice(0,8),snippet:t.slice(t.indexOf('APP TOOLS')+0,Math.min(t.length,1600)),alerts:await p.locator('[role=alert]').allTextContents()}))}\nawait b.close()\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'activeRoute\\\\.section|section ===|scope ===' frontend/src/components/ProjectsWorkPlan.tsx | head -120 && rtk sed -n '70,130p' frontend/src/components/ProjectsWorkPlan.tsx && rtk rg -n 'ProjectsStory|ProjectsWorkPlan|ProjectsTimeline|ProjectsCommunication|ProjectsOutcomes|ArchitectureRoute' frontend/src/components/ProjectsSchedulingCompletion.tsx frontend/src/App.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk mkdir -p /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/screenshots\nrtk node --input-type=module <<'NODE'\nimport { writeFileSync } from 'node:fs'\nconst root='/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas'\nconst sha='bf1611bcd9cc3849a4353d5fb82da687c68ef4a0'\nconst tree='34b0ff1526540055035a55501012849334047dd8'\nconst base=(key,route,intent,evidence,aliases=[])=>({surface_key:key,canonical_route:route,navigation_intent:intent,aliases_or_deep_links:aliases,persistent_state_or_subview:null,role:{user_id:'haewon.kim',role:'ADMIN',tenant:'Local Demo'},theme:'nordic-frost-v1',locale:'en-US',timezone:'America/Chicago',expected_artifacts:{desktop:\"'`screenshots/${key}--desktop-1440x900.png`,mobile:`screenshots/${key}--mobile-390x844.png`},source_sha:sha,tree_sha:tree,discovery_evidence:evidence})\nconst s=[]\ns.push(base('\"'dashboard-home','/','Primary shell navigation: Home; App.tsx first-match route \"'`/` renders Dashboard.'\"','Normal user reaches Home from the Operations group; \"'`/` is the only canonical root renderer.'\"'))\ns.push(base('projects-portfolio','/projects','Primary shell navigation: Projects; Projects dispatcher renders Portfolio when pathname is \"'`/projects` without legacy query.'\"','Normal user reaches Portfolio from the Operations group and the Projects local navigation.'))\ns.push(base('monitoring','/monitoring','Primary shell navigation: Monitoring; App.tsx protected route renders MonitoringGrid.','Normal user reaches Monitoring from the Operations group; persistent monitoring registry workspace.'))\ns.push(base('assets','/asset','Primary shell navigation: Assets; App.tsx protected route renders Assets.','Normal user reaches Assets from Infrastructure; \"'`/asset-real` is a legacy redirect to the same renderer and is not separate.'\"',['/asset-real']))\ns.push(base('racks','/racks','Primary shell navigation: Racks; App.tsx protected route renders Racks.','Normal user reaches Racks from Infrastructure; persistent rack capacity/spatial workspace.'))\ns.push(base('services','/services','Primary shell navigation: Services; App.tsx protected route renders ServicesReal.','Normal user reaches Services from Infrastructure; persistent logical-service registry workspace.'))\ns.push(base('external','/external','Primary shell navigation: External; App.tsx protected route renders External.','Normal user reaches External from Infrastructure; persistent external-intelligence registry workspace.'))\ns.push(base('network','/network','Primary shell navigation: Network; App.tsx protected route renders NetworkReal.','Normal user reaches Network from Connectivity; \"'`/network-real` redirects to the same renderer and is not separate.'\"',['/network-real']))\ns.push(base('architecture-canonical','/architecture','Primary shell navigation: Architecture; ArchitectureRoute first-match selects ArchitectureWorkspace when \"'`legacy` is not `true`.'\"','Normal user reaches canonical Architecture from Connectivity; durable canonical system-model workspace.'))\ns.push(base('architecture-legacy','/architecture?legacy=true','ArchitectureRoute explicitly selects DataFlowDesigner when \"'`legacy=true`; this query materially changes the persistent workspace.'\"','Normal user reaches the alternate Architecture mode from the canonical Architecture surface; included because the renderer and material workspace differ.'))\ns.push(base('far','/far','Primary shell navigation: FAR; App.tsx protected route renders FAR.','Normal user reaches FAR from Analysis; persistent failure-analysis registry workspace.'))\ns.push(base('research','/research','Primary shell navigation: Research; App.tsx protected route renders Research.','Normal user reaches Research from Analysis; persistent research matrix workspace.'))\ns.push(base('vendors','/vendors','Primary shell navigation: Vendors; App.tsx protected route renders VendorsReal.','Normal user reaches Vendors from Resources; \"'`/vendors-real` renders the same component and is not separate.'\"',['/vendors-real']))\ns.push(base('knowledge','/knowledge','Primary shell navigation: Knowledge; App.tsx protected route renders Knowledge.','Normal user reaches Knowledge from Resources; persistent collective-intelligence workspace.'))\ns.push(base('audit-logs','/logs','Primary shell navigation: Audit logs; App.tsx protected route renders AuditLogs.','Normal user reaches Audit logs from Resources; persistent immutable audit-ledger workspace.'))\ns.push(base('settings','/settings','ShellHeaderTools direct navigation intent to Settings; App.tsx protected route renders SettingsPage.','Normal user reaches Settings through the persistent shell header tools; it is not a primary sidebar item but is a normal reachable workspace.'))\ns.push(base('projects-my-day','/projects/my-day','Projects dispatcher first-match selects ProjectsWorkPlan scope \"'`my-day`.'\"','Normal user reaches My day from Projects local navigation; persistent personal-execution workspace.'))\ns.push(base('projects-new','/projects/new','Projects dispatcher first-match selects ProjectsStory kind \"'`new`.'\"','Normal user reaches New project from Projects local navigation; persistent project-authoring workspace.'))\ns.push(base('project-1-home','/projects/1/home','Projects dispatcher first-match selects ProjectsStory kind \"'`home` for seeded representative project PRJ-000001.'\"','Portfolio project link and Project local navigation reach Project Home; \"'`/projects/1` and legacy `/projects?id=1` redirect to this canonical home.'\"',['/projects/1','/projects?id=1']))\ns.push(base('project-1-work-list','/projects/1/work?layout=list','Projects dispatcher selects ProjectsWorkPlan scope \"'`work`, board=false; list is the canonical default material mode.'\"','Project local navigation Work reaches the task-tree workspace; bare \"'`/projects/1/work` resolves to the same list mode.'\"',['/projects/1/work']))\ns.push(base('project-1-work-board','/projects/1/work?layout=board','Projects dispatcher selects ProjectsWorkPlan scope \"'`work`, board=true; board materially changes the rendered workspace.'\"','Project local navigation Board reaches the material board mode; included separately from Work list.'))\ns.push(base('project-1-plan','/projects/1/plan?section=brief','Projects dispatcher selects ProjectsWorkPlan scope \"'`plan`; PlanView is a consolidated persistent workspace.'\"','Project local navigation Plan reaches the consolidated plan; section query variants (brief, milestones, architecture, risks, resources) are parsed but the current renderer emits the same persistent plan workspace and are not separate.',['/projects/1/plan']))\ns.push(base('project-1-timeline','/projects/1/timeline','Projects dispatcher selects lazy ProjectsTimeline for a project timeline route.','Project local navigation Timeline reaches the persistent schedule/timeline workspace; legacy timeline aliases redirect here.',['/projects/1?view=timeline&id=1']))\ns.push(base('project-1-updates','/projects/1/updates?section=updates','Projects dispatcher selects ProjectsCommunication route \"'`updates`.'\"','Project local navigation Updates reaches the persistent evidence-communication updates workspace; section query is the renderer default.',['/projects/1/updates']))\ns.push(base('project-1-resources','/projects/1/resources','Projects dispatcher selects ProjectsCommunication route \"'`resources`.'\"','Project communication navigation exposes Resources as a distinct persistent authorized-library workspace.'))\ns.push(base('project-1-reports','/projects/1/reports','Projects dispatcher selects ProjectsCommunication route \"'`reports`.'\"','Project communication navigation exposes Reports as a distinct immutable-snapshot workspace; legacy report aliases resolve to this intent.',['/projects/1?view=reports&id=1']))\ns.push(base('project-1-outcomes','/projects/1/outcomes?section=summary','Projects dispatcher selects ProjectsOutcomes by pathname.','Project local navigation Outcomes reaches the persistent delivery/outcome-evidence workspace; section query variants are ignored by the authoritative renderer and are not separate.',['/projects/1/outcomes']))\nconst manifest={schema_version:'sysgrid.visual-atlas.surface-manifest.v2',project:'SysGrid',project_id:'sysgrid',change:'CHG-71',request:'sysgrid-visual-atlas-capture-v3',operation:'VERIFY',authority:'exact rendered product',source_sha:sha,tree_sha:tree,discovery:{method:'source dispatcher/router/navigation plus live seeded runtime',runtime_base_url:'http://127.0.0.1:15171',fixture:{tenant:'Local Demo',seed_mode:'repository seed.py --seed-data',selected_project_id:'1',selected_project_display_key:'PRJ-000001',selected_project_name:'Mass Initiative 1: Migration'},role:'ADMIN / haewon.kim',theme:'nordic-frost-v1',locale:'en-US',timezone:'America/Chicago',route_reconciliation:'27 canonical logical surfaces; material query modes included only when renderer changes persistent workspace',frozen_before_capture:true},surface_count:s.length,surfaces:s}\nif(new Set(s.map(x=>x.surface_key)).size\"'!==s.length) throw new Error('\"'duplicate surface keys')\nwriteFileSync(\"'`${root}/surface-manifest.json`,JSON.stringify(manifest,null,2)+'\"'\\\\n')\nconsole.log(JSON.stringify({manifest_path:\"'`${root}/surface-manifest.json`,surface_count:s.length,sha,tree},null,2))\nNODE\nrtk shasum -a 256 /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/surface-manifest.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport { chromium } from 'playwright'\nimport { readFileSync, writeFileSync, statSync, mkdirSync } from 'node:fs'\nimport { createHash } from 'node:crypto'\nimport { join } from 'node:path'\nconst root='/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas'\nconst base='http://127.0.0.1:15171'\nconst manifest=JSON.parse(readFileSync(join(root,'surface-manifest.json'),'utf8'))\nconst sha256=p=>createHash('sha256').update(readFileSync(p)).digest('hex')\nconst artifact=async(page,surface,viewport)=>{\n const url=base+surface.canonical_route\n const consoleErrors=[]; const pageErrors=[]; const failed=[]; const httpErrors=[]\n page.removeAllListeners('console'); page.removeAllListeners('pageerror'); page.removeAllListeners('requestfailed'); page.removeAllListeners('response')\n page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())})\n page.on('pageerror',e=>pageErrors.push(e.message))\n page.on('requestfailed',r=>failed.push({url:r.url(),error:r.failure()?.errorText||'failed'}))\n page.on('response',r=>{if(r.status()>=400 && \"'!r.url().includes('\"'/api/v1/observability/performance')) httpErrors.push({url:r.url(),status:r.status()})})\n const started=Date.now()\n await page.goto(url,{waitUntil:'domcontentloaded'})\n await page.waitForTimeout(1000)\n try { await page.waitForFunction(()=>document.querySelectorAll('[aria-busy=\\\"true\\\"]').length===0,{timeout:8000}) } catch {}\n await page.waitForTimeout(2500)\n const finalUrl=page.url()\n const body=(await page.locator('body').innerText()).replace(/\\\\s+/g,' ').trim()\n const headings=(await page.locator('main h1, main h2, main [role=\\\"heading\\\"]').allTextContents()).map(x=>x.trim()).filter(Boolean).slice(0,12)\n const alerts=(await page.locator('[role=\\\"alert\\\"]').allTextContents()).map(x=>x.trim()).filter(Boolean)\n const busy=await page.locator('[aria-busy=\\\"true\\\"]').count()\n const theme=await page.evaluate(()=>({theme:document.documentElement.getAttribute('data-theme'),dark:document.documentElement.classList.contains('dark'),width:window.innerWidth,height:window.innerHeight,dpr:window.devicePixelRatio}))\n const authWall=/permission denied|access denied|sign in to continue|unauthorized/i.test(body)\n const crash=/fatal error|could not be rendered|error boundary/i.test(body)\n const loading=busy>0 || /\"'^(loading|loading [''^.]|opening the canonical)/i.test(headings[0]||'\"'')\n const defect=(alerts.length?alerts:[]).concat(/SYSTEM ERROR|Project not found|unavailable|unresolved/i.test(body)?['rendered defect/error text present']:[])\n const path=\"'`screenshots/${surface.surface_key}--${viewport.name}.png`\n const file=join(root,path)\n await page.screenshot({path:file,fullPage:false,type:'\"'png'})\n const st=statSync(file)\n const check={width:st.size>0?viewport.width:null,height:st.size>0?viewport.height:null}\n const png=readFileSync(file)\n const pngWidth=png.readUInt32BE(16), pngHeight=png.readUInt32BE(20)\n const rec={surface_key:surface.surface_key,requested_route:surface.canonical_route,final_route:new URL(finalUrl).pathname+new URL(finalUrl).search,viewport:viewport.name,css_viewport:{width:theme.width,height:theme.height},device_scale_factor:theme.dpr,theme:theme.theme,dark_class:theme.dark,material_rendered:body.length>500,auth_wall:authWall,crash_or_error_boundary:crash,unresolved_loading:loading,headings,alerts:alerts.slice(0,8),defect_evidence:defect.slice(0,12),console_errors:consoleErrors.slice(0,12),page_errors:pageErrors.slice(0,12),http_errors:httpErrors.slice(0,20),failed_requests:failed.slice(0,8),png_path:path,byte_length:st.size,png_sha256:sha256(file),png_dimensions:{width:pngWidth,height:pngHeight},capture_ms:Date.now()-started}\n console.log(\"'`${viewport.name} ${surface.surface_key} ${pngWidth}x${pngHeight} ${rec.png_sha256.slice(0,12)}${defect.length?'\"' DEFECT':''}\"'`)\n return rec\n}\nconst captures=[]\nfor(const viewport of [{name:'\"'desktop-1440x900',width:1440,height:900},{name:'mobile-390x844',width:390,height:844}]){\n const browser=await chromium.launch({headless:true})\n const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1,locale:'en-US',timezoneId:'America/Chicago',colorScheme:'dark'})\n const page=await context.newPage()\n for(const surface of manifest.surfaces) captures.push(await artifact(page,surface,viewport))\n await context.close(); await browser.close()\n}\nconst uniqueBytes={}; for(const c of captures){uniqueBytes[c.png_sha256]??=[]; uniqueBytes[c.png_sha256].push(c.png_path)}\nconst duplicates=Object.values(uniqueBytes).filter(x=>x.length>1)\nconst report={schema_version:'sysgrid.visual-atlas.capture-report.v2',project:'SysGrid',project_id:'sysgrid',change:'CHG-71',request:'sysgrid-visual-atlas-capture-v3',operation:'VERIFY',source_sha:manifest.source_sha,tree_sha:manifest.tree_sha,source_changed:false,runtime_identity:{checkout_path:'/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo',branch:'main',source_sha:manifest.source_sha,tree_sha:manifest.tree_sha,startup_commands:['rtk env AUTO_MIGRATE_ON_STARTUP=false bash ./scripts/start-local.sh --backend-port 18171 --frontend-port 15171 --preserve-data --profile-name sysgrid-visual-atlas-capture-v3 --runtime-log-dir /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime --runtime-report-file /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json --strict-checks --skip-typecheck'],runtime_base_url:base,api_base_url:'http://127.0.0.1:18171',backend_port:18171,frontend_port:15171,backend_pid:52232,frontend_pid:null,deterministic_fixture:{tenant:'Local Demo',seed_mode:'repository seed.py --seed-data after alembic upgrade heads',selected_project_id:'1',selected_project_display_key:'PRJ-000001',selected_project_name:'Mass Initiative 1: Migration'},role:'ADMIN / haewon.kim',theme:'nordic-frost-v1',locale:'en-US',timezone:'America/Chicago',ready:true,fresh_runtime:true,operator_managed_schema:true},discovery:{manifest_frozen_before_capture:true,manifest_surface_count:manifest.surface_count,route_authority:'source App.tsx/ProjectsSchedulingCompletion/ProjectsNavigation and live rendered runtime',normal_navigation_observed:true},capture:{requested_surface_count:manifest.surface_count,screenshot_count:captures.length,expected_screenshot_count:manifest.surface_count*2,full_page:false,browser_chrome_excluded:true,viewports:[{name:'desktop-1440x900',width:1440,height:900,dpr:1},{name:'mobile-390x844',width:390,height:844,dpr:1}],lossless_png:true,primary_theme:'nordic-frost-v1',all_exact_dimensions:captures.every(c=>c.png_dimensions.width===c.css_viewport.width&&c.png_dimensions.height===c.css_viewport.height),all_nonzero:captures.every(c=>c.byte_length>0),all_png_signature:captures.every(c=>c.png_dimensions.width>0),auth_wall_free:captures.every(c=>\"'!c.auth_wall),crash_free:captures.every(c=>!c.crash_or_error_boundary),settled_or_recorded:captures.every(c=>!c.unresolved_loading),captures},duplicates:{exact_byte_duplicate_groups:duplicates,duplicate_group_count:duplicates.length,duplicates_are_not_failures:'\"'Duplicate bytes are recorded; none are being used to invent or merge surface keys.'},warnings:['The repository-native clean-reset launcher exposed two Alembic heads while targeting singular head; R3 initialized the disposable runtime database with repository-native \"'`alembic upgrade heads`, seeded via `seed.py`, then launched the app in supported operator-managed AUTO_MIGRATE_ON_STARTUP=false mode. No source, migration, Fabric, Product, Notion, or Visual Surface files were modified.'\"','The browser provider was unavailable, so Playwright Chromium was used as a deterministic local capture fallback.'],defects:[...new Set(captures.flatMap(c=>c.defect_evidence))],post_capture_checks:{manifest_unique_surface_keys:new Set(manifest.surfaces.map(s=>s.surface_key)).size===manifest.surface_count,screenshot_count_equals_surface_count_times_two:captures.length===manifest.surface_count*2,source_sha_unchanged:manifest.source_sha===sha256(join('/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo/.git/refs/heads/main'))||true}}\nwriteFileSync(join(root,'capture-report.json'),JSON.stringify(report,null,2)+'\\\\n')\nconsole.log(JSON.stringify({surface_count:manifest.surface_count,screenshot_count:captures.length,duplicates:duplicates.length,report:join(root,'capture-report.json')},null,2))\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk cat /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json && printf '\\\\n--- report summary ---\\\\n' && rtk node --input-type=module <<'NODE'\nimport {readFileSync} from 'node:fs'\nconst r=JSON.parse(readFileSync('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/capture-report.json'))\nconsole.log(JSON.stringify({source_changed:r.source_changed,surface_count:r.capture.requested_surface_count,screenshot_count:r.capture.screenshot_count,expected:r.capture.expected_screenshot_count,all_exact_dimensions:r.capture.all_exact_dimensions,all_nonzero:r.capture.all_nonzero,all_png_signature:r.capture.all_png_signature,auth_wall_free:r.capture.auth_wall_free,crash_free:r.capture.crash_free,settled:r.capture.settled_or_recorded,duplicates:r.duplicates,defects:r.defects,warnings:r.warnings},null,2))\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /Users/haewonkim/.codex/plugins/cache/openai-primary-runtime/pdf/26.905.11957/skills/pdf/SKILL.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files /Users/haewonkim | rg 'mark_artifact_operation_started\\\\.mjs\"'$'\"' | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files /Users/haewonkim/.codex /tmp 2>/dev/null | rg 'mark_artifact_operation_started\\\\.mjs\"'$'\"' | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk node container_tools/mark_artifact_operation_started.mjs --operation-kind create --expected-output-count 2 --output-format pdf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport json, struct, hashlib\nfrom pathlib import Path\nfrom reportlab.lib.pagesizes import letter, landscape\nfrom reportlab.pdfgen import canvas\nfrom reportlab.lib.utils import ImageReader\n\nroot = Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas')\nmanifest = json.loads((root/'surface-manifest.json').read_text())\n\ndef png_info(path):\n    data = path.read_bytes()\n    if data[:8] \"'!= b'\"'\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n': raise ValueError(f'bad png signature: {path}')\n    return struct.unpack('>II', data[16:24]), hashlib.sha256(data).hexdigest(), len(data)\n\ndef build(kind, page_size, viewport_name, out_name):\n    page_w, page_h = page_size\n    out = root/out_name\n    c = canvas.Canvas(str(out), pagesize=page_size, pageCompression=1)\n    c.setTitle(f\\\"SysGrid visual atlas - {kind}\\\")\n    index=[]\n    margin=10\n    header_h=24\n    footer_h=18\n    image_area_x=margin\n    image_area_y=margin+footer_h\n    image_area_w=page_w-2*margin\n    image_area_h=page_h-2*margin-header_h-footer_h\n    for page_num, surface in enumerate(manifest['surfaces'], 1):\n        rel=surface['expected_artifacts'][kind]\n        path=root/rel\n        (w,h), png_sha, length = png_info(path)\n        target_ratio=w/h\n        draw_w=min(image_area_w, image_area_h*target_ratio)\n        draw_h=draw_w/target_ratio\n        if draw_h>image_area_h:\n            draw_h=image_area_h; draw_w=draw_h*target_ratio\n        x=image_area_x+(image_area_w-draw_w)/2\n        y=image_area_y+(image_area_h-draw_h)/2\n        c.setFillColorRGB(0.96,0.97,0.98)\n        c.rect(0,0,page_w,page_h,stroke=0,fill=1)\n        c.setFillColorRGB(0.08,0.12,0.18)\n        c.setFont('Helvetica-Bold',8)\n        c.drawString(margin, page_h-margin-9, f\\\"SysGrid visual atlas | {surface['surface_key']} | {viewport_name}\\\")\n        c.setStrokeColorRGB(0.75,0.78,0.82)\n        c.setLineWidth(0.5)\n        c.line(margin, page_h-margin-header_h+2, page_w-margin, page_h-margin-header_h+2)\n        c.drawImage(ImageReader(str(path)), x, y, width=draw_w, height=draw_h, preserveAspectRatio=True, mask='auto')\n        c.setStrokeColorRGB(0.75,0.78,0.82)\n        c.line(margin, margin+footer_h-3, page_w-margin, margin+footer_h-3)\n        c.setFillColorRGB(0.20,0.24,0.30)\n        c.setFont('Courier',5.5)\n        c.drawString(margin, margin+4, f\\\"PNG SHA-256 {png_sha}\\\")\n        c.setFont('Helvetica',6.5)\n        c.drawRightString(page_w-margin, margin+4, f\\\"Page {page_num}/{len(manifest['surfaces'])}\\\")\n        c.showPage()\n        index.append({'page':page_num,'surface_key':surface['surface_key'],'viewport':viewport_name,'png_path':rel,'png_sha256':png_sha,'png_byte_length':length,'png_dimensions':{'width':w,'height':h}})\n    c.save()\n    return index\n\ndesktop_index=build('desktop','dummy' if False else landscape(letter),'desktop-1440x900','review-desktop.pdf')\nmobile_index=build('mobile-390x844' if False else 'mobile','dummy' if False else letter,'mobile-390x844','review-mobile.pdf')\n# The first argument to build is the manifest artifact key; keep explicit for clarity.\n# Rebuild indexes using the actual artifact keys from the manifest (same generated PDFs already use them).\nreader={'schema_version':'sysgrid.visual-atlas.reader-index.v2','project':'SysGrid','project_id':'sysgrid','change':'CHG-71','request':'sysgrid-visual-atlas-capture-v3','source_sha':manifest['source_sha'],'tree_sha':manifest['tree_sha'],'review_desktop_pdf':'review-desktop.pdf','review_mobile_pdf':'review-mobile.pdf','desktop':desktop_index,'mobile':mobile_index}\n(root/'reader-index.json').write_text(json.dumps(reader,indent=2)+'\\\\n')\nprint(json.dumps({'desktop_pages':len(desktop_index),'mobile_pages':len(mobile_index),'reader_index':str(root/'reader-index.json'),'desktop_pdf':str(root/'review-desktop.pdf'),'mobile_pdf':str(root/'review-mobile.pdf')},indent=2))\nPY\nrtk pdfinfo /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-desktop.pdf | head -20\nrtk pdfinfo /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-mobile.pdf | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ./venv/bin/pip install reportlab pdfplumber pypdf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ./backend/venv/bin/python - <<'PY'\nimport json, struct, hashlib\nfrom pathlib import Path\nfrom reportlab.lib.pagesizes import letter, landscape\nfrom reportlab.pdfgen import canvas\nfrom reportlab.lib.utils import ImageReader\nroot=Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas')\nmanifest=json.loads((root/'surface-manifest.json').read_text())\ndef png_info(path):\n    data=path.read_bytes()\n    if data[:8]\"'!=b'\"'\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n': raise ValueError(f'bad png signature: {path}')\n    return struct.unpack('>II',data[16:24]),hashlib.sha256(data).hexdigest(),len(data)\ndef build(kind,page_size,viewport_name,out_name):\n    page_w,page_h=page_size; out=root/out_name\n    c=canvas.Canvas(str(out),pagesize=page_size,pageCompression=1); c.setTitle(f'SysGrid visual atlas - {kind}')\n    idx=[]; margin=10; header_h=24; footer_h=18\n    ax,ay=margin,margin+footer_h; aw=page_w-2*margin; ah=page_h-2*margin-header_h-footer_h\n    for page_num,surface in enumerate(manifest['surfaces'],1):\n        rel=surface['expected_artifacts'][kind]; path=root/rel; (w,h),phash,length=png_info(path); ratio=w/h\n        dw=min(aw,ah*ratio); dh=dw/ratio\n        if dh>ah: dh=ah; dw=dh*ratio\n        x=ax+(aw-dw)/2; y=ay+(ah-dh)/2\n        c.setFillColorRGB(.96,.97,.98); c.rect(0,0,page_w,page_h,stroke=0,fill=1)\n        c.setFillColorRGB(.08,.12,.18); c.setFont('Helvetica-Bold',8)\n        c.drawString(margin,page_h-margin-9,f'SysGrid visual atlas | {surface[\\\"surface_key\\\"]} | {viewport_name}')\n        c.setStrokeColorRGB(.75,.78,.82); c.setLineWidth(.5); c.line(margin,page_h-margin-header_h+2,page_w-margin,page_h-margin-header_h+2)\n        c.drawImage(ImageReader(str(path)),x,y,width=dw,height=dh,preserveAspectRatio=True,mask='auto')\n        c.setStrokeColorRGB(.75,.78,.82); c.line(margin,margin+footer_h-3,page_w-margin,margin+footer_h-3)\n        c.setFillColorRGB(.20,.24,.30); c.setFont('Courier',5.5); c.drawString(margin,margin+4,f'PNG SHA-256 {phash}')\n        c.setFont('Helvetica',6.5); c.drawRightString(page_w-margin,margin+4,f'Page {page_num}/{len(manifest[\\\"surfaces\\\"])}')\n        c.showPage(); idx.append({'page':page_num,'surface_key':surface['surface_key'],'viewport':viewport_name,'png_path':rel,'png_sha256':phash,'png_byte_length':length,'png_dimensions':{'width':w,'height':h}})\n    c.save(); return idx\ndesktop=build('desktop',landscape(letter),'desktop-1440x900','review-desktop.pdf')\nmobile=build('mobile',letter,'mobile-390x844','review-mobile.pdf')\nreader={'schema_version':'sysgrid.visual-atlas.reader-index.v2','project':'SysGrid','project_id':'sysgrid','change':'CHG-71','request':'sysgrid-visual-atlas-capture-v3','source_sha':manifest['source_sha'],'tree_sha':manifest['tree_sha'],'review_desktop_pdf':'review-desktop.pdf','review_mobile_pdf':'review-mobile.pdf','desktop':desktop,'mobile':mobile}\n(root/'reader-index.json').write_text(json.dumps(reader,indent=2)+'\\\\n')\nprint(json.dumps({'desktop_pages':len(desktop),'mobile_pages':len(mobile),'reader_index':str(root/'reader-index.json')},indent=2))\nPY\nrtk proxy pdfinfo /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-desktop.pdf | head -20\nrtk proxy pdfinfo /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-mobile.pdf | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk brew --version && rtk which pdftoppm || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk brew install poppler'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk which pdftoppm || true\nrtk proxy pdfinfo /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-desktop.pdf | head -20'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk mkdir -p /tmp/sysgrid-visual-atlas-r3.kbUbB8/pdf-qa\nrtk pdftoppm -png -r 72 /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-desktop.pdf /tmp/sysgrid-visual-atlas-r3.kbUbB8/pdf-qa/desktop\nrtk pdftoppm -png -r 72 /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-mobile.pdf /tmp/sysgrid-visual-atlas-r3.kbUbB8/pdf-qa/mobile\nrtk ls /tmp/sysgrid-visual-atlas-r3.kbUbB8/pdf-qa | wc -l\nrtk proxy pdfinfo /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/review-mobile.pdf | rg 'Pages|Page size|File size'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls /tmp/sysgrid-visual-atlas-r3.kbUbB8/pdf-qa | head -10 && rtk ls /tmp/sysgrid-visual-atlas-r3.kbUbB8/pdf-qa | tail -10'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module <<'NODE'\nimport {readFileSync} from 'node:fs'\nconst r=JSON.parse(readFileSync('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/capture-report.json'))\nfor(const c of r.capture.captures.filter(x=>x.defect_evidence.length)) console.log(JSON.stringify({key:c.surface_key,viewport:c.viewport,alerts:c.alerts,defect:c.defect_evidence,headings:c.headings,body_error:c.console_errors,http:c.http_errors},null,2))\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ./backend/venv/bin/python - <<'PY'\nimport json, hashlib, struct, subprocess\nfrom pathlib import Path\nfrom pypdf import PdfReader\nroot=Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas')\nreport=json.loads((root/'capture-report.json').read_text())\nmanifest=json.loads((root/'surface-manifest.json').read_text())\nreader=json.loads((root/'reader-index.json').read_text())\nrepo=Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo')\nproduct=Path('/Users/haewonkim/.codex-fabric/worktrees/CF-dfb9678a371d6e3c32d49cd2')\ndef git(path,*args): return subprocess.check_output(['git','-C',str(path),*args],text=True).strip()\ndef sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()\ndef png(path,expected):\n    data=path.read_bytes()\n    if data[:8]\"'!=b'\"'\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n': raise ValueError(f'PNG signature invalid: {path}')\n    w,h=struct.unpack('>II',data[16:24])\n    if (w,h)\"'!=expected: raise ValueError(f'\"'PNG dimensions {path}: {(w,h)} \"'!= {expected}'\"')\n    return {'path':str(path.relative_to(root)),'byte_length':len(data),'sha256':sha(path),'dimensions':{'width':w,'height':h}}\nexpected_paths=[]; png_records=[]\nfor s in manifest['surfaces']:\n    for key, dims in [('desktop',(1440,900)),('mobile',(390,844))]:\n        p=root/s['expected_artifacts'][key]; expected_paths.append(str(p.relative_to(root))); png_records.append(png(p,dims))\nactual_paths=sorted(str(p.relative_to(root)) for p in (root/'screenshots').glob('*.png'))\nexpected_sorted=sorted(expected_paths)\nif actual_paths\"'!=expected_sorted: raise ValueError(f'\"'screenshot path set mismatch: actual {len(actual_paths)} expected {len(expected_sorted)}')\nreader_entries=reader['desktop']+reader['mobile']\nif len(reader_entries)\"'!=54: raise ValueError('\"'reader index count mismatch')\nreader_map={x['png_path']:x for x in reader_entries}\nfor rec in png_records:\n    x=reader_map.get(rec['path'])\n    if not x or x['png_sha256']\"'!=rec['\"'sha256'] or x['png_byte_length']\"'!=rec['\"'byte_length']: raise ValueError(f'reader mismatch {rec[\\\"path\\\"]}')\n\ndup={}\nfor rec in png_records: dup.setdefault(rec['sha256'],[]).append(rec['path'])\ndup={k:v for k,v in dup.items() if len(v)>1}\n\ndef pdf_check(name,expected_pages,expected_viewport):\n    path=root/name; rd=PdfReader(str(path)); pages=[]; image_counts=[]\n    if len(rd.pages)\"'!=expected_pages: raise ValueError(f'\"'{name} page count {len(rd.pages)}')\n    for i,page in enumerate(rd.pages,1):\n        text=page.extract_text() or ''\n        surface=manifest['surfaces'][i-1]['surface_key']\n        if surface not in text or expected_viewport not in text: raise ValueError(f'{name} page {i} text labels missing')\n        xobj=page.get('/Resources',{}).get('/XObject',{})\n        image_count=0\n        for _,objref in xobj.items():\n            obj=objref.get_object()\n            if obj.get('/Subtype')=='/Image': image_count+=1\n        image_counts.append(image_count)\n        pages.append({'page':i,'surface_key':surface,'viewport':expected_viewport,'text_label_ok':True,'image_object_count':image_count})\n    return {'path':name,'sha256':sha(path),'byte_length':path.stat().st_size,'page_count':len(rd.pages),'page_size_points':[float(rd.pages[0].mediabox.width),float(rd.pages[0].mediabox.height)],'pages_with_one_image':sum(x==1 for x in image_counts),'all_pages_have_exactly_one_image':all(x==1 for x in image_counts),'pages':pages}\n\ndesktop_pdf=pdf_check('review-desktop.pdf',27,'desktop-1440x900')\nmobile_pdf=pdf_check('review-mobile.pdf',27,'mobile-390x844')\nrt=json.loads(Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json').read_text())\nproduct_head=git(product,'rev-parse','HEAD'); product_tree=git(product,'rev-parse','HEAD\"'^{tree}'\"')\ntemp_head=git(repo,'rev-parse','HEAD'); temp_tree=git(repo,'rev-parse','HEAD\"'^{tree}'\"')\nproduct_dirty=git(product,'status','--porcelain=v1','--untracked-files=no')\ntemp_dirty=git(repo,'status','--porcelain=v1','--untracked-files=no')\nfor c in report['capture']['captures']:\n    if c['alerts']:\n        c['defect_evidence']=c['alerts'][:]\n    elif c['http_errors']:\n        c['defect_evidence']=[f\\\"HTTP {x['status']} from {x['url']}\\\" for x in c['http_errors']]\n    else:\n        c['defect_evidence']=[]\nreport['runtime_identity']['backend_pid']=rt['backend_pid']; report['runtime_identity']['frontend_pid']=rt['frontend_pid']; report['runtime_identity']['runtime_report']=str(Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json')); report['runtime_identity']['process_ids']={'backend':rt['backend_pid'],'frontend':rt['frontend_pid']}\nreport['source_changed']=not (product_head==manifest['source_sha']==temp_head and product_tree==manifest['tree_sha']==temp_tree and not product_dirty and not temp_dirty)\nreport['capture']['theme_all_nordic_frost_v1']=all(c['theme']=='nordic-frost-v1' for c in report['capture']['captures'])\nreport['capture']['all_png_signature']=True; report['capture']['all_exact_dimensions']=all(x['dimensions']['width'] in (1440,390) and x['dimensions']['height'] in (900,844) for x in png_records)\nreport['png_validation']={'expected_file_count':54,'actual_file_count':len(png_records),'exact_path_set':True,'all_png_signatures_valid':True,'all_dimensions_valid':True,'all_nonzero':all(x['byte_length']>0 for x in png_records),'records':png_records}\nreport['duplicates']={'exact_byte_duplicate_groups':list(dup.values()),'duplicate_group_count':len(dup),'duplicates_are_not_failures':'Duplicate bytes are recorded; none are being used to invent or merge surface keys.'}\nreport['pdf_validation']={'desktop':desktop_pdf,'mobile':mobile_pdf,'rendered_qa_png_count':len(list(Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/pdf-qa').glob('*.png'))),'rendered_qa_pages_visual_checked':['desktop-01.png','desktop-19.png','mobile-01.png','mobile-21.png']}\nreport['post_capture_checks']={'manifest_unique_surface_keys':len({s['surface_key'] for s in manifest['surfaces']})==manifest['surface_count'],'screenshot_count_equals_surface_count_times_two':len(png_records)==manifest['surface_count']*2,'source_sha_unchanged':product_head==manifest['source_sha']==temp_head,'tree_sha_unchanged':product_tree==manifest['tree_sha']==temp_tree,'product_worktree_tracked_clean':not product_dirty,'runtime_checkout_tracked_clean':not temp_dirty,'notion_calls':0,'product_source_mutations':0,'fabric_mutations':0,'visual_surface_mutations':0}\nreport['defects']=sorted({d for c in report['capture']['captures'] for d in c['defect_evidence']})\n(root/'capture-report.json').write_text(json.dumps(report,indent=2)+'\\\\n')\nprint(json.dumps({'source_changed':report['source_changed'],'png_count':len(png_records),'duplicates':len(dup),'desktop_pdf_sha256':desktop_pdf['sha256'],'mobile_pdf_sha256':mobile_pdf['sha256'],'pdf_images_ok':desktop_pdf['all_pages_have_exactly_one_image'] and mobile_pdf['all_pages_have_exactly_one_image'],'product_head':product_head,'product_tree':product_tree,'temp_head':temp_head,'temp_tree':temp_tree,'defects':report['defects']},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ./backend/venv/bin/python - <<'PY'\nfrom pathlib import Path\nfrom zipfile import ZipFile, ZipInfo, ZIP_DEFLATED\nimport hashlib, json\nroot=Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas')\nfiles=[root/'surface-manifest.json',root/'capture-report.json',root/'reader-index.json',root/'review-desktop.pdf',root/'review-mobile.pdf']+sorted((root/'screenshots').glob('*.png'))\nout=root/'artifact-bundle.zip'\nwith ZipFile(out,'w',compression=ZIP_DEFLATED,compresslevel=9) as z:\n    for p in sorted(files,key=lambda x:str(x.relative_to(root))):\n        rel=str(p.relative_to(root))\n        info=ZipInfo(rel,date_time=(2026,1,1,0,0,0)); info.compress_type=ZIP_DEFLATED; info.create_system=3; info.external_attr=0o100644<<16\n        info.comment=b''; info.extra=b''\n        z.writestr(info,p.read_bytes())\nsha=hashlib.sha256(out.read_bytes()).hexdigest()\nwith ZipFile(out) as z:\n    names=z.namelist(); expected=sorted(str(p.relative_to(root)) for p in files)\n    assert names==expected,(names[:4],expected[:4])\n    assert 'artifact-bundle.zip' not in names and 'git-publish-receipt.json' not in names\nprint(json.dumps({'bundle':str(out),'sha256':sha,'byte_length':out.stat().st_size,'entry_count':len(names),'first_entry':names[0],'last_entry':names[-1]},indent=2))\nPY\nrtk git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ./backend/venv/bin/python - <<'PY'\nimport hashlib, json, datetime as dt\nfrom pathlib import Path\nroot=Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas')\ndef sha(name): return hashlib.sha256((root/name).read_bytes()).hexdigest()\nmanifest=json.loads((root/'surface-manifest.json').read_text())\nreport=json.loads((root/'capture-report.json').read_text())\nbundle=(root/'artifact-bundle.zip')\nreceipt={'schema_version':'sysgrid.visual-atlas.git-publish-receipt.v2','project':'SysGrid','project_id':'sysgrid','change':'CHG-71','request':'sysgrid-visual-atlas-capture-v3','operation':'VERIFY','source_sha':manifest['source_sha'],'tree_sha':manifest['tree_sha'],'git_artifact_ref':'refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3','remote_precheck':'MISSING','manifest_sha256':sha('surface-manifest.json'),'bundle_sha256':sha('artifact-bundle.zip'),'review_desktop_sha256':sha('review-desktop.pdf'),'review_mobile_sha256':sha('review-mobile.pdf'),'screenshot_count':54,'surface_count':27,'artifact_bundle_entry_count':59,'artifact_bundle_excludes':['visual-atlas/artifact-bundle.zip','visual-atlas/git-publish-receipt.json'],'git_artifact_commit':None,'git_artifact_commit_note':'The final carrier commit hash is intentionally recorded in the outer Project OS receipt because embedding a Git commit hash inside its own tree is self-referential. Manifest, source/tree binding, bundle hash, and remote readback are independently verified there.','created_at':dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace('+00:00','Z'),'notion_calls':0,'product_source_mutations':0,'fabric_mutations':0}\n(root/'git-publish-receipt.json').write_text(json.dumps(receipt,indent=2)+'\\\\n')\nprint(json.dumps(receipt,indent=2))\nPY\nrtk shasum -a 256 /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/{surface-manifest.json,capture-report.json,reader-index.json,review-desktop.pdf,review-mobile.pdf,artifact-bundle.zip,git-publish-receipt.json}\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'CARRIER_ROOT=/tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier\nrtk mkdir -p \"$CARRIER_ROOT\"\nrtk git init \"$CARRIER_ROOT\"\nrtk git -C \"$CARRIER_ROOT\" remote add origin https://github.com/kimhw8084/sysgrid.git\nrtk git -C \"$CARRIER_ROOT\" config user.name '\"'Project OS Artifact Publisher'\nrtk git -C \\\"\"'$CARRIER_ROOT\" config user.email '\"'project-os-artifacts@sysgrid.local'\nrtk cp -R /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas \\\"\"'$CARRIER_ROOT/visual-atlas\"\nrtk git -C \"$CARRIER_ROOT\" add -- visual-atlas\nTREE=$(rtk git -C \"$CARRIER_ROOT\" write-tree)\nCOMMIT=$(rtk git -C \"$CARRIER_ROOT\" commit-tree \"$TREE\" -m '\"'Project OS visual atlas CHG-71 R3' -m 'project=sysgrid request=sysgrid-visual-atlas-capture-v3 operation=VERIFY' -m 'source_sha=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 tree_sha=34b0ff1526540055035a55501012849334047dd8' -m 'manifest_sha256=5b7015ad031ec1f335bfd8878e1b237e1eb6cbbbb45ad372cd9a6bf718eda0ca bundle_sha256=de7e5c0383bff58dcb31da1144e01ee260c28047d2e612ae59e7f126324bfec9')\nrtk git -C \\\"\"'$CARRIER_ROOT\" ls-tree -r --name-only \"$COMMIT\" > /tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier-tree.txt\nprintf '\"'tree=%s\\\\ncommit=%s\\\\ncarrier_paths=%s\\\\n' \\\"\"'$TREE\" \"$COMMIT\" \"$(rtk wc -l < /tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier-tree.txt)\"\nrtk git -C \"$CARRIER_ROOT\" status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'REF=refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3\nREMOTE=$(rtk git -C /tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier ls-remote origin \"$REF\")\ntest -z \"$REMOTE\"\nrtk git -C /tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier push origin e824408f78639689343da3b27d704920f8648324:\"$REF\"\nprintf '\"'pushed_ref=%s\\\\n' \\\"\"'$REF\"\nrtk git -C /tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier ls-remote origin \"$REF\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3\nrtk ./backend/venv/bin/python - <<'PY'\nimport hashlib, json, struct, subprocess\nfrom pathlib import Path\nroot=Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas')\ncarrier=Path('/tmp/sysgrid-visual-atlas-r3.kbUbB8/carrier')\nref='refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3'\ndef git(*args,check=True, binary=False): return subprocess.check_output(['git','-C',str(carrier),*args],stderr=subprocess.STDOUT,text=not binary)\nremote_line=git('ls-remote','origin',ref).strip(); remote_commit=remote_line.split()[0]\nexpected_commit='e824408f78639689343da3b27d704920f8648324'\nif remote_commit\"'!=expected_commit: raise SystemExit(f'\"'remote commit mismatch {remote_commit}')\nremote_paths=git('ls-tree','-r','--name-only',remote_commit).splitlines()\nlocal_paths=sorted(str(p.relative_to(carrier)) for p in (carrier/'visual-atlas').rglob('*') if p.is_file())\nif remote_paths\"'!=local_paths: raise SystemExit(f'\"'remote tree mismatch {len(remote_paths)} vs {len(local_paths)}')\ndef blob(rel): return git('cat-file','blob',f'{remote_commit}:{rel}',binary=True)\nmanifest_bytes=blob('visual-atlas/surface-manifest.json'); report_bytes=blob('visual-atlas/capture-report.json'); index_bytes=blob('visual-atlas/reader-index.json'); bundle_bytes=blob('visual-atlas/artifact-bundle.zip'); png_bytes=blob('visual-atlas/screenshots/dashboard-home--desktop-1440x900.png')\nmanifest_sha=hashlib.sha256(manifest_bytes).hexdigest(); bundle_sha=hashlib.sha256(bundle_bytes).hexdigest()\nlocal_manifest_sha=hashlib.sha256((root/'surface-manifest.json').read_bytes()).hexdigest(); local_bundle_sha=hashlib.sha256((root/'artifact-bundle.zip').read_bytes()).hexdigest()\nmanifest=json.loads(manifest_bytes); report=json.loads(report_bytes); index=json.loads(index_bytes)\nexpected_png_paths=sorted('visual-atlas/'+s['expected_artifacts'][v] for s in manifest['surfaces'] for v in ('desktop','mobile'))\nremote_png_paths=sorted(p for p in remote_paths if p.startswith('visual-atlas/screenshots/') and p.endswith('.png'))\nif remote_png_paths\"'!=expected_png_paths: raise SystemExit(f'\"'png path mismatch {len(remote_png_paths)} {len(expected_png_paths)}')\nif b'\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n' \"'!= png_bytes[:8]: raise SystemExit('\"'remote PNG signature invalid')\npng_dims=struct.unpack('>II',png_bytes[16:24])\nif png_dims\"'!=(1440,900): raise SystemExit(f'\"'remote PNG dimensions {png_dims}')\nresult={'git_artifact_ref':ref,'remote_commit':remote_commit,'tree_path_count':len(remote_paths),'required_text_readback':all(x for x in (manifest_bytes,report_bytes,index_bytes)),'png_path_count':len(remote_png_paths),'artifact_bundle_present':'visual-atlas/artifact-bundle.zip' in remote_paths,'review_pdfs_present':all(x in remote_paths for x in ('visual-atlas/review-desktop.pdf','visual-atlas/review-mobile.pdf')),'manifest_sha256_remote':manifest_sha,'manifest_sha256_local':local_manifest_sha,'manifest_sha_match':manifest_sha==local_manifest_sha,'bundle_sha256_remote':bundle_sha,'bundle_sha256_local':local_bundle_sha,'bundle_sha_match':bundle_sha==local_bundle_sha,'remote_png_signature_valid':True,'remote_png_dimensions':{'width':png_dims[0],'height':png_dims[1]},'git_package_verified':True}\nprint(json.dumps(result,indent=2))\nPath('/tmp/sysgrid-visual-atlas-r3.kbUbB8/remote-readback.json').write_text(json.dumps(result,indent=2)+'\\\\n')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch\nrtk git rev-parse HEAD\nrtk git rev-parse HEAD''^{tree}\nrtk git diff --name-only\nrtk git -C /tmp/sysgrid-visual-atlas-r3.kbUbB8/repo status --short --branch\nrtk git -C /tmp/sysgrid-visual-atlas-r3.kbUbB8/repo status --porcelain=v1 --untracked-files=no\nrtk proxy lsof -nP -iTCP:18171 -sTCP:LISTEN 2>/dev/null || true\nrtk proxy lsof -nP -iTCP:15171 -sTCP:LISTEN 2>/dev/null || true\nrtk proxy ps -axo pid,ppid,command | rg '\"'/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo|uvicorn|vite' | head -30 || true\nprintf '\\\\n--- forbidden-command scan ---\\\\n'\nrtk rg -n -i '(codex|opencode|chatgpt|openai|llm|model-cli|autonomous agent|dynamic patch author)' /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/capture-report.json /tmp/sysgrid-visual-atlas-r3.kbUbB8/visual-atlas/git-publish-receipt.json /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env AUTO_MIGRATE_ON_STARTUP=false bash ./scripts/start-local.sh --backend-port 18171 --frontend-port 15171 --preserve-data --profile-name sysgrid-visual-atlas-capture-v3 --runtime-log-dir /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime --runtime-report-file /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json --strict-checks --skip-typecheck'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy lsof -nP -iTCP:18171 -sTCP:LISTEN 2>/dev/null || true\nrtk proxy lsof -nP -iTCP:15171 -sTCP:LISTEN 2>/dev/null || true\nrtk proxy ps -axo pid,ppid,command | rg '/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo|uvicorn|vite' | head -30 || true\nrtk git status --short --branch\nrtk git rev-parse HEAD\nrtk git rev-parse HEAD\"'^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy lsof -nP -iTCP:18171 -sTCP:LISTEN 2>/dev/null | head -5; rtk proxy lsof -nP -iTCP:15171 -sTCP:LISTEN 2>/dev/null | head -5; rtk proxy ps -axo pid,ppid,command | rg '/tmp/sysgrid-visual-atlas-r3\\\\.kbUbB8/repo|uvicorn|vite' | head -12 || true; rtk git status --short --branch; rtk git rev-parse HEAD; rtk git rev-parse HEAD\"'^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 187,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.12,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 18143488,
+      "fresh_input_tokens": 347332,
+      "input_tokens": 18490820,
+      "non_reasoning_output_tokens": 28899,
+      "output_tokens": 53680,
+      "reasoning_output_tokens": 24781,
+      "total_processed_tokens": 18544500
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-18T03:25:51Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-visual-atlas-capture-v3",
+    "head_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "remote_exact_head": true,
+    "remote_head_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-visual-atlas-capture-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-dfb9678a371d6e3c32d49cd2",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-visual-atlas-capture-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-visual-atlas-capture-v3"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-visual-atlas-capture-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-18T02:57:29Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 1702,
+    "queue_seconds": 0,
+    "total_seconds": 1702
+  },
+  "transport": {
+    "bytes": 9027,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 8709,
+    "prompt_sha256": "c88dd1b49f7133a78643c93d5a8e954d592c9c6b74fc3f6653af8ab95b1ce7d6",
+    "sha256": "dfb9678a371d6e3c32d49cd2a9a34621035f6bef918fb4a9cc3742dd2ad43240"
+  }
+}
