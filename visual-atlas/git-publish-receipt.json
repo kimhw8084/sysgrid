@@ -1,0 +1,29 @@
+{
+  "schema_version": "sysgrid.visual-atlas.git-publish-receipt.v2",
+  "project": "SysGrid",
+  "project_id": "sysgrid",
+  "change": "CHG-71",
+  "request": "sysgrid-visual-atlas-capture-v3",
+  "operation": "VERIFY",
+  "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+  "git_artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3",
+  "remote_precheck": "MISSING",
+  "manifest_sha256": "5b7015ad031ec1f335bfd8878e1b237e1eb6cbbbb45ad372cd9a6bf718eda0ca",
+  "bundle_sha256": "de7e5c0383bff58dcb31da1144e01ee260c28047d2e612ae59e7f126324bfec9",
+  "review_desktop_sha256": "6e87f5448ebee744597623e1fdc5958d47022a210551e29bd92fce529d0cdc45",
+  "review_mobile_sha256": "549158a8c479367310b051d633c3144f70d1365380dbacdf21bc3d5110f85718",
+  "screenshot_count": 54,
+  "surface_count": 27,
+  "artifact_bundle_entry_count": 59,
+  "artifact_bundle_excludes": [
+    "visual-atlas/artifact-bundle.zip",
+    "visual-atlas/git-publish-receipt.json"
+  ],
+  "git_artifact_commit": null,
+  "git_artifact_commit_note": "The final carrier commit hash is intentionally recorded in the outer Project OS receipt because embedding a Git commit hash inside its own tree is self-referential. Manifest, source/tree binding, bundle hash, and remote readback are independently verified there.",
+  "created_at": "2026-09-18T03:22:14Z",
+  "notion_calls": 0,
+  "product_source_mutations": 0,
+  "fabric_mutations": 0
+}

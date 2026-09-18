@@ -1,0 +1,3504 @@
+{
+  "schema_version": "sysgrid.visual-atlas.capture-report.v2",
+  "project": "SysGrid",
+  "project_id": "sysgrid",
+  "change": "CHG-71",
+  "request": "sysgrid-visual-atlas-capture-v3",
+  "operation": "VERIFY",
+  "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+  "source_changed": false,
+  "runtime_identity": {
+    "checkout_path": "/tmp/sysgrid-visual-atlas-r3.kbUbB8/repo",
+    "branch": "main",
+    "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+    "startup_commands": [
+      "rtk env AUTO_MIGRATE_ON_STARTUP=false bash ./scripts/start-local.sh --backend-port 18171 --frontend-port 15171 --preserve-data --profile-name sysgrid-visual-atlas-capture-v3 --runtime-log-dir /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime --runtime-report-file /tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json --strict-checks --skip-typecheck"
+    ],
+    "runtime_base_url": "http://127.0.0.1:15171",
+    "api_base_url": "http://127.0.0.1:18171",
+    "backend_port": 18171,
+    "frontend_port": 15171,
+    "backend_pid": 52232,
+    "frontend_pid": 52259,
+    "deterministic_fixture": {
+      "tenant": "Local Demo",
+      "seed_mode": "repository seed.py --seed-data after alembic upgrade heads",
+      "selected_project_id": "1",
+      "selected_project_display_key": "PRJ-000001",
+      "selected_project_name": "Mass Initiative 1: Migration"
+    },
+    "role": "ADMIN / haewon.kim",
+    "theme": "nordic-frost-v1",
+    "locale": "en-US",
+    "timezone": "America/Chicago",
+    "ready": true,
+    "fresh_runtime": true,
+    "operator_managed_schema": true,
+    "runtime_report": "/tmp/sysgrid-visual-atlas-r3.kbUbB8/runtime/runtime.json",
+    "process_ids": {
+      "backend": 52232,
+      "frontend": 52259
+    }
+  },
+  "discovery": {
+    "manifest_frozen_before_capture": true,
+    "manifest_surface_count": 27,
+    "route_authority": "source App.tsx/ProjectsSchedulingCompletion/ProjectsNavigation and live rendered runtime",
+    "normal_navigation_observed": true
+  },
+  "capture": {
+    "requested_surface_count": 27,
+    "screenshot_count": 54,
+    "expected_screenshot_count": 54,
+    "full_page": false,
+    "browser_chrome_excluded": true,
+    "viewports": [
+      {
+        "name": "desktop-1440x900",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      {
+        "name": "mobile-390x844",
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      }
+    ],
+    "lossless_png": true,
+    "primary_theme": "nordic-frost-v1",
+    "all_exact_dimensions": true,
+    "all_nonzero": true,
+    "all_png_signature": true,
+    "auth_wall_free": true,
+    "crash_free": true,
+    "settled_or_recorded": true,
+    "captures": [
+      {
+        "surface_key": "dashboard-home",
+        "requested_route": "/",
+        "final_route": "/",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Good evening, Haewon",
+          "200",
+          "277",
+          "120",
+          "72"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [],
+        "png_path": "screenshots/dashboard-home--desktop-1440x900.png",
+        "byte_length": 163193,
+        "png_sha256": "464cff619ac3cfb116bc5ab28738d6d7e80c7ee7b3cb586f90b8d45bc864d94d",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3809
+      },
+      {
+        "surface_key": "projects-portfolio",
+        "requested_route": "/projects",
+        "final_route": "/projects",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Projects",
+          "Interventions"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/projects-portfolio--desktop-1440x900.png",
+        "byte_length": 221494,
+        "png_sha256": "eaf5542bf6456f2ee4d0984b740a648711213b80bf83bf480260e9a25ebd2ef6",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3672
+      },
+      {
+        "surface_key": "monitoring",
+        "requested_route": "/monitoring",
+        "final_route": "/monitoring",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Monitoring"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/monitoring--desktop-1440x900.png",
+        "byte_length": 232089,
+        "png_sha256": "9fa029e0a6a066410e9953b2ade08e2de33337f299e3cb15e66c6b93a19e3c91",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3678
+      },
+      {
+        "surface_key": "assets",
+        "requested_route": "/asset",
+        "final_route": "/asset",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Assets"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/assets--desktop-1440x900.png",
+        "byte_length": 243144,
+        "png_sha256": "0242f2b88e82639667066a4eacc44db6e0a8f6d8b2f0a2f77d818ef58523deb7",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3668
+      },
+      {
+        "surface_key": "racks",
+        "requested_route": "/racks",
+        "final_route": "/racks",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Racks"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/racks--desktop-1440x900.png",
+        "byte_length": 187100,
+        "png_sha256": "0846fc32c539eb01b2e1faaf34c5b34fa71279daef46ffb188e3cd106f826c0e",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3669
+      },
+      {
+        "surface_key": "services",
+        "requested_route": "/services",
+        "final_route": "/services",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Services"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/services--desktop-1440x900.png",
+        "byte_length": 206178,
+        "png_sha256": "f67b9e0797dad5354a143f53cb959732bf02b834e38147607f32135336c02ded",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3685
+      },
+      {
+        "surface_key": "external",
+        "requested_route": "/external",
+        "final_route": "/external",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "External"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/external--desktop-1440x900.png",
+        "byte_length": 220222,
+        "png_sha256": "7926c66fb0f2edc67b2da09ab51c7f41ccbb40af1bf3c2fdc62febb0dfed31cd",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3683
+      },
+      {
+        "surface_key": "network",
+        "requested_route": "/network",
+        "final_route": "/network",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Network"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/network--desktop-1440x900.png",
+        "byte_length": 194885,
+        "png_sha256": "cb05c2578c05c8c65b7d61cb02af6c7c37226737f3d4a15e088d7d0f5a662d59",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3689
+      },
+      {
+        "surface_key": "architecture-canonical",
+        "requested_route": "/architecture",
+        "final_route": "/architecture",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Canonical system model",
+          "Create an Architecture model"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/architecture-canonical--desktop-1440x900.png",
+        "byte_length": 79444,
+        "png_sha256": "c73c57b9166401146a1c19a3728a11f69ccf11ee5c290f3a606a85bb684637fe",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3650
+      },
+      {
+        "surface_key": "architecture-legacy",
+        "requested_route": "/architecture?legacy=true",
+        "final_route": "/architecture?legacy=true",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Architecture Matrix"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/architecture-legacy--desktop-1440x900.png",
+        "byte_length": 166780,
+        "png_sha256": "ec23764757af0ef3eddd819f62265c18c918a0da27b15d01221eaa22d5b7095d",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3666
+      },
+      {
+        "surface_key": "far",
+        "requested_route": "/far",
+        "final_route": "/far",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Failure Matrix"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/far--desktop-1440x900.png",
+        "byte_length": 181128,
+        "png_sha256": "536182e43c940f5e0f71f880a5ac431c6fab6f05d597061414b33c08dde2b28a",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3687
+      },
+      {
+        "surface_key": "research",
+        "requested_route": "/research",
+        "final_route": "/research",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Research Matrix"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/research--desktop-1440x900.png",
+        "byte_length": 77836,
+        "png_sha256": "d10396bf1796a933613669ab9c318087158ea19e7ee81fe6053bcb7f728846a8",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3683
+      },
+      {
+        "surface_key": "vendors",
+        "requested_route": "/vendors",
+        "final_route": "/vendors",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Vendors"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/vendors--desktop-1440x900.png",
+        "byte_length": 164037,
+        "png_sha256": "7d38f16ae381c49c0d1377d21b228040f439827dcb27d12360b04e55b6bda571",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3673
+      },
+      {
+        "surface_key": "knowledge",
+        "requested_route": "/knowledge",
+        "final_route": "/knowledge",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Collective Intelligence"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/knowledge--desktop-1440x900.png",
+        "byte_length": 338590,
+        "png_sha256": "9eccc1ef06e633452472d431c682bdac9778a1844377ee451eab74130b10c3e7",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3730
+      },
+      {
+        "surface_key": "audit-logs",
+        "requested_route": "/logs",
+        "final_route": "/logs",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Audit Ledger"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/audit-logs--desktop-1440x900.png",
+        "byte_length": 95021,
+        "png_sha256": "16e5de9d2575ea0dc1d25c17a8920e2df35eb7db3fac6a4074c4e537a71109bf",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3667
+      },
+      {
+        "surface_key": "settings",
+        "requested_route": "/settings",
+        "final_route": "/settings",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Settings"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/settings--desktop-1440x900.png",
+        "byte_length": 118121,
+        "png_sha256": "8eaeaa1ae90bbed675f80be0ee5a64eaacb7c9daba7a64d668212bd70c992e76",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3654
+      },
+      {
+        "surface_key": "projects-my-day",
+        "requested_route": "/projects/my-day",
+        "final_route": "/projects/my-day",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "My day",
+          "The next useful actions"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/projects-my-day--desktop-1440x900.png",
+        "byte_length": 80098,
+        "png_sha256": "da3abcf83994ae0204124d768ed77413b9e80412fba3678bc3f4d49300cc5b1f",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3643
+      },
+      {
+        "surface_key": "projects-new",
+        "requested_route": "/projects/new",
+        "final_route": "/projects/new",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Build a meaningful project story",
+          "What problem are we solving?",
+          "Truthful by default"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/projects-new--desktop-1440x900.png",
+        "byte_length": 166967,
+        "png_sha256": "8bd470b23789525504aaa348017315781c04413f0453fee3098acc2242029e00",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3636
+      },
+      {
+        "surface_key": "project-1-home",
+        "requested_route": "/projects/1/home",
+        "final_route": "/projects/1/home",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Mass Initiative 1: Migration",
+          "Executing",
+          "Not configured",
+          "The management story",
+          "Unresolved management items",
+          "Next three",
+          "No published update",
+          "Authorized and pinned",
+          "Not assessed"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-home--desktop-1440x900.png",
+        "byte_length": 155413,
+        "png_sha256": "51dad6071bd332084f143dc8b3a5e5bc810b1c2480a224b93ae857ac784528a3",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3636
+      },
+      {
+        "surface_key": "project-1-work-list",
+        "requested_route": "/projects/1/work?layout=list",
+        "final_route": "/projects/1/work?layout=list",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Work"
+        ],
+        "alerts": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "defect_evidence": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-work-list--desktop-1440x900.png",
+        "byte_length": 72526,
+        "png_sha256": "7253d2612c2be24010095fe27983556517a4b283d6b191dd02b8f2a04f2283fb",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3624
+      },
+      {
+        "surface_key": "project-1-work-board",
+        "requested_route": "/projects/1/work?layout=board",
+        "final_route": "/projects/1/work?layout=board",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Work"
+        ],
+        "alerts": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "defect_evidence": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-work-board--desktop-1440x900.png",
+        "byte_length": 72785,
+        "png_sha256": "b43f4fde2efae1697d3469409d711f85a2110930aac948c2732497522669ccab",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3628
+      },
+      {
+        "surface_key": "project-1-plan",
+        "requested_route": "/projects/1/plan?section=brief",
+        "final_route": "/projects/1/plan?section=brief",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Plan"
+        ],
+        "alerts": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Plan unavailable."
+        ],
+        "defect_evidence": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Plan unavailable."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/plan",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/plan",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-plan--desktop-1440x900.png",
+        "byte_length": 69331,
+        "png_sha256": "cab5978988a7c9eb651f5060f7f3d8807a1de875f5f71c9198f3bf01820b5ef2",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3650
+      },
+      {
+        "surface_key": "project-1-timeline",
+        "requested_route": "/projects/1/timeline",
+        "final_route": "/projects/1/timeline",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Timeline unavailable"
+        ],
+        "alerts": [
+          "Timeline unavailableLegacy Project schedule data remains readable through v1 and must be migrated before v2 scheduling. Retry"
+        ],
+        "defect_evidence": [
+          "Timeline unavailableLegacy Project schedule data remains readable through v1 and must be migrated before v2 scheduling. Retry"
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 409 (Conflict)",
+          "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/schedule",
+            "status": 409
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/schedule",
+            "status": 409
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-timeline--desktop-1440x900.png",
+        "byte_length": 66128,
+        "png_sha256": "c2bfe17d25e322b1b7b56b8c82d8d64cafa6485f59e8950ca0d30ac48da74776",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3750
+      },
+      {
+        "surface_key": "project-1-updates",
+        "requested_route": "/projects/1/updates?section=updates",
+        "final_route": "/projects/1/updates?section=updates",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Updates"
+        ],
+        "alerts": [
+          "Updates unavailable. Retry to reconnect to the canonical project history."
+        ],
+        "defect_evidence": [
+          "Updates unavailable. Retry to reconnect to the canonical project history."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/activity?limit=40",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/updates?history=true",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/updates?history=true",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/activity?limit=40",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-updates--desktop-1440x900.png",
+        "byte_length": 74949,
+        "png_sha256": "bbe7e8735e7e7996b38b763f9a17b713c6f4a9e9d0b5fe9a9e3010fe5cbf9416",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3666
+      },
+      {
+        "surface_key": "project-1-resources",
+        "requested_route": "/projects/1/resources",
+        "final_route": "/projects/1/resources",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Resources"
+        ],
+        "alerts": [
+          "Resources unavailable. Retry to preserve the project story."
+        ],
+        "defect_evidence": [
+          "Resources unavailable. Retry to preserve the project story."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/resources",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/resources",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-resources--desktop-1440x900.png",
+        "byte_length": 76055,
+        "png_sha256": "ae029276c7a98e100dadb869756ef8b318e504be1365a3e636cc1fd691e60e4a",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3658
+      },
+      {
+        "surface_key": "project-1-reports",
+        "requested_route": "/projects/1/reports",
+        "final_route": "/projects/1/reports",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Reports",
+          "Reports from canonical state"
+        ],
+        "alerts": [],
+        "defect_evidence": [
+          "HTTP 404 from http://127.0.0.1:18171/api/v2/projects/1/reports",
+          "HTTP 404 from http://127.0.0.1:18171/api/v2/projects/1/reports"
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/reports",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/reports",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-reports--desktop-1440x900.png",
+        "byte_length": 95531,
+        "png_sha256": "d1ddc606f46b82b9fda5ade678ff4b2629a74daf462c080d061f3312035b428a",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3651
+      },
+      {
+        "surface_key": "project-1-outcomes",
+        "requested_route": "/projects/1/outcomes?section=summary",
+        "final_route": "/projects/1/outcomes?section=summary",
+        "viewport": "desktop-1440x900",
+        "css_viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [],
+        "alerts": [
+          "Outcome evidence is unavailable. Refresh and try again."
+        ],
+        "defect_evidence": [
+          "Outcome evidence is unavailable. Refresh and try again."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/outcomes",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/outcomes",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-outcomes--desktop-1440x900.png",
+        "byte_length": 59247,
+        "png_sha256": "8ad32a2e122accc9789e5a601a1a2422416d0c426cbd92ac5e953a0aef2b5c13",
+        "png_dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "capture_ms": 3630
+      },
+      {
+        "surface_key": "dashboard-home",
+        "requested_route": "/",
+        "final_route": "/",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Good evening, Haewon",
+          "200",
+          "277",
+          "120",
+          "72"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [],
+        "png_path": "screenshots/dashboard-home--mobile-390x844.png",
+        "byte_length": 69710,
+        "png_sha256": "1f02b50d69e3d799dcfc54c8d014684386e8dcdc466ac050ca35a3ffdce20a00",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3797
+      },
+      {
+        "surface_key": "projects-portfolio",
+        "requested_route": "/projects",
+        "final_route": "/projects",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Projects",
+          "Interventions"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/projects-portfolio--mobile-390x844.png",
+        "byte_length": 50627,
+        "png_sha256": "0016c6bb95ee09a589f1f293cc146a3168ed53ef651e20f671a9be4030b6fe8c",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3631
+      },
+      {
+        "surface_key": "monitoring",
+        "requested_route": "/monitoring",
+        "final_route": "/monitoring",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Monitoring"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/monitoring--mobile-390x844.png",
+        "byte_length": 57216,
+        "png_sha256": "f2954dad93239a8287f97f1c5c5c7319a21dd6bde20ae7ab541cff3e3520513b",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3615
+      },
+      {
+        "surface_key": "assets",
+        "requested_route": "/asset",
+        "final_route": "/asset",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Assets"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/assets--mobile-390x844.png",
+        "byte_length": 59227,
+        "png_sha256": "ad906d0bbe75af245029e6c68c544820466664a441ab3dda2a236aa6c464d258",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3627
+      },
+      {
+        "surface_key": "racks",
+        "requested_route": "/racks",
+        "final_route": "/racks",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Racks"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/racks--mobile-390x844.png",
+        "byte_length": 61039,
+        "png_sha256": "5710390ce412bf70863e50c4e3bf8112f35517cd48e7365997aef0bf7b61ece7",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3608
+      },
+      {
+        "surface_key": "services",
+        "requested_route": "/services",
+        "final_route": "/services",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Services"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/services--mobile-390x844.png",
+        "byte_length": 57760,
+        "png_sha256": "f802c01f408fb45b93ca15c125ef1db309948c0d0e7799cdb3ad0483be3af76a",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3660
+      },
+      {
+        "surface_key": "external",
+        "requested_route": "/external",
+        "final_route": "/external",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "External"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/external--mobile-390x844.png",
+        "byte_length": 57428,
+        "png_sha256": "a443db00dc80c4f23c7c17abb8727ef427d47b85beae9009707abfbd16deb26b",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3641
+      },
+      {
+        "surface_key": "network",
+        "requested_route": "/network",
+        "final_route": "/network",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Network"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/network--mobile-390x844.png",
+        "byte_length": 55469,
+        "png_sha256": "0baa20a485eb989e1fbae1caa638ecbb491ff46c834ce83499943331b1896389",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3635
+      },
+      {
+        "surface_key": "architecture-canonical",
+        "requested_route": "/architecture",
+        "final_route": "/architecture",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Canonical system model",
+          "Create an Architecture model"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/architecture-canonical--mobile-390x844.png",
+        "byte_length": 51939,
+        "png_sha256": "ec2a7775b481edfcc58997865de2ec86e80c2f9b775e1f04a37a528393fb4906",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3625
+      },
+      {
+        "surface_key": "architecture-legacy",
+        "requested_route": "/architecture?legacy=true",
+        "final_route": "/architecture?legacy=true",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Architecture Matrix"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/architecture-legacy--mobile-390x844.png",
+        "byte_length": 80920,
+        "png_sha256": "6a22decb339d70517048467cc936bc8fcc46db90aa91a7cb2cea6f01183f6bae",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3632
+      },
+      {
+        "surface_key": "far",
+        "requested_route": "/far",
+        "final_route": "/far",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Failure Matrix"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/far--mobile-390x844.png",
+        "byte_length": 58416,
+        "png_sha256": "1139cd4d07ce5986e995a0b0fdaf7a65be5d39d1188dd94eb51025ad2a5c2ba3",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3629
+      },
+      {
+        "surface_key": "research",
+        "requested_route": "/research",
+        "final_route": "/research",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Research Matrix"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/research--mobile-390x844.png",
+        "byte_length": 40837,
+        "png_sha256": "017d769321a03f3b324270373a04304f3e924825ae18ecd3ddd356d3306b84f9",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3621
+      },
+      {
+        "surface_key": "vendors",
+        "requested_route": "/vendors",
+        "final_route": "/vendors",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Vendors"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/vendors--mobile-390x844.png",
+        "byte_length": 55549,
+        "png_sha256": "cae7794050bc726780e98984901e2ae7d17cdbd6b7c72f7dd99bdcff66576531",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3637
+      },
+      {
+        "surface_key": "knowledge",
+        "requested_route": "/knowledge",
+        "final_route": "/knowledge",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Collective Intelligence"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/knowledge--mobile-390x844.png",
+        "byte_length": 58938,
+        "png_sha256": "7e914e578e669a05ba876beae3eef7ed1c65d5337f619e8746b69d4235ba2a8f",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3633
+      },
+      {
+        "surface_key": "audit-logs",
+        "requested_route": "/logs",
+        "final_route": "/logs",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Audit Ledger"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/audit-logs--mobile-390x844.png",
+        "byte_length": 51116,
+        "png_sha256": "1731a96c1b67d5a93f683061bf14ee03786c71602898052a2ab05372943170f5",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3632
+      },
+      {
+        "surface_key": "settings",
+        "requested_route": "/settings",
+        "final_route": "/settings",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Settings"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/settings--mobile-390x844.png",
+        "byte_length": 57645,
+        "png_sha256": "217e610b27de6a2880093f0c28b888df00c8edec8c9e14720a32b2f3bc3e8306",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3633
+      },
+      {
+        "surface_key": "projects-my-day",
+        "requested_route": "/projects/my-day",
+        "final_route": "/projects/my-day",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "My day",
+          "The next useful actions"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/projects-my-day--mobile-390x844.png",
+        "byte_length": 34877,
+        "png_sha256": "855b252b95b25922459d7ece272ceecd79916968c197ee44bcc1492c40b423b1",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3612
+      },
+      {
+        "surface_key": "projects-new",
+        "requested_route": "/projects/new",
+        "final_route": "/projects/new",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Build a meaningful project story",
+          "What problem are we solving?",
+          "Truthful by default"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/projects-new--mobile-390x844.png",
+        "byte_length": 60795,
+        "png_sha256": "4d1d7095c67b3193cf6502e54de920d8ea4e253568257cd9b8021233842ce3dd",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3609
+      },
+      {
+        "surface_key": "project-1-home",
+        "requested_route": "/projects/1/home",
+        "final_route": "/projects/1/home",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": true,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Mass Initiative 1: Migration",
+          "Executing",
+          "Not configured",
+          "The management story",
+          "Unresolved management items",
+          "Next three",
+          "No published update",
+          "Authorized and pinned",
+          "Not assessed"
+        ],
+        "alerts": [],
+        "defect_evidence": [],
+        "console_errors": [],
+        "page_errors": [],
+        "http_errors": [],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-home--mobile-390x844.png",
+        "byte_length": 46187,
+        "png_sha256": "290001db85962363926b9e941151ab703323ca7ee38a24a47e30df84d31324d5",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3592
+      },
+      {
+        "surface_key": "project-1-work-list",
+        "requested_route": "/projects/1/work?layout=list",
+        "final_route": "/projects/1/work?layout=list",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Work"
+        ],
+        "alerts": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "defect_evidence": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-work-list--mobile-390x844.png",
+        "byte_length": 27649,
+        "png_sha256": "f9fd463c5f0c2f2ba49e29fc1753664b7a28d45573ce3f540f453979998b2e13",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3608
+      },
+      {
+        "surface_key": "project-1-work-board",
+        "requested_route": "/projects/1/work?layout=board",
+        "final_route": "/projects/1/work?layout=board",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Work"
+        ],
+        "alerts": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "defect_evidence": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Work unavailable. Retry to refresh the canonical task graph."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/work",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-work-board--mobile-390x844.png",
+        "byte_length": 27649,
+        "png_sha256": "f9fd463c5f0c2f2ba49e29fc1753664b7a28d45573ce3f540f453979998b2e13",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3599
+      },
+      {
+        "surface_key": "project-1-plan",
+        "requested_route": "/projects/1/plan?section=brief",
+        "final_route": "/projects/1/plan?section=brief",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Plan"
+        ],
+        "alerts": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Plan unavailable."
+        ],
+        "defect_evidence": [
+          "Focus unavailable. Work remains available when the server reconnects.",
+          "Plan unavailable."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/plan",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/focus?project_id=1",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/plan",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-plan--mobile-390x844.png",
+        "byte_length": 24612,
+        "png_sha256": "6bd625e1b74ec5be1f90b836d118004899c3abe73e2ca58fa932e0f6ca935df0",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3600
+      },
+      {
+        "surface_key": "project-1-timeline",
+        "requested_route": "/projects/1/timeline",
+        "final_route": "/projects/1/timeline",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Timeline unavailable"
+        ],
+        "alerts": [
+          "Timeline unavailableLegacy Project schedule data remains readable through v1 and must be migrated before v2 scheduling. Retry"
+        ],
+        "defect_evidence": [
+          "Timeline unavailableLegacy Project schedule data remains readable through v1 and must be migrated before v2 scheduling. Retry"
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 409 (Conflict)",
+          "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/schedule",
+            "status": 409
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/schedule",
+            "status": 409
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-timeline--mobile-390x844.png",
+        "byte_length": 22960,
+        "png_sha256": "1927d694056c1ede02f7b6e818ecc333df82ad5905c7fa57eafeb970a751f496",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3692
+      },
+      {
+        "surface_key": "project-1-updates",
+        "requested_route": "/projects/1/updates?section=updates",
+        "final_route": "/projects/1/updates?section=updates",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Updates"
+        ],
+        "alerts": [
+          "Updates unavailable. Retry to reconnect to the canonical project history."
+        ],
+        "defect_evidence": [
+          "Updates unavailable. Retry to reconnect to the canonical project history."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/updates?history=true",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/activity?limit=40",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/updates?history=true",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/activity?limit=40",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-updates--mobile-390x844.png",
+        "byte_length": 29534,
+        "png_sha256": "8f62f8c56d04a1d568ea9467745ad2e67e537388dfcd503605809f9c08eecc7e",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3624
+      },
+      {
+        "surface_key": "project-1-resources",
+        "requested_route": "/projects/1/resources",
+        "final_route": "/projects/1/resources",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Resources"
+        ],
+        "alerts": [
+          "Resources unavailable. Retry to preserve the project story."
+        ],
+        "defect_evidence": [
+          "Resources unavailable. Retry to preserve the project story."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/resources",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/resources",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-resources--mobile-390x844.png",
+        "byte_length": 29553,
+        "png_sha256": "b85995ad9174d904e4e5b35cf4ad25f05c24aca9d1d86ac0eee7aa26c859adbd",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3627
+      },
+      {
+        "surface_key": "project-1-reports",
+        "requested_route": "/projects/1/reports",
+        "final_route": "/projects/1/reports",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [
+          "Reports",
+          "Reports from canonical state"
+        ],
+        "alerts": [],
+        "defect_evidence": [
+          "HTTP 404 from http://127.0.0.1:18171/api/v2/projects/1/reports",
+          "HTTP 404 from http://127.0.0.1:18171/api/v2/projects/1/reports"
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/reports",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/reports",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-reports--mobile-390x844.png",
+        "byte_length": 49811,
+        "png_sha256": "7080e5f774b3c7f71c7165741d376c2dfa944a92518d2ecda087751ff781e5ad",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3621
+      },
+      {
+        "surface_key": "project-1-outcomes",
+        "requested_route": "/projects/1/outcomes?section=summary",
+        "final_route": "/projects/1/outcomes?section=summary",
+        "viewport": "mobile-390x844",
+        "css_viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "device_scale_factor": 1,
+        "theme": "nordic-frost-v1",
+        "dark_class": true,
+        "material_rendered": false,
+        "auth_wall": false,
+        "crash_or_error_boundary": false,
+        "unresolved_loading": false,
+        "headings": [],
+        "alerts": [
+          "Outcome evidence is unavailable. Refresh and try again."
+        ],
+        "defect_evidence": [
+          "Outcome evidence is unavailable. Refresh and try again."
+        ],
+        "console_errors": [
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "page_errors": [],
+        "http_errors": [
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/outcomes",
+            "status": 404
+          },
+          {
+            "url": "http://127.0.0.1:18171/api/v2/projects/1/outcomes",
+            "status": 404
+          }
+        ],
+        "failed_requests": [
+          {
+            "url": "http://127.0.0.1:15171/api/v1/observability/performance",
+            "error": "net::ERR_ABORTED"
+          }
+        ],
+        "png_path": "screenshots/project-1-outcomes--mobile-390x844.png",
+        "byte_length": 15153,
+        "png_sha256": "ce0a39368519786400072e012a6c5700f1eba1790c330f6b412467c333c12edd",
+        "png_dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "capture_ms": 3628
+      }
+    ],
+    "theme_all_nordic_frost_v1": true
+  },
+  "duplicates": {
+    "exact_byte_duplicate_groups": [
+      [
+        "screenshots/project-1-work-list--mobile-390x844.png",
+        "screenshots/project-1-work-board--mobile-390x844.png"
+      ]
+    ],
+    "duplicate_group_count": 1,
+    "duplicates_are_not_failures": "Duplicate bytes are recorded; none are being used to invent or merge surface keys."
+  },
+  "warnings": [
+    "The repository-native clean-reset launcher exposed two Alembic heads while targeting singular head; R3 initialized the disposable runtime database with repository-native `alembic upgrade heads`, seeded via `seed.py`, then launched the app in supported operator-managed AUTO_MIGRATE_ON_STARTUP=false mode. No source, migration, Fabric, Product, Notion, or Visual Surface files were modified.",
+    "The browser provider was unavailable, so Playwright Chromium was used as a deterministic local capture fallback."
+  ],
+  "defects": [
+    "Focus unavailable. Work remains available when the server reconnects.",
+    "HTTP 404 from http://127.0.0.1:18171/api/v2/projects/1/reports",
+    "Outcome evidence is unavailable. Refresh and try again.",
+    "Plan unavailable.",
+    "Resources unavailable. Retry to preserve the project story.",
+    "Timeline unavailableLegacy Project schedule data remains readable through v1 and must be migrated before v2 scheduling. Retry",
+    "Updates unavailable. Retry to reconnect to the canonical project history.",
+    "Work unavailable. Retry to refresh the canonical task graph."
+  ],
+  "post_capture_checks": {
+    "manifest_unique_surface_keys": true,
+    "screenshot_count_equals_surface_count_times_two": true,
+    "source_sha_unchanged": true,
+    "tree_sha_unchanged": true,
+    "product_worktree_tracked_clean": true,
+    "runtime_checkout_tracked_clean": true,
+    "notion_calls": 0,
+    "product_source_mutations": 0,
+    "fabric_mutations": 0,
+    "visual_surface_mutations": 0
+  },
+  "png_validation": {
+    "expected_file_count": 54,
+    "actual_file_count": 54,
+    "exact_path_set": true,
+    "all_png_signatures_valid": true,
+    "all_dimensions_valid": true,
+    "all_nonzero": true,
+    "records": [
+      {
+        "path": "screenshots/dashboard-home--desktop-1440x900.png",
+        "byte_length": 163193,
+        "sha256": "464cff619ac3cfb116bc5ab28738d6d7e80c7ee7b3cb586f90b8d45bc864d94d",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/dashboard-home--mobile-390x844.png",
+        "byte_length": 69710,
+        "sha256": "1f02b50d69e3d799dcfc54c8d014684386e8dcdc466ac050ca35a3ffdce20a00",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/projects-portfolio--desktop-1440x900.png",
+        "byte_length": 221494,
+        "sha256": "eaf5542bf6456f2ee4d0984b740a648711213b80bf83bf480260e9a25ebd2ef6",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/projects-portfolio--mobile-390x844.png",
+        "byte_length": 50627,
+        "sha256": "0016c6bb95ee09a589f1f293cc146a3168ed53ef651e20f671a9be4030b6fe8c",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/monitoring--desktop-1440x900.png",
+        "byte_length": 232089,
+        "sha256": "9fa029e0a6a066410e9953b2ade08e2de33337f299e3cb15e66c6b93a19e3c91",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/monitoring--mobile-390x844.png",
+        "byte_length": 57216,
+        "sha256": "f2954dad93239a8287f97f1c5c5c7319a21dd6bde20ae7ab541cff3e3520513b",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/assets--desktop-1440x900.png",
+        "byte_length": 243144,
+        "sha256": "0242f2b88e82639667066a4eacc44db6e0a8f6d8b2f0a2f77d818ef58523deb7",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/assets--mobile-390x844.png",
+        "byte_length": 59227,
+        "sha256": "ad906d0bbe75af245029e6c68c544820466664a441ab3dda2a236aa6c464d258",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/racks--desktop-1440x900.png",
+        "byte_length": 187100,
+        "sha256": "0846fc32c539eb01b2e1faaf34c5b34fa71279daef46ffb188e3cd106f826c0e",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/racks--mobile-390x844.png",
+        "byte_length": 61039,
+        "sha256": "5710390ce412bf70863e50c4e3bf8112f35517cd48e7365997aef0bf7b61ece7",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/services--desktop-1440x900.png",
+        "byte_length": 206178,
+        "sha256": "f67b9e0797dad5354a143f53cb959732bf02b834e38147607f32135336c02ded",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/services--mobile-390x844.png",
+        "byte_length": 57760,
+        "sha256": "f802c01f408fb45b93ca15c125ef1db309948c0d0e7799cdb3ad0483be3af76a",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/external--desktop-1440x900.png",
+        "byte_length": 220222,
+        "sha256": "7926c66fb0f2edc67b2da09ab51c7f41ccbb40af1bf3c2fdc62febb0dfed31cd",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/external--mobile-390x844.png",
+        "byte_length": 57428,
+        "sha256": "a443db00dc80c4f23c7c17abb8727ef427d47b85beae9009707abfbd16deb26b",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/network--desktop-1440x900.png",
+        "byte_length": 194885,
+        "sha256": "cb05c2578c05c8c65b7d61cb02af6c7c37226737f3d4a15e088d7d0f5a662d59",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/network--mobile-390x844.png",
+        "byte_length": 55469,
+        "sha256": "0baa20a485eb989e1fbae1caa638ecbb491ff46c834ce83499943331b1896389",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/architecture-canonical--desktop-1440x900.png",
+        "byte_length": 79444,
+        "sha256": "c73c57b9166401146a1c19a3728a11f69ccf11ee5c290f3a606a85bb684637fe",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/architecture-canonical--mobile-390x844.png",
+        "byte_length": 51939,
+        "sha256": "ec2a7775b481edfcc58997865de2ec86e80c2f9b775e1f04a37a528393fb4906",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/architecture-legacy--desktop-1440x900.png",
+        "byte_length": 166780,
+        "sha256": "ec23764757af0ef3eddd819f62265c18c918a0da27b15d01221eaa22d5b7095d",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/architecture-legacy--mobile-390x844.png",
+        "byte_length": 80920,
+        "sha256": "6a22decb339d70517048467cc936bc8fcc46db90aa91a7cb2cea6f01183f6bae",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/far--desktop-1440x900.png",
+        "byte_length": 181128,
+        "sha256": "536182e43c940f5e0f71f880a5ac431c6fab6f05d597061414b33c08dde2b28a",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/far--mobile-390x844.png",
+        "byte_length": 58416,
+        "sha256": "1139cd4d07ce5986e995a0b0fdaf7a65be5d39d1188dd94eb51025ad2a5c2ba3",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/research--desktop-1440x900.png",
+        "byte_length": 77836,
+        "sha256": "d10396bf1796a933613669ab9c318087158ea19e7ee81fe6053bcb7f728846a8",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/research--mobile-390x844.png",
+        "byte_length": 40837,
+        "sha256": "017d769321a03f3b324270373a04304f3e924825ae18ecd3ddd356d3306b84f9",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/vendors--desktop-1440x900.png",
+        "byte_length": 164037,
+        "sha256": "7d38f16ae381c49c0d1377d21b228040f439827dcb27d12360b04e55b6bda571",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/vendors--mobile-390x844.png",
+        "byte_length": 55549,
+        "sha256": "cae7794050bc726780e98984901e2ae7d17cdbd6b7c72f7dd99bdcff66576531",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/knowledge--desktop-1440x900.png",
+        "byte_length": 338590,
+        "sha256": "9eccc1ef06e633452472d431c682bdac9778a1844377ee451eab74130b10c3e7",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/knowledge--mobile-390x844.png",
+        "byte_length": 58938,
+        "sha256": "7e914e578e669a05ba876beae3eef7ed1c65d5337f619e8746b69d4235ba2a8f",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/audit-logs--desktop-1440x900.png",
+        "byte_length": 95021,
+        "sha256": "16e5de9d2575ea0dc1d25c17a8920e2df35eb7db3fac6a4074c4e537a71109bf",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/audit-logs--mobile-390x844.png",
+        "byte_length": 51116,
+        "sha256": "1731a96c1b67d5a93f683061bf14ee03786c71602898052a2ab05372943170f5",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/settings--desktop-1440x900.png",
+        "byte_length": 118121,
+        "sha256": "8eaeaa1ae90bbed675f80be0ee5a64eaacb7c9daba7a64d668212bd70c992e76",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/settings--mobile-390x844.png",
+        "byte_length": 57645,
+        "sha256": "217e610b27de6a2880093f0c28b888df00c8edec8c9e14720a32b2f3bc3e8306",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/projects-my-day--desktop-1440x900.png",
+        "byte_length": 80098,
+        "sha256": "da3abcf83994ae0204124d768ed77413b9e80412fba3678bc3f4d49300cc5b1f",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/projects-my-day--mobile-390x844.png",
+        "byte_length": 34877,
+        "sha256": "855b252b95b25922459d7ece272ceecd79916968c197ee44bcc1492c40b423b1",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/projects-new--desktop-1440x900.png",
+        "byte_length": 166967,
+        "sha256": "8bd470b23789525504aaa348017315781c04413f0453fee3098acc2242029e00",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/projects-new--mobile-390x844.png",
+        "byte_length": 60795,
+        "sha256": "4d1d7095c67b3193cf6502e54de920d8ea4e253568257cd9b8021233842ce3dd",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-home--desktop-1440x900.png",
+        "byte_length": 155413,
+        "sha256": "51dad6071bd332084f143dc8b3a5e5bc810b1c2480a224b93ae857ac784528a3",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-home--mobile-390x844.png",
+        "byte_length": 46187,
+        "sha256": "290001db85962363926b9e941151ab703323ca7ee38a24a47e30df84d31324d5",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-work-list--desktop-1440x900.png",
+        "byte_length": 72526,
+        "sha256": "7253d2612c2be24010095fe27983556517a4b283d6b191dd02b8f2a04f2283fb",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-work-list--mobile-390x844.png",
+        "byte_length": 27649,
+        "sha256": "f9fd463c5f0c2f2ba49e29fc1753664b7a28d45573ce3f540f453979998b2e13",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-work-board--desktop-1440x900.png",
+        "byte_length": 72785,
+        "sha256": "b43f4fde2efae1697d3469409d711f85a2110930aac948c2732497522669ccab",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-work-board--mobile-390x844.png",
+        "byte_length": 27649,
+        "sha256": "f9fd463c5f0c2f2ba49e29fc1753664b7a28d45573ce3f540f453979998b2e13",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-plan--desktop-1440x900.png",
+        "byte_length": 69331,
+        "sha256": "cab5978988a7c9eb651f5060f7f3d8807a1de875f5f71c9198f3bf01820b5ef2",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-plan--mobile-390x844.png",
+        "byte_length": 24612,
+        "sha256": "6bd625e1b74ec5be1f90b836d118004899c3abe73e2ca58fa932e0f6ca935df0",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-timeline--desktop-1440x900.png",
+        "byte_length": 66128,
+        "sha256": "c2bfe17d25e322b1b7b56b8c82d8d64cafa6485f59e8950ca0d30ac48da74776",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-timeline--mobile-390x844.png",
+        "byte_length": 22960,
+        "sha256": "1927d694056c1ede02f7b6e818ecc333df82ad5905c7fa57eafeb970a751f496",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-updates--desktop-1440x900.png",
+        "byte_length": 74949,
+        "sha256": "bbe7e8735e7e7996b38b763f9a17b713c6f4a9e9d0b5fe9a9e3010fe5cbf9416",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-updates--mobile-390x844.png",
+        "byte_length": 29534,
+        "sha256": "8f62f8c56d04a1d568ea9467745ad2e67e537388dfcd503605809f9c08eecc7e",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-resources--desktop-1440x900.png",
+        "byte_length": 76055,
+        "sha256": "ae029276c7a98e100dadb869756ef8b318e504be1365a3e636cc1fd691e60e4a",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-resources--mobile-390x844.png",
+        "byte_length": 29553,
+        "sha256": "b85995ad9174d904e4e5b35cf4ad25f05c24aca9d1d86ac0eee7aa26c859adbd",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-reports--desktop-1440x900.png",
+        "byte_length": 95531,
+        "sha256": "d1ddc606f46b82b9fda5ade678ff4b2629a74daf462c080d061f3312035b428a",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-reports--mobile-390x844.png",
+        "byte_length": 49811,
+        "sha256": "7080e5f774b3c7f71c7165741d376c2dfa944a92518d2ecda087751ff781e5ad",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      {
+        "path": "screenshots/project-1-outcomes--desktop-1440x900.png",
+        "byte_length": 59247,
+        "sha256": "8ad32a2e122accc9789e5a601a1a2422416d0c426cbd92ac5e953a0aef2b5c13",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      {
+        "path": "screenshots/project-1-outcomes--mobile-390x844.png",
+        "byte_length": 15153,
+        "sha256": "ce0a39368519786400072e012a6c5700f1eba1790c330f6b412467c333c12edd",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        }
+      }
+    ]
+  },
+  "pdf_validation": {
+    "desktop": {
+      "path": "review-desktop.pdf",
+      "sha256": "6e87f5448ebee744597623e1fdc5958d47022a210551e29bd92fce529d0cdc45",
+      "byte_length": 4008404,
+      "page_count": 27,
+      "page_size_points": [
+        792.0,
+        612.0
+      ],
+      "pages_with_one_image": 27,
+      "all_pages_have_exactly_one_image": true,
+      "pages": [
+        {
+          "page": 1,
+          "surface_key": "dashboard-home",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 2,
+          "surface_key": "projects-portfolio",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 3,
+          "surface_key": "monitoring",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 4,
+          "surface_key": "assets",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 5,
+          "surface_key": "racks",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 6,
+          "surface_key": "services",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 7,
+          "surface_key": "external",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 8,
+          "surface_key": "network",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 9,
+          "surface_key": "architecture-canonical",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 10,
+          "surface_key": "architecture-legacy",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 11,
+          "surface_key": "far",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 12,
+          "surface_key": "research",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 13,
+          "surface_key": "vendors",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 14,
+          "surface_key": "knowledge",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 15,
+          "surface_key": "audit-logs",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 16,
+          "surface_key": "settings",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 17,
+          "surface_key": "projects-my-day",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 18,
+          "surface_key": "projects-new",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 19,
+          "surface_key": "project-1-home",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 20,
+          "surface_key": "project-1-work-list",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 21,
+          "surface_key": "project-1-work-board",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 22,
+          "surface_key": "project-1-plan",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 23,
+          "surface_key": "project-1-timeline",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 24,
+          "surface_key": "project-1-updates",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 25,
+          "surface_key": "project-1-resources",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 26,
+          "surface_key": "project-1-reports",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 27,
+          "surface_key": "project-1-outcomes",
+          "viewport": "desktop-1440x900",
+          "text_label_ok": true,
+          "image_object_count": 1
+        }
+      ]
+    },
+    "mobile": {
+      "path": "review-mobile.pdf",
+      "sha256": "549158a8c479367310b051d633c3144f70d1365380dbacdf21bc3d5110f85718",
+      "byte_length": 1307093,
+      "page_count": 27,
+      "page_size_points": [
+        612.0,
+        792.0
+      ],
+      "pages_with_one_image": 27,
+      "all_pages_have_exactly_one_image": true,
+      "pages": [
+        {
+          "page": 1,
+          "surface_key": "dashboard-home",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 2,
+          "surface_key": "projects-portfolio",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 3,
+          "surface_key": "monitoring",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 4,
+          "surface_key": "assets",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 5,
+          "surface_key": "racks",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 6,
+          "surface_key": "services",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 7,
+          "surface_key": "external",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 8,
+          "surface_key": "network",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 9,
+          "surface_key": "architecture-canonical",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 10,
+          "surface_key": "architecture-legacy",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 11,
+          "surface_key": "far",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 12,
+          "surface_key": "research",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 13,
+          "surface_key": "vendors",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 14,
+          "surface_key": "knowledge",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 15,
+          "surface_key": "audit-logs",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 16,
+          "surface_key": "settings",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 17,
+          "surface_key": "projects-my-day",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 18,
+          "surface_key": "projects-new",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 19,
+          "surface_key": "project-1-home",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 20,
+          "surface_key": "project-1-work-list",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 21,
+          "surface_key": "project-1-work-board",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 22,
+          "surface_key": "project-1-plan",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 23,
+          "surface_key": "project-1-timeline",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 24,
+          "surface_key": "project-1-updates",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 25,
+          "surface_key": "project-1-resources",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 26,
+          "surface_key": "project-1-reports",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        },
+        {
+          "page": 27,
+          "surface_key": "project-1-outcomes",
+          "viewport": "mobile-390x844",
+          "text_label_ok": true,
+          "image_object_count": 1
+        }
+      ]
+    },
+    "rendered_qa_png_count": 54,
+    "rendered_qa_pages_visual_checked": [
+      "desktop-01.png",
+      "desktop-19.png",
+      "mobile-01.png",
+      "mobile-21.png"
+    ]
+  }
+}

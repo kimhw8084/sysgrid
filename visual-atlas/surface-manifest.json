@@ -1,0 +1,646 @@
+{
+  "schema_version": "sysgrid.visual-atlas.surface-manifest.v2",
+  "project": "SysGrid",
+  "project_id": "sysgrid",
+  "change": "CHG-71",
+  "request": "sysgrid-visual-atlas-capture-v3",
+  "operation": "VERIFY",
+  "authority": "exact rendered product",
+  "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+  "discovery": {
+    "method": "source dispatcher/router/navigation plus live seeded runtime",
+    "runtime_base_url": "http://127.0.0.1:15171",
+    "fixture": {
+      "tenant": "Local Demo",
+      "seed_mode": "repository seed.py --seed-data",
+      "selected_project_id": "1",
+      "selected_project_display_key": "PRJ-000001",
+      "selected_project_name": "Mass Initiative 1: Migration"
+    },
+    "role": "ADMIN / haewon.kim",
+    "theme": "nordic-frost-v1",
+    "locale": "en-US",
+    "timezone": "America/Chicago",
+    "route_reconciliation": "27 canonical logical surfaces; material query modes included only when renderer changes persistent workspace",
+    "frozen_before_capture": true
+  },
+  "surface_count": 27,
+  "surfaces": [
+    {
+      "surface_key": "dashboard-home",
+      "canonical_route": "/",
+      "navigation_intent": "Primary shell navigation: Home; App.tsx first-match route `/` renders Dashboard.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/dashboard-home--desktop-1440x900.png",
+        "mobile": "screenshots/dashboard-home--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Home from the Operations group; `/` is the only canonical root renderer."
+    },
+    {
+      "surface_key": "projects-portfolio",
+      "canonical_route": "/projects",
+      "navigation_intent": "Primary shell navigation: Projects; Projects dispatcher renders Portfolio when pathname is `/projects` without legacy query.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/projects-portfolio--desktop-1440x900.png",
+        "mobile": "screenshots/projects-portfolio--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Portfolio from the Operations group and the Projects local navigation."
+    },
+    {
+      "surface_key": "monitoring",
+      "canonical_route": "/monitoring",
+      "navigation_intent": "Primary shell navigation: Monitoring; App.tsx protected route renders MonitoringGrid.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/monitoring--desktop-1440x900.png",
+        "mobile": "screenshots/monitoring--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Monitoring from the Operations group; persistent monitoring registry workspace."
+    },
+    {
+      "surface_key": "assets",
+      "canonical_route": "/asset",
+      "navigation_intent": "Primary shell navigation: Assets; App.tsx protected route renders Assets.",
+      "aliases_or_deep_links": [
+        "/asset-real"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/assets--desktop-1440x900.png",
+        "mobile": "screenshots/assets--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Assets from Infrastructure; `/asset-real` is a legacy redirect to the same renderer and is not separate."
+    },
+    {
+      "surface_key": "racks",
+      "canonical_route": "/racks",
+      "navigation_intent": "Primary shell navigation: Racks; App.tsx protected route renders Racks.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/racks--desktop-1440x900.png",
+        "mobile": "screenshots/racks--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Racks from Infrastructure; persistent rack capacity/spatial workspace."
+    },
+    {
+      "surface_key": "services",
+      "canonical_route": "/services",
+      "navigation_intent": "Primary shell navigation: Services; App.tsx protected route renders ServicesReal.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/services--desktop-1440x900.png",
+        "mobile": "screenshots/services--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Services from Infrastructure; persistent logical-service registry workspace."
+    },
+    {
+      "surface_key": "external",
+      "canonical_route": "/external",
+      "navigation_intent": "Primary shell navigation: External; App.tsx protected route renders External.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/external--desktop-1440x900.png",
+        "mobile": "screenshots/external--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches External from Infrastructure; persistent external-intelligence registry workspace."
+    },
+    {
+      "surface_key": "network",
+      "canonical_route": "/network",
+      "navigation_intent": "Primary shell navigation: Network; App.tsx protected route renders NetworkReal.",
+      "aliases_or_deep_links": [
+        "/network-real"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/network--desktop-1440x900.png",
+        "mobile": "screenshots/network--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Network from Connectivity; `/network-real` redirects to the same renderer and is not separate."
+    },
+    {
+      "surface_key": "architecture-canonical",
+      "canonical_route": "/architecture",
+      "navigation_intent": "Primary shell navigation: Architecture; ArchitectureRoute first-match selects ArchitectureWorkspace when `legacy` is not `true`.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/architecture-canonical--desktop-1440x900.png",
+        "mobile": "screenshots/architecture-canonical--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches canonical Architecture from Connectivity; durable canonical system-model workspace."
+    },
+    {
+      "surface_key": "architecture-legacy",
+      "canonical_route": "/architecture?legacy=true",
+      "navigation_intent": "ArchitectureRoute explicitly selects DataFlowDesigner when `legacy=true`; this query materially changes the persistent workspace.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/architecture-legacy--desktop-1440x900.png",
+        "mobile": "screenshots/architecture-legacy--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches the alternate Architecture mode from the canonical Architecture surface; included because the renderer and material workspace differ."
+    },
+    {
+      "surface_key": "far",
+      "canonical_route": "/far",
+      "navigation_intent": "Primary shell navigation: FAR; App.tsx protected route renders FAR.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/far--desktop-1440x900.png",
+        "mobile": "screenshots/far--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches FAR from Analysis; persistent failure-analysis registry workspace."
+    },
+    {
+      "surface_key": "research",
+      "canonical_route": "/research",
+      "navigation_intent": "Primary shell navigation: Research; App.tsx protected route renders Research.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/research--desktop-1440x900.png",
+        "mobile": "screenshots/research--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Research from Analysis; persistent research matrix workspace."
+    },
+    {
+      "surface_key": "vendors",
+      "canonical_route": "/vendors",
+      "navigation_intent": "Primary shell navigation: Vendors; App.tsx protected route renders VendorsReal.",
+      "aliases_or_deep_links": [
+        "/vendors-real"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/vendors--desktop-1440x900.png",
+        "mobile": "screenshots/vendors--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Vendors from Resources; `/vendors-real` renders the same component and is not separate."
+    },
+    {
+      "surface_key": "knowledge",
+      "canonical_route": "/knowledge",
+      "navigation_intent": "Primary shell navigation: Knowledge; App.tsx protected route renders Knowledge.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/knowledge--desktop-1440x900.png",
+        "mobile": "screenshots/knowledge--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Knowledge from Resources; persistent collective-intelligence workspace."
+    },
+    {
+      "surface_key": "audit-logs",
+      "canonical_route": "/logs",
+      "navigation_intent": "Primary shell navigation: Audit logs; App.tsx protected route renders AuditLogs.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/audit-logs--desktop-1440x900.png",
+        "mobile": "screenshots/audit-logs--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Audit logs from Resources; persistent immutable audit-ledger workspace."
+    },
+    {
+      "surface_key": "settings",
+      "canonical_route": "/settings",
+      "navigation_intent": "ShellHeaderTools direct navigation intent to Settings; App.tsx protected route renders SettingsPage.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/settings--desktop-1440x900.png",
+        "mobile": "screenshots/settings--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches Settings through the persistent shell header tools; it is not a primary sidebar item but is a normal reachable workspace."
+    },
+    {
+      "surface_key": "projects-my-day",
+      "canonical_route": "/projects/my-day",
+      "navigation_intent": "Projects dispatcher first-match selects ProjectsWorkPlan scope `my-day`.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/projects-my-day--desktop-1440x900.png",
+        "mobile": "screenshots/projects-my-day--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches My day from Projects local navigation; persistent personal-execution workspace."
+    },
+    {
+      "surface_key": "projects-new",
+      "canonical_route": "/projects/new",
+      "navigation_intent": "Projects dispatcher first-match selects ProjectsStory kind `new`.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/projects-new--desktop-1440x900.png",
+        "mobile": "screenshots/projects-new--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Normal user reaches New project from Projects local navigation; persistent project-authoring workspace."
+    },
+    {
+      "surface_key": "project-1-home",
+      "canonical_route": "/projects/1/home",
+      "navigation_intent": "Projects dispatcher first-match selects ProjectsStory kind `home` for seeded representative project PRJ-000001.",
+      "aliases_or_deep_links": [
+        "/projects/1",
+        "/projects?id=1"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-home--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-home--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Portfolio project link and Project local navigation reach Project Home; `/projects/1` and legacy `/projects?id=1` redirect to this canonical home."
+    },
+    {
+      "surface_key": "project-1-work-list",
+      "canonical_route": "/projects/1/work?layout=list",
+      "navigation_intent": "Projects dispatcher selects ProjectsWorkPlan scope `work`, board=false; list is the canonical default material mode.",
+      "aliases_or_deep_links": [
+        "/projects/1/work"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-work-list--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-work-list--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project local navigation Work reaches the task-tree workspace; bare `/projects/1/work` resolves to the same list mode."
+    },
+    {
+      "surface_key": "project-1-work-board",
+      "canonical_route": "/projects/1/work?layout=board",
+      "navigation_intent": "Projects dispatcher selects ProjectsWorkPlan scope `work`, board=true; board materially changes the rendered workspace.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-work-board--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-work-board--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project local navigation Board reaches the material board mode; included separately from Work list."
+    },
+    {
+      "surface_key": "project-1-plan",
+      "canonical_route": "/projects/1/plan?section=brief",
+      "navigation_intent": "Projects dispatcher selects ProjectsWorkPlan scope `plan`; PlanView is a consolidated persistent workspace.",
+      "aliases_or_deep_links": [
+        "/projects/1/plan"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-plan--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-plan--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project local navigation Plan reaches the consolidated plan; section query variants (brief, milestones, architecture, risks, resources) are parsed but the current renderer emits the same persistent plan workspace and are not separate."
+    },
+    {
+      "surface_key": "project-1-timeline",
+      "canonical_route": "/projects/1/timeline",
+      "navigation_intent": "Projects dispatcher selects lazy ProjectsTimeline for a project timeline route.",
+      "aliases_or_deep_links": [
+        "/projects/1?view=timeline&id=1"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-timeline--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-timeline--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project local navigation Timeline reaches the persistent schedule/timeline workspace; legacy timeline aliases redirect here."
+    },
+    {
+      "surface_key": "project-1-updates",
+      "canonical_route": "/projects/1/updates?section=updates",
+      "navigation_intent": "Projects dispatcher selects ProjectsCommunication route `updates`.",
+      "aliases_or_deep_links": [
+        "/projects/1/updates"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-updates--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-updates--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project local navigation Updates reaches the persistent evidence-communication updates workspace; section query is the renderer default."
+    },
+    {
+      "surface_key": "project-1-resources",
+      "canonical_route": "/projects/1/resources",
+      "navigation_intent": "Projects dispatcher selects ProjectsCommunication route `resources`.",
+      "aliases_or_deep_links": [],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-resources--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-resources--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project communication navigation exposes Resources as a distinct persistent authorized-library workspace."
+    },
+    {
+      "surface_key": "project-1-reports",
+      "canonical_route": "/projects/1/reports",
+      "navigation_intent": "Projects dispatcher selects ProjectsCommunication route `reports`.",
+      "aliases_or_deep_links": [
+        "/projects/1?view=reports&id=1"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-reports--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-reports--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project communication navigation exposes Reports as a distinct immutable-snapshot workspace; legacy report aliases resolve to this intent."
+    },
+    {
+      "surface_key": "project-1-outcomes",
+      "canonical_route": "/projects/1/outcomes?section=summary",
+      "navigation_intent": "Projects dispatcher selects ProjectsOutcomes by pathname.",
+      "aliases_or_deep_links": [
+        "/projects/1/outcomes"
+      ],
+      "persistent_state_or_subview": null,
+      "role": {
+        "user_id": "haewon.kim",
+        "role": "ADMIN",
+        "tenant": "Local Demo"
+      },
+      "theme": "nordic-frost-v1",
+      "locale": "en-US",
+      "timezone": "America/Chicago",
+      "expected_artifacts": {
+        "desktop": "screenshots/project-1-outcomes--desktop-1440x900.png",
+        "mobile": "screenshots/project-1-outcomes--mobile-390x844.png"
+      },
+      "source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+      "discovery_evidence": "Project local navigation Outcomes reaches the persistent delivery/outcome-evidence workspace; section query variants are ignored by the authoritative renderer and are not separate."
+    }
+  ]
+}
