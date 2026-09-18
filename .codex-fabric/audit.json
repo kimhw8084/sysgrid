@@ -1,0 +1,772 @@
+{
+  "accepted_at": "2026-09-18T15:31:25Z",
+  "changed_files": [
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/audit.py",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 0,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 58,
+      "deletions": 33,
+      "path": "backend/app/api/dashboard.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/data_flows.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 37,
+      "deletions": 3,
+      "path": "backend/app/api/far.py",
+      "status": "M"
+    },
+    {
+      "additions": 32,
+      "deletions": 6,
+      "path": "backend/app/api/import_engine.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/intelligence.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/investigations.py",
+      "status": "M"
+    },
+    {
+      "additions": 135,
+      "deletions": 8,
+      "path": "backend/app/api/knowledge.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/logical_services.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/maintenance.py",
+      "status": "M"
+    },
+    {
+      "additions": 257,
+      "deletions": 0,
+      "path": "backend/app/api/module_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/monitoring.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/networks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/operational_actions.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/projects.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1_communication.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/racks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/rca.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/security.py",
+      "status": "M"
+    },
+    {
+      "additions": 202,
+      "deletions": 37,
+      "path": "backend/app/api/settings.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/sites.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/troubleshoot.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/vendors.py",
+      "status": "M"
+    },
+    {
+      "additions": 35,
+      "deletions": 3,
+      "path": "backend/app/api/workspaces.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/architecture/api.py",
+      "status": "M"
+    },
+    {
+      "additions": 28,
+      "deletions": 0,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 40,
+      "deletions": 12,
+      "path": "backend/app/main.py",
+      "status": "M"
+    },
+    {
+      "additions": 124,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 39,
+      "deletions": 0,
+      "path": "contracts/monitoring_feature_preservation_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 261,
+      "deletions": 0,
+      "path": "contracts/system_management_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 55,
+      "deletions": 69,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 0,
+      "path": "frontend/src/api/apiClient.ts",
+      "status": "M"
+    },
+    {
+      "additions": 11,
+      "deletions": 4,
+      "path": "frontend/src/components/Dashboard.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 3,
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/NetworkReal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 2,
+      "path": "frontend/src/components/assets/AssetDetailsView.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 3,
+      "path": "frontend/src/components/monitoring/BkmDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/monitoring/BkmListModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/monitoring/MonitoringDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/monitoring/MonitoringForm.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 13,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 28,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ModuleReleasePolicyContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 32,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 43,
+      "deletions": 46,
+      "path": "frontend/src/components/shared/ShellNavigation.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/TenantSelector.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/main.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 71,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 32,
+      "deletions": 0,
+      "path": "frontend/src/policy/moduleCatalog.ts",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tsconfig.json",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": "frontend/vite.config.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,35p' backend/app/api/investigations.py; rtk sed -n '1,35p' backend/app/api/data_flows.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,35p' backend/app/api/projects.py; rtk sed -n '1,35p' backend/app/api/pv1.py; rtk sed -n '1,30p' backend/app/architecture/api.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"prefix=|router = APIRouter\" backend/app/api/devices.py backend/app/api/monitoring.py backend/app/api/logical_services.py backend/app/api/networks.py backend/app/api/racks.py backend/app/api/sites.py backend/app/api/audit.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for f in backend/app/api/devices.py backend/app/api/monitoring.py backend/app/api/logical_services.py backend/app/api/networks.py backend/app/api/racks.py backend/app/api/sites.py backend/app/api/audit.py; do echo ---$f; rtk sed -n '\"'1,28p' \\\"\"'$f\"; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"include_router\\\" backend/app/main.py | sed -n '1,100p'; for f in backend/app/api/maintenance.py backend/app/api/operational_actions.py backend/app/api/rca.py backend/app/api/troubleshoot.py; do echo ---\"'$f; rtk rg -n \"router = APIRouter\" \"$f\"; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -o \\\"'/api/v1/[\"'^'\"']+|\\\\\"'`/api/v1/[''^'\"\\\\\"'`]+\" frontend/src/components/MonitoringGrid.tsx frontend/src/components/monitoring frontend/src/components/assets/AssetDetailsView.tsx | sort -u | head -160'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"operational-actions|/rca|/incidents|/maintenance|/security|/tenants\" frontend/src | head -120'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '235,310p' backend/app/main.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for f in backend/app/api/maintenance.py backend/app/api/operational_actions.py backend/app/api/rca.py backend/app/api/troubleshoot.py backend/app/api/security.py; do echo ---$f; rtk sed -n '\"'1,28p' \\\"\"'$f\"; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '18,42p' backend/app/api/operational_actions.py; rtk tail -35 contracts/system_management_v1.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,95p' frontend/src/components/shared/TenantSelector.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"SYSGRID_TENANT|localStorage|onClick\" frontend/src/components/shared/TenantSelector.tsx | tail -25'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '105,172p' frontend/src/components/shared/TenantSelector.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '775,850p' backend/app/api/settings.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m compileall -q backend/app backend/test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,280p' backend/app/api/module_policy.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts; rtk sed -n '1,240p' contracts/monitoring_feature_preservation_v1.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' backend/test_system_management_v1_policy.py; rtk sed -n '1,180p' frontend/src/policy/moduleCatalog.ts; rtk sed -n '1,180p' frontend/src/components/shared/ModuleReleasePolicyContract.test.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m compileall -q backend/app backend/test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m json.tool contracts/system_management_v1.json >/dev/null && rtk python -m json.tool contracts/monitoring_feature_preservation_v1.json >/dev/null'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m compileall -q backend/app backend/test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --numstat | tail -50'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"class FarFailureModeResponse|class FarFailureModeBase\\\" backend/app/schemas/schemas.py && rtk sed -n '845,915p' backend/app/schemas/schemas.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '760,825p' backend/app/schemas/schemas.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"StatCard|handleNavigate\\\\(\\\" frontend/src/components/Dashboard.tsx | head -60\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '360,430p' frontend/src/components/Dashboard.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"ProtectedRoute|getPermLevel|item\\\\.permission|is_admin.*preview|SYSTEM_ROOT_USER_IDS|module-availability|embedded_consumer\\\" frontend/src backend/app contracts | head -180\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 contracts/system_management_v1.json contracts/monitoring_feature_preservation_v1.json backend/app/api/module_policy.py backend/test_system_management_v1_policy.py frontend/src/policy/moduleCatalog.ts frontend/src/policy/ModulePolicy.tsx frontend/src/components/shared/ModuleReleasePolicyContract.test.ts frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat; rtk git status --short | wc -l'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --binary | shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show-ref --verify refs/heads/main; rtk git show-ref --verify refs/heads/codex/sysgrid-smv1-release-foundation-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show-ref --verify refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-v1; rtk git show-ref --verify refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-release-foundation-v1'",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-only | wc -l; rtk git ls-files --others --exclude-standard | sort'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git merge-base --is-ancestor bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 refs/heads/main; rtk git merge-base bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show -s --format='%H%n%T%n%P%n%s' refs/heads/main; rtk git show -s --format='%H%n%T%n%P%n%s' bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sh -c 'git ls-files -m; git ls-files --others --exclude-standard' | sort -u | while IFS= read -r path; do shasum -a 256 \\\"\"'$path\"; done | LC_ALL=C sort | shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sh -c 'git ls-files -m; git ls-files --others --exclude-standard' | sort -u | while IFS= read -r path; do git hash-object -- \\\"\"'$path\"; done | git hash-object --stdin'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1080,1165p' backend/app/api/settings.py; rtk sed -n '780,825p' backend/app/api/settings.py; rtk sed -n '80,125p' backend/app/main.py; rtk sed -n '205,245p' backend/app/main.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '15,28p' backend/app/api/settings.py; rtk sed -n '815,835p' backend/app/api/settings.py; rtk sed -n '1140,1160p' backend/app/api/settings.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '795,820p' backend/app/api/settings.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"SAFE_DIAGNOSTIC_ENV_KEYS|value.*SAFE_DIAGNOSTIC\" backend/app/api/settings.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m compileall -q backend/app backend/test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 contracts/system_management_v1.json contracts/monitoring_feature_preservation_v1.json backend/app/api/module_policy.py backend/test_system_management_v1_policy.py frontend/src/policy/moduleCatalog.ts frontend/src/policy/ModulePolicy.tsx frontend/src/components/shared/ModuleReleasePolicyContract.test.ts frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --binary | shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 495,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.03,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 27148288,
+      "fresh_input_tokens": 545750,
+      "input_tokens": 27694038,
+      "non_reasoning_output_tokens": 60720,
+      "output_tokens": 104490,
+      "reasoning_output_tokens": 43770,
+      "total_processed_tokens": 27798528
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+      "subject": "fabric: capture completed model changes [CF-171432b8db5445e209d7ee53]"
+    }
+  ],
+  "diff": {
+    "additions": 1727,
+    "changed_files": 55,
+    "commit_count": 1,
+    "deletions": 263
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 3,
+    "items": [
+      {
+        "bytes": 1481,
+        "path": "contracts/monitoring_feature_preservation_v1.json",
+        "sha256": "d92dadbe48332eb6308dc0f01116b277c25db563828ce66ecdfbe6ce5c7a51dc"
+      },
+      {
+        "bytes": 8291,
+        "path": "contracts/system_management_v1.json",
+        "sha256": "5aceb0e578a9c2edee40b607efaa8e55b87021ef2c2da6e50796a648d527db4f"
+      },
+      {
+        "bytes": 808,
+        "path": "frontend/tsconfig.json",
+        "sha256": "cfa49edf32dac185335e7daa8fa30e8b4d68cbf180c1d87cd97ca409790efc73"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-171432b8db5445e209d7ee53]",
+    "commit_sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+    "paths_before": 53,
+    "status_before": [
+      " M backend/app/api/audit.py",
+      " M backend/app/api/authorization.py",
+      " M backend/app/api/dashboard.py",
+      " M backend/app/api/data_flows.py",
+      " M backend/app/api/devices.py",
+      " M backend/app/api/far.py",
+      " M backend/app/api/import_engine.py",
+      " M backend/app/api/intelligence.py",
+      " M backend/app/api/investigations.py",
+      " M backend/app/api/knowledge.py",
+      " M backend/app/api/logical_services.py",
+      " M backend/app/api/maintenance.py",
+      " M backend/app/api/monitoring.py",
+      " M backend/app/api/networks.py",
+      " M backend/app/api/operational_actions.py",
+      " M backend/app/api/projects.py",
+      " M backend/app/api/pv1.py",
+      " M backend/app/api/pv1_communication.py",
+      " M backend/app/api/racks.py",
+      " M backend/app/api/rca.py",
+      " M backend/app/api/security.py",
+      " M backend/app/api/settings.py",
+      " M backend/app/api/sites.py",
+      " M backend/app/api/troubleshoot.py",
+      " M backend/app/api/vendors.py",
+      " M backend/app/api/workspaces.py",
+      " M backend/app/architecture/api.py",
+      " M backend/app/core/config.py",
+      " M backend/app/main.py",
+      " M frontend/src/App.tsx",
+      " M frontend/src/api/apiClient.ts",
+      " M frontend/src/components/Dashboard.tsx",
+      " M frontend/src/components/MonitoringGrid.tsx",
+      " M frontend/src/components/NetworkReal.tsx",
+      " M frontend/src/components/assets/AssetDetailsView.tsx",
+      " M frontend/src/components/monitoring/BkmDetailModal.tsx",
+      " M frontend/src/components/monitoring/BkmListModal.tsx",
+      " M frontend/src/components/monitoring/MonitoringDetailModal.tsx",
+      " M frontend/src/components/monitoring/MonitoringForm.tsx",
+      " M frontend/src/components/shared/GlobalSearch.tsx",
+      " M frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts",
+      " M frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts",
+      " M frontend/src/components/shared/ShellNavigation.tsx",
+      " M frontend/src/components/shared/TenantSelector.tsx",
+      " M frontend/src/main.tsx",
+      " M frontend/tsconfig.json",
+      " M frontend/vite.config.ts",
+      "?? backend/app/api/module_policy.py",
+      "?? backend/test_system_management_v1_policy.py",
+      "?? contracts/",
+      "?? frontend/src/components/shared/ModuleReleasePolicyContract.test.ts",
+      "?? frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts",
+      "?? frontend/src/policy/"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-18T16:10:51Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-release-foundation-v1",
+    "head_sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+    "remote_exact_head": true,
+    "remote_head_sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-release-foundation-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-171432b8db5445e209d7ee53",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-release-foundation-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-18T15:31:25Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2366,
+    "queue_seconds": 0,
+    "total_seconds": 2366
+  },
+  "transport": {
+    "bytes": 18152,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 17828,
+    "prompt_sha256": "f0e8ca1fec41a89b6fbebf629fbdf14c57f82e16c9dd2aeea4eaef89af5bbc8f",
+    "sha256": "171432b8db5445e209d7ee539566d87f54eeb5bc33285db508f839379e2ac146"
+  }
+}
