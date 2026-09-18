@@ -1,0 +1,757 @@
+{
+  "accepted_at": "2026-09-18T18:04:08Z",
+  "changed_files": [
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/audit.py",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 0,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 58,
+      "deletions": 33,
+      "path": "backend/app/api/dashboard.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/data_flows.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 37,
+      "deletions": 3,
+      "path": "backend/app/api/far.py",
+      "status": "M"
+    },
+    {
+      "additions": 32,
+      "deletions": 6,
+      "path": "backend/app/api/import_engine.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/intelligence.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/investigations.py",
+      "status": "M"
+    },
+    {
+      "additions": 184,
+      "deletions": 8,
+      "path": "backend/app/api/knowledge.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/logical_services.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/maintenance.py",
+      "status": "M"
+    },
+    {
+      "additions": 342,
+      "deletions": 0,
+      "path": "backend/app/api/module_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/monitoring.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/networks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/operational_actions.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/projects.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1_communication.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/racks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/rca.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/security.py",
+      "status": "M"
+    },
+    {
+      "additions": 202,
+      "deletions": 37,
+      "path": "backend/app/api/settings.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/sites.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/troubleshoot.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/vendors.py",
+      "status": "M"
+    },
+    {
+      "additions": 35,
+      "deletions": 3,
+      "path": "backend/app/api/workspaces.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/architecture/api.py",
+      "status": "M"
+    },
+    {
+      "additions": 28,
+      "deletions": 0,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 40,
+      "deletions": 12,
+      "path": "backend/app/main.py",
+      "status": "M"
+    },
+    {
+      "additions": 306,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 39,
+      "deletions": 0,
+      "path": "contracts/monitoring_feature_preservation_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 277,
+      "deletions": 0,
+      "path": "contracts/system_management_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 55,
+      "deletions": 69,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 0,
+      "path": "frontend/src/api/apiClient.ts",
+      "status": "M"
+    },
+    {
+      "additions": 11,
+      "deletions": 4,
+      "path": "frontend/src/components/Dashboard.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 6,
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 5,
+      "path": "frontend/src/components/NetworkReal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 3,
+      "path": "frontend/src/components/assets/AssetDetailsView.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 3,
+      "path": "frontend/src/components/monitoring/BkmDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/monitoring/BkmListModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/monitoring/MonitoringDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/monitoring/MonitoringForm.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 13,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 28,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ModuleReleasePolicyContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 32,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 43,
+      "deletions": 46,
+      "path": "frontend/src/components/shared/ShellNavigation.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/TenantSelector.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/main.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 71,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 31,
+      "deletions": 0,
+      "path": "frontend/src/policy/moduleCatalog.ts",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tsconfig.json",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": "frontend/vite.config.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1360,1535p' src/components/MonitoringGrid.tsx; rtk sed -n '1670,1815p' src/components/MonitoringGrid.tsx; rtk rg -n \\\"bulkPreview|showBulk|isBulk|preview\\\" src/components/MonitoringGrid.tsx | sed -n '1,180p'; rtk tail -n 180 src/components/MonitoringGrid.tsx | sed -n '1,180p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '2050,2245p' src/components/MonitoringGrid.tsx; rtk sed -n '2490,2555p' src/components/MonitoringGrid.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 3 \\\"bulkMutation\\\\.mutate|bulkPreview\\\" src/components/MonitoringGrid.tsx | sed -n '1,260p'; rtk sed -n '2240,2325p' src/components/MonitoringGrid.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,145p' src/components/MonitoringGrid.tsx; rtk sed -n '490,565p' src/components/MonitoringGrid.tsx; rtk sed -n '1815,1885p' src/components/MonitoringGrid.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"bulkDraft|lastUndoRef|const bulkMutation|return \\\\(\\\" src/components/MonitoringGrid.tsx | sed -n '1,140p'; rtk sed -n '565,665p' src/components/MonitoringGrid.tsx; rtk sed -n '1740,1835p' src/components/MonitoringGrid.tsx\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"bulkDraft|lastUndoRef|const bulkMutation|return \\\\(\\\" src/components/MonitoringGrid.tsx | sed -n '1,140p'; rtk sed -n '565,665p' src/components/MonitoringGrid.tsx; rtk sed -n '1740,1835p' src/components/MonitoringGrid.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'env PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run typecheck; typecheck_exit=$?; env PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm exec -- vitest run src/components/shared/MonitoringFeaturePreservationContract.test.ts src/components/shared/ModuleReleasePolicyContract.test.ts --reporter=dot; unit_exit=$?; printf '\"'typecheck_exit=%s\\\\nunit_exit=%s\\\\n' \\\"\"'$typecheck_exit\" \"$unit_exit\"; if [ \"$typecheck_exit\" -ne 0 ] || [ \"$unit_exit\" -ne 0 ]; then exit 1; fi'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'unit_log=\"$(mktemp /tmp/chg120-unit-XXXXXX.log)\"; env PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run test:unit >\"$unit_log\" 2>&1; unit_exit=\"$?\"; tail -n 120 \"$unit_log\"; printf '\"'unit_log=%s\\\\nunit_exit=%s\\\\n' \\\"\"'$unit_log\" \"$unit_exit\"; exit \"$unit_exit\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"pwd; git status --short; find /tmp -maxdepth 1 -name 'chg120-unit-*' -print 2>/dev/null | tail -n 5\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git diff --stat; git diff --check; git diff --name-only; git diff -- frontend/src/components/MonitoringGrid.tsx | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git diff -- backend/app/api/module_policy.py backend/app/api/knowledge.py contracts/system_management_v1.json | sed -n '1,360p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg -n \\\"class (Device|LogicalService|MonitoringItem)|tenant_id\\\" backend/app/models.py backend/app/models -g '*.py' | head -n 100; rg -n \\\"embedded_consumer|monitoring_id\\\" frontend/src/components/network frontend/src/components -g '*.tsx' | head -n 120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '55,155p' backend/app/models/models.py; sed -n '425,500p' backend/app/models/models.py; sed -n '3215,3260p' frontend/src/components/NetworkReal.tsx; sed -n '3745,3790p' frontend/src/components/AssetReal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '124,168p' backend/app/models/models.py; rg -n \\\"class BaseMixin|tenant_id = Column\\\" backend/app/models/models.py | head -n 40; rg -n \\\"network-knowledge|embedded_consumer=network\\\" backend -g '*.py' frontend/src -g '*.tsx'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,30p' backend/app/models/models.py; rg -n \\\"class (LogicalService|MonitoringItem).*tenant|tenant_id\\\" backend/app/api/services.py backend/app/api/monitoring.py backend/app/api/network.py 2>/dev/null | head -n 80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg -n \\\"device_id|source_device_id|target_device_id\\\" frontend/src/components/NetworkReal.tsx | head -n 80; rg -n \\\"getNetworkConnections|connections|NetworkReal\\\" frontend/src -g '*.tsx' | head -n 80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg -n \\\"class (PortConnection|NetworkConnection)|port_connections|device_id\\\" backend/app/models/models.py backend/app/api/network.py backend/app/schemas.py | head -n 140; sed -n '1,180p' backend/app/api/network.py 2>/dev/null\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '215,245p' backend/app/models/models.py; rg --files backend/app/api | rg 'network|port'; rg -n \\\"PortConnection|port_connections\\\" backend/app/api backend/app/schemas -g '*.py' | head -n 120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg -n \\\"Knowledge|recovery|suggestedKnowledge|interventionDoc|onOpenKnowledge\\\" frontend/src/components/NetworkReal.tsx | tail -n 80; rg -n \\\"network\\\" contracts/system_management_v1.json frontend/src/components/shared -g '*.tsx' | head -n 120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '3218,3270p' frontend/src/components/NetworkReal.tsx; sed -n '3445,3510p' frontend/src/components/NetworkReal.tsx; rg -n \\\"suggestedKnowledge\\\" frontend/src/components/NetworkReal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nunit_log=$(mktemp /tmp/chg120-unit-final-XXXXXX.log)\nenv PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run test:unit >\"$unit_log\" 2>&1\nunit_exit=$?\ntail -n 180 \"$unit_log\"\nprintf '\"'unit_log=%s\\\\nunit_exit=%s\\\\n' \\\"\"'$unit_log\" \"$unit_exit\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rg -n \"''^ FAIL|''^ ❯|''^ Test Files|''^ Tests|FAIL|failed\" /tmp/chg120-unit-final-XXXXXX.log | tail -n 120'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nbuild_log=$(mktemp /tmp/chg120-build-XXXXXX.log)\nenv PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run build >\"$build_log\" 2>&1\nbuild_exit=$?\ntail -n 160 \"$build_log\"\nprintf '\"'build_log=%s\\\\nbuild_exit=%s\\\\n' \\\"\"'$build_log\" \"$build_exit\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\ne2e_log=$(mktemp /tmp/chg120-e2e-XXXXXX.log)\nenv PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run test:e2e >\"$e2e_log\" 2>&1\ne2e_exit=$?\ntail -n 200 \"$e2e_log\"\nprintf '\"'e2e_log=%s\\\\ne2e_exit=%s\\\\n' \\\"\"'$e2e_log\" \"$e2e_exit\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,180p' /tmp/chg120-e2e-XXXXXX.log; rg -n \\\"\"'^  1'\"\\\\)|\"'^  2'\"\\\\)|Error:|failed|Expected|Received|net::|timeout\\\" /tmp/chg120-e2e-XXXXXX.log | head -n 100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nverify_log=$(mktemp /tmp/chg120-verify-XXXXXX.log)\nenv PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run verify:app >\"$verify_log\" 2>&1\nverify_exit=$?\ntail -n 200 \"$verify_log\"\nprintf '\"'verify_log=%s\\\\nverify_exit=%s\\\\n' \\\"\"'$verify_log\" \"$verify_exit\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'env PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run check:operational-contracts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '110,210p' backend/test_system_management_v1_policy.py; rg -n 'network.*monitoring_id|consumer_selector_sets' backend/test_system_management_v1_policy.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '24,50p' backend/test_system_management_v1_policy.py; sed -n '235,280p' backend/test_system_management_v1_policy.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m pytest -q test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 49,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 591,
+        "output_sha256": "2c0cf9bf1dbb113e278c73e9528048a99e8b728b503df3d0851bdb3b3d919831",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nenv PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run typecheck\ntypecheck_exit=$?\nenv PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm exec -- vitest run src/components/shared/ModuleReleasePolicyContract.test.ts src/components/shared/MonitoringFeaturePreservationContract.test.ts --reporter=dot\nfocused_exit=$?\nprintf '\"'typecheck_exit=%s\\\\nfocused_exit=%s\\\\n' \\\"\"'$typecheck_exit\" \"$focused_exit\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'env PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run build >/tmp/chg120-build-final-XXXXXX.log 2>&1; build_exit=$?; tail -n 35 /tmp/chg120-build-final-XXXXXX.log; printf '\"'build_exit=%s\\\\n' \\\"\"'$build_exit\"; exit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,240p' scripts/verify-app.sh; ls -la | sed -n '1,80p'; git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD; printf 'committed_diff_check_exit=%s\\\\n' \\\"\"'$?\"; git diff --check; printf '\"'worktree_diff_check_exit=%s\\\\n' \\\"\"'$?\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git show-ref | rg 'codex-fabric/evidence|project-os-artifacts|sysgrid-smv1|CF-171432|e50e664' | head -n 100; rg --files .sysgrid-project-view-publish-evidence .sysgrid-project-view-executor 2>/dev/null | head -n 100; rg -n \\\"artifact-carrier|project-os-artifacts|reader-index|review-desktop\\\" . -g '*.sh' -g '*.md' -g '*.py' -g '*.js' -g '*.json' | head -n 120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git ls-tree -r --name-only refs/remotes/origin/codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-v1 | head -n 80; git ls-tree -r --name-only refs/remotes/origin/codex-fabric/evidence/sysgrid/sysgrid-visual-atlas-capture-v3 | head -n 80; git remote -v'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git status --short; git rev-parse HEAD; git merge-base --is-ancestor e50e66401846b1cd989469ab09b9d76f20f2d56a HEAD; printf 'predecessor_ancestor_exit=%s\\\\n' \\\"\"'$?\"; git diff --stat bf1611bcd9cc3849a4353d5fb82da687c68ef4a0; git diff --stat; git diff --numstat | tail -n 20; git rev-parse HEAD''^{tree}; git rev-parse bf1611bcd9cc3849a4353d5fb82da687c68ef4a0''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0; printf 'native_complete_worktree_diff_check_exit=%s\\\\n' \\\"\"'$?\"; fix_patch=/tmp/sysgrid-chg120-fix.patch; git diff --binary e50e66401846b1cd989469ab09b9d76f20f2d56a -- > \"$fix_patch\"; shasum -a 256 \"$fix_patch\"; wc -c \"$fix_patch\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -e\ntmp_worktree=$(mktemp -d /tmp/sysgrid-chg120-check-XXXXXX)\ngit worktree add --detach \"$tmp_worktree\" e50e66401846b1cd989469ab09b9d76f20f2d56a >/tmp/chg120-worktree-add.log\ngit -C \"$tmp_worktree\" apply --check /tmp/sysgrid-chg120-fix.patch\ngit -C \"$tmp_worktree\" apply /tmp/sysgrid-chg120-fix.patch\ngit -C \"$tmp_worktree\" diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncheck_exit=$?\ngit -C \"$tmp_worktree\" add -A\ncandidate_tree=$(git -C \"$tmp_worktree\" write-tree)\nchanged_count=$(git -C \"$tmp_worktree\" diff --name-only bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 --cached | wc -l | tr -d '\"' ')\nprintf 'disposable_complete_diff_check_exit=%s\\\\ncandidate_tree=%s\\\\nchanged_file_count=%s\\\\n' \\\"\"'$check_exit\" \"$candidate_tree\" \"$changed_count\"\ngit worktree remove --force \"$tmp_worktree\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m json.tool contracts/system_management_v1.json >/tmp/chg120-json.out; json_exit=$?; /opt/anaconda3/bin/python3 -m compileall -q backend/app backend/test_system_management_v1_policy.py; compile_exit=$?; printf '\"'json_exit=%s\\\\ncompile_exit=%s\\\\n' \\\"\"'$json_exit\" \"$compile_exit\"; exit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nunit_log=/tmp/chg120-unit-final-r2.log\nenv PATH=/opt/homebrew/opt/node@20/bin:/usr/bin:/bin /opt/homebrew/opt/node@20/bin/npm run test:unit >\"$unit_log\" 2>&1\nunit_exit=$?\ntail -n 35 \"$unit_log\"\nprintf '\"'unit_log=%s\\\\nunit_exit=%s\\\\n' \\\"\"'$unit_log\" \"$unit_exit\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git status --short; git diff --name-only; git diff --check; printf 'native_worktree_diff_check_exit=%s\\\\n' \\\"\"'$?\"; git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0; printf '\"'native_base_to_worktree_check_exit=%s\\\\n' \\\"\"'$?\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf 'branch='; git branch --show-current; printf 'head='; git rev-parse HEAD; printf 'main='; git rev-parse refs/heads/main; printf 'fresh_base='; git rev-parse bf1611bcd9cc3849a4353d5fb82da687c68ef4a0; printf 'head_tree='; git rev-parse HEAD\"'^{tree}; printf '\"'main_tree='; git rev-parse refs/heads/main\"'^{tree}; git diff --quiet refs/heads/main; printf '\"'main_worktree_diff_exit=%s\\\\n' \\\"\"'$?\"; git merge-base --is-ancestor bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 e50e66401846b1cd989469ab09b9d76f20f2d56a; printf '\"'base_ancestor_predecessor_exit=%s\\\\n' \\\"\"'$?\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,35p' backend/test_system_management_v1_policy.py; sed -n '1,55p' backend/app/api/knowledge.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m pytest -q test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 53,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 591,
+        "output_sha256": "ceb965812c39daa533d8a414d7122883c61c5ad980def4f1c9d68d9e297938d2",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git diff --check; worktree_check=$?; git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0; complete_check=$?; git diff --binary e50e66401846b1cd989469ab09b9d76f20f2d56a0 -- >/tmp/sysgrid-chg120-fix-final.patch 2>/tmp/chg120-patch.err; patch_exit=$?; shasum -a 256 /tmp/sysgrid-chg120-fix-final.patch; wc -c /tmp/sysgrid-chg120-fix-final.patch; printf '\"'worktree_check=%s\\\\ncomplete_worktree_check=%s\\\\npatch_generation_exit=%s\\\\n' \\\"\"'$worktree_check\" \"$complete_check\" \"$patch_exit\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,5p' /tmp/chg120-patch.err; head -n 3 /tmp/sysgrid-chg120-fix-final.patch; git diff --binary e50e66401846b1cd989469ab09b9d76f20f2d56a -- >/tmp/sysgrid-chg120-fix-final.patch; shasum -a 256 /tmp/sysgrid-chg120-fix-final.patch; wc -c /tmp/sysgrid-chg120-fix-final.patch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git rev-parse e50e66401846b1cd989469ab09b9d76f20f2d56a0; git rev-parse e50e66401846b1cd989469ab09b9d76f20f2d56a'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -e\ntmp_worktree=$(mktemp -d /tmp/sysgrid-chg120-check-final-XXXXXX)\ngit worktree add --detach \"$tmp_worktree\" e50e66401846b1cd989469ab09b9d76f20f2d56a >/dev/null\ngit -C \"$tmp_worktree\" apply --check /tmp/sysgrid-chg120-fix-final.patch\ngit -C \"$tmp_worktree\" apply /tmp/sysgrid-chg120-fix-final.patch\ngit -C \"$tmp_worktree\" diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncheck_exit=$?\ngit -C \"$tmp_worktree\" add -A\ncandidate_tree=$(git -C \"$tmp_worktree\" write-tree)\nprintf '\"'disposable_complete_diff_check_exit=%s\\\\ncandidate_tree=%s\\\\n' \\\"\"'$check_exit\" \"$candidate_tree\"\ngit worktree remove --force \"$tmp_worktree\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nnative_range_log=/tmp/chg120-native-range-check.log\ngit diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD >\"$native_range_log\" 2>&1\nrange_exit=$?\nnative_worktree_log=/tmp/chg120-native-worktree-check.log\ngit diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 >\"$native_worktree_log\" 2>&1\nworktree_exit=$?\nprintf '\"'%s\\\\n' 'range_output:'\nsed -n '1,20p' \\\"\"'$native_range_log\"\nprintf '\"'range_exit=%s\\\\nworktree_exit=%s\\\\n' \\\"\"'$range_exit\" \"$worktree_exit\"\nexit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git ls-remote --heads origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-audit-fix-v1 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-release-foundation-audit-fix-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 261,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.88,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 19186688,
+      "fresh_input_tokens": 416173,
+      "input_tokens": 19602861,
+      "non_reasoning_output_tokens": 31060,
+      "output_tokens": 60782,
+      "reasoning_output_tokens": 29722,
+      "total_processed_tokens": 19663643
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "ea43d81196498be8edf1877ead7f989044909460",
+      "subject": "fabric: capture completed model changes [CF-d764e58d89040e1c768a954c]"
+    },
+    {
+      "sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+      "subject": "fabric: capture completed model changes [CF-171432b8db5445e209d7ee53]"
+    }
+  ],
+  "diff": {
+    "additions": 2138,
+    "changed_files": 55,
+    "commit_count": 2,
+    "deletions": 271
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 3,
+    "items": [
+      {
+        "bytes": 1481,
+        "path": "contracts/monitoring_feature_preservation_v1.json",
+        "sha256": "d92dadbe48332eb6308dc0f01116b277c25db563828ce66ecdfbe6ce5c7a51dc"
+      },
+      {
+        "bytes": 8685,
+        "path": "contracts/system_management_v1.json",
+        "sha256": "f2c03dc8335c902b7c638cd47ae41ceb3742a366ab26f53c449182bf7855a8c9"
+      },
+      {
+        "bytes": 808,
+        "path": "frontend/tsconfig.json",
+        "sha256": "cfa49edf32dac185335e7daa8fa30e8b4d68cbf180c1d87cd97ca409790efc73"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-d764e58d89040e1c768a954c]",
+    "commit_sha": "ea43d81196498be8edf1877ead7f989044909460",
+    "paths_before": 10,
+    "status_before": [
+      " M backend/app/api/knowledge.py",
+      " M backend/app/api/module_policy.py",
+      " M backend/test_system_management_v1_policy.py",
+      " M contracts/system_management_v1.json",
+      " M frontend/src/App.tsx",
+      " M frontend/src/components/MonitoringGrid.tsx",
+      " M frontend/src/components/NetworkReal.tsx",
+      " M frontend/src/components/assets/AssetDetailsView.tsx",
+      " M frontend/src/components/shared/ModuleReleasePolicyContract.test.ts",
+      " M frontend/src/policy/moduleCatalog.ts"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-18T18:31:15Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-release-foundation-audit-fix-v1",
+    "head_sha": "ea43d81196498be8edf1877ead7f989044909460",
+    "remote_exact_head": true,
+    "remote_head_sha": "ea43d81196498be8edf1877ead7f989044909460",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-release-foundation-audit-fix-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-d764e58d89040e1c768a954c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-audit-fix-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-audit-fix-v1"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-release-foundation-audit-fix-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-18T18:04:08Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1627,
+    "queue_seconds": 0,
+    "total_seconds": 1627
+  },
+  "transport": {
+    "bytes": 16410,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 16068,
+    "prompt_sha256": "34c582e65f4b62eb27e26b68432372817a3400c61dfd83f3349b49ad3f7b8a80",
+    "sha256": "d764e58d89040e1c768a954c49eeb07a021c46f47c99d8a0ab0985884ec29603"
+  }
+}
