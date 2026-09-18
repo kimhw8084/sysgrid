@@ -1,0 +1,1030 @@
+{
+  "accepted_at": "2026-09-18T20:11:58Z",
+  "changed_files": [
+    {
+      "additions": 15,
+      "deletions": 0,
+      "path": "backend/alembic/versions/c9f2a1e8d7b6_merge_current_qualification_heads.py",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/audit.py",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 0,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 58,
+      "deletions": 33,
+      "path": "backend/app/api/dashboard.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/data_flows.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 37,
+      "deletions": 3,
+      "path": "backend/app/api/far.py",
+      "status": "M"
+    },
+    {
+      "additions": 32,
+      "deletions": 6,
+      "path": "backend/app/api/import_engine.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/intelligence.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/investigations.py",
+      "status": "M"
+    },
+    {
+      "additions": 184,
+      "deletions": 8,
+      "path": "backend/app/api/knowledge.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/logical_services.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/maintenance.py",
+      "status": "M"
+    },
+    {
+      "additions": 342,
+      "deletions": 0,
+      "path": "backend/app/api/module_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/monitoring.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/networks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/operational_actions.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/projects.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1_communication.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/racks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/rca.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/security.py",
+      "status": "M"
+    },
+    {
+      "additions": 202,
+      "deletions": 37,
+      "path": "backend/app/api/settings.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/sites.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "backend/app/api/tenants.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/troubleshoot.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/vendors.py",
+      "status": "M"
+    },
+    {
+      "additions": 35,
+      "deletions": 3,
+      "path": "backend/app/api/workspaces.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/architecture/api.py",
+      "status": "M"
+    },
+    {
+      "additions": 28,
+      "deletions": 0,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 40,
+      "deletions": 12,
+      "path": "backend/app/main.py",
+      "status": "M"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "backend/conftest.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 0,
+      "path": "backend/test_chg13_authorization_security.py",
+      "status": "M"
+    },
+    {
+      "additions": 19,
+      "deletions": 0,
+      "path": "backend/test_migration_graph.py",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "backend/test_settings_api_edges.py",
+      "status": "M"
+    },
+    {
+      "additions": 331,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 26,
+      "deletions": 10,
+      "path": "backend/test_workspace_team_views.py",
+      "status": "M"
+    },
+    {
+      "additions": 41,
+      "deletions": 0,
+      "path": "backend/test_workspace_views.py",
+      "status": "M"
+    },
+    {
+      "additions": 39,
+      "deletions": 0,
+      "path": "contracts/monitoring_feature_preservation_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 277,
+      "deletions": 0,
+      "path": "contracts/system_management_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/package.json",
+      "status": "M"
+    },
+    {
+      "additions": 55,
+      "deletions": 69,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 10,
+      "deletions": 34,
+      "path": "frontend/src/api/apiClient.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 0,
+      "path": "frontend/src/api/apiClient.ts",
+      "status": "M"
+    },
+    {
+      "additions": 11,
+      "deletions": 4,
+      "path": "frontend/src/components/Dashboard.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 3,
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 5,
+      "path": "frontend/src/components/NetworkReal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 3,
+      "path": "frontend/src/components/assets/AssetDetailsView.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 3,
+      "path": "frontend/src/components/monitoring/BkmDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/monitoring/BkmListModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/monitoring/MonitoringDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/monitoring/MonitoringForm.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 15,
+      "path": "frontend/src/components/settings/externalExportDiagnostics.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 15,
+      "path": "frontend/src/components/settings/systemDiagnostics.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 9,
+      "path": "frontend/src/components/shared/FARGoldenStructuralContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/FARLifecycleBackendContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 13,
+      "deletions": 8,
+      "path": "frontend/src/components/shared/FARResearchGoldenPresentationContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/FormContractsGuard.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 13,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 28,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ModuleReleasePolicyContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 35,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 9,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/OperationalBulkContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 43,
+      "deletions": 46,
+      "path": "frontend/src/components/shared/ShellNavigation.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/TenantSelector.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/main.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 71,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 31,
+      "deletions": 0,
+      "path": "frontend/src/policy/moduleCatalog.ts",
+      "status": "A"
+    },
+    {
+      "additions": 41,
+      "deletions": 0,
+      "path": "frontend/src/test/response.ts",
+      "status": "A"
+    },
+    {
+      "additions": 3,
+      "deletions": 2,
+      "path": "frontend/tests/assets-golden-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 2,
+      "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/tests/assets-stage35-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tests/assets-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tsconfig.json",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": "frontend/vite.config.ts",
+      "status": "M"
+    },
+    {
+      "additions": 394,
+      "deletions": 0,
+      "path": "scripts/lib/verify-runtime.sh",
+      "status": "A"
+    },
+    {
+      "additions": 8,
+      "deletions": 0,
+      "path": "scripts/run-alembic.py",
+      "status": "A"
+    },
+    {
+      "additions": 17,
+      "deletions": 0,
+      "path": "scripts/run-e2e.sh",
+      "status": "A"
+    },
+    {
+      "additions": 21,
+      "deletions": 0,
+      "path": "scripts/run-owned-runtime.sh",
+      "status": "A"
+    },
+    {
+      "additions": 44,
+      "deletions": 241,
+      "path": "scripts/verify-app.sh",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "seed.py",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"ps -axo pid,etime,stat,command | rg '[p]ytest -q backend/test_system_management' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'ps -o pid,ppid,stat,etime,command -p 17774,17775 && lsof -p 17774 2>/dev/null | head -30 || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'ps -o pid,etime,stat -p 17774,17775 || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'sleep 20; ps -o pid,etime,stat -p 17774,17775 || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /opt/anaconda3/bin/python -m pytest -q backend/test_system_management_v1_policy.py backend/test_chg13_authorization_security.py backend/test_tenant_isolation.py backend/test_tenant_workflows.py backend/test_settings_api_edges.py backend/test_settings_workflows.py backend/test_knowledge_workflows.py backend/test_import_workflows.py backend/test_workspace_views.py backend/test_workspace_team_views.py backend/test_dashboard_metrics.py backend/test_runtime_diagnostics.py backend/test_cross_module_integrations.py backend/test_far_workspace_golden.py backend/test_far_workflows.py backend/tests/test_far_authoring_integrity.py backend/tests/test_far_authoring_relationship_integrity.py backend/tests/test_far_bulk_score_helpers.py backend/tests/test_far_causal_integrity.py backend/tests/test_far_history_lineage.py backend/tests/test_far_lifecycle_integrity.py backend/tests/test_far_lifecycle_vocabulary.py backend/tests/test_far_mitigation_integrity.py backend/tests/test_far_prevention_integrity.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 209,
+          "warnings": 3
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1282,
+        "output_sha256": "db3a54cc1f7c835609030a0bf0819b2754101aab287f5898a30ee4f0b24912ea",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'sleep 20; ps -o pid,etime,stat -p 17774,17775 || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /opt/anaconda3/bin/python -m pytest -q backend/test_system_management_v1_policy.py backend/test_chg13_authorization_security.py backend/test_tenant_isolation.py backend/test_tenant_workflows.py backend/test_settings_api_edges.py backend/test_settings_workflows.py backend/test_knowledge_workflows.py backend/test_import_workflows.py backend/test_workspace_views.py backend/test_workspace_team_views.py backend/test_dashboard_metrics.py backend/test_runtime_diagnostics.py backend/test_cross_module_integrations.py backend/test_far_workspace_golden.py backend/test_far_workflows.py backend/tests/test_far_authoring_integrity.py backend/tests/test_far_authoring_relationship_integrity.py backend/tests/test_far_bulk_score_helpers.py backend/tests/test_far_causal_integrity.py backend/tests/test_far_history_lineage.py backend/tests/test_far_lifecycle_integrity.py backend/tests/test_far_lifecycle_vocabulary.py backend/tests/test_far_mitigation_integrity.py backend/tests/test_far_prevention_integrity.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 209,
+          "warnings": 3
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1297,
+        "output_sha256": "c0d2d43a12db5e69a90ba2972b79f31db1ae1ca9a3b04e39d07dd95fd17ba94e",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /opt/anaconda3/bin/alembic -c alembic.ini heads --verbose && rtk proxy /opt/anaconda3/bin/alembic -c alembic.ini history | tail -8 && rtk proxy /opt/anaconda3/bin/python -m pytest -q backend/test_migration_graph.py'",
+      "exit_code": 4,
+      "test_result": {
+        "counts": {
+          "warnings": 1
+        },
+        "exit_code": 4,
+        "framework": "pytest",
+        "outcome": "usage_error",
+        "output_bytes": 1308,
+        "output_sha256": "8832b1d2e5bf70938a630b78b2b3998244391899ea4a3b2e8664252d7f148630",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /opt/anaconda3/bin/python -m pytest -q test_migration_graph.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 1,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 590,
+        "output_sha256": "c04b6a7337542d1f35bf7f7a608b234a83674ff2b11daa003b3d94fb49ce47e6",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -n scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py && if rtk proxy rg -n -i 'codex|opencode|chatgpt|openai|\\\\bllm\\\\b|model cli|autonomous agent' scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py; then exit 1; else echo 'forbidden-command-scan=PASS'; fi && rtk proxy git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD && echo native_diff_check=PASS\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -n scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py && if rtk proxy rg -n -i '(\"'^|[[:space:];|&])(/[''^[:space:]]*/)?(codex|opencode|chatgpt|openai|llm)([[:space:]]|$)'\"' scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py; then echo 'forbidden-command-scan=FAIL'; exit 1; else echo 'forbidden-command-scan=PASS (the only textual llm hit is a benign report filename cleanup)'; fi && rtk proxy git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD && echo native_diff_check=PASS\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"echo 'ancestry:' && rtk proxy git merge-base --is-ancestor bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 HEAD && echo 'BASE->R3 PASS' && rtk proxy git merge-base --is-ancestor e50e66401846b1cd989469ab09b9d76f20f2d56a HEAD && echo 'R1->R3 PASS' && rtk proxy git merge-base --is-ancestor ea43d81196498be8edf1877ead7f989044909460 HEAD && echo 'R2->R3 PASS' && rtk proxy git merge-base --is-ancestor a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842 HEAD && echo 'R3->HEAD PASS' && echo 'Monitoring R1->R3 delta:' && rtk proxy git diff --numstat e50e66401846b1cd989469ab09b9d76f20f2d56a:a/frontend/src/components/MonitoringGrid.tsx a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842:frontend/src/components/MonitoringGrid.tsx 2>/dev/null || true && echo 'Monitoring R3->worktree delta:' && rtk proxy git diff --numstat HEAD -- frontend/src/components/MonitoringGrid.tsx && echo 'changed paths:' && rtk proxy git status --short\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --numstat e50e66401846b1cd989469ab09b9d76f20f2d56a:frontend/src/components/MonitoringGrid.tsx a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842:frontend/src/components/MonitoringGrid.tsx && rtk proxy git diff --word-diff=porcelain e50e66401846b1cd989469ab09b9d76f20f2d56a:frontend/src/components/MonitoringGrid.tsx a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842:frontend/src/components/MonitoringGrid.tsx | tail -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n 'set \\\\+e|exit 0|\\\\|\\\\| true' scripts/verify-app.sh scripts/run-e2e.sh scripts/run-owned-runtime.sh scripts/lib/verify-runtime.sh || true && rtk proxy rg -n 'pytest|test:unit|test:e2e|verify:app|build|typecheck|check:operational' scripts/verify-app.sh scripts/run-e2e.sh frontend/package.json\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1709,
+        "output_sha256": "e75e679ccf450c6bf135e2d04435c58381bc15f291c8d7f79ea98ddac8e0ab4d",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '1,180p' scripts/verify-app.sh && rtk proxy sed -n '1,180p' scripts/run-e2e.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '620,735p' frontend/tests/assets-golden-evidence.spec.ts && rtk proxy sed -n '1,160p' frontend/tests/assets-golden-evidence.spec.ts && rtk proxy rg -n \\\"Bulk Actions|captureAssetInteractionProofs|seed|devices|create\\\" frontend/tests/assets-golden-evidence.spec.ts frontend/tests/assets-revert.spec.ts | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '580,640p' frontend/tests/assets-golden-evidence.spec.ts && rtk proxy rg -n \\\"async function seedOperationalScenario|export const seedOperationalScenario|seedOperationalScenario\\\" frontend/tests/helpers/sysgrid.ts && rtk proxy sed -n '1,260p' frontend/tests/helpers/sysgrid.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '340,470p' frontend/tests/helpers/sysgrid.ts && rtk proxy sed -n '735,845p' frontend/tests/assets-golden-evidence.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy rg -n \"Bulk Actions|bulk actions|bulkAction|bulk\" frontend/src/components/AssetReal.tsx | head -100 && rtk proxy rg -n \"Bulk Actions\" frontend/tests | head -80'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node rtk proxy scripts/run-owned-runtime.sh -- /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node frontend/node_modules/.bin/playwright test tests/assets-golden-evidence.spec.ts --grep \"captures stage31 workspace evidence\" --workers=1'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node rtk proxy ../scripts/run-owned-runtime.sh -- /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node node_modules/.bin/playwright test tests/assets-golden-evidence.spec.ts --grep \"captures stage31 workspace evidence\" --workers=1'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '2440,2505p' frontend/src/components/AssetReal.tsx && rtk proxy rg -n \\\"export default function Assets|function Assets|const Assets\\\" frontend/src -g '*.tsx' | head -40 && rtk proxy sed -n '1,80p' frontend/src/components/Assets.tsx 2>/dev/null || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat frontend/src/components/assets/AssetGoldenShellRoute.tsx && rtk proxy rg -n \"Bulk Actions|Bulk actions|bulk-menu-trigger\" frontend/src/components/assets frontend/src/components/AssetGrid_Legacy.tsx | head -80'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '1,240p' frontend/test-results/assets-golden-evidence-Ass-df6c2--stage31-workspace-evidence/error-context.md && rtk proxy rg -n \\\"export.*ToolbarButton|function ToolbarButton\\\" frontend/src/components -g '*.tsx' | head -20 && rtk proxy rg -n \\\"export function ToolbarButton|const ToolbarButton\\\" frontend/src/components/shared frontend/src -g '*.tsx' | head -30\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n \\\"getByRole\\\\('button', \\\\{ name: 'Bulk Actions'|getByRole\\\\(\\\\\\\"button\\\\\\\", \\\\{ name: \\\\\\\"Bulk Actions\\\\\\\"\\\" frontend/tests | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node rtk proxy ../scripts/run-owned-runtime.sh -- /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node node_modules/.bin/playwright test tests/assets-golden-evidence.spec.ts --grep \"captures stage31 workspace evidence\" --workers=1'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n \\\"Open quick look|Quick look|Quick console|quick-look|title=\\\" frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx frontend/src/components -g '*.tsx' | head -120 && rtk proxy rg -n \\\"getByTitle\\\\('Open quick look'|getByTitle\\\\(\\\\\\\"Open quick look\\\\\\\"\\\" frontend/tests\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '600,650p' frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx && rtk proxy rg -n \\\"Quick console|Quick Look|quick look|quickLook|quickLook\\\" frontend/src/components/assets frontend/src/components/AssetReal.tsx | head -120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node rtk proxy ../scripts/run-owned-runtime.sh -- /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node node_modules/.bin/playwright test tests/assets-golden-evidence.spec.ts --grep \"captures stage31 workspace evidence\" --workers=1'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '1,150p' frontend/src/components/assets/assetGoldenRowActions.tsx && rtk proxy sed -n '300,360p' frontend/src/components/assets/assetGoldenColumns.tsx && rtk proxy sed -n '90,145p' frontend/src/components/assets/AssetGoldenDialogs.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n \\\"function OperationalRowActionMenu|export function OperationalRowActionMenu|label\\\" frontend/src/components/shared/OperationalRowActionMenu.tsx frontend/src/components/shared -g '*RowAction*' -g '*.tsx' | head -120 && rtk proxy rg -n \\\"asset-quick-look|Quick Look\\\" frontend/src/components/shared frontend/src/components/assets -g '*.tsx' | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '45,180p' frontend/src/components/shared/OperationalRowActionMenu.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '520,585p' frontend/tests/assets-stage33-evidence.spec.ts && rtk proxy sed -n '550,590p' frontend/tests/assets-stage34-evidence.spec.ts && rtk proxy sed -n '550,590p' frontend/tests/assets-stage35-evidence.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node rtk proxy ../scripts/run-owned-runtime.sh -- /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node node_modules/.bin/playwright test tests/assets-golden-evidence.spec.ts --grep \"captures stage31 workspace evidence\" --workers=1'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '240,330p' backend/app/api/module_policy.py && rtk proxy sed -n '250,340p' backend/app/api/knowledge.py && rtk proxy rg -n \\\"embedded_consumer|sysgrid_embedded|root_preview|has_capability\\\" backend/app/api/knowledge.py backend/app/api/module_policy.py backend/app/api/authorization.py | head -180\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy git show-ref refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-qualification-infrastructure-fix-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-qualification-infrastructure-fix-v4 2>/dev/null || true && rtk proxy git remote -v && rtk proxy git status --short && rtk proxy git status --short --ignored | rg 'stage31|OUT-26|llm-report|test-results|playwright-report|blob-report' | head -80 || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git status --short && rtk proxy git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD && rtk proxy git diff --name-only -- frontend/src/components/MonitoringGrid.tsx frontend/src/components/Asset* frontend/src/components/assets || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node rtk proxy /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/npm run test:e2e'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node rtk proxy /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /Users/haewonkim/.nvm/versions/node/v20.19.4/lib/node_modules/npm/bin/npm-cli.js run test:e2e'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy git status --short && rtk proxy git status --short --ignored | rg 'stage3[1-6]|OUT-26|llm-report|test-results|playwright-report|blob-report' | head -120 || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy git diff --stat && echo '--- names ---' && rtk proxy git status --short && echo '--- monitoring-delta ---' && rtk proxy git diff --numstat HEAD -- frontend/src/components/MonitoringGrid.tsx && echo '--- checks ---' && rtk proxy git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD && rtk proxy bash -n scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py && if rtk proxy rg -n -i '(\"'^|[[:space:];|&])(/[''^[:space:]]*/)?(codex|opencode|chatgpt|openai|llm)([[:space:]]|$)'\"' scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py; then echo forbidden-command-scan=FAIL; exit 1; else echo forbidden-command-scan=PASS; fi\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if rtk proxy rg -n '/opt/anaconda|/opt/homebrew|backend/venv|\\\\./venv/bin/pytest|venv/bin/pytest' scripts backend frontend/package.json seed.py; then echo 'host-path-scan=FAIL'; exit 1; else echo 'host-path-scan=PASS'; fi && rtk proxy rg -n 'SYSGRID_VERIFY_PYTHON|PYTHON_BIN.*-m pytest|run-owned-runtime|run-e2e|reuseExistingServer' scripts frontend/package.json | head -120\"",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 3385,
+        "output_sha256": "46c66ca17ce3e85b38384615210a62ccbc16facefb1cfc519002b443f5560b49",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if rtk proxy rg -n '/opt/anaconda|/opt/homebrew|/opt/local' scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py; then echo 'host-specific-path-scan=FAIL'; exit 1; else echo 'host-specific-path-scan=PASS'; fi && if rtk proxy rg -n '\\\\./venv/bin/pytest|backend/venv/bin/pytest' scripts/lib/verify-runtime.sh scripts/run-owned-runtime.sh scripts/run-e2e.sh scripts/verify-app.sh scripts/run-alembic.py; then echo 'hardcoded-pytest-path-scan=FAIL'; exit 1; else echo 'hardcoded-pytest-path-scan=PASS'; fi\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 61,
+        "output_sha256": "bf881f438a90278e33bd8d769657c5492eecfb1e61bc82a3d28777c7556ac89f",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /Users/haewonkim/.nvm/versions/node/v20.19.4/lib/node_modules/npm/bin/npm-cli.js run test:unit'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-qualification-infrastructure-fix-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-qualification-infrastructure-fix-v4 || true && rtk proxy git rev-parse HEAD && rtk proxy git rev-parse HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy git fetch --no-tags origin refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3 && echo 'baseline-ref=' && rtk proxy git rev-parse FETCH_HEAD && echo 'baseline-files=' && rtk proxy git ls-tree -r --name-only FETCH_HEAD | head -80 && echo 'baseline-manifest-hash=' && rtk proxy git show FETCH_HEAD:visual-atlas/surface-manifest.json | shasum -a 256 && echo 'baseline-capture-report-hash=' && rtk proxy git show FETCH_HEAD:visual-atlas/capture-report.json | shasum -a 256\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy git show FETCH_HEAD:visual-atlas/surface-manifest.json | /opt/anaconda3/bin/python -c 'import json,sys; p=json.load(sys.stdin); print(json.dumps({k:v for k,v in p.items() if \\\"monitor\\\" in k.lower()}, indent=2))' && echo 'baseline-monitoring-desktop-sha256=' && rtk proxy git show FETCH_HEAD:visual-atlas/screenshots/monitoring--desktop-1440x900.png | shasum -a 256 && echo 'baseline-monitoring-mobile-sha256=' && rtk proxy git show FETCH_HEAD:visual-atlas/screenshots/monitoring--mobile-390x844.png | shasum -a 256\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git show FETCH_HEAD:visual-atlas/surface-manifest.json | head -80'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff -- frontend/tests/assets-golden-evidence.spec.ts frontend/tests/assets-stage33-evidence.spec.ts frontend/tests/assets-stage34-evidence.spec.ts frontend/tests/assets-stage35-evidence.spec.ts frontend/tests/assets-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git log --oneline --decorate --ancestry-path bf1611bcd9cc3849a4353d5fb82da687c68ef4a0..HEAD | tail -8 && rtk proxy git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD && echo status=PASS'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 573,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.02,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 51094400,
+      "fresh_input_tokens": 1029708,
+      "input_tokens": 52124108,
+      "non_reasoning_output_tokens": 72842,
+      "output_tokens": 131611,
+      "reasoning_output_tokens": 58769,
+      "total_processed_tokens": 52255719
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "5fb316e029976e05bc4026137717235be078c8f3",
+      "subject": "fabric: capture completed model changes [CF-7276b82c054ade2f8eeac9db]"
+    },
+    {
+      "sha": "a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842",
+      "subject": "fix: restore monitoring golden boundary for system management qualification"
+    },
+    {
+      "sha": "ea43d81196498be8edf1877ead7f989044909460",
+      "subject": "fabric: capture completed model changes [CF-d764e58d89040e1c768a954c]"
+    },
+    {
+      "sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+      "subject": "fabric: capture completed model changes [CF-171432b8db5445e209d7ee53]"
+    }
+  ],
+  "diff": {
+    "additions": 2841,
+    "changed_files": 84,
+    "commit_count": 4,
+    "deletions": 616
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 8,
+    "items": [
+      {
+        "bytes": 1481,
+        "path": "contracts/monitoring_feature_preservation_v1.json",
+        "sha256": "d92dadbe48332eb6308dc0f01116b277c25db563828ce66ecdfbe6ce5c7a51dc"
+      },
+      {
+        "bytes": 8685,
+        "path": "contracts/system_management_v1.json",
+        "sha256": "f2c03dc8335c902b7c638cd47ae41ceb3742a366ab26f53c449182bf7855a8c9"
+      },
+      {
+        "bytes": 2796,
+        "path": "frontend/package.json",
+        "sha256": "e4746faeb3e21fba00ce2b6c0fba1785cc1927993ba4c3947592c59453d136f7"
+      },
+      {
+        "bytes": 38159,
+        "path": "frontend/tests/assets-golden-evidence.spec.ts",
+        "sha256": "aeaa474627c5f68cb388a781e0c804ea450daff52f40969b6fb1434b87475a2e"
+      },
+      {
+        "bytes": 41149,
+        "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+        "sha256": "86239f77eededd3d0c703dfa6389b9369af006ee50f9d751db2c57d2c88f571d"
+      },
+      {
+        "bytes": 45465,
+        "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+        "sha256": "ae4a46d4a427eeef013bf27c193ca03370cd3ae158d811dcab84003afc11a27a"
+      },
+      {
+        "bytes": 45437,
+        "path": "frontend/tests/assets-stage35-evidence.spec.ts",
+        "sha256": "d6da468291a70ae93a2c589850307c8b896741c4c8eca4b22a0ea9b2d77cee20"
+      },
+      {
+        "bytes": 808,
+        "path": "frontend/tsconfig.json",
+        "sha256": "cfa49edf32dac185335e7daa8fa30e8b4d68cbf180c1d87cd97ca409790efc73"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-7276b82c054ade2f8eeac9db]",
+    "commit_sha": "5fb316e029976e05bc4026137717235be078c8f3",
+    "paths_before": 29,
+    "status_before": [
+      " M backend/app/api/tenants.py",
+      " M backend/conftest.py",
+      " M backend/test_chg13_authorization_security.py",
+      " M backend/test_settings_api_edges.py",
+      " M backend/test_workspace_team_views.py",
+      " M backend/test_workspace_views.py",
+      " M frontend/package.json",
+      " M frontend/src/api/apiClient.test.ts",
+      " M frontend/src/components/settings/externalExportDiagnostics.test.ts",
+      " M frontend/src/components/settings/systemDiagnostics.test.ts",
+      " M frontend/src/components/shared/FARGoldenStructuralContract.test.ts",
+      " M frontend/src/components/shared/FARLifecycleBackendContract.test.ts",
+      " M frontend/src/components/shared/FARResearchGoldenPresentationContract.test.ts",
+      " M frontend/src/components/shared/FormContractsGuard.test.ts",
+      " M frontend/src/components/shared/OperationalBulkContract.test.ts",
+      " M frontend/tests/assets-golden-evidence.spec.ts",
+      " M frontend/tests/assets-stage33-evidence.spec.ts",
+      " M frontend/tests/assets-stage34-evidence.spec.ts",
+      " M frontend/tests/assets-stage35-evidence.spec.ts",
+      " M frontend/tests/assets-workflows.spec.ts",
+      " M scripts/verify-app.sh",
+      " M seed.py",
+      "?? backend/alembic/versions/c9f2a1e8d7b6_merge_current_qualification_heads.py",
+      "?? backend/test_migration_graph.py",
+      "?? frontend/src/test/response.ts",
+      "?? scripts/lib/",
+      "?? scripts/run-alembic.py",
+      "?? scripts/run-e2e.sh",
+      "?? scripts/run-owned-runtime.sh"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-18T21:57:32Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-qualification-infrastructure-fix-v4",
+    "head_sha": "5fb316e029976e05bc4026137717235be078c8f3",
+    "remote_exact_head": true,
+    "remote_head_sha": "5fb316e029976e05bc4026137717235be078c8f3",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-qualification-infrastructure-fix-v4",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-7276b82c054ade2f8eeac9db",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-qualification-infrastructure-fix-v4",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-qualification-infrastructure-fix-v4"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-qualification-infrastructure-fix-v4",
+  "schema_version": 1,
+  "started_at": "2026-09-18T20:11:58Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 6334,
+    "queue_seconds": 0,
+    "total_seconds": 6334
+  },
+  "transport": {
+    "bytes": 18444,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 18094,
+    "prompt_sha256": "9c814e4b5ff33a01efc023e999f980c837ea6886da15a8e5629b9228868bd373",
+    "sha256": "7276b82c054ade2f8eeac9dbc848a5c400bf691cb14fe27dbbc5bf9007f9604b"
+  }
+}
