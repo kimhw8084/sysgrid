@@ -2507,7 +2507,7 @@ export default function MonitoringGrid() {
             key={`monitoring-bkm-list-${bkmPopup.monitorId ?? 'none'}-${bkmPopup.docs.join('-')}`}
             docs={bkmPopup.docs} 
             monitorId={bkmPopup.monitorId}
-            onOpenBkm={setActiveBkm} 
+            onOpenBkm={(knowledgeId) => setActiveBkm({ id: knowledgeId, monitorId: bkmPopup.monitorId })} 
             onOpenKnowledge={(knowledgeId) => {
               setBkmPopup(null)
               setActiveBkm(null)
@@ -2517,7 +2517,7 @@ export default function MonitoringGrid() {
             onClose={() => { setBkmPopup(null); detailRoute.finishTransition(); }} 
           />
         )}
-        {activeBkm && <BkmDetailModal key={`monitoring-bkm-detail-${activeBkm}`} bkmId={activeBkm} onClose={() => { setActiveBkm(null); detailRoute.finishTransition(); }} />}
+        {activeBkm && <BkmDetailModal key={`monitoring-bkm-detail-${activeBkm.id}`} bkmId={activeBkm.id} monitorId={activeBkm.monitorId} onClose={() => { setActiveBkm(null); detailRoute.finishTransition(); }} />}
         {compareOpen && <CompareMonitorsModal key={`monitoring-compare-${compareItems.map((item) => item.id).join('-') || 'empty'}`} items={compareItems} onClose={() => setCompareOpen(false)} />}
         {showBulkEditModal && (
           <BulkEditTableModal
@@ -2885,11 +2885,12 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
       const params = new URLSearchParams()
       if (item.device_id) params.append('device_id', String(item.device_id))
       params.append('monitoring_id', String(item.id))
+      params.append('embedded_consumer', 'monitoring')
       const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
       const linked = await response.json()
       if (Array.isArray(linked) && linked.length > 0) return linked
       if (!item.device_id) return linked
-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}`)
+      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}&embedded_consumer=monitoring&monitoring_id=${item.id}`)
       return fallback.json()
     }
   })

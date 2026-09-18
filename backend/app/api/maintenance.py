@@ -5,8 +5,13 @@ from ..database import get_db
 from ..models import models
 from datetime import datetime
 from .utils import build_audit_log
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/maintenance", tags=["Maintenance"])
+router = APIRouter(
+    prefix="/maintenance",
+    tags=["Maintenance"],
+    dependencies=[Depends(require_module_access("assets"))],
+)
 
 @router.get("")
 async def get_maintenance_windows(device_id: int | None = None, db: AsyncSession = Depends(get_db)):

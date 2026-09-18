@@ -12,8 +12,13 @@ from .operational_bulk import (
     normalize_operational_bulk_payload,
     require_executable_operational_bulk,
 )
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/vendors", tags=["Vendor & Contract Management"])
+router = APIRouter(
+    prefix="/vendors",
+    tags=["Vendor & Contract Management"],
+    dependencies=[Depends(require_module_access("vendors"))],
+)
 IMMUTABLE_VENDOR_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 
 

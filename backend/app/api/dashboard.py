@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, or_
 from sqlalchemy.orm import aliased
 from ..database import get_db
 from ..models import models
+from .module_policy import build_effective_policy
 from typing import Dict, Any, List
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -23,67 +24,82 @@ def group_by_status(items: List[Any], type_attr: str = "type") -> Dict[str, Dict
     return result
 
 @router.get("/metrics")
-async def get_metrics(db: AsyncSession = Depends(get_db)):
+async def get_metrics(request: Request, db: AsyncSession = Depends(get_db)):
+    policy = await build_effective_policy(request, db)
+    visible = lambda module_id: bool(policy["modules"].get(module_id, {}).get("available"))
     # 1. Rack Overview
-    sites_count = (await db.execute(select(func.count(models.Site.id)))).scalar() or 0
-    racks_count = (await db.execute(select(func.count(models.Rack.id)).filter(models.Rack.is_deleted == False))).scalar() or 0
+    sites_count = (await db.execute(select(func.count(models.Site.id)))).scalar() or 0 if visible("racks") else 0
+    racks_count = (await db.execute(select(func.count(models.Rack.id)).filter(models.Rack.is_deleted == False))).scalar() or 0 if visible("racks") else 0
     
     # Count unique devices that have a record in device_locations
     racked_assets_query = select(func.count(func.distinct(models.DeviceLocation.device_id))).join(
         models.Device, models.Device.id == models.DeviceLocation.device_id
     ).filter(models.Device.is_deleted == False)
-    racked_assets = (await db.execute(racked_assets_query)).scalar() or 0
+    racked_assets = (await db.execute(racked_assets_query)).scalar() or 0 if visible("assets") and visible("racks") else 0
     
     # 2. Asset Overview
-    devices = (await db.execute(select(models.Device).filter(models.Device.is_deleted == False))).scalars().all()
+    devices = (await db.execute(select(models.Device).filter(models.Device.is_deleted == False))).scalars().all() if visible("assets") else []
     asset_overview = {
         "total": len(devices),
         "breakdown": group_by_status(devices, "type")
     }
 
     # 3. Service Overview
-    services = (await db.execute(select(models.LogicalService).filter(models.LogicalService.is_deleted == False))).scalars().all()
+    services = (await db.execute(select(models.LogicalService).filter(models.LogicalService.is_deleted == False))).scalars().all() if visible("services") else []
     service_overview = {
         "total": len(services),
         "breakdown": group_by_status(services, "service_type")
     }
 
     # 4. External Overview
-    externals = (await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.is_deleted == False))).scalars().all()
+    externals = []
+    if visible("external"):
+        externals = (await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.is_deleted == False))).scalars().all()
     external_overview = {
         "total": len(externals),
         "breakdown": group_by_status(externals, "type")
     }
 
     # 5. Network Overview
-    connections = (await db.execute(select(models.PortConnection))).scalars().all()
+    connections = (await db.execute(select(models.PortConnection))).scalars().all() if visible("network") else []
     network_overview = {
         "total": len(connections),
         "breakdown": group_by_status(connections, "link_type")
     }
 
     # 6. Monitoring Overview
-    mon_items = (await db.execute(select(models.MonitoringItem).filter(models.MonitoringItem.is_deleted == False))).scalars().all()
+    mon_items = (await db.execute(select(models.MonitoringItem).filter(models.MonitoringItem.is_deleted == False))).scalars().all() if visible("monitoring") else []
     monitoring_overview = {
         "total": len(mon_items),
         "breakdown": group_by_status(mon_items, "platform")
     }
 
     # 7. Recent Items (Last 3)
-    research = (await db.execute(select(models.Investigation).order_by(desc(models.Investigation.updated_at)).limit(3))).scalars().all()
-    far = (await db.execute(select(models.FarFailureMode).order_by(desc(models.FarFailureMode.created_at)).limit(3))).scalars().all()
-    knowledge = (await db.execute(select(models.KnowledgeEntry).order_by(desc(models.KnowledgeEntry.created_at)).limit(3))).scalars().all()
-    architecture = (await db.execute(select(models.DataFlow).order_by(desc(models.DataFlow.created_at)).limit(3))).scalars().all()
+    research = []
+    if visible("research"):
+        research = (await db.execute(select(models.Investigation).order_by(desc(models.Investigation.updated_at)).limit(3))).scalars().all()
+    far = []
+    if visible("far"):
+        far = (await db.execute(select(models.FarFailureMode).order_by(desc(models.FarFailureMode.created_at)).limit(3))).scalars().all()
+    knowledge = []
+    if visible("knowledge"):
+        knowledge = (await db.execute(select(models.KnowledgeEntry).order_by(desc(models.KnowledgeEntry.created_at)).limit(3))).scalars().all()
+    architecture = []
+    if visible("architecture"):
+        architecture = (await db.execute(select(models.DataFlow).order_by(desc(models.DataFlow.created_at)).limit(3))).scalars().all()
     
     # Projects: 3 latest in progress, 3 latest completed
-    projects_in_progress = (await db.execute(select(models.Project).filter(models.Project.status == "In Progress").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
-    projects_completed = (await db.execute(select(models.Project).filter(models.Project.status == "Completed").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
+    projects_in_progress = []
+    projects_completed = []
+    if visible("projects"):
+        projects_in_progress = (await db.execute(select(models.Project).filter(models.Project.status == "In Progress").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
+        projects_completed = (await db.execute(select(models.Project).filter(models.Project.status == "Completed").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
 
     # 8. Audit Logs (Recent Activity)
-    audit_logs = (await db.execute(select(models.AuditLog).order_by(desc(models.AuditLog.timestamp)).limit(5))).scalars().all()
+    audit_logs = (await db.execute(select(models.AuditLog).order_by(desc(models.AuditLog.timestamp)).limit(5))).scalars().all() if visible("logs") else []
     
     # 9. Sites
-    sites = (await db.execute(select(models.Site).order_by(models.Site.order_index))).scalars().all()
+    sites = (await db.execute(select(models.Site).order_by(models.Site.order_index))).scalars().all() if visible("racks") else []
 
     # 10. Stability Score Calculation (Mock logic based on monitoring items)
     # If more than 10% are not 'Existing' or inactive, lower the score
@@ -144,10 +160,12 @@ async def get_metrics(db: AsyncSession = Depends(get_db)):
     }
 
 @router.get("/search")
-async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+async def global_search(q: str, request: Request, db: AsyncSession = Depends(get_db)):
     if not q or len(q) < 2:
         return {"results": []}
     
+    policy = await build_effective_policy(request, db)
+    visible = lambda module_id: bool(policy["modules"].get(module_id, {}).get("available"))
     results = []
     search_term = f"%{q}%"
 
@@ -161,7 +179,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
         (models.Device.management_ip.ilike(search_term)) |
         (models.Device.primary_ip.ilike(search_term))
     ).limit(10)
-    assets = (await db.execute(assets_query)).scalars().all()
+    assets = (await db.execute(assets_query)).scalars().all() if visible("assets") else []
     for a in assets:
         results.append({
             "id": a.id,
@@ -169,7 +187,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             "title": a.name,
             "subtitle": f"{a.system} | {a.management_ip or a.primary_ip or 'No IP'}",
             "tag": a.type,
-            "path": "/asset"
+            "path": "/asset",
+            "module_id": "assets",
         })
 
     # 2. Search Projects
@@ -178,7 +197,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
         (models.Project.name.ilike(search_term)) |
         (models.Project.description.ilike(search_term))
     ).limit(10)
-    projects = (await db.execute(projects_query)).scalars().all()
+    projects = (await db.execute(projects_query)).scalars().all() if visible("projects") else []
     for p in projects:
         results.append({
             "id": p.id,
@@ -186,7 +205,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             "title": p.name,
             "subtitle": p.status,
             "tag": p.type,
-            "path": "/projects"
+            "path": "/projects",
+            "module_id": "projects",
         })
 
     # 3. Search FAR
@@ -196,7 +216,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
         (models.FarFailureMode.system_name.ilike(search_term)) |
         (models.FarFailureMode.effect.ilike(search_term))
     ).limit(10)
-    far = (await db.execute(far_query)).scalars().all()
+    far = (await db.execute(far_query)).scalars().all() if visible("far") else []
     for f in far:
         results.append({
             "id": f.id,
@@ -204,7 +224,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             "title": f.title,
             "subtitle": f.system_name,
             "tag": f"RPN: {f.rpn}",
-            "path": "/far"
+            "path": "/far",
+            "module_id": "far",
         })
 
     # 4. Search Services
@@ -215,7 +236,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
         (models.LogicalService.environment.ilike(search_term)) |
         (models.LogicalService.purpose.ilike(search_term))
     ).limit(10)
-    services = (await db.execute(services_query)).scalars().all()
+    services = (await db.execute(services_query)).scalars().all() if visible("services") else []
     for service in services:
         results.append({
             "id": service.id,
@@ -223,7 +244,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             "title": service.name,
             "subtitle": f"{service.service_type} | {service.environment}",
             "tag": service.status or "Unknown",
-            "path": "/services"
+            "path": "/services",
+            "module_id": "services",
         })
 
     # 5. Search Monitoring
@@ -235,7 +257,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
         (models.MonitoringItem.purpose.ilike(search_term)) |
         (models.MonitoringItem.impact.ilike(search_term))
     ).limit(10)
-    monitoring_items = (await db.execute(monitoring_query)).scalars().all()
+    monitoring_items = (await db.execute(monitoring_query)).scalars().all() if visible("monitoring") else []
     for monitor in monitoring_items:
         results.append({
             "id": monitor.id,
@@ -243,7 +265,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             "title": monitor.title,
             "subtitle": f"{monitor.category or 'Monitor'} | {monitor.platform or 'No Platform'}",
             "tag": monitor.severity or "Info",
-            "path": "/monitoring"
+            "path": "/monitoring",
+            "module_id": "monitoring",
         })
 
     # 6. Search Knowledge
@@ -253,7 +276,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
         (models.KnowledgeEntry.content.ilike(search_term)) |
         (models.KnowledgeEntry.question_context.ilike(search_term))
     ).limit(10)
-    knowledge_entries = (await db.execute(knowledge_query)).scalars().all()
+    knowledge_entries = (await db.execute(knowledge_query)).scalars().all() if visible("knowledge") else []
     for entry in knowledge_entries:
         results.append({
             "id": entry.id,
@@ -261,7 +284,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             "title": entry.title,
             "subtitle": entry.category,
             "tag": entry.status or "Published",
-            "path": "/knowledge"
+            "path": "/knowledge",
+            "module_id": "knowledge",
         })
 
     # 7. Search Network Fabric
@@ -285,7 +309,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             target_device.name.ilike(search_term)
         )
     ).limit(10)
-    network_rows = (await db.execute(network_query)).all()
+    network_rows = (await db.execute(network_query)).all() if visible("network") else []
     for connection, source_name, target_name in network_rows:
         results.append({
             "id": connection.id,
@@ -293,7 +317,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
             "title": f"{source_name} -> {target_name}",
             "subtitle": f"{connection.source_port} -> {connection.target_port}",
             "tag": connection.link_type or "Link",
-            "path": "/network"
+            "path": "/network",
+            "module_id": "network",
         })
 
     return {"results": results}

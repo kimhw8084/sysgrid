@@ -5,8 +5,13 @@ from typing import List, Optional
 from ..database import get_db
 from ..models import models
 from .utils import build_audit_log, filter_valid_columns, normalize_json_object
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/security", tags=["Security & Firewall"])
+router = APIRouter(
+    prefix="/security",
+    tags=["Security & Firewall"],
+    dependencies=[Depends(require_module_access("assets"))],
+)
 
 # --- Secret Vault ---
 

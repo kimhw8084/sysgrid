@@ -1,0 +1,261 @@
+{
+  "catalog_version": "sysgrid-system-management-v1",
+  "profile_id": "system-management-v1",
+  "stages": ["production", "preview", "disabled", "retired"],
+  "modules": [
+    {
+      "id": "home",
+      "label": "Home",
+      "canonical_route": "/",
+      "aliases": [],
+      "navigation_group": "Operations",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": null,
+      "resource_owner": "dashboard",
+      "root_preview_allowed": false,
+      "atlas_identity": "home",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "projects",
+      "label": "Projects",
+      "canonical_route": "/projects",
+      "aliases": [],
+      "navigation_group": "Operations",
+      "profile_membership": "preview",
+      "default_stage": "preview",
+      "required_capability": "projects",
+      "resource_owner": "projects",
+      "root_preview_allowed": true,
+      "atlas_identity": "projects",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring",
+      "canonical_route": "/monitoring",
+      "aliases": [],
+      "navigation_group": "Operations",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": "monitoring",
+      "resource_owner": "monitoring",
+      "root_preview_allowed": false,
+      "atlas_identity": "monitoring",
+      "embedded_support_projections": [
+        {
+          "id": "knowledge-recovery-context",
+          "consumers": ["monitoring", "assets", "network", "services"],
+          "allowed_selectors": ["device_id", "monitoring_id", "service_id"]
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "label": "Assets",
+      "canonical_route": "/asset",
+      "aliases": ["/asset-real"],
+      "navigation_group": "Infrastructure",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": "assets",
+      "resource_owner": "devices",
+      "root_preview_allowed": false,
+      "atlas_identity": "assets",
+      "embedded_support_projections": [
+        {
+          "id": "knowledge-recovery-context",
+          "consumers": ["assets"],
+          "allowed_selectors": ["device_id", "monitoring_id"]
+        },
+        {
+          "id": "far-risk-summary",
+          "consumers": ["assets"],
+          "allowed_selectors": ["system"]
+        }
+      ]
+    },
+    {
+      "id": "racks",
+      "label": "Racks",
+      "canonical_route": "/racks",
+      "aliases": [],
+      "navigation_group": "Infrastructure",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": "racks",
+      "resource_owner": "racks",
+      "root_preview_allowed": false,
+      "atlas_identity": "racks",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "services",
+      "label": "Services",
+      "canonical_route": "/services",
+      "aliases": [],
+      "navigation_group": "Infrastructure",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": "services",
+      "resource_owner": "logical_services",
+      "root_preview_allowed": false,
+      "atlas_identity": "services",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "external",
+      "label": "External",
+      "canonical_route": "/external",
+      "aliases": [],
+      "navigation_group": "Infrastructure",
+      "profile_membership": "preview",
+      "default_stage": "preview",
+      "required_capability": "external",
+      "resource_owner": "external_entities",
+      "root_preview_allowed": true,
+      "atlas_identity": "external",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "network",
+      "label": "Network",
+      "canonical_route": "/network",
+      "aliases": ["/network-real"],
+      "navigation_group": "Connectivity",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": "network",
+      "resource_owner": "networks",
+      "root_preview_allowed": false,
+      "atlas_identity": "network",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "architecture",
+      "label": "Architecture",
+      "canonical_route": "/architecture",
+      "aliases": [],
+      "navigation_group": "Connectivity",
+      "profile_membership": "preview",
+      "default_stage": "preview",
+      "required_capability": "architecture",
+      "resource_owner": "architecture",
+      "root_preview_allowed": true,
+      "atlas_identity": "architecture",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "research",
+      "label": "Research",
+      "canonical_route": "/research",
+      "aliases": [],
+      "navigation_group": "Analysis",
+      "profile_membership": "preview",
+      "default_stage": "preview",
+      "required_capability": "research",
+      "resource_owner": "investigations",
+      "root_preview_allowed": true,
+      "atlas_identity": "research",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "far",
+      "label": "FAR",
+      "canonical_route": "/far",
+      "aliases": [],
+      "navigation_group": "Analysis",
+      "profile_membership": "preview",
+      "default_stage": "preview",
+      "required_capability": "far",
+      "resource_owner": "far",
+      "root_preview_allowed": true,
+      "atlas_identity": "far",
+      "embedded_support_projections": [
+        {
+          "id": "far-risk-summary",
+          "consumers": ["assets"],
+          "allowed_selectors": ["system"]
+        }
+      ]
+    },
+    {
+      "id": "vendors",
+      "label": "Vendors",
+      "canonical_route": "/vendors",
+      "aliases": ["/vendors-real"],
+      "navigation_group": "Resources",
+      "profile_membership": "preview",
+      "default_stage": "preview",
+      "required_capability": "vendors",
+      "resource_owner": "vendors",
+      "root_preview_allowed": true,
+      "atlas_identity": "vendors",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "knowledge",
+      "label": "Knowledge",
+      "canonical_route": "/knowledge",
+      "aliases": [],
+      "navigation_group": "Resources",
+      "profile_membership": "preview",
+      "default_stage": "preview",
+      "required_capability": "knowledge",
+      "resource_owner": "knowledge_entries",
+      "root_preview_allowed": true,
+      "atlas_identity": "knowledge",
+      "embedded_support_projections": [
+        {
+          "id": "knowledge-recovery-context",
+          "consumers": ["monitoring", "assets", "network", "services"],
+          "allowed_selectors": ["device_id", "monitoring_id", "service_id"]
+        }
+      ]
+    },
+    {
+      "id": "logs",
+      "label": "Audit logs",
+      "canonical_route": "/logs",
+      "aliases": [],
+      "navigation_group": "Resources",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": "logs",
+      "resource_owner": "audit",
+      "root_preview_allowed": false,
+      "atlas_identity": "logs",
+      "embedded_support_projections": []
+    },
+    {
+      "id": "settings",
+      "label": "Settings / Access",
+      "canonical_route": "/settings",
+      "aliases": [],
+      "navigation_group": "Resources",
+      "profile_membership": "v1",
+      "default_stage": "production",
+      "required_capability": "settings",
+      "resource_owner": "settings",
+      "root_preview_allowed": false,
+      "atlas_identity": "settings",
+      "embedded_support_projections": []
+    }
+  ],
+  "api_ownership": {
+    "projects": ["/api/v1/projects", "/api/v1/workspaces/projects", "/api/v2/projects"],
+    "external": ["/api/v1/intelligence"],
+    "architecture": ["/api/v1/data-flows", "/api/v1/incidents", "/api/v2/architecture"],
+    "research": ["/api/v1/investigations", "/api/v1/rca"],
+    "far": ["/api/v1/far", "/api/v1/import/far_records"],
+    "vendors": ["/api/v1/vendors"],
+    "knowledge": ["/api/v1/knowledge"],
+    "monitoring": ["/api/v1/monitoring", "/api/v1/operational-actions", "/api/v1/import/monitoring_items"],
+    "network": ["/api/v1/networks", "/api/v1/import/port_connections"],
+    "assets": ["/api/v1/devices", "/api/v1/maintenance", "/api/v1/security"],
+    "services": ["/api/v1/logical-services"],
+    "racks": ["/api/v1/racks", "/api/v1/sites"],
+    "logs": ["/api/v1/audit"]
+  }
+}

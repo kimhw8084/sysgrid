@@ -211,7 +211,23 @@ function getCurrentTenantId(): string {
   )
 }
 
+export function getRequestScopeKey(): string {
+  return `${getCurrentUserId()}::${getCurrentTenantId()}`
+}
+
+let lastRequestScopeKey = ''
+
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
+  const requestScopeKey = getRequestScopeKey()
+  if (requestScopeKey !== lastRequestScopeKey) {
+    const previousScopeKey = lastRequestScopeKey
+    lastRequestScopeKey = requestScopeKey
+    if (previousScopeKey && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sysgrid-scope-changed', {
+        detail: { previousScopeKey, requestScopeKey },
+      }))
+    }
+  }
   const baseUrl = getApiBaseUrl();
   const invalidApiBaseMessage = validateConfiguredApiBaseUrl(baseUrl)
   if (invalidApiBaseMessage && !endpoint.startsWith('http')) {

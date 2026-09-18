@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload, selectinload
@@ -10,8 +10,13 @@ from .utils import filter_valid_columns
 
 from sqlalchemy import delete, update
 from ..api.utils import filter_valid_columns, normalize_json_object, normalize_json_list
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/far", tags=["FAR"])
+router = APIRouter(
+    prefix="/far",
+    tags=["FAR"],
+    dependencies=[Depends(require_module_access("far", allow_embedded=True))],
+)
 IMMUTABLE_FAR_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "version", "is_deleted"}
 FAR_BULK_SCORE_FIELDS = {"severity", "occurrence", "detection"}
 
@@ -625,6 +630,8 @@ async def save_far_history(mode_id: int, version: int, db: AsyncSession, summary
 async def get_failure_modes(
     system: Optional[str] = None,
     include_deleted: bool = False,
+    request: Request = None,
+    embedded_consumer: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
     stmt = select(models.FarFailureMode).options(
@@ -643,7 +650,34 @@ async def get_failure_modes(
         stmt = stmt.filter(models.FarFailureMode.system_name == system)
     
     result = await db.execute(stmt)
-    return result.unique().scalars().all()
+    modes = result.unique().scalars().all()
+    if getattr(request.state, "sysgrid_embedded_projection", None):
+        return [
+            {
+                "id": mode.id,
+                "created_at": mode.created_at,
+                "updated_at": mode.updated_at,
+                "system_name": mode.system_name,
+                "failure_type": mode.failure_type,
+                "title": mode.title,
+                "effect": mode.effect,
+                "severity": mode.severity,
+                "occurrence": mode.occurrence,
+                "detection": mode.detection,
+                "rpn": mode.rpn,
+                "status": mode.status,
+                "is_deleted": bool(mode.is_deleted),
+                "version": mode.version,
+                "metadata_json": {},
+                "affected_assets": [],
+                "causes": [],
+                "mitigations": [],
+                "prevention_actions": [],
+                "linked_rcas": [],
+            }
+            for mode in modes
+        ]
+    return modes
 
 @router.post("/modes", response_model=schemas.FarFailureModeResponse)
 async def create_failure_mode(data: dict, db: AsyncSession = Depends(get_db)):

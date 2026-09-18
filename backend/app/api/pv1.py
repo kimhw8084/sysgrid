@@ -13,9 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_db
 from ..models import models as legacy_models
 from ..pv1 import domain, migration, models, schemas
+from .module_policy import require_module_access
 
 
-router = APIRouter(tags=["PV1 v2"])
+router = APIRouter(
+    tags=["PV1 v2"],
+    dependencies=[Depends(require_module_access("projects"))],
+)
 
 
 def _tenant_id(request: Request) -> int:

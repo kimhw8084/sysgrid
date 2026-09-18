@@ -1,0 +1,39 @@
+{
+  "harness_version": "monitoring-preservation-v1",
+  "golden_consumer": "frontend/src/components/MonitoringGrid.tsx",
+  "routed_consumers": {
+    "monitoring": "/monitoring -> MonitoringGrid.tsx",
+    "assets": "/asset -> Assets.tsx -> assets/AssetGoldenShellRoute.tsx -> assets/AssetGoldenOperationalWorkspace.tsx"
+  },
+  "accepted_geometry": {
+    "frame_class": "h-full min-h-0 flex flex-col space-y-4",
+    "toolbar_class": "gap-3 px-4 py-3 rounded-lg border-white/5 bg-black/20",
+    "control_height": "h-9",
+    "grid_width_owner": "frontend/src/components/shared/OperationalGridContract.ts"
+  },
+  "features": [
+    "saved and collaborative views",
+    "sanitized column/filter/sort persistence",
+    "display density",
+    "grouping",
+    "favorites and watch",
+    "selection and grouped selection",
+    "context and row actions",
+    "bulk preview, execute, result, and revert",
+    "import and export",
+    "details and dossier",
+    "edit, validation, and dirty behavior",
+    "history",
+    "compare",
+    "linked records and recovery context",
+    "diagnostics",
+    "data states",
+    "deep-linked details"
+  ],
+  "expected_release_changes": [
+    "navigation labels may show Preview or Unavailable for policy-blocked modules",
+    "preview routes render the existing permission/unavailable state before module mount",
+    "diagnostics shell affordance is visible only with the explicit diagnostics capability"
+  ],
+  "monitoring_inner_workspace_change": "none"
+}

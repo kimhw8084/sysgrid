@@ -53,8 +53,8 @@ export function BkmListModal({
   }, [normalizedDocs])
 
   const { data: knowledgeEntries } = useQuery({
-    queryKey: ['knowledge-entries'],
-    queryFn: async () => (await apiFetch('/api/v1/knowledge/')).json()
+    queryKey: ['knowledge-entries', 'monitoring', monitorId],
+    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring&monitoring_id=${monitorId}`)).json()
   })
 
   const filteredKnowledge = useMemo(() => {

@@ -255,8 +255,8 @@ export function MonitoringForm({ item, devices, categories, severities, platform
 
   // Fetch knowledge entries for recovery docs
   const { data: knowledgeEntries } = useQuery({
-    queryKey: ['knowledge-entries'],
-    queryFn: async () => (await apiFetch('/api/v1/knowledge/')).json()
+    queryKey: ['knowledge-entries', 'monitoring', item?.id || 'new'],
+    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring${item?.id ? `&monitoring_id=${item.id}` : ''}`)).json()
   })
 
   const filteredKnowledge = useMemo(() => {

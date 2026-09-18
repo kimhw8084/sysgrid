@@ -294,7 +294,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     // --- FETCH RELATED CONTEXT ---
     const { data: farModes } = useQuery({
       queryKey: ['far-modes-system', device.system],
-      queryFn: async () => (await (await apiFetch(`/api/v1/far/modes?system=${device.system}`)).json()),
+      queryFn: async () => (await (await apiFetch(`/api/v1/far/modes?system=${encodeURIComponent(device.system)}&embedded_consumer=assets`)).json()),
       enabled: !!device.system
     })
 
@@ -318,7 +318,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
 
     const { data: relatedKnowledge } = useQuery({
       queryKey: ['asset-knowledge', device.id],
-      queryFn: async () => (await apiFetch(`/api/v1/knowledge?device_id=${device.id}`)).json(),
+      queryFn: async () => (await apiFetch(`/api/v1/knowledge?device_id=${device.id}&embedded_consumer=assets`)).json(),
       enabled: !!device.id
     })
 
@@ -329,6 +329,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
         const params = new URLSearchParams()
         params.append('device_id', String(device.id))
         if (primaryMonitoringId) params.append('monitoring_id', String(primaryMonitoringId))
+        params.append('embedded_consumer', 'assets')
         return (await apiFetch(`/api/v1/knowledge?${params.toString()}`)).json()
       },
       enabled: !!device.id

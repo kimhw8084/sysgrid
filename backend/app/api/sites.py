@@ -4,8 +4,13 @@ from sqlalchemy import select, delete, update, func
 from ..database import get_db
 from ..models import models
 from .utils import build_audit_log
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/sites", tags=["Sites"])
+router = APIRouter(
+    prefix="/sites",
+    tags=["Sites"],
+    dependencies=[Depends(require_module_access("racks"))],
+)
 
 @router.get("")
 async def get_sites(db: AsyncSession = Depends(get_db)):

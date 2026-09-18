@@ -18,6 +18,7 @@ import { apiFetch } from '../api/apiClient'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
+import { useModulePolicy } from '../policy/ModulePolicy'
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -163,6 +164,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [globalSearch, setGlobalSearch] = useState('');
+  const modulePolicy = useModulePolicy();
 
   const handleNavigate = (tab: string) => {
     setSearchParams({ tab: tab.toLowerCase() });
@@ -522,10 +524,15 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
 
            <div className="col-span-8 grid grid-cols-3 gap-6">
               {[
-                { title: 'Failure Forensics', items: metrics?.recent.far, icon: AlertTriangle, color: 'text-rose-400', path: '/far' },
-                { title: 'Strategic Pipeline', items: metrics?.recent.projects.in_progress, icon: Briefcase, color: 'text-blue-400', path: '/projects' },
-                { title: 'Intel Knowledge', items: metrics?.recent.knowledge, icon: BookOpen, color: 'text-amber-400', path: '/knowledge' }
-              ].map((feed, i) => (
+                { moduleId: 'far', title: 'Failure Forensics', items: metrics?.recent?.far, icon: AlertTriangle, color: 'text-rose-400', path: '/far' },
+                { moduleId: 'projects', title: 'Strategic Pipeline', items: metrics?.recent?.projects?.in_progress, icon: Briefcase, color: 'text-blue-400', path: '/projects' },
+                { moduleId: 'knowledge', title: 'Intel Knowledge', items: metrics?.recent?.knowledge, icon: BookOpen, color: 'text-amber-400', path: '/knowledge' }
+              ].filter((feed) => {
+                const policyModule = modulePolicy.data?.modules?.[feed.moduleId]
+                if (!policyModule) return false
+                if (modulePolicy.isLoading || modulePolicy.isError) return policyModule.default_stage === 'production' && policyModule.available
+                return policyModule.available
+              }).map((feed, i) => (
                 <div key={i} className="glass-panel rounded-lg border-white/5 bg-black/20 p-8 shadow-xl flex flex-col h-[400px]">
                    <div className="flex items-center justify-between mb-8">
                       <div className="flex items-center gap-4">

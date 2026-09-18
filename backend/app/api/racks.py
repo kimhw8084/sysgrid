@@ -6,8 +6,13 @@ from ..database import get_db
 from ..models import models
 from typing import List, Optional
 from .utils import build_audit_log
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/racks", tags=["Racks"])
+router = APIRouter(
+    prefix="/racks",
+    tags=["Racks"],
+    dependencies=[Depends(require_module_access("racks"))],
+)
 
 @router.get("/plans")
 async def get_plans(db: AsyncSession = Depends(get_db)):

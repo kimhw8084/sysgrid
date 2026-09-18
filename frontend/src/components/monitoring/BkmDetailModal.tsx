@@ -13,13 +13,13 @@ import { apiFetch } from '../../api/apiClient'
 import { useQuery } from '@tanstack/react-query'
 
 
-export function BkmDetailModal({ bkmId, onClose }: any) {
+export function BkmDetailModal({ bkmId, monitorId, onClose }: any) {
   useEscapeDismiss(onClose)
   useBodyModalFlag()
   const [isMaximized, setIsMaximized] = useState(false)
   const { data: bkm, isLoading } = useQuery({
-    queryKey: ['knowledge-entry', bkmId],
-    queryFn: async () => (await apiFetch(`/api/v1/knowledge/${bkmId}`)).json(),
+    queryKey: ['knowledge-entry', bkmId, 'monitoring', monitorId],
+    queryFn: async () => (await apiFetch(`/api/v1/knowledge/${bkmId}?embedded_consumer=monitoring&monitoring_id=${monitorId}`)).json(),
     enabled: !!bkmId
   })
 

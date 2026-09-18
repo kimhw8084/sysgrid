@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiClient';
 import metadata from '../../metadata.json';
+import { useModulePolicy } from '../../policy/ModulePolicy';
 
 interface SearchResult {
   id: number;
@@ -12,6 +13,7 @@ interface SearchResult {
   subtitle: string;
   tag: string;
   path: string;
+  module_id?: string;
 }
 
 export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
@@ -21,6 +23,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const modulePolicy = useModulePolicy();
 
   useEffect(() => {
     if (!isOpen) return
@@ -42,7 +45,17 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         try {
           const res = await apiFetch(`/api/v1/dashboard/search?q=${encodeURIComponent(trimmedQuery)}`);
           const data = await res.json();
-          setResults(data.results || []);
+          const releasedModuleIds = new Set(['home', 'assets', 'monitoring', 'services', 'network', 'racks', 'logs', 'settings']);
+          const visibleResults = (data.results || []).filter((result: SearchResult) => {
+            const moduleId = result.module_id;
+            if (moduleId && modulePolicy.data?.modules?.[moduleId]) {
+              const module = modulePolicy.data.modules[moduleId];
+              if (modulePolicy.isLoading || modulePolicy.isError) return module.default_stage === 'production' && module.available;
+              return module.available;
+            }
+            return !modulePolicy.isError && !moduleId || releasedModuleIds.has(moduleId || result.type);
+          });
+          setResults(visibleResults);
           setSelectedIndex(0);
         } catch (err) {
           console.error('Search failed:', err);
@@ -55,7 +68,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     }, 500); // Increased debounce for stability
 
     return () => clearTimeout(handler);
-  }, [query]);
+  }, [query, modulePolicy.data, modulePolicy.isError]);
 
   const groupedResults = useMemo(() => {
     const groups: Record<string, SearchResult[]> = {};

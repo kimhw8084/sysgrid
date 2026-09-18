@@ -13,8 +13,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_db
 from ..models import models
 from .utils import get_current_user_id, normalize_json_object
+from .module_policy import build_effective_policy, ensure_module_access, get_module_definition
 
-router = APIRouter(prefix="/workspaces", tags=["Workspaces"])
+async def require_workspace_module_access(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    workspace_key: str | None = None,
+    view_id: int | None = None,
+) -> None:
+    module_id = workspace_key
+    if not module_id and view_id is not None:
+        view = await db.get(models.WorkspaceSavedView, view_id)
+        module_id = view.workspace_key if view else None
+    if not module_id:
+        return
+    try:
+        get_module_definition(module_id)
+    except ValueError:
+        return
+    await ensure_module_access(module_id, request, db)
+
+
+router = APIRouter(
+    prefix="/workspaces",
+    tags=["Workspaces"],
+    dependencies=[Depends(require_workspace_module_access)],
+)
 
 WorkspaceScope = Literal["personal", "team"]
 WorkspaceArchetype = Literal["table", "topology_hybrid", "investigation", "research", "hybrid"]
@@ -537,8 +561,16 @@ def conflict_detail(view: models.WorkspaceSavedView) -> dict[str, Any]:
 
 
 @router.get("/definitions", response_model=WorkspaceDefinitionList)
-async def list_definitions() -> WorkspaceDefinitionList:
-    return WorkspaceDefinitionList(definitions=list(WORKSPACE_DEFINITIONS.values()))
+async def list_definitions(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> WorkspaceDefinitionList:
+    policy = await build_effective_policy(request, db)
+    definitions = [
+        definition for definition in WORKSPACE_DEFINITIONS.values()
+        if policy["modules"].get(definition.key, {}).get("available")
+    ]
+    return WorkspaceDefinitionList(definitions=definitions)
 
 
 @router.get("/{workspace_key}/views", response_model=SavedViewListResponse)

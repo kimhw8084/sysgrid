@@ -30,6 +30,9 @@ export default defineConfig(({ mode }) => {
       host: true,
       strictPort: true,
       allowedHosts: true,
+      fs: {
+        allow: ['..'],
+      },
       proxy: {
         '/api': {
           target: apiTarget,

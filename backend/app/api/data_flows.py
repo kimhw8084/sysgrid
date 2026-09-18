@@ -7,8 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
 from ..models import models
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/data-flows", tags=["Data Flow Designer"])
+router = APIRouter(
+    prefix="/data-flows",
+    tags=["Data Flow Designer"],
+    dependencies=[Depends(require_module_access("architecture"))],
+)
 
 DEFAULT_FLOW_METADATA = {
     "owner_team": "",

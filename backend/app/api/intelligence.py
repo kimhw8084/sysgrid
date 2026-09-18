@@ -15,8 +15,13 @@ from .operational_bulk import (
     normalize_operational_bulk_payload,
     require_executable_operational_bulk,
 )
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/intelligence", tags=["External Intelligence"])
+router = APIRouter(
+    prefix="/intelligence",
+    tags=["External Intelligence"],
+    dependencies=[Depends(require_module_access("external"))],
+)
 IMMUTABLE_EXTERNAL_ENTITY_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 EXTERNAL_BULK_UPDATE_FIELDS = {"status", "environment", "criticality", "risk_rating"}
 EXTERNAL_BULK_RATING_VALUES = {"Critical", "High", "Medium", "Low"}

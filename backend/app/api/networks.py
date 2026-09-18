@@ -6,8 +6,13 @@ from ..database import get_db
 from ..models import models
 from ..schemas import schemas
 from .utils import build_audit_log, filter_valid_columns
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/networks", tags=["Network Fabric"])
+router = APIRouter(
+    prefix="/networks",
+    tags=["Network Fabric"],
+    dependencies=[Depends(require_module_access("network"))],
+)
 
 NETWORK_DIRECTION_VALUES = {"Bidirectional", "Unidirectional", "Source to Target", "Target to Source"}
 NETWORK_UNIT_VALUES = {"Gbps", "Mbps", "Kbps"}

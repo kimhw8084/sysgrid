@@ -7,7 +7,7 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), 'u
 
 const views = [
   'MonitoringGrid.tsx',
-  'AssetReal.tsx',
+  'assets/AssetGoldenOperationalWorkspace.tsx',
   'ServicesReal.tsx',
   'External.tsx',
   'NetworkReal.tsx',
@@ -45,5 +45,17 @@ describe('Golden workspace geometry contract', () => {
     expect(source).not.toContain('flex flex-wrap items-start justify-between gap-6')
     expect(source).not.toContain('overflow-x-auto rounded-lg border border-white/5 bg-black/20 px-4 py-3')
     expect(source).not.toContain('rounded-t-none border-x border-b border-white/5')
+  })
+
+  it('follows the live Assets route chain instead of the retired AssetReal filename', () => {
+    const assets = read('Assets.tsx')
+    const route = read('assets/AssetGoldenShellRoute.tsx')
+    const workspace = read('assets/AssetGoldenOperationalWorkspace.tsx')
+    const app = fs.readFileSync(path.resolve(root, '..', 'App.tsx'), 'utf8')
+    expect(assets).toContain("AssetGoldenShellRoute")
+    expect(route).toContain("AssetGoldenOperationalWorkspace")
+    expect(workspace).toContain("AssetGoldenShellScaffold")
+    expect(app).toContain('path="/asset"')
+    expect(app).toContain('<Assets />')
   })
 })

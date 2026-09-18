@@ -7,8 +7,13 @@ from ..database import get_db
 from ..models import models
 from ..schemas import schemas
 from .utils import filter_valid_columns, parse_iso_date, normalize_json_object, normalize_json_list
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/rca", tags=["Incident RCA Management"])
+router = APIRouter(
+    prefix="/rca",
+    tags=["Incident RCA Management"],
+    dependencies=[Depends(require_module_access("research"))],
+)
 
 def build_rca_snapshot(record: models.RcaRecord) -> dict:
     """Creates a forensic snapshot of an RCA record including timeline/mitigations."""

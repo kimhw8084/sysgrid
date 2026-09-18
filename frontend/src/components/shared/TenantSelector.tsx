@@ -44,7 +44,8 @@ export function TenantSelector() {
       if (!res.ok) throw new Error("Failed to switch database")
       return res.json()
     },
-    onSuccess: () => {
+    onSuccess: (_data, tenantId) => {
+      localStorage.setItem('SYSGRID_TENANT_ID', String(tenantId))
       toast.success("Database switched successfully")
       queryClient.invalidateQueries()
       // Reload the page to ensure all components refresh with new data context

@@ -10,6 +10,7 @@ from ..database import get_db
 from ..models import models
 from ..schemas import schemas
 from .utils import filter_valid_columns, get_current_user_id
+from .module_policy import require_module_access
 
 router = APIRouter(prefix="/knowledge", tags=["Knowledge Base & Q&A"])
 
@@ -141,6 +142,64 @@ async def expand_entry_search_text(entry: models.KnowledgeEntry, db: AsyncSessio
     ]
     return " ".join(part for part in parts if part)
 
+
+def _embedded_knowledge_projection(entry: models.KnowledgeEntry) -> dict:
+    """Return the title/index projection used by released workspaces."""
+    return {
+        "id": entry.id,
+        "created_at": entry.created_at,
+        "updated_at": entry.updated_at,
+        "category": entry.category,
+        "title": entry.title,
+        "content": entry.content,
+        "content_json": deepcopy(entry.content_json or {}),
+        "question_context": entry.question_context,
+        "is_answered": bool(entry.is_answered),
+        "verified_by": entry.verified_by,
+        "tags": list(entry.tags or []),
+        "impacted_systems": list(entry.impacted_systems or []),
+        "linked_device_ids": list(entry.linked_device_ids or []),
+        "status": entry.status,
+        "metadata_json": normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json),
+        "is_deleted": bool(entry.is_deleted),
+        "qa_threads": [],
+    }
+
+
+async def _embedded_entry_is_in_scope(
+    entry: models.KnowledgeEntry,
+    *,
+    consumer: str | None,
+    device_id: int | None,
+    service_id: int | None,
+    monitoring_id: int | None,
+    db: AsyncSession,
+) -> bool:
+    metadata = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
+    links = metadata.get("links", {})
+    if consumer in {"assets", "network"} and device_id is not None:
+        return device_id is not None and device_id in (entry.linked_device_ids or [])
+    if consumer == "services":
+        return service_id is not None and service_id in (links.get("service_ids", []) or [])
+    if consumer in {"monitoring", "network"}:
+        if monitoring_id is not None and monitoring_id in (links.get("monitoring_ids", []) or []):
+            return True
+        recovery_query = select(models.MonitoringItem.recovery_docs)
+        if monitoring_id is not None:
+            recovery_query = recovery_query.where(models.MonitoringItem.id == monitoring_id)
+        monitoring_rows = (await db.execute(recovery_query)).scalars().all()
+        recovery_ids: set[int] = set()
+        for docs in monitoring_rows:
+            for doc in (docs or []):
+                raw_id = doc.get("id") if isinstance(doc, dict) else doc
+                try:
+                    if raw_id is not None:
+                        recovery_ids.add(int(raw_id))
+                except (TypeError, ValueError):
+                    continue
+        return entry.id in recovery_ids
+    return False
+
 @router.get("", response_model=List[schemas.KnowledgeEntryResponse])
 async def get_entries(
     category: Optional[str] = None,
@@ -152,6 +211,9 @@ async def get_entries(
     research_id: Optional[int] = None,
     vendor_id: Optional[int] = None,
     project_id: Optional[int] = None,
+    request: Request = None,
+    embedded_consumer: Optional[str] = None,
+    _policy: dict = Depends(require_module_access("knowledge", allow_embedded=True)),
     db: AsyncSession = Depends(get_db)
 ):
     query = select(models.KnowledgeEntry).filter(models.KnowledgeEntry.is_deleted == False).options(
@@ -183,6 +245,19 @@ async def get_entries(
         and matches_link(entry, "project_ids", project_id)
     ]
 
+    if getattr(request.state, "sysgrid_embedded_projection", None):
+        entries = [
+            entry for entry in entries
+            if await _embedded_entry_is_in_scope(
+                entry,
+                consumer=embedded_consumer,
+                device_id=device_id,
+                service_id=service_id,
+                monitoring_id=monitoring_id,
+                db=db,
+            )
+        ]
+
     if search:
         search_term = search.lower()
         filtered_entries = []
@@ -191,24 +266,54 @@ async def get_entries(
                 filtered_entries.append(entry)
         entries = filtered_entries
 
+    if getattr(request.state, "sysgrid_embedded_projection", None):
+        return [_embedded_knowledge_projection(entry) for entry in entries]
+
     for entry in entries:
         entry.metadata_json = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
 
     return entries
 
 @router.get("/{entry_id}", response_model=schemas.KnowledgeEntryResponse)
-async def get_entry(entry_id: int, db: AsyncSession = Depends(get_db)):
+async def get_entry(
+    entry_id: int,
+    request: Request,
+    device_id: Optional[int] = None,
+    service_id: Optional[int] = None,
+    monitoring_id: Optional[int] = None,
+    embedded_consumer: Optional[str] = None,
+    _policy: dict = Depends(require_module_access("knowledge", allow_embedded=True)),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(
         select(models.KnowledgeEntry)
         .filter(models.KnowledgeEntry.id == entry_id)
         .options(selectinload(models.KnowledgeEntry.qa_threads).selectinload(models.KnowledgeQA.replies))
     )
     entry = result.scalar_one_or_none()
-    if not entry: raise HTTPException(404, "Entry not found")
+    if not entry:
+        raise HTTPException(404, "Entry not found")
+    if getattr(request.state, "sysgrid_embedded_projection", None):
+        if not await _embedded_entry_is_in_scope(
+            entry,
+            consumer=embedded_consumer,
+            device_id=device_id,
+            service_id=service_id,
+            monitoring_id=monitoring_id,
+            db=db,
+        ):
+            raise HTTPException(404, "Entry not found")
+    else:
+        entry.metadata_json = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
     return entry
 
 @router.post("", response_model=schemas.KnowledgeEntryResponse)
-async def create_entry(data: schemas.KnowledgeEntryCreate, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_entry(
+    data: schemas.KnowledgeEntryCreate,
+    request: Request,
+    _policy: dict = Depends(require_module_access("knowledge")),
+    db: AsyncSession = Depends(get_db),
+):
     payload = data.model_dump()
     payload["metadata_json"] = normalize_metadata(payload)
     entry = models.KnowledgeEntry(**payload)
@@ -229,7 +334,12 @@ async def create_entry(data: schemas.KnowledgeEntryCreate, request: Request, db:
         raise HTTPException(400, detail=str(e))
 
 @router.put("/{entry_id}", response_model=schemas.KnowledgeEntryResponse)
-async def update_entry(entry_id: int, data: schemas.KnowledgeEntryBase, db: AsyncSession = Depends(get_db)):
+async def update_entry(
+    entry_id: int,
+    data: schemas.KnowledgeEntryBase,
+    _policy: dict = Depends(require_module_access("knowledge")),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(models.KnowledgeEntry).filter(models.KnowledgeEntry.id == entry_id))
     entry = result.scalar_one_or_none()
     if not entry: raise HTTPException(404, "Entry not found")
@@ -257,7 +367,11 @@ async def update_entry(entry_id: int, data: schemas.KnowledgeEntryBase, db: Asyn
     return result.scalar_one()
 
 @router.delete("/{entry_id}")
-async def delete_entry(entry_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_entry(
+    entry_id: int,
+    _policy: dict = Depends(require_module_access("knowledge")),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(models.KnowledgeEntry).filter(models.KnowledgeEntry.id == entry_id))
     entry = result.scalar_one_or_none()
     if not entry: raise HTTPException(404, "Entry not found")
@@ -269,7 +383,11 @@ async def delete_entry(entry_id: int, db: AsyncSession = Depends(get_db)):
 # --- QA Thread Routes ---
 
 @router.post("/qa", response_model=schemas.KnowledgeQAResponse)
-async def add_qa_entry(data: schemas.KnowledgeQACreate, db: AsyncSession = Depends(get_db)):
+async def add_qa_entry(
+    data: schemas.KnowledgeQACreate,
+    _policy: dict = Depends(require_module_access("knowledge")),
+    db: AsyncSession = Depends(get_db),
+):
     qa = models.KnowledgeQA(**data.model_dump())
     db.add(qa)
     await db.commit()
@@ -283,7 +401,12 @@ async def add_qa_entry(data: schemas.KnowledgeQACreate, db: AsyncSession = Depen
     return result.scalar_one()
 
 @router.put("/qa/{qa_id}", response_model=schemas.KnowledgeQAResponse)
-async def update_qa_entry(qa_id: int, data: schemas.KnowledgeQABase, db: AsyncSession = Depends(get_db)):
+async def update_qa_entry(
+    qa_id: int,
+    data: schemas.KnowledgeQABase,
+    _policy: dict = Depends(require_module_access("knowledge")),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(models.KnowledgeQA).filter(models.KnowledgeQA.id == qa_id))
     qa = result.scalar_one_or_none()
     if not qa: raise HTTPException(404, "QA entry not found")
@@ -302,7 +425,11 @@ async def update_qa_entry(qa_id: int, data: schemas.KnowledgeQABase, db: AsyncSe
     return result.scalar_one()
 
 @router.delete("/qa/{qa_id}")
-async def delete_qa_entry(qa_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_qa_entry(
+    qa_id: int,
+    _policy: dict = Depends(require_module_access("knowledge")),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(models.KnowledgeQA).filter(models.KnowledgeQA.id == qa_id))
     qa = result.scalar_one_or_none()
     if not qa: raise HTTPException(404, "QA entry not found")

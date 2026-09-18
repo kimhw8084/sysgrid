@@ -41,6 +41,12 @@ class Settings(BaseSettings):
     CONTROL_PLANE_ADMIN_USER_IDS: str = ""
     CONTROL_PLANE_BOOTSTRAP_ENABLED: bool = False
     CONTROL_PLANE_BOOTSTRAP_USER_ID: str = ""
+    # Reserved System Root is a deployment-owned identity plane. It is never
+    # inferred from tenant ADMIN/is_admin, wildcard permissions, or browser state.
+    SYSTEM_ROOT_USER_IDS: str = ""
+    # Optional deployment kill-switches for catalog stages, expressed as
+    # comma-separated module=stage pairs (production, preview, disabled, retired).
+    MODULE_STAGE_OVERRIDES: str = ""
     SCHEDULE_PREVIEW_SIGNING_KEY: str = "development-only-schedule-preview-key"
     # Trusted deployment identity for release field evidence. Browser hints
     # are never authoritative for this value.
@@ -166,6 +172,8 @@ class Settings(BaseSettings):
             errors.append("AUTO_ADMIN_USER_IDS must be empty in production unless explicitly acknowledged.")
         if not self.control_plane_admin_user_ids:
             errors.append("CONTROL_PLANE_ADMIN_USER_IDS must contain explicit global administrator identities in production.")
+        if not self.system_root_user_ids:
+            errors.append("SYSTEM_ROOT_USER_IDS must contain explicit reserved System Root identities in production.")
         if self.CONTROL_PLANE_BOOTSTRAP_ENABLED:
             errors.append("CONTROL_PLANE_BOOTSTRAP_ENABLED must be false in production.")
         if self.CONTROL_PLANE_BOOTSTRAP_USER_ID.strip():
@@ -238,6 +246,26 @@ class Settings(BaseSettings):
     @property
     def control_plane_bootstrap_user_id(self) -> str:
         return self.CONTROL_PLANE_BOOTSTRAP_USER_ID.strip()
+
+    @property
+    def system_root_user_ids(self) -> set[str]:
+        return {
+            user_id.strip()
+            for user_id in self.SYSTEM_ROOT_USER_IDS.split(",")
+            if user_id.strip()
+        }
+
+    @property
+    def module_stage_overrides(self) -> dict[str, str]:
+        allowed = {"production", "preview", "disabled", "retired"}
+        overrides: dict[str, str] = {}
+        for raw_entry in self.MODULE_STAGE_OVERRIDES.split(","):
+            if "=" not in raw_entry:
+                continue
+            module_id, stage = (part.strip().lower() for part in raw_entry.split("=", 1))
+            if module_id and stage in allowed:
+                overrides[module_id] = stage
+        return overrides
 
 
 settings = Settings()
