@@ -10,6 +10,7 @@ from app.api.module_policy import CATALOG, _build_module_entry, ensure_module_ac
 from app.api.authorization import has_capability
 from app.api.settings import reject_reserved_system_root_identity
 from app.core.config import settings
+from app.main import ConnectionManager
 from fastapi import Request, HTTPException
 
 
@@ -304,3 +305,27 @@ async def test_embedded_target_resolution_is_tenant_scoped_and_fails_closed():
             return Result()
 
     await _require_embedded_targets(request, AuthorizedTargetDB())
+
+
+@pytest.mark.anyio
+async def test_websocket_broadcast_does_not_cross_tenant_connections():
+    class FakeWebSocket:
+        def __init__(self):
+            self.messages = []
+
+        async def accept(self):
+            return None
+
+        async def send_text(self, message):
+            self.messages.append(message)
+
+    manager = ConnectionManager()
+    tenant_a = FakeWebSocket()
+    tenant_b = FakeWebSocket()
+    await manager.connect(tenant_a, user_id="user-a", tenant_id=101)
+    await manager.connect(tenant_b, user_id="user-b", tenant_id=202)
+
+    await manager.broadcast("TENANT_A_EVENT", tenant_id=101)
+
+    assert tenant_a.messages == ["TENANT_A_EVENT"]
+    assert tenant_b.messages == []

@@ -73,7 +73,6 @@ import {
 } from './shared/OperationalWorkspaceHooks'
 import { WorkspaceCompareShell, WorkspaceDossierShell, WorkspaceHistoryShell } from './shared/WorkspaceModalShells'
 import { OperationalImportModal } from './shared/OperationalImportModal'
-import { OperationalBulkPreviewModal, type OperationalBulkPreview } from './shared/OperationalBulkPreviewModal'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
 import { OPERATIONAL_ACTION_LABELS } from './shared/OperationalActionLabels'
@@ -572,15 +571,6 @@ export default function MonitoringGrid() {
   const [searchTerm, setSearchTerm] = useState(persistedUiState?.searchTerm ?? '')
   const [groupBy, setGroupBy] = useState<string>(persistedUiState?.groupBy ?? 'raw')
   const [bulkDraft, setBulkDraft] = useState({ status: '', severity: '', notification_method: '' })
-  const [bulkPreviewState, setBulkPreviewState] = useState<{
-    action: string
-    ids: number[]
-    payload: Record<string, any>
-    actionLabel: string
-    fieldLabel?: string
-    nextValue?: string
-    preview: OperationalBulkPreview
-  } | null>(null)
   const [lastVisitedAt] = useState<number>(() => persistedUiState?.lastVisitedAt ?? 0)
   const [pendingIds, setPendingIds] = useState<number[]>([])
 
@@ -1504,51 +1494,6 @@ export default function MonitoringGrid() {
       currentCounts: Object.entries(currentCounts)
     }
   }, [bulkDraft, expandedBulkSection, selectedItems])
-
-  const openBulkPreview = useCallback((action: string, payload: Record<string, any>, ids = selectedIds) => {
-    const idsToPreview = Array.from(new Set(ids.map(Number).filter((id) => Number.isFinite(id) && id > 0)))
-    const rows = (allItems || []).filter((item: any) => idsToPreview.includes(Number(item.id)))
-    const missingIds = idsToPreview.filter((id) => !rows.some((item: any) => Number(item.id) === id))
-    const changedIds = rows
-      .filter((item: any) => {
-        if (action === 'delete') return !item.is_deleted && item.status !== 'Deleted'
-        if (action === 'restore') return Boolean(item.is_deleted || item.status === 'Deleted')
-        if (action === 'purge') return true
-        return Object.entries(payload).some(([field, value]) => JSON.stringify(item[field] ?? null) !== JSON.stringify(value ?? null))
-      })
-      .map((item: any) => Number(item.id))
-    const unchangedIds = idsToPreview.filter((id) => !changedIds.includes(id) && !missingIds.includes(id))
-    const fieldLabel = action === 'update' ? resolveBulkFieldLabel(payload, MONITORING_BULK_FIELD_LABELS) : undefined
-    const actionLabel = action === 'delete'
-      ? 'Archive selection'
-      : action === 'restore'
-        ? 'Restore selection'
-        : action === 'purge'
-          ? 'Purge selection'
-          : `Apply ${fieldLabel || 'change'}`
-    setBulkPreviewState({
-      action,
-      ids: idsToPreview,
-      payload,
-      actionLabel,
-      fieldLabel,
-      nextValue: action === 'update' ? String(Object.values(payload)[0] ?? '') : undefined,
-      preview: {
-        action,
-        selected_count: idsToPreview.length,
-        matched_count: rows.length,
-        changed_count: changedIds.length,
-        unchanged_count: unchangedIds.length,
-        blocked_count: 0,
-        missing_count: missingIds.length,
-        changed_ids: changedIds,
-        unchanged_ids: unchangedIds,
-        missing_ids: missingIds,
-        blockers: [],
-        can_execute: idsToPreview.length > 0 && missingIds.length === 0,
-      },
-    })
-  }, [allItems, selectedIds])
   useEffect(() => {
     if (typeof window === 'undefined') return
     window.localStorage.setItem(MONITORING_UI_STATE_KEY, JSON.stringify({
@@ -1581,7 +1526,6 @@ export default function MonitoringGrid() {
   useEffect(() => {
     if (!hasSelection()) {
       closeOverlay('bulk')
-      setBulkPreviewState(null)
       setExpandedBulkSection(null)
     }
   }, [closeOverlay, hasSelection])
@@ -2274,7 +2218,7 @@ export default function MonitoringGrid() {
                     options={STATUSES.filter((status) => status.value !== 'Deleted').map((status) => ({ value: status.value, label: status.label }))}
                     placeholder="Choose status"
                     actionLabel="Apply Status"
-                    onApply={() => openBulkPreview('update', { status: bulkDraft.status })}
+                    onApply={() => bulkMutation.mutate({ action: 'update', payload: { status: bulkDraft.status } })}
                     disabled={!bulkDraft.status || bulkMutation.isPending}
                   />
                 )}
@@ -2290,7 +2234,7 @@ export default function MonitoringGrid() {
                     options={severities.map((severity: any) => ({ value: severity.value, label: severity.label }))}
                     placeholder="Choose severity"
                     actionLabel="Apply Severity"
-                    onApply={() => openBulkPreview('update', { severity: bulkDraft.severity })}
+                    onApply={() => bulkMutation.mutate({ action: 'update', payload: { severity: bulkDraft.severity } })}
                     disabled={!bulkDraft.severity || bulkMutation.isPending}
                   />
                 )}
@@ -2306,7 +2250,7 @@ export default function MonitoringGrid() {
                     options={notificationMethods.map((method: any) => ({ value: method.value, label: method.label }))}
                     placeholder="Choose notification method"
                     actionLabel="Apply Method"
-                    onApply={() => openBulkPreview('update', { notification_method: bulkDraft.notification_method })}
+                    onApply={() => bulkMutation.mutate({ action: 'update', payload: { notification_method: bulkDraft.notification_method } })}
                     disabled={!bulkDraft.notification_method || bulkMutation.isPending}
                   />
                 )}
@@ -2589,24 +2533,6 @@ export default function MonitoringGrid() {
               setShowBulkEditModal(false)
             }}
             onDirtyChange={setIsBulkEditDirty}
-          />
-        )}
-        {bulkPreviewState && (
-          <OperationalBulkPreviewModal
-            isOpen={true}
-            workspaceLabel="Monitoring"
-            actionLabel={bulkPreviewState.actionLabel}
-            fieldLabel={bulkPreviewState.fieldLabel}
-            nextValue={bulkPreviewState.nextValue}
-            preview={bulkPreviewState.preview}
-            isExecuting={bulkMutation.isPending}
-            onClose={() => setBulkPreviewState(null)}
-            onConfirm={() => bulkMutation.mutate({
-              action: bulkPreviewState.action,
-              ids: bulkPreviewState.ids,
-              payload: bulkPreviewState.payload,
-            })}
-            previewBasis="workspace-snapshot"
           />
         )}
         <OperationalImportModal

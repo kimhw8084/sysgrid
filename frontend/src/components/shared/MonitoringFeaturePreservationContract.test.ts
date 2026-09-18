@@ -18,7 +18,6 @@ describe('Monitoring preservation harness inventory', () => {
     for (const marker of [
       'OperationalSavedViewsPanel',
       'useOperationalGroupedSelection',
-      'OperationalBulkPreviewModal',
       'MonitoringHistoryModal',
       'CompareMonitorsModal',
       'BkmListModal',
@@ -28,5 +27,9 @@ describe('Monitoring preservation harness inventory', () => {
     ]) {
       expect(monitoringSource).toContain(marker)
     }
+    expect(monitoringSource).toContain('bulkMutation.mutate')
+    expect(monitoringSource).not.toContain('OperationalBulkPreviewModal')
+    expect(monitoringSource).not.toContain('bulkPreviewState')
+    expect(monitoringSource).not.toContain('openBulkPreview')
   })
 })
