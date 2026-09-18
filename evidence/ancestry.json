@@ -1,0 +1,14 @@
+{
+  "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "final_candidate_sha": "a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842",
+  "final_candidate_tree": "a77bedc3480ea0645e20f48047821be752b0151e",
+  "main_remote_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "parent_checks": {
+    "base_ancestor_of_r3": true,
+    "r1_ancestor_of_r2": true,
+    "r2_parent_of_r3": true
+  },
+  "product_worktree_clean": true,
+  "r1_sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+  "r2_predecessor_sha": "ea43d81196498be8edf1877ead7f989044909460"
+}

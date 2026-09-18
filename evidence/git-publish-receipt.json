@@ -1,0 +1,68 @@
+{
+  "bundle_exclusions": [
+    "visual-atlas/artifact-bundle.zip",
+    "visual-atlas/git-publish-receipt.json"
+  ],
+  "change": "CHG-120",
+  "git_package_verified": false,
+  "local_package": {
+    "bundle_sha256": "6586e311ab39e7f431b992f48f64272240f0b764b616b5b8e45396eba7387ad7",
+    "comparison_report_sha256": "e3bf8cad57fc401b4213d68a3751f11ea6bace655d6dd740a1e9cbbbddd1ddd0",
+    "file_count_excluding_self_and_receipt": 29,
+    "manifest_sha256": "29eb23e01ff5f8315b6d27b6e6e081c309d51cad1c31a77f23bb5fb29efa6a7a",
+    "qualification_report_sha256": "4459dff2b9f5d600420225559ba5b09f807bf65b4e4d9e1d5b1b5a9723e1944e",
+    "review_desktop_sha256": "b2f7883cec6d023d5769b6549f607f5be4781aef7fa639583b1a652579cddad0",
+    "review_mobile_sha256": "bf6445b5984e428a60fc36ea0a020cab07757f558f15e42968c7d58efee35dec"
+  },
+  "project": "sysgrid",
+  "remote_commit": "ecc0ad1ea6a5d534039d7be17563a2189f39fa66",
+  "remote_readback": {
+    "base_png": {
+      "reason": "no canonical base PNG was captured; therefore package verification cannot be upgraded to true",
+      "status": "NOT_AVAILABLE"
+    },
+    "candidate_png": {
+      "canonical": false,
+      "dimensions": [
+        1280,
+        720
+      ],
+      "path": "visual-atlas/screenshots/candidate/monitoring-runtime-blocked.png",
+      "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401",
+      "signature": "89504e470d0a1a0a",
+      "status": "VERIFIED"
+    },
+    "manifest": {
+      "path": "visual-atlas/surface-manifest.json",
+      "sha256": "29eb23e01ff5f8315b6d27b6e6e081c309d51cad1c31a77f23bb5fb29efa6a7a",
+      "status": "VERIFIED"
+    },
+    "qualification_report": {
+      "path": "visual-atlas/qualification-report.json",
+      "sha256": "4459dff2b9f5d600420225559ba5b09f807bf65b4e4d9e1d5b1b5a9723e1944e",
+      "status": "VERIFIED"
+    },
+    "readback_commit": "ecc0ad1ea6a5d534039d7be17563a2189f39fa66",
+    "reader_index": {
+      "path": "visual-atlas/reader-index.json",
+      "status": "VERIFIED"
+    },
+    "remote_binary_readback_commands": [
+      "git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-release-foundation-qualification-fix-v3",
+      "git fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-release-foundation-qualification-fix-v3",
+      "git show <commit>:visual-atlas/screenshots/candidate/monitoring-runtime-blocked.png",
+      "git show <commit>:visual-atlas/review-desktop.pdf"
+    ],
+    "remote_ref_resolved": true,
+    "review_pdf": {
+      "canonical": false,
+      "path": "visual-atlas/review-desktop.pdf",
+      "sha256": "b2f7883cec6d023d5769b6549f607f5be4781aef7fa639583b1a652579cddad0",
+      "signature": "255044462d",
+      "status": "VERIFIED"
+    },
+    "status": "VERIFIED_FOR_PUBLISHED_COMMIT"
+  },
+  "remote_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-release-foundation-qualification-fix-v3",
+  "request": "sysgrid-smv1-release-foundation-qualification-fix-v3"
+}

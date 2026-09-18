@@ -1,0 +1,8 @@
+.......................................................                  [100%]
+=============================== warnings summary ===============================
+app/api/pv1_communication.py:12
+  /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/backend/app/api/pv1_communication.py:12: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+    from ..pv1 import communication, domain, models, schemas
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+55 passed, 1 warning in 1.60s

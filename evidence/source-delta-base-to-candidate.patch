@@ -1,0 +1,3814 @@
+diff --git a/backend/app/api/audit.py b/backend/app/api/audit.py
+index 00b096cd..2fa15be7 100644
+--- a/backend/app/api/audit.py
++++ b/backend/app/api/audit.py
+@@ -3,11 +3,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
+ from sqlalchemy import select, delete
+ from ..database import get_db
+ from ..models import models
++from .module_policy import require_module_access
+ 
+ from typing import Optional
+ from datetime import datetime
+ 
+-router = APIRouter(prefix="/audit", tags=["Audit"])
++router = APIRouter(
++    prefix="/audit",
++    tags=["Audit"],
++    dependencies=[Depends(require_module_access("logs"))],
++)
+ 
+ @router.get("")
+ async def get_audit_logs(
+diff --git a/backend/app/api/authorization.py b/backend/app/api/authorization.py
+index e1e688d2..332e655b 100644
+--- a/backend/app/api/authorization.py
++++ b/backend/app/api/authorization.py
+@@ -73,6 +73,10 @@ def has_capability(
+         raise ValueError("required_level must be between 0 and 3")
+     if not operator or not capability or not capability.strip():
+         return False
++    # The reserved System Root/control-plane plane is deployment-owned and is
++    # never granted by tenant ADMIN, is_admin, all, or custom permissions.
++    if capability.strip().lower().startswith("system."):
++        return False
+     if bool(operator.is_admin):
+         return True
+ 
+diff --git a/backend/app/api/dashboard.py b/backend/app/api/dashboard.py
+index 154e95e2..f9c64f2e 100644
+--- a/backend/app/api/dashboard.py
++++ b/backend/app/api/dashboard.py
+@@ -1,9 +1,10 @@
+-from fastapi import APIRouter, Depends
++from fastapi import APIRouter, Depends, Request
+ from sqlalchemy.ext.asyncio import AsyncSession
+ from sqlalchemy import select, func, desc, or_
+ from sqlalchemy.orm import aliased
+ from ..database import get_db
+ from ..models import models
++from .module_policy import build_effective_policy
+ from typing import Dict, Any, List
+ 
+ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+@@ -23,67 +24,82 @@ def group_by_status(items: List[Any], type_attr: str = "type") -> Dict[str, Dict
+     return result
+ 
+ @router.get("/metrics")
+-async def get_metrics(db: AsyncSession = Depends(get_db)):
++async def get_metrics(request: Request, db: AsyncSession = Depends(get_db)):
++    policy = await build_effective_policy(request, db)
++    visible = lambda module_id: bool(policy["modules"].get(module_id, {}).get("available"))
+     # 1. Rack Overview
+-    sites_count = (await db.execute(select(func.count(models.Site.id)))).scalar() or 0
+-    racks_count = (await db.execute(select(func.count(models.Rack.id)).filter(models.Rack.is_deleted == False))).scalar() or 0
++    sites_count = (await db.execute(select(func.count(models.Site.id)))).scalar() or 0 if visible("racks") else 0
++    racks_count = (await db.execute(select(func.count(models.Rack.id)).filter(models.Rack.is_deleted == False))).scalar() or 0 if visible("racks") else 0
+     
+     # Count unique devices that have a record in device_locations
+     racked_assets_query = select(func.count(func.distinct(models.DeviceLocation.device_id))).join(
+         models.Device, models.Device.id == models.DeviceLocation.device_id
+     ).filter(models.Device.is_deleted == False)
+-    racked_assets = (await db.execute(racked_assets_query)).scalar() or 0
++    racked_assets = (await db.execute(racked_assets_query)).scalar() or 0 if visible("assets") and visible("racks") else 0
+     
+     # 2. Asset Overview
+-    devices = (await db.execute(select(models.Device).filter(models.Device.is_deleted == False))).scalars().all()
++    devices = (await db.execute(select(models.Device).filter(models.Device.is_deleted == False))).scalars().all() if visible("assets") else []
+     asset_overview = {
+         "total": len(devices),
+         "breakdown": group_by_status(devices, "type")
+     }
+ 
+     # 3. Service Overview
+-    services = (await db.execute(select(models.LogicalService).filter(models.LogicalService.is_deleted == False))).scalars().all()
++    services = (await db.execute(select(models.LogicalService).filter(models.LogicalService.is_deleted == False))).scalars().all() if visible("services") else []
+     service_overview = {
+         "total": len(services),
+         "breakdown": group_by_status(services, "service_type")
+     }
+ 
+     # 4. External Overview
+-    externals = (await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.is_deleted == False))).scalars().all()
++    externals = []
++    if visible("external"):
++        externals = (await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.is_deleted == False))).scalars().all()
+     external_overview = {
+         "total": len(externals),
+         "breakdown": group_by_status(externals, "type")
+     }
+ 
+     # 5. Network Overview
+-    connections = (await db.execute(select(models.PortConnection))).scalars().all()
++    connections = (await db.execute(select(models.PortConnection))).scalars().all() if visible("network") else []
+     network_overview = {
+         "total": len(connections),
+         "breakdown": group_by_status(connections, "link_type")
+     }
+ 
+     # 6. Monitoring Overview
+-    mon_items = (await db.execute(select(models.MonitoringItem).filter(models.MonitoringItem.is_deleted == False))).scalars().all()
++    mon_items = (await db.execute(select(models.MonitoringItem).filter(models.MonitoringItem.is_deleted == False))).scalars().all() if visible("monitoring") else []
+     monitoring_overview = {
+         "total": len(mon_items),
+         "breakdown": group_by_status(mon_items, "platform")
+     }
+ 
+     # 7. Recent Items (Last 3)
+-    research = (await db.execute(select(models.Investigation).order_by(desc(models.Investigation.updated_at)).limit(3))).scalars().all()
+-    far = (await db.execute(select(models.FarFailureMode).order_by(desc(models.FarFailureMode.created_at)).limit(3))).scalars().all()
+-    knowledge = (await db.execute(select(models.KnowledgeEntry).order_by(desc(models.KnowledgeEntry.created_at)).limit(3))).scalars().all()
+-    architecture = (await db.execute(select(models.DataFlow).order_by(desc(models.DataFlow.created_at)).limit(3))).scalars().all()
++    research = []
++    if visible("research"):
++        research = (await db.execute(select(models.Investigation).order_by(desc(models.Investigation.updated_at)).limit(3))).scalars().all()
++    far = []
++    if visible("far"):
++        far = (await db.execute(select(models.FarFailureMode).order_by(desc(models.FarFailureMode.created_at)).limit(3))).scalars().all()
++    knowledge = []
++    if visible("knowledge"):
++        knowledge = (await db.execute(select(models.KnowledgeEntry).order_by(desc(models.KnowledgeEntry.created_at)).limit(3))).scalars().all()
++    architecture = []
++    if visible("architecture"):
++        architecture = (await db.execute(select(models.DataFlow).order_by(desc(models.DataFlow.created_at)).limit(3))).scalars().all()
+     
+     # Projects: 3 latest in progress, 3 latest completed
+-    projects_in_progress = (await db.execute(select(models.Project).filter(models.Project.status == "In Progress").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
+-    projects_completed = (await db.execute(select(models.Project).filter(models.Project.status == "Completed").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
++    projects_in_progress = []
++    projects_completed = []
++    if visible("projects"):
++        projects_in_progress = (await db.execute(select(models.Project).filter(models.Project.status == "In Progress").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
++        projects_completed = (await db.execute(select(models.Project).filter(models.Project.status == "Completed").order_by(desc(models.Project.updated_at)).limit(3))).scalars().all()
+ 
+     # 8. Audit Logs (Recent Activity)
+-    audit_logs = (await db.execute(select(models.AuditLog).order_by(desc(models.AuditLog.timestamp)).limit(5))).scalars().all()
++    audit_logs = (await db.execute(select(models.AuditLog).order_by(desc(models.AuditLog.timestamp)).limit(5))).scalars().all() if visible("logs") else []
+     
+     # 9. Sites
+-    sites = (await db.execute(select(models.Site).order_by(models.Site.order_index))).scalars().all()
++    sites = (await db.execute(select(models.Site).order_by(models.Site.order_index))).scalars().all() if visible("racks") else []
+ 
+     # 10. Stability Score Calculation (Mock logic based on monitoring items)
+     # If more than 10% are not 'Existing' or inactive, lower the score
+@@ -144,10 +160,12 @@ async def get_metrics(db: AsyncSession = Depends(get_db)):
+     }
+ 
+ @router.get("/search")
+-async def global_search(q: str, db: AsyncSession = Depends(get_db)):
++async def global_search(q: str, request: Request, db: AsyncSession = Depends(get_db)):
+     if not q or len(q) < 2:
+         return {"results": []}
+     
++    policy = await build_effective_policy(request, db)
++    visible = lambda module_id: bool(policy["modules"].get(module_id, {}).get("available"))
+     results = []
+     search_term = f"%{q}%"
+ 
+@@ -161,7 +179,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+         (models.Device.management_ip.ilike(search_term)) |
+         (models.Device.primary_ip.ilike(search_term))
+     ).limit(10)
+-    assets = (await db.execute(assets_query)).scalars().all()
++    assets = (await db.execute(assets_query)).scalars().all() if visible("assets") else []
+     for a in assets:
+         results.append({
+             "id": a.id,
+@@ -169,7 +187,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             "title": a.name,
+             "subtitle": f"{a.system} | {a.management_ip or a.primary_ip or 'No IP'}",
+             "tag": a.type,
+-            "path": "/asset"
++            "path": "/asset",
++            "module_id": "assets",
+         })
+ 
+     # 2. Search Projects
+@@ -178,7 +197,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+         (models.Project.name.ilike(search_term)) |
+         (models.Project.description.ilike(search_term))
+     ).limit(10)
+-    projects = (await db.execute(projects_query)).scalars().all()
++    projects = (await db.execute(projects_query)).scalars().all() if visible("projects") else []
+     for p in projects:
+         results.append({
+             "id": p.id,
+@@ -186,7 +205,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             "title": p.name,
+             "subtitle": p.status,
+             "tag": p.type,
+-            "path": "/projects"
++            "path": "/projects",
++            "module_id": "projects",
+         })
+ 
+     # 3. Search FAR
+@@ -196,7 +216,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+         (models.FarFailureMode.system_name.ilike(search_term)) |
+         (models.FarFailureMode.effect.ilike(search_term))
+     ).limit(10)
+-    far = (await db.execute(far_query)).scalars().all()
++    far = (await db.execute(far_query)).scalars().all() if visible("far") else []
+     for f in far:
+         results.append({
+             "id": f.id,
+@@ -204,7 +224,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             "title": f.title,
+             "subtitle": f.system_name,
+             "tag": f"RPN: {f.rpn}",
+-            "path": "/far"
++            "path": "/far",
++            "module_id": "far",
+         })
+ 
+     # 4. Search Services
+@@ -215,7 +236,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+         (models.LogicalService.environment.ilike(search_term)) |
+         (models.LogicalService.purpose.ilike(search_term))
+     ).limit(10)
+-    services = (await db.execute(services_query)).scalars().all()
++    services = (await db.execute(services_query)).scalars().all() if visible("services") else []
+     for service in services:
+         results.append({
+             "id": service.id,
+@@ -223,7 +244,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             "title": service.name,
+             "subtitle": f"{service.service_type} | {service.environment}",
+             "tag": service.status or "Unknown",
+-            "path": "/services"
++            "path": "/services",
++            "module_id": "services",
+         })
+ 
+     # 5. Search Monitoring
+@@ -235,7 +257,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+         (models.MonitoringItem.purpose.ilike(search_term)) |
+         (models.MonitoringItem.impact.ilike(search_term))
+     ).limit(10)
+-    monitoring_items = (await db.execute(monitoring_query)).scalars().all()
++    monitoring_items = (await db.execute(monitoring_query)).scalars().all() if visible("monitoring") else []
+     for monitor in monitoring_items:
+         results.append({
+             "id": monitor.id,
+@@ -243,7 +265,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             "title": monitor.title,
+             "subtitle": f"{monitor.category or 'Monitor'} | {monitor.platform or 'No Platform'}",
+             "tag": monitor.severity or "Info",
+-            "path": "/monitoring"
++            "path": "/monitoring",
++            "module_id": "monitoring",
+         })
+ 
+     # 6. Search Knowledge
+@@ -253,7 +276,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+         (models.KnowledgeEntry.content.ilike(search_term)) |
+         (models.KnowledgeEntry.question_context.ilike(search_term))
+     ).limit(10)
+-    knowledge_entries = (await db.execute(knowledge_query)).scalars().all()
++    knowledge_entries = (await db.execute(knowledge_query)).scalars().all() if visible("knowledge") else []
+     for entry in knowledge_entries:
+         results.append({
+             "id": entry.id,
+@@ -261,7 +284,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             "title": entry.title,
+             "subtitle": entry.category,
+             "tag": entry.status or "Published",
+-            "path": "/knowledge"
++            "path": "/knowledge",
++            "module_id": "knowledge",
+         })
+ 
+     # 7. Search Network Fabric
+@@ -285,7 +309,7 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             target_device.name.ilike(search_term)
+         )
+     ).limit(10)
+-    network_rows = (await db.execute(network_query)).all()
++    network_rows = (await db.execute(network_query)).all() if visible("network") else []
+     for connection, source_name, target_name in network_rows:
+         results.append({
+             "id": connection.id,
+@@ -293,7 +317,8 @@ async def global_search(q: str, db: AsyncSession = Depends(get_db)):
+             "title": f"{source_name} -> {target_name}",
+             "subtitle": f"{connection.source_port} -> {connection.target_port}",
+             "tag": connection.link_type or "Link",
+-            "path": "/network"
++            "path": "/network",
++            "module_id": "network",
+         })
+ 
+     return {"results": results}
+diff --git a/backend/app/api/data_flows.py b/backend/app/api/data_flows.py
+index 10b53681..7a5d759a 100644
+--- a/backend/app/api/data_flows.py
++++ b/backend/app/api/data_flows.py
+@@ -7,8 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
+ 
+ from ..database import get_db
+ from ..models import models
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/data-flows", tags=["Data Flow Designer"])
++router = APIRouter(
++    prefix="/data-flows",
++    tags=["Data Flow Designer"],
++    dependencies=[Depends(require_module_access("architecture"))],
++)
+ 
+ DEFAULT_FLOW_METADATA = {
+     "owner_team": "",
+diff --git a/backend/app/api/devices.py b/backend/app/api/devices.py
+index 3c0c9844..74c43746 100644
+--- a/backend/app/api/devices.py
++++ b/backend/app/api/devices.py
+@@ -12,8 +12,13 @@ from .operational_bulk import (
+     normalize_operational_bulk_payload,
+     require_executable_operational_bulk,
+ )
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/devices", tags=["Devices"])
++router = APIRouter(
++    prefix="/devices",
++    tags=["Devices"],
++    dependencies=[Depends(require_module_access("assets"))],
++)
+ 
+ async def sync_device_to_os(device, db: AsyncSession):
+     if device.os_name:
+diff --git a/backend/app/api/far.py b/backend/app/api/far.py
+index 005a7556..5f400e06 100644
+--- a/backend/app/api/far.py
++++ b/backend/app/api/far.py
+@@ -1,4 +1,4 @@
+-from fastapi import APIRouter, Depends, HTTPException, Query
++from fastapi import APIRouter, Depends, HTTPException, Query, Request
+ from sqlalchemy.ext.asyncio import AsyncSession
+ from sqlalchemy.future import select
+ from sqlalchemy.orm import joinedload, selectinload
+@@ -10,8 +10,13 @@ from .utils import filter_valid_columns
+ 
+ from sqlalchemy import delete, update
+ from ..api.utils import filter_valid_columns, normalize_json_object, normalize_json_list
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/far", tags=["FAR"])
++router = APIRouter(
++    prefix="/far",
++    tags=["FAR"],
++    dependencies=[Depends(require_module_access("far", allow_embedded=True))],
++)
+ IMMUTABLE_FAR_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "version", "is_deleted"}
+ FAR_BULK_SCORE_FIELDS = {"severity", "occurrence", "detection"}
+ 
+@@ -625,6 +630,8 @@ async def save_far_history(mode_id: int, version: int, db: AsyncSession, summary
+ async def get_failure_modes(
+     system: Optional[str] = None,
+     include_deleted: bool = False,
++    request: Request = None,
++    embedded_consumer: Optional[str] = None,
+     db: AsyncSession = Depends(get_db),
+ ):
+     stmt = select(models.FarFailureMode).options(
+@@ -643,7 +650,34 @@ async def get_failure_modes(
+         stmt = stmt.filter(models.FarFailureMode.system_name == system)
+     
+     result = await db.execute(stmt)
+-    return result.unique().scalars().all()
++    modes = result.unique().scalars().all()
++    if getattr(request.state, "sysgrid_embedded_projection", None):
++        return [
++            {
++                "id": mode.id,
++                "created_at": mode.created_at,
++                "updated_at": mode.updated_at,
++                "system_name": mode.system_name,
++                "failure_type": mode.failure_type,
++                "title": mode.title,
++                "effect": mode.effect,
++                "severity": mode.severity,
++                "occurrence": mode.occurrence,
++                "detection": mode.detection,
++                "rpn": mode.rpn,
++                "status": mode.status,
++                "is_deleted": bool(mode.is_deleted),
++                "version": mode.version,
++                "metadata_json": {},
++                "affected_assets": [],
++                "causes": [],
++                "mitigations": [],
++                "prevention_actions": [],
++                "linked_rcas": [],
++            }
++            for mode in modes
++        ]
++    return modes
+ 
+ @router.post("/modes", response_model=schemas.FarFailureModeResponse)
+ async def create_failure_mode(data: dict, db: AsyncSession = Depends(get_db)):
+diff --git a/backend/app/api/import_engine.py b/backend/app/api/import_engine.py
+index 4955e8d7..940fc290 100644
+--- a/backend/app/api/import_engine.py
++++ b/backend/app/api/import_engine.py
+@@ -26,6 +26,7 @@ from .monitoring import (
+ )
+ from .far import save_far_history
+ from .utils import filter_valid_columns, get_current_user_id
++from .module_policy import ensure_module_access
+ 
+ router = APIRouter(prefix="/import", tags=["Intelligence Engine"])
+ MONITORING_IMPORT_SCHEMA_VERSION = "2026-06-monitoring-v1"
+@@ -1627,6 +1628,22 @@ def build_import_profiles() -> dict[str, ImportProfile]:
+ 
+ IMPORT_PROFILES = build_import_profiles()
+ 
++IMPORT_PROFILE_MODULES = {
++    "monitoring_items": "monitoring",
++    "external_entities": "external",
++    "far_records": "far",
++    "port_connections": "network",
++    "devices": "assets",
++    "racks": "racks",
++    "logical_services": "services",
++}
++
++
++async def enforce_import_profile_access(profile: ImportProfile, request: Request, db: AsyncSession) -> None:
++    module_id = IMPORT_PROFILE_MODULES.get(profile.key)
++    if module_id:
++        await ensure_module_access(module_id, request, db)
++
+ 
+ def get_import_profile(table_name: str) -> ImportProfile:
+     profile = IMPORT_PROFILES.get(table_name)
+@@ -1710,8 +1727,9 @@ def build_snapshot_manifest(profile: ImportProfile, export_token: Optional[str]
+ 
+ 
+ @router.get("/schema/{table_name}")
+-async def get_import_schema(table_name: str, db: AsyncSession = Depends(get_db)):
++async def get_import_schema(table_name: str, request: Request, db: AsyncSession = Depends(get_db)):
+     profile = get_import_profile(table_name)
++    await enforce_import_profile_access(profile, request, db)
+     context = await profile.schema_context(db) if profile.schema_context else {}
+     headers = {}
+     if profile.key == "monitoring_items":
+@@ -1735,12 +1753,14 @@ async def get_import_schema(table_name: str, db: AsyncSession = Depends(get_db))
+ @router.get("/template/{table_name}")
+ async def download_template(
+     table_name: str,
++    request: Request,
+     columns: Optional[str] = None,
+     mode: str = "hints",
+     example_id: Optional[int] = None,
+     db: AsyncSession = Depends(get_db),
+ ):
+     profile = get_import_profile(table_name)
++    await enforce_import_profile_access(profile, request, db)
+     fields = resolve_template_fields(profile, columns)
+     df = pd.DataFrame(columns=[field.name for field in fields])
+ 
+@@ -1782,8 +1802,9 @@ async def download_template(
+ 
+ 
+ @router.get("/snapshot/{table_name}")
+-async def download_snapshot(table_name: str, export_token: Optional[str] = None, db: AsyncSession = Depends(get_db)):
++async def download_snapshot(table_name: str, request: Request, export_token: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+     profile = get_import_profile(table_name)
++    await enforce_import_profile_access(profile, request, db)
+     export_contract = build_snapshot_manifest(profile, export_token=export_token if profile.key == "external_entities" else None)
+     model = profile.model
+     if profile.serialize_example_row:
+@@ -1834,16 +1855,18 @@ async def download_snapshot(table_name: str, export_token: Optional[str] = None,
+ 
+ 
+ @router.get("/snapshot/{table_name}/manifest")
+-async def get_snapshot_manifest(table_name: str):
++async def get_snapshot_manifest(table_name: str, request: Request, db: AsyncSession = Depends(get_db)):
+     profile = get_import_profile(table_name)
++    await enforce_import_profile_access(profile, request, db)
+     if profile.key not in {"external_entities", "far_records"}:
+         raise HTTPException(status_code=404, detail="Snapshot manifest not found")
+     return build_snapshot_manifest(profile)
+ 
+ 
+ @router.post("/preview-file")
+-async def preview_import_file(table_name: str = Form(...), file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
++async def preview_import_file(request: Request, table_name: str = Form(...), file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
+     profile = get_import_profile(table_name)
++    await enforce_import_profile_access(profile, request, db)
+     content = await file.read()
+     try:
+         df = load_dataframe_from_upload(file, content)
+@@ -1856,10 +1879,12 @@ async def preview_import_file(table_name: str = Form(...), file: UploadFile = Fi
+ @router.post("/preview-rows")
+ async def preview_import_rows(
+     table_name: str,
++    request: Request,
+     payload: dict[str, Any] = Body(...),
+     db: AsyncSession = Depends(get_db),
+ ):
+     profile = get_import_profile(table_name)
++    await enforce_import_profile_access(profile, request, db)
+     rows = payload.get("rows")
+     if not isinstance(rows, list):
+         raise HTTPException(status_code=400, detail="rows must be a list")
+@@ -1868,8 +1893,8 @@ async def preview_import_rows(
+ 
+ 
+ @router.post("/audit")
+-async def audit_import(table_name: str, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
+-    return await preview_import_file(table_name=table_name, file=file, db=db)
++async def audit_import(request: Request, table_name: str, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
++    return await preview_import_file(request=request, table_name=table_name, file=file, db=db)
+ 
+ 
+ @router.post("/execute")
+@@ -1880,6 +1905,7 @@ async def execute_import(
+     db: AsyncSession = Depends(get_db),
+ ):
+     profile = get_import_profile(table_name)
++    await enforce_import_profile_access(profile, request, db)
+     if isinstance(body, dict):
+         rows = body.get("rows")
+     else:
+diff --git a/backend/app/api/intelligence.py b/backend/app/api/intelligence.py
+index b9ebe0b9..d91806da 100644
+--- a/backend/app/api/intelligence.py
++++ b/backend/app/api/intelligence.py
+@@ -15,8 +15,13 @@ from .operational_bulk import (
+     normalize_operational_bulk_payload,
+     require_executable_operational_bulk,
+ )
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/intelligence", tags=["External Intelligence"])
++router = APIRouter(
++    prefix="/intelligence",
++    tags=["External Intelligence"],
++    dependencies=[Depends(require_module_access("external"))],
++)
+ IMMUTABLE_EXTERNAL_ENTITY_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+ EXTERNAL_BULK_UPDATE_FIELDS = {"status", "environment", "criticality", "risk_rating"}
+ EXTERNAL_BULK_RATING_VALUES = {"Critical", "High", "Medium", "Low"}
+diff --git a/backend/app/api/investigations.py b/backend/app/api/investigations.py
+index b1c69672..53a9d73b 100644
+--- a/backend/app/api/investigations.py
++++ b/backend/app/api/investigations.py
+@@ -7,8 +7,13 @@ from datetime import datetime, timezone
+ from ..database import get_db
+ from ..models import models
+ from .utils import filter_valid_columns, get_current_user_id, parse_iso_date
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/investigations", tags=["Investigation Management"])
++router = APIRouter(
++    prefix="/investigations",
++    tags=["Investigation Management"],
++    dependencies=[Depends(require_module_access("research"))],
++)
+ IMMUTABLE_INVESTIGATION_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+ 
+ @router.get("")
+diff --git a/backend/app/api/knowledge.py b/backend/app/api/knowledge.py
+index 157eadf2..a3f7ee9c 100644
+--- a/backend/app/api/knowledge.py
++++ b/backend/app/api/knowledge.py
+@@ -10,6 +10,7 @@ from ..database import get_db
+ from ..models import models
+ from ..schemas import schemas
+ from .utils import filter_valid_columns, get_current_user_id
++from .module_policy import require_module_access
+ 
+ router = APIRouter(prefix="/knowledge", tags=["Knowledge Base & Q&A"])
+ 
+@@ -141,6 +142,111 @@ async def expand_entry_search_text(entry: models.KnowledgeEntry, db: AsyncSessio
+     ]
+     return " ".join(part for part in parts if part)
+ 
++
++async def _require_embedded_targets(request: Request, db: AsyncSession) -> None:
++    """Resolve every embedded selector inside the active tenant before reading rows."""
++    if not getattr(request.state, "sysgrid_embedded_projection", None):
++        return
++
++    selectors = getattr(request.state, "sysgrid_embedded_selectors", {})
++    tenant_id = getattr(request.state, "tenant_id", None)
++    target_checks = []
++    if "device_id" in selectors:
++        device_query = select(models.Device.id).where(
++            models.Device.id == selectors["device_id"],
++            models.Device.is_deleted == False,
++        )
++        if tenant_id is not None:
++            device_query = device_query.where(models.Device.tenant_id == tenant_id)
++        target_checks.append(("device_id", device_query))
++    if "service_id" in selectors:
++        target_checks.append((
++            "service_id",
++            select(models.LogicalService.id).where(
++                models.LogicalService.id == selectors["service_id"],
++                models.LogicalService.is_deleted == False,
++            ),
++        ))
++    if "monitoring_id" in selectors:
++        target_checks.append((
++            "monitoring_id",
++            select(models.MonitoringItem.id).where(
++                models.MonitoringItem.id == selectors["monitoring_id"],
++                models.MonitoringItem.is_deleted == False,
++            ),
++        ))
++
++    for selector, query in target_checks:
++        if (await db.execute(query)).scalar_one_or_none() is None:
++            raise HTTPException(status_code=404, detail="Embedded target not found")
++
++
++def _embedded_knowledge_projection(entry: models.KnowledgeEntry) -> dict:
++    """Return the title/index projection used by released workspaces."""
++    return {
++        "id": entry.id,
++        "created_at": entry.created_at,
++        "updated_at": entry.updated_at,
++        "category": entry.category,
++        "title": entry.title,
++        "content": entry.content,
++        "content_json": deepcopy(entry.content_json or {}),
++        "question_context": entry.question_context,
++        "is_answered": bool(entry.is_answered),
++        "verified_by": entry.verified_by,
++        "tags": list(entry.tags or []),
++        "impacted_systems": list(entry.impacted_systems or []),
++        "linked_device_ids": list(entry.linked_device_ids or []),
++        "status": entry.status,
++        "metadata_json": normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json),
++        "is_deleted": bool(entry.is_deleted),
++        "qa_threads": [],
++    }
++
++
++async def _embedded_entry_is_in_scope(
++    entry: models.KnowledgeEntry,
++    *,
++    consumer: str | None,
++    device_id: int | None,
++    service_id: int | None,
++    monitoring_id: int | None,
++    db: AsyncSession,
++) -> bool:
++    metadata = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
++    links = metadata.get("links", {})
++    device_match = device_id is not None and device_id in (entry.linked_device_ids or [])
++    service_match = service_id is not None and service_id in (links.get("service_ids", []) or [])
++    monitoring_match = monitoring_id is not None and monitoring_id in (links.get("monitoring_ids", []) or [])
++
++    if consumer == "assets":
++        return device_match
++    if consumer == "services":
++        return service_match
++
++    if consumer == "monitoring" and monitoring_id is not None:
++        if monitoring_match:
++            return True
++        recovery_query = select(models.MonitoringItem.recovery_docs).where(
++            models.MonitoringItem.id == monitoring_id,
++            models.MonitoringItem.is_deleted == False,
++        )
++        monitoring_rows = (await db.execute(recovery_query)).scalars().all()
++        recovery_ids: set[int] = set()
++        for docs in monitoring_rows:
++            for doc in (docs or []):
++                raw_id = doc.get("id") if isinstance(doc, dict) else doc
++                try:
++                    if raw_id is not None:
++                        recovery_ids.add(int(raw_id))
++                except (TypeError, ValueError):
++                    continue
++        monitoring_match = entry.id in recovery_ids
++
++    if consumer in {"monitoring", "network"}:
++        return monitoring_match if consumer == "monitoring" else device_match
++    return False
++
+ @router.get("", response_model=List[schemas.KnowledgeEntryResponse])
+ async def get_entries(
+     category: Optional[str] = None,
+@@ -152,8 +258,12 @@ async def get_entries(
+     research_id: Optional[int] = None,
+     vendor_id: Optional[int] = None,
+     project_id: Optional[int] = None,
++    request: Request = None,
++    embedded_consumer: Optional[str] = None,
++    _policy: dict = Depends(require_module_access("knowledge", allow_embedded=True)),
+     db: AsyncSession = Depends(get_db)
+ ):
++    await _require_embedded_targets(request, db)
+     query = select(models.KnowledgeEntry).filter(models.KnowledgeEntry.is_deleted == False).options(
+         selectinload(models.KnowledgeEntry.qa_threads).selectinload(models.KnowledgeQA.replies)
+     )
+@@ -183,6 +293,19 @@ async def get_entries(
+         and matches_link(entry, "project_ids", project_id)
+     ]
+ 
++    if getattr(request.state, "sysgrid_embedded_projection", None):
++        entries = [
++            entry for entry in entries
++            if await _embedded_entry_is_in_scope(
++                entry,
++                consumer=embedded_consumer,
++                device_id=device_id,
++                service_id=service_id,
++                monitoring_id=monitoring_id,
++                db=db,
++            )
++        ]
++
+     if search:
+         search_term = search.lower()
+         filtered_entries = []
+@@ -191,24 +314,55 @@ async def get_entries(
+                 filtered_entries.append(entry)
+         entries = filtered_entries
+ 
++    if getattr(request.state, "sysgrid_embedded_projection", None):
++        return [_embedded_knowledge_projection(entry) for entry in entries]
++
+     for entry in entries:
+         entry.metadata_json = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
+ 
+     return entries
+ 
+ @router.get("/{entry_id}", response_model=schemas.KnowledgeEntryResponse)
+-async def get_entry(entry_id: int, db: AsyncSession = Depends(get_db)):
++async def get_entry(
++    entry_id: int,
++    request: Request,
++    device_id: Optional[int] = None,
++    service_id: Optional[int] = None,
++    monitoring_id: Optional[int] = None,
++    embedded_consumer: Optional[str] = None,
++    _policy: dict = Depends(require_module_access("knowledge", allow_embedded=True)),
++    db: AsyncSession = Depends(get_db),
++):
++    await _require_embedded_targets(request, db)
+     result = await db.execute(
+         select(models.KnowledgeEntry)
+         .filter(models.KnowledgeEntry.id == entry_id)
+         .options(selectinload(models.KnowledgeEntry.qa_threads).selectinload(models.KnowledgeQA.replies))
+     )
+     entry = result.scalar_one_or_none()
+-    if not entry: raise HTTPException(404, "Entry not found")
++    if not entry:
++        raise HTTPException(404, "Entry not found")
++    if getattr(request.state, "sysgrid_embedded_projection", None):
++        if not await _embedded_entry_is_in_scope(
++            entry,
++            consumer=embedded_consumer,
++            device_id=device_id,
++            service_id=service_id,
++            monitoring_id=monitoring_id,
++            db=db,
++        ):
++            raise HTTPException(404, "Entry not found")
++    else:
++        entry.metadata_json = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
+     return entry
+ 
+ @router.post("", response_model=schemas.KnowledgeEntryResponse)
+-async def create_entry(data: schemas.KnowledgeEntryCreate, request: Request, db: AsyncSession = Depends(get_db)):
++async def create_entry(
++    data: schemas.KnowledgeEntryCreate,
++    request: Request,
++    _policy: dict = Depends(require_module_access("knowledge")),
++    db: AsyncSession = Depends(get_db),
++):
+     payload = data.model_dump()
+     payload["metadata_json"] = normalize_metadata(payload)
+     entry = models.KnowledgeEntry(**payload)
+@@ -229,7 +383,12 @@ async def create_entry(data: schemas.KnowledgeEntryCreate, request: Request, db:
+         raise HTTPException(400, detail=str(e))
+ 
+ @router.put("/{entry_id}", response_model=schemas.KnowledgeEntryResponse)
+-async def update_entry(entry_id: int, data: schemas.KnowledgeEntryBase, db: AsyncSession = Depends(get_db)):
++async def update_entry(
++    entry_id: int,
++    data: schemas.KnowledgeEntryBase,
++    _policy: dict = Depends(require_module_access("knowledge")),
++    db: AsyncSession = Depends(get_db),
++):
+     result = await db.execute(select(models.KnowledgeEntry).filter(models.KnowledgeEntry.id == entry_id))
+     entry = result.scalar_one_or_none()
+     if not entry: raise HTTPException(404, "Entry not found")
+@@ -257,7 +416,11 @@ async def update_entry(entry_id: int, data: schemas.KnowledgeEntryBase, db: Asyn
+     return result.scalar_one()
+ 
+ @router.delete("/{entry_id}")
+-async def delete_entry(entry_id: int, db: AsyncSession = Depends(get_db)):
++async def delete_entry(
++    entry_id: int,
++    _policy: dict = Depends(require_module_access("knowledge")),
++    db: AsyncSession = Depends(get_db),
++):
+     result = await db.execute(select(models.KnowledgeEntry).filter(models.KnowledgeEntry.id == entry_id))
+     entry = result.scalar_one_or_none()
+     if not entry: raise HTTPException(404, "Entry not found")
+@@ -269,7 +432,11 @@ async def delete_entry(entry_id: int, db: AsyncSession = Depends(get_db)):
+ # --- QA Thread Routes ---
+ 
+ @router.post("/qa", response_model=schemas.KnowledgeQAResponse)
+-async def add_qa_entry(data: schemas.KnowledgeQACreate, db: AsyncSession = Depends(get_db)):
++async def add_qa_entry(
++    data: schemas.KnowledgeQACreate,
++    _policy: dict = Depends(require_module_access("knowledge")),
++    db: AsyncSession = Depends(get_db),
++):
+     qa = models.KnowledgeQA(**data.model_dump())
+     db.add(qa)
+     await db.commit()
+@@ -283,7 +450,12 @@ async def add_qa_entry(data: schemas.KnowledgeQACreate, db: AsyncSession = Depen
+     return result.scalar_one()
+ 
+ @router.put("/qa/{qa_id}", response_model=schemas.KnowledgeQAResponse)
+-async def update_qa_entry(qa_id: int, data: schemas.KnowledgeQABase, db: AsyncSession = Depends(get_db)):
++async def update_qa_entry(
++    qa_id: int,
++    data: schemas.KnowledgeQABase,
++    _policy: dict = Depends(require_module_access("knowledge")),
++    db: AsyncSession = Depends(get_db),
++):
+     result = await db.execute(select(models.KnowledgeQA).filter(models.KnowledgeQA.id == qa_id))
+     qa = result.scalar_one_or_none()
+     if not qa: raise HTTPException(404, "QA entry not found")
+@@ -302,7 +474,11 @@ async def update_qa_entry(qa_id: int, data: schemas.KnowledgeQABase, db: AsyncSe
+     return result.scalar_one()
+ 
+ @router.delete("/qa/{qa_id}")
+-async def delete_qa_entry(qa_id: int, db: AsyncSession = Depends(get_db)):
++async def delete_qa_entry(
++    qa_id: int,
++    _policy: dict = Depends(require_module_access("knowledge")),
++    db: AsyncSession = Depends(get_db),
++):
+     result = await db.execute(select(models.KnowledgeQA).filter(models.KnowledgeQA.id == qa_id))
+     qa = result.scalar_one_or_none()
+     if not qa: raise HTTPException(404, "QA entry not found")
+diff --git a/backend/app/api/logical_services.py b/backend/app/api/logical_services.py
+index fe8d3428..dd7df267 100644
+--- a/backend/app/api/logical_services.py
++++ b/backend/app/api/logical_services.py
+@@ -13,8 +13,13 @@ from .operational_bulk import (
+     normalize_operational_bulk_payload,
+     require_executable_operational_bulk,
+ )
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/logical-services", tags=["Logical Services"])
++router = APIRouter(
++    prefix="/logical-services",
++    tags=["Logical Services"],
++    dependencies=[Depends(require_module_access("services"))],
++)
+ IMMUTABLE_SERVICE_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+ SERVICE_BULK_UPDATE_FIELDS = {"status", "service_type", "environment", "version", "device_id"}
+ 
+diff --git a/backend/app/api/maintenance.py b/backend/app/api/maintenance.py
+index 2389cfdc..e9d281e5 100644
+--- a/backend/app/api/maintenance.py
++++ b/backend/app/api/maintenance.py
+@@ -5,8 +5,13 @@ from ..database import get_db
+ from ..models import models
+ from datetime import datetime
+ from .utils import build_audit_log
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/maintenance", tags=["Maintenance"])
++router = APIRouter(
++    prefix="/maintenance",
++    tags=["Maintenance"],
++    dependencies=[Depends(require_module_access("assets"))],
++)
+ 
+ @router.get("")
+ async def get_maintenance_windows(device_id: int | None = None, db: AsyncSession = Depends(get_db)):
+diff --git a/backend/app/api/module_policy.py b/backend/app/api/module_policy.py
+new file mode 100644
+index 00000000..4777f8be
+--- /dev/null
++++ b/backend/app/api/module_policy.py
+@@ -0,0 +1,342 @@
++"""System Management V1 module catalog and effective access projection.
++
++The catalog is neutral JSON so the backend owns authorization decisions while
++the frontend consumes the same release/profile vocabulary for presentation.
++It contains no component names or executable UI instructions.
++"""
++
++from __future__ import annotations
++
++import json
++from pathlib import Path
++from typing import Any
++
++from fastapi import APIRouter, Depends, HTTPException, Request, status
++from sqlalchemy.ext.asyncio import AsyncSession
++
++from ..api.authorization import (
++    has_capability,
++    merge_operator_permissions,
++    resolve_current_operator,
++)
++from ..core.config import settings
++from ..database import get_db
++from ..models import models
++from .utils import get_current_user_id
++
++
++CATALOG_PATH = Path(__file__).resolve().parents[3] / "contracts" / "system_management_v1.json"
++CATALOG: dict[str, Any] = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
++MODULES: dict[str, dict[str, Any]] = {
++    module["id"]: module for module in CATALOG["modules"]
++}
++SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
++EMBEDDED_SELECTOR_FIELDS = frozenset({
++    "device_id",
++    "monitoring_id",
++    "service_id",
++    "far_id",
++    "research_id",
++    "vendor_id",
++    "project_id",
++    "system",
++})
++EMBEDDED_INTEGER_SELECTOR_FIELDS = frozenset(EMBEDDED_SELECTOR_FIELDS - {"system"})
++
++
++def get_module_definition(module_id: str) -> dict[str, Any]:
++    try:
++        return MODULES[module_id]
++    except KeyError as exc:
++        raise ValueError(f"Unknown SysGrid module '{module_id}'") from exc
++
++
++def is_system_root_user_id(user_id: str | None) -> bool:
++    return bool(user_id and user_id in settings.system_root_user_ids)
++
++
++def _module_stage(module: dict[str, Any]) -> str:
++    return settings.module_stage_overrides.get(module["id"], module["default_stage"])
++
++
++def _explicit_capability(operator: models.Operator | None, capability: str | None, required_level: int = 1) -> bool:
++    if not operator or not capability:
++        return False
++    permissions = merge_operator_permissions(operator)
++    # Explicit deployment-owned surfaces do not inherit legacy is_admin/all
++    # compatibility grants. Ordinary released modules still use has_capability.
++    return permissions.get(capability, 0) >= required_level
++
++
++def _projection_for_consumer(module: dict[str, Any], consumer_module_id: str | None) -> dict[str, Any] | None:
++    if not consumer_module_id:
++        return None
++    for projection in module.get("embedded_support_projections", []):
++        if isinstance(projection, dict) and consumer_module_id in projection.get("consumers", []):
++            return projection
++    return None
++
++
++def _embedded_selector_sets(
++    projection: dict[str, Any],
++    consumer_module_id: str,
++) -> list[frozenset[str]]:
++    raw_sets = projection.get("consumer_selector_sets", {}).get(consumer_module_id, [])
++    if not isinstance(raw_sets, list):
++        return []
++    selector_sets: list[frozenset[str]] = []
++    for raw_set in raw_sets:
++        if not isinstance(raw_set, list) or not raw_set:
++            continue
++        selector_set = frozenset(str(selector).strip() for selector in raw_set if str(selector).strip())
++        if selector_set and selector_set <= EMBEDDED_SELECTOR_FIELDS:
++            selector_sets.append(selector_set)
++    return selector_sets
++
++
++def _parse_embedded_selectors(
++    request: Request,
++    projection: dict[str, Any],
++    consumer_module_id: str,
++) -> dict[str, int | str] | None:
++    """Parse the exact selector set declared for one embedded consumer.
++
++    The catalog deliberately describes selector *sets*, not one projection-wide
++    union. That keeps consumer-specific scope decisions auditable and makes a
++    selector from another consumer fail closed before the endpoint runs.
++    """
++    values: dict[str, int | str] = {}
++    present: set[str] = set()
++    for selector in EMBEDDED_SELECTOR_FIELDS:
++        raw_values = request.query_params.getlist(selector)
++        if not raw_values:
++            continue
++        if len(raw_values) != 1:
++            return None
++        raw_value = raw_values[0]
++        if raw_value is None or not raw_value.strip():
++            return None
++        if selector in EMBEDDED_INTEGER_SELECTOR_FIELDS:
++            try:
++                parsed_value = int(raw_value)
++            except (TypeError, ValueError):
++                return None
++            if parsed_value <= 0:
++                return None
++            values[selector] = parsed_value
++        else:
++            values[selector] = raw_value.strip()
++        present.add(selector)
++
++    if frozenset(present) not in _embedded_selector_sets(projection, consumer_module_id):
++        return None
++    return values
++
++
++def _build_module_entry(
++    module: dict[str, Any],
++    *,
++    operator: models.Operator | None,
++    system_root: bool,
++) -> dict[str, Any]:
++    stage = _module_stage(module)
++    capability = module.get("required_capability")
++    root_preview_requires_explicit_capability = bool(system_root and stage == "preview")
++    has_read = (
++        not capability
++        or (
++            _explicit_capability(operator, capability, 1)
++            if root_preview_requires_explicit_capability
++            else has_capability(operator, capability, 1)
++        )
++    )
++    has_write = (
++        not capability
++        or (
++            _explicit_capability(operator, capability, 2)
++            if root_preview_requires_explicit_capability
++            else has_capability(operator, capability, 2)
++        )
++    )
++    root_preview = bool(
++        stage == "preview"
++        and system_root
++        and module.get("root_preview_allowed", False)
++        and has_read
++    )
++
++    if stage == "disabled":
++        blocked_reason = "MODULE_DISABLED"
++    elif stage == "retired":
++        blocked_reason = "MODULE_RETIRED"
++    elif not has_read:
++        blocked_reason = "MISSING_CAPABILITY"
++    elif stage == "preview" and not root_preview:
++        blocked_reason = "SYSTEM_ROOT_REQUIRED"
++    else:
++        blocked_reason = None
++
++    available = stage == "production" and has_read or root_preview
++    return {
++        "module_id": module["id"],
++        "label": module["label"],
++        "canonical_route": module["canonical_route"],
++        "aliases": list(module.get("aliases", [])),
++        "navigation_group": module["navigation_group"],
++        "profile_membership": module["profile_membership"],
++        "stage": stage,
++        "default_stage": module["default_stage"],
++        "required_capability": capability,
++        "resource_owner": module["resource_owner"],
++        "root_preview_allowed": bool(module.get("root_preview_allowed", False)),
++        "atlas_identity": module["atlas_identity"],
++        "available": available,
++        "blocked_reason": blocked_reason,
++        "root_preview": root_preview,
++        "actions": {
++            "read": available,
++            "write": bool(available and has_write),
++            "import": bool(available and has_write),
++            "export": bool(available),
++            "preview": root_preview,
++        },
++    }
++
++
++async def build_effective_policy(request: Request, db: AsyncSession) -> dict[str, Any]:
++    user_id = get_current_user_id(request)
++    operator = await resolve_current_operator(request, db)
++    system_root = is_system_root_user_id(user_id)
++    modules = {
++        module_id: _build_module_entry(module, operator=operator, system_root=system_root)
++        for module_id, module in MODULES.items()
++    }
++    policy = {
++        "catalog_version": CATALOG["catalog_version"],
++        "profile_id": CATALOG["profile_id"],
++        "identity": {
++            "authenticated": bool(user_id),
++            "tenant_id": getattr(request.state, "tenant_id", None),
++            "access_role": getattr(request.state, "sysgrid_access_role", None),
++            "operator_role": operator.role.name if operator and operator.role else None,
++            "tenant_admin": bool(operator and operator.is_admin),
++            "system_root": system_root,
++        },
++        "actions": {
++            "diagnostics": {
++                "read": _explicit_capability(operator, "diagnostics", 1),
++            },
++        },
++        "modules": modules,
++    }
++    request.state.sysgrid_policy = policy
++    return policy
++
++
++def _deny(module_id: str, entry: dict[str, Any], *, operation: str) -> HTTPException:
++    return HTTPException(
++        status_code=status.HTTP_403_FORBIDDEN,
++        detail={
++            "code": "MODULE_ACCESS_DENIED",
++            "module_id": module_id,
++            "operation": operation,
++            "stage": entry.get("stage"),
++            "reason": entry.get("blocked_reason") or "MISSING_WRITE_CAPABILITY",
++            "message": "This module is unavailable for the current account and tenant.",
++        },
++    )
++
++
++def _deny_embedded(module_id: str, *, operation: str, reason: str) -> HTTPException:
++    return HTTPException(
++        status_code=status.HTTP_403_FORBIDDEN,
++        detail={
++            "code": "EMBEDDED_PROJECTION_DENIED",
++            "module_id": module_id,
++            "operation": operation,
++            "reason": reason,
++            "message": "The embedded projection is unavailable for this consumer and selector context.",
++        },
++    )
++
++
++async def ensure_module_access(
++    module_id: str,
++    request: Request,
++    db: AsyncSession,
++    *,
++    allow_embedded: bool = False,
++) -> dict[str, Any]:
++    module = get_module_definition(module_id)
++    policy = await build_effective_policy(request, db)
++    entry = policy["modules"][module_id]
++    operation = request.method.upper().lower()
++
++    embedded_requested = "embedded_consumer" in request.query_params
++    if embedded_requested:
++        if not allow_embedded:
++            raise _deny_embedded(module_id, operation=operation, reason="EMBEDDED_PROJECTION_NOT_SUPPORTED")
++        consumer_values = request.query_params.getlist("embedded_consumer")
++        if len(consumer_values) != 1 or not consumer_values[0].strip():
++            raise _deny_embedded(module_id, operation=operation, reason="INVALID_CONSUMER")
++        consumer_module_id = consumer_values[0].strip()
++        projection = _projection_for_consumer(module, consumer_module_id)
++        consumer_entry = policy["modules"].get(consumer_module_id or "")
++        if not projection or not consumer_entry or not consumer_entry["available"]:
++            raise _deny_embedded(module_id, operation=operation, reason="CONSUMER_UNAVAILABLE")
++        if request.method.upper() not in SAFE_METHODS:
++            raise _deny_embedded(module_id, operation=operation, reason="READ_ONLY")
++        selector_values = _parse_embedded_selectors(request, projection, consumer_module_id or "")
++        if selector_values is None:
++            raise _deny_embedded(module_id, operation=operation, reason="INVALID_SELECTOR_SET")
++        request.state.sysgrid_embedded_projection = projection["id"]
++        request.state.sysgrid_embedded_consumer = consumer_module_id
++        request.state.sysgrid_embedded_selectors = selector_values
++        return policy
++
++    if not entry["available"]:
++        raise _deny(module_id, entry, operation=operation)
++
++    if operation not in {method.lower() for method in SAFE_METHODS} and not entry["actions"]["write"]:
++        raise _deny(module_id, entry, operation=operation)
++    return policy
++
++
++def require_module_access(module_id: str, *, allow_embedded: bool = False):
++    get_module_definition(module_id)
++
++    async def dependency(
++        request: Request,
++        db: AsyncSession = Depends(get_db),
++    ) -> dict[str, Any]:
++        return await ensure_module_access(module_id, request, db, allow_embedded=allow_embedded)
++
++    dependency.__name__ = f"require_{module_id}_module_access"
++    return dependency
++
++
++async def require_diagnostics_access(
++    request: Request,
++    db: AsyncSession = Depends(get_db),
++) -> models.Operator:
++    operator = await resolve_current_operator(request, db)
++    if not _explicit_capability(operator, "diagnostics", 1):
++        raise HTTPException(
++            status_code=status.HTTP_403_FORBIDDEN,
++            detail={
++                "code": "DIAGNOSTICS_ACCESS_DENIED",
++                "message": "Environment diagnostics require the explicit diagnostics capability.",
++            },
++        )
++    return operator
++
++
++router = APIRouter(prefix="/policy", tags=["Module Policy"])
++
++
++@router.get("/module-availability")
++async def get_module_availability(
++    request: Request,
++    db: AsyncSession = Depends(get_db),
++):
++    return await build_effective_policy(request, db)
+diff --git a/backend/app/api/monitoring.py b/backend/app/api/monitoring.py
+index 22ab0545..86709e9d 100644
+--- a/backend/app/api/monitoring.py
++++ b/backend/app/api/monitoring.py
+@@ -8,8 +8,13 @@ from ..database import get_db
+ from ..models import models
+ from ..schemas import schemas
+ from .utils import filter_valid_columns
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/monitoring", tags=["Monitoring Matrix"])
++router = APIRouter(
++    prefix="/monitoring",
++    tags=["Monitoring Matrix"],
++    dependencies=[Depends(require_module_access("monitoring"))],
++)
+ IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+ MONITORING_SEVERITIES = {"Critical", "Warning", "Info"}
+ MONITORING_STATUSES = {"Existing", "Planned", "Cancelled", "Decommissioned", "Deleted"}
+diff --git a/backend/app/api/networks.py b/backend/app/api/networks.py
+index 8ccae792..622b083e 100644
+--- a/backend/app/api/networks.py
++++ b/backend/app/api/networks.py
+@@ -6,8 +6,13 @@ from ..database import get_db
+ from ..models import models
+ from ..schemas import schemas
+ from .utils import build_audit_log, filter_valid_columns
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/networks", tags=["Network Fabric"])
++router = APIRouter(
++    prefix="/networks",
++    tags=["Network Fabric"],
++    dependencies=[Depends(require_module_access("network"))],
++)
+ 
+ NETWORK_DIRECTION_VALUES = {"Bidirectional", "Unidirectional", "Source to Target", "Target to Source"}
+ NETWORK_UNIT_VALUES = {"Gbps", "Mbps", "Kbps"}
+diff --git a/backend/app/api/operational_actions.py b/backend/app/api/operational_actions.py
+index 96ad8476..247ac723 100644
+--- a/backend/app/api/operational_actions.py
++++ b/backend/app/api/operational_actions.py
+@@ -24,9 +24,14 @@ from ..schemas.operational_actions import (
+     VerificationRequest,
+ )
+ from .utils import get_current_user_id
++from .module_policy import require_module_access
+ 
+ 
+-router = APIRouter(prefix="/operational-actions", tags=["Operational Actions"])
++router = APIRouter(
++    prefix="/operational-actions",
++    tags=["Operational Actions"],
++    dependencies=[Depends(require_module_access("monitoring"))],
++)
+ 
+ 
+ def _context(request: Request) -> tuple[int, str, str | None]:
+diff --git a/backend/app/api/projects.py b/backend/app/api/projects.py
+index 5e24b843..6e09d9c5 100644
+--- a/backend/app/api/projects.py
++++ b/backend/app/api/projects.py
+@@ -13,8 +13,13 @@ from ..pv1 import migration as pv1_migration
+ from ..pv1 import models as pv1_models
+ from .utils import filter_valid_columns, get_current_user_id
+ from .project_hierarchy import validate_project_parent_assignment
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/projects", tags=["Projects"])
++router = APIRouter(
++    prefix="/projects",
++    tags=["Projects"],
++    dependencies=[Depends(require_module_access("projects"))],
++)
+ 
+ async def _cutover(request: Request, db: AsyncSession):
+     tenant_id = getattr(request.state, "tenant_id", None)
+diff --git a/backend/app/api/pv1.py b/backend/app/api/pv1.py
+index e29e4235..3d0d43f4 100644
+--- a/backend/app/api/pv1.py
++++ b/backend/app/api/pv1.py
+@@ -13,9 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
+ from ..database import get_db
+ from ..models import models as legacy_models
+ from ..pv1 import domain, migration, models, schemas
++from .module_policy import require_module_access
+ 
+ 
+-router = APIRouter(tags=["PV1 v2"])
++router = APIRouter(
++    tags=["PV1 v2"],
++    dependencies=[Depends(require_module_access("projects"))],
++)
+ 
+ 
+ def _tenant_id(request: Request) -> int:
+diff --git a/backend/app/api/pv1_communication.py b/backend/app/api/pv1_communication.py
+index e548f6e6..9037fc4b 100644
+--- a/backend/app/api/pv1_communication.py
++++ b/backend/app/api/pv1_communication.py
+@@ -11,9 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
+ from ..database import get_db
+ from ..pv1 import communication, domain, models, schemas
+ from . import pv1
++from .module_policy import require_module_access
+ 
+ 
+-router = APIRouter(tags=["PV1 communication"])
++router = APIRouter(
++    tags=["PV1 communication"],
++    dependencies=[Depends(require_module_access("projects"))],
++)
+ 
+ 
+ async def _project(request: Request, db: AsyncSession, project_id: str, *, write: bool = False) -> tuple[models.PV1Project, str]:
+diff --git a/backend/app/api/racks.py b/backend/app/api/racks.py
+index ff5c8410..dc6ce21a 100644
+--- a/backend/app/api/racks.py
++++ b/backend/app/api/racks.py
+@@ -6,8 +6,13 @@ from ..database import get_db
+ from ..models import models
+ from typing import List, Optional
+ from .utils import build_audit_log
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/racks", tags=["Racks"])
++router = APIRouter(
++    prefix="/racks",
++    tags=["Racks"],
++    dependencies=[Depends(require_module_access("racks"))],
++)
+ 
+ @router.get("/plans")
+ async def get_plans(db: AsyncSession = Depends(get_db)):
+diff --git a/backend/app/api/rca.py b/backend/app/api/rca.py
+index d6e1ef38..9690512c 100644
+--- a/backend/app/api/rca.py
++++ b/backend/app/api/rca.py
+@@ -7,8 +7,13 @@ from ..database import get_db
+ from ..models import models
+ from ..schemas import schemas
+ from .utils import filter_valid_columns, parse_iso_date, normalize_json_object, normalize_json_list
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/rca", tags=["Incident RCA Management"])
++router = APIRouter(
++    prefix="/rca",
++    tags=["Incident RCA Management"],
++    dependencies=[Depends(require_module_access("research"))],
++)
+ 
+ def build_rca_snapshot(record: models.RcaRecord) -> dict:
+     """Creates a forensic snapshot of an RCA record including timeline/mitigations."""
+diff --git a/backend/app/api/security.py b/backend/app/api/security.py
+index 780148e2..4b4cea7a 100644
+--- a/backend/app/api/security.py
++++ b/backend/app/api/security.py
+@@ -5,8 +5,13 @@ from typing import List, Optional
+ from ..database import get_db
+ from ..models import models
+ from .utils import build_audit_log, filter_valid_columns, normalize_json_object
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/security", tags=["Security & Firewall"])
++router = APIRouter(
++    prefix="/security",
++    tags=["Security & Firewall"],
++    dependencies=[Depends(require_module_access("assets"))],
++)
+ 
+ # --- Secret Vault ---
+ 
+diff --git a/backend/app/api/settings.py b/backend/app/api/settings.py
+index a5d10d5b..30d5c2aa 100644
+--- a/backend/app/api/settings.py
++++ b/backend/app/api/settings.py
+@@ -4,7 +4,7 @@ from copy import deepcopy
+ from urllib.parse import urlparse
+ from fastapi import APIRouter, Depends, HTTPException, status, Request
+ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+-from sqlalchemy import select, delete, update
++from sqlalchemy import select, delete, update, or_
+ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+ from ..database import get_db, get_config_db, Base
+ from ..models import models
+@@ -16,10 +16,13 @@ from ..runtime_diagnostics import (
+     infer_sanitized_environment_mode,
+ )
+ from .utils import filter_valid_columns, get_current_user_id, normalize_json_list, normalize_json_object
++from .authorization import require_capability
++from .module_policy import is_system_root_user_id, require_diagnostics_access
+ 
+ router = APIRouter(prefix="/settings", tags=["Settings"])
+ LOCKED_MONITORING_OPTION_CATEGORIES = {"MonitoringSeverity", "MonitoringOwnerRole", "MonitoringPlatform", "MonitoringCategory", "NotificationMethod"}
+ RELATIONAL_OPTION_CATEGORIES = {"MonitoringTeam"}
++SAFE_DIAGNOSTIC_ENV_KEYS = {"PORT", "ENVIRONMENT", "LOG_LEVEL", "API_V1_STR", "VITE_UI_DEBUG_LOGGING"}
+ 
+ 
+ def parse_env_file_to_map(path: str | None) -> dict[str, str]:
+@@ -91,6 +94,21 @@ def normalize_string_list(values: list[str] | None) -> list[str]:
+     return sorted(cleaned, key=lambda value: value.lower())
+ 
+ 
++def reject_reserved_system_root_identity(payload: dict, *, actor_id: str) -> None:
++    if is_system_root_user_id(actor_id):
++        return
++    for field in ("external_id", "username", "id"):
++        candidate = normalize_string(payload.get(field))
++        if candidate and is_system_root_user_id(candidate):
++            raise HTTPException(
++                status_code=status.HTTP_403_FORBIDDEN,
++                detail={
++                    "code": "RESERVED_SYSTEM_ROOT_IDENTITY",
++                    "message": "Reserved System Root identities are deployment-owned and cannot be managed from tenant settings.",
++                },
++            )
++
++
+ def normalize_permission_map(raw_permissions: dict | None) -> dict:
+     if not isinstance(raw_permissions, dict):
+         return {}
+@@ -727,8 +745,13 @@ async def get_user_profile(request: Request, db: AsyncSession = Depends(get_db))
+     user_id = get_current_user_id(request)
+     # Attempt to find the operator by username
+     from sqlalchemy.orm import selectinload
+-    res = await db.execute(select(models.Operator).options(selectinload(models.Operator.role)).filter(models.Operator.username == user_id))
+-    operator = res.scalar_one_or_none()
++    res = await db.execute(
++        select(models.Operator)
++        .options(selectinload(models.Operator.role))
++        .filter(or_(models.Operator.username == user_id, models.Operator.external_id == user_id))
++    )
++    operators = res.scalars().all()
++    operator = operators[0] if len(operators) == 1 else None
+     if not operator:
+         is_public_readonly = bool(getattr(getattr(request, "state", None), "sysgrid_public_readonly", False))
+         return {
+@@ -763,28 +786,31 @@ async def get_user_profile(request: Request, db: AsyncSession = Depends(get_db))
+     }
+ 
+ @router.get("/user/env-vars")
+-async def get_user_env_vars(request: Request):
++async def get_user_env_vars(
++    request: Request,
++    _diagnostics_access: models.Operator = Depends(require_diagnostics_access),
++):
+     # Return user-specific environment context (Mostly OS-level forensics)
+     user_id = get_current_user_id(request)
+     
+     # Sensitive patterns to redact
+-    redact_patterns = ["KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL"]
++    redact_patterns = [
++        "KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL",
++        "DATABASE", "PRIVATE", "COOKIE", "CERT", "URL",
++    ]
+     
+     env_data = {}
+     for key, value in os.environ.items():
+         # Check if the key is sensitive
+         is_sensitive = any(pattern in key.upper() for pattern in redact_patterns)
+         
+-        if is_sensitive:
+-            env_data[key] = "********"
+-        else:
+-            env_data[key] = value
++        env_data[key] = value if not is_sensitive and key.upper() in SAFE_DIAGNOSTIC_ENV_KEYS else "********"
+             
+     # Add some calculated fields
+     env_data["USER_ID"] = user_id
+     env_data["SESSION_TYPE"] = "PROXIED" if os.environ.get("HTTP_X_FORWARDED_FOR") else "DIRECT"
+     env_data["DEBUG_MODE"] = str(os.environ.get("VITE_UI_DEBUG_LOGGING", "false").lower() == "true")
+-    env_data["WORKSPACE_ROOT"] = os.getcwd()
++    env_data["WORKSPACE_ROOT"] = "[redacted]"
+     
+     return env_data
+ 
+@@ -849,7 +875,11 @@ async def get_options(category: str = None, db: AsyncSession = Depends(get_db)):
+     return result.scalars().all()
+ 
+ @router.post("/options")
+-async def create_option(data: dict, db: AsyncSession = Depends(get_db)):
++async def create_option(
++    data: dict,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     clean_data = normalize_setting_option_payload(filter_valid_columns(models.SettingOption, data))
+     category = clean_data.get("category")
+     label = clean_data.get("label")
+@@ -870,7 +900,12 @@ async def create_option(data: dict, db: AsyncSession = Depends(get_db)):
+     return opt
+ 
+ @router.put("/options/{opt_id}")
+-async def update_option(opt_id: int, data: dict, db: AsyncSession = Depends(get_db)):
++async def update_option(
++    opt_id: int,
++    data: dict,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     result = await db.execute(select(models.SettingOption).filter(models.SettingOption.id == opt_id))
+     opt = result.scalar_one_or_none()
+     if not opt: raise HTTPException(404, "Option not found")
+@@ -917,7 +952,11 @@ async def update_option(opt_id: int, data: dict, db: AsyncSession = Depends(get_
+     return opt
+ 
+ @router.delete("/options/{opt_id}")
+-async def delete_option(opt_id: int, db: AsyncSession = Depends(get_db)):
++async def delete_option(
++    opt_id: int,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     result = await db.execute(select(models.SettingOption).filter(models.SettingOption.id == opt_id))
+     opt = result.scalar_one_or_none()
+     if not opt: raise HTTPException(404, "Option not found")
+@@ -958,7 +997,12 @@ async def get_ui_settings(db: AsyncSession = Depends(get_db)):
+     return settings
+ 
+ @router.post("/ui")
+-async def update_ui_settings(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def update_ui_settings(
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     # Simple clear and set
+     from sqlalchemy import delete
+     user_id = get_current_user_id(request)
+@@ -983,7 +1027,11 @@ async def update_ui_settings(data: dict, request: Request, db: AsyncSession = De
+ 
+ 
+ @router.get("/startup-check")
+-async def get_startup_check(request: Request, config_db: AsyncSession = Depends(get_config_db)):
++async def get_startup_check(
++    request: Request,
++    _diagnostics_access: models.Operator = Depends(require_diagnostics_access),
++    config_db: AsyncSession = Depends(get_config_db),
++):
+     user_id = get_current_user_id(request)
+     configured_identity_value = os.getenv(settings.USER_ID_ENV_VAR, "")
+     frontend_env = parse_env_file_to_map(settings.FRONTEND_ENV_FILE_PATH)
+@@ -1055,7 +1103,12 @@ async def get_startup_check(request: Request, config_db: AsyncSession = Depends(
+     }
+ 
+ @router.get("/global")
+-async def get_global_settings(request: Request, db: AsyncSession = Depends(get_db), config_db: AsyncSession = Depends(get_config_db)):
++async def get_global_settings(
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++    config_db: AsyncSession = Depends(get_config_db),
++):
+     """Fetch all settings from the unified GlobalSetting table."""
+     user_id = get_current_user_id(request)
+     # Security: Verify if user is admin before exposing raw env
+@@ -1070,11 +1123,11 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
+     config = {s.key: s.value for s in settings_list}
+     config["_metadata"] = {s.key: {"category": s.category, "description": s.description, "file": "Database", "param": s.key} for s in settings_list}
+     config["_deployment"] = {
+-        "database_url": settings.DATABASE_URL,
+-        "config_database_url": settings.CONFIG_DATABASE_URL,
+-        "tenant_storage_root": settings.TENANT_STORAGE_ROOT,
+-        "backend_env_file_path": settings.BACKEND_ENV_FILE_PATH,
+-        "frontend_env_file_path": settings.FRONTEND_ENV_FILE_PATH,
++        "database_url_configured": bool(settings.DATABASE_URL),
++        "config_database_url_configured": bool(settings.CONFIG_DATABASE_URL),
++        "tenant_storage_root": "[redacted]",
++        "backend_env_file_configured": bool(settings.BACKEND_ENV_FILE_PATH),
++        "frontend_env_file_configured": bool(settings.FRONTEND_ENV_FILE_PATH),
+         "default_tenant_name": settings.DEFAULT_TENANT_NAME,
+         "default_user_id": settings.DEFAULT_USER_ID,
+         "auto_admin_user_ids": sorted(settings.auto_admin_user_ids),
+@@ -1090,7 +1143,10 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
+     def parse_env(path):
+         if not os.path.exists(path): return {}
+         data = {}
+-        redact_patterns = ["KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL"]
++        redact_patterns = [
++            "KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL",
++            "DATABASE", "PRIVATE", "COOKIE", "CERT", "URL",
++        ]
+         with open(path, "r") as f:
+             for line in f:
+                 if "=" in line and not line.startswith("#"):
+@@ -1098,7 +1154,10 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
+                     k = k.strip()
+                     v = v.strip()
+                     is_sensitive = any(p in k.upper() for p in redact_patterns)
+-                    data[k] = {"value": "********" if is_sensitive else v, "file": path}
++                    data[k] = {
++                        "value": v if not is_sensitive and k.upper() in SAFE_DIAGNOSTIC_ENV_KEYS else "********",
++                        "file": "[redacted]",
++                    }
+         return data
+ 
+     # Backend .env
+@@ -1111,7 +1170,13 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
+     return config
+ 
+ @router.post("/global")
+-async def update_global_settings(data: dict, request: Request, db: AsyncSession = Depends(get_db), config_db: AsyncSession = Depends(get_config_db)):
++async def update_global_settings(
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++    config_db: AsyncSession = Depends(get_config_db),
++):
+     """Update unified settings and log to Audit Trail."""
+     from sqlalchemy.exc import IntegrityError
+     user_id = get_current_user_id(request)
+@@ -1130,6 +1195,11 @@ async def update_global_settings(data: dict, request: Request, db: AsyncSession
+         "DEFAULT_TENANT_NAME",
+         "DEFAULT_USER_ID",
+         "AUTO_ADMIN_USER_IDS",
++        "SYSTEM_ROOT_USER_IDS",
++        "CONTROL_PLANE_ADMIN_USER_IDS",
++        "MODULE_STAGE_OVERRIDES",
++        "PV1_RELEASE_CANDIDATE_SHA",
++        "PV1_RELEASE_ID",
+         "DEFAULT_EMAIL_DOMAIN"
+     }
+ 
+@@ -1200,12 +1270,19 @@ async def update_global_settings(data: dict, request: Request, db: AsyncSession
+     
+     # Notify all connected clients via WebSocket
+     if hasattr(request.app.state, 'ws_manager'):
+-        await request.app.state.ws_manager.broadcast("CONFIG_UPDATED")
++        await request.app.state.ws_manager.broadcast(
++            "CONFIG_UPDATED",
++            tenant_id=getattr(request.state, "tenant_id", None),
++        )
+         
+     return {"status": "success"}
+ 
+ @router.get("/env/history")
+-async def get_env_history(field: str, db: AsyncSession = Depends(get_db)):
++async def get_env_history(
++    field: str,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     res = await db.execute(select(models.EnvHistory).filter(models.EnvHistory.field == field).order_by(models.EnvHistory.timestamp.desc()))
+     return res.scalars().all()
+ 
+@@ -1264,7 +1341,12 @@ async def get_team_audit(team_id: int, db: AsyncSession = Depends(get_db)):
+     return audit_res.scalars().all()
+ 
+ @router.post("/teams")
+-async def create_team(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def create_team(
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     name = (data.get("name") or "").strip()
+     if not name:
+         raise HTTPException(status_code=400, detail="Team name is required")
+@@ -1293,7 +1375,13 @@ async def create_team(data: dict, request: Request, db: AsyncSession = Depends(g
+     return team
+ 
+ @router.patch("/teams/{team_id}")
+-async def update_team(team_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def update_team(
++    team_id: int,
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
+     team = team_res.scalar_one_or_none()
+     if not team:
+@@ -1349,7 +1437,12 @@ async def update_team(team_id: int, data: dict, request: Request, db: AsyncSessi
+     return team
+ 
+ @router.delete("/teams/{team_id}")
+-async def delete_team(team_id: int, request: Request, db: AsyncSession = Depends(get_db)):
++async def delete_team(
++    team_id: int,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
+     team = team_res.scalar_one_or_none()
+     if not team:
+@@ -1373,7 +1466,12 @@ async def delete_team(team_id: int, request: Request, db: AsyncSession = Depends
+     return {"status": "success"}
+ 
+ @router.post("/operators")
+-async def create_operator(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def create_operator(
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     from sqlalchemy.exc import IntegrityError
+     external_id = normalize_string(data.get("external_id"))
+     username = normalize_string(data.get("username"))
+@@ -1399,6 +1497,10 @@ async def create_operator(data: dict, request: Request, db: AsyncSession = Depen
+     )
+ 
+     user_id = get_current_user_id(request)
++    reject_reserved_system_root_identity(
++        {"external_id": external_id, "username": username, **data},
++        actor_id=user_id,
++    )
+     if op:
+         previous_state = canonical_operator_state(op)
+         patch_payload = dict(data)
+@@ -1444,11 +1546,21 @@ async def create_operator(data: dict, request: Request, db: AsyncSession = Depen
+     return op
+ 
+ @router.patch("/operators/{op_id}")
+-async def update_operator(op_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def update_operator(
++    op_id: int,
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     user_id = get_current_user_id(request)
+     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
+     op = res.scalar_one_or_none()
+     if not op: raise HTTPException(404, "Operator not found")
++    reject_reserved_system_root_identity(
++        {"external_id": op.external_id, "username": op.username, "id": op.external_id, **data},
++        actor_id=user_id,
++    )
+     update_result = await apply_operator_patch(db, op=op, data=data, user_id=user_id)
+     if update_result["changed"]:
+         await create_user_pool_version(db, created_by=user_id, diff_summary={
+@@ -1463,11 +1575,20 @@ async def update_operator(op_id: int, data: dict, request: Request, db: AsyncSes
+     return op
+ 
+ @router.delete("/operators/{op_id}")
+-async def delete_operator(op_id: int, request: Request, db: AsyncSession = Depends(get_db)):
++async def delete_operator(
++    op_id: int,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     user_id = get_current_user_id(request)
+     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
+     op = res.scalar_one_or_none()
+     if not op: raise HTTPException(404, "Operator not found")
++    reject_reserved_system_root_identity(
++        {"external_id": op.external_id, "username": op.username, "id": op.external_id},
++        actor_id=user_id,
++    )
+     delete_result = await apply_operator_delete(db, op=op, user_id=user_id)
+     await create_user_pool_version(db, created_by=user_id, diff_summary={
+         "added": 0,
+@@ -1480,7 +1601,12 @@ async def delete_operator(op_id: int, request: Request, db: AsyncSession = Depen
+ 
+ 
+ @router.post("/operators/bulk-update")
+-async def bulk_update_operators(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def bulk_update_operators(
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     updates = data.get("updates")
+     if not isinstance(updates, list) or not updates:
+         raise HTTPException(status_code=400, detail="A non-empty updates list is required")
+@@ -1503,6 +1629,10 @@ async def bulk_update_operators(data: dict, request: Request, db: AsyncSession =
+         op = res.scalar_one_or_none()
+         if not op:
+             raise HTTPException(status_code=404, detail=f"Operator {op_id} not found")
++        reject_reserved_system_root_identity(
++            {"external_id": op.external_id, "username": op.username, "id": op.external_id, **payload},
++            actor_id=user_id,
++        )
+         update_result = await apply_operator_patch(db, op=op, data=payload, user_id=user_id)
+         if update_result["changed"]:
+             changed_count += 1
+@@ -1521,7 +1651,12 @@ async def bulk_update_operators(data: dict, request: Request, db: AsyncSession =
+ 
+ 
+ @router.post("/operators/bulk-delete")
+-async def bulk_delete_operators(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def bulk_delete_operators(
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     ids = data.get("ids")
+     if not isinstance(ids, list) or not ids:
+         raise HTTPException(status_code=400, detail="A non-empty ids list is required")
+@@ -1538,6 +1673,10 @@ async def bulk_delete_operators(data: dict, request: Request, db: AsyncSession =
+         op = res.scalar_one_or_none()
+         if not op:
+             raise HTTPException(status_code=404, detail=f"Operator {op_id} not found")
++        reject_reserved_system_root_identity(
++            {"external_id": op.external_id, "username": op.username, "id": op.external_id},
++            actor_id=user_id,
++        )
+         delete_result = await apply_operator_delete(db, op=op, user_id=user_id)
+         deleted_count += 1
+         team_updates.extend(delete_result["team_updates"])
+@@ -1559,12 +1698,20 @@ async def get_roles(db: AsyncSession = Depends(get_db)):
+     return res.scalars().all()
+ 
+ @router.get("/user-pool/versions")
+-async def get_user_pool_versions(db: AsyncSession = Depends(get_db)):
++async def get_user_pool_versions(
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     res = await db.execute(select(models.UserPoolVersion).order_by(models.UserPoolVersion.created_at.desc(), models.UserPoolVersion.id.desc()))
+     return res.scalars().all()
+ 
+ @router.post("/user-pool/refresh")
+-async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
++async def refresh_user_pool(
++    data: dict,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     preview = data.get("preview", False)
+     user_id = get_current_user_id(request)
+ 
+@@ -1592,6 +1739,10 @@ async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Dep
+                 status_code=400,
+                 detail=f"records[{index}] requires external_id/id, username, and full_name",
+             )
++        reject_reserved_system_root_identity(
++            {"external_id": external_id, "username": username, "id": raw_record.get("id")},
++            actor_id=user_id,
++        )
+         if external_id in seen_external_ids:
+             raise HTTPException(status_code=400, detail=f"Duplicate external_id '{external_id}' found in source records")
+         if username in seen_usernames:
+@@ -1637,6 +1788,11 @@ async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Dep
+         res = await db.execute(select(models.Operator).filter(models.Operator.external_id == ext_id))
+         op = res.scalar_one_or_none()
+ 
++        reject_reserved_system_root_identity(
++            {"external_id": ext_id, "username": u["username"], "id": ext_id},
++            actor_id=user_id,
++        )
++
+         item_status = "unchanged"
+         item_changes = {}
+ 
+@@ -1789,7 +1945,12 @@ async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Dep
+     return {"status": "success", "version": None, "changes": False}
+ 
+ @router.post("/user-pool/restore/{version_id}")
+-async def restore_user_pool(version_id: int, request: Request, db: AsyncSession = Depends(get_db)):
++async def restore_user_pool(
++    version_id: int,
++    request: Request,
++    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
++    db: AsyncSession = Depends(get_db),
++):
+     user_id = get_current_user_id(request)
+     res = await db.execute(select(models.UserPoolVersion).filter(models.UserPoolVersion.id == version_id))
+     version = res.scalar_one_or_none()
+@@ -1809,6 +1970,10 @@ async def restore_user_pool(version_id: int, request: Request, db: AsyncSession
+         username = normalize_string(u.get("username"))
+         if not username:
+             raise HTTPException(status_code=400, detail=f"Snapshot record for '{ext_id}' is missing username")
++        reject_reserved_system_root_identity(
++            {"external_id": ext_id, "username": username, "id": ext_id},
++            actor_id=user_id,
++        )
+         if username in snapshot_usernames:
+             raise HTTPException(status_code=409, detail=f"Snapshot contains duplicate username '{username}'")
+         snapshot_usernames.add(username)
+diff --git a/backend/app/api/sites.py b/backend/app/api/sites.py
+index e31597f1..4dbb71da 100644
+--- a/backend/app/api/sites.py
++++ b/backend/app/api/sites.py
+@@ -4,8 +4,13 @@ from sqlalchemy import select, delete, update, func
+ from ..database import get_db
+ from ..models import models
+ from .utils import build_audit_log
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/sites", tags=["Sites"])
++router = APIRouter(
++    prefix="/sites",
++    tags=["Sites"],
++    dependencies=[Depends(require_module_access("racks"))],
++)
+ 
+ @router.get("")
+ async def get_sites(db: AsyncSession = Depends(get_db)):
+diff --git a/backend/app/api/troubleshoot.py b/backend/app/api/troubleshoot.py
+index 9b266630..5a770333 100644
+--- a/backend/app/api/troubleshoot.py
++++ b/backend/app/api/troubleshoot.py
+@@ -6,8 +6,13 @@ from typing import List, Optional
+ from ..database import get_db
+ from ..models import models
+ from .utils import build_audit_log, filter_valid_columns, parse_iso_date
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/incidents", tags=["Incident Management"])
++router = APIRouter(
++    prefix="/incidents",
++    tags=["Incident Management"],
++    dependencies=[Depends(require_module_access("architecture"))],
++)
+ 
+ def format_incident(inc: models.IncidentLog, devices_map: dict = {}):
+     device_names = []
+diff --git a/backend/app/api/vendors.py b/backend/app/api/vendors.py
+index 24adac69..b7dd5a02 100644
+--- a/backend/app/api/vendors.py
++++ b/backend/app/api/vendors.py
+@@ -12,8 +12,13 @@ from .operational_bulk import (
+     normalize_operational_bulk_payload,
+     require_executable_operational_bulk,
+ )
++from .module_policy import require_module_access
+ 
+-router = APIRouter(prefix="/vendors", tags=["Vendor & Contract Management"])
++router = APIRouter(
++    prefix="/vendors",
++    tags=["Vendor & Contract Management"],
++    dependencies=[Depends(require_module_access("vendors"))],
++)
+ IMMUTABLE_VENDOR_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+ 
+ 
+diff --git a/backend/app/api/workspaces.py b/backend/app/api/workspaces.py
+index cdaff479..b4bb0f87 100644
+--- a/backend/app/api/workspaces.py
++++ b/backend/app/api/workspaces.py
+@@ -13,8 +13,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
+ from ..database import get_db
+ from ..models import models
+ from .utils import get_current_user_id, normalize_json_object
++from .module_policy import build_effective_policy, ensure_module_access, get_module_definition
+ 
+-router = APIRouter(prefix="/workspaces", tags=["Workspaces"])
++async def require_workspace_module_access(
++    request: Request,
++    db: AsyncSession = Depends(get_db),
++    workspace_key: str | None = None,
++    view_id: int | None = None,
++) -> None:
++    module_id = workspace_key
++    if not module_id and view_id is not None:
++        view = await db.get(models.WorkspaceSavedView, view_id)
++        module_id = view.workspace_key if view else None
++    if not module_id:
++        return
++    try:
++        get_module_definition(module_id)
++    except ValueError:
++        return
++    await ensure_module_access(module_id, request, db)
++
++
++router = APIRouter(
++    prefix="/workspaces",
++    tags=["Workspaces"],
++    dependencies=[Depends(require_workspace_module_access)],
++)
+ 
+ WorkspaceScope = Literal["personal", "team"]
+ WorkspaceArchetype = Literal["table", "topology_hybrid", "investigation", "research", "hybrid"]
+@@ -537,8 +561,16 @@ def conflict_detail(view: models.WorkspaceSavedView) -> dict[str, Any]:
+ 
+ 
+ @router.get("/definitions", response_model=WorkspaceDefinitionList)
+-async def list_definitions() -> WorkspaceDefinitionList:
+-    return WorkspaceDefinitionList(definitions=list(WORKSPACE_DEFINITIONS.values()))
++async def list_definitions(
++    request: Request,
++    db: AsyncSession = Depends(get_db),
++) -> WorkspaceDefinitionList:
++    policy = await build_effective_policy(request, db)
++    definitions = [
++        definition for definition in WORKSPACE_DEFINITIONS.values()
++        if policy["modules"].get(definition.key, {}).get("available")
++    ]
++    return WorkspaceDefinitionList(definitions=definitions)
+ 
+ 
+ @router.get("/{workspace_key}/views", response_model=SavedViewListResponse)
+diff --git a/backend/app/architecture/api.py b/backend/app/architecture/api.py
+index b4135850..07126328 100644
+--- a/backend/app/architecture/api.py
++++ b/backend/app/architecture/api.py
+@@ -11,12 +11,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
+ from ..database import get_db
+ from ..pv1 import domain as pv1_domain
+ from ..pv1 import models as pv1_models
++from ..api.module_policy import require_module_access
+ from . import domain
+ from . import models
+ from . import traceability
+ 
+ 
+-router = APIRouter(prefix="/architecture", tags=["PV1 Architecture"])
++router = APIRouter(
++    prefix="/architecture",
++    tags=["PV1 Architecture"],
++    dependencies=[Depends(require_module_access("architecture"))],
++)
+ 
+ 
+ def _tenant_id(request: Request) -> int:
+diff --git a/backend/app/core/config.py b/backend/app/core/config.py
+index a090ad13..a582a815 100644
+--- a/backend/app/core/config.py
++++ b/backend/app/core/config.py
+@@ -41,6 +41,12 @@ class Settings(BaseSettings):
+     CONTROL_PLANE_ADMIN_USER_IDS: str = ""
+     CONTROL_PLANE_BOOTSTRAP_ENABLED: bool = False
+     CONTROL_PLANE_BOOTSTRAP_USER_ID: str = ""
++    # Reserved System Root is a deployment-owned identity plane. It is never
++    # inferred from tenant ADMIN/is_admin, wildcard permissions, or browser state.
++    SYSTEM_ROOT_USER_IDS: str = ""
++    # Optional deployment kill-switches for catalog stages, expressed as
++    # comma-separated module=stage pairs (production, preview, disabled, retired).
++    MODULE_STAGE_OVERRIDES: str = ""
+     SCHEDULE_PREVIEW_SIGNING_KEY: str = "development-only-schedule-preview-key"
+     # Trusted deployment identity for release field evidence. Browser hints
+     # are never authoritative for this value.
+@@ -166,6 +172,8 @@ class Settings(BaseSettings):
+             errors.append("AUTO_ADMIN_USER_IDS must be empty in production unless explicitly acknowledged.")
+         if not self.control_plane_admin_user_ids:
+             errors.append("CONTROL_PLANE_ADMIN_USER_IDS must contain explicit global administrator identities in production.")
++        if not self.system_root_user_ids:
++            errors.append("SYSTEM_ROOT_USER_IDS must contain explicit reserved System Root identities in production.")
+         if self.CONTROL_PLANE_BOOTSTRAP_ENABLED:
+             errors.append("CONTROL_PLANE_BOOTSTRAP_ENABLED must be false in production.")
+         if self.CONTROL_PLANE_BOOTSTRAP_USER_ID.strip():
+@@ -239,5 +247,25 @@ class Settings(BaseSettings):
+     def control_plane_bootstrap_user_id(self) -> str:
+         return self.CONTROL_PLANE_BOOTSTRAP_USER_ID.strip()
+ 
++    @property
++    def system_root_user_ids(self) -> set[str]:
++        return {
++            user_id.strip()
++            for user_id in self.SYSTEM_ROOT_USER_IDS.split(",")
++            if user_id.strip()
++        }
++
++    @property
++    def module_stage_overrides(self) -> dict[str, str]:
++        allowed = {"production", "preview", "disabled", "retired"}
++        overrides: dict[str, str] = {}
++        for raw_entry in self.MODULE_STAGE_OVERRIDES.split(","):
++            if "=" not in raw_entry:
++                continue
++            module_id, stage = (part.strip().lower() for part in raw_entry.split("=", 1))
++            if module_id and stage in allowed:
++                overrides[module_id] = stage
++        return overrides
++
+ 
+ settings = Settings()
+diff --git a/backend/app/main.py b/backend/app/main.py
+index 26016d29..324436a3 100644
+--- a/backend/app/main.py
++++ b/backend/app/main.py
+@@ -13,7 +13,7 @@ from alembic.config import Config
+ from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+ from fastapi.middleware.cors import CORSMiddleware
+ from fastapi.responses import JSONResponse
+-from sqlalchemy import text
++from sqlalchemy import select, text
+ from starlette.middleware.gzip import GZipMiddleware
+ from starlette.middleware.trustedhost import TrustedHostMiddleware
+ 
+@@ -21,12 +21,14 @@ from .api import (
+     audit, dashboard, data_flows, devices, far, import_engine, intelligence,
+     investigations, knowledge, logical_services, maintenance, monitoring, networks,
+     projects, pv1, racks, rca, security, settings as settings_api, sites, tenants, workspaces,
+-    troubleshoot, vendors, pv1_communication, operational_actions,
++    troubleshoot, vendors, pv1_communication, operational_actions, module_policy,
+ )
+ from .api.error_utils import standardize_validation_errors
+ from .api.import_engine import ROUND_TRIP_EXPOSE_HEADER_NAMES, ROUND_TRIP_EXPOSE_HEADERS
+ from .core.config import settings
+-from .database import config_engine, default_engine
++from .database import ConfigSessionLocal, config_engine, default_engine
++from .models.config import UserTenantAccess
++from .api.utils import get_current_user_id
+ from .runtime_diagnostics import build_readiness_payload
+ from .observability import SlidingWindowRateLimiter, request_rate_limit_key, safe_request_metric
+ from .pv1 import models as pv1_models  # noqa: F401 - register PV1 tables with Base.metadata
+@@ -84,22 +86,27 @@ async def lifespan(app: FastAPI):
+ 
+ class ConnectionManager:
+     def __init__(self):
+-        self.active_connections: list[WebSocket] = []
++        self.active_connections: list[dict[str, object]] = []
+ 
+-    async def connect(self, websocket: WebSocket):
++    async def connect(self, websocket: WebSocket, *, user_id: str, tenant_id: int):
+         await websocket.accept()
+-        self.active_connections.append(websocket)
++        self.active_connections.append({"websocket": websocket, "user_id": user_id, "tenant_id": tenant_id})
+ 
+     def disconnect(self, websocket: WebSocket):
+-        if websocket in self.active_connections:
+-            self.active_connections.remove(websocket)
++        self.active_connections = [
++            connection for connection in self.active_connections
++            if connection.get("websocket") is not websocket
++        ]
+ 
+-    async def broadcast(self, message: str):
++    async def broadcast(self, message: str, *, tenant_id: int | None = None):
+         for connection in list(self.active_connections):
++            if tenant_id is not None and connection.get("tenant_id") != tenant_id:
++                continue
++            websocket = connection["websocket"]
+             try:
+-                await connection.send_text(message)
++                await websocket.send_text(message)
+             except Exception:
+-                self.disconnect(connection)
++                self.disconnect(websocket)
+ 
+ 
+ manager = ConnectionManager()
+@@ -217,7 +224,26 @@ async def websocket_endpoint(websocket: WebSocket):
+         await websocket.close(code=1008, reason="Authenticated proxy identity is missing")
+         return
+ 
+-    await manager.connect(websocket)
++    user_id = get_current_user_id(websocket)
++    raw_tenant_id = websocket.query_params.get("tenant_id")
++    try:
++        tenant_id = int(raw_tenant_id or "")
++    except (TypeError, ValueError):
++        await websocket.close(code=1008, reason="Tenant scope is required")
++        return
++
++    async with ConfigSessionLocal() as config_db:
++        access = await config_db.execute(
++            select(UserTenantAccess).where(
++                UserTenantAccess.user_id == user_id,
++                UserTenantAccess.tenant_id == tenant_id,
++            )
++        )
++        if not access.scalar_one_or_none():
++            await websocket.close(code=1008, reason="Tenant scope is not authorized")
++            return
++
++    await manager.connect(websocket, user_id=user_id, tenant_id=tenant_id)
+     try:
+         while True:
+             await websocket.receive_text()
+@@ -256,6 +282,8 @@ for router in (
+ ):
+     app.include_router(router, prefix=settings.API_V1_STR)
+ 
++app.include_router(module_policy.router, prefix=settings.API_V1_STR)
++
+ app.include_router(pv1.router, prefix="/api/v2")
+ app.include_router(pv1_communication.router, prefix="/api/v2")
+ from .architecture import api as architecture_api
+diff --git a/backend/test_system_management_v1_policy.py b/backend/test_system_management_v1_policy.py
+new file mode 100644
+index 00000000..9535e28e
+--- /dev/null
++++ b/backend/test_system_management_v1_policy.py
+@@ -0,0 +1,331 @@
++import json
++from pathlib import Path
++from types import SimpleNamespace
++
++import pytest
++
++from app.api import module_policy
++from app.api.knowledge import _embedded_entry_is_in_scope, _require_embedded_targets
++from app.api.module_policy import CATALOG, _build_module_entry, ensure_module_access
++from app.api.authorization import has_capability
++from app.api.settings import reject_reserved_system_root_identity
++from app.core.config import settings
++from app.main import ConnectionManager
++from fastapi import Request, HTTPException
++
++
++def _operator(*, permissions=None, is_admin=False):
++    return SimpleNamespace(
++        role=SimpleNamespace(permissions=permissions or {}),
++        custom_permissions={},
++        is_admin=is_admin,
++    )
++
++
++def test_catalog_is_single_versioned_non_executable_contract():
++    catalog_path = Path(__file__).resolve().parents[1] / "contracts" / "system_management_v1.json"
++    assert json.loads(catalog_path.read_text(encoding="utf-8")) == CATALOG
++    assert set(CATALOG["stages"]) == {"production", "preview", "disabled", "retired"}
++    assert all("component" not in module and "executable" not in module for module in CATALOG["modules"])
++    module_ids = {module["id"] for module in CATALOG["modules"]}
++    assert set(CATALOG["api_ownership"]).issubset(module_ids)
++    assert all(path.startswith("/api/") for paths in CATALOG["api_ownership"].values() for path in paths)
++    knowledge_projection = next(
++        projection
++        for module in CATALOG["modules"]
++        if module["id"] == "knowledge"
++        for projection in module["embedded_support_projections"]
++        if projection["id"] == "knowledge-recovery-context"
++    )
++    assert "allowed_selectors" not in knowledge_projection
++    assert knowledge_projection["consumer_selector_sets"] == {
++        "monitoring": [["monitoring_id"]],
++        "assets": [["device_id"]],
++        "network": [["device_id"]],
++        "services": [["service_id"]],
++    }
++
++
++@pytest.mark.parametrize("stage", ["production", "preview", "disabled", "retired"])
++def test_module_stages_are_distinct_and_fail_closed(stage, monkeypatch):
++    monkeypatch.setattr(settings, "MODULE_STAGE_OVERRIDES", f"knowledge={stage}")
++    monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "system-root")
++    module = next(item for item in CATALOG["modules"] if item["id"] == "knowledge")
++
++    normal = _build_module_entry(module, operator=_operator(permissions={"knowledge": 3}), system_root=False)
++    root = _build_module_entry(module, operator=_operator(permissions={"knowledge": 3}), system_root=True)
++
++    assert normal["stage"] == stage
++    if stage == "production":
++        assert normal["available"] is True
++    elif stage in {"disabled", "retired"}:
++        assert normal["available"] is False
++        assert normal["blocked_reason"] == f"MODULE_{stage.upper()}"
++    else:
++        assert normal["available"] is False
++        assert normal["blocked_reason"] == "SYSTEM_ROOT_REQUIRED"
++        assert root["available"] is True
++        assert root["root_preview"] is True
++
++
++def test_tenant_admin_and_wildcard_do_not_become_system_root(monkeypatch):
++    monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "haewon.kim")
++    module = next(item for item in CATALOG["modules"] if item["id"] == "projects")
++    tenant_admin = _build_module_entry(module, operator=_operator(is_admin=True), system_root=False)
++    wildcard_admin = _build_module_entry(module, operator=_operator(permissions={"all": 3}), system_root=False)
++    assert tenant_admin["available"] is False
++    assert wildcard_admin["available"] is False
++    assert tenant_admin["blocked_reason"] == "SYSTEM_ROOT_REQUIRED"
++    assert has_capability(_operator(is_admin=True), "system.root", 3) is False
++    assert has_capability(_operator(permissions={"all": 3}), "system.preview", 1) is False
++
++
++def test_reserved_root_identity_cannot_be_manufactured_by_tenant_settings(monkeypatch):
++    monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "haewon.kim")
++    with pytest.raises(HTTPException) as exc:
++        reject_reserved_system_root_identity(
++            {"external_id": "haewon.kim", "username": "root-alias"},
++            actor_id="ordinary-admin",
++        )
++    assert exc.value.status_code == 403
++    assert exc.value.detail["code"] == "RESERVED_SYSTEM_ROOT_IDENTITY"
++    reject_reserved_system_root_identity(
++        {"external_id": "haewon.kim", "username": "haewon.kim"},
++        actor_id="haewon.kim",
++    )
++
++
++@pytest.mark.anyio
++async def test_embedded_projection_is_read_only_and_rejects_the_r1_monitoring_bypass(monkeypatch):
++    policy = _embedded_policy()
++
++    async def fake_policy(request, db):
++        request.state.sysgrid_policy = policy
++        return policy
++
++    monkeypatch.setattr(module_policy, "build_effective_policy", fake_policy)
++    request = Request({
++        "type": "http",
++        "method": "POST",
++        "path": "/api/v1/knowledge",
++        "headers": [],
++        "query_string": b"embedded_consumer=monitoring&monitoring_id=1",
++        "client": ("test", 1),
++        "server": ("test", 80),
++        "scheme": "http",
++    })
++    with pytest.raises(HTTPException) as exc:
++        await ensure_module_access("knowledge", request, object(), allow_embedded=True)
++    assert exc.value.status_code == 403
++    assert exc.value.detail["reason"] == "READ_ONLY"
++
++    request = Request({
++        "type": "http",
++        "method": "GET",
++        "path": "/api/v1/knowledge",
++        "headers": [],
++        "query_string": b"embedded_consumer=monitoring",
++        "client": ("test", 1),
++        "server": ("test", 80),
++        "scheme": "http",
++    })
++    with pytest.raises(HTTPException) as exc:
++        await ensure_module_access("knowledge", request, object(), allow_embedded=True)
++    assert exc.value.status_code == 403
++    assert exc.value.detail["reason"] == "INVALID_SELECTOR_SET"
++
++
++def _embedded_policy():
++    operator = _operator(permissions={"all": 3})
++    return {
++        "modules": {
++            module["id"]: _build_module_entry(module, operator=operator, system_root=False)
++            for module in CATALOG["modules"]
++        }
++    }
++
++
++def _request_with_query(query: str, method: str = "GET") -> Request:
++    return Request({
++        "type": "http",
++        "method": method,
++        "path": "/api/v1/knowledge",
++        "headers": [],
++        "query_string": query.encode(),
++        "client": ("test", 1),
++        "server": ("test", 80),
++        "scheme": "http",
++    })
++
++
++@pytest.mark.anyio
++@pytest.mark.parametrize(
++    ("query", "allowed"),
++    [
++        ("embedded_consumer=monitoring&monitoring_id=11", True),
++        ("embedded_consumer=monitoring&device_id=11", False),
++        ("embedded_consumer=monitoring&service_id=11", False),
++        ("embedded_consumer=monitoring", False),
++        ("embedded_consumer=monitoring&monitoring_id=", False),
++        ("embedded_consumer=monitoring&monitoring_id=not-an-id", False),
++        ("embedded_consumer=monitoring&embedded_consumer=monitoring&monitoring_id=11", False),
++        ("embedded_consumer=assets&device_id=11", True),
++        ("embedded_consumer=assets&monitoring_id=11", False),
++        ("embedded_consumer=assets&device_id=11&service_id=12", False),
++        ("embedded_consumer=services&service_id=12", True),
++        ("embedded_consumer=services&device_id=11", False),
++        ("embedded_consumer=network&device_id=11", True),
++        ("embedded_consumer=network&monitoring_id=11", False),
++        ("embedded_consumer=network&device_id=11&monitoring_id=12", False),
++        ("embedded_consumer=network&service_id=12", False),
++        ("embedded_consumer=network&device_id=11&service_id=12", False),
++        ("embedded_consumer=unknown&device_id=11", False),
++    ],
++)
++async def test_embedded_selector_matrix_is_consumer_specific(monkeypatch, query, allowed):
++    policy = _embedded_policy()
++
++    async def fake_policy(request, db):
++        request.state.sysgrid_policy = policy
++        return policy
++
++    monkeypatch.setattr(module_policy, "build_effective_policy", fake_policy)
++    request = _request_with_query(query)
++    if allowed:
++        result = await ensure_module_access("knowledge", request, object(), allow_embedded=True)
++        assert result is policy
++        assert request.state.sysgrid_embedded_projection == "knowledge-recovery-context"
++    else:
++        with pytest.raises(HTTPException) as exc:
++            await ensure_module_access("knowledge", request, object(), allow_embedded=True)
++        assert exc.value.status_code == 403
++        assert exc.value.detail["code"] == "EMBEDDED_PROJECTION_DENIED"
++
++
++@pytest.mark.anyio
++async def test_embedded_projection_rejects_disabled_consumer_and_unsupported_module(monkeypatch):
++    policy = _embedded_policy()
++    policy["modules"]["monitoring"]["available"] = False
++
++    async def fake_policy(request, db):
++        request.state.sysgrid_policy = policy
++        return policy
++
++    monkeypatch.setattr(module_policy, "build_effective_policy", fake_policy)
++    disabled_request = _request_with_query("embedded_consumer=monitoring&monitoring_id=11")
++    with pytest.raises(HTTPException) as disabled_exc:
++        await ensure_module_access("knowledge", disabled_request, object(), allow_embedded=True)
++    assert disabled_exc.value.detail["reason"] == "CONSUMER_UNAVAILABLE"
++
++    mismatched_request = _request_with_query("embedded_consumer=far&device_id=11")
++    with pytest.raises(HTTPException) as mismatched_exc:
++        await ensure_module_access("knowledge", mismatched_request, object(), allow_embedded=True)
++    assert mismatched_exc.value.detail["reason"] == "CONSUMER_UNAVAILABLE"
++
++
++@pytest.mark.anyio
++async def test_embedded_scope_never_scans_all_monitoring_rows_without_monitoring_id():
++    entry = SimpleNamespace(id=7, metadata_json={}, linked_device_ids=[])
++
++    class UnexpectedDatabase:
++        async def execute(self, query):
++            raise AssertionError("embedded monitoring scope must not scan all monitoring rows")
++
++    assert await _embedded_entry_is_in_scope(
++        entry,
++        consumer="monitoring",
++        device_id=101,
++        service_id=None,
++        monitoring_id=None,
++        db=UnexpectedDatabase(),
++    ) is False
++
++
++@pytest.mark.anyio
++async def test_embedded_scope_keeps_consumer_relationships_narrow():
++    entry = SimpleNamespace(
++        id=7,
++        linked_device_ids=[101],
++        metadata_json={"links": {"service_ids": [303], "monitoring_ids": [202]}},
++    )
++
++    class RecoveryDatabase:
++        async def execute(self, query):
++            class ScalarResult:
++                def scalars(self):
++                    class Values:
++                        def all(self):
++                            return [[{"id": 7}]]
++                    return Values()
++            return ScalarResult()
++
++    db = RecoveryDatabase()
++    assert await _embedded_entry_is_in_scope(entry, consumer="monitoring", device_id=None, service_id=None, monitoring_id=202, db=db)
++    assert await _embedded_entry_is_in_scope(entry, consumer="assets", device_id=101, service_id=None, monitoring_id=None, db=db)
++    assert await _embedded_entry_is_in_scope(entry, consumer="services", device_id=None, service_id=303, monitoring_id=None, db=db)
++    assert await _embedded_entry_is_in_scope(entry, consumer="network", device_id=101, service_id=None, monitoring_id=202, db=db)
++    assert not await _embedded_entry_is_in_scope(entry, consumer="network", device_id=None, service_id=None, monitoring_id=202, db=db)
++    assert not await _embedded_entry_is_in_scope(entry, consumer="monitoring", device_id=101, service_id=None, monitoring_id=None, db=db)
++    assert not await _embedded_entry_is_in_scope(entry, consumer="services", device_id=101, service_id=None, monitoring_id=None, db=db)
++
++
++@pytest.mark.anyio
++async def test_embedded_target_resolution_is_tenant_scoped_and_fails_closed():
++    request = _request_with_query("embedded_consumer=assets&device_id=99")
++    request.state.sysgrid_embedded_projection = "knowledge-recovery-context"
++    request.state.sysgrid_embedded_selectors = {"device_id": 99}
++    queries = []
++
++    class MissingTargetDB:
++        async def execute(self, query):
++            queries.append(str(query))
++
++            class Result:
++                def scalar_one_or_none(self):
++                    return None
++
++            return Result()
++
++    request.state.tenant_id = 42
++    with pytest.raises(HTTPException) as exc:
++        await _require_embedded_targets(request, MissingTargetDB())
++    assert exc.value.status_code == 404
++    assert "devices.tenant_id" in queries[0]
++
++    request = _request_with_query("embedded_consumer=monitoring&monitoring_id=99")
++    request.state.sysgrid_embedded_projection = "knowledge-recovery-context"
++    request.state.sysgrid_embedded_selectors = {"monitoring_id": 99}
++
++    class AuthorizedTargetDB:
++        async def execute(self, query):
++            class Result:
++                def scalar_one_or_none(self):
++                    return 99
++
++            return Result()
++
++    await _require_embedded_targets(request, AuthorizedTargetDB())
++
++
++@pytest.mark.anyio
++async def test_websocket_broadcast_does_not_cross_tenant_connections():
++    class FakeWebSocket:
++        def __init__(self):
++            self.messages = []
++
++        async def accept(self):
++            return None
++
++        async def send_text(self, message):
++            self.messages.append(message)
++
++    manager = ConnectionManager()
++    tenant_a = FakeWebSocket()
++    tenant_b = FakeWebSocket()
++    await manager.connect(tenant_a, user_id="user-a", tenant_id=101)
++    await manager.connect(tenant_b, user_id="user-b", tenant_id=202)
++
++    await manager.broadcast("TENANT_A_EVENT", tenant_id=101)
++
++    assert tenant_a.messages == ["TENANT_A_EVENT"]
++    assert tenant_b.messages == []
+diff --git a/contracts/monitoring_feature_preservation_v1.json b/contracts/monitoring_feature_preservation_v1.json
+new file mode 100644
+index 00000000..75886c38
+--- /dev/null
++++ b/contracts/monitoring_feature_preservation_v1.json
+@@ -0,0 +1,39 @@
++{
++  "harness_version": "monitoring-preservation-v1",
++  "golden_consumer": "frontend/src/components/MonitoringGrid.tsx",
++  "routed_consumers": {
++    "monitoring": "/monitoring -> MonitoringGrid.tsx",
++    "assets": "/asset -> Assets.tsx -> assets/AssetGoldenShellRoute.tsx -> assets/AssetGoldenOperationalWorkspace.tsx"
++  },
++  "accepted_geometry": {
++    "frame_class": "h-full min-h-0 flex flex-col space-y-4",
++    "toolbar_class": "gap-3 px-4 py-3 rounded-lg border-white/5 bg-black/20",
++    "control_height": "h-9",
++    "grid_width_owner": "frontend/src/components/shared/OperationalGridContract.ts"
++  },
++  "features": [
++    "saved and collaborative views",
++    "sanitized column/filter/sort persistence",
++    "display density",
++    "grouping",
++    "favorites and watch",
++    "selection and grouped selection",
++    "context and row actions",
++    "bulk preview, execute, result, and revert",
++    "import and export",
++    "details and dossier",
++    "edit, validation, and dirty behavior",
++    "history",
++    "compare",
++    "linked records and recovery context",
++    "diagnostics",
++    "data states",
++    "deep-linked details"
++  ],
++  "expected_release_changes": [
++    "navigation labels may show Preview or Unavailable for policy-blocked modules",
++    "preview routes render the existing permission/unavailable state before module mount",
++    "diagnostics shell affordance is visible only with the explicit diagnostics capability"
++  ],
++  "monitoring_inner_workspace_change": "none"
++}
+diff --git a/contracts/system_management_v1.json b/contracts/system_management_v1.json
+new file mode 100644
+index 00000000..bd836ddb
+--- /dev/null
++++ b/contracts/system_management_v1.json
+@@ -0,0 +1,277 @@
++{
++  "catalog_version": "sysgrid-system-management-v1",
++  "profile_id": "system-management-v1",
++  "stages": ["production", "preview", "disabled", "retired"],
++  "modules": [
++    {
++      "id": "home",
++      "label": "Home",
++      "canonical_route": "/",
++      "aliases": [],
++      "navigation_group": "Operations",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": null,
++      "resource_owner": "dashboard",
++      "root_preview_allowed": false,
++      "atlas_identity": "home",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "projects",
++      "label": "Projects",
++      "canonical_route": "/projects",
++      "aliases": [],
++      "navigation_group": "Operations",
++      "profile_membership": "preview",
++      "default_stage": "preview",
++      "required_capability": "projects",
++      "resource_owner": "projects",
++      "root_preview_allowed": true,
++      "atlas_identity": "projects",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "monitoring",
++      "label": "Monitoring",
++      "canonical_route": "/monitoring",
++      "aliases": [],
++      "navigation_group": "Operations",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": "monitoring",
++      "resource_owner": "monitoring",
++      "root_preview_allowed": false,
++      "atlas_identity": "monitoring",
++      "embedded_support_projections": [
++        {
++          "id": "knowledge-recovery-context",
++          "consumers": ["monitoring", "assets", "network", "services"],
++          "consumer_selector_sets": {
++            "monitoring": [["monitoring_id"]],
++            "assets": [["device_id"]],
++            "network": [["device_id"]],
++            "services": [["service_id"]]
++          }
++        }
++      ]
++    },
++    {
++      "id": "assets",
++      "label": "Assets",
++      "canonical_route": "/asset",
++      "aliases": ["/asset-real"],
++      "navigation_group": "Infrastructure",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": "assets",
++      "resource_owner": "devices",
++      "root_preview_allowed": false,
++      "atlas_identity": "assets",
++      "embedded_support_projections": [
++        {
++          "id": "knowledge-recovery-context",
++          "consumers": ["assets"],
++          "consumer_selector_sets": {
++            "assets": [["device_id"]]
++          }
++        },
++        {
++          "id": "far-risk-summary",
++          "consumers": ["assets"],
++          "consumer_selector_sets": {
++            "assets": [["system"]]
++          }
++        }
++      ]
++    },
++    {
++      "id": "racks",
++      "label": "Racks",
++      "canonical_route": "/racks",
++      "aliases": [],
++      "navigation_group": "Infrastructure",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": "racks",
++      "resource_owner": "racks",
++      "root_preview_allowed": false,
++      "atlas_identity": "racks",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "services",
++      "label": "Services",
++      "canonical_route": "/services",
++      "aliases": [],
++      "navigation_group": "Infrastructure",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": "services",
++      "resource_owner": "logical_services",
++      "root_preview_allowed": false,
++      "atlas_identity": "services",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "external",
++      "label": "External",
++      "canonical_route": "/external",
++      "aliases": [],
++      "navigation_group": "Infrastructure",
++      "profile_membership": "preview",
++      "default_stage": "preview",
++      "required_capability": "external",
++      "resource_owner": "external_entities",
++      "root_preview_allowed": true,
++      "atlas_identity": "external",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "network",
++      "label": "Network",
++      "canonical_route": "/network",
++      "aliases": ["/network-real"],
++      "navigation_group": "Connectivity",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": "network",
++      "resource_owner": "networks",
++      "root_preview_allowed": false,
++      "atlas_identity": "network",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "architecture",
++      "label": "Architecture",
++      "canonical_route": "/architecture",
++      "aliases": [],
++      "navigation_group": "Connectivity",
++      "profile_membership": "preview",
++      "default_stage": "preview",
++      "required_capability": "architecture",
++      "resource_owner": "architecture",
++      "root_preview_allowed": true,
++      "atlas_identity": "architecture",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "research",
++      "label": "Research",
++      "canonical_route": "/research",
++      "aliases": [],
++      "navigation_group": "Analysis",
++      "profile_membership": "preview",
++      "default_stage": "preview",
++      "required_capability": "research",
++      "resource_owner": "investigations",
++      "root_preview_allowed": true,
++      "atlas_identity": "research",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "far",
++      "label": "FAR",
++      "canonical_route": "/far",
++      "aliases": [],
++      "navigation_group": "Analysis",
++      "profile_membership": "preview",
++      "default_stage": "preview",
++      "required_capability": "far",
++      "resource_owner": "far",
++      "root_preview_allowed": true,
++      "atlas_identity": "far",
++      "embedded_support_projections": [
++        {
++          "id": "far-risk-summary",
++          "consumers": ["assets"],
++          "consumer_selector_sets": {
++            "assets": [["system"]]
++          }
++        }
++      ]
++    },
++    {
++      "id": "vendors",
++      "label": "Vendors",
++      "canonical_route": "/vendors",
++      "aliases": ["/vendors-real"],
++      "navigation_group": "Resources",
++      "profile_membership": "preview",
++      "default_stage": "preview",
++      "required_capability": "vendors",
++      "resource_owner": "vendors",
++      "root_preview_allowed": true,
++      "atlas_identity": "vendors",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "knowledge",
++      "label": "Knowledge",
++      "canonical_route": "/knowledge",
++      "aliases": [],
++      "navigation_group": "Resources",
++      "profile_membership": "preview",
++      "default_stage": "preview",
++      "required_capability": "knowledge",
++      "resource_owner": "knowledge_entries",
++      "root_preview_allowed": true,
++      "atlas_identity": "knowledge",
++      "embedded_support_projections": [
++        {
++          "id": "knowledge-recovery-context",
++          "consumers": ["monitoring", "assets", "network", "services"],
++          "consumer_selector_sets": {
++            "monitoring": [["monitoring_id"]],
++            "assets": [["device_id"]],
++            "network": [["device_id"]],
++            "services": [["service_id"]]
++          }
++        }
++      ]
++    },
++    {
++      "id": "logs",
++      "label": "Audit logs",
++      "canonical_route": "/logs",
++      "aliases": [],
++      "navigation_group": "Resources",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": "logs",
++      "resource_owner": "audit",
++      "root_preview_allowed": false,
++      "atlas_identity": "logs",
++      "embedded_support_projections": []
++    },
++    {
++      "id": "settings",
++      "label": "Settings / Access",
++      "canonical_route": "/settings",
++      "aliases": [],
++      "navigation_group": "Resources",
++      "profile_membership": "v1",
++      "default_stage": "production",
++      "required_capability": "settings",
++      "resource_owner": "settings",
++      "root_preview_allowed": false,
++      "atlas_identity": "settings",
++      "embedded_support_projections": []
++    }
++  ],
++  "api_ownership": {
++    "projects": ["/api/v1/projects", "/api/v1/workspaces/projects", "/api/v2/projects"],
++    "external": ["/api/v1/intelligence"],
++    "architecture": ["/api/v1/data-flows", "/api/v1/incidents", "/api/v2/architecture"],
++    "research": ["/api/v1/investigations", "/api/v1/rca"],
++    "far": ["/api/v1/far", "/api/v1/import/far_records"],
++    "vendors": ["/api/v1/vendors"],
++    "knowledge": ["/api/v1/knowledge"],
++    "monitoring": ["/api/v1/monitoring", "/api/v1/operational-actions", "/api/v1/import/monitoring_items"],
++    "network": ["/api/v1/networks", "/api/v1/import/port_connections"],
++    "assets": ["/api/v1/devices", "/api/v1/maintenance", "/api/v1/security"],
++    "services": ["/api/v1/logical-services"],
++    "racks": ["/api/v1/racks", "/api/v1/sites"],
++    "logs": ["/api/v1/audit"]
++  }
++}
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index f4fbffbe..eae44b59 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@ -8,7 +8,7 @@ import { Routes, Route, Link, useLocation, useNavigate, Navigate, RouterProvider
+ import { motion, AnimatePresence } from "framer-motion"
+ import { Terminal, X, ChevronRight, Info, Star, RefreshCcw, Grid3X3, Clock, Globe, Search } from "lucide-react"
+ import { Toaster, toast } from "react-hot-toast"
+-import { apiFetch, subscribeToLatency, getConfig } from "./api/apiClient"
++import { apiFetch, subscribeToLatency, getConfig, getRequestScopeKey } from "./api/apiClient"
+ import { errorManager, useErrors } from "./stores/errorStore"
+ import { ErrorConsole } from "./components/shared/ErrorConsole"
+ 
+@@ -40,6 +40,7 @@ import { FatalErrorState, PermissionDeniedState } from "./components/shared/Shel
+ import { SHELL_NAV_GROUPS, ShellNavGroup, ShellNavItem, isShellRouteActive } from "./components/shared/ShellNavigation"
+ import { normalizeTheme } from "./components/shared/theme"
+ import { useRouteFocus } from "./components/shared/routeFocus"
++import { ModulePolicyGate, useModulePolicy } from './policy/ModulePolicy'
+ 
+ const APP_VERSION = metadata.version
+ const PATCH_HISTORY = metadata.patchHistory
+@@ -152,43 +153,6 @@ class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean,
+   }
+ }
+ 
+-const getPermLevel = (perms: any, view: string) => {
+-  const val = perms?.[view] ?? perms?.['all'] ?? 0;
+-  if (typeof val === 'number') return val;
+-  if (val === 'read') return 1;
+-  if (val === 'add') return 2;
+-  if (val === 'edit' || val === 'manage') return 3;
+-  return 0;
+-};
+-
+-const ProtectedRoute = ({ children, view, userProfile }: any) => {
+-  const is_admin = userProfile?.is_admin;
+-  const permissions = userProfile?.permissions || {};
+-  const hasRead = is_admin || (getPermLevel(permissions, view) >= 1);
+-
+-  if (userProfile && !hasRead) {
+-    const areaLabels: Record<string, string> = {
+-      assets: 'Assets',
+-      projects: 'Projects',
+-      racks: 'Racks',
+-      services: 'Services',
+-      external: 'External',
+-      network: 'Network',
+-      architecture: 'Architecture',
+-      research: 'Research',
+-      far: 'FAR',
+-      monitoring: 'Monitoring',
+-      vendors: 'Vendors',
+-      knowledge: 'Knowledge',
+-      logs: 'Audit logs',
+-      settings: 'Settings',
+-    }
+-    return <PermissionDeniedState area={areaLabels[view] || view} />
+-  }
+-  return children;
+-}
+-;
+-
+ const LegacyNetworkRedirect = () => {
+   const location = useLocation()
+   return <Navigate to={`/network${location.search || ''}`} replace />
+@@ -328,6 +292,7 @@ function MainLayout() {
+   const [currentTheme, setCurrentTheme] = useState(normalizeTheme(localStorage.getItem('sysgrid-theme')));
+   const [latency, setLatency] = useState(0);
+   const [currentTime, setCurrentTime] = useState(new Date());
++  const modulePolicy = useModulePolicy()
+ 
+   useEffect(() => {
+     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+@@ -571,24 +536,35 @@ function MainLayout() {
+         <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4 custom-scrollbar" aria-label="Primary navigation">
+           {SHELL_NAV_GROUPS.map((group) => (
+             <ShellNavGroup key={group.label} label={group.label} isSidebarOpen={isSidebarOpen} defaultExpanded={group.defaultExpanded}>
+-              {group.items.map((item) => (
+-                <ShellNavItem
+-                  key={item.path}
+-                  icon={item.icon}
+-                  label={item.label}
+-                  path={item.path}
+-                  active={isShellRouteActive(location.pathname, item.path, item.aliases)}
+-                  isOpen={isSidebarOpen}
+-                  disabled={Boolean(userProfile && !userProfile.is_admin && item.permission && getPermLevel(userProfile.permissions, item.permission) < 1)}
+-                />
+-              ))}
++              {group.items.map((item) => {
++                const module = modulePolicy.data?.modules?.[item.moduleId]
++                const catalogIsPreview = module?.default_stage === 'preview' || (!module && item.moduleId !== 'home' && ['projects', 'external', 'architecture', 'research', 'far', 'vendors', 'knowledge'].includes(item.moduleId))
++                const disabled = (modulePolicy.isError || modulePolicy.isLoading) && catalogIsPreview
++                  ? true
++                  : module
++                    ? !module.available
++                    : false
++                return (
++                  <ShellNavItem
++                    key={item.path}
++                    icon={item.icon}
++                    moduleId={item.moduleId}
++                    label={module?.label || item.label}
++                    path={item.path}
++                    active={isShellRouteActive(location.pathname, item.path, item.aliases)}
++                    isOpen={isSidebarOpen}
++                    disabled={disabled}
++                    unavailableReason={module?.blocked_reason}
++                  />
++                )
++              })}
+             </ShellNavGroup>
+           ))}
+         </nav>
+         
+         {/* User Profile Section */}
+         <div className={`space-y-2 border-t border-[var(--border-subtle)] p-3 ${!isSidebarOpen ? 'flex flex-col items-center' : ''}`}>
+-           <button 
++           {modulePolicy.data?.actions?.diagnostics?.read ? <button
+               onClick={() => setShowLinuxEnv(true)}
+               className={`flex items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-2 hover:bg-[var(--surface-hover)] ${!isSidebarOpen ? 'h-10 w-10 justify-center' : 'w-full text-left'}`}
+               aria-label="Open environment details"
+@@ -602,7 +578,7 @@ function MainLayout() {
+                    <span className="truncate text-[10px] text-[var(--text-muted)]">{userProfile?.username || 'Signed-in user'}</span>
+                 </div>
+               )}
+-           </button>
++           </button> : null}
+ 
+            {/* Direct Theme Toggles */}
+            <div className={`flex items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1 ${!isSidebarOpen ? 'flex-col' : 'w-full'}`} aria-label="Theme">
+@@ -661,23 +637,23 @@ function MainLayout() {
+           <ErrorBoundary>
+             <Routes>
+               <Route path="/" element={<Dashboard onNavigate={(p:any) => navigate("/" + p)} />} />
+-              <Route path="/projects/*" element={<ProtectedRoute view="projects" userProfile={userProfile}><Projects /></ProtectedRoute>} />
+-              <Route path="/racks" element={<ProtectedRoute view="racks" userProfile={userProfile}><Racks /></ProtectedRoute>} />
+-              <Route path="/asset" element={<ProtectedRoute view="assets" userProfile={userProfile}><Assets /></ProtectedRoute>} />
+-              <Route path="/asset-real" element={<ProtectedRoute view="assets" userProfile={userProfile}><LegacyAssetRedirect /></ProtectedRoute>} />
+-              <Route path="/services" element={<ProtectedRoute view="services" userProfile={userProfile}><ServicesReal /></ProtectedRoute>} />
+-              <Route path="/external" element={<ProtectedRoute view="external" userProfile={userProfile}><External /></ProtectedRoute>} />
+-              <Route path="/network" element={<ProtectedRoute view="network" userProfile={userProfile}><NetworkReal /></ProtectedRoute>} />
+-              <Route path="/network-real" element={<ProtectedRoute view="network" userProfile={userProfile}><LegacyNetworkRedirect /></ProtectedRoute>} />
+-              <Route path="/architecture" element={<ProtectedRoute view="architecture" userProfile={userProfile}><ArchitectureRoute /></ProtectedRoute>} />
+-              <Route path="/research" element={<ProtectedRoute view="research" userProfile={userProfile}><Research /></ProtectedRoute>} />
+-              <Route path="/far" element={<ProtectedRoute view="far" userProfile={userProfile}><FAR /></ProtectedRoute>} />
+-              <Route path="/monitoring" element={<ProtectedRoute view="monitoring" userProfile={userProfile}><MonitoringGrid /></ProtectedRoute>} />
+-              <Route path="/vendors" element={<ProtectedRoute view="vendors" userProfile={userProfile}><VendorsReal /></ProtectedRoute>} />
+-              <Route path="/vendors-real" element={<ProtectedRoute view="vendors" userProfile={userProfile}><VendorsReal /></ProtectedRoute>} />
+-              <Route path="/knowledge" element={<ProtectedRoute view="knowledge" userProfile={userProfile}><Knowledge /></ProtectedRoute>} />
+-              <Route path="/logs" element={<ProtectedRoute view="logs" userProfile={userProfile}><AuditLogs /></ProtectedRoute>} />
+-              <Route path="/settings" element={<ProtectedRoute view="settings" userProfile={userProfile}><SettingsPage /></ProtectedRoute>} />
++              <Route path="/projects/*" element={<ModulePolicyGate moduleId="projects"><Projects /></ModulePolicyGate>} />
++              <Route path="/racks" element={<ModulePolicyGate moduleId="racks"><Racks /></ModulePolicyGate>} />
++              <Route path="/asset" element={<ModulePolicyGate moduleId="assets"><Assets /></ModulePolicyGate>} />
++              <Route path="/asset-real" element={<ModulePolicyGate moduleId="assets"><LegacyAssetRedirect /></ModulePolicyGate>} />
++              <Route path="/services" element={<ModulePolicyGate moduleId="services"><ServicesReal /></ModulePolicyGate>} />
++              <Route path="/external" element={<ModulePolicyGate moduleId="external"><External /></ModulePolicyGate>} />
++              <Route path="/network" element={<ModulePolicyGate moduleId="network"><NetworkReal /></ModulePolicyGate>} />
++              <Route path="/network-real" element={<ModulePolicyGate moduleId="network"><LegacyNetworkRedirect /></ModulePolicyGate>} />
++              <Route path="/architecture" element={<ModulePolicyGate moduleId="architecture"><ArchitectureRoute /></ModulePolicyGate>} />
++              <Route path="/research" element={<ModulePolicyGate moduleId="research"><Research /></ModulePolicyGate>} />
++              <Route path="/far" element={<ModulePolicyGate moduleId="far"><FAR /></ModulePolicyGate>} />
++              <Route path="/monitoring" element={<ModulePolicyGate moduleId="monitoring"><MonitoringGrid /></ModulePolicyGate>} />
++              <Route path="/vendors" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
++              <Route path="/vendors-real" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
++              <Route path="/knowledge" element={<ModulePolicyGate moduleId="knowledge"><Knowledge /></ModulePolicyGate>} />
++              <Route path="/logs" element={<ModulePolicyGate moduleId="logs"><AuditLogs /></ModulePolicyGate>} />
++              <Route path="/settings" element={<ModulePolicyGate moduleId="settings"><SettingsPage /></ModulePolicyGate>} />
+               <Route path="*" element={<Navigate to="/" replace />} />
+             </Routes>
+           </ErrorBoundary>
+@@ -711,8 +687,18 @@ import { ErrorSentinel } from './components/shared/ErrorSentinel'
+ function ReconnectRefresh() {
+   React.useEffect(() => {
+     const refresh = () => { void queryClient.invalidateQueries() }
++    const handleScopeChange = () => {
++      // Protected query keys include the request scope; clear old results so a
++      // tenant/user switch cannot render data from the previous identity.
++      queryClient.clear()
++      void queryClient.invalidateQueries({ queryKey: ['module-policy', getRequestScopeKey()] })
++    }
+     window.addEventListener('online', refresh)
+-    return () => window.removeEventListener('online', refresh)
++    window.addEventListener('sysgrid-scope-changed', handleScopeChange)
++    return () => {
++      window.removeEventListener('online', refresh)
++      window.removeEventListener('sysgrid-scope-changed', handleScopeChange)
++    }
+   }, [])
+   return null
+ }
+diff --git a/frontend/src/api/apiClient.ts b/frontend/src/api/apiClient.ts
+index 8e3e71d6..24832894 100644
+--- a/frontend/src/api/apiClient.ts
++++ b/frontend/src/api/apiClient.ts
+@@ -211,7 +211,23 @@ function getCurrentTenantId(): string {
+   )
+ }
+ 
++export function getRequestScopeKey(): string {
++  return `${getCurrentUserId()}::${getCurrentTenantId()}`
++}
++
++let lastRequestScopeKey = ''
++
+ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
++  const requestScopeKey = getRequestScopeKey()
++  if (requestScopeKey !== lastRequestScopeKey) {
++    const previousScopeKey = lastRequestScopeKey
++    lastRequestScopeKey = requestScopeKey
++    if (previousScopeKey && typeof window !== 'undefined') {
++      window.dispatchEvent(new CustomEvent('sysgrid-scope-changed', {
++        detail: { previousScopeKey, requestScopeKey },
++      }))
++    }
++  }
+   const baseUrl = getApiBaseUrl();
+   const invalidApiBaseMessage = validateConfiguredApiBaseUrl(baseUrl)
+   if (invalidApiBaseMessage && !endpoint.startsWith('http')) {
+diff --git a/frontend/src/components/Dashboard.tsx b/frontend/src/components/Dashboard.tsx
+index 1af51289..825315cc 100644
+--- a/frontend/src/components/Dashboard.tsx
++++ b/frontend/src/components/Dashboard.tsx
+@@ -18,6 +18,7 @@ import { apiFetch } from '../api/apiClient'
+ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+ import { formatDistanceToNow } from 'date-fns'
+ import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
++import { useModulePolicy } from '../policy/ModulePolicy'
+ 
+ const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+ 
+@@ -163,6 +164,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
+   const navigate = useNavigate();
+   const [searchParams, setSearchParams] = useSearchParams();
+   const [globalSearch, setGlobalSearch] = useState('');
++  const modulePolicy = useModulePolicy();
+ 
+   const handleNavigate = (tab: string) => {
+     setSearchParams({ tab: tab.toLowerCase() });
+@@ -522,10 +524,15 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
+ 
+            <div className="col-span-8 grid grid-cols-3 gap-6">
+               {[
+-                { title: 'Failure Forensics', items: metrics?.recent.far, icon: AlertTriangle, color: 'text-rose-400', path: '/far' },
+-                { title: 'Strategic Pipeline', items: metrics?.recent.projects.in_progress, icon: Briefcase, color: 'text-blue-400', path: '/projects' },
+-                { title: 'Intel Knowledge', items: metrics?.recent.knowledge, icon: BookOpen, color: 'text-amber-400', path: '/knowledge' }
+-              ].map((feed, i) => (
++                { moduleId: 'far', title: 'Failure Forensics', items: metrics?.recent?.far, icon: AlertTriangle, color: 'text-rose-400', path: '/far' },
++                { moduleId: 'projects', title: 'Strategic Pipeline', items: metrics?.recent?.projects?.in_progress, icon: Briefcase, color: 'text-blue-400', path: '/projects' },
++                { moduleId: 'knowledge', title: 'Intel Knowledge', items: metrics?.recent?.knowledge, icon: BookOpen, color: 'text-amber-400', path: '/knowledge' }
++              ].filter((feed) => {
++                const policyModule = modulePolicy.data?.modules?.[feed.moduleId]
++                if (!policyModule) return false
++                if (modulePolicy.isLoading || modulePolicy.isError) return policyModule.default_stage === 'production' && policyModule.available
++                return policyModule.available
++              }).map((feed, i) => (
+                 <div key={i} className="glass-panel rounded-lg border-white/5 bg-black/20 p-8 shadow-xl flex flex-col h-[400px]">
+                    <div className="flex items-center justify-between mb-8">
+                       <div className="flex items-center gap-4">
+diff --git a/frontend/src/components/MonitoringGrid.tsx b/frontend/src/components/MonitoringGrid.tsx
+index ba1785c0..98616394 100644
+--- a/frontend/src/components/MonitoringGrid.tsx
++++ b/frontend/src/components/MonitoringGrid.tsx
+@@ -2507,7 +2507,7 @@ export default function MonitoringGrid() {
+             key={`monitoring-bkm-list-${bkmPopup.monitorId ?? 'none'}-${bkmPopup.docs.join('-')}`}
+             docs={bkmPopup.docs} 
+             monitorId={bkmPopup.monitorId}
+-            onOpenBkm={setActiveBkm} 
++            onOpenBkm={(knowledgeId) => setActiveBkm({ id: knowledgeId, monitorId: bkmPopup.monitorId })}
+             onOpenKnowledge={(knowledgeId) => {
+               setBkmPopup(null)
+               setActiveBkm(null)
+@@ -2517,7 +2517,7 @@ export default function MonitoringGrid() {
+             onClose={() => { setBkmPopup(null); detailRoute.finishTransition(); }} 
+           />
+         )}
+-        {activeBkm && <BkmDetailModal key={`monitoring-bkm-detail-${activeBkm}`} bkmId={activeBkm} onClose={() => { setActiveBkm(null); detailRoute.finishTransition(); }} />}
++        {activeBkm && <BkmDetailModal key={`monitoring-bkm-detail-${activeBkm.id}`} bkmId={activeBkm.id} monitorId={activeBkm.monitorId} onClose={() => { setActiveBkm(null); detailRoute.finishTransition(); }} />}
+         {compareOpen && <CompareMonitorsModal key={`monitoring-compare-${compareItems.map((item) => item.id).join('-') || 'empty'}`} items={compareItems} onClose={() => setCompareOpen(false)} />}
+         {showBulkEditModal && (
+           <BulkEditTableModal
+@@ -2885,11 +2885,12 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
+       const params = new URLSearchParams()
+       if (item.device_id) params.append('device_id', String(item.device_id))
+       params.append('monitoring_id', String(item.id))
++      params.append('embedded_consumer', 'monitoring')
+       const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
+       const linked = await response.json()
+       if (Array.isArray(linked) && linked.length > 0) return linked
+       if (!item.device_id) return linked
+-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}`)
++      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}&embedded_consumer=monitoring&monitoring_id=${item.id}`)
+       return fallback.json()
+     }
+   })
+diff --git a/frontend/src/components/NetworkReal.tsx b/frontend/src/components/NetworkReal.tsx
+index 29b93567..07809538 100644
+--- a/frontend/src/components/NetworkReal.tsx
++++ b/frontend/src/components/NetworkReal.tsx
+@@ -3237,16 +3237,16 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
+   const detailTitle = getNetworkConnectionTitle(item)
+ 
+   const { data: suggestedKnowledge } = useQuery({
+-    queryKey: ['network-knowledge-suggestions', item.id, item.device_id],
++    queryKey: ['network-knowledge-suggestions', item.id, item.source_device_id],
+     queryFn: async () => {
+       const params = new URLSearchParams()
+-      if (item.device_id) params.append('device_id', String(item.device_id))
+-      params.append('monitoring_id', String(item.id))
++      if (item.source_device_id) params.append('device_id', String(item.source_device_id))
++      params.append('embedded_consumer', 'network')
+       const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
+       const linked = await response.json()
+       if (Array.isArray(linked) && linked.length > 0) return linked
+-      if (!item.device_id) return linked
+-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}`)
++      if (!item.source_device_id) return linked
++      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.source_device_id}&embedded_consumer=network`)
+       return fallback.json()
+     }
+   })
+diff --git a/frontend/src/components/assets/AssetDetailsView.tsx b/frontend/src/components/assets/AssetDetailsView.tsx
+index 661293b2..e5e902aa 100644
+--- a/frontend/src/components/assets/AssetDetailsView.tsx
++++ b/frontend/src/components/assets/AssetDetailsView.tsx
+@@ -294,7 +294,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
+     // --- FETCH RELATED CONTEXT ---
+     const { data: farModes } = useQuery({
+       queryKey: ['far-modes-system', device.system],
+-      queryFn: async () => (await (await apiFetch(`/api/v1/far/modes?system=${device.system}`)).json()),
++      queryFn: async () => (await (await apiFetch(`/api/v1/far/modes?system=${encodeURIComponent(device.system)}&embedded_consumer=assets`)).json()),
+       enabled: !!device.system
+     })
+ 
+@@ -318,7 +318,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
+ 
+     const { data: relatedKnowledge } = useQuery({
+       queryKey: ['asset-knowledge', device.id],
+-      queryFn: async () => (await apiFetch(`/api/v1/knowledge?device_id=${device.id}`)).json(),
++      queryFn: async () => (await apiFetch(`/api/v1/knowledge?device_id=${device.id}&embedded_consumer=assets`)).json(),
+       enabled: !!device.id
+     })
+ 
+@@ -328,7 +328,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
+       queryFn: async () => {
+         const params = new URLSearchParams()
+         params.append('device_id', String(device.id))
+-        if (primaryMonitoringId) params.append('monitoring_id', String(primaryMonitoringId))
++        params.append('embedded_consumer', 'assets')
+         return (await apiFetch(`/api/v1/knowledge?${params.toString()}`)).json()
+       },
+       enabled: !!device.id
+diff --git a/frontend/src/components/monitoring/BkmDetailModal.tsx b/frontend/src/components/monitoring/BkmDetailModal.tsx
+index a9e79248..bfb89579 100644
+--- a/frontend/src/components/monitoring/BkmDetailModal.tsx
++++ b/frontend/src/components/monitoring/BkmDetailModal.tsx
+@@ -13,13 +13,13 @@ import { apiFetch } from '../../api/apiClient'
+ import { useQuery } from '@tanstack/react-query'
+ 
+ 
+-export function BkmDetailModal({ bkmId, onClose }: any) {
++export function BkmDetailModal({ bkmId, monitorId, onClose }: any) {
+   useEscapeDismiss(onClose)
+   useBodyModalFlag()
+   const [isMaximized, setIsMaximized] = useState(false)
+   const { data: bkm, isLoading } = useQuery({
+-    queryKey: ['knowledge-entry', bkmId],
+-    queryFn: async () => (await apiFetch(`/api/v1/knowledge/${bkmId}`)).json(),
++    queryKey: ['knowledge-entry', bkmId, 'monitoring', monitorId],
++    queryFn: async () => (await apiFetch(`/api/v1/knowledge/${bkmId}?embedded_consumer=monitoring&monitoring_id=${monitorId}`)).json(),
+     enabled: !!bkmId
+   })
+ 
+diff --git a/frontend/src/components/monitoring/BkmListModal.tsx b/frontend/src/components/monitoring/BkmListModal.tsx
+index fd598b5b..30c1ef2f 100644
+--- a/frontend/src/components/monitoring/BkmListModal.tsx
++++ b/frontend/src/components/monitoring/BkmListModal.tsx
+@@ -53,8 +53,8 @@ export function BkmListModal({
+   }, [normalizedDocs])
+ 
+   const { data: knowledgeEntries } = useQuery({
+-    queryKey: ['knowledge-entries'],
+-    queryFn: async () => (await apiFetch('/api/v1/knowledge/')).json()
++    queryKey: ['knowledge-entries', 'monitoring', monitorId],
++    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring&monitoring_id=${monitorId}`)).json()
+   })
+ 
+   const filteredKnowledge = useMemo(() => {
+diff --git a/frontend/src/components/monitoring/MonitoringDetailModal.tsx b/frontend/src/components/monitoring/MonitoringDetailModal.tsx
+index 68076368..3da0ea88 100644
+--- a/frontend/src/components/monitoring/MonitoringDetailModal.tsx
++++ b/frontend/src/components/monitoring/MonitoringDetailModal.tsx
+@@ -32,11 +32,12 @@ export function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, on
+       const params = new URLSearchParams()
+       if (item.device_id) params.append('device_id', String(item.device_id))
+       params.append('monitoring_id', String(item.id))
++      params.append('embedded_consumer', 'monitoring')
+       const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
+       const linked = await response.json()
+       if (Array.isArray(linked) && linked.length > 0) return linked
+       if (!item.device_id) return linked
+-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}`)
++      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}&embedded_consumer=monitoring&monitoring_id=${item.id}`)
+       return fallback.json()
+     }
+   })
+diff --git a/frontend/src/components/monitoring/MonitoringForm.tsx b/frontend/src/components/monitoring/MonitoringForm.tsx
+index bf239fb0..7dbee5e4 100644
+--- a/frontend/src/components/monitoring/MonitoringForm.tsx
++++ b/frontend/src/components/monitoring/MonitoringForm.tsx
+@@ -255,8 +255,8 @@ export function MonitoringForm({ item, devices, categories, severities, platform
+ 
+   // Fetch knowledge entries for recovery docs
+   const { data: knowledgeEntries } = useQuery({
+-    queryKey: ['knowledge-entries'],
+-    queryFn: async () => (await apiFetch('/api/v1/knowledge/')).json()
++    queryKey: ['knowledge-entries', 'monitoring', item?.id || 'new'],
++    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring${item?.id ? `&monitoring_id=${item.id}` : ''}`)).json()
+   })
+ 
+   const filteredKnowledge = useMemo(() => {
+diff --git a/frontend/src/components/shared/GlobalSearch.tsx b/frontend/src/components/shared/GlobalSearch.tsx
+index c2fa4197..0a6d7e39 100644
+--- a/frontend/src/components/shared/GlobalSearch.tsx
++++ b/frontend/src/components/shared/GlobalSearch.tsx
+@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
+ import { useNavigate } from 'react-router-dom';
+ import { apiFetch } from '../../api/apiClient';
+ import metadata from '../../metadata.json';
++import { useModulePolicy } from '../../policy/ModulePolicy';
+ 
+ interface SearchResult {
+   id: number;
+@@ -12,6 +13,7 @@ interface SearchResult {
+   subtitle: string;
+   tag: string;
+   path: string;
++  module_id?: string;
+ }
+ 
+ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+@@ -21,6 +23,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
+   const [selectedIndex, setSelectedIndex] = useState(0);
+   const navigate = useNavigate();
+   const inputRef = useRef<HTMLInputElement>(null);
++  const modulePolicy = useModulePolicy();
+ 
+   useEffect(() => {
+     if (!isOpen) return
+@@ -42,7 +45,17 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
+         try {
+           const res = await apiFetch(`/api/v1/dashboard/search?q=${encodeURIComponent(trimmedQuery)}`);
+           const data = await res.json();
+-          setResults(data.results || []);
++          const releasedModuleIds = new Set(['home', 'assets', 'monitoring', 'services', 'network', 'racks', 'logs', 'settings']);
++          const visibleResults = (data.results || []).filter((result: SearchResult) => {
++            const moduleId = result.module_id;
++            if (moduleId && modulePolicy.data?.modules?.[moduleId]) {
++              const module = modulePolicy.data.modules[moduleId];
++              if (modulePolicy.isLoading || modulePolicy.isError) return module.default_stage === 'production' && module.available;
++              return module.available;
++            }
++            return !modulePolicy.isError && !moduleId || releasedModuleIds.has(moduleId || result.type);
++          });
++          setResults(visibleResults);
+           setSelectedIndex(0);
+         } catch (err) {
+           console.error('Search failed:', err);
+@@ -55,7 +68,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
+     }, 500); // Increased debounce for stability
+ 
+     return () => clearTimeout(handler);
+-  }, [query]);
++  }, [query, modulePolicy.data, modulePolicy.isError]);
+ 
+   const groupedResults = useMemo(() => {
+     const groups: Record<string, SearchResult[]> = {};
+diff --git a/frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts b/frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts
+index 87890a0b..7c5a461a 100644
+--- a/frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts
++++ b/frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts
+@@ -7,7 +7,7 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), 'u
+ 
+ const views = [
+   'MonitoringGrid.tsx',
+-  'AssetReal.tsx',
++  'assets/AssetGoldenOperationalWorkspace.tsx',
+   'ServicesReal.tsx',
+   'External.tsx',
+   'NetworkReal.tsx',
+@@ -46,4 +46,16 @@ describe('Golden workspace geometry contract', () => {
+     expect(source).not.toContain('overflow-x-auto rounded-lg border border-white/5 bg-black/20 px-4 py-3')
+     expect(source).not.toContain('rounded-t-none border-x border-b border-white/5')
+   })
++
++  it('follows the live Assets route chain instead of the retired AssetReal filename', () => {
++    const assets = read('Assets.tsx')
++    const route = read('assets/AssetGoldenShellRoute.tsx')
++    const workspace = read('assets/AssetGoldenOperationalWorkspace.tsx')
++    const app = fs.readFileSync(path.resolve(root, '..', 'App.tsx'), 'utf8')
++    expect(assets).toContain("AssetGoldenShellRoute")
++    expect(route).toContain("AssetGoldenOperationalWorkspace")
++    expect(workspace).toContain("AssetGoldenShellScaffold")
++    expect(app).toContain('path="/asset"')
++    expect(app).toContain('<Assets />')
++  })
+ })
+diff --git a/frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts b/frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts
+index f8f83678..2b55e801 100644
+--- a/frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts
++++ b/frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts
+@@ -8,7 +8,7 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), 'u
+ 
+ const views = [
+   ['MonitoringGrid.tsx', 'table'],
+-  ['AssetReal.tsx', 'table'],
++  ['assets/AssetGoldenShellScaffold.tsx', 'table'],
+   ['ServicesReal.tsx', 'table'],
+   ['External.tsx', 'table'],
+   ['NetworkReal.tsx', 'hybrid'],
+@@ -29,11 +29,24 @@ describe('Golden workspace shell contract', () => {
+ 
+   it.each(views)('%s declares the approved archetype and avoids local golden-grid reconstruction', (file, archetype) => {
+     const source = read(file)
+-    expect(source).toContain(`archetype="${archetype}"`)
++    if (file === 'assets/AssetGoldenShellScaffold.tsx') {
++      expect(source).toContain('<OperationalWorkspaceShell')
++    } else {
++      expect(source).toContain(`archetype="${archetype}"`)
++    }
+     expect(source).not.toContain('className="monitoring-grid-shell monitoring-grid')
+     expect(source).not.toContain('AgGridReact')
+   })
+ 
++  it('locks the live Assets route to the golden shell scaffold and workspace owner', () => {
++    const route = read('assets/AssetGoldenShellRoute.tsx')
++    const workspace = read('assets/AssetGoldenOperationalWorkspace.tsx')
++    const scaffold = read('assets/AssetGoldenShellScaffold.tsx')
++    expect(route).toContain('AssetGoldenOperationalWorkspace')
++    expect(workspace).toContain('AssetGoldenShellScaffold')
++    expect(scaffold).toContain('OperationalWorkspaceShell')
++  })
++
+   it('permits attached-panel geometry only through the shared named variant', () => {
+     const far = read('FAR.tsx')
+     expect(far).not.toContain('surfaceVariant="attached-panel"')
+diff --git a/frontend/src/components/shared/ModuleReleasePolicyContract.test.ts b/frontend/src/components/shared/ModuleReleasePolicyContract.test.ts
+new file mode 100644
+index 00000000..79a423df
+--- /dev/null
++++ b/frontend/src/components/shared/ModuleReleasePolicyContract.test.ts
+@@ -0,0 +1,28 @@
++import { describe, expect, it } from 'vitest'
++import fs from 'node:fs'
++import path from 'node:path'
++import catalog from '../../../../contracts/system_management_v1.json'
++
++const frontendRoot = path.resolve(__dirname, '../..')
++const appSource = fs.readFileSync(path.join(frontendRoot, 'App.tsx'), 'utf8')
++const navigationSource = fs.readFileSync(path.join(frontendRoot, 'components/shared/ShellNavigation.tsx'), 'utf8')
++
++describe('System Management V1 module release policy contract', () => {
++  it('classifies every catalog route and compatibility alias in the actual router', () => {
++    for (const module of catalog.modules) {
++      if (module.id !== 'home') expect(appSource).toContain(`moduleId="${module.id}"`)
++      for (const route of [module.canonical_route, ...module.aliases]) {
++        if (route === '/') expect(appSource).toContain('path="/"')
++        else expect(appSource).toContain(`path="${route}`)
++      }
++    }
++  })
++
++  it('derives navigation metadata from the neutral catalog with local icon bindings only', () => {
++    expect(navigationSource).toContain('MODULE_CATALOG.modules.reduce')
++    expect(navigationSource).toContain('module.canonical_route')
++    expect(navigationSource).toContain('module.aliases')
++    expect(navigationSource).toContain('MODULE_ICONS')
++    expect(navigationSource).not.toContain("permission: 'projects'")
++  })
++})
+diff --git a/frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts b/frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts
+new file mode 100644
+index 00000000..eaaa9f11
+--- /dev/null
++++ b/frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts
+@@ -0,0 +1,35 @@
++import { describe, expect, it } from 'vitest'
++import fs from 'node:fs'
++import path from 'node:path'
++
++const repoRoot = path.resolve(__dirname, '../../../..')
++const inventory = JSON.parse(fs.readFileSync(path.join(repoRoot, 'contracts/monitoring_feature_preservation_v1.json'), 'utf8'))
++const monitoringSource = fs.readFileSync(path.join(repoRoot, 'frontend/src/components/MonitoringGrid.tsx'), 'utf8')
++
++describe('Monitoring preservation harness inventory', () => {
++  it('contains the bounded feature inventory and explicit expected release changes', () => {
++    expect(inventory.monitoring_inner_workspace_change).toBe('none')
++    expect(inventory.features).toHaveLength(17)
++    expect(inventory.expected_release_changes).toHaveLength(3)
++    expect(inventory.accepted_geometry.grid_width_owner).toContain('OperationalGridContract.ts')
++  })
++
++  it('keeps the real Monitoring owner wired to the preserved feature families', () => {
++    for (const marker of [
++      'OperationalSavedViewsPanel',
++      'useOperationalGroupedSelection',
++      'MonitoringHistoryModal',
++      'CompareMonitorsModal',
++      'BkmListModal',
++      'MonitoringDetailModal',
++      'import',
++      'export',
++    ]) {
++      expect(monitoringSource).toContain(marker)
++    }
++    expect(monitoringSource).toContain('bulkMutation.mutate')
++    expect(monitoringSource).not.toContain('OperationalBulkPreviewModal')
++    expect(monitoringSource).not.toContain('bulkPreviewState')
++    expect(monitoringSource).not.toContain('openBulkPreview')
++  })
++})
+diff --git a/frontend/src/components/shared/ShellNavigation.tsx b/frontend/src/components/shared/ShellNavigation.tsx
+index 163956dd..f776d3cc 100644
+--- a/frontend/src/components/shared/ShellNavigation.tsx
++++ b/frontend/src/components/shared/ShellNavigation.tsx
+@@ -1,11 +1,12 @@
+ import React, { ReactNode, useState } from 'react'
+ import { Activity, AlertTriangle, BookOpen, Briefcase, ChevronDown, FileText, Globe, Layers, LayoutDashboard, Network, Package, Search, Server, Share2, Workflow, type LucideIcon } from 'lucide-react'
+ import { Link } from 'react-router-dom'
++import { MODULE_CATALOG } from '../../policy/moduleCatalog'
+ 
+ export type ShellNavigationItem = {
++  moduleId: string
+   label: string
+   path: string
+-  permission?: string
+   aliases?: string[]
+   icon: LucideIcon
+ }
+@@ -16,47 +17,38 @@ export type ShellNavigationGroup = {
+   defaultExpanded?: boolean
+ }
+ 
+-export const SHELL_NAV_GROUPS: ShellNavigationGroup[] = [
+-  {
+-    label: 'Operations',
+-    items: [
+-      { label: 'Home', path: '/', icon: LayoutDashboard },
+-      { label: 'Projects', path: '/projects', permission: 'projects', icon: Briefcase },
+-      { label: 'Monitoring', path: '/monitoring', permission: 'monitoring', icon: Activity },
+-    ],
+-  },
+-  {
+-    label: 'Infrastructure',
+-    items: [
+-      { label: 'Assets', path: '/asset', permission: 'assets', aliases: ['/asset-real'], icon: Server },
+-      { label: 'Racks', path: '/racks', permission: 'racks', icon: Package },
+-      { label: 'Services', path: '/services', permission: 'services', icon: Layers },
+-      { label: 'External', path: '/external', permission: 'external', icon: Share2 },
+-    ],
+-  },
+-  {
+-    label: 'Connectivity',
+-    items: [
+-      { label: 'Network', path: '/network', permission: 'network', aliases: ['/network-real'], icon: Network },
+-      { label: 'Architecture', path: '/architecture', permission: 'architecture', icon: Workflow },
+-    ],
+-  },
+-  {
+-    label: 'Analysis',
+-    items: [
+-      { label: 'FAR', path: '/far', permission: 'far', icon: AlertTriangle },
+-      { label: 'Research', path: '/research', permission: 'research', icon: Search },
+-    ],
+-  },
+-  {
+-    label: 'Resources',
+-    items: [
+-      { label: 'Vendors', path: '/vendors', permission: 'vendors', aliases: ['/vendors-real'], icon: Globe },
+-      { label: 'Knowledge', path: '/knowledge', permission: 'knowledge', icon: BookOpen },
+-      { label: 'Audit logs', path: '/logs', permission: 'logs', icon: FileText },
+-    ],
+-  },
+-]
++const MODULE_ICONS: Record<string, LucideIcon> = {
++  home: LayoutDashboard,
++  projects: Briefcase,
++  monitoring: Activity,
++  assets: Server,
++  racks: Package,
++  services: Layers,
++  external: Share2,
++  network: Network,
++  architecture: Workflow,
++  research: Search,
++  far: AlertTriangle,
++  vendors: Globe,
++  knowledge: BookOpen,
++  logs: FileText,
++  settings: FileText,
++}
++
++export const SHELL_NAV_GROUPS: ShellNavigationGroup[] = Array.from(
++  MODULE_CATALOG.modules.reduce((groups, module) => {
++    const group = groups.get(module.navigation_group) || []
++    group.push({
++      moduleId: module.id,
++      label: module.label,
++      path: module.canonical_route,
++      aliases: module.aliases,
++      icon: MODULE_ICONS[module.id] || FileText,
++    })
++    groups.set(module.navigation_group, group)
++    return groups
++  }, new Map<string, ShellNavigationItem[]>()),
++).map(([label, items]) => ({ label, items }))
+ 
+ const normalizePath = (path: string) => {
+   const normalized = path.replace(/\/+$/, '')
+@@ -78,19 +70,24 @@ const groupId = (label: string) => `shell-nav-group-${label.toLowerCase().replac
+ 
+ export function ShellNavItem({
+   icon: Icon,
++  moduleId,
+   label,
+   path,
+   active,
+   isOpen,
+   disabled = false,
++  unavailableReason,
+ }: {
+   icon: LucideIcon
++  moduleId?: string
+   label: string
+   path: string
+   active: boolean
+   isOpen: boolean
+   disabled?: boolean
++  unavailableReason?: string | null
+ }) {
++  const displayLabel = disabled && unavailableReason === 'SYSTEM_ROOT_REQUIRED' ? `${label} (Preview)` : disabled ? `${label} (Unavailable)` : label
+   const itemClassName = [
+     'group relative flex min-h-10 w-full items-center rounded-md px-3 py-2.5',
+     'text-sm transition-colors duration-150',
+@@ -105,7 +102,7 @@ export function ShellNavItem({
+   const content = (
+     <span className={itemClassName}>
+       <Icon size={18} aria-hidden="true" className="shrink-0" />
+-      <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{label}</span>
++      <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{displayLabel}</span>
+       {active && isOpen ? <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" /> : null}
+       {active && !isOpen ? <span className="absolute right-1.5 h-1.5 w-1.5 rounded-full bg-[var(--accent-primary)]" aria-hidden="true" /> : null}
+     </span>
+@@ -117,11 +114,11 @@ export function ShellNavItem({
+         className={itemClassName}
+         role="link"
+         aria-disabled="true"
+-        aria-label={`${label} unavailable`}
+-        title={`${label} is unavailable for the current account`}
++        aria-label={`${displayLabel} unavailable`}
++        title={`${displayLabel} is unavailable for the current account`}
+       >
+         <Icon size={18} aria-hidden="true" className="shrink-0" />
+-        <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{label}</span>
++        <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{displayLabel}</span>
+       </div>
+     )
+   }
+diff --git a/frontend/src/components/shared/TenantSelector.tsx b/frontend/src/components/shared/TenantSelector.tsx
+index 8c763f17..352a0b87 100644
+--- a/frontend/src/components/shared/TenantSelector.tsx
++++ b/frontend/src/components/shared/TenantSelector.tsx
+@@ -44,7 +44,8 @@ export function TenantSelector() {
+       if (!res.ok) throw new Error("Failed to switch database")
+       return res.json()
+     },
+-    onSuccess: () => {
++    onSuccess: (_data, tenantId) => {
++      localStorage.setItem('SYSGRID_TENANT_ID', String(tenantId))
+       toast.success("Database switched successfully")
+       queryClient.invalidateQueries()
+       // Reload the page to ensure all components refresh with new data context
+diff --git a/frontend/src/main.tsx b/frontend/src/main.tsx
+index 3204443a..d526628d 100644
+--- a/frontend/src/main.tsx
++++ b/frontend/src/main.tsx
+@@ -217,7 +217,8 @@ const Bootstrap = () => {
+         const baseUrl = getApiBaseUrl() || window.location.origin;
+         if (shouldUseWebSocketSync(baseUrl)) {
+           const wsProtocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
+-          const wsUrl = baseUrl.replace(/^https?/, wsProtocol) + '/api/v1/ws/sync';
++          const tenantId = localStorage.getItem('SYSGRID_TENANT_ID') || '1';
++          const wsUrl = baseUrl.replace(/^https?/, wsProtocol) + `/api/v1/ws/sync?tenant_id=${encodeURIComponent(tenantId)}`;
+           
+           console.log("BOOTSTRAP: Initializing WebSocket sync at " + wsUrl);
+           try {
+diff --git a/frontend/src/policy/ModulePolicy.tsx b/frontend/src/policy/ModulePolicy.tsx
+new file mode 100644
+index 00000000..4ecf4443
+--- /dev/null
++++ b/frontend/src/policy/ModulePolicy.tsx
+@@ -0,0 +1,71 @@
++import { useQuery } from '@tanstack/react-query'
++import type { ReactNode } from 'react'
++import { apiFetch, getRequestScopeKey } from '../api/apiClient'
++import { PermissionDeniedState } from '../components/shared/ShellStates'
++import { getCatalogModule, type ModuleStage } from './moduleCatalog'
++
++export type EffectiveModulePolicy = {
++  module_id: string
++  label: string
++  stage: ModuleStage
++  default_stage: ModuleStage
++  available: boolean
++  blocked_reason: string | null
++  root_preview: boolean
++  actions?: {
++    read?: boolean
++    write?: boolean
++    import?: boolean
++    export?: boolean
++    preview?: boolean
++  }
++}
++
++export type EffectiveModulePolicyProjection = {
++  catalog_version: string
++  profile_id: string
++  identity: {
++    authenticated: boolean
++    tenant_id: number | string | null
++    access_role: string | null
++    operator_role: string | null
++    tenant_admin: boolean
++    system_root: boolean
++  }
++  actions: { diagnostics?: { read?: boolean } }
++  modules: Record<string, EffectiveModulePolicy>
++}
++
++export function useModulePolicy() {
++  return useQuery<EffectiveModulePolicyProjection>({
++    queryKey: ['module-policy', getRequestScopeKey()],
++    queryFn: async () => (await apiFetch('/api/v1/policy/module-availability')).json(),
++    staleTime: 30000,
++    retry: 1,
++  })
++}
++
++export function moduleIsReleased(policy: EffectiveModulePolicyProjection | undefined, moduleId: string) {
++  const module = policy?.modules?.[moduleId]
++  return Boolean(module?.available)
++}
++
++export function ModulePolicyGate({ moduleId, children }: { moduleId: string; children: ReactNode }) {
++  const policyQuery = useModulePolicy()
++  const catalogModule = getCatalogModule(moduleId)
++  const module = policyQuery.data?.modules?.[moduleId]
++  const label = module?.label || catalogModule?.label || moduleId
++
++  // Released routes remain recoverable while the policy request is in flight or
++  // temporarily unavailable. Preview routes fail closed and never mount first.
++  if ((policyQuery.isLoading || policyQuery.isError) && catalogModule?.default_stage === 'preview') {
++    return <PermissionDeniedState area={label} />
++  }
++  if (!module && (policyQuery.isLoading || policyQuery.isError)) {
++    if (catalogModule?.default_stage === 'production') return <>{children}</>
++    return <PermissionDeniedState area={label} />
++  }
++
++  if (!module?.available) return <PermissionDeniedState area={label} />
++  return <>{children}</>
++}
+diff --git a/frontend/src/policy/moduleCatalog.ts b/frontend/src/policy/moduleCatalog.ts
+new file mode 100644
+index 00000000..8f064620
+--- /dev/null
++++ b/frontend/src/policy/moduleCatalog.ts
+@@ -0,0 +1,31 @@
++import catalog from '../../../contracts/system_management_v1.json'
++
++export type ModuleStage = 'production' | 'preview' | 'disabled' | 'retired'
++
++export type ModuleCatalogEntry = {
++  id: string
++  label: string
++  canonical_route: string
++  aliases: string[]
++  navigation_group: string
++  profile_membership: string
++  default_stage: ModuleStage
++  required_capability: string | null
++  resource_owner: string
++  root_preview_allowed: boolean
++  atlas_identity: string
++  embedded_support_projections: unknown[]
++}
++
++export const MODULE_CATALOG = catalog as {
++  catalog_version: string
++  profile_id: string
++  stages: ModuleStage[]
++  modules: ModuleCatalogEntry[]
++}
++
++export const MODULES_BY_ID = Object.fromEntries(
++  MODULE_CATALOG.modules.map((module) => [module.id, module]),
++) as Record<string, ModuleCatalogEntry>
++
++export const getCatalogModule = (moduleId: string) => MODULES_BY_ID[moduleId]
+diff --git a/frontend/tsconfig.json b/frontend/tsconfig.json
+index 24c30c85..7248bfab 100644
+--- a/frontend/tsconfig.json
++++ b/frontend/tsconfig.json
+@@ -23,6 +23,6 @@
+       "@/*": ["src/*"]
+     }
+   },
+-  "include": ["src", "tests"],
++  "include": ["src", "tests", "../contracts"],
+   "references": [{ "path": "./tsconfig.node.json" }]
+ }
+diff --git a/frontend/vite.config.ts b/frontend/vite.config.ts
+index 48380e87..ad136254 100644
+--- a/frontend/vite.config.ts
++++ b/frontend/vite.config.ts
+@@ -30,6 +30,9 @@ export default defineConfig(({ mode }) => {
+       host: true,
+       strictPort: true,
+       allowedHosts: true,
++      fs: {
++        allow: ['..'],
++      },
+       proxy: {
+         '/api': {
+           target: apiTarget,

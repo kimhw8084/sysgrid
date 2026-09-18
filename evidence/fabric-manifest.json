@@ -1,0 +1,85 @@
+{
+  "artifact_commit": "f776a5ba9dae3f16e4a68973b996222efbab754f",
+  "artifact_readback_verified": true,
+  "artifact_receipt_note": "receipt records the first published commit readback; final ref was fast-forwarded with receipt metadata",
+  "artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-release-foundation-qualification-fix-v3",
+  "change": "CHG-120",
+  "fabric_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-release-foundation-qualification-fix-v3",
+  "files_before_manifest": {
+    "capture-report.json": {
+      "bytes": 8304,
+      "sha256": "c94d28e82ad12f113b0036ec0f2d694634a54a3b1ccb518d13d26f636e466f54"
+    },
+    "comparison-report.json": {
+      "bytes": 8246,
+      "sha256": "e3bf8cad57fc401b4213d68a3751f11ea6bace655d6dd740a1e9cbbbddd1ddd0"
+    },
+    "git-publish-receipt.json": {
+      "bytes": 2964,
+      "sha256": "043c02a49edce8431ac867e517194d3811491d3d911fde6162c07fc3992696de"
+    },
+    "logs/backend-policy.log": {
+      "bytes": 591,
+      "sha256": "15a8b29a92634e3701d9bde4c5334ac7d7a92c912b27f4c34ec2829c893a95fe"
+    },
+    "logs/backend-relevant.log": {
+      "bytes": 653799,
+      "sha256": "fde3cca745b96cb23207689c78f9654718f39cdd4cda2c17d047d1b4fae46dbf"
+    },
+    "logs/base-backend-representative.log": {
+      "bytes": 3972,
+      "sha256": "2365869b217d2d7d4c386919a5dc635bece423b067b10e7cda6010b18af98124"
+    },
+    "logs/base-unit.log": {
+      "bytes": 830869,
+      "sha256": "7692c5401fcbce86c63df22d190bd2aeb5b4d33223ae9f0f802c90808d0e17b1"
+    },
+    "logs/eight-route-smoke.log": {
+      "bytes": 85558,
+      "sha256": "579bb0558830c78ef9ecaf2af87dd9df68eb445d7c05208c8b791246535a7a35"
+    },
+    "logs/frontend-e2e.log": {
+      "bytes": 1051378,
+      "sha256": "9fb0304516a45079087e52a6d0acfdc60ad532bd63d1445dff39e718a5231643"
+    },
+    "logs/r3-unit.log": {
+      "bytes": 831656,
+      "sha256": "99337917b2089df3228d1a713a59a676bd6fafa7034394290e85d9d087bd2f9e"
+    },
+    "logs/verify-app.log": {
+      "bytes": 135,
+      "sha256": "4eaad8c5cafba8799ef52b4ec5b7f47332d6ff55dfe25b6cd81fb0879f42e922"
+    },
+    "monitoring-r1-to-r3-ignore-space-at-eol.patch": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native-diff-check.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "qualification-report.json": {
+      "bytes": 17532,
+      "sha256": "4459dff2b9f5d600420225559ba5b09f807bf65b4e4d9e1d5b1b5a9723e1944e"
+    },
+    "source-delta-base-to-candidate.patch": {
+      "bytes": 167292,
+      "sha256": "f5bc1a23e421cc23d9af9d5739fb9f86a07e5dd6734fadca67314a17e906bbd5"
+    },
+    "source-delta-r2-to-r3.patch": {
+      "bytes": 9820,
+      "sha256": "849db8a6c696ffd8f6e411be2a02bddec05bdfc8d84b523823f9c71d14054d82"
+    },
+    "surface-manifest.json": {
+      "bytes": 8318,
+      "sha256": "29eb23e01ff5f8315b6d27b6e6e081c309d51cad1c31a77f23bb5fb29efa6a7a"
+    },
+    "worktree-status.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "git_package_verified": false,
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-release-foundation-qualification-fix-v3"
+}
