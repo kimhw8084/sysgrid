@@ -1,0 +1,33 @@
+{
+  "bundle_exclusions": [
+    "visual-atlas/artifact-bundle.zip",
+    "visual-atlas/git-publish-receipt.json"
+  ],
+  "change": "CHG-120",
+  "git_package_verified": false,
+  "local_package": {
+    "bundle_sha256": "6586e311ab39e7f431b992f48f64272240f0b764b616b5b8e45396eba7387ad7",
+    "comparison_report_sha256": "e3bf8cad57fc401b4213d68a3751f11ea6bace655d6dd740a1e9cbbbddd1ddd0",
+    "file_count_excluding_self_and_receipt": 29,
+    "manifest_sha256": "29eb23e01ff5f8315b6d27b6e6e081c309d51cad1c31a77f23bb5fb29efa6a7a",
+    "qualification_report_sha256": "4459dff2b9f5d600420225559ba5b09f807bf65b4e4d9e1d5b1b5a9723e1944e",
+    "review_desktop_sha256": "b2f7883cec6d023d5769b6549f607f5be4781aef7fa639583b1a652579cddad0",
+    "review_mobile_sha256": "bf6445b5984e428a60fc36ea0a020cab07757f558f15e42968c7d58efee35dec"
+  },
+  "project": "sysgrid",
+  "remote_commit": null,
+  "remote_readback": {
+    "base_png": {
+      "reason": "no canonical base PNG was captured",
+      "status": "NOT_AVAILABLE"
+    },
+    "candidate_png": null,
+    "manifest": null,
+    "qualification_report": null,
+    "reader_index": null,
+    "review_pdf": null,
+    "status": "PENDING_PUSH"
+  },
+  "remote_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-release-foundation-qualification-fix-v3",
+  "request": "sysgrid-smv1-release-foundation-qualification-fix-v3"
+}

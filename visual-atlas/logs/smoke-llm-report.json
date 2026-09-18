@@ -1,0 +1,1328 @@
+{
+  "failed_count": 189,
+  "failures": [
+    {
+      "test": "creates an architecture, adds internal and external inventory, and persists the manifest",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/architecture-workflows.spec.ts",
+      "line": 9,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "persists service-level swimlane workflows and protects against accidental exit",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/architecture-workflows.spec.ts",
+      "line": 148,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "captures stage31 workspace evidence",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-golden-evidence.spec.ts",
+      "line": 690,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "reverts the immutable completed row operation after selection changes",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-revert.spec.ts",
+      "line": 6,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "captures stage33 lock-proof evidence",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-stage33-evidence.spec.ts",
+      "line": 694,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "captures stage34 lock-proof evidence",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-stage34-evidence.spec.ts",
+      "line": 710,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "captures stage35 lock-proof evidence",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-stage35-evidence.spec.ts",
+      "line": 709,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "captures stage36 lock-proof evidence",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-stage36-evidence.spec.ts",
+      "line": 620,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "previews, confirms, receipts, and undoes exact shared changes",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-vendors-bulk-preview.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "simulates the changed Assets workflows end-to-end",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/assets-workflows.spec.ts",
+      "line": 9,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "AuditLogs view loads and is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/audit-logs-workflows.spec.ts",
+      "line": 10,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/audit | Call log: |   - navigating to \"http://127.0.0.1:5173/audit\", waiting until \"load\""
+    },
+    {
+      "test": "Navigates all views in a pristine, unseeded tenant to guarantee zero fatal React crashes",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/blank-slate-audit.spec.ts",
+      "line": 6,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:5173 | Call log: |   - → POST http://127.0.0.1:5173/settings/tenants"
+    },
+    {
+      "test": "keeps assets, services, and monitoring CRUD free of write-time ORM errors",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/crud-api-contracts.spec.ts",
+      "line": 18,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "keeps knowledge, research, and projects CRUD durable through read-update-delete cycles",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/crud-api-contracts.spec.ts",
+      "line": 89,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/knowledge"
+    },
+    {
+      "test": "keeps network, external, and FAR CRUD flows stable with realistic payloads",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/crud-api-contracts.spec.ts",
+      "line": 161,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "navigates to tabs and syncs URL parameter",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/dashboard-workflows.spec.ts",
+      "line": 10,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/ | Call log: |   - navigating to \"http://127.0.0.1:5173/\", waiting until \"load\""
+    },
+    {
+      "test": "debug settings reload",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/debug.spec.ts",
+      "line": 5,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings | Call log: |   - navigating to \"http://127.0.0.1:5173/settings\", waiting until \"load\""
+    },
+    {
+      "test": "previews and confirms exact environment changes in both goldenized workspaces",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/external-services-bulk-preview.spec.ts",
+      "line": 37,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/logical-services"
+    },
+    {
+      "test": "matches the workspace shell contract and opens the shared import modal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/external-workflows.spec.ts",
+      "line": 7,
+      "status": "failed",
+      "error": "Error: apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → GET http://127.0.0.1:8000/api/v1/settings/operators"
+    },
+    {
+      "test": "preserves metadata, supports credentials, and surfaces link failures clearly",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/external-workflows.spec.ts",
+      "line": 51,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "keeps FAR domain depth while exposing the golden command and interaction surfaces",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/far-golden-controls.spec.ts",
+      "line": 6,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:5173 | Call log: |   - → POST http://127.0.0.1:5173/far/modes"
+    },
+    {
+      "test": "repairs persisted collapse and paints analytical cells in the operator viewport",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/far-visible-grid.spec.ts",
+      "line": 6,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/far?view=local-collapsed | Call log: |   - navigating to \"http://127.0.0.1:5173/far?view=local-collapsed\", waiting until \"domcontentloaded\""
+    },
+    {
+      "test": "opens deep links and refreshes the wizard when the selected mode changes",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/far-workflows.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "uses the golden grid and previews failure-vector retirement without changing data",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/far-workflows.spec.ts",
+      "line": 61,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "edits mitigation provenance and preserves FAR version history invariants",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/far-workflows.spec.ts",
+      "line": 94,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "navigates to Research and can unlink linked research artifacts",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/far-workflows.spec.ts",
+      "line": 267,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "renders representative populated desktop states for every completed target view",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/golden-eight-seeded-visual-matrix.spec.ts",
+      "line": 28,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "supports command-center summaries, architecture linkage, export, and operational actions",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/knowledge-workflows.spec.ts",
+      "line": 9,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "supports richer Q&A collaboration and answer verification",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/knowledge-workflows.spec.ts",
+      "line": 114,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/knowledge"
+    },
+    {
+      "test": "Add Monitor: Validate field sanitization and success",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-comprehensive.spec.ts",
+      "line": 32,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "Edit Monitor: Validate state propagation and save",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-comprehensive.spec.ts",
+      "line": 44,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "Validation: Triggers error on empty title",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-comprehensive.spec.ts",
+      "line": 72,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "preserves lifecycle status, recovery linking, and knowledge jump paths",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-workflows.spec.ts",
+      "line": 58,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "supports bulk undo, compare, and persisted display state",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-workflows.spec.ts",
+      "line": 104,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "edits an existing monitor without save errors and persists the updated fields",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-workflows.spec.ts",
+      "line": 171,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "keeps default title sizing dynamic and preserves human resized widths only in saved views",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-workflows.spec.ts",
+      "line": 217,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "imports monitoring rows through the shared operational import modal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/monitoring-workflows.spec.ts",
+      "line": 364,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "supports deep-linked forensics, unit edits, and bulk sever from the grid",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/network-workflows.spec.ts",
+      "line": 36,
+      "status": "failed",
+      "error": "Error: apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → GET http://127.0.0.1:8000/api/v1/settings/options?category=NetworkFarm"
+    },
+    {
+      "test": "supports manual selection, modifiers, menu overlays, display configurations, and grouped grid parity",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/network-workflows.spec.ts",
+      "line": 146,
+      "status": "failed",
+      "error": "Error: apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → GET http://127.0.0.1:8000/api/v1/settings/options?category=NetworkFarm"
+    },
+    {
+      "test": "verifies golden column labels, domain order, pinning, resizability, bulk-edit dirty-close safety, context menu structure, and irreversible purge confirmation",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/network-workflows.spec.ts",
+      "line": 457,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/ | Call log: |   - navigating to \"http://127.0.0.1:5173/\", waiting until \"load\""
+    },
+    {
+      "test": "verify backend and frontend are up",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/pre-test-check.spec.ts",
+      "line": 3,
+      "status": "failed",
+      "error": "Error: apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → GET http://127.0.0.1:8000/api/v1/health"
+    },
+    {
+      "test": "should create a new project with cascading multi-selects and month/year dates",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-creation-flow.spec.ts",
+      "line": 7,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "Iteration 4A task comment authoring persists exact comment and @mentions on canonical task truth",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 42,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101 | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4A project material authoring persists one exact link through canonical Project PUT",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 58,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=files | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=files\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4A report capture creates immutable history and restores the exact snapshot by deep link",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 74,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=reports | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=reports\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4B mention click selection persists the exact canonical operator username",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 105,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101 | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4B mention keyboard selection inserts one canonical handle before persistence",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 125,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101 | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4C project update click selection posts one canonical human update through Project PUT",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 151,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=updates | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=updates\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4C project update keyboard selection persists and restores from canonical Project truth",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 172,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=updates | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=updates\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4D report snapshot freezes the canonical human update and mention evidence",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 202,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=updates | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=updates\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4D captured report remains immutable after a later live Project update",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 220,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=reports | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=reports\", waiting until \"load\""
+    },
+    {
+      "test": "Iteration 4E certification preserves the canonical collaboration chain through immutable report review",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-golden-evidence.spec.ts",
+      "line": 247,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101 | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=1001&view=tasks&task=101\", waiting until \"load\""
+    },
+    {
+      "test": "P10 hierarchy rehearsal shows ten roots and one nested child @hierarchy-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-hierarchy.spec.ts",
+      "line": 64,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=81010&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=81010&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "child deep link restores explicit parent context @hierarchy-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-hierarchy.spec.ts",
+      "line": 74,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=81011&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=81011&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "portfolio counts only top-level outcomes and excludes child card @hierarchy-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-hierarchy.spec.ts",
+      "line": 84,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?view=portfolio&section=control | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?view=portfolio&section=control\", waiting until \"load\""
+    },
+    {
+      "test": "create flow exposes top-level versus subproject semantics with required parent chooser @hierarchy-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-hierarchy.spec.ts",
+      "line": 92,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=81010&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=81010&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "edit child flow restores parent selection and can explicitly promote to top level @hierarchy-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-hierarchy.spec.ts",
+      "line": 108,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=81011&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=81011&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P01 central-navigation rehearsal exposes six intents and persistent context @navigation-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-navigation.spec.ts",
+      "line": 85,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P01 Work deep link opens the canonical task graph and Board projection @navigation-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-navigation.spec.ts",
+      "line": 95,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P02 fixed project navigation exposes canonical Plan, Timeline, Updates and Outcomes deep links @navigation-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-navigation.spec.ts",
+      "line": 106,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=902&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=902&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P09 Outcomes reveals Reports and Insights and legacy governance link canonicalizes @navigation-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-navigation.spec.ts",
+      "line": 117,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=909&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=909&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "all retained project view aliases history-replace to canonical destinations @navigation-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-navigation.spec.ts",
+      "line": 126,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=tasks | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=tasks\", waiting until \"load\""
+    },
+    {
+      "test": "central Add/edit and intent navigation reuse existing project flows @navigation-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-navigation.spec.ts",
+      "line": 142,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "Portfolio remains a separate cross-project utility @navigation-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-navigation.spec.ts",
+      "line": 152,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?view=portfolio&section=control | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?view=portfolio&section=control\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice C Board move alternatives expose exact names and minimum targets @out40-slice-c-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-c-board-a11y.spec.ts",
+      "line": 77,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=board | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=board\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice C keyboard status move persists canonical PUT, announces success, and restores focus @out40-slice-c-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-c-board-a11y.spec.ts",
+      "line": 94,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/901/work?layout=board | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/901/work?layout=board\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice D WBS keyboard reorder exposes exact native controls and minimum targets @out40-slice-d-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-d-wbs-keyboard.spec.ts",
+      "line": 85,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=tasks | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=tasks\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice D Enter reorder persists canonical PUT, preserves subtree, announces, and restores row focus @out40-slice-d-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-d-wbs-keyboard.spec.ts",
+      "line": 108,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/901/work | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/901/work\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice E Timeline controls expose keyboard dependency and named Gantt interactions @out40-slice-e-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-e-timeline-dependency-a11y.spec.ts",
+      "line": 106,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice E Enter add/remove uses canonical PUT, announces, and restores target focus @out40-slice-e-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-e-timeline-dependency-a11y.spec.ts",
+      "line": 134,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice F Task Drawer required controls are explicitly named and icon targets are >=40px @out40-slice-f-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-f-task-drawer-a11y.spec.ts",
+      "line": 95,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/901/work | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/901/work\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice F named dependency removal keeps native Enter activation and canonical Project PUT @out40-slice-f-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-f-task-drawer-a11y.spec.ts",
+      "line": 113,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/901/work | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/901/work\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice G persistent Projects surfaces have no unnamed required controls @out40-slice-g-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-g-accessible-name-audit.spec.ts",
+      "line": 123,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?view=portfolio&section=control | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?view=portfolio&section=control\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice G transient Projects surfaces have no unnamed required controls @out40-slice-g-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-g-accessible-name-audit.spec.ts",
+      "line": 144,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/901/work | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/901/work\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice H P10 Gantt is bounded, aligned and connector-anchored @out40-slice-h-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-h-gantt-modernization.spec.ts",
+      "line": 127,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice H keyboard dependency add/remove is explicit, canonical and focus-stable @out40-slice-h-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-h-gantt-modernization.spec.ts",
+      "line": 157,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice H scroll zoom filter collapse are mutation-free and stay bounded @out40-slice-h-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-h-gantt-modernization.spec.ts",
+      "line": 185,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice H bar move and resize each commit one Project PUT @out40-slice-h-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-h-gantt-modernization.spec.ts",
+      "line": 217,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 Slice H narrow Gantt contains page overflow and keeps primary controls >=40px @out40-slice-h-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-out40-slice-h-gantt-modernization.spec.ts",
+      "line": 238,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "P03 completed delivery remains visibly at risk when adoption is weak @outcomes-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-outcomes.spec.ts",
+      "line": 47,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80103&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80103&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P01 and P08 expose traceable measured adoption and realized value @outcomes-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-outcomes.spec.ts",
+      "line": 55,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80101&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80101&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "missing outcome measurement renders Unknown and Not measured @outcomes-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-outcomes.spec.ts",
+      "line": 63,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80104&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80104&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "portfolio outcome summary excludes child population and child value @outcomes-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-outcomes.spec.ts",
+      "line": 71,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?view=portfolio&section=control | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?view=portfolio&section=control\", waiting until \"load\""
+    },
+    {
+      "test": "measurement edit uses canonical Project PUT and preserves legacy ROI fields @outcomes-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-outcomes.spec.ts",
+      "line": 82,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80101&view=insights&section=review | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80101&view=insights&section=review\", waiting until \"load\""
+    },
+    {
+      "test": "captured report snapshot freezes measured outcome values @outcomes-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-outcomes.spec.ts",
+      "line": 96,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80101&view=reports | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80101&view=reports\", waiting until \"load\""
+    },
+    {
+      "test": "verifies shell and tab navigation",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-overhaul.spec.ts",
+      "line": 9,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/projects"
+    },
+    {
+      "test": "verifies dashboard view",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-overhaul.spec.ts",
+      "line": 41,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects | Call log: |   - navigating to \"http://127.0.0.1:5173/projects\", waiting until \"load\""
+    },
+    {
+      "test": "real backend creation survives one failed save and reload without duplicate Projects",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-p04-project-story.spec.ts",
+      "line": 35,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/settings/teams"
+    },
+    {
+      "test": "P05 Work treegrid exposes expanded row geometry and keyboard status projection",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-p05-work-plan.spec.ts",
+      "line": 15,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/p1/work | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/p1/work\", waiting until \"load\""
+    },
+    {
+      "test": "P05 Board keeps Move to keyboard control in the same task projection",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-p05-work-plan.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/p1/work?layout=board | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/p1/work?layout=board\", waiting until \"load\""
+    },
+    {
+      "test": "P11 Portfolio keeps migrated and native Projects in one canonical story projection",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-p11-portfolio-regression.spec.ts",
+      "line": 8,
+      "status": "failed",
+      "error": "TypeError: apiRequestContext.post: Invalid URL"
+    },
+    {
+      "test": "P01 readability rehearsal @readability-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-readability.spec.ts",
+      "line": 230,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80101&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80101&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P01 high-value Overview stays readable at 1280x720 @readability-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-readability.spec.ts",
+      "line": 239,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80101&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80101&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P02 blocked project preserves clear hierarchy at 1440x900 @readability-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-readability.spec.ts",
+      "line": 248,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80202&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80202&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "P10 large Gantt remains contained and readable at 1920x1080 @readability-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-readability.spec.ts",
+      "line": 257,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=81010&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=81010&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "narrow Projects navigation remains reachable at 390x844 @readability-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-readability.spec.ts",
+      "line": 268,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects/80101/home | Call log: |   - navigating to \"http://127.0.0.1:5173/projects/80101/home\", waiting until \"load\""
+    },
+    {
+      "test": "Projects modal inherits elevated readability without changing the shared modal @readability-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-readability.spec.ts",
+      "line": 282,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80101&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80101&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "readability diagnostics expose computed contract @readability-diagnostic",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-readability.spec.ts",
+      "line": 294,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=80101&view=overview | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=80101&view=overview\", waiting until \"load\""
+    },
+    {
+      "test": "hydrates without applying, then applies a normalized personal remote view only after explicit selection",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 66,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/workspaces/projects/views"
+    },
+    {
+      "test": "restores the exact nested Portfolio section from a synced saved view",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 89,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/workspaces/projects/views"
+    },
+    {
+      "test": "restores a locally saved nested Portfolio section after leaving the view",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 109,
+      "status": "failed",
+      "error": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document. |     at UtilityScript.evaluate (<anonymous>:313:16) |     at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "test": "preserves a linked legacy Portfolio subsection instead of falling back to Control Tower",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 129,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/workspaces/projects/views"
+    },
+    {
+      "test": "saved-view URL identity follows explicit remote selection and local replacement",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 149,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/workspaces/projects/views"
+    },
+    {
+      "test": "saved-view URL identity follows synced creation and deletion",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 177,
+      "status": "failed",
+      "error": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document. |     at UtilityScript.evaluate (<anonymous>:313:16) |     at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "test": "saved-view URL identity removes authoritative stale links but preserves them while hydration is offline",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 200,
+      "status": "failed",
+      "error": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document. |     at UtilityScript.evaluate (<anonymous>:313:16) |     at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "test": "preserves active state and local saved-view use when personal remote hydration fails",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 222,
+      "status": "failed",
+      "error": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document. |     at UtilityScript.evaluate (<anonymous>:313:16) |     at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "test": "creates and updates an explicit personal synced Project view, then reloads a stale-revision conflict without clobbering the client draft",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 236,
+      "status": "failed",
+      "error": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document. |     at UtilityScript.evaluate (<anonymous>:313:16) |     at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "test": "saves a stale personal client draft as a new synced copy and deletes that copy explicitly without touching legacy local views",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 265,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/workspaces/projects/views"
+    },
+    {
+      "test": "reconciles personal, current-team and local views and runs an authorized team write/conflict/delete lifecycle",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 288,
+      "status": "failed",
+      "error": "Error: apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → GET http://127.0.0.1:8000/api/v1/settings/teams"
+    },
+    {
+      "test": "never fabricates a local team view when team persistence is offline",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 331,
+      "status": "failed",
+      "error": "Error: apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → GET http://127.0.0.1:8000/api/v1/settings/teams"
+    },
+    {
+      "test": "copies a collision-safe saved_view link and restores it exactly once without replacing the Projects view parameter",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 355,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/workspaces/projects/views"
+    },
+    {
+      "test": "leaves inaccessible saved_view links inert and cancels delayed restoration after user interaction",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-saved-views.spec.ts",
+      "line": 380,
+      "status": "failed",
+      "error": "Error: page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document. |     at UtilityScript.evaluate (<anonymous>:313:16) |     at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "test": "advanced schedule control completes the existing Timeline without replacing it @scheduling-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-scheduling-completion.spec.ts",
+      "line": 68,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3801&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3801&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "typed dependency and calendar save through canonical Project PUT @scheduling-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-scheduling-completion.spec.ts",
+      "line": 79,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3801&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3801&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "scenario preview is non-mutating, save is metadata-only, and Apply changes live dates @scheduling-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-scheduling-completion.spec.ts",
+      "line": 97,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3801&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3801&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "baseline history is additive and capacity stays Unknown without authority @scheduling-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-scheduling-completion.spec.ts",
+      "line": 112,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3801&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3801&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 schedule control is keyboard-accessible, announced and contained at 390x844 @out40-slice-b-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-scheduling-completion.spec.ts",
+      "line": 122,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3801&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3801&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "OUT-40 schedule control stays viewport-contained on desktop and wide screens @out40-slice-b-regression",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-scheduling-completion.spec.ts",
+      "line": 170,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3801&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3801&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "executive showcase is question-driven, truthful and sparse @showcase-rehearsal",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-showcase.spec.ts",
+      "line": 63,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3901&view=reports | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3901&view=reports\", waiting until \"load\""
+    },
+    {
+      "test": "visual pins use canonical full Project PUT and preserve existing reporting metadata @showcase-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-showcase.spec.ts",
+      "line": 84,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3901&view=reports&showcase=team | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3901&view=reports&showcase=team\", waiting until \"load\""
+    },
+    {
+      "test": "captured report showcase stays frozen and does not borrow live schedule truth @showcase-acceptance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-showcase.spec.ts",
+      "line": 100,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=3901&view=reports | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=3901&view=reports\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 390x844",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 430x932",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 768x1024",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 1024x768",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 1280x720",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 1440x900",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 1920x1080",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "usable real workspace 2560x1440",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 49,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "move, connected preview, cancellation, and history at the formerly failing 1280 viewport",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 61,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "Fit and short-bar date actions; connector inspection is not deletion",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 72,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "wide resize and bounded realized DOM after scroll",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 81,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "virtual WBS semantics and keyboard schedule parity stay bounded",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 94,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "Board and Work preserve status meaning and working space",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 110,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "phone menu keeps focus contained and returns it on Escape",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 121,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "Projects sidebar has final geometry on first frame and breakpoint changes",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-visual-repair.spec.ts",
+      "line": 130,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?id=901&view=timeline | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?id=901&view=timeline\", waiting until \"load\""
+    },
+    {
+      "test": "opens project config, keeps selection stable on delete, and blocks filtered reorder affordance",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/projects-workflows.spec.ts",
+      "line": 6,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/projects"
+    },
+    {
+      "test": "PV1 browser/state acceptance matrix covers required cells with strict request failure @pv1-browser-matrix",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/pv1-browser-matrix.spec.ts",
+      "line": 68,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects?pv1_theme=nordic-frost-v1 | Call log: |   - navigating to \"http://127.0.0.1:5173/projects?pv1_theme=nordic-frost-v1\", waiting until \"domcontentloaded\""
+    },
+    {
+      "test": "PV1 Typical production browser performance evidence uses real backend and built frontend",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/pv1-performance-browser.spec.ts",
+      "line": 137,
+      "status": "failed",
+      "error": "Error: P12 performance environment is incomplete"
+    },
+    {
+      "test": "handles spatial navigation, site decommission fallback, and sandbox collision safety",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/racks-workflows.spec.ts",
+      "line": 7,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/sites"
+    },
+    {
+      "test": "filters by real years and rejects blank intelligence pulses",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/research-workflows.spec.ts",
+      "line": 23,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/investigations"
+    },
+    {
+      "test": "DataFlow resilience: Stalling node interaction",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/resilience/dataflow-chaos.spec.ts",
+      "line": 8,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/architecture | Call log: |   - navigating to \"http://127.0.0.1:5173/architecture\", waiting until \"load\""
+    },
+    {
+      "test": "FAR mitigation deletion resilience: Network Stall + Rapid Click",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/resilience/far-chaos.spec.ts",
+      "line": 10,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "Monitoring bulk action resilience: Network Stall + Rapid Interaction",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/resilience/monitoring-chaos.spec.ts",
+      "line": 9,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "Projects task update resilience: Network Stall + Rapid Interaction",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/resilience/projects-chaos.spec.ts",
+      "line": 10,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/projects"
+    },
+    {
+      "test": "Service registration resilience: Network Stall + Rapid Interaction",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/resilience/services-chaos.spec.ts",
+      "line": 8,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/services | Call log: |   - navigating to \"http://127.0.0.1:5173/services\", waiting until \"load\""
+    },
+    {
+      "test": "Comprehensive Check: Dashboard loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_comprehensive.spec.ts",
+      "line": 34,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/ | Call log: |   - navigating to \"http://127.0.0.1:5173/\", waiting until \"load\""
+    },
+    {
+      "test": "Comprehensive Check: Monitoring loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_comprehensive.spec.ts",
+      "line": 34,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "Comprehensive Check: Assets loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_comprehensive.spec.ts",
+      "line": 34,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/assets | Call log: |   - navigating to \"http://127.0.0.1:5173/assets\", waiting until \"load\""
+    },
+    {
+      "test": "Comprehensive Check: Projects loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_comprehensive.spec.ts",
+      "line": 34,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects | Call log: |   - navigating to \"http://127.0.0.1:5173/projects\", waiting until \"load\""
+    },
+    {
+      "test": "Comprehensive Check: Settings loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_comprehensive.spec.ts",
+      "line": 34,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings | Call log: |   - navigating to \"http://127.0.0.1:5173/settings\", waiting until \"load\""
+    },
+    {
+      "test": "Integrity Check: Dashboard loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/ | Call log: |   - navigating to \"http://127.0.0.1:5173/\", waiting until \"load\""
+    },
+    {
+      "test": "Integrity Check: Monitoring loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "Integrity Check: Assets loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/assets | Call log: |   - navigating to \"http://127.0.0.1:5173/assets\", waiting until \"load\""
+    },
+    {
+      "test": "Integrity Check: Projects loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects | Call log: |   - navigating to \"http://127.0.0.1:5173/projects\", waiting until \"load\""
+    },
+    {
+      "test": "Integrity Check: Settings loads and template is compliant",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings | Call log: |   - navigating to \"http://127.0.0.1:5173/settings\", waiting until \"load\""
+    },
+    {
+      "test": "Monitoring View: Golden Template Deep Link & Share Integrity",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/sentinel_smoke.spec.ts",
+      "line": 42,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "tolerates malformed metadata and clears deep-link state on close",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/service-workflows.spec.ts",
+      "line": 9,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "persists theme and loads major settings sections",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/settings-and-audit.spec.ts",
+      "line": 9,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings | Call log: |   - navigating to \"http://127.0.0.1:5173/settings\", waiting until \"load\""
+    },
+    {
+      "test": "filters operators and keeps tenant input after a failed create attempt",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/settings-and-audit.spec.ts",
+      "line": 32,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings?tab=permissions | Call log: |   - navigating to \"http://127.0.0.1:5173/settings?tab=permissions\", waiting until \"load\""
+    },
+    {
+      "test": "stores and exposes user-pool synchronization history",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/settings-and-audit.spec.ts",
+      "line": 61,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/settings/user-pool/refresh"
+    },
+    {
+      "test": "renders scoped audit logs for seeded service activity",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/settings-and-audit.spec.ts",
+      "line": 97,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "renders the synchronized reference and exercises shared primitives",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/settings-standards.spec.ts",
+      "line": 6,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings?tab=standards | Call log: |   - navigating to \"http://127.0.0.1:5173/settings?tab=standards\", waiting until \"load\""
+    },
+    {
+      "test": "loads the dashboard and feature audit HUD",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/shell-and-search.spec.ts",
+      "line": 8,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/ | Call log: |   - navigating to \"http://127.0.0.1:5173/\", waiting until \"load\""
+    },
+    {
+      "test": "navigates to seeded records through global search",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/shell-and-search.spec.ts",
+      "line": 19,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "records authoritative API response shapes for comprehensive Golden Eight seed fixtures",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/shell-and-search.spec.ts",
+      "line": 154,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "keeps desktop shell, command bar, and grid alignment invariant on every golden route",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/shell-and-search.spec.ts",
+      "line": 213,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "keeps narrow-screen stacking and overflow containment invariant on every golden route",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/shell-and-search.spec.ts",
+      "line": 257,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: monitoring (/monitoring)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: external (/external)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/external | Call log: |   - navigating to \"http://127.0.0.1:5173/external\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: services (/services)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/services | Call log: |   - navigating to \"http://127.0.0.1:5173/services\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: network (/network)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/network | Call log: |   - navigating to \"http://127.0.0.1:5173/network\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: far (/far)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/far | Call log: |   - navigating to \"http://127.0.0.1:5173/far\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: research (/research)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/research | Call log: |   - navigating to \"http://127.0.0.1:5173/research\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: assets (/asset)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/asset | Call log: |   - navigating to \"http://127.0.0.1:5173/asset\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: vendors (/vendors)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/vendors | Call log: |   - navigating to \"http://127.0.0.1:5173/vendors\", waiting until \"load\""
+    },
+    {
+      "test": "Canonical Page Load: settings-standards (/settings?tab=standards)",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings?tab=standards | Call log: |   - navigating to \"http://127.0.0.1:5173/settings?tab=standards\", waiting until \"load\""
+    },
+    {
+      "test": "Page Load: /",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/ | Call log: |   - navigating to \"http://127.0.0.1:5173/\", waiting until \"load\""
+    },
+    {
+      "test": "Page Load: /projects",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects | Call log: |   - navigating to \"http://127.0.0.1:5173/projects\", waiting until \"load\""
+    },
+    {
+      "test": "Page Load: /racks",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts",
+      "line": 31,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/racks | Call log: |   - navigating to \"http://127.0.0.1:5173/racks\", waiting until \"load\""
+    },
+    {
+      "test": "Automatically crawls all canonical views and injects bounded chaos @chaos",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/universal-crawler.spec.ts",
+      "line": 6,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/ | Call log: |   - navigating to \"http://127.0.0.1:5173/\", waiting until \"domcontentloaded\""
+    },
+    {
+      "test": "creates a vendor, updates the profile, and registers a contract",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/vendor-workflows.spec.ts",
+      "line": 7,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/vendors | Call log: |   - navigating to \"http://127.0.0.1:5173/vendors\", waiting until \"load\""
+    },
+    {
+      "test": "preserves shell actions, import/export/copy, row actions, context menu, and details on /vendors",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/vendors-real-runtime.spec.ts",
+      "line": 191,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "preserves /vendors?id= deep-link dossier and personnel accounts/pcs behavior",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/vendors-real-runtime.spec.ts",
+      "line": 276,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "registers a contract and preserves rich contract detail behavior on /vendors",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/vendors-real-runtime.spec.ts",
+      "line": 303,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "retains /vendors-real alias as a VendorsReal smoke route",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/vendors-real-runtime.spec.ts",
+      "line": 355,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "opens critical deep links without crashing and resolves the targeted record",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/view-deeplink-matrix.spec.ts",
+      "line": 12,
+      "status": "failed",
+      "error": "Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000 | Call log: |   - → POST http://127.0.0.1:8000/api/v1/devices"
+    },
+    {
+      "test": "renders explicit empty-state guidance for deterministic no-result filters",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/view-empty-states.spec.ts",
+      "line": 7,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/knowledge | Call log: |   - navigating to \"http://127.0.0.1:5173/knowledge\", waiting until \"load\""
+    },
+    {
+      "test": "persists personal views through the backend and restores stable view links",
+      "file": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/workspace-collaborative-views.spec.ts",
+      "line": 14,
+      "status": "failed",
+      "error": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring | Call log: |   - navigating to \"http://127.0.0.1:5173/monitoring\", waiting until \"load\""
+    }
+  ]
+}

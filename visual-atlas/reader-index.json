@@ -1,0 +1,30 @@
+{
+  "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "candidate_sha": "a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842",
+  "change": "CHG-120",
+  "note": "No base PNG or canonical candidate PNG exists; PDF pages deliberately show the runtime blocker and metadata.",
+  "pages": [
+    {
+      "base_or_candidate": "candidate-blocker-diagnostic",
+      "page": 1,
+      "path": "visual-atlas/screenshots/candidate/monitoring-runtime-blocked.png",
+      "pdf": "visual-atlas/review-desktop.pdf",
+      "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401",
+      "state_key": "monitoring-landing",
+      "viewport": "1440x900"
+    },
+    {
+      "base_or_candidate": "candidate-blocker-diagnostic",
+      "page": 1,
+      "path": "visual-atlas/screenshots/candidate/monitoring-runtime-blocked.png",
+      "pdf": "visual-atlas/review-mobile.pdf",
+      "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401",
+      "state_key": "monitoring-landing",
+      "viewport": "390x844"
+    }
+  ],
+  "project": "sysgrid",
+  "r1_sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+  "r2_predecessor_sha": "ea43d81196498be8edf1877ead7f989044909460",
+  "request": "sysgrid-smv1-release-foundation-qualification-fix-v3"
+}

@@ -1,0 +1,12 @@
+1:55:00 PM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+1:55:00 PM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+
+ RUN  v4.1.11 /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  13:55:01
+   Duration  610ms (transform 23ms, setup 75ms, import 8ms, tests 2ms, environment 442ms)
+

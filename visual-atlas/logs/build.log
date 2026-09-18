@@ -1,0 +1,20 @@
+
+> system-grid-frontend@1.2.4 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 4233 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                1.37 kB │ gzip:     0.68 kB
+dist/assets/ProjectsTimeline-ITrb3Hm4.css      5.33 kB │ gzip:     1.50 kB
+dist/assets/index-Dc_iPFqV.css               529.43 kB │ gzip:    85.51 kB
+dist/assets/ProjectsTimeline-4lwsDk4s.js      21.72 kB │ gzip:     6.61 kB
+dist/assets/index-WVLyuUQp.js              5,083.74 kB │ gzip: 1,361.02 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.18s

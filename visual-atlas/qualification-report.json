@@ -1,0 +1,422 @@
+{
+  "authorization_and_scope_matrix": {
+    "broader_tenant_and_saved_view": {
+      "evidence": "relevant suite blocked by exact-base Alembic multiple heads",
+      "verdict": "BLOCKED"
+    },
+    "eight_route_smoke": {
+      "evidence": "12 smoke tests failed with connection refused",
+      "verdict": "BLOCKED"
+    },
+    "embedded_projection": {
+      "evidence": "consumer-specific selector tests included in backend focused policy suite",
+      "verdict": "FOCUSED_PASS"
+    },
+    "monitoring_runtime_parity": {
+      "evidence": "no canonical base/candidate screenshot pairs",
+      "verdict": "BLOCKED"
+    },
+    "release_policy": {
+      "evidence": "55 focused backend policy tests; frontend contract/type/build gates pass",
+      "verdict": "FOCUSED_PASS"
+    },
+    "root_separation": {
+      "evidence": "included in backend focused policy suite",
+      "verdict": "FOCUSED_PASS"
+    },
+    "websocket_tenant_isolation": {
+      "evidence": "new ConnectionManager tenant 101/202 broadcast isolation test passed",
+      "verdict": "PASS"
+    }
+  },
+  "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "base_tree": "34b0ff1526540055035a55501012849334047dd8",
+  "blockers": [
+    "frontend unit gate has 18 failures in 7 files, reproduced identically on exact fresh base; failures are non-waivable until independently dispositioned",
+    "broader backend suite has 102 errors and 12 failures from pre-existing Alembic multiple-head state; exact-base representative reproduces it",
+    "full E2E and eight-route browser smoke cannot qualify because runtime services are unavailable/connection refused",
+    "verify:app cannot run because repository venv/pytest is absent",
+    "no canonical BASE/CANDIDATE Monitoring screenshots; visual parity remains unqualified"
+  ],
+  "change": "CHG-120",
+  "classification": {
+    "A_r2_unauthorized_monitoring_change": "fixed by exact MonitoringGrid restoration to R1 plus preservation contract",
+    "B_candidate_or_foundation_defect": "none isolated after restoration; focused R3 tests pass",
+    "C_preexisting_on_exact_base": [
+      "all 18 frontend unit failures",
+      "relevant backend migration errors",
+      "browser service unavailability",
+      "verify:app missing repository venv"
+    ]
+  },
+  "commands": [
+    {
+      "base_comparison_needed": false,
+      "command": "git merge-base --is-ancestor BASE R1 && git merge-base --is-ancestor R1 R2 && git merge-base --is-ancestor R2 HEAD",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c",
+      "detected": {
+        "base_to_r1": "pass",
+        "r1_to_r2": "pass",
+        "r2_to_r3": "pass"
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "ancestry",
+      "log": null,
+      "toolchain": "git 2.54.0"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c",
+      "detected": {
+        "diagnostic_lines": 0
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "native-diff-check",
+      "log": {
+        "path": "visual-atlas/logs/native-diff-check.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "/tmp/chg120-r3-native-diff-check-final.log"
+      },
+      "toolchain": "git 2.54.0"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "git status --porcelain",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c",
+      "detected": {
+        "dirty_paths": 0
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "worktree-clean",
+      "log": {
+        "path": "visual-atlas/logs/worktree-status.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "/tmp/chg120-r3-worktree-status-final.log"
+      },
+      "toolchain": "git 2.54.0"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npm run test:unit",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed_files": 7,
+        "failed_tests": 18,
+        "failed_tests_exact": [
+          "src/api/apiClient.test.ts: response.headers.get is not a function (8 tests)",
+          "src/components/settings/externalExportDiagnostics.test.ts: FormData append Blob type mismatch (2 tests)",
+          "src/components/settings/systemDiagnostics.test.ts: FormData append Blob type mismatch (1 test)",
+          "src/components/shared/FARGoldenStructuralContract.test.ts: FAR structural markers (3 tests)",
+          "src/components/shared/FARLifecycleBackendContract.test.ts: FAR lifecycle marker (1 test)",
+          "src/components/shared/FARResearchGoldenPresentationContract.test.ts: FAR presentation markers (2 tests)",
+          "src/components/shared/OperationalBulkContract.test.ts: operational bulk marker (1 test)"
+        ],
+        "passed_files": 121,
+        "passed_tests": 668,
+        "test_files": 128,
+        "tests": 686
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_PREEXISTING_ON_BASE",
+      "id": "r2-unit-reproduction",
+      "log": {
+        "path": "visual-atlas/logs/r2-unit.log",
+        "sha256": "99337917b2089df3228d1a713a59a676bd6fafa7034394290e85d9d087bd2f9e",
+        "source": "/tmp/chg120-r3-final-unit-2.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / Vitest 4.1.11"
+    },
+    {
+      "base_comparison_needed": true,
+      "command": "npm run test:unit",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed_files": 7,
+        "failed_tests": 18,
+        "failed_tests_exact": [
+          "src/api/apiClient.test.ts: response.headers.get is not a function (8 tests)",
+          "src/components/settings/externalExportDiagnostics.test.ts: FormData append Blob type mismatch (2 tests)",
+          "src/components/settings/systemDiagnostics.test.ts: FormData append Blob type mismatch (1 test)",
+          "src/components/shared/FARGoldenStructuralContract.test.ts: FAR structural markers (3 tests)",
+          "src/components/shared/FARLifecycleBackendContract.test.ts: FAR lifecycle marker (1 test)",
+          "src/components/shared/FARResearchGoldenPresentationContract.test.ts: FAR presentation markers (2 tests)",
+          "src/components/shared/OperationalBulkContract.test.ts: operational bulk marker (1 test)"
+        ],
+        "passed_files": 121,
+        "passed_tests": 668,
+        "test_files": 128,
+        "tests": 686
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_PREEXISTING_ON_BASE",
+      "id": "r3-unit",
+      "log": {
+        "path": "visual-atlas/logs/r3-unit.log",
+        "sha256": "99337917b2089df3228d1a713a59a676bd6fafa7034394290e85d9d087bd2f9e",
+        "source": "/tmp/chg120-r3-final-unit-2.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / Vitest 4.1.11"
+    },
+    {
+      "base_comparison_needed": true,
+      "command": "npm run test:unit",
+      "cwd": "/tmp/chg120-r3-base/frontend",
+      "detected": {
+        "failed_files": 7,
+        "failed_tests": 18,
+        "failed_tests_exact": [
+          "src/api/apiClient.test.ts: response.headers.get is not a function (8 tests)",
+          "src/components/settings/externalExportDiagnostics.test.ts: FormData append Blob type mismatch (2 tests)",
+          "src/components/settings/systemDiagnostics.test.ts: FormData append Blob type mismatch (1 test)",
+          "src/components/shared/FARGoldenStructuralContract.test.ts: FAR structural markers (3 tests)",
+          "src/components/shared/FARLifecycleBackendContract.test.ts: FAR lifecycle marker (1 test)",
+          "src/components/shared/FARResearchGoldenPresentationContract.test.ts: FAR presentation markers (2 tests)",
+          "src/components/shared/OperationalBulkContract.test.ts: operational bulk marker (1 test)"
+        ],
+        "passed_files": 119,
+        "passed_tests": 662,
+        "test_files": 126,
+        "tests": 680
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_PREEXISTING_CONFIRMED",
+      "id": "base-unit",
+      "log": {
+        "path": "visual-atlas/logs/base-unit.log",
+        "sha256": "7692c5401fcbce86c63df22d190bd2aeb5b4d33223ae9f0f802c90808d0e17b1",
+        "source": "/tmp/chg120-r3-base-unit.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / Vitest 4.1.11"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npx vitest run src/components/shared/MonitoringFeaturePreservationContract.test.ts",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "passed_files": 1,
+        "passed_tests": 2,
+        "test_files": 1,
+        "tests": 2
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "monitoring-preservation-contract",
+      "log": {
+        "path": "visual-atlas/logs/monitoring-contract.log",
+        "sha256": "293e78e0370716e7a7249889336187b35291483100a95b5a04f9ec842d5ed050",
+        "source": "/tmp/chg120-r3-monitoring-contract.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / Vitest 4.1.11"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "python -m pytest test_system_management_v1_policy.py -q",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/backend",
+      "detected": {
+        "coverage": [
+          "release policy",
+          "role/root separation",
+          "embedded projection selectors",
+          "tenant scope",
+          "settings protections",
+          "websocket tenant membership"
+        ],
+        "errors": 0,
+        "failed": 0,
+        "passed": 55,
+        "warnings": 1
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "backend-focused-policy",
+      "log": {
+        "path": "visual-atlas/logs/backend-policy.log",
+        "sha256": "15a8b29a92634e3701d9bde4c5334ac7d7a92c912b27f4c34ec2829c893a95fe",
+        "source": "/tmp/chg120-r3-backend-policy-final.log"
+      },
+      "toolchain": "Python 3.11.7 / pytest"
+    },
+    {
+      "base_comparison_needed": true,
+      "command": "python -m pytest -q test_chg13_authorization_security.py test_tenant_isolation.py test_tenant_workflows.py test_settings_api_edges.py test_settings_workflows.py test_knowledge_workflows.py test_import_workflows.py test_external_workflows.py test_workspace_views.py test_workspace_team_views.py test_dashboard_metrics.py test_runtime_diagnostics.py test_far_workspace_golden.py tests/test_projects_workspace_saved_views.py test_cross_module_integrations.py test_main.py",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/backend",
+      "detected": {
+        "dominant_failure": "Alembic Multiple head revisions are present for given argument 'head'",
+        "errors": 102,
+        "failed": 12,
+        "passed": 22,
+        "warnings": 1
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_PREEXISTING_MIGRATION_STATE",
+      "id": "backend-relevant",
+      "log": {
+        "path": "visual-atlas/logs/backend-relevant.log",
+        "sha256": "fde3cca745b96cb23207689c78f9654718f39cdd4cda2c17d047d1b4fae46dbf",
+        "source": "/tmp/chg120-r3-backend-relevant.log"
+      },
+      "toolchain": "Python 3.11.7 / pytest"
+    },
+    {
+      "base_comparison_needed": true,
+      "command": "python -m pytest -q test_tenant_workflows.py::test_create_tenant_grants_selected_admin_access_and_returns_serializable_payload[asyncio]",
+      "cwd": "/tmp/chg120-r3-base/backend",
+      "detected": {
+        "dominant_failure": "Alembic Multiple head revisions are present for given argument 'head'",
+        "failed": 1
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_PREEXISTING_CONFIRMED",
+      "id": "backend-base-representative",
+      "log": {
+        "path": "visual-atlas/logs/base-backend-representative.log",
+        "sha256": "2365869b217d2d7d4c386919a5dc635bece423b067b10e7cda6010b18af98124",
+        "source": "/tmp/chg120-r3-base-backend-representative.log"
+      },
+      "toolchain": "Python 3.11.7 / pytest"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npm run check:operational-contracts",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed": 0,
+        "passed": 4,
+        "subchecks": 4
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "operational-contracts",
+      "log": {
+        "path": "visual-atlas/logs/operational-contracts.log",
+        "sha256": "54537b67a1d6c167cfecc13848db374c9eed5975c9efe9d7ed444c083ecf604f",
+        "source": "/tmp/chg120-r3-frontend-operational-contracts.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npm run typecheck",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed": 0,
+        "passed": 1
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "typecheck",
+      "log": {
+        "path": "visual-atlas/logs/typecheck.log",
+        "sha256": "bfb04a7e3f2944b688bc7a2a5ed4ec94b4409e35b2bcabbe2af2d2e4492fe46d",
+        "source": "/tmp/chg120-r3-frontend-typecheck.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / TypeScript"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npm run build",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed": 0,
+        "modules": 4233,
+        "passed": 1,
+        "warning": "large chunks"
+      },
+      "exit_code": 0,
+      "final_status": "PASS",
+      "id": "build",
+      "log": {
+        "path": "visual-atlas/logs/build.log",
+        "sha256": "6d5a3abc679efbe47a614beb481db025ee918c8c78376487ba1b26039afd15f5",
+        "source": "/tmp/chg120-r3-frontend-build.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / Vite 5.4.21"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npm run test:e2e",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed": 189,
+        "passed": 9,
+        "skipped": 10,
+        "total": 208
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_RUNTIME_UNAVAILABLE",
+      "id": "e2e",
+      "log": {
+        "path": "visual-atlas/logs/frontend-e2e.log",
+        "sha256": "9fb0304516a45079087e52a6d0acfdc60ad532bd63d1445dff39e718a5231643",
+        "source": "/tmp/chg120-r3-frontend-e2e-final.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / Playwright"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npm run verify:app",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed": 1,
+        "failure": "env: ./venv/bin/pytest: No such file or directory",
+        "passed": 0
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_ENVIRONMENT",
+      "id": "verify-app",
+      "log": {
+        "path": "visual-atlas/logs/verify-app.log",
+        "sha256": "4eaad8c5cafba8799ef52b4ec5b7f47332d6ff55dfe25b6cd81fb0879f42e922",
+        "source": "/tmp/chg120-r3-frontend-verify-app.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / repository verification script"
+    },
+    {
+      "base_comparison_needed": false,
+      "command": "npx playwright test tests/smoke.spec.ts",
+      "cwd": "/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend",
+      "detected": {
+        "failed": 12,
+        "failure": "ERR_CONNECTION_REFUSED at 127.0.0.1:5173",
+        "passed": 0,
+        "routes_requested": [
+          "/",
+          "/asset",
+          "/monitoring",
+          "/services",
+          "/network",
+          "/racks",
+          "/logs",
+          "/settings"
+        ],
+        "skipped": 0
+      },
+      "exit_code": 1,
+      "final_status": "FAIL_RUNTIME_UNAVAILABLE",
+      "id": "eight-route-smoke",
+      "log": {
+        "path": "visual-atlas/logs/eight-route-smoke.log",
+        "sha256": "579bb0558830c78ef9ecaf2af87dd9df68eb445d7c05208c8b791246535a7a35",
+        "source": "/tmp/chg120-r3-eight-route-smoke.log"
+      },
+      "toolchain": "Node v22.23.2 / npm 10.9.8 / Playwright"
+    }
+  ],
+  "final_candidate_sha": "a2f243fd5a4562a3d1c4a7376c31f3c47ecbd842",
+  "final_candidate_tree": "a77bedc3480ea0645e20f48047821be752b0151e",
+  "final_status": "BLOCKED_FOR_INDEPENDENT_AUDIT",
+  "operation": "FIX",
+  "project": "sysgrid",
+  "r1_sha": "e50e66401846b1cd989469ab09b9d76f20f2d56a",
+  "r2_predecessor_sha": "ea43d81196498be8edf1877ead7f989044909460",
+  "request": "sysgrid-smv1-release-foundation-qualification-fix-v3",
+  "terminal_execution_attestation": {
+    "forbidden_command_scan": "No AI/agent/model command was authored or invoked by this qualification run; all recorded commands are deterministic Git, npm, pytest, Playwright, copy, and report generation operations.",
+    "rtk": "unavailable: installed wrapper crashed because /opt/homebrew/opt/simdutf/lib/libsimdutf.34.dylib is missing; explicit native commands were used and their real exit codes retained.",
+    "terminal_side_ai_or_agent_command_invocation": false
+  }
+}

@@ -1,0 +1,1436 @@
+
+Running 12 tests using 1 worker
+
+(node:68818) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758324668,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   1 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: monitoring (/monitoring) (353ms)
+(node:68834) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758325171,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   2 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: external (/external) (184ms)
+(node:68844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758325641,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   3 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: services (/services) (185ms)
+(node:68854) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758326111,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   4 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: network (/network) (167ms)
+(node:68867) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758326573,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   5 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: far (/far) (187ms)
+(node:68876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758327040,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   6 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: research (/research) (171ms)
+(node:68887) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758327770,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   7 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: assets (/asset) (260ms)
+(node:68898) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758328434,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   8 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: vendors (/vendors) (233ms)
+(node:68909) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758328955,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘   9 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: settings-standards (/settings?tab=standards) (218ms)
+(node:68922) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758329723,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘  10 tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: / (217ms)
+(node:68939) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758330272,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘  11 tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: /projects (209ms)
+(node:68953) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to clear backend settings: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000
+Call log:
+  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings
+    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - X-User-Id: haewon.kim
+    - X-Tenant-Id: 1
+    - content-type: application/json
+    - content-length: 1880
+
+    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)
+    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11 {
+  log: [
+    '  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings',
+    '    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-User-Id: haewon.kim',
+    '    - X-Tenant-Id: 1',
+    '    - content-type: application/json',
+    '    - content-length: 1880'
+  ],
+  name: 'Error',
+  [Symbol(step)]: {
+    location: {
+      file: '/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts',
+      line: 126,
+      column: 24,
+      function: 'resetBrowserState'
+    },
+    category: 'pw:api',
+    title: 'POST',
+    subtitle: '127.0.0.1:8000/api/v1/settings/user/settings',
+    params: {
+      url: 'http://127.0.0.1:8000/api/v1/settings/user/settings',
+      method: 'POST'
+    },
+    group: undefined,
+    stepId: 'pw:api@42',
+    boxedStack: undefined,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [TestInfoImpl],
+      _stepId: 'pw:api@42',
+      _title: 'POST',
+      _parentStep: [TestStepInfoImpl],
+      skip: [Function (anonymous)]
+    },
+    complete: [Function: complete],
+    endWallTime: 1789758330779,
+    error: {
+      message: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n',
+      stack: 'Error: apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:8000\n' +
+        'Call log:\n' +
+        '\x1B[2m  - → POST http://127.0.0.1:8000/api/v1/settings/user/settings\x1B[22m\n' +
+        '\x1B[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\x1B[22m\n' +
+        '\x1B[2m    - accept: */*\x1B[22m\n' +
+        '\x1B[2m    - accept-encoding: gzip,deflate,br\x1B[22m\n' +
+        '\x1B[2m    - X-User-Id: haewon.kim\x1B[22m\n' +
+        '\x1B[2m    - X-Tenant-Id: 1\x1B[22m\n' +
+        '\x1B[2m    - content-type: application/json\x1B[22m\n' +
+        '\x1B[2m    - content-length: 1880\x1B[22m\n' +
+        '\n' +
+        '    at resetBrowserState (/Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/helpers/sysgrid.ts:126:24)\n' +
+        '    at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:7:11',
+      cause: undefined
+    }
+  }
+}
+  ✘  12 tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: /racks (195ms)
+
+
+  1) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: monitoring (/monitoring) ────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/monitoring
+    Call log:
+      - navigating to "http://127.0.0.1:5173/monitoring", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-monitoring-monitoring-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-monitoring-monitoring-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-monitoring-monitoring-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-monitoring-monitoring-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-monitoring-monitoring-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: external (/external) ────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/external
+    Call log:
+      - navigating to "http://127.0.0.1:5173/external", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-external-external-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-external-external-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-external-external-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-external-external-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-external-external-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: services (/services) ────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/services
+    Call log:
+      - navigating to "http://127.0.0.1:5173/services", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-services-services-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-services-services-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-services-services-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-services-services-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-services-services-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: network (/network) ──────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/network
+    Call log:
+      - navigating to "http://127.0.0.1:5173/network", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-network-network-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-network-network-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-network-network-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-network-network-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-network-network-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: far (/far) ──────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/far
+    Call log:
+      - navigating to "http://127.0.0.1:5173/far", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-far-far-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-far-far-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-far-far-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-far-far-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-far-far-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: research (/research) ────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/research
+    Call log:
+      - navigating to "http://127.0.0.1:5173/research", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-research-research-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-research-research-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-research-research-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-research-research-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-research-research-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: assets (/asset) ─────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/asset
+    Call log:
+      - navigating to "http://127.0.0.1:5173/asset", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-assets-asset-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-assets-asset-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-assets-asset-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-assets-asset-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-assets-asset-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: vendors (/vendors) ──────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/vendors
+    Call log:
+      - navigating to "http://127.0.0.1:5173/vendors", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-vendors-vendors-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-vendors-vendors-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonical-Page-Load-vendors-vendors-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonical-Page-Load-vendors-vendors-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonical-Page-Load-vendors-vendors-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: settings-standards (/settings?tab=standards) 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/settings?tab=standards
+    Call log:
+      - navigating to "http://127.0.0.1:5173/settings?tab=standards", waiting until "load"
+
+
+      11 |   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
+      12 |     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
+    > 13 |       await page.goto(workspace.route)
+         |                  ^
+      14 |       
+      15 |       // Ensure the canonical selector is visible, indicating the page loaded correctly
+      16 |       await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:13:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonica-bf7b1-rds-settings-tab-standards-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonica-bf7b1-rds-settings-tab-standards-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Canonica-bf7b1-rds-settings-tab-standards-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Canonica-bf7b1-rds-settings-tab-standards-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Canonica-bf7b1-rds-settings-tab-standards-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: / ────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/
+    Call log:
+      - navigating to "http://127.0.0.1:5173/", waiting until "load"
+
+
+      30 |   for (const route of otherRoutes) {
+      31 |     test(`Page Load: ${route.path}`, async ({ page }) => {
+    > 32 |       await page.goto(route.path)
+         |                  ^
+      33 |       await expect(page.locator('body')).toContainText(route.expectedText, { timeout: 30000 })
+      34 |     })
+      35 |   }
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:32:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Page-Load-/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Page-Load-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: /projects ────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/projects
+    Call log:
+      - navigating to "http://127.0.0.1:5173/projects", waiting until "load"
+
+
+      30 |   for (const route of otherRoutes) {
+      31 |     test(`Page Load: ${route.path}`, async ({ page }) => {
+    > 32 |       await page.goto(route.path)
+         |                  ^
+      33 |       await expect(page.locator('body')).toContainText(route.expectedText, { timeout: 30000 })
+      34 |     })
+      35 |   }
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:32:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-projects/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-projects/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Page-Load-projects/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-projects/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Page-Load-projects/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: /racks ───────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/racks
+    Call log:
+      - navigating to "http://127.0.0.1:5173/racks", waiting until "load"
+
+
+      30 |   for (const route of otherRoutes) {
+      31 |     test(`Page Load: ${route.path}`, async ({ page }) => {
+    > 32 |       await page.goto(route.path)
+         |                  ^
+      33 |       await expect(page.locator('body')).toContainText(route.expectedText, { timeout: 30000 })
+      34 |     })
+      35 |   }
+        at /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/tests/smoke.spec.ts:32:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-racks/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-racks/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-Tests-Page-Load-racks/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-Tests-Page-Load-racks/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-Tests-Page-Load-racks/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12 failed
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: monitoring (/monitoring) ─────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: external (/external) ─────────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: services (/services) ─────────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: network (/network) ───────────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: far (/far) ───────────────────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: research (/research) ─────────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: assets (/asset) ──────────────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: vendors (/vendors) ───────────────
+    tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: settings-standards (/settings?tab=standards) 
+    tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: / ──────────────────────────────────────────
+    tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: /projects ──────────────────────────────────
+    tests/smoke.spec.ts:31:5 › Smoke Tests › Page Load: /racks ─────────────────────────────────────
+
+[LLM-Reporter] Emitted token-optimized failure artifact to /Users/haewonkim/.codex-fabric/worktrees/CF-636cebcd88631ae64e47fa3c/frontend/llm-report.json

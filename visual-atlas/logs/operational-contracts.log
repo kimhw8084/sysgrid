@@ -1,0 +1,23 @@
+
+> system-grid-frontend@1.2.4 check:operational-contracts
+> npm run check:operational-registry-drift && npm run check:form-contracts && npm run check:row-action-contracts && npm run check:shell-contracts
+
+
+> system-grid-frontend@1.2.4 check:operational-registry-drift
+> node scripts/check-operational-registry-drift.cjs
+
+No monitoring clone drift markers found in 3 file(s).
+
+> system-grid-frontend@1.2.4 check:form-contracts
+> node scripts/check-form-contracts.cjs
+
+Form contracts check passed.
+
+> system-grid-frontend@1.2.4 check:row-action-contracts
+> node scripts/check-row-action-contracts.cjs
+
+
+> system-grid-frontend@1.2.4 check:shell-contracts
+> node scripts/check-shell-contracts.cjs
+
+All shell contracts validated.

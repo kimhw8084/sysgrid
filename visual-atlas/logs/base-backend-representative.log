@@ -1,0 +1,55 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_create_tenant_grants_selected_admin_access_and_returns_serializable_payload[asyncio] _
+
+client = <httpx.AsyncClient object at 0x16e8091d0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x16e6c6150>
+tmp_path = PosixPath('/private/var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/pytest-of-haewonkim/pytest-365/test_create_tenant_grants_sele0')
+
+    @pytest.mark.anyio
+    async def test_create_tenant_grants_selected_admin_access_and_returns_serializable_payload(client, monkeypatch, tmp_path):
+        storage_root = tmp_path / "tenant-storage"
+        storage_root.mkdir(parents=True, exist_ok=True)
+    
+        monkeypatch.setenv("DEFAULT_USER_ID", "haewon.kim")
+        monkeypatch.setenv("USER_ID_ENV_VAR", "AccessKey")
+        monkeypatch.setenv("AccessKey", "haewon.kim")
+    
+        settings_res = await client.post("/api/v1/tenants/admin/settings", json={
+            "key": "tenant_storage_root",
+            "value": str(storage_root),
+            "description": "test storage root",
+        })
+        assert settings_res.status_code == 200, settings_res.text
+    
+        create_res = await client.post("/api/v1/tenants/admin/create", json={"name": f"Factory Test Tenant {tmp_path.name}"})
+>       assert create_res.status_code == 200, create_res.text
+E       AssertionError: {"detail":"Failed to initialize database: INFO  [alembic.runtime.migration] Context impl SQLiteImpl.\nINFO  [alembic.runtime.migration] Will assume non-transactional DDL.\nERROR [alembic.util.messaging] Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads\n"}
+E       assert 500 == 200
+E        +  where 500 = <Response [500 Internal Server Error]>.status_code
+
+test_tenant_workflows.py:25: AssertionError
+----------------------------- Captured stdout call -----------------------------
+ALEMBIC ERROR: INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+ERROR [alembic.util.messaging] Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads
+
+----------------------------- Captured stderr call -----------------------------
+2026-09-18 13:59:59,954 INFO sysgrid.api request_complete
+2026-09-18 13:59:59,955 INFO httpx HTTP Request: POST http://test/api/v1/tenants/admin/settings "HTTP/1.1 200 OK"
+2026-09-18 14:00:00,521 INFO sysgrid.api request_complete
+2026-09-18 14:00:00,521 INFO httpx HTTP Request: POST http://test/api/v1/tenants/admin/create "HTTP/1.1 500 Internal Server Error"
+------------------------------ Captured log call -------------------------------
+INFO     sysgrid.api:main.py:168 request_complete
+INFO     httpx:_client.py:1758 HTTP Request: POST http://test/api/v1/tenants/admin/settings "HTTP/1.1 200 OK"
+INFO     sysgrid.api:main.py:168 request_complete
+INFO     httpx:_client.py:1758 HTTP Request: POST http://test/api/v1/tenants/admin/create "HTTP/1.1 500 Internal Server Error"
+=============================== warnings summary ===============================
+app/api/pv1_communication.py:12
+  /private/tmp/chg120-r3-base/backend/app/api/pv1_communication.py:12: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+    from ..pv1 import communication, domain, models, schemas
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED test_tenant_workflows.py::test_create_tenant_grants_selected_admin_access_and_returns_serializable_payload[asyncio]
+1 failed, 1 warning in 0.66s

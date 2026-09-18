@@ -1,0 +1,4 @@
+
+> system-grid-frontend@1.2.4 typecheck
+> tsc --noEmit
+
