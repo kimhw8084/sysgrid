@@ -143,6 +143,44 @@ async def expand_entry_search_text(entry: models.KnowledgeEntry, db: AsyncSessio
     return " ".join(part for part in parts if part)
 
 
+async def _require_embedded_targets(request: Request, db: AsyncSession) -> None:
+    """Resolve every embedded selector inside the active tenant before reading rows."""
+    if not getattr(request.state, "sysgrid_embedded_projection", None):
+        return
+
+    selectors = getattr(request.state, "sysgrid_embedded_selectors", {})
+    tenant_id = getattr(request.state, "tenant_id", None)
+    target_checks = []
+    if "device_id" in selectors:
+        device_query = select(models.Device.id).where(
+            models.Device.id == selectors["device_id"],
+            models.Device.is_deleted == False,
+        )
+        if tenant_id is not None:
+            device_query = device_query.where(models.Device.tenant_id == tenant_id)
+        target_checks.append(("device_id", device_query))
+    if "service_id" in selectors:
+        target_checks.append((
+            "service_id",
+            select(models.LogicalService.id).where(
+                models.LogicalService.id == selectors["service_id"],
+                models.LogicalService.is_deleted == False,
+            ),
+        ))
+    if "monitoring_id" in selectors:
+        target_checks.append((
+            "monitoring_id",
+            select(models.MonitoringItem.id).where(
+                models.MonitoringItem.id == selectors["monitoring_id"],
+                models.MonitoringItem.is_deleted == False,
+            ),
+        ))
+
+    for selector, query in target_checks:
+        if (await db.execute(query)).scalar_one_or_none() is None:
+            raise HTTPException(status_code=404, detail="Embedded target not found")
+
+
 def _embedded_knowledge_projection(entry: models.KnowledgeEntry) -> dict:
     """Return the title/index projection used by released workspaces."""
     return {
@@ -177,16 +215,22 @@ async def _embedded_entry_is_in_scope(
 ) -> bool:
     metadata = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
     links = metadata.get("links", {})
-    if consumer in {"assets", "network"} and device_id is not None:
-        return device_id is not None and device_id in (entry.linked_device_ids or [])
+    device_match = device_id is not None and device_id in (entry.linked_device_ids or [])
+    service_match = service_id is not None and service_id in (links.get("service_ids", []) or [])
+    monitoring_match = monitoring_id is not None and monitoring_id in (links.get("monitoring_ids", []) or [])
+
+    if consumer == "assets":
+        return device_match
     if consumer == "services":
-        return service_id is not None and service_id in (links.get("service_ids", []) or [])
-    if consumer in {"monitoring", "network"}:
-        if monitoring_id is not None and monitoring_id in (links.get("monitoring_ids", []) or []):
+        return service_match
+
+    if consumer == "monitoring" and monitoring_id is not None:
+        if monitoring_match:
             return True
-        recovery_query = select(models.MonitoringItem.recovery_docs)
-        if monitoring_id is not None:
-            recovery_query = recovery_query.where(models.MonitoringItem.id == monitoring_id)
+        recovery_query = select(models.MonitoringItem.recovery_docs).where(
+            models.MonitoringItem.id == monitoring_id,
+            models.MonitoringItem.is_deleted == False,
+        )
         monitoring_rows = (await db.execute(recovery_query)).scalars().all()
         recovery_ids: set[int] = set()
         for docs in monitoring_rows:
@@ -197,7 +241,10 @@ async def _embedded_entry_is_in_scope(
                         recovery_ids.add(int(raw_id))
                 except (TypeError, ValueError):
                     continue
-        return entry.id in recovery_ids
+        monitoring_match = entry.id in recovery_ids
+
+    if consumer in {"monitoring", "network"}:
+        return monitoring_match if consumer == "monitoring" else device_match
     return False
 
 @router.get("", response_model=List[schemas.KnowledgeEntryResponse])
@@ -216,6 +263,7 @@ async def get_entries(
     _policy: dict = Depends(require_module_access("knowledge", allow_embedded=True)),
     db: AsyncSession = Depends(get_db)
 ):
+    await _require_embedded_targets(request, db)
     query = select(models.KnowledgeEntry).filter(models.KnowledgeEntry.is_deleted == False).options(
         selectinload(models.KnowledgeEntry.qa_threads).selectinload(models.KnowledgeQA.replies)
     )
@@ -285,6 +333,7 @@ async def get_entry(
     _policy: dict = Depends(require_module_access("knowledge", allow_embedded=True)),
     db: AsyncSession = Depends(get_db),
 ):
+    await _require_embedded_targets(request, db)
     result = await db.execute(
         select(models.KnowledgeEntry)
         .filter(models.KnowledgeEntry.id == entry_id)

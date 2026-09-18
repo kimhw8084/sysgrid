@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
-import catalog from '../../../contracts/system_management_v1.json'
+import catalog from '../../../../contracts/system_management_v1.json'
 
 const frontendRoot = path.resolve(__dirname, '../..')
 const appSource = fs.readFileSync(path.join(frontendRoot, 'App.tsx'), 'utf8')

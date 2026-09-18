@@ -29,4 +29,3 @@ export const MODULES_BY_ID = Object.fromEntries(
 ) as Record<string, ModuleCatalogEntry>
 
 export const getCatalogModule = (moduleId: string) => MODULES_BY_ID[moduleId]
-

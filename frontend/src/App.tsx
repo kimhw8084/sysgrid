@@ -564,7 +564,7 @@ function MainLayout() {
         
         {/* User Profile Section */}
         <div className={`space-y-2 border-t border-[var(--border-subtle)] p-3 ${!isSidebarOpen ? 'flex flex-col items-center' : ''}`}>
-           {modulePolicy.data?.actions?.diagnostics?.read ? <button 
+           {modulePolicy.data?.actions?.diagnostics?.read ? <button
               onClick={() => setShowLinuxEnv(true)}
               className={`flex items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-2 hover:bg-[var(--surface-hover)] ${!isSidebarOpen ? 'h-10 w-10 justify-center' : 'w-full text-left'}`}
               aria-label="Open environment details"

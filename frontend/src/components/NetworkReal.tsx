@@ -3237,17 +3237,16 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
   const detailTitle = getNetworkConnectionTitle(item)
 
   const { data: suggestedKnowledge } = useQuery({
-    queryKey: ['network-knowledge-suggestions', item.id, item.device_id],
+    queryKey: ['network-knowledge-suggestions', item.id, item.source_device_id],
     queryFn: async () => {
       const params = new URLSearchParams()
-      if (item.device_id) params.append('device_id', String(item.device_id))
-      params.append('monitoring_id', String(item.id))
+      if (item.source_device_id) params.append('device_id', String(item.source_device_id))
       params.append('embedded_consumer', 'network')
       const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
       const linked = await response.json()
       if (Array.isArray(linked) && linked.length > 0) return linked
-      if (!item.device_id) return linked
-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}&embedded_consumer=network&monitoring_id=${item.id}`)
+      if (!item.source_device_id) return linked
+      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.source_device_id}&embedded_consumer=network`)
       return fallback.json()
     }
   })

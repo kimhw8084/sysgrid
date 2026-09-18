@@ -31,6 +31,17 @@ MODULES: dict[str, dict[str, Any]] = {
     module["id"]: module for module in CATALOG["modules"]
 }
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+EMBEDDED_SELECTOR_FIELDS = frozenset({
+    "device_id",
+    "monitoring_id",
+    "service_id",
+    "far_id",
+    "research_id",
+    "vendor_id",
+    "project_id",
+    "system",
+})
+EMBEDDED_INTEGER_SELECTOR_FIELDS = frozenset(EMBEDDED_SELECTOR_FIELDS - {"system"})
 
 
 def get_module_definition(module_id: str) -> dict[str, Any]:
@@ -64,6 +75,62 @@ def _projection_for_consumer(module: dict[str, Any], consumer_module_id: str | N
         if isinstance(projection, dict) and consumer_module_id in projection.get("consumers", []):
             return projection
     return None
+
+
+def _embedded_selector_sets(
+    projection: dict[str, Any],
+    consumer_module_id: str,
+) -> list[frozenset[str]]:
+    raw_sets = projection.get("consumer_selector_sets", {}).get(consumer_module_id, [])
+    if not isinstance(raw_sets, list):
+        return []
+    selector_sets: list[frozenset[str]] = []
+    for raw_set in raw_sets:
+        if not isinstance(raw_set, list) or not raw_set:
+            continue
+        selector_set = frozenset(str(selector).strip() for selector in raw_set if str(selector).strip())
+        if selector_set and selector_set <= EMBEDDED_SELECTOR_FIELDS:
+            selector_sets.append(selector_set)
+    return selector_sets
+
+
+def _parse_embedded_selectors(
+    request: Request,
+    projection: dict[str, Any],
+    consumer_module_id: str,
+) -> dict[str, int | str] | None:
+    """Parse the exact selector set declared for one embedded consumer.
+
+    The catalog deliberately describes selector *sets*, not one projection-wide
+    union. That keeps consumer-specific scope decisions auditable and makes a
+    selector from another consumer fail closed before the endpoint runs.
+    """
+    values: dict[str, int | str] = {}
+    present: set[str] = set()
+    for selector in EMBEDDED_SELECTOR_FIELDS:
+        raw_values = request.query_params.getlist(selector)
+        if not raw_values:
+            continue
+        if len(raw_values) != 1:
+            return None
+        raw_value = raw_values[0]
+        if raw_value is None or not raw_value.strip():
+            return None
+        if selector in EMBEDDED_INTEGER_SELECTOR_FIELDS:
+            try:
+                parsed_value = int(raw_value)
+            except (TypeError, ValueError):
+                return None
+            if parsed_value <= 0:
+                return None
+            values[selector] = parsed_value
+        else:
+            values[selector] = raw_value.strip()
+        present.add(selector)
+
+    if frozenset(present) not in _embedded_selector_sets(projection, consumer_module_id):
+        return None
+    return values
 
 
 def _build_module_entry(
@@ -180,6 +247,19 @@ def _deny(module_id: str, entry: dict[str, Any], *, operation: str) -> HTTPExcep
     )
 
 
+def _deny_embedded(module_id: str, *, operation: str, reason: str) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail={
+            "code": "EMBEDDED_PROJECTION_DENIED",
+            "module_id": module_id,
+            "operation": operation,
+            "reason": reason,
+            "message": "The embedded projection is unavailable for this consumer and selector context.",
+        },
+    )
+
+
 async def ensure_module_access(
     module_id: str,
     request: Request,
@@ -192,22 +272,27 @@ async def ensure_module_access(
     entry = policy["modules"][module_id]
     operation = request.method.upper().lower()
 
-    if allow_embedded:
-        consumer_module_id = request.query_params.get("embedded_consumer")
+    embedded_requested = "embedded_consumer" in request.query_params
+    if embedded_requested:
+        if not allow_embedded:
+            raise _deny_embedded(module_id, operation=operation, reason="EMBEDDED_PROJECTION_NOT_SUPPORTED")
+        consumer_values = request.query_params.getlist("embedded_consumer")
+        if len(consumer_values) != 1 or not consumer_values[0].strip():
+            raise _deny_embedded(module_id, operation=operation, reason="INVALID_CONSUMER")
+        consumer_module_id = consumer_values[0].strip()
         projection = _projection_for_consumer(module, consumer_module_id)
         consumer_entry = policy["modules"].get(consumer_module_id or "")
-        allowed_selectors = projection.get("allowed_selectors", []) if projection else []
-        selector_present = any(request.query_params.get(selector) not in (None, "") for selector in allowed_selectors)
-        if (
-            projection
-            and consumer_entry
-            and consumer_entry["available"]
-            and request.method.upper() in SAFE_METHODS
-            and (not allowed_selectors or selector_present)
-        ):
-            request.state.sysgrid_embedded_projection = projection["id"]
-            request.state.sysgrid_embedded_consumer = consumer_module_id
-            return policy
+        if not projection or not consumer_entry or not consumer_entry["available"]:
+            raise _deny_embedded(module_id, operation=operation, reason="CONSUMER_UNAVAILABLE")
+        if request.method.upper() not in SAFE_METHODS:
+            raise _deny_embedded(module_id, operation=operation, reason="READ_ONLY")
+        selector_values = _parse_embedded_selectors(request, projection, consumer_module_id or "")
+        if selector_values is None:
+            raise _deny_embedded(module_id, operation=operation, reason="INVALID_SELECTOR_SET")
+        request.state.sysgrid_embedded_projection = projection["id"]
+        request.state.sysgrid_embedded_consumer = consumer_module_id
+        request.state.sysgrid_embedded_selectors = selector_values
+        return policy
 
     if not entry["available"]:
         raise _deny(module_id, entry, operation=operation)

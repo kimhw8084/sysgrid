@@ -328,7 +328,6 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
       queryFn: async () => {
         const params = new URLSearchParams()
         params.append('device_id', String(device.id))
-        if (primaryMonitoringId) params.append('monitoring_id', String(primaryMonitoringId))
         params.append('embedded_consumer', 'assets')
         return (await apiFetch(`/api/v1/knowledge?${params.toString()}`)).json()
       },
