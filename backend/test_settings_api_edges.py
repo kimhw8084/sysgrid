@@ -132,7 +132,7 @@ async def test_settings_user_profile_env_and_global_edges(seeded_admin_tenant, s
     assert env_res.status_code == 200, env_res.text
     env_payload = env_res.json()
     assert env_payload["API_KEY"] == "********"
-    assert env_payload["SAFE_NAME"] == "visible"
+    assert env_payload["SAFE_NAME"] == "********"
     assert env_payload["USER_ID"] == "admin_root"
     assert env_payload["SESSION_TYPE"] == "PROXIED"
     assert env_payload["DEBUG_MODE"] == "True"

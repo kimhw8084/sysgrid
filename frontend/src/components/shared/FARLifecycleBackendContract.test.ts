@@ -9,7 +9,7 @@ const source = readFileSync(backendPath, 'utf8')
 describe('FAR lifecycle and history backend golden contract', () => {
   it('keeps archive lifecycle separate from editable FAR content and historical restores', () => {
     expect(source).toContain('"version", "is_deleted"')
-    expect(source).toContain("elif k == 'is_deleted':\n            continue")
+    expect(source).toContain("if k == 'is_deleted':\n            continue")
     expect(source).toContain('"is_deleted": bool(mode.is_deleted)')
   })
 

@@ -230,11 +230,13 @@ describe('shared bulk workflow architecture', () => {
     expect(hookSource).toContain('const bulkMutation = useMutation({')
   })
 
-  it('keeps FAR and Research tables on the Monitoring-derived golden grid contract', () => {
+  it('keeps shared owners authoritative while preserving Monitoring’s pre-existing bulk path', () => {
     const farSource = readSource('FAR.tsx')
+    const farInteractionSource = readSource('FARGoldenWorkspaceInteraction.tsx')
+    const monitoringSource = readSource('MonitoringGrid.tsx')
     const researchSource = readSource('Research.tsx')
 
-    expect(farSource).toContain('<OperationalDataGrid')
+    expect(farInteractionSource).toContain('<OperationalDataGrid')
     expect(researchSource).toContain('<OperationalDataGrid')
     expect(farSource).not.toContain('surfaceVariant="attached-panel"')
     expect(researchSource).not.toContain('monitoring-grid-shell monitoring-grid')
@@ -247,6 +249,11 @@ describe('shared bulk workflow architecture', () => {
     expect(researchSource).not.toContain('Purge Record')
     expect(researchSource).toContain("next.set('type'")
     expect(researchSource).toContain("next.set('id'")
+    expect(monitoringSource).toContain('const bulkPreview = useMemo(')
+    expect(monitoringSource).toContain('const bulkMutation = useMutation({')
+    expect(monitoringSource).toContain('/api/v1/monitoring/bulk-action')
+    expect(monitoringSource).not.toContain('OperationalBulkPreviewModal')
+    expect(monitoringSource).not.toContain('openBulkPreview')
   })
 
   it('keeps the shared controller nonvisual and Monitoring-independent', () => {

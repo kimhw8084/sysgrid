@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 describe('check-form-contracts', () => {
   it('passes the dirty modal escape-dismiss guard', () => {
     expect(() => execFileSync(
-      'node',
+      process.execPath,
       [path.join(process.cwd(), 'scripts/check-form-contracts.cjs')],
       { cwd: process.cwd(), stdio: 'pipe' },
     )).not.toThrow()

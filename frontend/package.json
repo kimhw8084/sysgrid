@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "bash ../scripts/run-e2e.sh",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:assets": "playwright test tests/assets-workflows.spec.ts",
     "test:lint": "node test_linter.cjs",

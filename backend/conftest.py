@@ -102,6 +102,10 @@ os.environ["TENANT_STORAGE_ROOT"] = str(_TEST_TENANT_ROOT)
 # Test-only explicit control-plane identity. Production configuration is
 # required to provide its own deployment-specific allow-list.
 os.environ["CONTROL_PLANE_ADMIN_USER_IDS"] = "admin_root"
+# The broad legacy workflow fixtures exercise preview workspaces as a dedicated
+# disposable System Root identity. The policy tests override this setting when
+# they assert ordinary tenant-admin behavior.
+os.environ["SYSTEM_ROOT_USER_IDS"] = "admin_root"
 
 import pytest_asyncio
 import pytest
@@ -374,5 +378,43 @@ async def seeded_admin_tenant(client, tmp_path, tmp_path_factory, setup_db):
         pytest.fail(f"Alembic migration failed for seeded tenant {tenant_name}: {error_msg}")
     
     # We don't need to dispose the engine here as run_alembic_upgrade uses subprocess.
+
+    # The release-policy layer resolves an Operator from the tenant database;
+    # tenant-registry access alone is intentionally insufficient. Provision the
+    # legacy fixture's explicit operator and preview capabilities here so these
+    # workflow tests do not manufacture authorization in product code.
+    from app.api.settings import ensure_tenant_admin_async
+    from app.api.module_policy import MODULES
+    from app.models.models import Operator
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+    await ensure_tenant_admin_async(
+        tenant_db_url=tenant_db_url,
+        admin_user="admin_root",
+        full_name="Admin Root",
+        email="admin_root@test.com",
+        department="Infrastructure",
+    )
+    tenant_engine = create_async_engine(tenant_db_url)
+    tenant_session_factory = async_sessionmaker(
+        bind=tenant_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    explicit_capabilities = {
+        str(module["required_capability"]): 3
+        for module in MODULES.values()
+        if module.get("required_capability")
+    }
+    explicit_capabilities["diagnostics"] = 1
+    async with tenant_session_factory() as tenant_session:
+        operator = await tenant_session.scalar(
+            select(Operator).where(Operator.username == "admin_root")
+        )
+        assert operator is not None
+        operator.custom_permissions = explicit_capabilities
+        await tenant_session.commit()
+    await tenant_engine.dispose()
     
     return {"tenant_id": tenant_id, "tenant_name": tenant_name, "client": client}

@@ -1,6 +1,11 @@
 import asyncio
 import pytest
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.api.tenants import run_alembic_upgrade
+from app.api.settings import ensure_tenant_admin_async
+from app.database import get_tenant_engine
+from app.models import models
 from app.models.config import Tenant, UserTenantAccess
 
 
@@ -40,6 +45,27 @@ def headers(user_id: str, tenant_id: int) -> dict[str, str]:
 async def add_user_access(config_session_factory, *, user_id: str, tenant_id: int, role: str = "ADMIN"):
     async with config_session_factory() as db:
         db.add(UserTenantAccess(user_id=user_id, tenant_id=tenant_id, role=role, is_selected=True))
+        await db.commit()
+
+
+async def add_workspace_reader(config_session_factory, *, user_id: str, tenant_id: int, tenant_db_url: str):
+    engine = get_tenant_engine(tenant_db_url)
+    session_factory = async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    async with session_factory() as db:
+        role = models.Role(name=f"workspace-reader-{user_id}", permissions={"services": 1})
+        db.add(role)
+        await db.flush()
+        db.add(models.Operator(
+            external_id=user_id,
+            username=user_id,
+            role_id=role.id,
+            custom_permissions={},
+            is_admin=False,
+        ))
         await db.commit()
 
 
@@ -198,6 +224,14 @@ async def test_saved_view_owner_and_tenant_isolation(seeded_admin_tenant, setup_
     tenant_a_id = seeded_admin_tenant["tenant_id"]
     _, config_session_factory = setup_db
     await add_user_access(config_session_factory, user_id="other_user", tenant_id=tenant_a_id)
+    async with config_session_factory() as config_db:
+        tenant_a_url = await config_db.scalar(select(Tenant.db_url).where(Tenant.id == tenant_a_id))
+    await add_workspace_reader(
+        config_session_factory,
+        user_id="other_user",
+        tenant_id=tenant_a_id,
+        tenant_db_url=tenant_a_url,
+    )
 
     created_response = await client.post(
         "/api/v1/workspaces/services/views",
@@ -229,6 +263,13 @@ async def test_saved_view_owner_and_tenant_isolation(seeded_admin_tenant, setup_
         await config_db.commit()
     success, error = run_alembic_upgrade(tenant_b_url)
     assert success, error
+    await ensure_tenant_admin_async(
+        tenant_db_url=tenant_b_url,
+        admin_user="admin_root",
+        full_name="Admin Root",
+        email="admin_root@test.com",
+        department="Infrastructure",
+    )
 
     cross_tenant = await client.get(
         f"/api/v1/workspaces/views/{created['id']}",

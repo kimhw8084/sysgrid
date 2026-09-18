@@ -40,6 +40,8 @@ describe('FAR Monitoring-golden structural contract', () => {
 
   it('uses stable content-aware defaults and shared golden renderers without limiting operator resize', () => {
     const far = read('FAR.tsx')
+    const gridColumns = read('FAR.gridColumns.tsx')
+    const gridContract = read('shared/OperationalGridContract.ts')
     const helper = read('shared/OperationalGoldenColumns.tsx')
     const state = read('FAR.workspaceState.ts')
 
@@ -74,11 +76,13 @@ describe('FAR Monitoring-golden structural contract', () => {
     expect(helper).toContain('resizable: true')
     expect(helper).not.toContain('maxWidth: maxDefaultWidth')
 
-    expect(far).toContain('field: "status"')
-    expect(far).toContain('operational-grid-badge')
-    expect(far).toContain('operational-grid-badge-text')
-    expect(far).toContain('colId: "vectors"')
-    expect(far).toContain('headerName: "Incidents"')
+    expect(gridColumns).toContain("field: 'status'")
+    expect(gridColumns).toContain('OPERATIONAL_GRID_BADGE_CLASS')
+    expect(gridColumns).toContain('OPERATIONAL_GRID_BADGE_TEXT_CLASS')
+    expect(gridContract).toContain("export const OPERATIONAL_GRID_BADGE_CLASS = 'operational-grid-badge'")
+    expect(gridContract).toContain("export const OPERATIONAL_GRID_BADGE_TEXT_CLASS = 'operational-grid-badge-text'")
+    expect(gridColumns).toContain("headerName: 'Vectors'")
+    expect(gridColumns).toContain("headerName: 'Incidents'")
     expect(state).toContain("'vectors'")
   })
 
@@ -131,9 +135,10 @@ describe('FAR Monitoring-golden structural contract', () => {
     expect(FAR_WORKING_STATE_KEY).toBe('sysgrid_far_working_state_v1')
     expect(config.columnLayoutState.find((column: any) => column.colId === 'title')?.width).toBe(333)
     expect(controls).toContain('usePersistentJsonState<FarWorkspaceViewConfig>(FAR_WORKING_STATE_KEY, DEFAULT_FAR_VIEW_CONFIG)')
-    expect(controls).toContain('applyViewConfig(workingDefinition)')
-    expect(controls).toContain('setWorkingDefinition(currentDefinition)')
-    expect(controls).toContain("if (collaborativeViews.status === 'loading') return")
+    expect(controls).toContain("applyViewConfig(selection.definition, selection.source)")
+    expect(controls).toContain('setWorkingDefinition(durableCurrentDefinition)')
+    expect(controls).toContain('collaborativeStatus: collaborativeViews.status')
+    expect(controls).toContain('userSettingsReady')
     expect(controls).toContain('collaborativeViews.setViewLink(null)')
     expect(controls).toContain('workingStateReady')
     expect(far).toContain('loading={modesLoading || !goldenWorkspace.workingStateReady}')
@@ -255,9 +260,10 @@ describe('FAR Monitoring-golden structural contract', () => {
 
   it('keeps FAR analytical semantics intact while adopting the shared frame', () => {
     const far = read('FAR.tsx')
+    const gridColumns = read('FAR.gridColumns.tsx')
 
     for (const token of ['severity', 'occurrence', 'detection', 'rpn', 'Failure Mode', 'Vectors', 'Incidents']) {
-      expect(far).toContain(token)
+      expect(`${far}\n${gridColumns}`).toContain(token)
     }
     expect(far).toContain('setShowRpnHelp(true)')
     expect(far).toContain('setShowMaturityHelp(true)')

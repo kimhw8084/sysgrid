@@ -56,7 +56,7 @@ def run_tenant_migrations(db_url: str) -> None:
     env = os.environ.copy()
     env["SQLALCHEMY_DATABASE_URL"] = db_url
     result = subprocess.run(
-        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        [sys.executable, str(ROOT_DIR / "scripts" / "run-alembic.py"), "upgrade", "head"],
         cwd=str(BACKEND_DIR),
         env=env,
         check=False,
@@ -64,7 +64,7 @@ def run_tenant_migrations(db_url: str) -> None:
         text=True,
     )
     if result.returncode != 0:
-        print(f"Migration Error: {result.stderr.strip()}")
+        raise RuntimeError(f"Migration Error: {result.stderr.strip()}")
 
 
 def ensure_seed_schema_compatibility(db_url: str) -> None:

@@ -570,7 +570,8 @@ const captureAssetQuickLook = async (page: any) => {
   const attempts: string[] = []
   console.log(`[Interaction] Starting quick-look panel capture`)
   attempts.push('click explicit quick-look trigger')
-  await page.getByTitle('Open quick look').first().click({ force: true })
+  await page.getByTitle('More actions').first().click({ force: true })
+  await page.getByRole('button', { name: 'Quick Look', exact: true }).click({ force: true })
   const quickLookButton = page.getByRole('button', { name: 'Engage Full Configuration' })
   const opened = await quickLookButton.isVisible({ timeout: 5_000 }).catch(() => false)
   attempts.push(opened ? 'quick-look panel visible' : 'quick-look panel not visible')

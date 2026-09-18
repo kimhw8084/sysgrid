@@ -50,7 +50,7 @@ test.describe('Assets workflows', () => {
     const openKnowledgeButton = page.getByRole('button', { name: 'Open Knowledge', exact: true })
     const farRisksButton = page.getByRole('button', { name: 'FAR Risks', exact: true })
     const auditButton = page.getByRole('button', { name: 'Audit', exact: true })
-    const bulkActionsButton = page.getByRole('button', { name: 'Bulk Actions', exact: true })
+    const bulkActionsButton = page.getByRole('button', { name: /Bulk Actions/i })
     const compareVisibleButton = page.getByRole('button', { name: 'Compare', exact: true })
 
     const primaryDetailsRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)

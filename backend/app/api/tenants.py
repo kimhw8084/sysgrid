@@ -369,8 +369,9 @@ def run_alembic_upgrade(db_url: str):
     env = os.environ.copy()
     env["SQLALCHEMY_DATABASE_URL"] = sync_url
 
+    alembic_runner = os.path.abspath(os.path.join(backend_dir, "..", "scripts", "run-alembic.py"))
     process = subprocess.run(
-        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        [sys.executable, alembic_runner, "upgrade", "head"],
         cwd=backend_dir,
         env=env,
         capture_output=True,

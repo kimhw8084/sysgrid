@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.tenants import run_alembic_upgrade
@@ -34,17 +35,32 @@ async def seed_team(config_session_factory, *, tenant_id: int, name: str, users:
         team = models.Team(name=name, description="Workspace saved-view test team", source="manual")
         db.add(team)
         await db.flush()
+        team_role = models.Role(
+            name=f"workspace-team-{name.lower().replace(' ', '-')}",
+            permissions={"monitoring": 3},
+        )
+        db.add(team_role)
+        await db.flush()
         for index, user_id in enumerate(users):
-            db.add(models.Operator(
-                external_id=f"team-view-{name.lower().replace(' ', '-')}-{index}",
-                username=user_id,
-                full_name=user_id,
-                email=f"{user_id}@example.test",
-                team=name,
-                team_id=team.id,
-                team_source="manual",
-                registration_status="Registered",
-            ))
+            operator = await db.scalar(
+                select(models.Operator).where(models.Operator.username == user_id)
+            )
+            if operator is None:
+                db.add(models.Operator(
+                    external_id=f"team-view-{name.lower().replace(' ', '-')}-{index}",
+                    username=user_id,
+                    full_name=user_id,
+                    email=f"{user_id}@example.test",
+                    role_id=team_role.id,
+                    team=name,
+                    team_id=team.id,
+                    team_source="manual",
+                    registration_status="Registered",
+                ))
+            else:
+                operator.team = name
+                operator.team_id = team.id
+                operator.team_source = "manual"
         await db.commit()
         return team.id
 

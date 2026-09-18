@@ -1,22 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 import { runSystemDiagnostics } from './systemDiagnostics'
-
-function makeResponse(
-  body: BodyInit | null,
-  init: ResponseInit & { redirected?: boolean; finalUrl?: string } = {},
-) {
-  const response = new Response(body, init)
-  Object.defineProperty(response, 'redirected', { value: Boolean(init.redirected) })
-  Object.defineProperty(response, 'url', { value: init.finalUrl || 'https://api.example.com/response' })
-  return response
-}
+import { makeTestResponse } from '../../test/response'
 
 describe('runSystemDiagnostics', () => {
   it('flags stale frontend bundle mismatch when backend hint differs', async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input)
       if (url.endsWith('/api/v1/readiness')) {
-        return makeResponse(JSON.stringify({
+        return makeTestResponse(JSON.stringify({
           status: 'ready',
           frontend_build_version_hint: '9.9.9',
           environment_mode: 'restricted-origin-runtime',
@@ -26,7 +17,7 @@ describe('runSystemDiagnostics', () => {
         }), { status: 200, headers: { 'Content-Type': 'application/json' }, finalUrl: url })
       }
       if (url.endsWith('/api/v1/settings/startup-check')) {
-        return makeResponse(JSON.stringify({
+        return makeTestResponse(JSON.stringify({
           runtime: {
             environment_mode: 'restricted-origin-runtime',
             frontend_build_version_hint: '9.9.9',
@@ -35,7 +26,7 @@ describe('runSystemDiagnostics', () => {
         }), { status: 200, headers: { 'Content-Type': 'application/json' }, finalUrl: url })
       }
       if (url.endsWith('/api/v1/import/snapshot/external_entities/manifest')) {
-        return makeResponse(JSON.stringify({
+        return makeTestResponse(JSON.stringify({
           profile: 'external_entities',
           schema_version: '2026-06-external-v1',
           filename: 'SysGrid_External_2026-06-30_15-11-09.csv',
@@ -45,7 +36,7 @@ describe('runSystemDiagnostics', () => {
         }), { status: 200, headers: { 'Content-Type': 'application/json' }, finalUrl: url })
       }
       if (url.includes('/api/v1/import/snapshot/external_entities?export_token=')) {
-        return makeResponse('name,type\nA,API\n', {
+        return makeTestResponse('name,type\nA,API\n', {
           status: 200,
           headers: {
             'Content-Type': 'text/csv',
@@ -58,7 +49,7 @@ describe('runSystemDiagnostics', () => {
         })
       }
       if (url.endsWith('/api/v1/import/preview-file')) {
-        return makeResponse(JSON.stringify({
+        return makeTestResponse(JSON.stringify({
           table_name: 'external_entities',
           invalid_rows: 0,
         }), { status: 200, headers: { 'Content-Type': 'application/json' }, finalUrl: url })
