@@ -1,0 +1,331 @@
+{
+  "accepted_at": "2026-09-19T15:56:56Z",
+  "changed_files": [
+    {
+      "additions": 1130,
+      "deletions": 0,
+      "path": ".github/workflows/project-os-chg120-final-verify-v16.yml",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && echo '--- RTK ---' && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && echo '--- LAW ---' && sed -n '1,260p' /Users/haewonkim/.codex/law.md && echo '--- STATUS ---' && git status --short --branch && echo '--- REMOTES ---' && git remote -v && echo '--- HEAD ---' && git log -1 --oneline --decorate\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show 2074e8bffb50b90d379b23760e61017d5107e079:frontend/src/components/MonitoringGrid.tsx | rg -n -C 3 'Scan matrix|data-workspace|ToolbarSearch' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show 2074e8bffb50b90d379b23760e61017d5107e079:frontend/src/components/MonitoringGrid.tsx | rg -n 'data-workspace|placeholder' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show --stat --oneline db7e66d69e5bc0c2751f97e4006882d615a4e7a -- .github/workflows/project-os-chg120-final-verify-v15.yml && rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | wc -l'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git cat-file -t db7e66d69e5bc0c2751f97e4006882d615a4e7a && rtk git cat-file -t 2074e8bffb50b90d379b23760e61017d5107e079 && rtk git cat-file -t bf1611bcd9cc3849a4353d5fb82da687c68ef4a0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files -g 'project-os-chg120-final-verify-v*.yml' -g '\"'!node_modules'\"' && rtk git ls-tree -r --name-only HEAD .github/workflows | rg 'chg120-final-verify' || true && rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | rg -n -C 2 'v15|Scan matrix|Monitoring|ARTIFACT_REF|WORKFLOW_PATH|artifact|capture_spec|git_package_verified'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'v15|Scan matrix|data-workspace|workflow_file_only|git_package_verified|sysgrid-smv1-final-verify-actions-v16|sysgrid-smv1-actions-verifier-v16' .github/workflows/project-os-chg120-final-verify-v16.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if rtk rg -n \\\"locator\\\\('body'\\\\).*Scan matrix|Scan matrix.*locator\\\\('body'\\\\)\\\" .github/workflows/project-os-chg120-final-verify-v16.yml; then exit 1; else echo 'no remaining body-text Scan matrix assertion'; fi && rtk rg -n \\\"getByPlaceholder\\\\('Scan matrix\\\\.\\\\.\\\\.'\\\\)\\\" .github/workflows/project-os-chg120-final-verify-v16.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show 2074e8bffb50b90d379b23760e61017d5107e079:frontend/src/components/MonitoringGrid.tsx | rg -n -C 2 'placeholder=\\\"Scan matrix\\\\.\\\\.\\\\.\\\"' && if rtk git show 2074e8bffb50b90d379b23760e61017d5107e079:frontend/src/components/MonitoringGrid.tsx | rtk rg -n 'data-workspace=\\\"monitoring\\\"'; then echo 'workspace data attribute present'; else echo 'workspace data attribute absent in candidate source'; fi\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git diff --stat && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run view 35452515142 --repo kimhw8084/sysgrid --json status,conclusion,headBranch,workflowName,artifacts,url'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13 refs/heads/main refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v16'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run view 35452515142 --repo kimhw8084/sysgrid --log-failed'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh run view 35452515142 --repo kimhw8084/sysgrid --log-failed | rtk rg -n -C 8 \\\"toContainText\\\\('Scan matrix'\\\\)|attachment #1: screenshot|Error Context:|1 failed|Process completed with exit code 1\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add -- .github/workflows/project-os-chg120-final-verify-v16.yml && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nrtk git diff --cached --check\ntest \"$(rtk git diff --cached --name-only origin/main)\" = '\"'.github/workflows/project-os-chg120-final-verify-v16.yml'\ntest \\\"\"'$(rtk git diff --cached --name-only origin/main | wc -l | tr -d '\"' ')\\\" -eq 1\ntest \\\"\"'$(rtk git status --short | awk '\"'{print \"'$2}'\"' | sed '/\"'^$/d'\"' | wc -l | tr -d ' ')\\\" -eq 1\nprintf '%s\\\\n' 'staged scope/diff-check: PASS'\n\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | rtk python - <<'PY'\nfrom pathlib import Path\nimport sys\nr15 = sys.stdin.read()\nexpected = r15.replace('v15', 'v16').replace(\n    \\\"                  await expect(page.locator('body')).toContainText('Scan matrix')\\\",\n    \\\"                  await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\",\n)\nactual = Path('.github/workflows/project-os-chg120-final-verify-v16.yml').read_text()\nassert expected == actual, 'v16 is not the exact R15 template plus requested substitutions'\nassert actual.count(\\\"await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\") == 1\nassert \\\"await expect(page.locator('body')).toContainText('Scan matrix')\\\" not in actual\nassert 'v15' not in actual\nprint('exact R15 transform: PASS')\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\nparent=c958ce80124bcc9012a53cfb688d02a756a30beb\ntree=3254e1802ec09511ea46469263995ed54874a0fd\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0d\ncandidate_ref=refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13\nartifact_ref=refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v16\ntest \"$(rtk git rev-parse \"$candidate\")\" = \"$candidate\"\ntest \"$(rtk git rev-parse \"$candidate''^\")\" = \"$parent\"\ntest \"$(rtk git rev-parse \"$candidate''^{tree}\")\" = \"$tree\"\ntest \"$(rtk git rev-parse origin/main)\" = \"${base%0}\"\ntest \"$(rtk git rev-list --count origin/main..\"$candidate\")\" -eq 4\ntest -z \"$(rtk git diff --name-only origin/main...\"$candidate\" | rtk rg -E '\"'(\"'^|/)(test-results[''^/]*|playwright-report[''^/]*|blob-report[''^/]*|coverage)(/|$)|(''^|/)llm-report'\"\\\\\\\\.json\"'$|(''^|/)OUT-[''^/]*_EVIDENCE'\"\\\\\\\\.html\"'$|'\"\\\\\\\\.(png|jpe?g|webp|pdf|zip|db|sqlite|log|trace|webm|mp4)\"'$'\"' || true)\\\"\ntest -z \\\"\"'$(rtk git ls-tree -r --name-only \"$candidate\" | rtk rg '\"'\"'^frontend/OUT-.*_EVIDENCE'\"\\\\\\\\.html\"'$'\"' || true)\\\"\ntest \\\"\"'$(rtk git ls-remote origin \"$candidate_ref\" | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$candidate\"\ntest \"$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'${base%0}\"\ntest -z \"$(rtk git ls-remote origin \"$artifact_ref\")\"\necho '\"'candidate identity/history/generated-output firewall/remote refs: PASS'\n\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nfrom pathlib import Path\nimport subprocess\nimport yaml\npath = Path('.github/workflows/project-os-chg120-final-verify-v16.yml')\ndoc = yaml.safe_load(path.read_text())\nassert doc['jobs']['qualify']['runs-on'] == 'ubuntu-latest'\nblocks = []\ndef collect(value):\n    if isinstance(value, dict):\n        if isinstance(value.get('run'), str):\n            blocks.append(value['run'])\n        for child in value.values():\n            collect(child)\n    elif isinstance(value, list):\n        for child in value:\n            collect(child)\ncollect(doc)\nassert blocks, 'no bash run blocks found'\nfor index, block in enumerate(blocks, 1):\n    result = subprocess.run(['bash', '-n', '-'], input=block, text=True, capture_output=True)\n    assert result.returncode == 0, f'bash -n failed for run block {index}: {result.stderr}'\nprint(f'YAML parse: PASS; bash -n: PASS ({len(blocks)} run blocks)')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nrtk git diff --cached --check\ntest \"$(rtk git diff --cached --name-only origin/main)\" = '\"'.github/workflows/project-os-chg120-final-verify-v16.yml'\ntest \\\"\"'$(rtk git diff --cached --name-only origin/main | wc -l | tr -d '\"' ')\\\" -eq 1\nstatus_paths=\\\"\"'$(rtk git status --short | awk '\"'{print \"'$2}'\"' | sed '/\"'^$/d'\"')\\\"\ntest \\\"\"'$(printf '\"'%s\\\\n' \\\"\"'$status_paths\" | wc -l | tr -d '\"' ')\\\" -eq 1\ntest \\\"\"'$status_paths\" = '\"'.github/workflows/project-os-chg120-final-verify-v16.yml'\nprintf '%s\\\\n' 'staged scope/diff-check: PASS'\n\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | rtk python -c \\\"from pathlib import Path; import sys; r15=sys.stdin.read(); old=\\\\\\\"                  await expect(page.locator('body')).toContainText('Scan matrix')\\\\\\\"; new=\\\\\\\"                  await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\\\\\"; expected=r15.replace('v15','v16').replace(old,new); actual=Path('.github/workflows/project-os-chg120-final-verify-v16.yml').read_text(); assert expected == actual, 'v16 is not the exact R15 template plus requested substitutions'; assert actual.count(\\\\\\\"await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\\\\\") == 1; assert \\\\\\\"await expect(page.locator('body')).toContainText('Scan matrix')\\\\\\\" not in actual; assert 'v15' not in actual; print('exact R15 transform: PASS')\\\"\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\nparent=c958ce80124bcc9012a53cfb688d02a756a30beb\ntree=3254e1802ec09511ea46469263995ed54874a0fd\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate_ref=refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13\nartifact_ref=refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v16\ntest \"$(rtk git rev-parse \"$candidate\")\" = \"$candidate\"\ntest \"$(rtk git rev-parse \"$candidate''^\")\" = \"$parent\"\ntest \"$(rtk git rev-parse \"$candidate''^{tree}\")\" = \"$tree\"\ntest \"$(rtk git rev-parse origin/main)\" = \"$base\"\ntest \"$(rtk git rev-list --count origin/main..\"$candidate\")\" -eq 4\ntest -z \"$(rtk git diff --name-only origin/main...\"$candidate\" | rtk rg -E '\"'(\"'^|/)(test-results[''^/]*|playwright-report[''^/]*|blob-report[''^/]*|coverage)(/|$)|(''^|/)llm-report'\"\\\\\\\\.json\"'$|(''^|/)OUT-[''^/]*_EVIDENCE'\"\\\\\\\\.html\"'$|'\"\\\\\\\\.(png|jpe?g|webp|pdf|zip|db|sqlite|log|trace|webm|mp4)\"'$'\"' || true)\\\"\ntest -z \\\"\"'$(rtk git ls-tree -r --name-only \"$candidate\" | rtk rg '\"'\"'^frontend/OUT-.*_EVIDENCE'\"\\\\\\\\.html\"'$'\"' || true)\\\"\ntest \\\"\"'$(rtk git ls-remote origin \"$candidate_ref\" | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$candidate\"\ntest \"$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$base\"\ntest -z \"$(rtk git ls-remote origin \"$artifact_ref\")\"\necho '\"'candidate identity/history/generated-output firewall/remote refs: PASS'\n\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'tail -n 8 .github/workflows/project-os-chg120-final-verify-v16.yml | rtk sed -n l && rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | tail -n 8 | rtk sed -n l && wc -l .github/workflows/project-os-chg120-final-verify-v16.yml && rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | wc -l && rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show db7e66d69e5bc0c2751f97e4006882d615a4e7a:.github/workflows/project-os-chg120-final-verify-v15.yml | rtk python -c \\\"from pathlib import Path; import sys; r15=sys.stdin.read(); old=\\\\\\\"                  await expect(page.locator('body')).toContainText('Scan matrix')\\\\\\\"; new=\\\\\\\"                  await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\\\\\"; expected=r15.replace('v15','v16').replace(old,new); actual=Path('.github/workflows/project-os-chg120-final-verify-v16.yml').read_text(); assert expected == actual, 'v16 is not the exact R15 template plus requested substitutions'; assert actual.count(\\\\\\\"await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\\\\\") == 1; assert \\\\\\\"await expect(page.locator('body')).toContainText('Scan matrix')\\\\\\\" not in actual; assert 'v15' not in actual; print('exact R15 transform: PASS')\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk git status --short --branch && wc -l .github/workflows/project-os-chg120-final-verify-v16.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate_ref=refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13\nartifact_ref=refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v16\ntest -z \"$(rtk git diff --name-only origin/main...\"$candidate\" | rtk rg --regexp '\"'(\"'^|/)(test-results[''^/]*|playwright-report[''^/]*|blob-report[''^/]*|coverage)(/|$)|(''^|/)llm-report'\"\\\\\\\\.json\"'$|(''^|/)OUT-[''^/]*_EVIDENCE'\"\\\\\\\\.html\"'$|'\"\\\\\\\\.(png|jpe?g|webp|pdf|zip|db|sqlite|log|trace|webm|mp4)\"'$'\"' || true)\\\"\ntest -z \\\"\"'$(rtk git ls-tree -r --name-only \"$candidate\" | rtk rg --regexp '\"'\"'^frontend/OUT-.*_EVIDENCE'\"\\\\\\\\.html\"'$'\"' || true)\\\"\ntest \\\"\"'$(rtk git ls-remote origin \"$candidate_ref\" | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$candidate\"\ntest \"$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$base\"\ntest -z \"$(rtk git ls-remote origin \"$artifact_ref\")\"\necho '\"'generated-output firewall/remote refs/artifact nonexistence: PASS'\n\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add -- .github/workflows/project-os-chg120-final-verify-v16.yml && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nrtk git diff --cached --check\ntest \"$(rtk git diff --cached --name-only origin/main)\" = '\"'.github/workflows/project-os-chg120-final-verify-v16.yml'\ntest \\\"\"'$(rtk git diff --cached --name-only origin/main | wc -l | tr -d '\"' ')\\\" -eq 1\n\"'! rtk rg -n '\"'v15|project-os-chg120-final-verify-v15|sysgrid-smv1-actions-verifier-v15|sysgrid-smv1-final-verify-actions-v15' .github/workflows/project-os-chg120-final-verify-v16.yml\ntest \\\"\"'$(rtk rg -n -F '\"\\\\\\\"await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\\\\\" .github/workflows/project-os-chg120-final-verify-v16.yml | wc -l | tr -d ' ')\\\" -eq 1\n\"'! rtk rg -n -F '\"\\\\\\\"await expect(page.locator('body')).toContainText('Scan matrix')\\\\\\\" .github/workflows/project-os-chg120-final-verify-v16.yml\nprintf '%s\\\\n' 'scope/stale-label/Monitoring assertion checks: PASS'\n\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nfrom pathlib import Path\nimport subprocess\nimport yaml\npath = Path('.github/workflows/project-os-chg120-final-verify-v16.yml')\ndoc = yaml.safe_load(path.read_text())\nassert doc['jobs']['qualify']['runs-on'] == 'ubuntu-latest'\nblocks = []\ndef collect(value):\n    if isinstance(value, dict):\n        if isinstance(value.get('run'), str):\n            blocks.append(value['run'])\n        for child in value.values():\n            collect(child)\n    elif isinstance(value, list):\n        for child in value:\n            collect(child)\ncollect(doc)\nassert len(blocks) == 6\nfor index, block in enumerate(blocks, 1):\n    result = subprocess.run(['bash', '-n', '-'], input=block, text=True, capture_output=True)\n    assert result.returncode == 0, f'bash -n failed for run block {index}: {result.stderr}'\nprint(f'YAML parse: PASS; bash -n: PASS ({len(blocks)} run blocks)')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nworkflow_text=\"$(rtk git show :'\"\\\\.github/workflows/project-os-chg120-final-verify-v16.yml)\\\"\nforbidden=''\nfor term in codex opencode chatgpt openai llm model-cli agent-loop; do\n  matches=\\\"\"'$(printf '\"'%s\\\\n' \\\"\"'$workflow_text\" | rtk rg --regexp \"(''^|[[:space:];|])${term}([[:space:];|]|'\"\\\\\"'$)\" --ignore-case || true)\"\n  if [ -n \"$matches\" ]; then forbidden=\"$forbidden$matches'\"\\\\n\\\"; fi\ndone\ntest -z \\\"\"'$forbidden\"\nprintf '\"'%s\\\\n' 'forbidden-command scan: PASS'\n\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set -euo pipefail\nworkflow=.github/workflows/project-os-chg120-final-verify-v16.yml\nfor expected in \\\\\n  'CANDIDATE_SHA: 2074e8bffb50b90d379b23760e61017d5107e079' \\\\\n  'CANDIDATE_PARENT: c958ce80124bcc9012a53cfb688d02a756a30beb' \\\\\n  'CANDIDATE_TREE: 3254e1802ec09511ea46469263995ed54874a0fd' \\\\\n  'CANDIDATE_REF: refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13' \\\\\n  'BASE_SHA: bf1611bcd9cc3849a4353d5fb82da687c68ef4a0' \\\\\n  'ARTIFACT_REF: refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v16' \\\\\n  'WORKFLOW_PATH: .github/workflows/project-os-chg120-final-verify-v16.yml' \\\\\n  'name: sysgrid-smv1-final-verify-actions-v16-diagnostics'; do\n  rtk rg -F -q \\\"\"'$expected\" \"$workflow\"\ndone\nrtk rg -F -q '\"'branches:' \\\"\"'$workflow\"\nrtk rg -F -q '\"'codex/sysgrid-smv1-actions-verifier-v16' \\\"\"'$workflow\"\nrtk rg -F -q '\"'retention-days: 14' \\\"\"'$workflow\"\nrtk rg -F -q '\"'git_package_verified\\\": True' \\\"\"'$workflow\"\nprintf '\"'%s\\\\n' 'identity/ref/artifact/trigger assertions: PASS'\n\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set +e\nprintf '%s\\\\n' '--- cached names ---'\nrtk git diff --cached --name-only origin/main\nprintf 'diff-check=%s\\\\n' \\\"\"'$?\"\nprintf '\"'%s\\\\n' '--- stale matches ---'\nrtk rg -n 'v15|project-os-chg120-final-verify-v15|sysgrid-smv1-actions-verifier-v15|sysgrid-smv1-final-verify-actions-v15' .github/workflows/project-os-chg120-final-verify-v16.yml\nprintf 'stale=%s\\\\n' \\\"\"'$?\"\nprintf '\"'%s\\\\n' '--- placeholder matches ---'\nrtk rg -n -F \\\"await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\" .github/workflows/project-os-chg120-final-verify-v16.yml\nprintf 'placeholder=%s\\\\n' \\\"\"'$?\"\nprintf '\"'%s\\\\n' '--- body matches ---'\nrtk rg -n -F \\\"await expect(page.locator('body')).toContainText('Scan matrix')\\\" .github/workflows/project-os-chg120-final-verify-v16.yml\nprintf 'body=%s\\\\n' \\\"\"'$?\"\n'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nrtk proxy git diff --cached --check\ntest \"$(rtk proxy git diff --cached --name-only origin/main)\" = '\"'.github/workflows/project-os-chg120-final-verify-v16.yml'\ntest \\\"\"'$(rtk proxy git diff --cached --name-only origin/main | wc -l | tr -d '\"' ')\\\" -eq 1\n\"'! rtk rg -n '\"'v15|project-os-chg120-final-verify-v15|sysgrid-smv1-actions-verifier-v15|sysgrid-smv1-final-verify-actions-v15' .github/workflows/project-os-chg120-final-verify-v16.yml\ntest \\\"\"'$(rtk rg -n -F '\"\\\\\\\"await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\\\\\" .github/workflows/project-os-chg120-final-verify-v16.yml | wc -l | tr -d ' ')\\\" -eq 1\n\"'! rtk rg -n -F '\"\\\\\\\"await expect(page.locator('body')).toContainText('Scan matrix')\\\\\\\" .github/workflows/project-os-chg120-final-verify-v16.yml\nprintf '%s\\\\n' 'scope/stale-label/Monitoring assertion checks: PASS'\n\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nrtk proxy git diff --cached --check\ntest \"$(rtk proxy git diff --cached --name-only origin/main)\" = \".github/workflows/project-os-chg120-final-verify-v16.yml\"\ntest \"$(rtk proxy git diff --cached --name-only origin/main | wc -l | tr -d \" \")\" -eq 1\n! rtk rg -n '\"'v15|project-os-chg120-final-verify-v15|sysgrid-smv1-actions-verifier-v15|sysgrid-smv1-final-verify-actions-v15' .github/workflows/project-os-chg120-final-verify-v16.yml\nrtk rg -n -F \\\"await expect(page.getByPlaceholder('Scan matrix...')).toBeVisible()\\\" .github/workflows/project-os-chg120-final-verify-v16.yml >/dev/null\ntest \\\"\"'$(rtk rg -n -F \"await expect(page.getByPlaceholder('\"'Scan matrix...')).toBeVisible()\\\" .github/workflows/project-os-chg120-final-verify-v16.yml | wc -l | tr -d \\\" \\\")\\\" -eq 1\n\"'! rtk rg -n -F \"await expect(page.locator('\"'body')).toContainText('Scan matrix')\\\" .github/workflows/project-os-chg120-final-verify-v16.yml\nprintf '%s\n' 'scope/stale-label/Monitoring assertion checks: PASS'\n\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git commit -m 'Project OS: SysGrid CHG-120 final verify actions v16'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nfrom hashlib import sha256\nfrom pathlib import Path\npath = Path('.github/workflows/project-os-chg120-final-verify-v16.yml')\nprint(f'workflow_sha256={sha256(path.read_bytes()).hexdigest()}')\nprint(f'workflow_lines={len(path.read_text().splitlines())}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --branch && rtk git log -1 --format='%H%n%s%n%P' && rtk proxy git diff --name-only origin/main..HEAD && rtk proxy git diff --check origin/main..HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\ntest \"$(rtk git rev-parse origin/main)\" = \"$base\"\ntest \"$(rtk git rev-parse \"$candidate\")\" = \"$candidate\"\ntest \"$(rtk git rev-parse \"$candidate''^{tree}\")\" = 3254e1802ec09511ea46469263995ed54874a0fd\ntest \"$(rtk git rev-list --count origin/main..\"$candidate\")\" -eq 4\ntest -z \"$(rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-actions-verifier-v16)\"\necho '\"'post-commit main/candidate/branch preflight: PASS'\n\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:codex/sysgrid-smv1-actions-verifier-v16'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 95,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 93.09,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 869120,
+      "fresh_input_tokens": 64501,
+      "input_tokens": 933621,
+      "non_reasoning_output_tokens": 10165,
+      "output_tokens": 20014,
+      "reasoning_output_tokens": 9849,
+      "total_processed_tokens": 953635
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1",
+      "subject": "Project OS: SysGrid CHG-120 final verify actions v16"
+    }
+  ],
+  "diff": {
+    "additions": 1130,
+    "changed_files": 1,
+    "commit_count": 1,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-19T16:05:47Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-actions-verifier-v16",
+    "detached_verify": false,
+    "head_sha": "da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1",
+    "remote_exact_head": true,
+    "remote_head_sha": "da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-actions-verifier-v16",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-f79f6c9ac8a9b0d4af0322bc",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v16",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v16"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-actions-verifier-v16",
+  "schema_version": 1,
+  "started_at": "2026-09-19T15:56:56Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 531,
+    "queue_seconds": 0,
+    "total_seconds": 531
+  },
+  "transport": {
+    "bytes": 8811,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 8490,
+    "prompt_sha256": "3c893c2206cf6e586f4fbefa17010ab0745583594915cce2c87c891622adf049",
+    "sha256": "f79f6c9ac8a9b0d4af0322bc4ead124b1661770abc5c96917081b2c667e82580"
+  }
+}
