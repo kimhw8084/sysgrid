@@ -4,9 +4,11 @@ import { isExpectedTelemetryRequest, isExpectedUnavailableConsoleError, isUnexpe
 describe('browser failure classification', () => {
   it('allows only the exact telemetry beacon', () => {
     expect(isExpectedTelemetryRequest({ method: 'POST', url: 'http://test/api/v1/observability/performance', resourceType: 'beacon' })).toBe(true)
+    expect(isExpectedTelemetryRequest({ method: 'POST', url: 'http://test/api/v1/observability/performance', resourceType: 'ping' })).toBe(true)
     expect(isExpectedTelemetryRequest({ method: 'POST', url: 'http://test/api/v1/observability/performance?x=1', resourceType: 'fetch' })).toBe(true)
     expect(isExpectedTelemetryRequest({ method: 'GET', url: 'http://test/api/v1/observability/performance', resourceType: 'fetch' })).toBe(false)
     expect(isExpectedTelemetryRequest({ method: 'POST', url: 'http://test/api/v1/projects', resourceType: 'fetch' })).toBe(false)
+    expect(isExpectedTelemetryRequest({ method: 'POST', url: 'http://test/api/v1/observability/performance', resourceType: 'document' })).toBe(false)
   })
 
   it('does not suppress arbitrary console resource failures', () => {

@@ -17,7 +17,7 @@ export const isExpectedTelemetryRequest = ({ method, url, resourceType }: Browse
     const parsed = new URL(url, 'http://localhost')
     return method.toUpperCase() === 'POST'
       && parsed.pathname === '/api/v1/observability/performance'
-      && (resourceType == null || ['beacon', 'fetch', 'xhr'].includes(resourceType))
+      && (resourceType == null || ['beacon', 'ping', 'fetch', 'xhr'].includes(resourceType))
   } catch {
     return false
   }
