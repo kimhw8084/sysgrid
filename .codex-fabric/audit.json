@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "kind": "codex-fabric-audit-evidence",
+  "operation": "BUILD",
+  "project_id": "sysgrid",
+  "request": "sysgrid-smv1-accepted-integration-v18d",
+  "status": "INTEGRATED_FAST_FORWARD",
+  "recorded_at": "2026-09-19T19:51:48Z",
+  "identity": {
+    "repository": "kimhw8084/sysgrid",
+    "change": "CHG-120 — System Management V1 — release/access and golden foundation",
+    "work_branch": "codex/sysgrid-smv1-accepted-integration-v18d",
+    "evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-accepted-integration-v18d"
+  },
+  "accepted_product": {
+    "branch": "refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13",
+    "sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "tree": "3254e1802ec09511ea46469263995ed54874a0fd",
+    "parent": "c958ce80124bcc9012a53cfb688d02a756a30beb",
+    "qualification": {
+      "github_actions_run": "35464098487",
+      "result": "SUCCESS",
+      "artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v18c",
+      "artifact_receipt_commit": "df1ed32a14fcc11e5bb06f37c7002efc68388454",
+      "git_package_verified": true
+    }
+  },
+  "preflight": {
+    "fetch_prune": {
+      "command": "rtk git fetch --prune origin",
+      "exit_code": 0
+    },
+    "remote_main": {
+      "ref": "refs/heads/main",
+      "sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0"
+    },
+    "remote_candidate": {
+      "ref": "refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13",
+      "sha": "2074e8bffb50b90d379b23760e61017d5107e079"
+    },
+    "candidate_exists_locally": true,
+    "candidate_tree": "3254e1802ec09511ea46469263995ed54874a0fd",
+    "candidate_parent": "c958ce80124bcc9012a53cfb688d02a756a30beb",
+    "base_is_ancestor": true,
+    "base_to_candidate_commit_count": 4,
+    "worktree_branch": "codex/sysgrid-smv1-accepted-integration-v18d",
+    "worktree_clean": true,
+    "status": "clean — nothing to commit",
+    "unstaged_diff_exit_code": 0,
+    "index_diff_exit_code": 0,
+    "source_changes": 0,
+    "index_changes": 0
+  },
+  "write": {
+    "command": "rtk git push origin --force-with-lease=refs/heads/main:bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 2074e8bffb50b90d379b23760e61017d5107e079:refs/heads/main",
+    "exit_code": 0,
+    "lease_guarded": true,
+    "fast_forward": true,
+    "force_unconditional": false,
+    "new_product_commit": false
+  },
+  "post_integration": {
+    "fetch_prune": {
+      "command": "rtk git fetch --prune origin",
+      "exit_code": 0
+    },
+    "remote_main": {
+      "ref": "refs/heads/main",
+      "sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    "accepted_candidate": {
+      "ref": "refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13",
+      "sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "unchanged": true
+    },
+    "artifact": {
+      "ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v18c",
+      "sha": "df1ed32a14fcc11e5bb06f37c7002efc68388454",
+      "exists": true,
+      "unchanged": true
+    },
+    "tracked_source_changes": 0,
+    "worktree_clean": true,
+    "status": "clean — nothing to commit",
+    "unstaged_diff_exit_code": 0,
+    "index_diff_exit_code": 0
+  },
+  "result": {
+    "source_changes": 0,
+    "main_before": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "main_after": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "main_tree_after": "3254e1802ec09511ea46469263995ed54874a0fd",
+    "accepted_candidate_unchanged": true,
+    "artifact_ref_unchanged": true,
+    "fast_forward": true,
+    "lease_guarded": true,
+    "force_unconditional": false,
+    "worktree_clean": true,
+    "error_code": null,
+    "blockers": []
+  },
+  "scope": {
+    "product_files_changed": [],
+    "audit_files_changed": [
+      ".codex-fabric/audit.json"
+    ],
+    "product_branch_changed": false,
+    "artifact_or_verifier_branch_changed": false
+  }
+}
