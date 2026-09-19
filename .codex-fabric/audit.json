@@ -1,0 +1,246 @@
+{
+  "accepted_at": "2026-09-19T04:14:10Z",
+  "changed_files": [
+    {
+      "additions": 1037,
+      "deletions": 0,
+      "path": ".github/workflows/project-os-chg120-final-verify.yml",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && printf '%s\\\\n' '--- git status ---' && git status --short --branch && printf '%s\\\\n' '--- instruction files ---' && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && printf '%s\\\\n' '--- law ---' && sed -n '1,260p' /Users/haewonkim/.codex/law.md && printf '%s\\\\n' '--- repo files ---' && rg --files -g 'AGENTS.md' -g '.github/**' -g 'package.json' -g 'backend/requirements.txt' -g 'frontend/package.json' -g 'scripts/run-e2e.sh' -g 'playwright*.config.ts' | sort\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git rev-parse --show-toplevel && rtk git branch --show-current && rtk git rev-parse HEAD && rtk git status --porcelain=v1 && rtk git log -1 --oneline --decorate && rtk git remote -v && printf '%s\\\\n' '--- workflows ---' && (rg --files .github 2>/dev/null || true) && printf '%s\\\\n' '--- candidate-related scripts/config ---' && rg -n \\\"normal-v1|root-preview|run-e2e|SYSTEM_ROOT_USER_IDS|surface-manifest|artifact-bundle|visual-atlas|release-policy\\\" . --glob '\"'!node_modules'\"' --glob '\"'!frontend/node_modules'\"' --glob '\"'!*.map'\"' | head -n 240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-tree -r --name-only be4a7abfa670800f75386872f8e1cbf0c5316918 | sed -n '1,260p' && printf '%s\\\\n' '--- candidate package manifests ---' && rtk git show be4a7abfa670800f75386872f8e1cbf0c5316918:frontend/package.json && printf '%s\\\\n' '--- candidate backend requirements ---' && rtk git show be4a7abfa670800f75386872f8e1cbf0c5316918:backend/requirements.txt && printf '%s\\\\n' '--- candidate run-e2e ---' && rtk git show be4a7abfa670800f75386872f8e1cbf0c5316918:scripts/run-e2e.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for p in scripts/lib/verify-runtime.sh scripts/verify-app.sh frontend/playwright.v1.config.ts frontend/playwright.root-preview.config.ts frontend/tests/eight-route-smoke.spec.ts frontend/tests/release-policy-normal.spec.ts frontend/tests/release-policy-root-preview.spec.ts backend/.env.example backend/seed.py backend/main.py; do echo \"--- $p ---\"; rtk git show be4a7abfa670800f75386872f8e1cbf0c5316918:\"$p\" 2>/dev/null || echo '\"'(missing)'; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for p in seed.py backend/app/core/config.py backend/app/main.py scripts/run-alembic.py frontend/playwright.config.ts frontend/vite.config.ts backend/tests/test_migration_graph.py backend/tests/test_system_management_v1_policy.py backend/tests/test_chg13_authorization_security.py; do echo \"--- $p ---\"; rtk git show be4a7abfa670800f75386872f8e1cbf0c5316918:\"$p\" 2>/dev/null || echo '\"'(missing)'; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-tree -r --name-only be4a7abfa670800f75386872f8e1cbf0c5316918 backend | rg '(\"'^|/)(test_migration_graph|test_system_management_v1_policy|test_chg13_authorization_security)'\"\\\\.py\"'$|tests/'\"' | sed -n '1,240p' && printf '%s\\\\n' '--- env config names ---' && rtk git show be4a7abfa670800f75386872f8e1cbf0c5316918:backend/app/core/config.py | rg -n \\\"CONFIG_DATABASE_URL|DATABASE_URL|TENANT_STORAGE_ROOT|DEFAULT_USER_ID|AUTO_ADMIN|SYSTEM_ROOT|USER_ID_ENV_VAR|BACKEND_CORS|ALLOWED_HOSTS|STARTUP\\\" && printf '%s\\\\n' '--- seed CLI ---' && rtk git show be4a7abfa670800f75386872f8e1cbf0c5316918:seed.py | tail -n 160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v9 && printf '%s\\\\n' '--- existing artifact refs ---' && rtk git ls-remote origin 'refs/heads/project-os-artifacts/sysgrid/*' | sed -n '1,120p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git fetch --no-tags origin refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3 && rtk git ls-tree -r --name-only FETCH_HEAD | sed -n '1,220p' && printf '%s\\\\n' '--- baseline manifest ---' && rtk git show FETCH_HEAD:visual-atlas/surface-manifest.json && printf '%s\\\\n' '--- baseline capture report ---' && rtk git show FETCH_HEAD:visual-atlas/capture-report.json | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show --stat --oneline --decorate be4a7abfa670800f75386872f8e1cbf0c5316918 && rtk git diff --name-status bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 be4a7abfa670800f75386872f8e1cbf0c5316918 && printf '%s\\\\n' '--- candidate diff summary ---' && rtk git diff --stat bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 be4a7abfa670800f75386872f8e1cbf0c5316918\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-actions-verifier-v9 refs/heads/codex/sysgrid-smv1-clean-integration-qualification-v7 refs/heads/main && printf '%s\\\\n' '--- base candidate ancestry ---' && rtk git merge-base --is-ancestor bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 be4a7abfa670800f75386872f8e1cbf0c5316918; echo ancestry_status=\"'$?'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -e; work=$(mktemp -d /tmp/sysgrid-baseline-view.XXXXXX); rtk git archive FETCH_HEAD visual-atlas/screenshots/monitoring--desktop-1440x900.png visual-atlas/screenshots/monitoring--mobile-390x844.png | tar -x -C \"$work\"; find \"$work\" -type f -print'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --stat && rtk git status --short && printf '%s\\\\n' '--- workflow line count / key markers ---' && wc -l .github/workflows/project-os-chg120-final-verify.yml && rg -n \\\"\"'^name:|''^on:|branches:|workflow_dispatch|permissions:|contents:|actions:|concurrency:|CANDIDATE_SHA|BASELINE_REF|ARTIFACT_REF|actions/checkout|fetch-depth|npm ci|playwright install|test:unit|check:operational-contracts|typecheck|build|test_migration_graph|run-e2e|1440|390|seed.py|artifact-bundle|git_package_verified|upload-artifact|retention-days|visual qualification\" .github/workflows/project-os-chg120-final-verify.yml && printf '\"'%s\\\\n' '--- heredoc markers ---' && rg -n \\\"<<'PY|\"'^          PY$|CAPTURE_SPEC\" .github/workflows/project-os-chg120-final-verify.yml && printf '\"'%s\\\\n' '--- suspicious quote ---' && rg -n \\\"PY\\\\\\\"|\\\\\"'$'\"\\\\{\\\\{|\"'`\" .github/workflows/project-os-chg120-final-verify.yml || true'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --stat && rtk git status --short && printf '%s\\\\n' '--- workflow line count / key markers ---' && wc -l .github/workflows/project-os-chg120-final-verify.yml && rg -n \\\"\"'^name:|''^on:|branches:|workflow_dispatch|permissions:|contents:|actions:|concurrency:|CANDIDATE_SHA|BASELINE_REF|ARTIFACT_REF|actions/checkout|fetch-depth|npm ci|playwright install|test:unit|check:operational-contracts|typecheck|build|test_migration_graph|run-e2e|1440|390|seed.py|artifact-bundle|git_package_verified|upload-artifact|retention-days|visual qualification\" .github/workflows/project-os-chg120-final-verify.yml && printf '\"'%s\\\\n' '--- heredoc markers ---' && rg -n \\\"<<'PY|\"'^          PY$|CAPTURE_SPEC\" .github/workflows/project-os-chg120-final-verify.yml && printf '\"'%s\\\\n' '--- suspicious quote ---' && rg -n \\\"PY\\\\\\\"|\\\\\"'$'\"\\\\{\\\\{\\\" .github/workflows/project-os-chg120-final-verify.yml || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\\\\\\\\\\\\\"'$'\"\\\\{' .github/workflows/project-os-chg120-final-verify.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\\\\\\\\\\\\\"'$'\"\\\\{|\\\\\"'$'\"\\\\{\\\\{|PY\\\"|\"'^          PY$|CAPTURE_SPEC'\"' .github/workflows/project-os-chg120-final-verify.yml && sed -n '28,40p' .github/workflows/project-os-chg120-final-verify.yml && sed -n '106,121p' .github/workflows/project-os-chg120-final-verify.yml && sed -n '750,765p' .github/workflows/project-os-chg120-final-verify.yml && sed -n '976,989p' .github/workflows/project-os-chg120-final-verify.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --check && rtk git diff --numstat && rtk git status --short && (rtk python - <<'PY'\nimport yaml\nfrom pathlib import Path\np=Path('.github/workflows/project-os-chg120-final-verify.yml')\ndata=yaml.safe_load(p.read_text())\nassert data['permissions']=={'contents':'write','actions':'read'}\nassert data['on']['push']['branches']==['codex/sysgrid-smv1-actions-verifier-v9']\nassert 'workflow_dispatch' in data['on']\nassert data['concurrency']['cancel-in-progress'] is False\nassert data['jobs']['qualify']['runs-on']=='ubuntu-latest'\nprint('yaml_ok steps=',len(data['jobs']['qualify']['steps']))\nPY\n) || (rtk ruby -e 'require \\\"yaml\\\"; YAML.load_file(\\\".github/workflows/project-os-chg120-final-verify.yml\\\", aliases: true); puts \\\"yaml_ok\\\"')\nprintf '%s\\\\n' '--- shell-ish markers ---'\nrtk rg -n \\\"ref:|GITHUB_TOKEN|\\\\\"'$'\"\\\\{runtime_env|PIPESTATUS|<<'PY|\"'^          PY$|<<'\"'CAPTURE_SPEC|\"'^          CAPTURE_SPEC$|git push|git_package_verified|final_remote_head\" .github/workflows/project-os-chg120-final-verify.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '944,983p' .github/workflows/project-os-chg120-final-verify.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --check && rtk git status --short && rtk ruby -e 'require \\\"yaml\\\"; d=YAML.load_file(\\\".github/workflows/project-os-chg120-final-verify.yml\\\", aliases: true); abort \\\"missing jobs\\\" unless d[\\\"jobs\\\"]; puts \\\"yaml_ok steps=#{d[\\\"jobs\\\"][\\\"qualify\\\"][\\\"steps\\\"].length}\\\"' && printf '%s\\\\n' '--- residual escaped expressions / heredocs ---' && (rtk rg -n '\\\\\\\\\\\\\"'$'\"\\\\{|PY\\\"|<<.PY\"'$|''^          PY$|CAPTURE_SPEC'\"' .github/workflows/project-os-chg120-final-verify.yml || true) && printf '%s\\\\n' '--- required exact assertions ---' && rtk rg -n \\\"HEAD\\\\\"'^|HEAD'\"\\\\\"'^'\"\\\\{tree\\\\}|origin/main|rev-list --count|diff --check|OUT-\\\\*_EVIDENCE|SYSTEM_ROOT_USER_IDS=|seed.py|strictPort|fullPage: false|locale: 'en-US'|timezoneId|contents: write|actions: read|cancel-in-progress: false|git_package_verified|PREEXISTING_DEFERRED|Project OS: SysGrid CHG-120 final visual verification\\\" .github/workflows/project-os-chg120-final-verify.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if command -v actionlint >/dev/null 2>&1; then rtk actionlint .github/workflows/project-os-chg120-final-verify.yml; else echo actionlint_unavailable; fi; if command -v yamllint >/dev/null 2>&1; then rtk yamllint .github/workflows/project-os-chg120-final-verify.yml; else echo yamllint_unavailable; fi; rtk ruby -ryaml -e 'd=YAML.load_file(\\\".github/workflows/project-os-chg120-final-verify.yml\\\", aliases: true); puts d[\\\"jobs\\\"][\\\"qualify\\\"][\\\"steps\\\"][7][\\\"run\\\"]' | bash -n; echo capture_shell_syntax_ok=\"'$?; rtk ruby -ryaml -e '\"'d=YAML.load_file(\\\".github/workflows/project-os-chg120-final-verify.yml\\\", aliases: true); puts d[\\\"jobs\\\"][\\\"qualify\\\"][\\\"steps\\\"].map { |s| s[\\\"name\\\"] }.join(\\\"\\\\n\\\")'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nimport yaml\nfrom pathlib import Path\np=Path('.github/workflows/project-os-chg120-final-verify.yml')\ndata=yaml.safe_load(p.read_text())\ntrigger=data[True]\nassert trigger['push']['branches']==['codex/sysgrid-smv1-actions-verifier-v9']\nassert 'workflow_dispatch' in trigger\nassert data['permissions']=={'contents':'write','actions':'read'}\nassert data['concurrency']=={'group':'sysgrid-smv1-actions-verifier-v9','cancel-in-progress':False}\nsteps=data['jobs']['qualify']['steps']\nassert steps[0]['with']['ref']=='\"'${{ env.CANDIDATE_SHA }}'\"'\nassert steps[-1]['with']['retention-days']==14\nprint('github_yaml_contract_ok')\nPY\nrtk git diff --name-only && rtk git diff -- .github/workflows/project-os-chg120-final-verify.yml | sed -n '1,80p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git add .github/workflows/project-os-chg120-final-verify.yml && rtk git diff --cached --check && rtk git diff --cached --name-status && rtk git status --short --branch && rtk git diff --cached --stat && printf '%s\\\\n' '--- staged workflow contract scan ---' && rtk rg -n \\\"\"'^name:|''^on:|branches:|workflow_dispatch|permissions:|concurrency:|CANDIDATE_SHA|CANDIDATE_TREE|BASE_SHA|BASELINE_REF|ARTIFACT_REF|actions/checkout|fetch-depth|npm ci|playwright install|run-e2e.sh|seed.py --seed-data|strictPort|fullPage: false|git push origin|upload-artifact|retention-days\" .github/workflows/project-os-chg120-final-verify.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git commit -m \"Project OS: SysGrid CHG-120 final verify actions v9\" && rtk git status --short --branch && rtk git log -1 --oneline --decorate && rtk git diff --name-only \"$BASE_SHA\" 2>/dev/null || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff-tree --no-commit-id --name-status -r HEAD && rtk git rev-parse HEAD''^ && rtk git rev-parse HEAD && rtk git status --porcelain=v1 && test \"$(rtk git rev-parse HEAD''^)\" = bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 && test \"$(rtk git show -s --format=%T HEAD)\" != \"\" && test -z \"$(rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-actions-verifier-v9)\" && test \"$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 && test \\\"\"'$(rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-clean-integration-qualification-v7 | awk '\"'NR==1 {print \"'$1}'\"')\\\" = be4a7abfa670800f75386872f8e1cbf0c5316918 && echo prepush_identity_scope_ok\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-smv1-actions-verifier-v9 && test \"$(rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-actions-verifier-v9 | awk '\"'NR==1 {print \"'$1}'\"')\\\" = d2c19081cbb4dc9597970651d6668537cfefe8ad && test \\\"\"'$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = bf1611bcd9cc3849a4353d5fb82da687c68ef4a0 && test \\\"\"'$(rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-clean-integration-qualification-v7 | awk '\"'NR==1 {print \"'$1}'\"')\\\" = be4a7abfa670800f75386872f8e1cbf0c5316918 && echo push_readback_identity_ok\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 74,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 95.94,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 3335936,
+      "fresh_input_tokens": 141315,
+      "input_tokens": 3477251,
+      "non_reasoning_output_tokens": 40080,
+      "output_tokens": 64465,
+      "reasoning_output_tokens": 24385,
+      "total_processed_tokens": 3541716
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "d2c19081cbb4dc9597970651d6668537cfefe8ad",
+      "subject": "Project OS: SysGrid CHG-120 final verify actions v9"
+    }
+  ],
+  "diff": {
+    "additions": 1037,
+    "changed_files": 1,
+    "commit_count": 1,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-19T04:34:40Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-actions-verifier-v9",
+    "detached_verify": false,
+    "head_sha": "d2c19081cbb4dc9597970651d6668537cfefe8ad",
+    "remote_exact_head": true,
+    "remote_head_sha": "d2c19081cbb4dc9597970651d6668537cfefe8ad",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-actions-verifier-v9",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-44d7c661c95a73678cf7de2e",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v9",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v9"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-actions-verifier-v9",
+  "schema_version": 1,
+  "started_at": "2026-09-19T04:14:10Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1230,
+    "queue_seconds": 0,
+    "total_seconds": 1230
+  },
+  "transport": {
+    "bytes": 10689,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 10369,
+    "prompt_sha256": "be04eac5007a61e59808aae243659e9553fdea6cb98b15e3cccc7bff645cca47",
+    "sha256": "44d7c661c95a73678cf7de2e1f08a3aee3e16cff0b0ccacaba43a8844aa5a40a"
+  }
+}
