@@ -1,0 +1,271 @@
+{
+  "accepted_at": "2026-09-19T16:22:15Z",
+  "changed_files": [
+    {
+      "additions": 1131,
+      "deletions": 0,
+      "path": ".github/workflows/project-os-chg120-final-verify-v17.yml",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && sed -n '1,260p' /Users/haewonkim/.codex/law.md && printf '\\\\n--- status ---\\\\n' && git status --short --branch && printf '\\\\n--- workflow listing ---\\\\n' && rg --files .github/workflows | sort\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse refs/heads/main && rtk git show --no-ext-diff --format=fuller --stat da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1 -- .github/workflows/project-os-chg120-final-verify-v16.yml && rtk git show da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1:.github/workflows/project-os-chg120-final-verify-v16.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1:.github/workflows/project-os-chg120-final-verify-v16.yml | rg -n -C 4 'v16|R16|captures CHG-120 landing anchors|test\\\\.setTimeout|Scan matrix|Existing|placeholder|artifact_ref|request|diagnostic'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1:.github/workflows/project-os-chg120-final-verify-v16.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pwd && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1:.github/workflows/project-os-chg120-final-verify-v16.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,1400p' .github/workflows/project-os-chg120-final-verify-v17.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1:.github/workflows/project-os-chg120-final-verify-v16.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,1400p' .github/workflows/project-os-chg120-final-verify-v17.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ruby -ryaml -ropen3 -e 'path = ARGV.fetch(0); doc = YAML.load_file(path); raise \\\"missing qualify job\\\" unless doc.dig(\\\"jobs\\\", \\\"qualify\\\"); runs = doc.dig(\\\"jobs\\\", \\\"qualify\\\", \\\"steps\\\").filter_map { |step| step[\\\"run\\\"] }; raise \\\"no run blocks\\\" if runs.empty?; runs.each_with_index do |script, index|; _out, err, status = Open3.capture3(\\\"bash\\\", \\\"-n\\\", stdin_data: script); abort \\\"bash -n failed for run block #{index + 1}: #{err}\\\" unless status.success?; end; puts \\\"YAML parse: PASS\\\"; puts \\\"bash -n run blocks: PASS (#{runs.length})\\\"' .github/workflows/project-os-chg120-final-verify-v17.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse origin/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse 2074e8bffb50b90d379b23760e61017d5107e079''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse 2074e8bffb50b90d379b23760e61017d5107e079''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-list --count origin/main..2074e8bffb50b90d379b23760e61017d5107e079'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v17'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'v16|sysgrid-smv1-actions-verifier-v16|sysgrid-smv1-final-verify-actions-v16|project-os-chg120-final-verify-v16' .github/workflows/project-os-chg120-final-verify-v17.yml || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'CANDIDATE_SHA|CANDIDATE_PARENT|CANDIDATE_TREE|CANDIDATE_REF|BASE_SHA|ARTIFACT_REF|WORKFLOW_PATH|Scan matrix|setTimeout|request' .github/workflows/project-os-chg120-final-verify-v17.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add -- .github/workflows/project-os-chg120-final-verify-v17.yml && rtk git diff --cached --check && rtk git diff --cached --name-only && rtk git status --short --branch'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --cached --name-only && rtk proxy git status --short --branch && rtk proxy git diff --cached --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git show da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1:.github/workflows/project-os-chg120-final-verify-v16.yml | rtk proxy wc -l\nrtk proxy wc -l .github/workflows/project-os-chg120-final-verify-v17.yml\nrtk proxy tail -n 8 .github/workflows/project-os-chg120-final-verify-v17.yml | rtk proxy nl -ba'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add -- .github/workflows/project-os-chg120-final-verify-v17.yml && rtk proxy git diff --cached --check && rtk proxy git diff --cached --name-only && rtk proxy wc -l .github/workflows/project-os-chg120-final-verify-v17.yml && rtk proxy git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git show da00382c65eb2ed9aa11a92ec6f56b8d452a6ee1:.github/workflows/project-os-chg120-final-verify-v16.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '1,1400p' .github/workflows/project-os-chg120-final-verify-v17.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ruby -e 'text = File.read(ARGV.fetch(0)); terms = [\\\"codex\\\", \\\"opencode\\\", \\\"chatgpt\\\", \\\"openai\\\", \\\"llm\\\", \\\"model-cli\\\", \\\"agent-loop\\\"]; hits = terms.flat_map { |term| pattern = /(\"'^|[[:space:];|])#{Regexp.escape(term)}([[:space:];|]|$)/i; text.lines.grep(pattern).map { |line| [term, line] } }; abort \"forbidden matches: #{hits.inspect}\" unless hits.empty?; puts \"forbidden-command scan: PASS\"'\"' .github/workflows/project-os-chg120-final-verify-v17.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git commit -m 'Project OS: SysGrid CHG-120 final verify actions v17'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git rev-parse HEAD && rtk proxy git show --no-ext-diff --stat --oneline HEAD && rtk proxy git diff --check origin/main...HEAD && rtk proxy git diff --name-only origin/main...HEAD && rtk proxy git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push -u origin codex/sysgrid-smv1-actions-verifier-v17'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 75,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 93.28,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 713472,
+      "fresh_input_tokens": 51378,
+      "input_tokens": 764850,
+      "non_reasoning_output_tokens": 5905,
+      "output_tokens": 13335,
+      "reasoning_output_tokens": 7430,
+      "total_processed_tokens": 778185
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "a99327a2d71fe7ffaffd9905e8f8ac0b9328c62b",
+      "subject": "Project OS: SysGrid CHG-120 final verify actions v17"
+    }
+  ],
+  "diff": {
+    "additions": 1131,
+    "changed_files": 1,
+    "commit_count": 1,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-19T16:26:49Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-actions-verifier-v17",
+    "detached_verify": false,
+    "head_sha": "a99327a2d71fe7ffaffd9905e8f8ac0b9328c62b",
+    "remote_exact_head": true,
+    "remote_head_sha": "a99327a2d71fe7ffaffd9905e8f8ac0b9328c62b",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-actions-verifier-v17",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-2780ec266fa885c9495850f8",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v17",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v17"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-actions-verifier-v17",
+  "schema_version": 1,
+  "started_at": "2026-09-19T16:22:15Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 274,
+    "queue_seconds": 0,
+    "total_seconds": 274
+  },
+  "transport": {
+    "bytes": 7832,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7511,
+    "prompt_sha256": "1cbb5b20059fdd846b992499037e3376910f2f857a73996d3b397327ecc5982f",
+    "sha256": "2780ec266fa885c9495850f8b80f35f824962f98d4c6b9cc6dc9056b70d4b33a"
+  }
+}
