@@ -1,0 +1,226 @@
+{
+  "accepted_at": "2026-09-19T15:33:49Z",
+  "changed_files": [
+    {
+      "additions": 1130,
+      "deletions": 0,
+      "path": ".github/workflows/project-os-chg120-final-verify-v15.yml",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd; sed -n '1,240p' /Users/haewonkim/.codex/RTK.md; sed -n '1,260p' /Users/haewonkim/.codex/law.md; printf '\\\\n--- status ---\\\\n'; git status --short --branch; printf '\\\\n--- remotes ---\\\\n'; git remote -v; printf '\\\\n--- branches ---\\\\n'; git branch --show-current; git rev-parse HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show --stat --oneline 9a3ff076cabd46d573770e66ff39d9087bb46a91; printf '\\\\n--- R14 workflow ---\\\\n'; rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml; printf '\\\\n--- target path check ---\\\\n'; if test -e .github/workflows/project-os-chg120-final-verify-v15.yml; then echo exists; else echo absent; fi\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set -o pipefail\nprintf '%s\\\\n' '--- status ---'\nrtk git status --short --branch\nprintf '%s\\\\n' '--- v15 firewall / identifiers ---'\nrg -n \\\"generated_paths|OUT-\\\\[|test-results|playwright-report|blob-report|qualification|runtime|screenshot|v14|V14|final-verify-actions-v14|actions-verifier-v14|workflow-v14\\\" .github/workflows/project-os-chg120-final-verify-v15.yml || true\nprintf '%s\\\\n' '--- workflow key values ---'\nrg -n \\\"\"'^(name:|      - codex/sysgrid|  group:|  ARTIFACT_REF:|  WORKFLOW_PATH:)|sysgrid-smv1-final-verify-actions-v15|sysgrid-smv1-actions-verifier-v15\" .github/workflows/project-os-chg120-final-verify-v15.yml\nprintf '\"'%s\\\\n' '--- real candidate firewall ---'\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\ncandidate_delta=\\\"\"'$(rtk git diff --name-only \"$base...$candidate\")\"\nprintf '\"'%s\\\\n' \\\"\"'$candidate_delta\" | sed -n '\"'1,80p'\ngenerated_paths=\\\"\"'$(printf '\"'%s\\\\n' \\\"\"'$candidate_delta\" | grep -E '\"'(\"'^|/)(test-results[''^/]*|playwright-report[''^/]*|blob-report[''^/]*|coverage)(/|$)|(''^|/)llm-report'\"\\\\.json\"'$|(''^|/)OUT-[''^/]*_EVIDENCE'\"\\\\.html\"'$|'\"\\\\.(png|jpe?g|webp|pdf|zip|db|sqlite|log|trace|webm|mp4)\"'$'\"' || true)\\\"\nif [[ -n \\\"\"'$generated_paths\" ]]; then\n  printf '\"'%s\\\\n' 'generated_paths was unexpectedly non-empty:' \\\"\"'$generated_paths\" >&2\n  exit 1\nfi\ntest \"$(printf '\"'%s\\\\n' \\\"\"'$candidate_delta\" | rtk grep -Fx '\"'frontend/tests/qualification-suite.json')\\\" = 'frontend/tests/qualification-suite.json'\ntest \\\"\"'$(printf '\"'%s\\\\n' \\\"\"'$candidate_delta\" | rtk grep -Fx '\"'scripts/lib/verify-runtime.sh')\\\" = 'scripts/lib/verify-runtime.sh'\nfor legitimate in frontend/tests/qualification-suite.json scripts/lib/verify-runtime.sh; do\n  if printf '%s\\\\n' \\\"\"'$generated_paths\" | rtk grep -Fxq \"$legitimate\"; then\n    echo \"legitimate path classified as generated: $legitimate\" >&2\n    exit 1\n  fi\ndone\nprintf '\"'%s\\\\n' 'generated_output_firewall_real_candidate=pass'\nprintf '%s\\\\n' '--- exact R14-derived content check ---'\nrtk python - <<'PY'\nfrom pathlib import Path\nimport subprocess\n\nr14 = subprocess.check_output([\n    \\\"git\\\", \\\"show\\\",\n    \\\"9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml\\\",\n], text=True)\nnew = Path(\\\".github/workflows/project-os-chg120-final-verify-v15.yml\\\").read_text()\nold = \\\"          generated_paths=\\\\\\\"\"'$(git diff --name-only origin/main...HEAD | grep -E '\"'(\"'^|/)(qualification|qualifications|screenshot|screenshots|runtime)([-_/]|$)|'\"\\\\\\\\.(png|pdf|zip|db|sqlite|log)\"'$'\"' || true)\\\\\\\"\\\\n\\\"\nreplacement = \\\"          generated_paths=\\\\\\\"\"'$('\"\\\\n\\\" \\\\\n    \\\"            git diff --name-only origin/main...HEAD |\\\\n\\\" \\\\\n    \\\"              grep -E '(\"'^|/)(test-results[''^/]*|playwright-report[''^/]*|blob-report[''^/]*|coverage)(/|$)|(''^|/)llm-report'\"\\\\\\\\\\\\\\\\.json\"'$|(''^|/)OUT-[''^/]*_EVIDENCE'\"\\\\\\\\\\\\\\\\.html\"'$|'\"\\\\\\\\\\\\\\\\.(png|jpe?g|webp|pdf|zip|db|sqlite|log|trace|webm|mp4)\"'$'\"' ||\\\\n\\\" \\\\\n    \\\"              true\\\\n\\\" \\\\\n    \\\"          )\\\\\\\"\\\\n\\\"\nexpected = r14.replace(\\\"v14\\\", \\\"v15\\\").replace(old, replacement)\nassert new == expected, \\\"v15 differs from R14 beyond requested substitutions/firewall replacement\\\"\nprint(\\\"r14_template_delta=exact\\\")\nPY\nprintf '%s\\\\n' '--- YAML and bash syntax ---'\nrtk python - <<'PY'\nfrom pathlib import Path\nimport subprocess\nimport yaml\n\npath = Path('.github/workflows/project-os-chg120-final-verify-v15.yml')\ndoc = yaml.safe_load(path.read_text())\nassert isinstance(doc, dict)\nruns = []\ndef walk(value):\n    if isinstance(value, dict):\n        if isinstance(value.get('run'), str):\n            runs.append(value['run'])\n        for item in value.values():\n            walk(item)\n    elif isinstance(value, list):\n        for item in value:\n            walk(item)\nwalk(doc)\nassert runs, 'no run blocks found'\nfor index, run in enumerate(runs, 1):\n    result = subprocess.run(['bash', '-n'], input=run, text=True, capture_output=True)\n    assert result.returncode == 0, f'bash -n failed for run block {index}: {result.stderr}'\nprint(f'yaml_parse=pass bash_blocks={len(runs)}')\nPY\nprintf '%s\\\\n' '--- diff hygiene ---'\nrtk git diff --no-index --check /dev/null .github/workflows/project-os-chg120-final-verify-v15.yml >/dev/null || test \\\"\"'$?\" -eq 1\nprintf '\"'%s\\\\n' 'git_diff_check=pass'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- line count / boundaries ---'; rtk wc -l .github/workflows/project-os-chg120-final-verify-v15.yml; rtk sed -n '42,62p' .github/workflows/project-os-chg120-final-verify-v15.yml; printf '%s\\\\n' '--- around first tail ---'; rtk sed -n '1095,1140p' .github/workflows/project-os-chg120-final-verify-v15.yml; printf '%s\\\\n' '--- duplicate markers ---'; rtk rg -n '\"'^name:|''^jobs:|''^      - name: Capture, package|''^      - name: Upload complete'\"' .github/workflows/project-os-chg120-final-verify-v15.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- source line count ---'; rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml | rtk wc -l; printf '%s\\\\n' '--- source bytes/hash ---'; rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml | rtk wc -c; rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml | shasum -a 256; printf '%s\\\\n' '--- target bytes/hash ---'; rtk wc -c .github/workflows/project-os-chg120-final-verify-v15.yml; rtk shasum -a 256 .github/workflows/project-os-chg120-final-verify-v15.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- source special patch-like lines ---'; rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml | rtk rg -n '\"'^'\"\\\\+|\"'^'\"\\\\*\\\\*\\\\*|\"'^@@|''^---|''^'\"\\\\-'; printf '%s\\\\n' '--- target around duplication ---'; rtk sed -n '1118,1140p' .github/workflows/project-os-chg120-final-verify-v15.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show 9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml > .github/workflows/project-os-chg120-final-verify-v15.yml\nrtk perl -0pi -e 's/v14/v15/g' .github/workflows/project-os-chg120-final-verify-v15.yml\nrtk wc -l .github/workflows/project-os-chg120-final-verify-v15.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set -o pipefail\nprintf '%s\\\\n' '--- status / size ---'\nrtk git status --short --branch\nrtk wc -l .github/workflows/project-os-chg120-final-verify-v15.yml\nprintf '%s\\\\n' '--- firewall block ---'\nrtk sed -n '48,62p' .github/workflows/project-os-chg120-final-verify-v15.yml\nprintf '%s\\\\n' '--- duplicate markers ---'\nrtk rg -n '\"'^name:|''^jobs:|''^      - name: Capture, package|''^      - name: Upload complete'\"' .github/workflows/project-os-chg120-final-verify-v15.yml\nprintf '%s\\\\n' '--- stale v14 check ---'\nif rtk rg -n 'v14|V14|final-verify-actions-v14|actions-verifier-v14' .github/workflows/project-os-chg120-final-verify-v15.yml; then exit 1; else echo stale_labels=none; fi\nprintf '%s\\\\n' '--- exact R14-derived content check ---'\nrtk python - <<'PY'\nfrom pathlib import Path\nimport subprocess\nr14 = subprocess.check_output([\n    \\\"git\\\", \\\"show\\\",\n    \\\"9a3ff076cabd46d573770e66ff39d9087bb46a91:.github/workflows/project-os-chg120-final-verify-v14.yml\\\",\n], text=True)\nnew = Path(\\\".github/workflows/project-os-chg120-final-verify-v15.yml\\\").read_text()\nold = \\\"          generated_paths=\\\\\\\"\"'$(git diff --name-only origin/main...HEAD | grep -E '\"'(\"'^|/)(qualification|qualifications|screenshot|screenshots|runtime)([-_/]|$)|'\"\\\\\\\\.(png|pdf|zip|db|sqlite|log)\"'$'\"' || true)\\\\\\\"\\\\n\\\"\nreplacement = \\\"          generated_paths=\\\\\\\"\"'$('\"\\\\n\\\" \\\\\n    \\\"            git diff --name-only origin/main...HEAD |\\\\n\\\" \\\\\n    \\\"              grep -E '(\"'^|/)(test-results[''^/]*|playwright-report[''^/]*|blob-report[''^/]*|coverage)(/|$)|(''^|/)llm-report'\"\\\\\\\\.json\"'$|(''^|/)OUT-[''^/]*_EVIDENCE'\"\\\\\\\\.html\"'$|'\"\\\\\\\\.(png|jpe?g|webp|pdf|zip|db|sqlite|log|trace|webm|mp4)\"'$'\"' ||\\\\n\\\" \\\\\n    \\\"              true\\\\n\\\" \\\\\n    \\\"          )\\\\\\\"\\\\n\\\"\nexpected = r14.replace(\\\"v14\\\", \\\"v15\\\").replace(old, replacement)\nassert new == expected, \\\"v15 differs from R14 beyond requested substitutions/firewall replacement\\\"\nprint(\\\"r14_template_delta=exact\\\")\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set -o pipefail\nprintf '%s\\\\n' '--- YAML parse and bash syntax ---'\nrtk python - <<'PY'\nfrom pathlib import Path\nimport subprocess\nimport yaml\n\npath = Path('.github/workflows/project-os-chg120-final-verify-v15.yml')\ntext = path.read_text()\ndoc = yaml.safe_load(text)\nassert isinstance(doc, dict)\nruns = []\ndef walk(value):\n    if isinstance(value, dict):\n        if isinstance(value.get('run'), str):\n            runs.append(value['run'])\n        for item in value.values():\n            walk(item)\n    elif isinstance(value, list):\n        for item in value:\n            walk(item)\nwalk(doc)\nassert len(runs) == 7, len(runs)\nfor index, run in enumerate(runs, 1):\n    result = subprocess.run(['bash', '-n'], input=run, text=True, capture_output=True)\n    assert result.returncode == 0, f'bash -n failed for run block {index}: {result.stderr}'\nprint(f'yaml_parse=pass bash_blocks={len(runs)}')\nPY\nprintf '%s\\\\n' '--- candidate identity / real firewall ---'\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\nparent=c958ce80124bcc9012a53cfb688d02a756a30beb\ntree=3254e1802ec09511ea46469263995ed54874a0fd\ncandidate_delta=\\\"\"'$(rtk git diff --name-only \"$base...$candidate\")\"\ngenerated_paths=\"$(printf '\"'%s\\\\n' \\\"\"'$candidate_delta\" | grep -E '\"'(\"'^|/)(test-results[''^/]*|playwright-report[''^/]*|blob-report[''^/]*|coverage)(/|$)|(''^|/)llm-report'\"\\\\.json\"'$|(''^|/)OUT-[''^/]*_EVIDENCE'\"\\\\.html\"'$|'\"\\\\.(png|jpe?g|webp|pdf|zip|db|sqlite|log|trace|webm|mp4)\"'$'\"' || true)\\\"\ntest -z \\\"\"'$generated_paths\"\ntest \"$(printf '\"'%s\\\\n' \\\"\"'$candidate_delta\" | rtk grep -Fx '\"'frontend/tests/qualification-suite.json')\\\" = 'frontend/tests/qualification-suite.json'\ntest \\\"\"'$(printf '\"'%s\\\\n' \\\"\"'$candidate_delta\" | rtk grep -Fx '\"'scripts/lib/verify-runtime.sh')\\\" = 'scripts/lib/verify-runtime.sh'\ntest \\\"\"'$(rtk git rev-parse \"$candidate\")\" = \"$candidate\"\ntest \"$(rtk git rev-parse \"$candidate''^1\")\" = \"$parent\"\ntest \"$(rtk git rev-parse \"$candidate''^{tree}\")\" = \"$tree\"\ntest \"$(rtk git rev-list --count \"$base..$candidate\")\" -eq 4\nrtk git diff --check \"$base...$candidate\"\nprintf '\"'%s\\\\n' 'candidate_identity=pass' 'generated_output_firewall_real_candidate=pass' 'legitimate_paths_unclassified=pass'\nprintf '%s\\\\n' '--- workflow identity assertions ---'\nrtk python - <<'PY'\nfrom pathlib import Path\ntext = Path('.github/workflows/project-os-chg120-final-verify-v15.yml').read_text()\nrequired = [\n    'codex/sysgrid-smv1-actions-verifier-v15',\n    'sysgrid-smv1-actions-verifier-v15',\n    'refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v15',\n    '.github/workflows/project-os-chg120-final-verify-v15.yml',\n    'name: sysgrid-smv1-final-verify-actions-v15',\n    'name: sysgrid-smv1-final-verify-actions-v15-diagnostics',\n    'retention-days: 14',\n    'if-no-files-found: warn',\n    'CANDIDATE_SHA: 2074e8bffb50b90d379b23760e61017d5107e079',\n    'CANDIDATE_PARENT: c958ce80124bcc9012a53cfb688d02a756a30beb',\n    'CANDIDATE_TREE: 3254e1802ec09511ea46469263995ed54874a0fd',\n    'BASE_SHA: bf1611bcd9cc3849a4353d5fb82da687c68ef4a0',\n]\nfor value in required:\n    assert value in text, value\nassert 'grep -E \\\\'(\"'^|/)(qualification|qualifications|screenshot|screenshots|runtime)'\"' not in text\nassert \\\"test -z \\\\\\\"\"'$(git ls-files '\"'frontend/OUT-*_EVIDENCE.html')\\\\\\\"\\\" in text\nassert 'git_package_verified\\\": True' in text\nassert 'human_acceptance_claimed\\\": False' in text\nassert 'pixel_perfect_acceptance_claimed\\\": False' in text\nprint('workflow_identity_and_acceptance_boundary=pass')\nPY\nprintf '%s\\\\n' '--- untracked-file diff check ---'\nrtk git diff --no-index --check /dev/null .github/workflows/project-os-chg120-final-verify-v15.yml >/dev/null || test \\\"\"'$?\" -eq 1\nprintf '\"'%s\\\\n' 'git_diff_check=pass'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nfrom pathlib import Path\nimport subprocess\nimport yaml\n\npath = Path('.github/workflows/project-os-chg120-final-verify-v15.yml')\ndoc = yaml.safe_load(path.read_text())\nassert isinstance(doc, dict)\nruns = []\ndef walk(value):\n    if isinstance(value, dict):\n        if isinstance(value.get('run'), str):\n            runs.append(value['run'])\n        for item in value.values():\n            walk(item)\n    elif isinstance(value, list):\n        for item in value:\n            walk(item)\nwalk(doc)\nfor index, run in enumerate(runs, 1):\n    result = subprocess.run(['bash', '-n'], input=run, text=True, capture_output=True)\n    if result.returncode \"'!= 0:\n        raise SystemExit(f'\"'bash -n failed for run block {index}: {result.stderr}')\nprint(f'yaml_parse=pass bash_blocks={len(runs)}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\nworkflow=.github/workflows/project-os-chg120-final-verify-v15.yml\nexpected_branch=codex/sysgrid-smv1-actions-verifier-v15\nexpected_remote_main=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\nrtk git add \"$workflow\"\nrtk git diff --cached --check\nrtk python - <<'\"'PY'\nimport subprocess\nfrom pathlib import Path\nworkflow = '.github/workflows/project-os-chg120-final-verify-v15.yml'\nbase = 'bf1611bcd9cc3849a4353d5fb82da687c68ef4a0'\nname_only = subprocess.check_output(['git', 'diff', '--cached', '--name-only', base], text=True).splitlines()\nassert name_only == [workflow], name_only\nassert subprocess.check_output(['git', 'diff', '--cached', '--name-status', base], text=True) == f'A\\\\t{workflow}\\\\n'\nassert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == base\nassert subprocess.check_output(['git', 'rev-parse', 'HEAD\"'^{}'\"'], text=True).strip() == base\nassert Path(workflow).is_file()\nprint('staged_scope=exactly_one_workflow')\nPY\nprintf '%s\\\\n' '--- staged status ---'\nrtk git status --short --branch\nprintf '%s\\\\n' '--- staged summary ---'\nrtk git diff --cached --stat\nprintf '%s\\\\n' '--- local/remote identity ---'\ntest \\\"\"'$(rtk git rev-parse --abbrev-ref HEAD)\" = \"$expected_branch\"\ntest \"$(rtk git rev-parse HEAD)\" = \"$base\"\ntest \"$(rtk git rev-parse main)\" = \"$base\"\ntest \"$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$expected_remote_main\"\ntest \"$(rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13 | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$candidate\"\nprintf '\"'%s\\\\n' 'local_main_candidate_refs=pass'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set +e\nfor check in \\\\\n  'git rev-parse --abbrev-ref HEAD' \\\\\n  'git rev-parse HEAD' \\\\\n  'git rev-parse main' \\\\\n  'git ls-remote origin refs/heads/main' \\\\\n  'git ls-remote origin refs/heads/codex/sysgrid-smv1-eight-route-isolation-fix-v13'; do\n  echo \\\"--- \"'$check\";\n  eval \"rtk $check\";\n  echo \"status=$?\";\ndone\nprintf '\"'%s\\\\n' '--- all refs containing base ---'\nrtk git show-ref | rtk grep 'bf1611bcd9cc3849a4353d5fb82da687c68ef4a0' || true\nprintf '%s\\\\n' '--- status ---'\nrtk git status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set -euo pipefail\nrtk git commit -m 'Project OS: SysGrid CHG-120 final verify actions v15'\nprintf '%s\\\\n' '--- post-commit identity ---'\nrtk git status --short --branch\nrtk git rev-parse HEAD\nrtk git rev-parse HEAD\"'^1\nrtk git diff --name-status origin/main..HEAD\nrtk git diff --check origin/main..HEAD\nrtk git show --stat --oneline --decorate --no-renames HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nbranch=codex/sysgrid-smv1-actions-verifier-v15\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\ncandidate_parent=c958ce80124bcc9012a53cfb688d02a756a30beb\ncandidate_tree=3254e1802ec09511ea46469263995ed54874a0fd\nworkflow=.github/workflows/project-os-chg120-final-verify-v15.yml\ncommit=$(rtk git rev-parse HEAD)\ntest \"$(rtk git rev-parse --abbrev-ref HEAD)\" = \"$branch\"\ntest \"$commit\" = db7e66d69e5bc0c2751f97e4006882d615a4e7a5\ntest \"$(rtk git rev-parse HEAD''^1)\" = \"$base\"\ntest \"$(rtk git rev-parse \"$candidate\")\" = \"$candidate\"\ntest \"$(rtk git rev-parse \"$candidate''^1\")\" = \"$candidate_parent\"\ntest \"$(rtk git rev-parse \"$candidate''^{tree}\")\" = \"$candidate_tree\"\ntest \"$(rtk git rev-parse origin/main)\" = \"$base\"\ntest \"$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$base\"\ntest \"$(rtk git ls-remote origin refs/heads/$branch | awk '\"'NR==1 {print \"'$1}'\"')\\\" = ''\nname_only=\"'$(rtk git diff --name-only origin/main..HEAD)\ntest \"$name_only\" = \"$workflow\"\nrtk git diff --check origin/main..HEAD\nprintf '\"'%s\\\\n' 'pre_push_scope_and_immutability=pass'\nprintf '%s\\\\n' \\\"workflow_commit=\"'$commit\" \"workflow_tree=$(rtk git rev-parse HEAD''^{tree})\"\nprintf '\"'%s\\\\n' '--- remote verifier branch pre-push ---'\nrtk git ls-remote origin \\\"refs/heads/\"'$branch\" || true'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set +e\nfor check in \\\\\n  'git rev-parse HEAD' \\\\\n  'git rev-parse HEAD\"'^1'\"' \\\\\n  'git rev-parse 2074e8bffb50b90d379b23760e61017d5107e079' \\\\\n  'git rev-parse 2074e8bffb50b90d379b23760e61017d5107e079\"'^1'\"' \\\\\n  'git rev-parse 2074e8bffb50b90d379b23760e61017d5107e079\"'^{tree}'\"' \\\\\n  'git rev-parse origin/main' \\\\\n  'git ls-remote origin refs/heads/main' \\\\\n  'git ls-remote origin refs/heads/codex/sysgrid-smv1-actions-verifier-v15' \\\\\n  'git diff --name-only bf1611bcd9cc3849a4353d5fb82da687c68ef4a0..HEAD'; do\n  echo \\\"--- \"'$check\";\n  eval \"rtk $check\";\n  echo \"status=$?\";\ndone'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nbranch=codex/sysgrid-smv1-actions-verifier-v15\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\ncandidate_parent=c958ce80124bcc9012a53cfb688d02a756a30beb\ncandidate_tree=3254e1802ec09511ea46469263995ed54874a0fd\nworkflow=.github/workflows/project-os-chg120-final-verify-v15.yml\ncommit=$(rtk git rev-parse HEAD)\ntest \"$(rtk git rev-parse --abbrev-ref HEAD)\" = \"$branch\"\ntest \"$commit\" = db7e66d69e5bc0c2751f97e4006882d615a4e7a5\ntest \"$(rtk git rev-parse HEAD''^1)\" = \"$base\"\ntest \"$(rtk git rev-parse \"$candidate\")\" = \"$candidate\"\ntest \"$(rtk git rev-parse \"$candidate''^1\")\" = \"$candidate_parent\"\ntest \"$(rtk git rev-parse \"$candidate''^{tree}\")\" = \"$candidate_tree\"\ntest \"$(rtk git rev-parse origin/main)\" = \"$base\"\ntest \"$(rtk git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$base\"\ntest \"$(rtk git ls-remote origin refs/heads/$branch | awk '\"'NR==1 {print \"'$1}'\"')\\\" = ''\nname_only=\"'$(rtk proxy git diff --name-only \"$base..HEAD\")\ntest \"$name_only\" = \"$workflow\"\nrtk proxy git diff --check \"$base..HEAD\"\nprintf '\"'%s\\\\n' 'pre_push_scope_and_immutability=pass'\nprintf '%s\\\\n' \\\"workflow_commit=\"'$commit\" \"workflow_tree=$(rtk git rev-parse HEAD''^{tree})\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nbranch=codex/sysgrid-smv1-actions-verifier-v15\ncommit=$(rtk git rev-parse HEAD)\nrtk git push origin \"HEAD:$branch\"\ntest \"$(rtk git ls-remote origin \"refs/heads/$branch\" | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$commit\"\ntest -z \"$(rtk git status --porcelain=v1)\"\nprintf '\"'%s\\\\n' 'push=pass' \\\"remote_branch=\"'$branch\" \"remote_commit=$commit\" '\"'github_actions_trigger=push'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nbranch=codex/sysgrid-smv1-actions-verifier-v15\nbase=bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\ncandidate=2074e8bffb50b90d379b23760e61017d5107e079\ncommit=db7e66d69e5bc0c2751f97e4006882d615a4e7a5\nworkflow=.github/workflows/project-os-chg120-final-verify-v15.yml\nremote_commit=$(rtk proxy git ls-remote origin \"refs/heads/$branch\" | awk '\"'NR==1 {print \"'$1}'\"')\ntest \\\"\"'$remote_commit\" = \"$commit\"\ntest \"$(rtk proxy git ls-remote origin refs/heads/main | awk '\"'NR==1 {print \"'$1}'\"')\\\" = \\\"\"'$base\"\ntest -z \"$(rtk proxy git status --porcelain=v1)\"\ntest \"$(rtk proxy git diff --name-only \"$base..HEAD\")\" = \"$workflow\"\ntest \"$(rtk proxy git diff --check \"$base..HEAD\" >/dev/null; echo $?)\" -eq 0\nprintf '\"'%s\\\\n' '--- final readback ---'\nprintf '%s\\\\n' 'workflow_file_only=true'\nprintf '%s\\\\n' \\\"workflow_path=\"'$workflow\"\nprintf '\"'%s\\\\n' \\\"workflow_commit=\"'$commit\"\nprintf '\"'%s\\\\n' \\\"workflow_sha256=\"'$(rtk shasum -a 256 \"$workflow\" | awk '\"'{print \"'$1}'\"')\\\"\nprintf '%s\\\\n' 'candidate_sha=2074e8bffb50b90d379b23760e61017d5107e079'\nprintf '%s\\\\n' 'candidate_tree=3254e1802ec09511ea46469263995ed54874a0fd'\nprintf '%s\\\\n' 'candidate_parent=c958ce80124bcc9012a53cfb688d02a756a30beb'\nprintf '%s\\\\n' 'candidate_unchanged=true'\nprintf '%s\\\\n' 'main_unchanged=true'\nprintf '%s\\\\n' 'generated_output_firewall_real_candidate=pass'\nprintf '%s\\\\n' 'expected_actions_trigger=push'\nprintf '%s\\\\n' 'artifact_ref=refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v15'\nprintf '%s\\\\n' 'diagnostics_artifact=sysgrid-smv1-final-verify-actions-v15-diagnostics'\nprintf '%s\\\\n' 'error_code='\nprintf '%s\\\\n' 'blockers='\nprintf '%s\\\\n' \\\"remote_branch_commit=\"'$remote_commit\" '\"'worktree_clean=true' 'github_actions_triggered_by_push=true'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 60,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 93.84,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 850432,
+      "fresh_input_tokens": 55871,
+      "input_tokens": 906303,
+      "non_reasoning_output_tokens": 10586,
+      "output_tokens": 19656,
+      "reasoning_output_tokens": 9070,
+      "total_processed_tokens": 925959
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "db7e66d69e5bc0c2751f97e4006882d615a4e7a5",
+      "subject": "Project OS: SysGrid CHG-120 final verify actions v15"
+    }
+  ],
+  "diff": {
+    "additions": 1130,
+    "changed_files": 1,
+    "commit_count": 1,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-19T15:40:31Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-actions-verifier-v15",
+    "detached_verify": false,
+    "head_sha": "db7e66d69e5bc0c2751f97e4006882d615a4e7a5",
+    "remote_exact_head": true,
+    "remote_head_sha": "db7e66d69e5bc0c2751f97e4006882d615a4e7a5",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-actions-verifier-v15",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-9ff1a8b55aaa03ec7df2af10",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v15",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v15"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-actions-verifier-v15",
+  "schema_version": 1,
+  "started_at": "2026-09-19T15:33:50Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 401,
+    "queue_seconds": 1,
+    "total_seconds": 402
+  },
+  "transport": {
+    "bytes": 8514,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 8193,
+    "prompt_sha256": "26b23337566475c731bee5a3e8bf9d5a3706e05144855d3ace4db0f1c518b738",
+    "sha256": "9ff1a8b55aaa03ec7df2af1076aaabc20ef561ea5fba7b9a3f90e18dd6a819d1"
+  }
+}
