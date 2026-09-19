@@ -1,0 +1,145 @@
+{
+  "accepted_at": "2026-09-19T14:48:28Z",
+  "project_id": "sysgrid",
+  "project": "sysgrid",
+  "change": "CHG-120 — System Management V1 — release/access and golden foundation",
+  "request": "sysgrid-smv1-eight-route-telemetry-classification-fix-v12",
+  "operation": "FIX",
+  "kind": "codex-fabric-audit-evidence",
+  "schema_version": 1,
+  "status": "EXECUTED_CHANGE_WITH_BLOCKER",
+  "error_code": "NORMAL_V1_E2E_FAILED_LOCAL",
+  "blockers": [
+    "Required normal-v1 browser proof ran with 1 failed and 1 passed. The exact telemetry POST was observed by Playwright as resourceType=ping, while the pre-existing shared classifier intentionally allows only beacon/fetch/xhr; the smoke test also observed unrelated aborted route-navigation requests. The requested patch does not broaden the classifier or suppress non-allowlisted failures."
+  ],
+  "environment_notes": [
+    "frontend/node_modules was absent initially; locked npm ci completed successfully before validation.",
+    "Generated Playwright reports were removed before commit.",
+    "No product/runtime source, package manifest, lockfile, backend, contract, script, or other test file changed."
+  ],
+  "changed_files": [
+    {
+      "path": "frontend/tests/eight-route-smoke.spec.ts",
+      "status": "M",
+      "additions": 10,
+      "deletions": 1
+    }
+  ],
+  "checks": [
+    {
+      "command": "HEAD == e828a5022d547730c523762cbf8a28d60a052010 before edit",
+      "exit_code": 0
+    },
+    {
+      "command": "HEAD^ == be4a7abfa670800f75386872f8e1cbf0c5316918 before edit",
+      "exit_code": 0
+    },
+    {
+      "command": "HEAD^{tree} == 448c922b9eccbea8a01ee36eb672fa2a88e1d885 before edit",
+      "exit_code": 0
+    },
+    {
+      "command": "origin/main == bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "exit_code": 0
+    },
+    {
+      "command": "npm ci --prefix frontend",
+      "exit_code": 0
+    },
+    {
+      "command": "browserFailurePolicy unit test",
+      "exit_code": 0,
+      "decisive_output": "1 test file passed; 4 tests passed"
+    },
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "normal-v1 targeted E2E",
+      "exit_code": 1,
+      "decisive_output": "1 failed, 1 passed; release-policy-normal passed; eight-route smoke failed on request classification and unrelated aborted navigation requests"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "forbidden command-position scan",
+      "exit_code": 0,
+      "decisive_output": "no terminal-side AI/agent invocation matches"
+    },
+    {
+      "command": "predecessor-to-candidate changed-file scope",
+      "exit_code": 0,
+      "decisive_output": "frontend/tests/eight-route-smoke.spec.ts only"
+    },
+    {
+      "command": "post-commit worktree clean and remote branch exact",
+      "exit_code": 0
+    }
+  ],
+  "git": {
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "predecessor_sha": "e828a5022d547730c523762cbf8a28d60a052010",
+    "predecessor_tree": "448c922b9eccbea8a01ee36eb672fa2a88e1d885",
+    "head_sha": "c958ce80124bcc9012a53cfb688d02a756a30beb",
+    "head_tree": "d44843024b4d7080e223b1fe53808bbac9eaf982",
+    "candidate_parent": "e828a5022d547730c523762cbf8a28d60a052010",
+    "target_branch": "main",
+    "target_ref": "refs/heads/main",
+    "target_head_observed": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-eight-route-telemetry-classification-fix-v12",
+    "remote_work_branch_sha": "c958ce80124bcc9012a53cfb688d02a756a30beb",
+    "remote_exact_head": true,
+    "worktree_clean": true
+  },
+  "final_report": {
+    "project": "sysgrid",
+    "change": "CHG-120 — System Management V1 — release/access and golden foundation",
+    "request": "sysgrid-smv1-eight-route-telemetry-classification-fix-v12",
+    "operation": "FIX",
+    "predecessor_sha": "e828a5022d547730c523762cbf8a28d60a052010",
+    "predecessor_tree": "448c922b9eccbea8a01ee36eb672fa2a88e1d885",
+    "final_candidate_sha": "c958ce80124bcc9012a53cfb688d02a756a30beb",
+    "final_candidate_tree": "d44843024b4d7080e223b1fe53808bbac9eaf982",
+    "candidate_parent": "e828a5022d547730c523762cbf8a28d60a052010",
+    "changed_files": [
+      "frontend/tests/eight-route-smoke.spec.ts"
+    ],
+    "shared_classifier_used": "frontend/src/observability/browserFailurePolicy.ts:isExpectedTelemetryRequest",
+    "classifier_unit_tests": "PASS — 4 tests",
+    "normal_v1_e2e": "BLOCKED — exit 1; 1 failed, 1 passed",
+    "release_policy_normal": "PASS",
+    "typecheck": "PASS",
+    "native_diff_check": "PASS",
+    "worktree_clean": true,
+    "main_unchanged": true,
+    "remote_work_branch_exact": true,
+    "error_code": "NORMAL_V1_E2E_FAILED_LOCAL",
+    "blockers": [
+      "Local Playwright reports sendBeacon as resourceType=ping, outside the pre-existing classifier's beacon/fetch/xhr allowlist; unrelated aborted route-navigation requests were also observed."
+    ],
+    "visual_capture": "not run per request",
+    "github_actions_verifier": "not rerun per request"
+  },
+  "evidence_manifest": {
+    "version": 1,
+    "count": 0,
+    "items": []
+  },
+  "fabric_capture": {
+    "applied": false,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-eight-route-telemetry-classification-fix-v12",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-eight-route-telemetry-classification-fix-v12"
+  },
+  "started_at": "2026-09-19T14:35:00Z",
+  "finished_at": "2026-09-19T14:48:28Z"
+}
