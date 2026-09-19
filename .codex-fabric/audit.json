@@ -1,0 +1,113 @@
+{
+  "accepted_at": "2026-09-19T18:46:59Z",
+  "changed_files": [],
+  "checks": [],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 4,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 70.82,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 9984,
+      "fresh_input_tokens": 4114,
+      "input_tokens": 14098,
+      "non_reasoning_output_tokens": 35,
+      "output_tokens": 136,
+      "reasoning_output_tokens": 101,
+      "total_processed_tokens": 14234
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-19T18:47:09Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-actions-verifier-v18",
+    "detached_verify": false,
+    "head_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "remote_exact_head": true,
+    "remote_head_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-actions-verifier-v18",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-aa3c0f3fb8793d75796b204c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v18",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-actions-verifier-v18"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-actions-verifier-v18",
+  "schema_version": 1,
+  "started_at": "2026-09-19T18:46:59Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 10,
+    "queue_seconds": 0,
+    "total_seconds": 10
+  },
+  "transport": {
+    "bytes": 393,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 74,
+    "prompt_sha256": "64f57492767c5710c7d1cc64420b0707ea387277443dfeff612b132a1445f8fe",
+    "sha256": "aa3c0f3fb8793d75796b204c9c441c42e6260492b265796ad81019c55187b9c7"
+  }
+}
