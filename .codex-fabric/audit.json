@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "codex-fabric-audit-evidence",
+  "operation": "BUILD",
+  "project_id": "sysgrid",
+  "change": "CHG-51",
+  "request": "sysgrid-smv1-api-integrity-contract-audit-v2",
+  "status": "EXECUTED_CHANGE",
+  "candidate": {
+    "sha": "92e7d6b6e654d2518527855ae938c16484c2fc49",
+    "tree": "bead2fe621c83c0ae7d593bfaabddcbc48509179",
+    "parent": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "base_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "base_tree": "3254e1802ec09511ea46469263995ed54874a0fd"
+  },
+  "git": {
+    "target_branch": "main",
+    "target_head_observed_after_execution": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "work_branch": "codex/sysgrid-smv1-api-integrity-contract-audit-v2",
+    "evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-api-integrity-contract-audit-v2",
+    "base_is_ancestor": true,
+    "main_unchanged": true,
+    "remote_exact_head": true,
+    "worktree_clean": true
+  },
+  "changed_files": [
+    "backend/app/api/audit.py",
+    "backend/app/api/monitoring.py",
+    "backend/app/domain/__init__.py",
+    "backend/app/domain/monitoring_contract.py",
+    "backend/app/main.py",
+    "backend/test_audit_integrity.py",
+    "backend/test_monitoring_domain_contract.py",
+    "contracts/monitoring_domain_contract_v1.json",
+    "frontend/src/components/AuditLogs.tsx",
+    "frontend/src/components/MonitoringGrid.tsx",
+    "frontend/src/components/audit/auditQuery.test.ts",
+    "frontend/src/components/audit/auditQuery.ts",
+    "frontend/src/domain/monitoringContract.test.ts",
+    "frontend/src/domain/monitoringContract.ts",
+    "frontend/src/utils/monitoringValidation.test.ts",
+    "frontend/src/utils/monitoringValidation.ts",
+    "frontend/tests/audit-logs-workflows.spec.ts"
+  ],
+  "contract_truth": {
+    "monitoring_contract_path": "contracts/monitoring_domain_contract_v1.json",
+    "monitoring_contract_frontend_backend_shared": true,
+    "audit_body_compatibility": "array",
+    "audit_scope_headers": [
+      "X-SysGrid-Result-Scope",
+      "X-SysGrid-Result-Limit",
+      "X-SysGrid-Result-Offset",
+      "X-SysGrid-Result-Has-More",
+      "X-SysGrid-Result-Complete"
+    ]
+  },
+  "checks": [
+    {"name": "git diff --check", "exit_code": 0},
+    {"name": "focused frontend units", "command": "monitoringValidation.test.ts monitoringContract.test.ts auditQuery.test.ts", "result": "3 files, 11 tests passed", "exit_code": 0},
+    {"name": "operational contracts", "command": "npm run check:operational-contracts --prefix frontend", "exit_code": 0},
+    {"name": "frontend typecheck", "command": "npm run typecheck --prefix frontend", "exit_code": 0},
+    {"name": "frontend build", "command": "npm run build --prefix frontend", "exit_code": 0},
+    {"name": "focused backend pytest", "command": "test_monitoring_domain_contract.py test_audit_integrity.py test_monitoring_query_and_bulk_edges.py test_monitoring_workflows.py test_system_management_v1_policy.py", "result": "90 passed, 1 warning", "exit_code": 0},
+    {"name": "targeted browser", "command": "bash ../scripts/run-e2e.sh --config=playwright.v1.config.ts tests/audit-logs-workflows.spec.ts tests/monitoring-workflows.spec.ts", "result": "7 passed", "runtime": "normal-v1", "exit_code": 0},
+    {"name": "full frontend unit suite", "command": "npm run test:unit --prefix frontend", "result": "131 files, 696 tests passed", "exit_code": 0},
+    {"name": "forbidden-command scan", "result": "0 matches in staged patch", "exit_code": 0}
+  ],
+  "focused_frontend_result": "3 files, 11 tests passed",
+  "typecheck_result": "exit 0",
+  "build_result": "exit 0",
+  "focused_backend_result": "90 passed, 1 warning",
+  "targeted_browser_result": "7 passed",
+  "full_frontend_unit_result": "131 files, 696 tests passed",
+  "error_code": null,
+  "blockers": [],
+  "finished_at": "2026-09-19T21:11:29Z"
+}
