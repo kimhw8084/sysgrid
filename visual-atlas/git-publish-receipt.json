@@ -1,0 +1,30 @@
+{
+  "schema_version": "sysgrid.visual-atlas.git-publish-receipt.v2",
+  "request": "sysgrid-smv1-actions-verifier-v18c",
+  "remote_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-final-verify-actions-v18c",
+  "artifact_commit": "c195c6b64290b6354a60973a511aaa8b9b110a0a",
+  "artifact_commit_contains": "visual-atlas/** only",
+  "candidate_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+  "candidate_tree": "3254e1802ec09511ea46469263995ed54874a0fd",
+  "candidate_parent": "c958ce80124bcc9012a53cfb688d02a756a30beb",
+  "target_ref": "refs/heads/main",
+  "target_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "baseline_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3",
+  "required_readback_sha256": {
+    "screenshots/baseline/monitoring--desktop-1440x900.png": "9fa029e0a6a066410e9953b2ade08e2de33337f299e3cb15e66c6b93a19e3c91",
+    "screenshots/candidate/monitoring--desktop-1440x900.png": "215ac75c1c1670262c2002c7559bc5e59d76c981a6e2e88300a45b54bd147966",
+    "screenshots/candidate/monitoring--mobile-390x844.png": "21ce4537532d947e9cc980c220c41fd7984b06cf9b9c89e6e5017836706d3f36",
+    "screenshots/candidate/dashboard-home--desktop-1440x900.png": "22f0dfee9f64ab20c28056b8d665442dad0f93baa93d58306511a08111b57720",
+    "screenshots/candidate/dashboard-home--mobile-390x844.png": "728e798216915adfb8175dd292a23938d322a4514c24995bd1f4adff45a60387",
+    "review-desktop.pdf": "398011bd0695d01fb6e24d93d5738f6b8c0843baef534295ccd164be308bc38c",
+    "review-mobile.pdf": "97832c7c8eee14c844eb1d51c2fc91a59671879d9841b7698feb5dba9c0ef348",
+    "artifact-bundle.zip": "2b0344ead23f887ca03cd50cacf5a97d88d4c9ef50aa334a4b5b14f6396a834c",
+    "surface-manifest.json": "9dcb148fc59730954e78bf49fb92f317c2c6e5dc99752fc40a6b82320c18ff41",
+    "capture-report.json": "9cca3d2f7f6a02c5acf181f227acc0c3c66da634a5f6ccda93d85dcafa712802",
+    "comparison-report.json": "0685e3c299e10cd8dbe010ef258bbb832754c1bc0b170a8fa829ebf90de2b892",
+    "qualification-report.json": "ad6dd643df5f8e2132c847e6caa933ae7a622e2ae634effcadd3e0735cc52096",
+    "diagnostic-disposition.json": "b72084fffbc7ae18c7e3f9f7be1d06468ca089791e76f6b1ed4e7bd1a0bbbae8",
+    "reader-index.json": "d68191e1b0e9d0c9131491bc4a99da6bfb59d19eeef64174ee81e33c03451595"
+  },
+  "git_package_verified": true
+}
