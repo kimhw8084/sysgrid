@@ -1,0 +1,170 @@
+{
+  "accepted_at": "2026-09-19T05:15:06Z",
+  "project_id": "sysgrid",
+  "project": "sysgrid",
+  "change": "CHG-120 — System Management V1 — release/access and golden foundation",
+  "request": "sysgrid-smv1-lockfile-reproducibility-fix-v10",
+  "operation": "FIX",
+  "kind": "codex-fabric-audit-evidence",
+  "schema_version": 1,
+  "status": "EXECUTED_CHANGE",
+  "error_code": null,
+  "blockers": [],
+  "environment_notes": [
+    "Default PATH exposed a broken Homebrew Node/merve/simdutf loader; restricting PATH to the existing nvm Node 20.19.4 toolchain made the exact npm 10.8.2 npx commands pass. No repository files were changed by the failed attempts."
+  ],
+  "changed_files": [
+    {
+      "path": "frontend/package-lock.json",
+      "status": "M",
+      "additions": 512,
+      "deletions": 30
+    }
+  ],
+  "checks": [
+    {
+      "command": "HEAD == be4a7abfa670800f75386872f8e1cbf0c5316918",
+      "exit_code": 0
+    },
+    {
+      "command": "HEAD^ == bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "exit_code": 0
+    },
+    {
+      "command": "HEAD^{tree} == ac50c9c49f0a83546fd04616763f2672f91212b7",
+      "exit_code": 0
+    },
+    {
+      "command": "origin/main == bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+      "exit_code": 0
+    },
+    {
+      "command": "npx --yes npm@10.8.2 install --package-lock-only --ignore-scripts --no-audit --no-fund",
+      "exit_code": 0
+    },
+    {
+      "command": "npx --yes npm@10.8.2 ci --no-audit --no-fund",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run test:unit",
+      "exit_code": 0,
+      "decisive_output": "129 test files passed; 690 tests passed"
+    },
+    {
+      "command": "npm run check:operational-contracts",
+      "exit_code": 0,
+      "decisive_output": "monitoring clone drift, form, row-action, and shell contracts passed"
+    },
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "decisive_output": "4350 modules transformed; built in 6.72s"
+    },
+    {
+      "command": "git diff --check be4a7abfa670800f75386872f8e1cbf0c5316918..HEAD",
+      "exit_code": 0
+    },
+    {
+      "command": "forbidden-command scan on added lockfile lines",
+      "exit_code": 0,
+      "decisive_output": "no terminal-side AI/agent invocation matches"
+    },
+    {
+      "command": "generated-artifact scan on predecessor-to-candidate changed paths",
+      "exit_code": 0,
+      "decisive_output": "no generated artifact paths added"
+    }
+  ],
+  "git": {
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "predecessor_sha": "be4a7abfa670800f75386872f8e1cbf0c5316918",
+    "predecessor_tree": "ac50c9c49f0a83546fd04616763f2672f91212b7",
+    "head_sha": "e828a5022d547730c523762cbf8a28d60a052010",
+    "head_tree": "448c922b9eccbea8a01ee36eb672fa2a88e1d885",
+    "candidate_parent": "be4a7abfa670800f75386872f8e1cbf0c5316918",
+    "target_branch": "main",
+    "target_ref": "refs/remotes/origin/main",
+    "target_head_observed": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-lockfile-reproducibility-fix-v10",
+    "remote_work_branch_sha": "e828a5022d547730c523762cbf8a28d60a052010",
+    "remote_exact_head": true,
+    "worktree_clean": true
+  },
+  "final_report": {
+    "project": "sysgrid",
+    "change": "CHG-120 — System Management V1 — release/access and golden foundation",
+    "request": "sysgrid-smv1-lockfile-reproducibility-fix-v10",
+    "operation": "FIX",
+    "predecessor_sha": "be4a7abfa670800f75386872f8e1cbf0c5316918",
+    "predecessor_tree": "ac50c9c49f0a83546fd04616763f2672f91212b7",
+    "final_candidate_sha": "e828a5022d547730c523762cbf8a28d60a052010",
+    "final_candidate_tree": "448c922b9eccbea8a01ee36eb672fa2a88e1d885",
+    "candidate_parent": "be4a7abfa670800f75386872f8e1cbf0c5316918",
+    "changed_files": [
+      "frontend/package-lock.json"
+    ],
+    "node_version": "v20.19.4",
+    "system_npm_version": "10.8.2",
+    "lockfile_npm_version": "10.8.2",
+    "lockfile_regeneration_exit": 0,
+    "clean_npm_ci_exit": 0,
+    "frontend_unit": "pass — 129 test files, 690 tests",
+    "operational_contracts": "pass",
+    "typecheck": "pass",
+    "build": "pass — 4350 modules transformed",
+    "lockfile_version": 3,
+    "vite_versions": {
+      "top_level": "5.4.21",
+      "nested_vitest": "8.0.16"
+    },
+    "vitest_version": "4.1.9",
+    "esbuild_versions": {
+      "top_level": "0.21.5",
+      "nested_vitest": "0.28.2"
+    },
+    "linux_esbuild_entry": {
+      "top_level": "0.21.5",
+      "nested_vitest": "0.28.2"
+    },
+    "playwright_versions": {
+      "playwright": "1.60.0",
+      "playwright_test": "1.60.0"
+    },
+    "package_json_unchanged": true,
+    "package_json_sha256": "2776bdebb0a21ee716b2e4051ed316e5fb2d4708308859a880e470e3396e7a4e",
+    "lockfile_sha256": "245332c3b3ed66bce0aa9733afe93f0fb16f31c46cef16f59f46624e81d91d19",
+    "native_diff_check": true,
+    "worktree_clean": true,
+    "main_unchanged": true,
+    "remote_work_branch_exact": true,
+    "no_generated_artifacts_added": true,
+    "error_code": null,
+    "blockers": [],
+    "visual_capture": "not run per request",
+    "github_actions_verifier": "not rerun per request"
+  },
+  "evidence_manifest": {
+    "version": 1,
+    "count": 0,
+    "items": []
+  },
+  "fabric_capture": {
+    "applied": false,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-lockfile-reproducibility-fix-v10",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-lockfile-reproducibility-fix-v10"
+  },
+  "started_at": "2026-09-19T04:48:00Z",
+  "finished_at": "2026-09-19T05:15:06Z"
+}
