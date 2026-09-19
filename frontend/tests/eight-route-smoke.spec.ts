@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { isExpectedTelemetryRequest } from '../src/observability/browserFailurePolicy'
 
 const routes = ['/', '/asset', '/monitoring', '/services', '/network', '/racks', '/logs', '/settings']
 
@@ -9,7 +10,15 @@ test.describe('CHG-120 normal-v1 eight-route smoke', () => {
     page.on('console', (message) => {
       if (message.type() === 'error') consoleErrors.push(message.text())
     })
-    page.on('requestfailed', (request) => failedRequests.push(`${request.method()} ${request.url()} ${request.failure()?.errorText || ''}`))
+    page.on('requestfailed', (request) => {
+      if (isExpectedTelemetryRequest({
+        method: request.method(),
+        url: request.url(),
+        resourceType: request.resourceType(),
+      })) return
+
+      failedRequests.push(`${request.method()} ${request.url()} ${request.failure()?.errorText || ''}`)
+    })
 
     for (const route of routes) {
       await page.goto(route)
