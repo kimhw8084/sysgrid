@@ -9,6 +9,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHeader, PageToolbar, ToolbarButton, ToolbarGroup, ToolbarIconButton, ToolbarSearch } from './shared/LayoutPrimitives'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { ModulePolicyButton } from '../policy/ModulePolicy'
+import {
+  buildAuditQueryUrl,
+  createAuditQueryDescriptor,
+  getAuditQueryKey,
+  parseAuditResponse,
+} from './audit/auditQuery'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 
@@ -42,23 +48,31 @@ export default function AuditLogs() {
   const targetIdParam = searchParams.get('target_id') || ''
 
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
+  const auditQuery = useMemo(() => createAuditQueryDescriptor({
+    start_date: dateRange.start,
+    end_date: dateRange.end,
+    target_table: targetTableParam,
+    target_id: targetIdParam,
+    limit: 200,
+    offset: 0,
+  }), [dateRange.end, dateRange.start, targetIdParam, targetTableParam])
 
-  const { data: logs, isLoading } = useQuery({
-    queryKey: ['audit', dateRange],
+  const { data: auditResult, isLoading } = useQuery({
+    queryKey: getAuditQueryKey(auditQuery),
     queryFn: async () => {
-      const params = new URLSearchParams()
-      if (dateRange.start) params.append('start_date', dateRange.start)
-      if (dateRange.end) params.append('end_date', dateRange.end)
-      if (targetTableParam) params.append('target_table', targetTableParam)
-      if (targetIdParam) params.append('target_id', targetIdParam)
-      const res = await apiFetch(`/api/v1/audit/?${params.toString()}`)
-      return res.json()
-    }
+      const res = await apiFetch(buildAuditQueryUrl(auditQuery))
+      return parseAuditResponse<any>(res, auditQuery)
+    },
   })
+  const logs = auditResult?.items || []
+  const scope = auditResult?.scope
+  const scopeText = scope?.complete
+    ? 'Complete matching scope'
+    : `Loaded ${logs.length} records${scope?.hasMore ? ' · more matching records' : ' · matching scope is bounded'}`
 
   // Prepare chart data
   const chartData = useMemo(() => {
-    if (!logs || !Array.isArray(logs)) return []
+    if (!Array.isArray(logs)) return []
     const dailyMap: Record<string, number> = {}
     logs.forEach(log => {
       const date = formatAppDay(log.timestamp)
@@ -71,7 +85,7 @@ export default function AuditLogs() {
   }, [logs])
 
   const opsData = useMemo(() => {
-    if (!logs || !Array.isArray(logs)) return []
+    if (!Array.isArray(logs)) return []
     const opsMap: Record<string, number> = {}
     logs.forEach(log => {
       opsMap[log.action] = (opsMap[log.action] || 0) + 1
@@ -218,11 +232,14 @@ export default function AuditLogs() {
           }
           subtitle="Immutable record of system state changes and operator actions"
           meta={
-            (targetTableParam || targetIdParam) ? (
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">
-                Scoped: {targetTableParam || 'Any Table'} {targetIdParam ? `// ${targetIdParam}` : ''}
-              </span>
-            ) : undefined
+            <div className="flex flex-wrap items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em]">
+              {(targetTableParam || targetIdParam) && (
+                <span className="text-blue-400">
+                  Scoped: {targetTableParam || 'Any Table'} {targetIdParam ? `// ${targetIdParam}` : ''}
+                </span>
+              )}
+              <span className="text-slate-500">{scopeText}</span>
+            </div>
           }
         />
 
@@ -266,7 +283,7 @@ export default function AuditLogs() {
               </div>
               <ToolbarButton onClick={handleExportCSV} variant="primary" className="px-5 py-3">
                 <span className="flex items-center gap-2">
-                  <Download size={14} /> Export CSV
+                  <Download size={14} /> Export loaded CSV
                 </span>
               </ToolbarButton>
             </>
@@ -284,7 +301,7 @@ export default function AuditLogs() {
           >
              <div className="flex-1 h-[140px] py-4">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                   <Activity size={12} className="text-blue-500" /> Transaction Velocity (Last 14 Days)
+                   <Activity size={12} className="text-blue-500" /> Transaction Velocity (Loaded result/page)
                 </p>
                 <ResponsiveContainer width="100%" height="100%">
                    <AreaChart data={chartData}>
@@ -307,7 +324,7 @@ export default function AuditLogs() {
 
              <div className="w-[300px] h-[140px] py-4">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                   <Filter size={12} className="text-indigo-500" /> Operation Distribution
+                   <Filter size={12} className="text-indigo-500" /> Operation Distribution (Loaded result/page)
                 </p>
                 <ResponsiveContainer width="100%" height="100%">
                    <BarChart data={opsData} layout="vertical">
@@ -328,7 +345,7 @@ export default function AuditLogs() {
              <div className="w-[200px] h-[140px] flex flex-col justify-center border-l border-white/5 pl-12">
                 <div className="space-y-4">
                    <div>
-                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Total Logs</p>
+                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Loaded Logs</p>
                       <p className="text-2xl font-black text-white">{logs?.length || 0}</p>
                    </div>
                    <div>
@@ -397,7 +414,7 @@ export default function AuditLogs() {
         )}
         <AgGridReact
           ref={gridRef}
-          rowData={logs || []}
+          rowData={logs}
           columnDefs={columnDefs}
           defaultColDef={{ 
               resizable: true, 

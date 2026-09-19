@@ -1,10 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
 from sqlalchemy.orm import joinedload
 from typing import List, Optional, Any
+from math import isfinite
 from urllib.parse import urlparse
 from ..database import get_db
+from ..domain.monitoring_contract import (
+    ALERT_DURATION_MAX,
+    ALERT_DURATION_MIN,
+    CHECK_INTERVAL_MAX,
+    CHECK_INTERVAL_MIN,
+    NOTIFICATION_THROTTLE_MAX,
+    NOTIFICATION_THROTTLE_MIN,
+)
 from ..models import models
 from ..schemas import schemas
 from .utils import filter_valid_columns
@@ -19,12 +29,6 @@ IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_use
 MONITORING_SEVERITIES = {"Critical", "Warning", "Info"}
 MONITORING_STATUSES = {"Existing", "Planned", "Cancelled", "Decommissioned", "Deleted"}
 MONITORING_OWNER_ROLES = {"Primary Support", "Escalation", "Observer"}
-CHECK_INTERVAL_MIN = 15
-CHECK_INTERVAL_MAX = 86400
-ALERT_DURATION_MIN = 0
-ALERT_DURATION_MAX = 86400
-NOTIFICATION_THROTTLE_MIN = 60
-NOTIFICATION_THROTTLE_MAX = 604800
 
 
 def normalize_string(value: Any) -> Optional[str]:
@@ -340,6 +344,35 @@ def summarize_bulk_monitoring_action(
             parts.append(f"fields: {', '.join(labels[:3])} and {len(labels) - 3} more")
     return " | ".join(parts)
 
+
+def validate_monitoring_numeric_fields(payload: dict[str, Any]) -> dict[str, Any]:
+    """Validate and normalize the shared integer-seconds fields."""
+    for field_name, minimum, maximum in (
+        ("check_interval", CHECK_INTERVAL_MIN, CHECK_INTERVAL_MAX),
+        ("alert_duration", ALERT_DURATION_MIN, ALERT_DURATION_MAX),
+        ("notification_throttle", NOTIFICATION_THROTTLE_MIN, NOTIFICATION_THROTTLE_MAX),
+    ):
+        if field_name not in payload:
+            continue
+        value = payload[field_name]
+        invalid_numeric_value = (
+            value is None
+            or isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or (isinstance(value, float) and (not isfinite(value) or not value.is_integer()))
+        )
+        if invalid_numeric_value:
+            raise HTTPException(
+                status_code=400,
+                detail=f"{field_name} must be a finite integer number of seconds",
+            )
+        normalized_value = int(value)
+        if normalized_value < minimum or normalized_value > maximum:
+            raise HTTPException(status_code=400, detail=f"{field_name} must be between {minimum} and {maximum}")
+        payload[field_name] = normalized_value
+    return payload
+
+
 async def build_monitoring_payload(
     db: AsyncSession,
     payload: dict[str, Any],
@@ -357,16 +390,7 @@ async def build_monitoring_payload(
     if "status" in clean_data and clean_data["status"] not in MONITORING_STATUSES:
         raise HTTPException(status_code=400, detail=f"Status must be one of: {', '.join(sorted(MONITORING_STATUSES))}")
 
-    for field_name, minimum, maximum in (
-        ("check_interval", CHECK_INTERVAL_MIN, CHECK_INTERVAL_MAX),
-        ("alert_duration", ALERT_DURATION_MIN, ALERT_DURATION_MAX),
-        ("notification_throttle", NOTIFICATION_THROTTLE_MIN, NOTIFICATION_THROTTLE_MAX),
-    ):
-        if field_name in clean_data and clean_data[field_name] is not None:
-            value = int(clean_data[field_name])
-            if value < minimum or value > maximum:
-                raise HTTPException(status_code=400, detail=f"{field_name} must be between {minimum} and {maximum}")
-            clean_data[field_name] = value
+    validate_monitoring_numeric_fields(clean_data)
 
     if "platform" in clean_data and clean_data["platform"]:
         platforms = await get_setting_values_by_category(db, "MonitoringPlatform")
@@ -458,7 +482,10 @@ async def build_monitoring_payload(
             })
 
     if not partial:
-        data = schemas.MonitoringItemCreate.model_validate({**clean_data, "owners": resolved_owners or []})
+        try:
+            data = schemas.MonitoringItemCreate.model_validate({**clean_data, "owners": resolved_owners or []})
+        except ValidationError as exc:
+            raise HTTPException(status_code=400, detail=f"Monitoring payload validation failed: {exc}") from exc
         clean_data = data.model_dump(exclude={"owners"})
         resolved_owners = [owner.model_dump() for owner in data.owners]
     elif "logic_json" in clean_data:
@@ -713,8 +740,8 @@ async def get_monitoring_items(device_id: Optional[int] = None, include_deleted:
     return res
 
 @router.post("", response_model=schemas.MonitoringItemResponse)
-async def create_monitoring_item(data: schemas.MonitoringItemCreate, db: AsyncSession = Depends(get_db), user_id: str = Header(None, alias="X-User-Id")):
-    item_data, owners_data = await build_monitoring_payload(db, data.model_dump(), partial=False)
+async def create_monitoring_item(data: dict[str, Any], db: AsyncSession = Depends(get_db), user_id: str = Header(None, alias="X-User-Id")):
+    item_data, owners_data = await build_monitoring_payload(db, data, partial=False)
     await ensure_monitoring_item_uniqueness(db, item_data=item_data)
 
     db_obj = models.MonitoringItem(**item_data)

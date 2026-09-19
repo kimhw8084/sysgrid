@@ -1,4 +1,5 @@
 export type MonitoringFormErrors = Record<string, string>
+import { MONITORING_NUMERIC_FIELDS } from '../domain/monitoringContract'
 
 const MONITORING_REQUIRED_FIELD_NAMES = new Set(['title', 'category', 'status', 'severity', 'check_interval', 'alert_duration', 'notification_throttle'])
 export const isMonitoringFieldRequired = (name: string) => MONITORING_REQUIRED_FIELD_NAMES.has(name)
@@ -13,6 +14,17 @@ export const buildMonitoringFormErrors = (
   if (isMonitoringFieldRequired('category') && !formData.category) errors.category = 'Category is required.'
   if (isMonitoringFieldRequired('status') && !formData.status) errors.status = 'Status is required.'
   if (isMonitoringFieldRequired('severity') && !formData.severity) errors.severity = 'Severity is required.'
+
+  for (const [fieldName, field] of Object.entries(MONITORING_NUMERIC_FIELDS)) {
+    const value = formData[fieldName]
+    if (typeof value !== 'number' || !Number.isFinite(value) || !Number.isInteger(value)) {
+      errors[fieldName] = `${field.label} must be a finite integer number of seconds.`
+      continue
+    }
+    if (value < field.min || value > field.max) {
+      errors[fieldName] = `${field.label} must be between ${field.min} and ${field.max} seconds.`
+    }
+  }
 
   if (formData.monitoring_url) {
     try {

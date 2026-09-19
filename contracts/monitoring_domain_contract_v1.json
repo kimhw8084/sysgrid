@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_id": "sysgrid.monitoring.domain",
+  "version": "v1",
+  "schema_version": "1.0.0",
+  "value_semantics": {
+    "unit": "seconds",
+    "type": "integer",
+    "description": "Values are integer counts of seconds; boolean, fractional, non-finite, and non-numeric values are invalid."
+  },
+  "bounds": {
+    "check_interval_seconds": {
+      "min": 15,
+      "max": 86400
+    },
+    "alert_duration_seconds": {
+      "min": 0,
+      "max": 86400
+    },
+    "notification_throttle_seconds": {
+      "min": 60,
+      "max": 604800
+    }
+  }
+}
