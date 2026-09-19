@@ -8,7 +8,7 @@ import { Routes, Route, Link, useLocation, useNavigate, Navigate, RouterProvider
 import { motion, AnimatePresence } from "framer-motion"
 import { Terminal, X, ChevronRight, Info, Star, RefreshCcw, Grid3X3, Clock, Globe, Search } from "lucide-react"
 import { Toaster, toast } from "react-hot-toast"
-import { apiFetch, subscribeToLatency, getConfig } from "./api/apiClient"
+import { apiFetch, subscribeToLatency, getConfig, getRequestScopeKey } from "./api/apiClient"
 import { errorManager, useErrors } from "./stores/errorStore"
 import { ErrorConsole } from "./components/shared/ErrorConsole"
 
@@ -40,6 +40,7 @@ import { FatalErrorState, PermissionDeniedState } from "./components/shared/Shel
 import { SHELL_NAV_GROUPS, ShellNavGroup, ShellNavItem, isShellRouteActive } from "./components/shared/ShellNavigation"
 import { normalizeTheme } from "./components/shared/theme"
 import { useRouteFocus } from "./components/shared/routeFocus"
+import { ModulePolicyGate, useModulePolicy } from './policy/ModulePolicy'
 
 const APP_VERSION = metadata.version
 const PATCH_HISTORY = metadata.patchHistory
@@ -151,43 +152,6 @@ class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean,
       : this.props.children;
   }
 }
-
-const getPermLevel = (perms: any, view: string) => {
-  const val = perms?.[view] ?? perms?.['all'] ?? 0;
-  if (typeof val === 'number') return val;
-  if (val === 'read') return 1;
-  if (val === 'add') return 2;
-  if (val === 'edit' || val === 'manage') return 3;
-  return 0;
-};
-
-const ProtectedRoute = ({ children, view, userProfile }: any) => {
-  const is_admin = userProfile?.is_admin;
-  const permissions = userProfile?.permissions || {};
-  const hasRead = is_admin || (getPermLevel(permissions, view) >= 1);
-
-  if (userProfile && !hasRead) {
-    const areaLabels: Record<string, string> = {
-      assets: 'Assets',
-      projects: 'Projects',
-      racks: 'Racks',
-      services: 'Services',
-      external: 'External',
-      network: 'Network',
-      architecture: 'Architecture',
-      research: 'Research',
-      far: 'FAR',
-      monitoring: 'Monitoring',
-      vendors: 'Vendors',
-      knowledge: 'Knowledge',
-      logs: 'Audit logs',
-      settings: 'Settings',
-    }
-    return <PermissionDeniedState area={areaLabels[view] || view} />
-  }
-  return children;
-}
-;
 
 const LegacyNetworkRedirect = () => {
   const location = useLocation()
@@ -328,6 +292,7 @@ function MainLayout() {
   const [currentTheme, setCurrentTheme] = useState(normalizeTheme(localStorage.getItem('sysgrid-theme')));
   const [latency, setLatency] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const modulePolicy = useModulePolicy()
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -571,24 +536,28 @@ function MainLayout() {
         <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4 custom-scrollbar" aria-label="Primary navigation">
           {SHELL_NAV_GROUPS.map((group) => (
             <ShellNavGroup key={group.label} label={group.label} isSidebarOpen={isSidebarOpen} defaultExpanded={group.defaultExpanded}>
-              {group.items.map((item) => (
-                <ShellNavItem
-                  key={item.path}
-                  icon={item.icon}
-                  label={item.label}
-                  path={item.path}
-                  active={isShellRouteActive(location.pathname, item.path, item.aliases)}
-                  isOpen={isSidebarOpen}
-                  disabled={Boolean(userProfile && !userProfile.is_admin && item.permission && getPermLevel(userProfile.permissions, item.permission) < 1)}
-                />
-              ))}
+              {group.items.map((item) => {
+                const module = modulePolicy.data?.modules?.[item.moduleId]
+                return (
+                  <ShellNavItem
+                    key={item.path}
+                    icon={item.icon}
+                    moduleId={item.moduleId}
+                    label={module?.label || item.label}
+                    path={item.path}
+                    active={isShellRouteActive(location.pathname, item.path, item.aliases)}
+                    isOpen={isSidebarOpen}
+                    unavailableReason={module?.blocked_reason}
+                  />
+                )
+              })}
             </ShellNavGroup>
           ))}
         </nav>
         
         {/* User Profile Section */}
         <div className={`space-y-2 border-t border-[var(--border-subtle)] p-3 ${!isSidebarOpen ? 'flex flex-col items-center' : ''}`}>
-           <button 
+           {modulePolicy.data?.actions?.diagnostics?.read ? <button
               onClick={() => setShowLinuxEnv(true)}
               className={`flex items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-2 hover:bg-[var(--surface-hover)] ${!isSidebarOpen ? 'h-10 w-10 justify-center' : 'w-full text-left'}`}
               aria-label="Open environment details"
@@ -602,7 +571,7 @@ function MainLayout() {
                    <span className="truncate text-[10px] text-[var(--text-muted)]">{userProfile?.username || 'Signed-in user'}</span>
                 </div>
               )}
-           </button>
+           </button> : null}
 
            {/* Direct Theme Toggles */}
            <div className={`flex items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1 ${!isSidebarOpen ? 'flex-col' : 'w-full'}`} aria-label="Theme">
@@ -661,23 +630,23 @@ function MainLayout() {
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Dashboard onNavigate={(p:any) => navigate("/" + p)} />} />
-              <Route path="/projects/*" element={<ProtectedRoute view="projects" userProfile={userProfile}><Projects /></ProtectedRoute>} />
-              <Route path="/racks" element={<ProtectedRoute view="racks" userProfile={userProfile}><Racks /></ProtectedRoute>} />
-              <Route path="/asset" element={<ProtectedRoute view="assets" userProfile={userProfile}><Assets /></ProtectedRoute>} />
-              <Route path="/asset-real" element={<ProtectedRoute view="assets" userProfile={userProfile}><LegacyAssetRedirect /></ProtectedRoute>} />
-              <Route path="/services" element={<ProtectedRoute view="services" userProfile={userProfile}><ServicesReal /></ProtectedRoute>} />
-              <Route path="/external" element={<ProtectedRoute view="external" userProfile={userProfile}><External /></ProtectedRoute>} />
-              <Route path="/network" element={<ProtectedRoute view="network" userProfile={userProfile}><NetworkReal /></ProtectedRoute>} />
-              <Route path="/network-real" element={<ProtectedRoute view="network" userProfile={userProfile}><LegacyNetworkRedirect /></ProtectedRoute>} />
-              <Route path="/architecture" element={<ProtectedRoute view="architecture" userProfile={userProfile}><ArchitectureRoute /></ProtectedRoute>} />
-              <Route path="/research" element={<ProtectedRoute view="research" userProfile={userProfile}><Research /></ProtectedRoute>} />
-              <Route path="/far" element={<ProtectedRoute view="far" userProfile={userProfile}><FAR /></ProtectedRoute>} />
-              <Route path="/monitoring" element={<ProtectedRoute view="monitoring" userProfile={userProfile}><MonitoringGrid /></ProtectedRoute>} />
-              <Route path="/vendors" element={<ProtectedRoute view="vendors" userProfile={userProfile}><VendorsReal /></ProtectedRoute>} />
-              <Route path="/vendors-real" element={<ProtectedRoute view="vendors" userProfile={userProfile}><VendorsReal /></ProtectedRoute>} />
-              <Route path="/knowledge" element={<ProtectedRoute view="knowledge" userProfile={userProfile}><Knowledge /></ProtectedRoute>} />
-              <Route path="/logs" element={<ProtectedRoute view="logs" userProfile={userProfile}><AuditLogs /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute view="settings" userProfile={userProfile}><SettingsPage /></ProtectedRoute>} />
+              <Route path="/projects/*" element={<ModulePolicyGate moduleId="projects"><Projects /></ModulePolicyGate>} />
+              <Route path="/racks" element={<ModulePolicyGate moduleId="racks"><Racks /></ModulePolicyGate>} />
+              <Route path="/asset" element={<ModulePolicyGate moduleId="assets"><Assets /></ModulePolicyGate>} />
+              <Route path="/asset-real" element={<ModulePolicyGate moduleId="assets"><LegacyAssetRedirect /></ModulePolicyGate>} />
+              <Route path="/services" element={<ModulePolicyGate moduleId="services"><ServicesReal /></ModulePolicyGate>} />
+              <Route path="/external" element={<ModulePolicyGate moduleId="external"><External /></ModulePolicyGate>} />
+              <Route path="/network" element={<ModulePolicyGate moduleId="network"><NetworkReal /></ModulePolicyGate>} />
+              <Route path="/network-real" element={<ModulePolicyGate moduleId="network"><LegacyNetworkRedirect /></ModulePolicyGate>} />
+              <Route path="/architecture" element={<ModulePolicyGate moduleId="architecture"><ArchitectureRoute /></ModulePolicyGate>} />
+              <Route path="/research" element={<ModulePolicyGate moduleId="research"><Research /></ModulePolicyGate>} />
+              <Route path="/far" element={<ModulePolicyGate moduleId="far"><FAR /></ModulePolicyGate>} />
+              <Route path="/monitoring" element={<ModulePolicyGate moduleId="monitoring"><MonitoringGrid /></ModulePolicyGate>} />
+              <Route path="/vendors" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
+              <Route path="/vendors-real" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
+              <Route path="/knowledge" element={<ModulePolicyGate moduleId="knowledge"><Knowledge /></ModulePolicyGate>} />
+              <Route path="/logs" element={<ModulePolicyGate moduleId="logs"><AuditLogs /></ModulePolicyGate>} />
+              <Route path="/settings" element={<ModulePolicyGate moduleId="settings"><SettingsPage /></ModulePolicyGate>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </ErrorBoundary>
@@ -711,8 +680,18 @@ import { ErrorSentinel } from './components/shared/ErrorSentinel'
 function ReconnectRefresh() {
   React.useEffect(() => {
     const refresh = () => { void queryClient.invalidateQueries() }
+    const handleScopeChange = () => {
+      // Protected query keys include the request scope; clear old results so a
+      // tenant/user switch cannot render data from the previous identity.
+      queryClient.clear()
+      void queryClient.invalidateQueries({ queryKey: ['module-policy', getRequestScopeKey()] })
+    }
     window.addEventListener('online', refresh)
-    return () => window.removeEventListener('online', refresh)
+    window.addEventListener('sysgrid-scope-changed', handleScopeChange)
+    return () => {
+      window.removeEventListener('online', refresh)
+      window.removeEventListener('sysgrid-scope-changed', handleScopeChange)
+    }
   }, [])
   return null
 }

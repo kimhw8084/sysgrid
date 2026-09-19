@@ -459,7 +459,7 @@ const classifyEvent = (routeLabel: string, event: RuntimeEvent): Omit<Classifica
   }
 
   const exactMessage = `${event.method} ${event.url} :: ${event.status} ${event.statusText}`
-  const unrelated = event.status === 404 && /favicon\.ico$/i.test(event.url)
+  const unrelated = (event.status === 404 && /favicon\.ico$/i.test(event.url)) || event.status === 304
   return {
     key: `${event.kind}:${event.method}:${event.url}:${event.status}:${event.resourceType || ''}`,
     routeLabel,
@@ -467,7 +467,9 @@ const classifyEvent = (routeLabel: string, event: RuntimeEvent): Omit<Classifica
     exactMessage,
     classification: unrelated ? 'unrelated' : 'blocking',
     reason: unrelated
-      ? 'Missing favicon response is unrelated to route render and lock eligibility.'
+      ? event.status === 304
+        ? 'HTTP 304 is a successful cache revalidation response and is unrelated to route render and lock eligibility.'
+        : 'Missing favicon response is unrelated to route render and lock eligibility.'
       : 'Non-OK response remains blocking until proven unrelated.',
     affectsAssetLockEligibility: !unrelated,
   }
@@ -538,7 +540,7 @@ const captureAssetRowClick = async (page: any) => {
   const interactionCell = firstRow.locator('.ag-cell').nth(2)
   attempts.push('click first visible asset row')
   await interactionCell.click({ force: true })
-  const bulkActionsButton = page.getByRole('button', { name: 'Bulk Actions', exact: true })
+  const bulkActionsButton = page.getByRole('button', { name: /Bulk Actions/i })
   await expect(bulkActionsButton).toBeEnabled({ timeout: 3_000 }).catch(() => {})
   const selectedRowCount = await page.locator('.ag-row-selected, .ag-row[aria-selected="true"]').count()
   const bulkActionsEnabled = await bulkActionsButton.isEnabled().catch(() => false)
@@ -559,7 +561,8 @@ const captureAssetRowClick = async (page: any) => {
 const captureAssetQuickLook = async (page: any) => {
   const attempts: string[] = []
   attempts.push('click explicit quick-look trigger')
-  await page.getByTitle('Open quick look').first().click({ force: true })
+  await page.getByTitle('More actions').first().click({ force: true })
+  await page.getByRole('button', { name: 'Quick Look', exact: true }).click({ force: true })
   const quickLookButton = page.getByRole('button', { name: 'Engage Full Configuration' })
   const opened = await quickLookButton.isVisible({ timeout: 5_000 }).catch(() => false)
   attempts.push(opened ? 'quick-look panel visible' : 'quick-look panel not visible')
@@ -607,7 +610,7 @@ const captureDirtyStateProof = async (page: any, dirtyValue: string) => {
   await page.goto('/asset')
   await ensureWorkspaceVisible(page, 'Assets')
   attempts.push('open asset form from canonical /asset toolbar')
-  await clickResilientButton(page, 'Add Asset')
+  await clickResilientButton(page, 'Register Asset')
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible({ timeout: 5_000 })
   const formInput = dialog.locator('input').first()

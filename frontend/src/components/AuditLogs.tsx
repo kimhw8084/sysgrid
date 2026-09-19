@@ -8,8 +8,23 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageHeader, PageToolbar, ToolbarButton, ToolbarGroup, ToolbarIconButton, ToolbarSearch } from './shared/LayoutPrimitives'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
+import { ModulePolicyButton } from '../policy/ModulePolicy'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
+
+const resolveAuditTarget = (log: any) => {
+  const table = String(log?.target_table || '').toLowerCase()
+  const targetId = log?.target_id
+  if (!targetId) return null
+  if (table.includes('device')) return { moduleId: 'assets', path: `/asset?id=${targetId}` }
+  if (table.includes('project')) return { moduleId: 'projects', path: `/projects?id=${targetId}` }
+  if (table.includes('far')) return { moduleId: 'far', path: `/far?id=${targetId}` }
+  if (table.includes('knowledge')) return { moduleId: 'knowledge', path: `/knowledge?id=${targetId}` }
+  if (table.includes('logical_service') || table.includes('service')) return { moduleId: 'services', path: `/services?id=${targetId}` }
+  if (table.includes('monitor')) return { moduleId: 'monitoring', path: `/monitoring?id=${targetId}` }
+  if (table.includes('port_connection') || table.includes('network')) return { moduleId: 'network', path: `/network?id=${targetId}` }
+  return null
+}
 
 export default function AuditLogs() {
   const navigate = useNavigate()
@@ -79,17 +94,9 @@ export default function AuditLogs() {
   }
 
   const openTarget = (log: any) => {
-    const table = String(log.target_table || '').toLowerCase()
-    const targetId = log.target_id
-    if (!targetId) return
-
-    if (table.includes('device')) return navigate(`/asset?id=${targetId}`)
-    if (table.includes('project')) return navigate(`/projects?id=${targetId}`)
-    if (table.includes('far')) return navigate(`/far?id=${targetId}`)
-    if (table.includes('knowledge')) return navigate(`/knowledge?id=${targetId}`)
-    if (table.includes('logical_service') || table.includes('service')) return navigate(`/services?id=${targetId}`)
-    if (table.includes('monitor')) return navigate(`/monitoring?id=${targetId}`)
-    if (table.includes('port_connection') || table.includes('network')) return navigate(`/network?id=${targetId}`)
+    const target = resolveAuditTarget(log)
+    if (!target) return
+    navigate(target.path)
   }
 
   const columnDefs = useMemo(() => [
@@ -176,18 +183,28 @@ export default function AuditLogs() {
         headerName: 'ACTIONS',
         width: 150,
         pinned: 'right' as const,
-        cellRenderer: (params: any) => (
+        cellRenderer: (params: any) => {
+          const target = resolveAuditTarget(params.data)
+          return (
             <div className="flex items-center justify-center gap-1">
-              <button onClick={() => openTarget(params.data)} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-blue-400 transition-all" title="Open target record">
+              <ModulePolicyButton
+                moduleId={target?.moduleId || 'home'}
+                disabled={!target}
+                disabledReason={!target ? 'No target route recorded.' : undefined}
+                onClick={() => openTarget(params.data)}
+                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-blue-400 transition-all"
+                aria-label="Open target record"
+              >
                 <Search size={14} />
-              </button>
+              </ModulePolicyButton>
               <button onClick={() => setActiveLog(params.data)} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload">
                 <Layers size={14} />
               </button>
             </div>
-        )
+          )
+        }
     }
-  ], [])
+  ], [navigate])
 
   return (
     <div className="h-full flex flex-col bg-[#020617]">

@@ -119,6 +119,7 @@ import {
 } from './shared/OperationalBulkContract'
 import { buildOperationalLifecycleToastMessage } from './shared/OperationalLifecycleToasts'
 import { useCollaborativeWorkspaceViews } from './shared/CollaborativeWorkspaceViews'
+import { ModulePolicyButton, useModuleActionPolicy } from '../policy/ModulePolicy'
 
 const MONITORING_VIEW_STORAGE_KEY = 'sysgrid_monitoring_views_v1'
 const MONITORING_ACTIVE_VIEW_KEY = 'sysgrid_monitoring_active_view_v1'
@@ -485,6 +486,7 @@ const ObservabilityHUD = ({ items }: any) => {
 export default function MonitoringGrid() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const knowledgeAction = useModuleActionPolicy('knowledge')
   const gridRef = React.useRef<any>(null)
   const [showMonitoringDataDiagnostic, setShowMonitoringDataDiagnostic] = useState(false)
   const { data: userSettings, isSuccess: hasUserSettings } = useQuery({
@@ -2269,7 +2271,7 @@ export default function MonitoringGrid() {
                         { id: 'edit', label: 'Edit', icon: Edit2, tone: 'success' as OperationalRowActionTone, onClick: () => { setEditingItem(item); setIsFormOpen(true); setRowActionMenu(null); } },
                         { id: 'history', label: 'History', icon: Clock, tone: 'warning' as OperationalRowActionTone, onClick: () => { setHistoryItem(item); setRowActionMenu(null); } },
                         { id: 'asset', label: 'Asset', icon: Monitor, tone: 'info' as OperationalRowActionTone, onClick: () => { if (item.device_id) navigate(`/asset?id=${item.device_id}`); setRowActionMenu(null); } },
-                        { id: 'knowledge', label: 'Knowledge', icon: BookOpen, tone: 'success' as OperationalRowActionTone, onClick: () => { const firstDoc = item.recovery_docs?.[0]; const docId = typeof firstDoc === 'object' ? firstDoc?.id : firstDoc; if (docId) navigate(`/knowledge?id=${docId}`); setRowActionMenu(null); }, disabled: !item.recovery_docs?.[0] }
+                        { id: 'knowledge', label: 'Knowledge', icon: BookOpen, tone: 'success' as OperationalRowActionTone, onClick: () => { const firstDoc = item.recovery_docs?.[0]; const docId = typeof firstDoc === 'object' ? firstDoc?.id : firstDoc; if (docId && knowledgeAction.available) navigate(`/knowledge?id=${docId}`); setRowActionMenu(null); }, disabled: !item.recovery_docs?.[0] || knowledgeAction.disabled, disabledReason: !item.recovery_docs?.[0] ? 'No recovery procedure linked.' : knowledgeAction.reason }
 
                     ]
                 },
@@ -2496,7 +2498,7 @@ export default function MonitoringGrid() {
               setDetailDeleteConfirm(false)
             }}
             onOpenAsset={(deviceId: number) => navigate(`/asset?id=${deviceId}`)}
-            onOpenKnowledge={(knowledgeId: number) => navigate(`/knowledge?id=${knowledgeId}`)}
+            onOpenKnowledge={(knowledgeId: number) => { if (knowledgeAction.available) navigate(`/knowledge?id=${knowledgeId}`) }}
             deleteConfirm={detailDeleteConfirm}
           />
         )}
@@ -2507,8 +2509,9 @@ export default function MonitoringGrid() {
             key={`monitoring-bkm-list-${bkmPopup.monitorId ?? 'none'}-${bkmPopup.docs.join('-')}`}
             docs={bkmPopup.docs} 
             monitorId={bkmPopup.monitorId}
-            onOpenBkm={setActiveBkm} 
+            onOpenBkm={(knowledgeId) => setActiveBkm({ id: knowledgeId, monitorId: bkmPopup.monitorId })}
             onOpenKnowledge={(knowledgeId) => {
+              if (!knowledgeAction.available) return
               setBkmPopup(null)
               setActiveBkm(null)
               detailRoute.finishTransition()
@@ -2517,7 +2520,7 @@ export default function MonitoringGrid() {
             onClose={() => { setBkmPopup(null); detailRoute.finishTransition(); }} 
           />
         )}
-        {activeBkm && <BkmDetailModal key={`monitoring-bkm-detail-${activeBkm}`} bkmId={activeBkm} onClose={() => { setActiveBkm(null); detailRoute.finishTransition(); }} />}
+        {activeBkm && <BkmDetailModal key={`monitoring-bkm-detail-${activeBkm.id}`} bkmId={activeBkm.id} monitorId={activeBkm.monitorId} onClose={() => { setActiveBkm(null); detailRoute.finishTransition(); }} />}
         {compareOpen && <CompareMonitorsModal key={`monitoring-compare-${compareItems.map((item) => item.id).join('-') || 'empty'}`} items={compareItems} onClose={() => setCompareOpen(false)} />}
         {showBulkEditModal && (
           <BulkEditTableModal
@@ -2874,6 +2877,7 @@ function RecipientsModal({ recipients, method, onClose }: any) {
 function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm, onDelete, onOpenAsset, onOpenKnowledge, deleteConfirm }: any) {
   useEscapeDismiss(onClose)
   useBodyModalFlag()
+  const knowledgeAction = useModuleActionPolicy('knowledge')
   const [isMaximized, setIsMaximized] = useState(false)
   const [expandedLogic, setExpandedLogic] = useState<number | null>(item.logic_json?.[0]?.id || null)
   const [showLineNumbers, setShowLineNumbers] = useState(true)
@@ -2883,16 +2887,32 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
     queryKey: ['monitoring-knowledge-suggestions', item.id, item.device_id],
     queryFn: async () => {
       const params = new URLSearchParams()
-      if (item.device_id) params.append('device_id', String(item.device_id))
       params.append('monitoring_id', String(item.id))
+      params.append('embedded_consumer', 'monitoring')
       const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
       const linked = await response.json()
       if (Array.isArray(linked) && linked.length > 0) return linked
-      if (!item.device_id) return linked
-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}`)
-      return fallback.json()
+      return linked
     }
   })
+
+  const recoveryDocContent = (doc: any, index: number) => (
+    <>
+      <div className="p-1.5 bg-black/40 rounded-lg text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all"><FileText size={14}/></div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-bold text-slate-300 tracking-tight leading-tight group-hover:text-white truncate">{doc.title}</p>
+        <div className="flex items-center justify-between mt-0.5">
+          <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Procedure {index + 1}</p>
+          {doc.note && (
+            <div className="flex items-center gap-1 text-blue-500/60">
+              <MessageSquare size={8} />
+              <span className="text-[8px] font-black uppercase tracking-widest">Note attached</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
 
   return (
     <>
@@ -2987,27 +3007,24 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                  <section className="space-y-3">
                     <h3 className="px-1 text-[11px] font-black text-slate-500 uppercase tracking-widest">Recovery protocol</h3>
                     <div className="space-y-2">
-                       {item.recovery_doc_details?.map((doc: any, i: number) => (
+                       {item.recovery_doc_details?.map((doc: any, i: number) => doc.note ? (
                          <button
                            key={`${i}-${item.id}`}
                            type="button"
-                           onClick={() => doc.note ? setInterventionDoc(doc) : onOpenKnowledge?.(doc.id)}
+                           onClick={() => setInterventionDoc(doc)}
                            className="w-full bg-slate-900/60 border border-white/5 rounded-lg p-3 flex items-center space-x-3 hover:border-amber-500/30 transition-all cursor-pointer group text-left shadow-inner"
                          >
-                            <div className="p-1.5 bg-black/40 rounded-lg text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all"><FileText size={14}/></div>
-                            <div className="min-w-0 flex-1">
-                               <p className="text-[11px] font-bold text-slate-300 tracking-tight leading-tight group-hover:text-white truncate">{doc.title}</p>
-                               <div className="flex items-center justify-between mt-0.5">
-                                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Procedure {i+1}</p>
-                                  {doc.note && (
-                                     <div className="flex items-center gap-1 text-blue-500/60">
-                                        <MessageSquare size={8} />
-                                        <span className="text-[8px] font-black uppercase tracking-widest">Note attached</span>
-                                     </div>
-                                  )}
-                               </div>
-                            </div>
+                           {recoveryDocContent(doc, i)}
                          </button>
+                       ) : (
+                         <ModulePolicyButton
+                           key={`${i}-${item.id}`}
+                           moduleId="knowledge"
+                           onClick={() => onOpenKnowledge?.(doc.id)}
+                           className="w-full bg-slate-900/60 border border-white/5 rounded-lg p-3 flex items-center space-x-3 hover:border-amber-500/30 transition-all cursor-pointer group text-left shadow-inner"
+                         >
+                           {recoveryDocContent(doc, i)}
+                         </ModulePolicyButton>
                        ))}
                        {(!item.recovery_doc_details || item.recovery_doc_details.length === 0) && (
                          <WorkspaceEmptyState compact icon={<AlertCircle size={18} />} title="No procedures linked" description="Guaranteed operational response protocol missing." />
@@ -3176,16 +3193,16 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
             icon={<Shield size={20} className="text-amber-500" />}
             footerRight={
                <div className="flex items-center gap-3">
-                  <ToolbarButton 
-                    variant="primary" 
+                  <ModulePolicyButton
+                    moduleId="knowledge"
                     onClick={() => {
                        const id = interventionDoc.id;
                        setInterventionDoc(null);
                        onOpenKnowledge?.(id);
-                    }}
+                     }}
                   >
                      Confirm & Open Procedure
-                  </ToolbarButton>
+                  </ModulePolicyButton>
                </div>
             }
           >

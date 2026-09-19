@@ -1,15 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { formatExternalExportContractReport, runExternalExportContractCheck } from './externalExportDiagnostics'
-
-function makeResponse(
-  body: BodyInit | null,
-  init: ResponseInit & { redirected?: boolean; finalUrl?: string } = {},
-) {
-  const response = new Response(body, init)
-  Object.defineProperty(response, 'redirected', { value: Boolean(init.redirected) })
-  Object.defineProperty(response, 'url', { value: init.finalUrl || 'https://api.example.com/response' })
-  return response
-}
+import { makeTestResponse } from '../../test/response'
 
 const validManifest = {
   profile: 'external_entities',
@@ -46,14 +37,14 @@ function createFetchImpl({
     const url = String(input)
     if (url.endsWith('/api/v1/import/snapshot/external_entities/manifest')) {
       if (manifestRedirect) {
-        return makeResponse(manifestRedirect.body || '<html>GitLab sign in</html>', {
+        return makeTestResponse(manifestRedirect.body || '<html>GitLab sign in</html>', {
           status: 200,
           headers: { 'Content-Type': 'text/html' },
           redirected: true,
           finalUrl: manifestRedirect.finalUrl,
         })
       }
-      return makeResponse(JSON.stringify(manifest), {
+      return makeTestResponse(JSON.stringify(manifest), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
         finalUrl: url,
@@ -61,14 +52,14 @@ function createFetchImpl({
     }
     if (url.includes('/api/v1/import/snapshot/external_entities?export_token=')) {
       if (csvRedirect) {
-        return makeResponse(csvRedirect.body || '<html>OAuth</html>', {
+        return makeTestResponse(csvRedirect.body || '<html>OAuth</html>', {
           status: 200,
           headers: { 'Content-Type': 'text/html' },
           redirected: true,
           finalUrl: csvRedirect.finalUrl,
         })
       }
-      return makeResponse(csvBody, {
+      return makeTestResponse(csvBody, {
         status: 200,
         headers: {
           'Content-Type': csvContentType,
@@ -82,7 +73,7 @@ function createFetchImpl({
       })
     }
     if (url.endsWith('/api/v1/import/preview-file')) {
-      return makeResponse(JSON.stringify(previewBody), {
+      return makeTestResponse(JSON.stringify(previewBody), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
         finalUrl: url,

@@ -3,11 +3,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from ..database import get_db
 from ..models import models
+from .module_policy import require_module_access
 
 from typing import Optional
 from datetime import datetime
 
-router = APIRouter(prefix="/audit", tags=["Audit"])
+router = APIRouter(
+    prefix="/audit",
+    tags=["Audit"],
+    dependencies=[Depends(require_module_access("logs"))],
+)
 
 @router.get("")
 async def get_audit_logs(

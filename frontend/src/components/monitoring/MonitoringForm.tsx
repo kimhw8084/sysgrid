@@ -255,8 +255,12 @@ export function MonitoringForm({ item, devices, categories, severities, platform
 
   // Fetch knowledge entries for recovery docs
   const { data: knowledgeEntries } = useQuery({
-    queryKey: ['knowledge-entries'],
-    queryFn: async () => (await apiFetch('/api/v1/knowledge/')).json()
+    queryKey: ['knowledge-entries', 'monitoring', item?.id || 'new'],
+    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring&monitoring_id=${item!.id}`)).json(),
+    // A new monitor has no embedded target yet. Do not issue an unscoped
+    // preview projection request; the recovery picker is populated for an
+    // existing monitor or after the saved monitor is reopened.
+    enabled: Boolean(item?.id),
   })
 
   const filteredKnowledge = useMemo(() => {

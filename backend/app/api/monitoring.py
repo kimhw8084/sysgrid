@@ -8,8 +8,13 @@ from ..database import get_db
 from ..models import models
 from ..schemas import schemas
 from .utils import filter_valid_columns
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/monitoring", tags=["Monitoring Matrix"])
+router = APIRouter(
+    prefix="/monitoring",
+    tags=["Monitoring Matrix"],
+    dependencies=[Depends(require_module_access("monitoring"))],
+)
 IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 MONITORING_SEVERITIES = {"Critical", "Warning", "Info"}
 MONITORING_STATUSES = {"Existing", "Planned", "Cancelled", "Decommissioned", "Deleted"}

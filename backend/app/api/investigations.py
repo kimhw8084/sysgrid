@@ -7,8 +7,13 @@ from datetime import datetime, timezone
 from ..database import get_db
 from ..models import models
 from .utils import filter_valid_columns, get_current_user_id, parse_iso_date
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/investigations", tags=["Investigation Management"])
+router = APIRouter(
+    prefix="/investigations",
+    tags=["Investigation Management"],
+    dependencies=[Depends(require_module_access("research"))],
+)
 IMMUTABLE_INVESTIGATION_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 
 @router.get("")

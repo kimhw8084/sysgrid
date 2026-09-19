@@ -73,6 +73,10 @@ def has_capability(
         raise ValueError("required_level must be between 0 and 3")
     if not operator or not capability or not capability.strip():
         return False
+    # The reserved System Root/control-plane plane is deployment-owned and is
+    # never granted by tenant ADMIN, is_admin, all, or custom permissions.
+    if capability.strip().lower().startswith("system."):
+        return False
     if bool(operator.is_admin):
         return True
 

@@ -269,6 +269,12 @@ async def test_viewer_and_editor_cannot_reveal_legacy_service_secret(
 
     for user_id, tenant_role in (("service-viewer", "VIEWER"), ("service-editor", "EDITOR")):
         await _grant_access(setup_db, tenant_id=tenant_id, user_id=user_id, role=tenant_role)
+        await _seed_operator(
+            setup_db,
+            tenant_id,
+            user_id,
+            role_permissions={"services": 1},
+        )
         response = await client.get(
             "/api/v1/logical-services?include_secret_values=true",
             headers={"X-User-Id": user_id, "X-Tenant-Id": str(tenant_id)},

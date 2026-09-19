@@ -13,8 +13,13 @@ from ..pv1 import migration as pv1_migration
 from ..pv1 import models as pv1_models
 from .utils import filter_valid_columns, get_current_user_id
 from .project_hierarchy import validate_project_parent_assignment
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/projects", tags=["Projects"])
+router = APIRouter(
+    prefix="/projects",
+    tags=["Projects"],
+    dependencies=[Depends(require_module_access("projects"))],
+)
 
 async def _cutover(request: Request, db: AsyncSession):
     tenant_id = getattr(request.state, "tenant_id", None)

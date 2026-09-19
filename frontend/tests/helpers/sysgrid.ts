@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process'
+import path from 'node:path'
 import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
@@ -353,6 +355,62 @@ export async function createRack(request: APIRequestContext, payload: Record<str
   return post(request, '/racks', payload)
 }
 
+export async function createEmbeddedKnowledgeFixture(
+  request: APIRequestContext,
+  deviceId: number,
+  title: string,
+) {
+  if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && process.env.SYSGRID_VERIFY_TENANT_DB) {
+    const python = process.env.SYSGRID_VERIFY_PYTHON_BIN || 'python3'
+    const script = path.resolve(process.cwd(), '../scripts/seed-e2e-embedded-knowledge.py')
+    const output = execFileSync(python, [
+      script,
+      '--db-path', process.env.SYSGRID_VERIFY_TENANT_DB,
+      '--device-id', String(deviceId),
+      '--title', title,
+      '--created-by', testUserId,
+    ], { encoding: 'utf8', env: process.env })
+    return JSON.parse(output.trim())
+  }
+  return post(request, '/knowledge', {
+    category: 'BKM',
+    title,
+    content: 'Recovery procedure',
+    tags: ['Playwright'],
+    linked_device_ids: [deviceId],
+  })
+}
+
+export async function createEmbeddedFarFixture(
+  request: APIRequestContext,
+  deviceId: number,
+  systemName: string,
+  title: string,
+) {
+  if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && process.env.SYSGRID_VERIFY_TENANT_DB) {
+    const python = process.env.SYSGRID_VERIFY_PYTHON_BIN || 'python3'
+    const script = path.resolve(process.cwd(), '../scripts/seed-e2e-embedded-far.py')
+    const output = execFileSync(python, [
+      script,
+      '--db-path', process.env.SYSGRID_VERIFY_TENANT_DB,
+      '--device-id', String(deviceId),
+      '--system-name', systemName,
+      '--title', title,
+      '--created-by', testUserId,
+    ], { encoding: 'utf8', env: process.env })
+    return JSON.parse(output.trim())
+  }
+  return post(request, '/far/modes', {
+    system_name: systemName,
+    title,
+    effect: 'Simulated failure mode',
+    severity: 8,
+    occurrence: 4,
+    detection: 3,
+    affected_assets: [deviceId],
+  })
+}
+
 export async function mountRackDevice(request: APIRequestContext, rackId: number, payload: Record<string, any>) {
   return post(request, `/racks/${rackId}/mount`, payload)
 }
@@ -417,13 +475,7 @@ export async function seedOperationalScenario(request: APIRequestContext) {
     purpose: 'Playwright validation service'
   })
 
-  const knowledge = await post(request, '/knowledge', {
-    category: 'BKM',
-    title: `PW-RUNBOOK-${nonce}`,
-    content: 'Recovery procedure',
-    tags: ['Playwright'],
-    linked_device_ids: [primary.id]
-  })
+  const knowledge = await createEmbeddedKnowledgeFixture(request, primary.id, `PW-RUNBOOK-${nonce}`)
 
   const monitoring = await createMonitoring(request, {
     device_id: primary.id,
@@ -448,15 +500,7 @@ export async function seedOperationalScenario(request: APIRequestContext) {
     status: 'Scheduled'
   })
 
-  const far = await post(request, '/far/modes', {
-    system_name: systemName,
-    title: `PW-FAR-${nonce}`,
-    effect: 'Simulated failure mode',
-    severity: 8,
-    occurrence: 4,
-    detection: 3,
-    affected_assets: [primary.id]
-  })
+  const far = await createEmbeddedFarFixture(request, primary.id, systemName, `PW-FAR-${nonce}`)
 
   return { stamp: nonce, systemName, primary, secondary, tertiary, service, knowledge, monitoring, maintenance, far }
 }

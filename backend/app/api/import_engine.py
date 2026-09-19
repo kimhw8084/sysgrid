@@ -26,6 +26,7 @@ from .monitoring import (
 )
 from .far import save_far_history
 from .utils import filter_valid_columns, get_current_user_id
+from .module_policy import ensure_module_access
 
 router = APIRouter(prefix="/import", tags=["Intelligence Engine"])
 MONITORING_IMPORT_SCHEMA_VERSION = "2026-06-monitoring-v1"
@@ -1627,6 +1628,22 @@ def build_import_profiles() -> dict[str, ImportProfile]:
 
 IMPORT_PROFILES = build_import_profiles()
 
+IMPORT_PROFILE_MODULES = {
+    "monitoring_items": "monitoring",
+    "external_entities": "external",
+    "far_records": "far",
+    "port_connections": "network",
+    "devices": "assets",
+    "racks": "racks",
+    "logical_services": "services",
+}
+
+
+async def enforce_import_profile_access(profile: ImportProfile, request: Request, db: AsyncSession) -> None:
+    module_id = IMPORT_PROFILE_MODULES.get(profile.key)
+    if module_id:
+        await ensure_module_access(module_id, request, db)
+
 
 def get_import_profile(table_name: str) -> ImportProfile:
     profile = IMPORT_PROFILES.get(table_name)
@@ -1710,8 +1727,9 @@ def build_snapshot_manifest(profile: ImportProfile, export_token: Optional[str] 
 
 
 @router.get("/schema/{table_name}")
-async def get_import_schema(table_name: str, db: AsyncSession = Depends(get_db)):
+async def get_import_schema(table_name: str, request: Request, db: AsyncSession = Depends(get_db)):
     profile = get_import_profile(table_name)
+    await enforce_import_profile_access(profile, request, db)
     context = await profile.schema_context(db) if profile.schema_context else {}
     headers = {}
     if profile.key == "monitoring_items":
@@ -1735,12 +1753,14 @@ async def get_import_schema(table_name: str, db: AsyncSession = Depends(get_db))
 @router.get("/template/{table_name}")
 async def download_template(
     table_name: str,
+    request: Request,
     columns: Optional[str] = None,
     mode: str = "hints",
     example_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
 ):
     profile = get_import_profile(table_name)
+    await enforce_import_profile_access(profile, request, db)
     fields = resolve_template_fields(profile, columns)
     df = pd.DataFrame(columns=[field.name for field in fields])
 
@@ -1782,8 +1802,9 @@ async def download_template(
 
 
 @router.get("/snapshot/{table_name}")
-async def download_snapshot(table_name: str, export_token: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+async def download_snapshot(table_name: str, request: Request, export_token: Optional[str] = None, db: AsyncSession = Depends(get_db)):
     profile = get_import_profile(table_name)
+    await enforce_import_profile_access(profile, request, db)
     export_contract = build_snapshot_manifest(profile, export_token=export_token if profile.key == "external_entities" else None)
     model = profile.model
     if profile.serialize_example_row:
@@ -1834,16 +1855,18 @@ async def download_snapshot(table_name: str, export_token: Optional[str] = None,
 
 
 @router.get("/snapshot/{table_name}/manifest")
-async def get_snapshot_manifest(table_name: str):
+async def get_snapshot_manifest(table_name: str, request: Request, db: AsyncSession = Depends(get_db)):
     profile = get_import_profile(table_name)
+    await enforce_import_profile_access(profile, request, db)
     if profile.key not in {"external_entities", "far_records"}:
         raise HTTPException(status_code=404, detail="Snapshot manifest not found")
     return build_snapshot_manifest(profile)
 
 
 @router.post("/preview-file")
-async def preview_import_file(table_name: str = Form(...), file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
+async def preview_import_file(request: Request, table_name: str = Form(...), file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
     profile = get_import_profile(table_name)
+    await enforce_import_profile_access(profile, request, db)
     content = await file.read()
     try:
         df = load_dataframe_from_upload(file, content)
@@ -1856,10 +1879,12 @@ async def preview_import_file(table_name: str = Form(...), file: UploadFile = Fi
 @router.post("/preview-rows")
 async def preview_import_rows(
     table_name: str,
+    request: Request,
     payload: dict[str, Any] = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
     profile = get_import_profile(table_name)
+    await enforce_import_profile_access(profile, request, db)
     rows = payload.get("rows")
     if not isinstance(rows, list):
         raise HTTPException(status_code=400, detail="rows must be a list")
@@ -1868,8 +1893,8 @@ async def preview_import_rows(
 
 
 @router.post("/audit")
-async def audit_import(table_name: str, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
-    return await preview_import_file(table_name=table_name, file=file, db=db)
+async def audit_import(request: Request, table_name: str, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
+    return await preview_import_file(request=request, table_name=table_name, file=file, db=db)
 
 
 @router.post("/execute")
@@ -1880,6 +1905,7 @@ async def execute_import(
     db: AsyncSession = Depends(get_db),
 ):
     profile = get_import_profile(table_name)
+    await enforce_import_profile_access(profile, request, db)
     if isinstance(body, dict):
         rows = body.get("rows")
     else:

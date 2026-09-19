@@ -1,11 +1,13 @@
 import React, { ReactNode, useState } from 'react'
-import { Activity, AlertTriangle, BookOpen, Briefcase, ChevronDown, FileText, Globe, Layers, LayoutDashboard, Network, Package, Search, Server, Share2, Workflow, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { Activity, AlertTriangle, BookOpen, Briefcase, ChevronDown, FileText, Globe, Layers, LayoutDashboard, Network, Package, Search, Server, Share2, Workflow, type LucideIcon } from 'lucide-react'
+import { MODULE_CATALOG } from '../../policy/moduleCatalog'
+import { ModulePolicyLink, useModuleActionPolicy } from '../../policy/ModulePolicy'
 
 export type ShellNavigationItem = {
+  moduleId: string
   label: string
   path: string
-  permission?: string
   aliases?: string[]
   icon: LucideIcon
 }
@@ -16,47 +18,38 @@ export type ShellNavigationGroup = {
   defaultExpanded?: boolean
 }
 
-export const SHELL_NAV_GROUPS: ShellNavigationGroup[] = [
-  {
-    label: 'Operations',
-    items: [
-      { label: 'Home', path: '/', icon: LayoutDashboard },
-      { label: 'Projects', path: '/projects', permission: 'projects', icon: Briefcase },
-      { label: 'Monitoring', path: '/monitoring', permission: 'monitoring', icon: Activity },
-    ],
-  },
-  {
-    label: 'Infrastructure',
-    items: [
-      { label: 'Assets', path: '/asset', permission: 'assets', aliases: ['/asset-real'], icon: Server },
-      { label: 'Racks', path: '/racks', permission: 'racks', icon: Package },
-      { label: 'Services', path: '/services', permission: 'services', icon: Layers },
-      { label: 'External', path: '/external', permission: 'external', icon: Share2 },
-    ],
-  },
-  {
-    label: 'Connectivity',
-    items: [
-      { label: 'Network', path: '/network', permission: 'network', aliases: ['/network-real'], icon: Network },
-      { label: 'Architecture', path: '/architecture', permission: 'architecture', icon: Workflow },
-    ],
-  },
-  {
-    label: 'Analysis',
-    items: [
-      { label: 'FAR', path: '/far', permission: 'far', icon: AlertTriangle },
-      { label: 'Research', path: '/research', permission: 'research', icon: Search },
-    ],
-  },
-  {
-    label: 'Resources',
-    items: [
-      { label: 'Vendors', path: '/vendors', permission: 'vendors', aliases: ['/vendors-real'], icon: Globe },
-      { label: 'Knowledge', path: '/knowledge', permission: 'knowledge', icon: BookOpen },
-      { label: 'Audit logs', path: '/logs', permission: 'logs', icon: FileText },
-    ],
-  },
-]
+const MODULE_ICONS: Record<string, LucideIcon> = {
+  home: LayoutDashboard,
+  projects: Briefcase,
+  monitoring: Activity,
+  assets: Server,
+  racks: Package,
+  services: Layers,
+  external: Share2,
+  network: Network,
+  architecture: Workflow,
+  research: Search,
+  far: AlertTriangle,
+  vendors: Globe,
+  knowledge: BookOpen,
+  logs: FileText,
+  settings: FileText,
+}
+
+export const SHELL_NAV_GROUPS: ShellNavigationGroup[] = Array.from(
+  MODULE_CATALOG.modules.reduce((groups, module) => {
+    const group = groups.get(module.navigation_group) || []
+    group.push({
+      moduleId: module.id,
+      label: module.label,
+      path: module.canonical_route,
+      aliases: module.aliases,
+      icon: MODULE_ICONS[module.id] || FileText,
+    })
+    groups.set(module.navigation_group, group)
+    return groups
+  }, new Map<string, ShellNavigationItem[]>()),
+).map(([label, items]) => ({ label, items }))
 
 const normalizePath = (path: string) => {
   const normalized = path.replace(/\/+$/, '')
@@ -78,24 +71,35 @@ const groupId = (label: string) => `shell-nav-group-${label.toLowerCase().replac
 
 export function ShellNavItem({
   icon: Icon,
+  moduleId,
   label,
   path,
   active,
   isOpen,
-  disabled = false,
+  disabled,
+  unavailableReason,
 }: {
   icon: LucideIcon
+  moduleId?: string
   label: string
   path: string
   active: boolean
   isOpen: boolean
   disabled?: boolean
+  unavailableReason?: string | null
 }) {
+  const effectiveModuleId = moduleId || 'home'
+  const action = useModuleActionPolicy(effectiveModuleId)
+  const isDisabled = disabled ?? action.disabled
+  const reason = unavailableReason || action.reason
+  const displayLabel = isDisabled && (unavailableReason === 'SYSTEM_ROOT_REQUIRED' || action.blockedReason === 'SYSTEM_ROOT_REQUIRED')
+    ? `${label} (Preview)`
+    : isDisabled ? `${label} (Unavailable)` : label
   const itemClassName = [
     'group relative flex min-h-10 w-full items-center rounded-md px-3 py-2.5',
     'text-sm transition-colors duration-150',
     isOpen ? 'justify-start gap-3' : 'justify-center',
-    disabled
+    isDisabled
       ? 'cursor-not-allowed text-[var(--text-disabled)] opacity-60'
       : active
         ? 'bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]'
@@ -105,37 +109,39 @@ export function ShellNavItem({
   const content = (
     <span className={itemClassName}>
       <Icon size={18} aria-hidden="true" className="shrink-0" />
-      <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{label}</span>
+      <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{displayLabel}</span>
       {active && isOpen ? <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" /> : null}
       {active && !isOpen ? <span className="absolute right-1.5 h-1.5 w-1.5 rounded-full bg-[var(--accent-primary)]" aria-hidden="true" /> : null}
     </span>
   )
 
-  if (disabled) {
+  if (!moduleId) {
     return (
-      <div
-        className={itemClassName}
-        role="link"
-        aria-disabled="true"
-        aria-label={`${label} unavailable`}
-        title={`${label} is unavailable for the current account`}
+      <Link
+        to={path}
+        className="block rounded-md focus-visible:outline-none"
+        aria-current={active ? 'page' : undefined}
+        aria-label={isOpen ? undefined : displayLabel}
+        title={!isOpen ? label : undefined}
       >
-        <Icon size={18} aria-hidden="true" className="shrink-0" />
-        <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{label}</span>
-      </div>
+        {content}
+      </Link>
     )
   }
 
   return (
-    <Link
+    <ModulePolicyLink
+      moduleId={effectiveModuleId}
       to={path}
+      disabled={isDisabled}
+      disabledReason={reason}
       className="block rounded-md focus-visible:outline-none"
       aria-current={active ? 'page' : undefined}
-      aria-label={isOpen ? undefined : label}
+      aria-label={isOpen ? undefined : displayLabel}
       title={!isOpen ? label : undefined}
     >
       {content}
-    </Link>
+    </ModulePolicyLink>
   )
 }
 

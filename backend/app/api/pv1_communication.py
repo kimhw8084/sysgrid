@@ -11,9 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_db
 from ..pv1 import communication, domain, models, schemas
 from . import pv1
+from .module_policy import require_module_access
 
 
-router = APIRouter(tags=["PV1 communication"])
+router = APIRouter(
+    tags=["PV1 communication"],
+    dependencies=[Depends(require_module_access("projects"))],
+)
 
 
 async def _project(request: Request, db: AsyncSession, project_id: str, *, write: bool = False) -> tuple[models.PV1Project, str]:

@@ -606,7 +606,7 @@ const captureAssetInteractionProofs = async (page: any, recordText: string) => {
   rowClickAttempts.push('click first visible asset row system cell')
   await interactionCell.click({ force: true })
 
-  const bulkActionsButton = page.getByRole('button', { name: 'Bulk Actions', exact: true })
+  const bulkActionsButton = page.getByRole('button', { name: /Bulk Actions/i })
   await expect(bulkActionsButton).toBeEnabled({ timeout: 3_000 }).catch(() => {})
   const rowClickProof = {
     selectedRowCount: await page.locator('.ag-row-selected, .ag-row[aria-selected="true"]').count(),
@@ -640,7 +640,8 @@ const captureAssetInteractionProofs = async (page: any, recordText: string) => {
   }
 
   quickLookAttempts.push('click explicit quick-look trigger')
-  await page.getByTitle('Open quick look').first().click({ force: true })
+  await page.getByTitle('More actions').first().click({ force: true })
+  await page.getByRole('button', { name: 'Quick Look', exact: true }).click({ force: true })
   const quickLookButton = page.getByRole('button', { name: 'Engage Full Configuration' })
   const quickLookVisible = await quickLookButton.isVisible({ timeout: 5_000 }).catch(() => false)
   const quickLookBox = quickLookVisible

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import { MonitoringView } from './pom/MonitoringView'
 import {
   clickResilientButton,
+  createEmbeddedKnowledgeFixture,
   createMonitoring,
   expectToast,
   expectWorkspaceRoute,
@@ -18,7 +19,6 @@ import {
 } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
-const monitoringWorkspacePreferenceKey = 'monitoring_workspace_state_v2'
 
 async function getColumnWidth(page: any, colId: string) {
   return page.evaluate((targetColId: string) => {
@@ -57,18 +57,11 @@ async function openMonitoringDetailFromLogicalRow(page: any, title: string) {
 test.describe('Monitoring workflows', () => {
   test('preserves lifecycle status, recovery linking, and knowledge jump paths', async ({ page, request }) => {
     await resetBrowserState(page)
-    const { stamp, monitoring, knowledge } = await seedOperationalScenario(request)
+    const { stamp, primary, monitoring, knowledge } = await seedOperationalScenario(request)
 
-    const extraKnowledgeResponse = await request.post(`${apiBase}/knowledge`, {
-      headers: testApiHeaders,
-      data: {
-        category: 'BKM',
-        title: `PW-RECOVERY-EXTRA-${stamp}`,
-        content: 'Expanded recovery path'
-      }
-    })
-    expect(extraKnowledgeResponse.ok()).toBeTruthy()
-    const extraKnowledge = await extraKnowledgeResponse.json()
+    const extraKnowledge = process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1'
+      ? null
+      : await createEmbeddedKnowledgeFixture(request, primary.id, `PW-RECOVERY-EXTRA-${stamp}`)
 
     await page.goto(`/monitoring?id=${monitoring.id}`)
     await expectWorkspaceRoute(page, '/monitoring')
@@ -79,24 +72,28 @@ test.describe('Monitoring workflows', () => {
     await expect(recoveryDialog).toBeVisible()
     await expect(recoveryDialog.getByText(knowledge.title, { exact: true })).toBeVisible()
 
-    await clickResilientButton(page, 'Link Procedure')
-    await recoveryDialog.getByPlaceholder('Search Knowledge Base by title or category...').fill(extraKnowledge.title)
-    const extraKnowledgeButton = recoveryDialog.getByRole('button', { name: new RegExp(extraKnowledge.title, 'i') }).first()
-    await expect(extraKnowledgeButton).toBeVisible()
-    await extraKnowledgeButton.click()
-    await expect(page.getByText(extraKnowledge.title)).toBeVisible()
-    await recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true }).click()
-    await expectToast(page, 'Synchronized recovery procedures')
-    await expect(recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true })).toBeDisabled()
-    await clickResilientButton(page, /Close Search/i)
+    if (extraKnowledge) {
+      await clickResilientButton(page, 'Link Procedure')
+      await recoveryDialog.getByPlaceholder('Search Knowledge Base by title or category...').fill(extraKnowledge.title)
+      const extraKnowledgeButton = recoveryDialog.getByRole('button', { name: new RegExp(extraKnowledge.title, 'i') }).first()
+      await expect(extraKnowledgeButton).toBeVisible()
+      await extraKnowledgeButton.click()
+      await expect(page.getByText(extraKnowledge.title)).toBeVisible()
+      await recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true }).click()
+      await expectToast(page, 'Synchronized recovery procedures')
+      await expect(recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true })).toBeDisabled()
+      await clickResilientButton(page, /Close Search/i)
+    }
     await page.getByRole('button').filter({ hasText: /^PW-RUNBOOK-/ }).click()
     await expect(page.getByText('Recovery procedure').first()).toBeVisible()
     const bkmDetailDialog = page.locator('[role="dialog"]').filter({ has: page.getByRole('heading', { name: knowledge.title, exact: true }) }).last()
     await bkmDetailDialog.getByTitle('Close').click()
     await expect(bkmDetailDialog).not.toBeVisible()
     await expect(recoveryDialog).toBeVisible()
-    await recoveryDialog.getByRole('button', { name: 'Open Recovery BKM', exact: true }).first().click()
-    await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
+    const standaloneRecoveryButton = recoveryDialog.getByTitle('Open Recovery BKM').first()
+    await expect(standaloneRecoveryButton).toBeDisabled()
+    await expect(standaloneRecoveryButton).toHaveAttribute('aria-disabled', 'true')
+    await expect(page).toHaveURL(/\/monitoring(?:\?.*)?$/)
     await expect(page.getByText(knowledge.title, { exact: true }).first()).toBeVisible()
     await expect(page.getByText('Recovery procedure').first()).toBeVisible()
   })
@@ -343,11 +340,18 @@ test.describe('Monitoring workflows', () => {
       }
     }, { nextViewName: viewName, nextWidth: manualViewWidth })
 
-    const settingsResponse = await request.patch(`${apiBase}/settings/user/settings`, {
+    const createViewResponse = await request.post(`${apiBase}/workspaces/monitoring/views`, {
       headers: testApiHeaders,
-      data: { [monitoringWorkspacePreferenceKey]: workspacePreference }
+      data: {
+        name: viewName,
+        scope: 'personal',
+        team_id: null,
+        definition: workspacePreference.savedViews[0].config,
+        schema_version: 1,
+      }
     })
-    expect(settingsResponse.ok()).toBeTruthy()
+    expect(createViewResponse.ok(), await createViewResponse.text()).toBeTruthy()
+    const createdView = await createViewResponse.json()
 
     await page.reload()
     await expect(page.getByRole('heading', { name: 'Monitoring' })).toBeVisible()
@@ -359,6 +363,9 @@ test.describe('Monitoring workflows', () => {
     await page.keyboard.press('Escape')
     await fillGridSearch(page, 'Scan matrix...', createdLongTitle, 'monitoring')
     await expect.poll(async () => getColumnWidth(page, 'device_name')).toBe(manualViewWidth)
+
+    const cleanup = await request.delete(`${apiBase}/workspaces/views/${createdView.id}?revision=${createdView.revision}`, { headers: testApiHeaders })
+    expect(cleanup.ok()).toBeTruthy()
   })
 
   test('imports monitoring rows through the shared operational import modal', async ({ page, request }) => {

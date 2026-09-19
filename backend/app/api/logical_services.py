@@ -13,8 +13,13 @@ from .operational_bulk import (
     normalize_operational_bulk_payload,
     require_executable_operational_bulk,
 )
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/logical-services", tags=["Logical Services"])
+router = APIRouter(
+    prefix="/logical-services",
+    tags=["Logical Services"],
+    dependencies=[Depends(require_module_access("services"))],
+)
 IMMUTABLE_SERVICE_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 SERVICE_BULK_UPDATE_FIELDS = {"status", "service_type", "environment", "version", "device_id"}
 

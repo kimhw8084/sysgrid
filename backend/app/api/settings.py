@@ -4,7 +4,7 @@ from copy import deepcopy
 from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select, delete, update
+from sqlalchemy import select, delete, update, or_
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from ..database import get_db, get_config_db, Base
 from ..models import models
@@ -16,10 +16,13 @@ from ..runtime_diagnostics import (
     infer_sanitized_environment_mode,
 )
 from .utils import filter_valid_columns, get_current_user_id, normalize_json_list, normalize_json_object
+from .authorization import require_capability
+from .module_policy import is_system_root_user_id, require_diagnostics_access
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 LOCKED_MONITORING_OPTION_CATEGORIES = {"MonitoringSeverity", "MonitoringOwnerRole", "MonitoringPlatform", "MonitoringCategory", "NotificationMethod"}
 RELATIONAL_OPTION_CATEGORIES = {"MonitoringTeam"}
+SAFE_DIAGNOSTIC_ENV_KEYS = {"PORT", "ENVIRONMENT", "LOG_LEVEL", "API_V1_STR", "VITE_UI_DEBUG_LOGGING"}
 
 
 def parse_env_file_to_map(path: str | None) -> dict[str, str]:
@@ -89,6 +92,21 @@ def normalize_string_list(values: list[str] | None) -> list[str]:
         if normalized
     }
     return sorted(cleaned, key=lambda value: value.lower())
+
+
+def reject_reserved_system_root_identity(payload: dict, *, actor_id: str) -> None:
+    if is_system_root_user_id(actor_id):
+        return
+    for field in ("external_id", "username", "id"):
+        candidate = normalize_string(payload.get(field))
+        if candidate and is_system_root_user_id(candidate):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "RESERVED_SYSTEM_ROOT_IDENTITY",
+                    "message": "Reserved System Root identities are deployment-owned and cannot be managed from tenant settings.",
+                },
+            )
 
 
 def normalize_permission_map(raw_permissions: dict | None) -> dict:
@@ -727,8 +745,13 @@ async def get_user_profile(request: Request, db: AsyncSession = Depends(get_db))
     user_id = get_current_user_id(request)
     # Attempt to find the operator by username
     from sqlalchemy.orm import selectinload
-    res = await db.execute(select(models.Operator).options(selectinload(models.Operator.role)).filter(models.Operator.username == user_id))
-    operator = res.scalar_one_or_none()
+    res = await db.execute(
+        select(models.Operator)
+        .options(selectinload(models.Operator.role))
+        .filter(or_(models.Operator.username == user_id, models.Operator.external_id == user_id))
+    )
+    operators = res.scalars().all()
+    operator = operators[0] if len(operators) == 1 else None
     if not operator:
         is_public_readonly = bool(getattr(getattr(request, "state", None), "sysgrid_public_readonly", False))
         return {
@@ -763,28 +786,31 @@ async def get_user_profile(request: Request, db: AsyncSession = Depends(get_db))
     }
 
 @router.get("/user/env-vars")
-async def get_user_env_vars(request: Request):
+async def get_user_env_vars(
+    request: Request,
+    _diagnostics_access: models.Operator = Depends(require_diagnostics_access),
+):
     # Return user-specific environment context (Mostly OS-level forensics)
     user_id = get_current_user_id(request)
     
     # Sensitive patterns to redact
-    redact_patterns = ["KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL"]
+    redact_patterns = [
+        "KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL",
+        "DATABASE", "PRIVATE", "COOKIE", "CERT", "URL",
+    ]
     
     env_data = {}
     for key, value in os.environ.items():
         # Check if the key is sensitive
         is_sensitive = any(pattern in key.upper() for pattern in redact_patterns)
         
-        if is_sensitive:
-            env_data[key] = "********"
-        else:
-            env_data[key] = value
+        env_data[key] = value if not is_sensitive and key.upper() in SAFE_DIAGNOSTIC_ENV_KEYS else "********"
             
     # Add some calculated fields
     env_data["USER_ID"] = user_id
     env_data["SESSION_TYPE"] = "PROXIED" if os.environ.get("HTTP_X_FORWARDED_FOR") else "DIRECT"
     env_data["DEBUG_MODE"] = str(os.environ.get("VITE_UI_DEBUG_LOGGING", "false").lower() == "true")
-    env_data["WORKSPACE_ROOT"] = os.getcwd()
+    env_data["WORKSPACE_ROOT"] = "[redacted]"
     
     return env_data
 
@@ -849,7 +875,11 @@ async def get_options(category: str = None, db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 @router.post("/options")
-async def create_option(data: dict, db: AsyncSession = Depends(get_db)):
+async def create_option(
+    data: dict,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     clean_data = normalize_setting_option_payload(filter_valid_columns(models.SettingOption, data))
     category = clean_data.get("category")
     label = clean_data.get("label")
@@ -870,7 +900,12 @@ async def create_option(data: dict, db: AsyncSession = Depends(get_db)):
     return opt
 
 @router.put("/options/{opt_id}")
-async def update_option(opt_id: int, data: dict, db: AsyncSession = Depends(get_db)):
+async def update_option(
+    opt_id: int,
+    data: dict,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(models.SettingOption).filter(models.SettingOption.id == opt_id))
     opt = result.scalar_one_or_none()
     if not opt: raise HTTPException(404, "Option not found")
@@ -917,7 +952,11 @@ async def update_option(opt_id: int, data: dict, db: AsyncSession = Depends(get_
     return opt
 
 @router.delete("/options/{opt_id}")
-async def delete_option(opt_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_option(
+    opt_id: int,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(models.SettingOption).filter(models.SettingOption.id == opt_id))
     opt = result.scalar_one_or_none()
     if not opt: raise HTTPException(404, "Option not found")
@@ -958,7 +997,12 @@ async def get_ui_settings(db: AsyncSession = Depends(get_db)):
     return settings
 
 @router.post("/ui")
-async def update_ui_settings(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_ui_settings(
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     # Simple clear and set
     from sqlalchemy import delete
     user_id = get_current_user_id(request)
@@ -983,7 +1027,11 @@ async def update_ui_settings(data: dict, request: Request, db: AsyncSession = De
 
 
 @router.get("/startup-check")
-async def get_startup_check(request: Request, config_db: AsyncSession = Depends(get_config_db)):
+async def get_startup_check(
+    request: Request,
+    _diagnostics_access: models.Operator = Depends(require_diagnostics_access),
+    config_db: AsyncSession = Depends(get_config_db),
+):
     user_id = get_current_user_id(request)
     configured_identity_value = os.getenv(settings.USER_ID_ENV_VAR, "")
     frontend_env = parse_env_file_to_map(settings.FRONTEND_ENV_FILE_PATH)
@@ -1055,7 +1103,12 @@ async def get_startup_check(request: Request, config_db: AsyncSession = Depends(
     }
 
 @router.get("/global")
-async def get_global_settings(request: Request, db: AsyncSession = Depends(get_db), config_db: AsyncSession = Depends(get_config_db)):
+async def get_global_settings(
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+    config_db: AsyncSession = Depends(get_config_db),
+):
     """Fetch all settings from the unified GlobalSetting table."""
     user_id = get_current_user_id(request)
     # Security: Verify if user is admin before exposing raw env
@@ -1070,11 +1123,11 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
     config = {s.key: s.value for s in settings_list}
     config["_metadata"] = {s.key: {"category": s.category, "description": s.description, "file": "Database", "param": s.key} for s in settings_list}
     config["_deployment"] = {
-        "database_url": settings.DATABASE_URL,
-        "config_database_url": settings.CONFIG_DATABASE_URL,
-        "tenant_storage_root": settings.TENANT_STORAGE_ROOT,
-        "backend_env_file_path": settings.BACKEND_ENV_FILE_PATH,
-        "frontend_env_file_path": settings.FRONTEND_ENV_FILE_PATH,
+        "database_url_configured": bool(settings.DATABASE_URL),
+        "config_database_url_configured": bool(settings.CONFIG_DATABASE_URL),
+        "tenant_storage_root": "[redacted]",
+        "backend_env_file_configured": bool(settings.BACKEND_ENV_FILE_PATH),
+        "frontend_env_file_configured": bool(settings.FRONTEND_ENV_FILE_PATH),
         "default_tenant_name": settings.DEFAULT_TENANT_NAME,
         "default_user_id": settings.DEFAULT_USER_ID,
         "auto_admin_user_ids": sorted(settings.auto_admin_user_ids),
@@ -1090,7 +1143,10 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
     def parse_env(path):
         if not os.path.exists(path): return {}
         data = {}
-        redact_patterns = ["KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL"]
+        redact_patterns = [
+            "KEY", "SECRET", "PASSWORD", "TOKEN", "AUTH", "CREDENTIAL",
+            "DATABASE", "PRIVATE", "COOKIE", "CERT", "URL",
+        ]
         with open(path, "r") as f:
             for line in f:
                 if "=" in line and not line.startswith("#"):
@@ -1098,7 +1154,10 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
                     k = k.strip()
                     v = v.strip()
                     is_sensitive = any(p in k.upper() for p in redact_patterns)
-                    data[k] = {"value": "********" if is_sensitive else v, "file": path}
+                    data[k] = {
+                        "value": v if not is_sensitive and k.upper() in SAFE_DIAGNOSTIC_ENV_KEYS else "********",
+                        "file": "[redacted]",
+                    }
         return data
 
     # Backend .env
@@ -1111,7 +1170,13 @@ async def get_global_settings(request: Request, db: AsyncSession = Depends(get_d
     return config
 
 @router.post("/global")
-async def update_global_settings(data: dict, request: Request, db: AsyncSession = Depends(get_db), config_db: AsyncSession = Depends(get_config_db)):
+async def update_global_settings(
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+    config_db: AsyncSession = Depends(get_config_db),
+):
     """Update unified settings and log to Audit Trail."""
     from sqlalchemy.exc import IntegrityError
     user_id = get_current_user_id(request)
@@ -1130,6 +1195,11 @@ async def update_global_settings(data: dict, request: Request, db: AsyncSession 
         "DEFAULT_TENANT_NAME",
         "DEFAULT_USER_ID",
         "AUTO_ADMIN_USER_IDS",
+        "SYSTEM_ROOT_USER_IDS",
+        "CONTROL_PLANE_ADMIN_USER_IDS",
+        "MODULE_STAGE_OVERRIDES",
+        "PV1_RELEASE_CANDIDATE_SHA",
+        "PV1_RELEASE_ID",
         "DEFAULT_EMAIL_DOMAIN"
     }
 
@@ -1200,12 +1270,19 @@ async def update_global_settings(data: dict, request: Request, db: AsyncSession 
     
     # Notify all connected clients via WebSocket
     if hasattr(request.app.state, 'ws_manager'):
-        await request.app.state.ws_manager.broadcast("CONFIG_UPDATED")
+        await request.app.state.ws_manager.broadcast(
+            "CONFIG_UPDATED",
+            tenant_id=getattr(request.state, "tenant_id", None),
+        )
         
     return {"status": "success"}
 
 @router.get("/env/history")
-async def get_env_history(field: str, db: AsyncSession = Depends(get_db)):
+async def get_env_history(
+    field: str,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     res = await db.execute(select(models.EnvHistory).filter(models.EnvHistory.field == field).order_by(models.EnvHistory.timestamp.desc()))
     return res.scalars().all()
 
@@ -1264,7 +1341,12 @@ async def get_team_audit(team_id: int, db: AsyncSession = Depends(get_db)):
     return audit_res.scalars().all()
 
 @router.post("/teams")
-async def create_team(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_team(
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     name = (data.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Team name is required")
@@ -1293,7 +1375,13 @@ async def create_team(data: dict, request: Request, db: AsyncSession = Depends(g
     return team
 
 @router.patch("/teams/{team_id}")
-async def update_team(team_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_team(
+    team_id: int,
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
     team = team_res.scalar_one_or_none()
     if not team:
@@ -1349,7 +1437,12 @@ async def update_team(team_id: int, data: dict, request: Request, db: AsyncSessi
     return team
 
 @router.delete("/teams/{team_id}")
-async def delete_team(team_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_team(
+    team_id: int,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
     team = team_res.scalar_one_or_none()
     if not team:
@@ -1373,7 +1466,12 @@ async def delete_team(team_id: int, request: Request, db: AsyncSession = Depends
     return {"status": "success"}
 
 @router.post("/operators")
-async def create_operator(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_operator(
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     from sqlalchemy.exc import IntegrityError
     external_id = normalize_string(data.get("external_id"))
     username = normalize_string(data.get("username"))
@@ -1399,6 +1497,10 @@ async def create_operator(data: dict, request: Request, db: AsyncSession = Depen
     )
 
     user_id = get_current_user_id(request)
+    reject_reserved_system_root_identity(
+        {"external_id": external_id, "username": username, **data},
+        actor_id=user_id,
+    )
     if op:
         previous_state = canonical_operator_state(op)
         patch_payload = dict(data)
@@ -1444,11 +1546,21 @@ async def create_operator(data: dict, request: Request, db: AsyncSession = Depen
     return op
 
 @router.patch("/operators/{op_id}")
-async def update_operator(op_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_operator(
+    op_id: int,
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     user_id = get_current_user_id(request)
     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
     op = res.scalar_one_or_none()
     if not op: raise HTTPException(404, "Operator not found")
+    reject_reserved_system_root_identity(
+        {"external_id": op.external_id, "username": op.username, "id": op.external_id, **data},
+        actor_id=user_id,
+    )
     update_result = await apply_operator_patch(db, op=op, data=data, user_id=user_id)
     if update_result["changed"]:
         await create_user_pool_version(db, created_by=user_id, diff_summary={
@@ -1463,11 +1575,20 @@ async def update_operator(op_id: int, data: dict, request: Request, db: AsyncSes
     return op
 
 @router.delete("/operators/{op_id}")
-async def delete_operator(op_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_operator(
+    op_id: int,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     user_id = get_current_user_id(request)
     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
     op = res.scalar_one_or_none()
     if not op: raise HTTPException(404, "Operator not found")
+    reject_reserved_system_root_identity(
+        {"external_id": op.external_id, "username": op.username, "id": op.external_id},
+        actor_id=user_id,
+    )
     delete_result = await apply_operator_delete(db, op=op, user_id=user_id)
     await create_user_pool_version(db, created_by=user_id, diff_summary={
         "added": 0,
@@ -1480,7 +1601,12 @@ async def delete_operator(op_id: int, request: Request, db: AsyncSession = Depen
 
 
 @router.post("/operators/bulk-update")
-async def bulk_update_operators(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def bulk_update_operators(
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     updates = data.get("updates")
     if not isinstance(updates, list) or not updates:
         raise HTTPException(status_code=400, detail="A non-empty updates list is required")
@@ -1503,6 +1629,10 @@ async def bulk_update_operators(data: dict, request: Request, db: AsyncSession =
         op = res.scalar_one_or_none()
         if not op:
             raise HTTPException(status_code=404, detail=f"Operator {op_id} not found")
+        reject_reserved_system_root_identity(
+            {"external_id": op.external_id, "username": op.username, "id": op.external_id, **payload},
+            actor_id=user_id,
+        )
         update_result = await apply_operator_patch(db, op=op, data=payload, user_id=user_id)
         if update_result["changed"]:
             changed_count += 1
@@ -1521,7 +1651,12 @@ async def bulk_update_operators(data: dict, request: Request, db: AsyncSession =
 
 
 @router.post("/operators/bulk-delete")
-async def bulk_delete_operators(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def bulk_delete_operators(
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     ids = data.get("ids")
     if not isinstance(ids, list) or not ids:
         raise HTTPException(status_code=400, detail="A non-empty ids list is required")
@@ -1538,6 +1673,10 @@ async def bulk_delete_operators(data: dict, request: Request, db: AsyncSession =
         op = res.scalar_one_or_none()
         if not op:
             raise HTTPException(status_code=404, detail=f"Operator {op_id} not found")
+        reject_reserved_system_root_identity(
+            {"external_id": op.external_id, "username": op.username, "id": op.external_id},
+            actor_id=user_id,
+        )
         delete_result = await apply_operator_delete(db, op=op, user_id=user_id)
         deleted_count += 1
         team_updates.extend(delete_result["team_updates"])
@@ -1559,12 +1698,20 @@ async def get_roles(db: AsyncSession = Depends(get_db)):
     return res.scalars().all()
 
 @router.get("/user-pool/versions")
-async def get_user_pool_versions(db: AsyncSession = Depends(get_db)):
+async def get_user_pool_versions(
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     res = await db.execute(select(models.UserPoolVersion).order_by(models.UserPoolVersion.created_at.desc(), models.UserPoolVersion.id.desc()))
     return res.scalars().all()
 
 @router.post("/user-pool/refresh")
-async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def refresh_user_pool(
+    data: dict,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     preview = data.get("preview", False)
     user_id = get_current_user_id(request)
 
@@ -1592,6 +1739,10 @@ async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Dep
                 status_code=400,
                 detail=f"records[{index}] requires external_id/id, username, and full_name",
             )
+        reject_reserved_system_root_identity(
+            {"external_id": external_id, "username": username, "id": raw_record.get("id")},
+            actor_id=user_id,
+        )
         if external_id in seen_external_ids:
             raise HTTPException(status_code=400, detail=f"Duplicate external_id '{external_id}' found in source records")
         if username in seen_usernames:
@@ -1636,6 +1787,11 @@ async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Dep
         source_external_ids.add(ext_id)
         res = await db.execute(select(models.Operator).filter(models.Operator.external_id == ext_id))
         op = res.scalar_one_or_none()
+
+        reject_reserved_system_root_identity(
+            {"external_id": ext_id, "username": u["username"], "id": ext_id},
+            actor_id=user_id,
+        )
 
         item_status = "unchanged"
         item_changes = {}
@@ -1789,7 +1945,12 @@ async def refresh_user_pool(data: dict, request: Request, db: AsyncSession = Dep
     return {"status": "success", "version": None, "changes": False}
 
 @router.post("/user-pool/restore/{version_id}")
-async def restore_user_pool(version_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+async def restore_user_pool(
+    version_id: int,
+    request: Request,
+    _settings_access: models.Operator = Depends(require_capability("settings", 3)),
+    db: AsyncSession = Depends(get_db),
+):
     user_id = get_current_user_id(request)
     res = await db.execute(select(models.UserPoolVersion).filter(models.UserPoolVersion.id == version_id))
     version = res.scalar_one_or_none()
@@ -1809,6 +1970,10 @@ async def restore_user_pool(version_id: int, request: Request, db: AsyncSession 
         username = normalize_string(u.get("username"))
         if not username:
             raise HTTPException(status_code=400, detail=f"Snapshot record for '{ext_id}' is missing username")
+        reject_reserved_system_root_identity(
+            {"external_id": ext_id, "username": username, "id": ext_id},
+            actor_id=user_id,
+        )
         if username in snapshot_usernames:
             raise HTTPException(status_code=409, detail=f"Snapshot contains duplicate username '{username}'")
         snapshot_usernames.add(username)

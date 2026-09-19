@@ -13,7 +13,7 @@ from alembic.config import Config
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import text
+from sqlalchemy import select, text
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -21,12 +21,14 @@ from .api import (
     audit, dashboard, data_flows, devices, far, import_engine, intelligence,
     investigations, knowledge, logical_services, maintenance, monitoring, networks,
     projects, pv1, racks, rca, security, settings as settings_api, sites, tenants, workspaces,
-    troubleshoot, vendors, pv1_communication, operational_actions,
+    troubleshoot, vendors, pv1_communication, operational_actions, module_policy,
 )
 from .api.error_utils import standardize_validation_errors
 from .api.import_engine import ROUND_TRIP_EXPOSE_HEADER_NAMES, ROUND_TRIP_EXPOSE_HEADERS
 from .core.config import settings
-from .database import config_engine, default_engine
+from .database import ConfigSessionLocal, config_engine, default_engine
+from .models.config import UserTenantAccess
+from .api.utils import get_current_user_id
 from .runtime_diagnostics import build_readiness_payload
 from .observability import SlidingWindowRateLimiter, request_rate_limit_key, safe_request_metric
 from .pv1 import models as pv1_models  # noqa: F401 - register PV1 tables with Base.metadata
@@ -84,22 +86,27 @@ async def lifespan(app: FastAPI):
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: list[dict[str, object]] = []
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket, *, user_id: str, tenant_id: int):
         await websocket.accept()
-        self.active_connections.append(websocket)
+        self.active_connections.append({"websocket": websocket, "user_id": user_id, "tenant_id": tenant_id})
 
     def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
+        self.active_connections = [
+            connection for connection in self.active_connections
+            if connection.get("websocket") is not websocket
+        ]
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: str, *, tenant_id: int | None = None):
         for connection in list(self.active_connections):
+            if tenant_id is not None and connection.get("tenant_id") != tenant_id:
+                continue
+            websocket = connection["websocket"]
             try:
-                await connection.send_text(message)
+                await websocket.send_text(message)
             except Exception:
-                self.disconnect(connection)
+                self.disconnect(websocket)
 
 
 manager = ConnectionManager()
@@ -217,7 +224,26 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(code=1008, reason="Authenticated proxy identity is missing")
         return
 
-    await manager.connect(websocket)
+    user_id = get_current_user_id(websocket)
+    raw_tenant_id = websocket.query_params.get("tenant_id")
+    try:
+        tenant_id = int(raw_tenant_id or "")
+    except (TypeError, ValueError):
+        await websocket.close(code=1008, reason="Tenant scope is required")
+        return
+
+    async with ConfigSessionLocal() as config_db:
+        access = await config_db.execute(
+            select(UserTenantAccess).where(
+                UserTenantAccess.user_id == user_id,
+                UserTenantAccess.tenant_id == tenant_id,
+            )
+        )
+        if not access.scalar_one_or_none():
+            await websocket.close(code=1008, reason="Tenant scope is not authorized")
+            return
+
+    await manager.connect(websocket, user_id=user_id, tenant_id=tenant_id)
     try:
         while True:
             await websocket.receive_text()
@@ -255,6 +281,8 @@ for router in (
     operational_actions.router,
 ):
     app.include_router(router, prefix=settings.API_V1_STR)
+
+app.include_router(module_policy.router, prefix=settings.API_V1_STR)
 
 app.include_router(pv1.router, prefix="/api/v2")
 app.include_router(pv1_communication.router, prefix="/api/v2")

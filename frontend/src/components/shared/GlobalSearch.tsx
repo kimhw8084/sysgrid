@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiClient';
 import metadata from '../../metadata.json';
+import { ModulePolicyLink, resolveModuleActionState, useModulePolicy } from '../../policy/ModulePolicy';
+import { getCatalogModuleForPath } from '../../policy/moduleCatalog';
 
 interface SearchResult {
   id: number;
@@ -12,6 +14,7 @@ interface SearchResult {
   subtitle: string;
   tag: string;
   path: string;
+  module_id?: string;
 }
 
 export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
@@ -21,6 +24,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const modulePolicy = useModulePolicy();
 
   useEffect(() => {
     if (!isOpen) return
@@ -86,6 +90,8 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   };
 
   const handleSelect = (result: SearchResult) => {
+    const moduleId = result.module_id || getCatalogModuleForPath(result.path)?.id
+    if (moduleId && resolveModuleActionState(moduleId, modulePolicy).disabled) return
     // Append ID to path if not present for highlighting
     const finalPath = result.path.includes('?') ? `${result.path}&id=${result.id}` : `${result.path}?id=${result.id}`;
     navigate(finalPath);
@@ -170,10 +176,11 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                         const globalIndex = flattenedResults.indexOf(result);
                         const isSelected = globalIndex === selectedIndex;
                         return (
-                          <button
+                          <ModulePolicyLink
                             key={`${result.type}-${result.id}`}
+                            moduleId={result.module_id}
+                            to={result.path.includes('?') ? `${result.path}&id=${result.id}` : `${result.path}?id=${result.id}`}
                             onMouseEnter={() => setSelectedIndex(globalIndex)}
-                            onClick={() => handleSelect(result)}
                             aria-pressed={isSelected}
                             className={`w-full flex items-center justify-between p-3.5 rounded-lg transition-all ${
                               isSelected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'hover:bg-white/5 text-slate-300'
@@ -198,7 +205,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                               </span>
                               <ChevronRight size={14} className={isSelected ? 'text-white' : 'text-slate-700'} />
                             </div>
-                          </button>
+                          </ModulePolicyLink>
                         );
                       })}
                     </div>

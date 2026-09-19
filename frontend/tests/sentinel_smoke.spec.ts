@@ -1,9 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from './helpers/sysgrid-test';
 import { DashboardView } from './pom/DashboardView';
 import { MonitoringView } from './pom/MonitoringView';
 import { AssetView } from './pom/AssetView';
 import { ProjectView } from './pom/ProjectView';
 import { SettingsView } from './pom/SettingsView';
+import { seedOperationalScenario } from './helpers/sysgrid';
 
 test.describe('System Sentinel (Zero-Tolerance Coverage)', () => {
   
@@ -39,16 +41,17 @@ test.describe('System Sentinel (Zero-Tolerance Coverage)', () => {
     });
   }
 
-  test('Monitoring View: Golden Template Deep Link & Share Integrity', async ({ page }) => {
+  test('Monitoring View: Golden Template Deep Link & Share Integrity', async ({ page, sysApi: request }) => {
     const monitoringView = new MonitoringView(page);
+    await seedOperationalScenario(request);
     await page.goto('/monitoring');
     await monitoringView.waitForAppIdle();
 
     // Select first item with wait
-    const firstRow = page.locator('[data-workspace="monitoring"] .ag-center-cols-container .ag-row').first();
-    await firstRow.scrollIntoViewIfNeeded();
-    await firstRow.waitFor({ state: 'visible' });
-    await firstRow.dblclick();
+    const firstTitleCell = page.locator('[data-workspace="monitoring"] .ag-row .ag-cell[col-id="title"]').first();
+    await firstTitleCell.scrollIntoViewIfNeeded();
+    await firstTitleCell.waitFor({ state: 'visible' });
+    await firstTitleCell.dblclick();
     
     // Verify Deep Linking
     await expect(page).toHaveURL(/id=/);

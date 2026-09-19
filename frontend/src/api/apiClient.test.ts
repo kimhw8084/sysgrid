@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient, apiFetch, getApiBaseUrl, getConfig, setApiOverride, subscribeToLatency } from './apiClient'
+import { makeJsonResponse } from '../test/response'
 
 function makeJsonErrorResponse(status: number, statusText: string, body: unknown) {
-  return new Response(JSON.stringify(body), {
+  return makeJsonResponse(body, {
     status,
     statusText,
-    headers: { 'Content-Type': 'application/json' },
   })
 }
 
@@ -60,10 +60,7 @@ describe('apiClient', () => {
   })
 
   it('trims trailing slashes on relative endpoints without query strings', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch('/health/')
@@ -72,10 +69,7 @@ describe('apiClient', () => {
   })
 
   it('does not force JSON content type for FormData payloads', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch('/upload', { method: 'POST', body: new FormData() })
@@ -85,10 +79,7 @@ describe('apiClient', () => {
   })
 
   it('does not send Content-Type for bodyless GET requests', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch('/health', { method: 'GET' })
@@ -98,10 +89,7 @@ describe('apiClient', () => {
   })
 
   it('does not send Content-Type for bodyless HEAD requests', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch('/health', { method: 'HEAD' })
@@ -128,10 +116,7 @@ describe('apiClient', () => {
   })
 
   it('does not leak identity headers to non-local external requests', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch('https://api.example.com/health')
@@ -143,10 +128,7 @@ describe('apiClient', () => {
   })
 
   it('uses same-origin credentials for absolute same-origin URLs', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch(`${window.location.origin}/api/health`)
@@ -161,10 +143,7 @@ describe('apiClient', () => {
     const unsubscribe = subscribeToLatency(listener)
     expect(listener).toHaveBeenCalledWith(expect.any(Number))
 
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch('/health')
@@ -241,10 +220,7 @@ describe('apiClient', () => {
   })
 
   it('falls back to same-origin credentials when URL parsing fails', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ ok: true }),
-    })
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
 
     await apiFetch('http://[bad-url')

@@ -6,8 +6,13 @@ from typing import List, Optional
 from ..database import get_db
 from ..models import models
 from .utils import build_audit_log, filter_valid_columns, parse_iso_date
+from .module_policy import require_module_access
 
-router = APIRouter(prefix="/incidents", tags=["Incident Management"])
+router = APIRouter(
+    prefix="/incidents",
+    tags=["Incident Management"],
+    dependencies=[Depends(require_module_access("architecture"))],
+)
 
 def format_incident(inc: models.IncidentLog, devices_map: dict = {}):
     device_names = []

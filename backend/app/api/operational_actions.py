@@ -24,9 +24,14 @@ from ..schemas.operational_actions import (
     VerificationRequest,
 )
 from .utils import get_current_user_id
+from .module_policy import require_module_access
 
 
-router = APIRouter(prefix="/operational-actions", tags=["Operational Actions"])
+router = APIRouter(
+    prefix="/operational-actions",
+    tags=["Operational Actions"],
+    dependencies=[Depends(require_module_access("monitoring"))],
+)
 
 
 def _context(request: Request) -> tuple[int, str, str | None]:

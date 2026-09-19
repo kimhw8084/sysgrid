@@ -8,6 +8,7 @@ import { StyledSelect } from '../shared/StyledSelect'
 import { useNavigate } from 'react-router-dom'
 import { WorkspaceEmptyState } from '../shared/OperationalWorkspacePrimitives'
 import { AssetServicesTable, MetadataViewer, MiniMonitoringTable } from '../AssetGrid_Legacy'
+import { ModulePolicyButton } from '../../policy/ModulePolicy'
 
 const getAssetConsoleUrl = (asset: any) => {
   if (asset?.management_url) {
@@ -294,7 +295,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     // --- FETCH RELATED CONTEXT ---
     const { data: farModes } = useQuery({
       queryKey: ['far-modes-system', device.system],
-      queryFn: async () => (await (await apiFetch(`/api/v1/far/modes?system=${device.system}`)).json()),
+      queryFn: async () => (await (await apiFetch(`/api/v1/far/modes?system=${encodeURIComponent(device.system)}&embedded_consumer=assets`)).json()),
       enabled: !!device.system
     })
 
@@ -318,7 +319,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
 
     const { data: relatedKnowledge } = useQuery({
       queryKey: ['asset-knowledge', device.id],
-      queryFn: async () => (await apiFetch(`/api/v1/knowledge?device_id=${device.id}`)).json(),
+      queryFn: async () => (await apiFetch(`/api/v1/knowledge?device_id=${device.id}&embedded_consumer=assets`)).json(),
       enabled: !!device.id
     })
 
@@ -328,7 +329,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
       queryFn: async () => {
         const params = new URLSearchParams()
         params.append('device_id', String(device.id))
-        if (primaryMonitoringId) params.append('monitoring_id', String(primaryMonitoringId))
+        params.append('embedded_consumer', 'assets')
         return (await apiFetch(`/api/v1/knowledge?${params.toString()}`)).json()
       },
       enabled: !!device.id
@@ -415,21 +416,22 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                                 <p className="text-[9px] font-black uppercase tracking-[0.24em] text-amber-300">Suggested Runbooks Now</p>
                                 <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Procedures matched to this asset and active monitoring context.</p>
                             </div>
-                            <button
+                            <ModulePolicyButton
+                              moduleId="knowledge"
                               onClick={() => navigate(`/knowledge?device_id=${device.id}${primaryMonitoringId ? `&monitoring_id=${primaryMonitoringId}` : ''}&mode=incident`)}
                               className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-amber-300 transition-all hover:bg-amber-500/20"
                             >
                               Open Knowledge
-                            </button>
+                            </ModulePolicyButton>
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-3">
                             {Array.isArray(suggestedKnowledge) && suggestedKnowledge.slice(0, 2).map((entry: any) => (
-                              <button key={entry.id} onClick={() => navigate(`/knowledge?id=${entry.id}`)} className="rounded-lg border border-white/5 bg-black/20 px-3 py-3 text-left hover:bg-white/[0.06] transition-all">
+                              <ModulePolicyButton key={entry.id} moduleId="knowledge" onClick={() => navigate(`/knowledge?id=${entry.id}`)} className="rounded-lg border border-white/5 bg-black/20 px-3 py-3 text-left hover:bg-white/[0.06] transition-all">
                                 <p className="text-[10px] font-black uppercase tracking-tight text-white truncate">{entry.title}</p>
                                 <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-500">
                                   {entry.metadata_json?.entry_type || entry.category} // {entry.metadata_json?.verification?.state || entry.status}
                                 </p>
-                              </button>
+                              </ModulePolicyButton>
                             ))}
                             {!suggestedKnowledge?.length && <p className="col-span-2 text-[10px] font-bold uppercase text-slate-600 italic">No suggested runbooks identified</p>}
                         </div>
@@ -491,14 +493,16 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                           <Activity size={16} className="text-slate-500 group-hover:text-blue-400 mb-2" />
                           <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Audit</span>
                         </button>
-                        <button
+                        <ModulePolicyButton
+                          moduleId="far"
                           disabled={!farModes?.[0]?.id}
+                          disabledReason={!farModes?.[0]?.id ? 'No related FAR risk recorded.' : undefined}
                           onClick={() => farModes?.[0]?.id && navigate(`/far?id=${farModes[0].id}`)}
                           className="flex flex-col items-center justify-center p-3 rounded-lg border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 transition-all group disabled:opacity-30"
                         >
                           <AlertTriangle size={16} className="text-rose-500 mb-2" />
                           <span className="text-[8px] font-black uppercase tracking-widest text-rose-400">FAR Risks</span>
-                        </button>
+                        </ModulePolicyButton>
                         <button 
                           onClick={() => mutation.mutate(device)}
                           className="flex flex-col items-center justify-center p-3 rounded-lg border border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/20 transition-all group"
@@ -534,10 +538,10 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                     </p>
                     <div className="space-y-2">
                         {Array.isArray(relatedKnowledge) && relatedKnowledge.slice(0, 3).map((entry: any) => (
-                          <button key={entry.id} onClick={() => navigate(`/knowledge?id=${entry.id}`)} className="w-full rounded-lg border border-white/5 bg-white/[0.03] px-3 py-3 text-left hover:bg-white/[0.06] transition-all group">
+                          <ModulePolicyButton key={entry.id} moduleId="knowledge" onClick={() => navigate(`/knowledge?id=${entry.id}`)} className="w-full rounded-lg border border-white/5 bg-white/[0.03] px-3 py-3 text-left hover:bg-white/[0.06] transition-all group">
                             <p className="text-[10px] font-bold uppercase text-slate-200 group-hover:text-amber-400">{entry.title}</p>
                             <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-500">{entry.category} // {entry.status}</p>
-                          </button>
+                          </ModulePolicyButton>
                         ))}
                         {!runbookCount && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No linked knowledge</p>}
                     </div>

@@ -1,10 +1,18 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { LayoutDashboard } from 'lucide-react'
 import { ShellNavGroup, ShellNavItem, isShellRouteActive } from './ShellNavigation'
 
 describe('shell navigation', () => {
+  const withQueryClient = (children: ReactNode) => (
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      {children}
+    </QueryClientProvider>
+  )
+
   it('matches nested routes without matching sibling paths', () => {
     expect(isShellRouteActive('/projects/42/timeline', '/projects')).toBe(true)
     expect(isShellRouteActive('/project-status', '/projects')).toBe(false)
@@ -13,9 +21,11 @@ describe('shell navigation', () => {
 
   it('exposes the active state and an accessible name when collapsed', () => {
     render(
-      <MemoryRouter initialEntries={['/projects/42/timeline']}>
-        <ShellNavItem icon={LayoutDashboard} label="Projects" path="/projects" active isOpen={false} />
-      </MemoryRouter>,
+      withQueryClient(
+        <MemoryRouter initialEntries={['/projects/42/timeline']}>
+          <ShellNavItem icon={LayoutDashboard} label="Projects" path="/projects" active isOpen={false} />
+        </MemoryRouter>,
+      ),
     )
 
     const link = screen.getByRole('link', { name: 'Projects' })
@@ -26,11 +36,13 @@ describe('shell navigation', () => {
 
   it('keeps groups keyboard reachable with an explicit expanded state', () => {
     render(
-      <MemoryRouter>
-        <ShellNavGroup label="Operations" isSidebarOpen defaultExpanded>
-          <ShellNavItem icon={LayoutDashboard} label="Home" path="/" active isOpen />
-        </ShellNavGroup>
-      </MemoryRouter>,
+      withQueryClient(
+        <MemoryRouter>
+          <ShellNavGroup label="Operations" isSidebarOpen defaultExpanded>
+            <ShellNavItem icon={LayoutDashboard} label="Home" path="/" active isOpen />
+          </ShellNavGroup>
+        </MemoryRouter>,
+      ),
     )
 
     const groupToggle = screen.getByText('Operations').closest('summary')

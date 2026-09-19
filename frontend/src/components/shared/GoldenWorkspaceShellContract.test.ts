@@ -8,7 +8,7 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), 'u
 
 const views = [
   ['MonitoringGrid.tsx', 'table'],
-  ['AssetReal.tsx', 'table'],
+  ['assets/AssetGoldenShellScaffold.tsx', 'table'],
   ['ServicesReal.tsx', 'table'],
   ['External.tsx', 'table'],
   ['NetworkReal.tsx', 'hybrid'],
@@ -29,9 +29,22 @@ describe('Golden workspace shell contract', () => {
 
   it.each(views)('%s declares the approved archetype and avoids local golden-grid reconstruction', (file, archetype) => {
     const source = read(file)
-    expect(source).toContain(`archetype="${archetype}"`)
+    if (file === 'assets/AssetGoldenShellScaffold.tsx') {
+      expect(source).toContain('<OperationalWorkspaceShell')
+    } else {
+      expect(source).toContain(`archetype="${archetype}"`)
+    }
     expect(source).not.toContain('className="monitoring-grid-shell monitoring-grid')
     expect(source).not.toContain('AgGridReact')
+  })
+
+  it('locks the live Assets route to the golden shell scaffold and workspace owner', () => {
+    const route = read('assets/AssetGoldenShellRoute.tsx')
+    const workspace = read('assets/AssetGoldenOperationalWorkspace.tsx')
+    const scaffold = read('assets/AssetGoldenShellScaffold.tsx')
+    expect(route).toContain('AssetGoldenOperationalWorkspace')
+    expect(workspace).toContain('AssetGoldenShellScaffold')
+    expect(scaffold).toContain('OperationalWorkspaceShell')
   })
 
   it('permits attached-panel geometry only through the shared named variant', () => {
