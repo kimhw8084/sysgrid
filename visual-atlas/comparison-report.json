@@ -1,0 +1,483 @@
+{
+  "schema_version": "sysgrid.visual-atlas.comparison-report.v2",
+  "project": "SysGrid",
+  "change": "CHG-120",
+  "candidate_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+  "candidate_tree": "3254e1802ec09511ea46469263995ed54874a0fd",
+  "baseline_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v3",
+  "baseline_source_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+  "baseline_tree_sha": "34b0ff1526540055035a55501012849334047dd8",
+  "expected_difference_scope": [
+    "Preview/Unavailable navigation treatment",
+    "disabled standalone preview actions",
+    "release/access permission affordances",
+    "fixture or time-varying text"
+  ],
+  "unexpected_difference_scope": [
+    "monitoring inner workspace geometry",
+    "monitoring inner workspace style",
+    "monitoring feature surface"
+  ],
+  "comparisons": [
+    {
+      "surface_key": "dashboard-home",
+      "route": "/",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/dashboard-home--desktop-1440x900.png",
+        "sha256": "464cff619ac3cfb116bc5ab28738d6d7e80c7ee7b3cb586f90b8d45bc864d94d",
+        "width": 1440,
+        "height": 900,
+        "bytes": 163193
+      },
+      "candidate": {
+        "path": "screenshots/candidate/dashboard-home--desktop-1440x900.png",
+        "sha256": "22f0dfee9f64ab20c28056b8d665442dad0f93baa93d58306511a08111b57720",
+        "width": 1440,
+        "height": 900,
+        "bytes": 167348
+      },
+      "pixel_difference": {
+        "changed_channel_values": 2056454,
+        "changed_channel_ratio": 0.39669251543209877,
+        "mean_absolute_channel_difference": 8.23664023919753,
+        "max_channel_difference": 239,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "dashboard-home",
+      "route": "/",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/dashboard-home--mobile-390x844.png",
+        "sha256": "1f02b50d69e3d799dcfc54c8d014684386e8dcdc466ac050ca35a3ffdce20a00",
+        "width": 390,
+        "height": 844,
+        "bytes": 69710
+      },
+      "candidate": {
+        "path": "screenshots/candidate/dashboard-home--mobile-390x844.png",
+        "sha256": "728e798216915adfb8175dd292a23938d322a4514c24995bd1f4adff45a60387",
+        "width": 390,
+        "height": 844,
+        "bytes": 65457
+      },
+      "pixel_difference": {
+        "changed_channel_values": 485258,
+        "changed_channel_ratio": 0.368557844209503,
+        "mean_absolute_channel_difference": 5.8991744136590105,
+        "max_channel_difference": 234,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "assets",
+      "route": "/asset",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/assets--desktop-1440x900.png",
+        "sha256": "0242f2b88e82639667066a4eacc44db6e0a8f6d8b2f0a2f77d818ef58523deb7",
+        "width": 1440,
+        "height": 900,
+        "bytes": 243144
+      },
+      "candidate": {
+        "path": "screenshots/candidate/assets--desktop-1440x900.png",
+        "sha256": "c3370644caa14519997badaa57bb93fd00e6e9be88a830748ea31af97bd5af44",
+        "width": 1440,
+        "height": 900,
+        "bytes": 227569
+      },
+      "pixel_difference": {
+        "changed_channel_values": 1526564,
+        "changed_channel_ratio": 0.2944760802469136,
+        "mean_absolute_channel_difference": 2.1086965663580246,
+        "max_channel_difference": 228,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "assets",
+      "route": "/asset",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/assets--mobile-390x844.png",
+        "sha256": "ad906d0bbe75af245029e6c68c544820466664a441ab3dda2a236aa6c464d258",
+        "width": 390,
+        "height": 844,
+        "bytes": 59227
+      },
+      "candidate": {
+        "path": "screenshots/candidate/assets--mobile-390x844.png",
+        "sha256": "630f52757c0628d0234a7d492fd25f077b9ed1282033150978e18bd0fd182c51",
+        "width": 390,
+        "height": 844,
+        "bytes": 56221
+      },
+      "pixel_difference": {
+        "changed_channel_values": 396711,
+        "changed_channel_ratio": 0.30130559606270507,
+        "mean_absolute_channel_difference": 1.9765638291408432,
+        "max_channel_difference": 224,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "monitoring",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/monitoring--desktop-1440x900.png",
+        "sha256": "9fa029e0a6a066410e9953b2ade08e2de33337f299e3cb15e66c6b93a19e3c91",
+        "width": 1440,
+        "height": 900,
+        "bytes": 232089
+      },
+      "candidate": {
+        "path": "screenshots/candidate/monitoring--desktop-1440x900.png",
+        "sha256": "215ac75c1c1670262c2002c7559bc5e59d76c981a6e2e88300a45b54bd147966",
+        "width": 1440,
+        "height": 900,
+        "bytes": 224615
+      },
+      "pixel_difference": {
+        "changed_channel_values": 1604869,
+        "changed_channel_ratio": 0.3095812114197531,
+        "mean_absolute_channel_difference": 2.045512731481481,
+        "max_channel_difference": 224,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "monitoring",
+      "route": "/monitoring",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/monitoring--mobile-390x844.png",
+        "sha256": "f2954dad93239a8287f97f1c5c5c7319a21dd6bde20ae7ab541cff3e3520513b",
+        "width": 390,
+        "height": 844,
+        "bytes": 57216
+      },
+      "candidate": {
+        "path": "screenshots/candidate/monitoring--mobile-390x844.png",
+        "sha256": "21ce4537532d947e9cc980c220c41fd7984b06cf9b9c89e6e5017836706d3f36",
+        "width": 390,
+        "height": 844,
+        "bytes": 55793
+      },
+      "pixel_difference": {
+        "changed_channel_values": 517642,
+        "changed_channel_ratio": 0.3931537853931219,
+        "mean_absolute_channel_difference": 3.6958872584761213,
+        "max_channel_difference": 227,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "services",
+      "route": "/services",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/services--desktop-1440x900.png",
+        "sha256": "f67b9e0797dad5354a143f53cb959732bf02b834e38147607f32135336c02ded",
+        "width": 1440,
+        "height": 900,
+        "bytes": 206178
+      },
+      "candidate": {
+        "path": "screenshots/candidate/services--desktop-1440x900.png",
+        "sha256": "a27f86063f526cf85cec62eb0d8f946d5936a2131f576ee8af89a1c22da3ca24",
+        "width": 1440,
+        "height": 900,
+        "bytes": 197200
+      },
+      "pixel_difference": {
+        "changed_channel_values": 1488796,
+        "changed_channel_ratio": 0.2871905864197531,
+        "mean_absolute_channel_difference": 1.9596367669753088,
+        "max_channel_difference": 228,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "services",
+      "route": "/services",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/services--mobile-390x844.png",
+        "sha256": "f802c01f408fb45b93ca15c125ef1db309948c0d0e7799cdb3ad0483be3af76a",
+        "width": 390,
+        "height": 844,
+        "bytes": 57760
+      },
+      "candidate": {
+        "path": "screenshots/candidate/services--mobile-390x844.png",
+        "sha256": "ab034ba2c52adf8ae58212ca04cfcc7ef42e1bb0f8adaca0250f2969ccda7111",
+        "width": 390,
+        "height": 844,
+        "bytes": 55575
+      },
+      "pixel_difference": {
+        "changed_channel_values": 542835,
+        "changed_channel_ratio": 0.41228809697411595,
+        "mean_absolute_channel_difference": 4.015337525823307,
+        "max_channel_difference": 227,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "network",
+      "route": "/network",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/network--desktop-1440x900.png",
+        "sha256": "cb05c2578c05c8c65b7d61cb02af6c7c37226737f3d4a15e088d7d0f5a662d59",
+        "width": 1440,
+        "height": 900,
+        "bytes": 194885
+      },
+      "candidate": {
+        "path": "screenshots/candidate/network--desktop-1440x900.png",
+        "sha256": "7cd7be469796ac91bc2176e3b7e2ac922720b514dc981adb864cc1c3e454b489",
+        "width": 1440,
+        "height": 900,
+        "bytes": 192092
+      },
+      "pixel_difference": {
+        "changed_channel_values": 1474805,
+        "changed_channel_ratio": 0.2844917052469136,
+        "mean_absolute_channel_difference": 2.0240464891975307,
+        "max_channel_difference": 228,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "network",
+      "route": "/network",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/network--mobile-390x844.png",
+        "sha256": "0baa20a485eb989e1fbae1caa638ecbb491ff46c834ce83499943331b1896389",
+        "width": 390,
+        "height": 844,
+        "bytes": 55469
+      },
+      "candidate": {
+        "path": "screenshots/candidate/network--mobile-390x844.png",
+        "sha256": "91a6000b5512dd679f6ef873db9d8710c9b03b14bed73627bb27f692c5037cf1",
+        "width": 390,
+        "height": 844,
+        "bytes": 54937
+      },
+      "pixel_difference": {
+        "changed_channel_values": 430416,
+        "changed_channel_ratio": 0.32690484870579656,
+        "mean_absolute_channel_difference": 2.118946712844817,
+        "max_channel_difference": 227,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "racks",
+      "route": "/racks",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/racks--desktop-1440x900.png",
+        "sha256": "0846fc32c539eb01b2e1faaf34c5b34fa71279daef46ffb188e3cd106f826c0e",
+        "width": 1440,
+        "height": 900,
+        "bytes": 187100
+      },
+      "candidate": {
+        "path": "screenshots/candidate/racks--desktop-1440x900.png",
+        "sha256": "6ec3df63714db1fa84cb7a6705611b2e448ebff8cc560d34551156b269adf2b9",
+        "width": 1440,
+        "height": 900,
+        "bytes": 180744
+      },
+      "pixel_difference": {
+        "changed_channel_values": 1780064,
+        "changed_channel_ratio": 0.34337654320987654,
+        "mean_absolute_channel_difference": 2.556442901234568,
+        "max_channel_difference": 227,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "racks",
+      "route": "/racks",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/racks--mobile-390x844.png",
+        "sha256": "5710390ce412bf70863e50c4e3bf8112f35517cd48e7365997aef0bf7b61ece7",
+        "width": 390,
+        "height": 844,
+        "bytes": 61039
+      },
+      "candidate": {
+        "path": "screenshots/candidate/racks--mobile-390x844.png",
+        "sha256": "1273d6ae8eed00b30c295199bb5810bf263f642e668de30a5213b7933dd44a18",
+        "width": 390,
+        "height": 844,
+        "bytes": 59493
+      },
+      "pixel_difference": {
+        "changed_channel_values": 429324,
+        "changed_channel_ratio": 0.32607546481954064,
+        "mean_absolute_channel_difference": 2.1735166788188116,
+        "max_channel_difference": 227,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "audit-logs",
+      "route": "/logs",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/audit-logs--desktop-1440x900.png",
+        "sha256": "16e5de9d2575ea0dc1d25c17a8920e2df35eb7db3fac6a4074c4e537a71109bf",
+        "width": 1440,
+        "height": 900,
+        "bytes": 95021
+      },
+      "candidate": {
+        "path": "screenshots/candidate/audit-logs--desktop-1440x900.png",
+        "sha256": "816a8adde4ba4662af4b5132beb373dabb0b3f4e552dcfedf4aa1bad172c389a",
+        "width": 1440,
+        "height": 900,
+        "bytes": 93423
+      },
+      "pixel_difference": {
+        "changed_channel_values": 970960,
+        "changed_channel_ratio": 0.18729938271604937,
+        "mean_absolute_channel_difference": 1.3013358410493827,
+        "max_channel_difference": 254,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "audit-logs",
+      "route": "/logs",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/audit-logs--mobile-390x844.png",
+        "sha256": "1731a96c1b67d5a93f683061bf14ee03786c71602898052a2ab05372943170f5",
+        "width": 390,
+        "height": 844,
+        "bytes": 51116
+      },
+      "candidate": {
+        "path": "screenshots/candidate/audit-logs--mobile-390x844.png",
+        "sha256": "0ffa95ff68e998da62ac9195cf266acc3ad3d859fe51f1678184cfdc6fba86f1",
+        "width": 390,
+        "height": 844,
+        "bytes": 48503
+      },
+      "pixel_difference": {
+        "changed_channel_values": 410211,
+        "changed_channel_ratio": 0.3115589682829019,
+        "mean_absolute_channel_difference": 2.2204550978247664,
+        "max_channel_difference": 239,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "settings",
+      "route": "/settings",
+      "viewport": "desktop",
+      "baseline": {
+        "path": "screenshots/baseline/settings--desktop-1440x900.png",
+        "sha256": "8eaeaa1ae90bbed675f80be0ee5a64eaacb7c9daba7a64d668212bd70c992e76",
+        "width": 1440,
+        "height": 900,
+        "bytes": 118121
+      },
+      "candidate": {
+        "path": "screenshots/candidate/settings--desktop-1440x900.png",
+        "sha256": "1a8f003d72ef57a3d513594838d044401b97c44c817af7dfd7d9cc2bf13d8ecf",
+        "width": 1440,
+        "height": 900,
+        "bytes": 114471
+      },
+      "pixel_difference": {
+        "changed_channel_values": 776522,
+        "changed_channel_ratio": 0.1497920524691358,
+        "mean_absolute_channel_difference": 1.3306446759259258,
+        "max_channel_difference": 224,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    },
+    {
+      "surface_key": "settings",
+      "route": "/settings",
+      "viewport": "mobile",
+      "baseline": {
+        "path": "screenshots/baseline/settings--mobile-390x844.png",
+        "sha256": "217e610b27de6a2880093f0c28b888df00c8edec8c9e14720a32b2f3bc3e8306",
+        "width": 390,
+        "height": 844,
+        "bytes": 57645
+      },
+      "candidate": {
+        "path": "screenshots/candidate/settings--mobile-390x844.png",
+        "sha256": "f91bc38ec1576a67f56b9a26ef61a404ed82ef883e29ea6015d83135190b1e70",
+        "width": 390,
+        "height": 844,
+        "bytes": 54737
+      },
+      "pixel_difference": {
+        "changed_channel_values": 444302,
+        "changed_channel_ratio": 0.3374513914205857,
+        "mean_absolute_channel_difference": 4.039515737027585,
+        "max_channel_difference": 227,
+        "bbox": null
+      },
+      "classification": "expected_release_access_or_fixture_difference",
+      "notes": "Pixel metrics are supplemental; visual review is authoritative for CHG-120 release/access presentation. Monitoring inner workspace anchors are asserted by the capture gate."
+    }
+  ],
+  "monitoring_inner_workspace": {
+    "status": "no_unexplained_regression_detected_by_blocking_route_and_semantic_gate",
+    "blocking_semantic_anchors": [
+      "Monitoring",
+      "Scan matrix",
+      "Existing"
+    ],
+    "manual_review_required": true,
+    "independent_manual_semantic_visual_review_required": true,
+    "human_acceptance_claimed": false,
+    "pixel_perfect_acceptance_claimed": false
+  }
+}

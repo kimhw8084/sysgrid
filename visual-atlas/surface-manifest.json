@@ -1,0 +1,107 @@
+{
+  "schema_version": "sysgrid.visual-atlas.surface-manifest.v2",
+  "project": "SysGrid",
+  "project_id": "sysgrid",
+  "change": "CHG-120",
+  "request": "sysgrid-smv1-actions-verifier-v18c",
+  "operation": "BUILD",
+  "authority": "exact rendered product candidate",
+  "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+  "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd",
+  "discovery": {
+    "method": "CHG-120 canonical route capture plus public accessibility state attempts",
+    "fixture": {
+      "tenant": "Local Demo",
+      "seed_mode": "repository seed.py --seed-data",
+      "role": "ADMIN / haewon.kim"
+    },
+    "locale": "en-US",
+    "timezone": "America/Chicago",
+    "theme": "candidate runtime"
+  },
+  "surface_count": 8,
+  "surfaces": [
+    {
+      "surface_key": "dashboard-home",
+      "canonical_route": "/",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/dashboard-home--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/dashboard-home--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    {
+      "surface_key": "assets",
+      "canonical_route": "/asset",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/assets--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/assets--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    {
+      "surface_key": "monitoring",
+      "canonical_route": "/monitoring",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/monitoring--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/monitoring--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    {
+      "surface_key": "services",
+      "canonical_route": "/services",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/services--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/services--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    {
+      "surface_key": "network",
+      "canonical_route": "/network",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/network--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/network--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    {
+      "surface_key": "racks",
+      "canonical_route": "/racks",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/racks--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/racks--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    {
+      "surface_key": "audit-logs",
+      "canonical_route": "/logs",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/audit-logs--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/audit-logs--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    },
+    {
+      "surface_key": "settings",
+      "canonical_route": "/settings",
+      "expected_artifacts": {
+        "desktop": "screenshots/candidate/settings--desktop-1440x900.png",
+        "mobile": "screenshots/candidate/settings--mobile-390x844.png"
+      },
+      "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+      "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd"
+    }
+  ],
+  "mandatory_landing_anchor_count": 16,
+  "optional_state_capture_count": 9
+}

@@ -1,0 +1,92 @@
+{
+  "states": [
+    {
+      "key": "monitoring-saved-display-grouped",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "captured",
+      "reason": "",
+      "path": "screenshots/candidate/states/monitoring-saved-display-grouped--desktop-1440x900.png"
+    },
+    {
+      "key": "monitoring-selected-row-pre-existing-bulk",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "captured",
+      "reason": "",
+      "path": "screenshots/candidate/states/monitoring-selected-row-pre-existing-bulk--desktop-1440x900.png"
+    },
+    {
+      "key": "monitoring-detail",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "captured",
+      "reason": "",
+      "path": "screenshots/candidate/states/monitoring-detail--desktop-1440x900.png"
+    },
+    {
+      "key": "monitoring-edit-validation-dirty",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "captured",
+      "reason": "",
+      "path": "screenshots/candidate/states/monitoring-edit-validation-dirty--desktop-1440x900.png"
+    },
+    {
+      "key": "monitoring-history",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "captured",
+      "reason": "",
+      "path": "screenshots/candidate/states/monitoring-history--desktop-1440x900.png"
+    },
+    {
+      "key": "monitoring-compare",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "unavailable",
+      "reason": "locator.click: Timeout 2500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /compare/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"button\" title=\"Compare selected monitors\" aria-label=\"Compare selected monitors\" class=\"h-9 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shrink-0 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-default)] hover:text-[var(--text-primary)]\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    4 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n; existing compact browser coverage proves the surrounding functionality in tests/eight-route-smoke.spec.ts, tests/release-policy-normal.spec.ts, or tests/release-policy-root-preview.spec.ts."
+    },
+    {
+      "key": "monitoring-embedded-recovery-context",
+      "route": "/monitoring",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "unavailable",
+      "reason": "Public accessibility target unavailable: embedded recovery context action; existing compact browser coverage proves the surrounding functionality in tests/eight-route-smoke.spec.ts, tests/release-policy-normal.spec.ts, or tests/release-policy-root-preview.spec.ts."
+    },
+    {
+      "key": "normal-preview-route-denial",
+      "route": "/far",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "captured",
+      "reason": "",
+      "path": "screenshots/candidate/states/normal-preview-route-denial--desktop-1440x900.png"
+    },
+    {
+      "key": "representative-disabled-preview-action",
+      "route": "/",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "status": "captured",
+      "reason": "",
+      "path": "screenshots/candidate/states/representative-disabled-preview-action--desktop-1440x900.png"
+    }
+  ]
+}

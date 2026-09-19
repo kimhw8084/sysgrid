@@ -1,0 +1,40 @@
+{
+  "schema_version": "sysgrid.visual-atlas.qualification-report.v2",
+  "project": "SysGrid",
+  "change": "CHG-120",
+  "request": "sysgrid-smv1-actions-verifier-v18c",
+  "operation": "BUILD",
+  "candidate_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+  "candidate_tree": "3254e1802ec09511ea46469263995ed54874a0fd",
+  "candidate_parent": "c958ce80124bcc9012a53cfb688d02a756a30beb",
+  "workflow_file_only": true,
+  "candidate_unchanged": true,
+  "main_unchanged": true,
+  "blocking_gates": {
+    "candidate_identity": true,
+    "compact_frontend": true,
+    "compact_backend": true,
+    "normal_browser": true,
+    "root_preview_browser": true,
+    "mandatory_16_landing_screenshots": true,
+    "mandatory_capture_first": true,
+    "optional_states_desktop_only_best_effort": true,
+    "baseline_source_binding": true,
+    "product_source_mutation": false,
+    "monitoring_inner_workspace_semantic_gate": true
+  },
+  "visual_review": {
+    "review_desktop": "review-desktop.pdf",
+    "review_mobile": "review-mobile.pdf",
+    "pixel_metrics_supplemental": true,
+    "independent_manual_semantic_visual_review_required": true,
+    "human_acceptance_claimed": false,
+    "pixel_perfect_acceptance_claimed": false,
+    "expected_difference_scope": [
+      "Preview/Unavailable navigation treatment",
+      "disabled standalone preview actions",
+      "release/access permission affordances"
+    ]
+  },
+  "diagnostic_disposition": "PREEXISTING_DEFERRED"
+}

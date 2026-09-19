@@ -1,0 +1,363 @@
+{
+  "schema_version": "sysgrid.visual-atlas.capture-report.v2",
+  "project": "SysGrid",
+  "change": "CHG-120",
+  "request": "sysgrid-smv1-actions-verifier-v18c",
+  "operation": "BUILD",
+  "source_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+  "tree_sha": "3254e1802ec09511ea46469263995ed54874a0fd",
+  "source_changed": false,
+  "runtime_identity": {
+    "tenant": "Local Demo",
+    "admin_user": "haewon.kim",
+    "system_root_user_ids": [],
+    "locale": "en-US",
+    "timezone": "America/Chicago",
+    "fresh_runtime": true,
+    "candidate_checkout_clean": true
+  },
+  "capture": {
+    "requested_surface_count": 8,
+    "screenshot_count": 16,
+    "expected_screenshot_count": 16,
+    "mandatory_capture_first": true,
+    "mandatory_landing_count": 16,
+    "optional_state_viewport": "desktop",
+    "optional_state_timeout_ms": 2500,
+    "optional_states_best_effort": true,
+    "full_page": false,
+    "viewports": [
+      {
+        "name": "desktop-1440x900",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      {
+        "name": "mobile-390x844",
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      }
+    ],
+    "lossless_png": true,
+    "all_exact_dimensions": true,
+    "all_png_signature": true,
+    "mandatory_landing_anchors": [
+      {
+        "surface_key": "dashboard-home",
+        "route": "/",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/dashboard-home--desktop-1440x900.png",
+        "sha256": "22f0dfee9f64ab20c28056b8d665442dad0f93baa93d58306511a08111b57720",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "dashboard-home",
+        "route": "/",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/dashboard-home--mobile-390x844.png",
+        "sha256": "728e798216915adfb8175dd292a23938d322a4514c24995bd1f4adff45a60387",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "assets",
+        "route": "/asset",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/assets--desktop-1440x900.png",
+        "sha256": "c3370644caa14519997badaa57bb93fd00e6e9be88a830748ea31af97bd5af44",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "assets",
+        "route": "/asset",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/assets--mobile-390x844.png",
+        "sha256": "630f52757c0628d0234a7d492fd25f077b9ed1282033150978e18bd0fd182c51",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "monitoring",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/monitoring--desktop-1440x900.png",
+        "sha256": "215ac75c1c1670262c2002c7559bc5e59d76c981a6e2e88300a45b54bd147966",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "monitoring",
+        "route": "/monitoring",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/monitoring--mobile-390x844.png",
+        "sha256": "21ce4537532d947e9cc980c220c41fd7984b06cf9b9c89e6e5017836706d3f36",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "services",
+        "route": "/services",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/services--desktop-1440x900.png",
+        "sha256": "a27f86063f526cf85cec62eb0d8f946d5936a2131f576ee8af89a1c22da3ca24",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "services",
+        "route": "/services",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/services--mobile-390x844.png",
+        "sha256": "ab034ba2c52adf8ae58212ca04cfcc7ef42e1bb0f8adaca0250f2969ccda7111",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "network",
+        "route": "/network",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/network--desktop-1440x900.png",
+        "sha256": "7cd7be469796ac91bc2176e3b7e2ac922720b514dc981adb864cc1c3e454b489",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "network",
+        "route": "/network",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/network--mobile-390x844.png",
+        "sha256": "91a6000b5512dd679f6ef873db9d8710c9b03b14bed73627bb27f692c5037cf1",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "racks",
+        "route": "/racks",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/racks--desktop-1440x900.png",
+        "sha256": "6ec3df63714db1fa84cb7a6705611b2e448ebff8cc560d34551156b269adf2b9",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "racks",
+        "route": "/racks",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/racks--mobile-390x844.png",
+        "sha256": "1273d6ae8eed00b30c295199bb5810bf263f642e668de30a5213b7933dd44a18",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "audit-logs",
+        "route": "/logs",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/audit-logs--desktop-1440x900.png",
+        "sha256": "816a8adde4ba4662af4b5132beb373dabb0b3f4e552dcfedf4aa1bad172c389a",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "audit-logs",
+        "route": "/logs",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/audit-logs--mobile-390x844.png",
+        "sha256": "0ffa95ff68e998da62ac9195cf266acc3ad3d859fe51f1678184cfdc6fba86f1",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "settings",
+        "route": "/settings",
+        "viewport": "desktop",
+        "path": "screenshots/candidate/settings--desktop-1440x900.png",
+        "sha256": "1a8f003d72ef57a3d513594838d044401b97c44c817af7dfd7d9cc2bf13d8ecf",
+        "dimensions": {
+          "width": 1440,
+          "height": 900
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      },
+      {
+        "surface_key": "settings",
+        "route": "/settings",
+        "viewport": "mobile",
+        "path": "screenshots/candidate/settings--mobile-390x844.png",
+        "sha256": "f91bc38ec1576a67f56b9a26ef61a404ed82ef883e29ea6015d83135190b1e70",
+        "dimensions": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 1,
+        "locale": "en-US",
+        "timezone": "America/Chicago"
+      }
+    ],
+    "optional_states": [
+      {
+        "key": "monitoring-saved-display-grouped",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "captured",
+        "reason": "",
+        "path": "screenshots/candidate/states/monitoring-saved-display-grouped--desktop-1440x900.png"
+      },
+      {
+        "key": "monitoring-selected-row-pre-existing-bulk",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "captured",
+        "reason": "",
+        "path": "screenshots/candidate/states/monitoring-selected-row-pre-existing-bulk--desktop-1440x900.png"
+      },
+      {
+        "key": "monitoring-detail",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "captured",
+        "reason": "",
+        "path": "screenshots/candidate/states/monitoring-detail--desktop-1440x900.png"
+      },
+      {
+        "key": "monitoring-edit-validation-dirty",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "captured",
+        "reason": "",
+        "path": "screenshots/candidate/states/monitoring-edit-validation-dirty--desktop-1440x900.png"
+      },
+      {
+        "key": "monitoring-history",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "captured",
+        "reason": "",
+        "path": "screenshots/candidate/states/monitoring-history--desktop-1440x900.png"
+      },
+      {
+        "key": "monitoring-compare",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "unavailable",
+        "reason": "locator.click: Timeout 2500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /compare/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"button\" title=\"Compare selected monitors\" aria-label=\"Compare selected monitors\" class=\"h-9 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shrink-0 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-default)] hover:text-[var(--text-primary)]\">\u2026</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 \u00d7 waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 \u00d7 waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    4 \u00d7 waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n; existing compact browser coverage proves the surrounding functionality in tests/eight-route-smoke.spec.ts, tests/release-policy-normal.spec.ts, or tests/release-policy-root-preview.spec.ts."
+      },
+      {
+        "key": "monitoring-embedded-recovery-context",
+        "route": "/monitoring",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "unavailable",
+        "reason": "Public accessibility target unavailable: embedded recovery context action; existing compact browser coverage proves the surrounding functionality in tests/eight-route-smoke.spec.ts, tests/release-policy-normal.spec.ts, or tests/release-policy-root-preview.spec.ts."
+      },
+      {
+        "key": "normal-preview-route-denial",
+        "route": "/far",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "captured",
+        "reason": "",
+        "path": "screenshots/candidate/states/normal-preview-route-denial--desktop-1440x900.png"
+      },
+      {
+        "key": "representative-disabled-preview-action",
+        "route": "/",
+        "viewport": "desktop",
+        "width": 1440,
+        "height": 900,
+        "status": "captured",
+        "reason": "",
+        "path": "screenshots/candidate/states/representative-disabled-preview-action--desktop-1440x900.png"
+      }
+    ]
+  }
+}

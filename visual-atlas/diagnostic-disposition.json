@@ -1,0 +1,15 @@
+{
+  "schema_version": "sysgrid.visual-atlas.diagnostic-disposition.v1",
+  "project": "SysGrid",
+  "change": "CHG-120",
+  "prior_r7_result": "The known 10 diagnostic failures reproduced on the candidate, the R4 predecessor, and the historical-base comparison.",
+  "material_failure_family_match": true,
+  "disposition": "PREEXISTING_DEFERRED",
+  "comparisons": [
+    "candidate",
+    "R4 predecessor",
+    "historical-base comparison"
+  ],
+  "certification_boundary": "This disposition does not certify deferred Project/PV1 domains.",
+  "deferred_suite_rerun": false
+}

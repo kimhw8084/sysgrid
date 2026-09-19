@@ -1,0 +1,193 @@
+{
+  "schema_version": "sysgrid.visual-atlas.reader-index.v1",
+  "entries": [
+    {
+      "path": "capture-report.json",
+      "bytes": 12894
+    },
+    {
+      "path": "comparison-report.json",
+      "bytes": 19368
+    },
+    {
+      "path": "diagnostic-disposition.json",
+      "bytes": 568
+    },
+    {
+      "path": "qualification-report.json",
+      "bytes": 1454
+    },
+    {
+      "path": "review-desktop.pdf",
+      "bytes": 2961476
+    },
+    {
+      "path": "review-mobile.pdf",
+      "bytes": 946472
+    },
+    {
+      "path": "screenshots/baseline/assets--desktop-1440x900.png",
+      "bytes": 243144
+    },
+    {
+      "path": "screenshots/baseline/assets--mobile-390x844.png",
+      "bytes": 59227
+    },
+    {
+      "path": "screenshots/baseline/audit-logs--desktop-1440x900.png",
+      "bytes": 95021
+    },
+    {
+      "path": "screenshots/baseline/audit-logs--mobile-390x844.png",
+      "bytes": 51116
+    },
+    {
+      "path": "screenshots/baseline/dashboard-home--desktop-1440x900.png",
+      "bytes": 163193
+    },
+    {
+      "path": "screenshots/baseline/dashboard-home--mobile-390x844.png",
+      "bytes": 69710
+    },
+    {
+      "path": "screenshots/baseline/monitoring--desktop-1440x900.png",
+      "bytes": 232089
+    },
+    {
+      "path": "screenshots/baseline/monitoring--mobile-390x844.png",
+      "bytes": 57216
+    },
+    {
+      "path": "screenshots/baseline/network--desktop-1440x900.png",
+      "bytes": 194885
+    },
+    {
+      "path": "screenshots/baseline/network--mobile-390x844.png",
+      "bytes": 55469
+    },
+    {
+      "path": "screenshots/baseline/racks--desktop-1440x900.png",
+      "bytes": 187100
+    },
+    {
+      "path": "screenshots/baseline/racks--mobile-390x844.png",
+      "bytes": 61039
+    },
+    {
+      "path": "screenshots/baseline/services--desktop-1440x900.png",
+      "bytes": 206178
+    },
+    {
+      "path": "screenshots/baseline/services--mobile-390x844.png",
+      "bytes": 57760
+    },
+    {
+      "path": "screenshots/baseline/settings--desktop-1440x900.png",
+      "bytes": 118121
+    },
+    {
+      "path": "screenshots/baseline/settings--mobile-390x844.png",
+      "bytes": 57645
+    },
+    {
+      "path": "screenshots/candidate/assets--desktop-1440x900.png",
+      "bytes": 227569
+    },
+    {
+      "path": "screenshots/candidate/assets--mobile-390x844.png",
+      "bytes": 56221
+    },
+    {
+      "path": "screenshots/candidate/audit-logs--desktop-1440x900.png",
+      "bytes": 93423
+    },
+    {
+      "path": "screenshots/candidate/audit-logs--mobile-390x844.png",
+      "bytes": 48503
+    },
+    {
+      "path": "screenshots/candidate/dashboard-home--desktop-1440x900.png",
+      "bytes": 167348
+    },
+    {
+      "path": "screenshots/candidate/dashboard-home--mobile-390x844.png",
+      "bytes": 65457
+    },
+    {
+      "path": "screenshots/candidate/monitoring--desktop-1440x900.png",
+      "bytes": 224615
+    },
+    {
+      "path": "screenshots/candidate/monitoring--mobile-390x844.png",
+      "bytes": 55793
+    },
+    {
+      "path": "screenshots/candidate/network--desktop-1440x900.png",
+      "bytes": 192092
+    },
+    {
+      "path": "screenshots/candidate/network--mobile-390x844.png",
+      "bytes": 54937
+    },
+    {
+      "path": "screenshots/candidate/racks--desktop-1440x900.png",
+      "bytes": 180744
+    },
+    {
+      "path": "screenshots/candidate/racks--mobile-390x844.png",
+      "bytes": 59493
+    },
+    {
+      "path": "screenshots/candidate/services--desktop-1440x900.png",
+      "bytes": 197200
+    },
+    {
+      "path": "screenshots/candidate/services--mobile-390x844.png",
+      "bytes": 55575
+    },
+    {
+      "path": "screenshots/candidate/settings--desktop-1440x900.png",
+      "bytes": 114471
+    },
+    {
+      "path": "screenshots/candidate/settings--mobile-390x844.png",
+      "bytes": 54737
+    },
+    {
+      "path": "screenshots/candidate/states/monitoring-detail--desktop-1440x900.png",
+      "bytes": 73935
+    },
+    {
+      "path": "screenshots/candidate/states/monitoring-edit-validation-dirty--desktop-1440x900.png",
+      "bytes": 115070
+    },
+    {
+      "path": "screenshots/candidate/states/monitoring-history--desktop-1440x900.png",
+      "bytes": 81262
+    },
+    {
+      "path": "screenshots/candidate/states/monitoring-saved-display-grouped--desktop-1440x900.png",
+      "bytes": 234738
+    },
+    {
+      "path": "screenshots/candidate/states/monitoring-selected-row-pre-existing-bulk--desktop-1440x900.png",
+      "bytes": 226835
+    },
+    {
+      "path": "screenshots/candidate/states/normal-preview-route-denial--desktop-1440x900.png",
+      "bytes": 80291
+    },
+    {
+      "path": "screenshots/candidate/states/representative-disabled-preview-action--desktop-1440x900.png",
+      "bytes": 166347
+    },
+    {
+      "path": "state-capture-status.json",
+      "bytes": 4438
+    },
+    {
+      "path": "surface-manifest.json",
+      "bytes": 3996
+    }
+  ]
+}
