@@ -1,0 +1,1171 @@
+{
+  "accepted_at": "2026-09-19T03:12:50Z",
+  "changed_files": [
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": ".gitignore",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 0,
+      "path": "backend/alembic/versions/c9f2a1e8d7b6_merge_current_qualification_heads.py",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/audit.py",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 0,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 58,
+      "deletions": 33,
+      "path": "backend/app/api/dashboard.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/data_flows.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 37,
+      "deletions": 3,
+      "path": "backend/app/api/far.py",
+      "status": "M"
+    },
+    {
+      "additions": 32,
+      "deletions": 6,
+      "path": "backend/app/api/import_engine.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/intelligence.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/investigations.py",
+      "status": "M"
+    },
+    {
+      "additions": 193,
+      "deletions": 9,
+      "path": "backend/app/api/knowledge.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/logical_services.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/maintenance.py",
+      "status": "M"
+    },
+    {
+      "additions": 342,
+      "deletions": 0,
+      "path": "backend/app/api/module_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/monitoring.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/networks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/operational_actions.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/projects.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1.py",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 1,
+      "path": "backend/app/api/pv1_communication.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/racks.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/rca.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/security.py",
+      "status": "M"
+    },
+    {
+      "additions": 202,
+      "deletions": 37,
+      "path": "backend/app/api/settings.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/sites.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "backend/app/api/tenants.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/troubleshoot.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/api/vendors.py",
+      "status": "M"
+    },
+    {
+      "additions": 35,
+      "deletions": 3,
+      "path": "backend/app/api/workspaces.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 1,
+      "path": "backend/app/architecture/api.py",
+      "status": "M"
+    },
+    {
+      "additions": 28,
+      "deletions": 0,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 40,
+      "deletions": 12,
+      "path": "backend/app/main.py",
+      "status": "M"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "backend/conftest.py",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 0,
+      "path": "backend/test_chg13_authorization_security.py",
+      "status": "M"
+    },
+    {
+      "additions": 19,
+      "deletions": 0,
+      "path": "backend/test_migration_graph.py",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "backend/test_settings_api_edges.py",
+      "status": "M"
+    },
+    {
+      "additions": 331,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "A"
+    },
+    {
+      "additions": 26,
+      "deletions": 10,
+      "path": "backend/test_workspace_team_views.py",
+      "status": "M"
+    },
+    {
+      "additions": 41,
+      "deletions": 0,
+      "path": "backend/test_workspace_views.py",
+      "status": "M"
+    },
+    {
+      "additions": 39,
+      "deletions": 0,
+      "path": "contracts/monitoring_feature_preservation_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 277,
+      "deletions": 0,
+      "path": "contracts/system_management_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 4,
+      "deletions": 2,
+      "path": "frontend/package.json",
+      "status": "M"
+    },
+    {
+      "additions": 12,
+      "deletions": 0,
+      "path": "frontend/playwright.all.config.ts",
+      "status": "A"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/playwright.config.ts",
+      "status": "M"
+    },
+    {
+      "additions": 8,
+      "deletions": 0,
+      "path": "frontend/playwright.root-preview.config.ts",
+      "status": "A"
+    },
+    {
+      "additions": 10,
+      "deletions": 0,
+      "path": "frontend/playwright.v1.config.ts",
+      "status": "A"
+    },
+    {
+      "additions": 48,
+      "deletions": 69,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 10,
+      "deletions": 34,
+      "path": "frontend/src/api/apiClient.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 0,
+      "path": "frontend/src/api/apiClient.ts",
+      "status": "M"
+    },
+    {
+      "additions": 33,
+      "deletions": 16,
+      "path": "frontend/src/components/AuditLogs.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 3,
+      "path": "frontend/src/components/ConfigRegistry.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 17,
+      "deletions": 5,
+      "path": "frontend/src/components/Dashboard.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 44,
+      "deletions": 27,
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 9,
+      "path": "frontend/src/components/NetworkReal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 11,
+      "path": "frontend/src/components/assets/AssetDetailsView.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 3,
+      "path": "frontend/src/components/monitoring/BkmDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 4,
+      "path": "frontend/src/components/monitoring/BkmListModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 4,
+      "path": "frontend/src/components/monitoring/MonitoringDetailModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 2,
+      "path": "frontend/src/components/monitoring/MonitoringForm.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 15,
+      "path": "frontend/src/components/settings/externalExportDiagnostics.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 15,
+      "path": "frontend/src/components/settings/systemDiagnostics.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 9,
+      "path": "frontend/src/components/shared/FARGoldenStructuralContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/FARLifecycleBackendContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 13,
+      "deletions": 8,
+      "path": "frontend/src/components/shared/FARResearchGoldenPresentationContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/FormContractsGuard.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 10,
+      "deletions": 3,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 13,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/GoldenWorkspaceGeometryContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 15,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/GoldenWorkspaceShellContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 48,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/ModuleReleasePolicyContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 35,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/MonitoringFeaturePreservationContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 9,
+      "deletions": 2,
+      "path": "frontend/src/components/shared/OperationalBulkContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 20,
+      "deletions": 8,
+      "path": "frontend/src/components/shared/ShellNavigation.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 65,
+      "deletions": 59,
+      "path": "frontend/src/components/shared/ShellNavigation.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/TenantSelector.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 1,
+      "path": "frontend/src/main.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 52,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 216,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 48,
+      "deletions": 0,
+      "path": "frontend/src/policy/moduleCatalog.ts",
+      "status": "A"
+    },
+    {
+      "additions": 41,
+      "deletions": 0,
+      "path": "frontend/src/test/response.ts",
+      "status": "A"
+    },
+    {
+      "additions": 3,
+      "deletions": 2,
+      "path": "frontend/tests/assets-golden-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 13,
+      "deletions": 4,
+      "path": "frontend/tests/assets-revert.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 8,
+      "deletions": 5,
+      "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 4,
+      "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 3,
+      "path": "frontend/tests/assets-stage35-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 9,
+      "deletions": 4,
+      "path": "frontend/tests/assets-stage36-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 2,
+      "path": "frontend/tests/assets-vendors-bulk-preview.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 62,
+      "deletions": 30,
+      "path": "frontend/tests/assets-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/tests/crud-api-contracts.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/tests/dashboard-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 25,
+      "deletions": 0,
+      "path": "frontend/tests/eight-route-smoke.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 60,
+      "deletions": 16,
+      "path": "frontend/tests/helpers/sysgrid.ts",
+      "status": "M"
+    },
+    {
+      "additions": 34,
+      "deletions": 27,
+      "path": "frontend/tests/monitoring-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 33,
+      "deletions": 13,
+      "path": "frontend/tests/network-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 2,
+      "path": "frontend/tests/pom/DashboardView.ts",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 2,
+      "path": "frontend/tests/pre-test-check.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 86,
+      "deletions": 0,
+      "path": "frontend/tests/qualification-suite.json",
+      "status": "A"
+    },
+    {
+      "additions": 38,
+      "deletions": 0,
+      "path": "frontend/tests/release-policy-normal.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 32,
+      "deletions": 0,
+      "path": "frontend/tests/release-policy-root-preview.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 9,
+      "deletions": 6,
+      "path": "frontend/tests/sentinel_smoke.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 8,
+      "deletions": 3,
+      "path": "frontend/tests/settings-and-audit.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 20,
+      "deletions": 7,
+      "path": "frontend/tests/shell-and-search.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 11,
+      "deletions": 4,
+      "path": "frontend/tests/smoke.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 24,
+      "deletions": 9,
+      "path": "frontend/tests/view-deeplink-matrix.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 1,
+      "path": "frontend/tests/view-empty-states.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 4,
+      "deletions": 1,
+      "path": "frontend/tests/workspace-collaborative-views.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tsconfig.json",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": "frontend/vite.config.ts",
+      "status": "M"
+    },
+    {
+      "additions": 430,
+      "deletions": 0,
+      "path": "scripts/lib/verify-runtime.sh",
+      "status": "A"
+    },
+    {
+      "additions": 8,
+      "deletions": 0,
+      "path": "scripts/run-alembic.py",
+      "status": "A"
+    },
+    {
+      "additions": 19,
+      "deletions": 0,
+      "path": "scripts/run-e2e.sh",
+      "status": "A"
+    },
+    {
+      "additions": 21,
+      "deletions": 0,
+      "path": "scripts/run-owned-runtime.sh",
+      "status": "A"
+    },
+    {
+      "additions": 61,
+      "deletions": 0,
+      "path": "scripts/seed-e2e-embedded-far.py",
+      "status": "A"
+    },
+    {
+      "additions": 90,
+      "deletions": 0,
+      "path": "scripts/seed-e2e-embedded-knowledge.py",
+      "status": "A"
+    },
+    {
+      "additions": 84,
+      "deletions": 245,
+      "path": "scripts/verify-app.sh",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "seed.py",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python3 -c 'import fastapi, sqlalchemy, alembic, pytest; print(fastapi.__version__); print(sqlalchemy.__version__); print(alembic.__version__); print(pytest.__version__)'\nrtk backend/venv/bin/python -c 'import fastapi, sqlalchemy, alembic, pytest; print(fastapi.__version__); print(sqlalchemy.__version__); print(alembic.__version__); print(pytest.__version__)'\nrtk git show origin/codex-fabric/evidence/sysgrid/sysgrid-smv1-qualification-completion-fix-v5:.codex-fabric/audit.json | rtk sed -n '840,905p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 4169,
+        "output_sha256": "25423d095170283c503189d432ba622a6a67035f87fbd5c6084a6536e4c590f6",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m alembic heads > /tmp/sysgrid-chg120-v7/logs/backend-alembic-heads.log 2>&1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'mkdir -p /tmp/sysgrid-chg120-v7/migration-upgrade && SQLALCHEMY_DATABASE_URL=sqlite:////tmp/sysgrid-chg120-v7/migration-upgrade/tenant.db /opt/anaconda3/bin/python3 ../scripts/run-alembic.py upgrade head > /tmp/sysgrid-chg120-v7/logs/backend-fresh-upgrade.log 2>&1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps -o pid,etime,%cpu,%mem,command -p 97760 || true\nrtk ps -axo pid,etime,%cpu,%mem,command | rtk rg 'pytest|python3.*test' | rtk head -n 30\nrtk wc -c /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log\nrtk tail -n 30 /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 179,
+        "output_sha256": "026e0811521a21352d1bcf7ab60f04479375825058300e7cd9cbd39abb2861c9",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps -ef | rtk rg 'pytest|/opt/anaconda3/bin/python3 -m pytest|backend-scoped' | rtk head -n 50\nrtk wc -c /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log\nrtk tail -n 10 /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 182,
+        "output_sha256": "1d5889547036754df892cf6634538775a57fb2ff67bc75783164173eb98ad019",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m pytest -q test_migration_graph.py test_system_management_v1_policy.py test_chg13_authorization_security.py test_runtime_diagnostics.py test_tenant_isolation.py test_tenant_workflows.py test_settings_api_edges.py test_settings_workflows.py test_monitoring_query_and_bulk_edges.py test_monitoring_restore_edges.py test_monitoring_workflows.py test_network_workflows.py test_service_workflows.py test_racks_api_edges.py test_racks_workflows.py test_workspace_views.py test_workspace_team_views.py test_asset_vendor_bulk_workflows.py test_import_workflows.py test_revert_logic.py > /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log 2>&1'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk sha256sum /tmp/sysgrid-chg120-v7/logs/backend-alembic-heads.log /tmp/sysgrid-chg120-v7/logs/backend-fresh-upgrade.log /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log\nrtk cat /tmp/sysgrid-chg120-v7/logs/backend-alembic-heads.log\nrtk tail -n 40 /tmp/sysgrid-chg120-v7/logs/backend-fresh-upgrade.log\nrtk tail -n 50 /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for ref in 5b9489c0261139c91f418bcfecae915773ac37e3 5fb316e029976e05bc4026137717235be078c8f4 bf1611bcd9cc3849a4353d5fb82da687c68ef4a0; do echo \"$ref\"; rtk git ls-tree -r --name-only \"$ref\" -- backend/test_operational_actions.py backend/test_p05_my_day_work_plan.py backend/test_p06_timeline_scheduling.py backend/test_p07_architecture_engine.py backend/test_p08_updates_resources_reports.py backend/test_p09_outcomes_delivery_value.py backend/test_pv1_domain_foundation.py; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse 5fb316e029976e05bc4026137717235be078c8f4''^{tree}\nrtk git cat-file -p 5fb316e029976e05bc4026137717235be078c8f4 | rtk head -n 20\nrtk git cat-file -t 5fb316e029976e05bc4026137717235be078c8f4''^{tree}'",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git fetch origin refs/heads/codex/sysgrid-smv1-qualification-infrastructure-fix-v4:refs/remotes/origin/codex/sysgrid-smv1-qualification-infrastructure-fix-v4\nrtk git cat-file -t 5fb316e029976e05bc4026137717235be078c8f4\nrtk git rev-parse 5fb316e029976e05bc4026137717235be078c8f4''^{tree}\nrtk git show -s --format='\"'%H%n%P%n%T%n%s' 5fb316e029976e05bc4026137717235be078c8f4\"",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-qualification-infrastructure-fix-v4\nrtk git fetch --no-tags --no-filter --depth=1 origin refs/heads/codex/sysgrid-smv1-qualification-infrastructure-fix-v4\nrtk git cat-file -t FETCH_HEAD || true\nrtk git rev-parse FETCH_HEAD || true\nrtk git show -s --format='%H%n%P%n%T%n%s' FETCH_HEAD || true\nrtk git fsck --no-reflogs --unreachable 5fb316e029976e05bc4026137717235be078c8f4 2>&1 | rtk head -n 30 || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git cat-file -p 5fb316e029976e05bc4026137717235be078c8f4 | rtk head -n 30\nrtk git rev-parse 5fb316e029976e05bc4026137717235be078c8f4''^{tree}\nrtk git show -s --format='\"'%H%n%P%n%T%n%s' 5fb316e029976e05bc4026137717235be078c8f4\nrtk git rev-parse refs/remotes/origin/codex/sysgrid-smv1-qualification-infrastructure-fix-v4\nrtk git ls-tree -r --name-only 5fb316e029976e05bc4026137717235be078c8f4 -- backend/test_operational_actions.py backend/test_p05_my_day_work_plan.py backend/test_p06_timeline_scheduling.py backend/test_p07_architecture_engine.py backend/test_p08_updates_resources_reports.py backend/test_p09_outcomes_delivery_value.py backend/test_pv1_domain_foundation.py\"",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -ld /tmp/sysgrid-chg120-v7/r4 /tmp/sysgrid-chg120-v7/base 2>/dev/null || true\nrtk git worktree add --detach /tmp/sysgrid-chg120-v7/r4 5fb316e029976e05bc4026137717235be078c8f3\nrtk git worktree add --detach /tmp/sysgrid-chg120-v7/base bf1611bcd9cc3849a4353d5fb82da687c68ef4a0\nrtk git -C /tmp/sysgrid-chg120-v7/r4 rev-parse HEAD''^{tree}\nrtk git -C /tmp/sysgrid-chg120-v7/base rev-parse HEAD''^{tree}\nrtk git -C /tmp/sysgrid-chg120-v7/r4 ls-tree -r --name-only HEAD -- backend/test_operational_actions.py backend/test_p05_my_day_work_plan.py backend/test_p06_timeline_scheduling.py backend/test_p07_architecture_engine.py backend/test_p08_updates_resources_reports.py backend/test_p09_outcomes_delivery_value.py backend/test_pv1_domain_foundation.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m pytest -q test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation test_p07_architecture_engine.py::test_changeset_review_apply_is_atomic_and_current_stays_unchanged test_p07_architecture_engine.py::test_stale_object_write_and_stale_change_set_apply_require_rebase test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify test_pv1_domain_foundation.py::test_project_membership_enforces_task_ownership_and_revocation test_pv1_domain_foundation.py::test_metric_delivery_acceptance_and_verified_outcome_are_independent test_pv1_domain_foundation.py::test_same_project_id_is_not_readable_from_another_tenant > /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-base.log 2>&1'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m pytest -q test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation test_p07_architecture_engine.py::test_changeset_review_apply_is_atomic_and_current_stays_unchanged test_p07_architecture_engine.py::test_stale_object_write_and_stale_change_set_apply_require_rebase test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify test_pv1_domain_foundation.py::test_project_membership_enforces_task_ownership_and_revocation test_pv1_domain_foundation.py::test_metric_delivery_acceptance_and_verified_outcome_are_independent test_pv1_domain_foundation.py::test_same_project_id_is_not_readable_from_another_tenant > /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-v7.log 2>&1'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m pytest -q test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation test_p07_architecture_engine.py::test_changeset_review_apply_is_atomic_and_current_stays_unchanged test_p07_architecture_engine.py::test_stale_object_write_and_stale_change_set_apply_require_rebase test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify test_pv1_domain_foundation.py::test_project_membership_enforces_task_ownership_and_revocation test_pv1_domain_foundation.py::test_metric_delivery_acceptance_and_verified_outcome_are_independent test_pv1_domain_foundation.py::test_same_project_id_is_not_readable_from_another_tenant > /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-r4-ref-c8f3.log 2>&1'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 100 /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-base.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /opt/anaconda3/bin/python3 -m alembic heads'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 140 /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-v7.log\nrtk tail -n 140 /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-r4-ref-c8f3.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python3 -m pytest -q test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation test_p07_architecture_engine.py::test_changeset_review_apply_is_atomic_and_current_stays_unchanged test_p07_architecture_engine.py::test_stale_object_write_and_stale_change_set_apply_require_rebase test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify test_pv1_domain_foundation.py::test_project_membership_enforces_task_ownership_and_revocation test_pv1_domain_foundation.py::test_metric_delivery_acceptance_and_verified_outcome_are_independent test_pv1_domain_foundation.py::test_same_project_id_is_not_readable_from_another_tenant > /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-base-merge.log 2>&1'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for f in /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-v7.log /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-r4-ref-c8f3.log /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-base-merge.log; do echo \"$f\"; rtk rg -n '\"'\"'^(FAILED|ERROR|[0-9]+ failed|[0-9]+ passed|================)'\"' \\\"\"'$f\" | rtk tail -n 30; rtk sha256sum \"$f\"; done\nrtk git -C /tmp/sysgrid-chg120-v7/base status --short\nrtk git -C /tmp/sysgrid-chg120-v7/r4 status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node frontend/node_modules/playwright/cli.js --version\nrtk ls -ld /Users/haewonkim/Library/Caches/ms-playwright 2>/dev/null || true\nrtk find /Users/haewonkim/Library/Caches/ms-playwright -maxdepth 2 -type d 2>/dev/null | rtk head -n 30\nrtk sed -n '1,220p' scripts/run-e2e.sh\nrtk sed -n '1,120p' frontend/playwright.v1.config.ts\nrtk sed -n '1,160p' frontend/playwright.root-preview.config.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 2 'node_modules/@playwright/test|node_modules/playwright\\\"' frontend/package-lock.json | rtk head -n 60\nrtk node -e 'console.log(require(\\\"./frontend/node_modules/playwright/package.json\\\").version)'\nrtk node -e 'console.log(require(\\\"./frontend/node_modules/@playwright/test/package.json\\\").version)'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'env -i HOME=/Users/haewonkim PATH=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin npm install --ignore-scripts --no-package-lock --no-save --no-audit --no-fund playwright@1.60.0 @playwright/test@1.60.0 > /tmp/sysgrid-chg120-v7/logs/npm-playwright-align.log 2>&1; rc=$?; sha256sum /tmp/sysgrid-chg120-v7/logs/npm-playwright-align.log; exit $rc'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e 'console.log(require(\\\"./frontend/node_modules/playwright/package.json\\\").version)'\nrtk node -e 'console.log(require(\\\"./frontend/node_modules/@playwright/test/package.json\\\").version)'\nrtk tail -n 30 /tmp/sysgrid-chg120-v7/logs/npm-playwright-align.log\nrtk git status --porcelain=v1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk tail -n 80 /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log\nrtk wc -c /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log\nrtk ps -ef | rtk rg 'run-e2e|start-local|uvicorn|vite|playwright|node' | rtk head -n 60\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 40 /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log\nrtk wc -c /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 6 '✘|failed|Error|AssertionError|Timeout' /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log | rtk head -n 220\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '640,760p' frontend/tests/assets-golden-evidence.spec.ts\nrtk sed -n '650,760p' frontend/tests/assets-stage33-evidence.spec.ts\nrtk sed -n '660,760p' frontend/tests/assets-stage35-evidence.spec.ts\nrtk sed -n '1,180p' frontend/tests/helpers/sysgrid.ts | rtk head -n 180\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find frontend/test-results-v1 -maxdepth 4 -type f 2>/dev/null | rtk head -n 80\nrtk find frontend/test-results-v1 -type f -name '*error*' -o -name '*trace*' 2>/dev/null | rtk head -n 40\nrtk find frontend/stage31-evidence frontend/stage33-evidence frontend/stage34-evidence frontend/stage35-evidence -maxdepth 2 -type f 2>/dev/null | rtk head -n 80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for f in frontend/test-results-v1/*/error-context.md; do echo \"$f\"; rtk sed -n '\"'1,160p' \\\"\"'$f\"; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'observability/performance|ERR_ABORTED' COMMAND_OUTPUTS frontend 2>/dev/null | rtk head -n 120\nrtk rg -n 'stage31|stage33|stage34|stage35|stage36|test:e2e' docs .sysgrid* 2>/dev/null | rtk head -n 120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'env -i HOME=/Users/haewonkim TZ=America/Chicago LANG=en_US.UTF-8 PATH=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/anaconda3/bin:/opt/homebrew/bin:/usr/bin:/bin npm run test:e2e > /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log 2>&1'",
+      "exit_code": 130,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-chg120-v7/base status --porcelain=v1\nrtk git -C /tmp/sysgrid-chg120-v7/r4 status --porcelain=v1\nrtk git worktree remove --force /tmp/sysgrid-chg120-v7/base\nrtk git worktree remove --force /tmp/sysgrid-chg120-v7/r4\nrtk git worktree list\nrtk git status --porcelain=v1 --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --porcelain=v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse refs/remotes/origin/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git log --format='%H %P %T %s' --first-parent bf1611bcd9cc3849a4353d5fb82da687c68ef4a0..HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git merge-base --is-ancestor 5b9489c0261139c91f418bcfecae915773ac37e3 HEAD'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git merge-base --is-ancestor 2551e1664bf5596add9b18fd53bedf9d92a8128a HEAD'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --name-status --diff-filter=A bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD | rtk rg '(\"'^|/)(frontend/OUT-.*_EVIDENCE'\"\\\\.html|.*\\\\.(png|jpe?g|pdf|zip|db|log|trace|mp4|webm)|coverage|test-results|playwright-report|blob-report|llm-report\\\\.json)(/|\"'$)'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-tree -r --name-only HEAD | rtk rg '(\"'^|/)OUT-.*_EVIDENCE'\"\\\\.html\"'$'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-status --diff-filter=A bf1611bcd9cc3849a4353d5fb82da687c68ef4a0...HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk sha256sum /tmp/sysgrid-chg120-v7/logs/frontend-test-unit.log /tmp/sysgrid-chg120-v7/logs/frontend-operational-contracts.log /tmp/sysgrid-chg120-v7/logs/frontend-typecheck.log /tmp/sysgrid-chg120-v7/logs/frontend-build.log /tmp/sysgrid-chg120-v7/logs/backend-alembic-heads.log /tmp/sysgrid-chg120-v7/logs/backend-fresh-upgrade.log /tmp/sysgrid-chg120-v7/logs/backend-scoped-r5.log /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-v7.log /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-r4-ref-c8f3.log /tmp/sysgrid-chg120-v7/logs/backend-diagnostic-base-merge.log /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --untracked-files=all\nrtk git diff-index --quiet HEAD --\nrtk git rev-parse HEAD HEAD''^1 HEAD''^{tree}\nrtk git show -s --format='\"'%H%n%P%n%T%n%s' HEAD\nrtk git rev-parse main origin/main\nrtk git worktree list\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk tail -n 80 /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log\nrtk rg -n '\"'^  ✘|''^  ✓|''^Running|''^.* tests using|passed|failed|interrupted'\"' /tmp/sysgrid-chg120-v7/logs/frontend-e2e-v1.log | rtk tail -n 80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.154.0",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 225,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.11,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 14059264,
+      "fresh_input_tokens": 270732,
+      "input_tokens": 14329996,
+      "non_reasoning_output_tokens": 22307,
+      "output_tokens": 44203,
+      "reasoning_output_tokens": 21896,
+      "total_processed_tokens": 14374199
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "be4a7abfa670800f75386872f8e1cbf0c5316918",
+      "subject": "chore: clean CHG-120 integration candidate"
+    }
+  ],
+  "diff": {
+    "additions": 3997,
+    "changed_files": 116,
+    "commit_count": 1,
+    "deletions": 844
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 10,
+    "items": [
+      {
+        "bytes": 1481,
+        "path": "contracts/monitoring_feature_preservation_v1.json",
+        "sha256": "d92dadbe48332eb6308dc0f01116b277c25db563828ce66ecdfbe6ce5c7a51dc"
+      },
+      {
+        "bytes": 8685,
+        "path": "contracts/system_management_v1.json",
+        "sha256": "f2c03dc8335c902b7c638cd47ae41ceb3742a366ab26f53c449182bf7855a8c9"
+      },
+      {
+        "bytes": 3098,
+        "path": "frontend/package.json",
+        "sha256": "2776bdebb0a21ee716b2e4051ed316e5fb2d4708308859a880e470e3396e7a4e"
+      },
+      {
+        "bytes": 38159,
+        "path": "frontend/tests/assets-golden-evidence.spec.ts",
+        "sha256": "aeaa474627c5f68cb388a781e0c804ea450daff52f40969b6fb1434b87475a2e"
+      },
+      {
+        "bytes": 41331,
+        "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+        "sha256": "e8e8554e0fa1ede563d33a8b9e80154c7b6243234476697ddff763ed7f1abb83"
+      },
+      {
+        "bytes": 45647,
+        "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+        "sha256": "8204169cc06a269e585094342d1c1f0ac9e15e5d0a9474afae2b363a38db63b1"
+      },
+      {
+        "bytes": 45614,
+        "path": "frontend/tests/assets-stage35-evidence.spec.ts",
+        "sha256": "a7bc68b5fd7cca7c0c2bbdeef6eafa2e8c90b6b3ac6baa959ca40a9c5c271cd5"
+      },
+      {
+        "bytes": 56725,
+        "path": "frontend/tests/assets-stage36-evidence.spec.ts",
+        "sha256": "51560755f4d84f13125c40d87022ee1ea259edc52fbaadf9f19a7ef29190e186"
+      },
+      {
+        "bytes": 3054,
+        "path": "frontend/tests/qualification-suite.json",
+        "sha256": "4896195cd6a3d2be7f794a9dfec8abdc4bebc2883bdfc607092a6abdc2551637"
+      },
+      {
+        "bytes": 808,
+        "path": "frontend/tsconfig.json",
+        "sha256": "cfa49edf32dac185335e7daa8fa30e8b4d68cbf180c1d87cd97ca409790efc73"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-19T03:33:57Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "branch": "codex/sysgrid-smv1-clean-integration-qualification-v7",
+    "detached_verify": false,
+    "head_sha": "be4a7abfa670800f75386872f8e1cbf0c5316918",
+    "remote_exact_head": true,
+    "remote_head_sha": "be4a7abfa670800f75386872f8e1cbf0c5316918",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "bf1611bcd9cc3849a4353d5fb82da687c68ef4a0",
+    "work_branch": "codex/sysgrid-smv1-clean-integration-qualification-v7",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-f312beb4a91a320814c91d4f",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-clean-integration-qualification-v7",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-clean-integration-qualification-v7"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "44756118cd7fda0c45cd23ba1d31a48a3f4f2422d687df15264ba4406f40e1f2",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-clean-integration-qualification-v7",
+  "schema_version": 1,
+  "started_at": "2026-09-19T03:12:50Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1267,
+    "queue_seconds": 0,
+    "total_seconds": 1267
+  },
+  "transport": {
+    "bytes": 12522,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 12174,
+    "prompt_sha256": "68c71235c92705fadc94177c4e07ab3bc6629c04995ce7522d3d7c062e0f5400",
+    "sha256": "f312beb4a91a320814c91d4f8ba387b6361395450d33812def1f15dbbfd122d0"
+  }
+}
