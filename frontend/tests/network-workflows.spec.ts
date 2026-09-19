@@ -14,7 +14,6 @@ import {
   resetBrowserState,
   getPrimaryGrid,
   waitForColumnRendered,
-  waitForColumnHidden,
 } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
@@ -125,7 +124,7 @@ test.describe('Network workflows', () => {
     await pinnedRows.nth(1).locator('.ag-selection-checkbox').first().click()
     await expect(pinnedRows.nth(1)).toHaveClass(/ag-row-selected/)
     
-    const bulkTrigger = page.getByRole('button', { name: 'Bulk Actions' })
+    const bulkTrigger = page.getByRole('button', { name: /Bulk Actions/i })
     await bulkTrigger.click()
     const bulkMenu = page.locator('.bulk-menu-container')
     await expect(bulkMenu).toBeVisible({ timeout: 5000 })
@@ -265,7 +264,7 @@ test.describe('Network workflows', () => {
     await expect(rows.nth(2)).toHaveClass(/ag-row-selected/)
 
     // 6. Prove bulk menu enables after selection
-    const bulkTrigger = page.getByRole('button', { name: 'Bulk Actions' })
+    const bulkTrigger = page.getByRole('button', { name: /Bulk Actions/i })
     await bulkTrigger.click()
     const bulkMenu = page.locator('.bulk-menu-container')
     await expect(bulkMenu).toBeVisible({ timeout: 5000 })
@@ -332,7 +331,7 @@ test.describe('Network workflows', () => {
     await expect(rows).toHaveCount(3, { timeout: 15000 })
 
     // 10. Prove saved views menu opens
-    const viewsTrigger = page.getByRole('button', { name: 'Views' })
+    const viewsTrigger = page.getByRole('button', { name: 'Views', exact: true })
     await viewsTrigger.click()
     const viewsMenu = page.locator('.views-menu-container').filter({ hasText: 'Saved views' })
     await expect(viewsMenu).toBeVisible({ timeout: 5000 })
@@ -447,8 +446,9 @@ test.describe('Network workflows', () => {
     // Collapse back
     await page.getByTitle('Hide Activity Columns').click()
     
-    // Wait until watch column is no longer visible in DOM using custom helper
-    await waitForColumnHidden(page, 'watch')
+    // AG Grid may retain a hidden header node in the DOM. Assert the
+    // authoritative column state instead of treating DOM retention as visible.
+    await expect.poll(() => isColumnVisible(page, 'watch')).toBe(false)
     
     expect(await isColumnVisible(page, 'watch')).toBe(false)
     expect(await isColumnVisible(page, 'recent_change')).toBe(false)
@@ -751,7 +751,7 @@ test.describe('Network workflows', () => {
     await rowInCenter.locator('.ag-cell').first().click()
     await expect(rowInCenter).toHaveClass(/ag-row-selected/)
     
-    await clickResilientButton(page, 'Bulk Actions')
+    await clickResilientButton(page, /Bulk Actions/i)
     await page.locator('.bulk-menu-container').getByText('Bulk Edit Table', { exact: true }).click()
 
     const bulkModal = page.locator('[role="dialog"]').filter({ hasText: 'Bulk Edit Network' })
@@ -766,7 +766,7 @@ test.describe('Network workflows', () => {
     await expect(bulkModal).not.toBeVisible()
 
     // Open again to test dirty confirmations
-    await clickResilientButton(page, 'Bulk Actions')
+    await clickResilientButton(page, /Bulk Actions/i)
     await page.locator('.bulk-menu-container').getByText('Bulk Edit Table', { exact: true }).click()
     await expect(bulkModal).toBeVisible({ timeout: 5000 })
 
@@ -801,12 +801,8 @@ test.describe('Network workflows', () => {
 
     // 8. Test irreversible purge confirmation warning and fallback success toast
     // Soft delete the selected row using Bulk Actions
-    const deleteResponsePromise = page.waitForResponse(response =>
-      response.url().includes('/api/v1/networks/connections/bulk-delete') && response.status() === 200
-    )
-
     // Open bulk actions menu
-    await clickResilientButton(page, 'Bulk Actions')
+    await clickResilientButton(page, /Bulk Actions/i)
     const bulkMenuForDelete = page.locator('.bulk-menu-container')
     await expect(bulkMenuForDelete).toBeVisible({ timeout: 5000 })
 
@@ -815,7 +811,20 @@ test.describe('Network workflows', () => {
     await expect(confirmDeactBtn).toBeVisible({ timeout: 5000 })
     await confirmDeactBtn.click()
 
+    const networkPreview = page.getByRole('dialog').filter({
+      has: page.getByRole('heading', { name: 'Network bulk preview' }),
+    })
+    await expect(networkPreview).toBeVisible({ timeout: 5000 })
+    const deleteResponsePromise = page.waitForResponse(response =>
+      response.url().includes('/api/v1/networks/connections/bulk-delete') && response.status() === 200
+    )
+    await networkPreview.getByRole('button', { name: 'Confirm Archive selection' }).click()
     await deleteResponsePromise
+    const deleteReceipt = page.getByRole('dialog').filter({
+      has: page.getByRole('heading', { name: 'Network bulk complete' }),
+    })
+    await expect(deleteReceipt).toBeVisible({ timeout: 15000 })
+    await deleteReceipt.getByRole('button', { name: 'Close bulk receipt', exact: true }).click()
     
     // Switch to Deleted tab dynamically by waiting for row count in Active grid viewport to settle at 0
     await expect(page.locator('.ag-center-cols-container .ag-row')).toHaveCount(0, { timeout: 10000 })
@@ -843,6 +852,17 @@ test.describe('Network workflows', () => {
     await deletedRowMenu.getByText('Purge', { exact: true }).click()
     await expect(purgeConfirmModal).toBeVisible({ timeout: 5000 })
     await purgeConfirmModal.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+
+    const purgePreview = page.getByRole('dialog').filter({
+      has: page.getByRole('heading', { name: 'Network bulk preview' }),
+    })
+    await expect(purgePreview).toBeVisible({ timeout: 5000 })
+    await purgePreview.getByRole('button', { name: 'Confirm Purge selection' }).click()
+    const purgeReceipt = page.getByRole('dialog').filter({
+      has: page.getByRole('heading', { name: 'Network bulk complete' }),
+    })
+    await expect(purgeReceipt).toBeVisible({ timeout: 15000 })
+    await purgeReceipt.getByRole('button', { name: 'Close bulk receipt', exact: true }).click()
 
     // Verify it is purged from grid
     await expect(purgeConfirmModal).not.toBeVisible()

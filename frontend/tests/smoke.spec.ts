@@ -11,9 +11,16 @@ test.describe('Smoke Tests', () => {
   for (const workspace of OPERATIONAL_WORKSPACE_MATRIX) {
     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
       await page.goto(workspace.route)
-      
-      // Ensure the canonical selector is visible, indicating the page loaded correctly
-      await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+
+      // Normal-v1 must prove deferred standalone routes fail before their
+      // preview component mounts; production routes retain their canonical
+      // workspace readiness assertion.
+      const previewKeys = new Set(['external', 'far', 'research', 'vendors'])
+      if (previewKeys.has(workspace.key)) {
+        await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible({ timeout: 30000 })
+      } else {
+        await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
+      }
       
       // Ensure the URL matches the canonical route (allowing for query params)
       await expect(page).toHaveURL(new RegExp(workspace.route.split('?')[0]))
@@ -23,7 +30,7 @@ test.describe('Smoke Tests', () => {
   // Legacy/Dashboard coverage
   const otherRoutes = [
     { path: '/', expectedText: /Stability Index/i },
-    { path: '/projects', expectedText: /Strategic/i },
+    { path: '/projects', expectedText: /Access unavailable/i },
     { path: '/racks', expectedText: /Racks/i },
   ]
 

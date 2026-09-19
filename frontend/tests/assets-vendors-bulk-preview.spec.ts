@@ -53,7 +53,7 @@ test.describe('Assets and Vendors authoritative bulk completion', () => {
     const assetSearch = page.getByPlaceholder('Scan asset matrix...')
     await assetSearch.fill(stamp)
     await selectRowsByNames(page, assets.map((asset: any) => asset.name))
-    await clickResilientButton(page, 'Bulk Actions')
+    await clickResilientButton(page, /Bulk Actions/i)
     await clickResilientButton(page, 'Set Environment')
     await clickResilientButton(page, 'Choose environment')
     await choosePortaledDropdownOption(page, 'Development')
@@ -86,6 +86,11 @@ test.describe('Assets and Vendors authoritative bulk completion', () => {
       expect(assetsRestored.find((row: any) => row.id === asset.id)?.environment).toBe('Production')
     }
 
+    // Vendors remains deferred/preview-only for normal-v1. Keep the asset
+    // qualification above release-blocking and retain vendor coverage for the
+    // explicit root-preview and historical suites.
+    if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1') return
+
     const vendors = []
     for (const suffix of ['A', 'B']) {
       const response = await request.post(`${apiBase}/vendors`, {
@@ -99,7 +104,7 @@ test.describe('Assets and Vendors authoritative bulk completion', () => {
     const vendorSearch = page.getByPlaceholder('Search vendors...')
     await vendorSearch.fill(stamp)
     await selectRowsByNames(page, vendors.map((vendor: any) => vendor.name))
-    await clickResilientButton(page, 'Bulk Actions')
+    await clickResilientButton(page, /Bulk Actions/i)
     await clickResilientButton(page, 'Set Country')
     await clickResilientButton(page, 'Choose country')
     await choosePortaledDropdownOption(page, 'South Korea')

@@ -515,7 +515,7 @@ const classifyEvent = (routeLabel: string, event: RuntimeEvent): Omit<Classifica
   }
 
   const exactMessage = `${event.method} ${event.url} :: ${event.status} ${event.statusText}`
-  const unrelated = event.status === 404 && /favicon\.ico$/i.test(event.url)
+  const unrelated = (event.status === 404 && /favicon\.ico$/i.test(event.url)) || event.status === 304
   return {
     key: `${event.kind}:${event.method}:${event.url}:${event.status}:${event.resourceType || ''}`,
     routeLabel,
@@ -523,7 +523,9 @@ const classifyEvent = (routeLabel: string, event: RuntimeEvent): Omit<Classifica
     exactMessage,
     classification: unrelated ? 'unrelated' : 'blocking',
     reason: unrelated
-      ? 'Missing favicon response is unrelated to route render and lock eligibility.'
+      ? event.status === 304
+        ? 'HTTP 304 is a successful cache revalidation response and is unrelated to route render and lock eligibility.'
+        : 'Missing favicon response is unrelated to route render and lock eligibility.'
       : 'Non-OK response remains blocking until proven unrelated.',
     affectsAssetLockEligibility: !unrelated,
   }
@@ -999,7 +1001,10 @@ test.describe('Assets Stage 36 targeted acceptance cleanup', () => {
 
         const contextMenu = currentPage.locator('.row-action-menu-container').filter({ has: currentPage.getByText('Row actions') }).first()
         customMenuVisible = await contextMenu.isVisible().catch(() => false)
-        customMenuCount = await currentPage.locator('.row-action-menu-container').count()
+        customMenuCount = await currentPage
+          .locator('.row-action-menu-container')
+          .filter({ has: currentPage.getByText('Row actions') })
+          .count()
 
         const evState = await currentPage.evaluate(() => ({
           seen: (window as any)._contextMenuSeen,
@@ -1029,7 +1034,7 @@ test.describe('Assets Stage 36 targeted acceptance cleanup', () => {
       interaction: async (currentPage) => {
         await currentPage.getByTitle('More actions').first().click({ force: true })
         await currentPage.waitForTimeout(300)
-        await currentPage.locator('.row-action-menu-container button').filter({ hasText: /open details/i }).first().click({ force: true })
+        await currentPage.locator('.row-action-menu-container button').filter({ hasText: /view details/i }).first().click({ force: true })
         const dialog = currentPage.getByRole('dialog')
         await expect(dialog).toBeVisible({ timeout: 5_000 })
       }

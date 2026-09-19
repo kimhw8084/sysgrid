@@ -10,7 +10,9 @@ test.describe('View empty states', () => {
     const impossibleTerm = `PW-NO-MATCH-${Date.now()}`
 
     const expectations = [
-      { path: '/knowledge', placeholder: 'Query Matrix...', text: 'No Intelligence Found' },
+      ...(process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' ? [] : [
+        { path: '/knowledge', placeholder: 'Query Matrix...', text: 'No Intelligence Found' },
+      ]),
       { path: '/racks', placeholder: 'Search racks & devices...', text: `No results for "${impossibleTerm}"` },
     ]
 

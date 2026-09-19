@@ -29,7 +29,7 @@ test.describe('App shell and global search', () => {
     await searchTrigger.click()
     await expect(searchInput).toBeVisible()
     await searchInput.fill(service.name)
-    const serviceResult = page.locator('button').filter({ hasText: service.name }).first()
+    const serviceResult = page.getByRole('link', { name: new RegExp(service.name) }).first()
     await expect(serviceResult).toBeVisible()
     await serviceResult.click()
     await expect(page).toHaveURL(new RegExp(`/services\\?id=${service.id}`))
@@ -44,7 +44,7 @@ test.describe('App shell and global search', () => {
     await searchTrigger.click()
     await expect(searchInput).toBeVisible()
     await searchInput.fill(monitoring.title)
-    const monitoringResult = page.locator('button').filter({ hasText: monitoring.title }).first()
+    const monitoringResult = page.getByRole('link', { name: new RegExp(monitoring.title) }).first()
     await expect(monitoringResult).toBeVisible()
     await monitoringResult.click()
     await expect(page).toHaveURL(new RegExp(`/monitoring\\?id=${monitoring.id}`))
@@ -59,11 +59,15 @@ test.describe('App shell and global search', () => {
     await searchTrigger.click()
     await expect(searchInput).toBeVisible()
     await searchInput.fill(knowledge.title)
-    const knowledgeResult = page.locator('button').filter({ hasText: knowledge.title }).first()
-    await expect(knowledgeResult).toBeVisible()
-    await knowledgeResult.click()
-    await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
-    await expect(page.locator('h1').filter({ hasText: knowledge.title })).toBeVisible()
+    if (process.env.SYSGRID_VERIFY_PROFILE === 'root-preview') {
+      const searchDialog = page.getByRole('dialog')
+      const knowledgeResult = searchDialog.getByRole('link', { name: new RegExp(knowledge.title) }).first()
+      await expect(knowledgeResult).toBeVisible()
+      await knowledgeResult.click()
+      await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
+    } else {
+      await expect(page.getByText(`Zero records found for "${knowledge.title}"`, { exact: true })).toBeVisible()
+    }
   })
 })
 
@@ -77,6 +81,7 @@ const goldenRoutes = [
   { path: '/research', archetype: 'analytical' },
   { path: '/vendors', archetype: 'table' },
 ] as const
+const normalPreviewRoutes = new Set(['/external', '/far', '/research', '/vendors'])
 
 type GeometryBox = { x: number; y: number; width: number; height: number; right: number; bottom: number }
 
@@ -217,6 +222,10 @@ test.describe('Golden Eight rendered geometry', () => {
     for (const route of goldenRoutes) {
       await page.goto(route.path)
       await waitForAppIdle(page)
+      if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && normalPreviewRoutes.has(route.path)) {
+        await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible()
+        continue
+      }
       const { shell, boxes } = await readGoldenGeometry(page)
 
       await expect(shell).toHaveAttribute('data-golden-geometry-version', '1')
@@ -261,6 +270,10 @@ test.describe('Golden Eight rendered geometry', () => {
     for (const route of goldenRoutes) {
       await page.goto(route.path)
       await waitForAppIdle(page)
+      if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && normalPreviewRoutes.has(route.path)) {
+        await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible()
+        continue
+      }
       const { shell, boxes } = await readGoldenGeometry(page)
 
       await expect(shell).toHaveAttribute('data-golden-geometry-version', '1')

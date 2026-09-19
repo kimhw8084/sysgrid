@@ -16,7 +16,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     extraHTTPHeaders: {
-      'X-User-Id': 'haewon.kim'
+      'X-User-Id': process.env.USER_ID || process.env.SYSGRID_VERIFY_USER_ID || 'haewon.kim',
+      'X-Tenant-Id': process.env.PW_TENANT_ID || '1'
     }
   }
 })

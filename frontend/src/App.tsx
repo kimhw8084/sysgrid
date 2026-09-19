@@ -538,12 +538,6 @@ function MainLayout() {
             <ShellNavGroup key={group.label} label={group.label} isSidebarOpen={isSidebarOpen} defaultExpanded={group.defaultExpanded}>
               {group.items.map((item) => {
                 const module = modulePolicy.data?.modules?.[item.moduleId]
-                const catalogIsPreview = module?.default_stage === 'preview' || (!module && item.moduleId !== 'home' && ['projects', 'external', 'architecture', 'research', 'far', 'vendors', 'knowledge'].includes(item.moduleId))
-                const disabled = (modulePolicy.isError || modulePolicy.isLoading) && catalogIsPreview
-                  ? true
-                  : module
-                    ? !module.available
-                    : false
                 return (
                   <ShellNavItem
                     key={item.path}
@@ -553,7 +547,6 @@ function MainLayout() {
                     path={item.path}
                     active={isShellRouteActive(location.pathname, item.path, item.aliases)}
                     isOpen={isSidebarOpen}
-                    disabled={disabled}
                     unavailableReason={module?.blocked_reason}
                   />
                 )

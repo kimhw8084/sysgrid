@@ -87,6 +87,7 @@ test.describe('CRUD API contracts', () => {
   })
 
   test('keeps knowledge, research, and projects CRUD durable through read-update-delete cycles', async ({ sysApi: request }) => {
+    test.skip(process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1', 'Deferred preview-domain CRUD; exercised by the root-preview/full historical suite')
     const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
     const knowledgeCreate = await request.post(`${apiBase}/knowledge`, {
@@ -159,6 +160,7 @@ test.describe('CRUD API contracts', () => {
   })
 
   test('keeps network, external, and FAR CRUD flows stable with realistic payloads', async ({ sysApi: request }) => {
+    test.skip(process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1', 'Deferred external/FAR CRUD; exercised by the root-preview/full historical suite')
     const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
     const source = await createAsset(request, {

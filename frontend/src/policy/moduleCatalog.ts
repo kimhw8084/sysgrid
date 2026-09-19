@@ -29,3 +29,20 @@ export const MODULES_BY_ID = Object.fromEntries(
 ) as Record<string, ModuleCatalogEntry>
 
 export const getCatalogModule = (moduleId: string) => MODULES_BY_ID[moduleId]
+
+const normalizePath = (path: string) => {
+  const pathname = path.split(/[?#]/, 1)[0].replace(/\/+$/, '')
+  return pathname || '/'
+}
+
+export const getCatalogModuleForPath = (path: string) => {
+  const current = normalizePath(path)
+  return MODULE_CATALOG.modules.find((module) => [module.canonical_route, ...module.aliases].some((candidate) => {
+    const normalizedCandidate = normalizePath(candidate)
+    return normalizedCandidate === '/'
+      ? current === '/'
+      : current === normalizedCandidate || current.startsWith(`${normalizedCandidate}/`)
+  }))
+}
+
+export const getCatalogModuleIdForPath = (path: string) => getCatalogModuleForPath(path)?.id

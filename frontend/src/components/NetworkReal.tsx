@@ -38,6 +38,7 @@ import {
 } from './shared/OperationalGridContract'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
 import { apiFetch } from '../api/apiClient'
+import { ModulePolicyButton, useModuleActionPolicy } from '../policy/ModulePolicy'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
 import { ConfigRegistryModal } from "./ConfigRegistry"
@@ -609,6 +610,7 @@ const ObservabilityHUD = ({ items }: any) => {
 export default function NetworkReal() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const knowledgeAction = useModuleActionPolicy('knowledge')
   const idParam = searchParams.get('id')
   const queryClient = useQueryClient()
   const gridRef = React.useRef<any>(null)
@@ -2771,7 +2773,10 @@ export default function NetworkReal() {
               }
             }}
             onOpenAsset={(deviceId: number) => navigate(`/asset?id=${deviceId}`)}
-            onOpenKnowledge={(knowledgeId: number) => navigate(`/knowledge?id=${knowledgeId}`)}
+            onOpenKnowledge={(knowledgeId: number) => {
+              if (!knowledgeAction.available) return
+              navigate(`/knowledge?id=${knowledgeId}`)
+            }}
             deleteConfirm={detailDeleteConfirm}
           />
         )}
@@ -3475,8 +3480,10 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
             footerRight={
                <div className="flex items-center gap-3">
                   <ToolbarButton onClick={() => setInterventionDoc(null)}>Cancel</ToolbarButton>
-                  <ToolbarButton 
-                    variant="primary" 
+                  <ModulePolicyButton
+                    moduleId="knowledge"
+                    disabledReason="Standalone Knowledge is available only for an authorized release profile."
+                    className="h-9 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shrink-0 transition-all active:scale-95 border border-[var(--action-primary)] bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20 hover:bg-[var(--action-primary-hover)] disabled:cursor-not-allowed disabled:opacity-40"
                     onClick={() => {
                        const id = interventionDoc.id;
                        setInterventionDoc(null);
@@ -3484,7 +3491,7 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
                     }}
                   >
                      Confirm & Open Procedure
-                  </ToolbarButton>
+                  </ModulePolicyButton>
                </div>
             }
           >

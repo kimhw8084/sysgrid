@@ -7,9 +7,10 @@ VERIFY_RUNTIME_BACKEND_DIR="$VERIFY_RUNTIME_ROOT_DIR/backend"
 VERIFY_RUNTIME_FRONTEND_DIR="$VERIFY_RUNTIME_ROOT_DIR/frontend"
 VERIFY_RUNTIME_BACKEND_HOST="${SYSGRID_VERIFY_BACKEND_HOST:-127.0.0.1}"
 VERIFY_RUNTIME_FRONTEND_HOST="${SYSGRID_VERIFY_FRONTEND_HOST:-127.0.0.1}"
+VERIFY_RUNTIME_PROFILE="${SYSGRID_VERIFY_PROFILE:-normal-v1}"
 VERIFY_RUNTIME_TEST_USER="${SYSGRID_VERIFY_USER_ID:-haewon.kim}"
 VERIFY_RUNTIME_TEST_TENANT="${SYSGRID_VERIFY_TENANT_ID:-1}"
-VERIFY_RUNTIME_SYSTEM_ROOT="${SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID:-}"
+VERIFY_RUNTIME_SYSTEM_ROOT=""
 VERIFY_RUNTIME_USER_ENV_VAR="SYSGRID_VERIFY_RUNTIME_USER_ID"
 VERIFY_RUNTIME_BACKEND_PID=""
 VERIFY_RUNTIME_FRONTEND_PID=""
@@ -17,6 +18,33 @@ VERIFY_RUNTIME_DIR=""
 VERIFY_RUNTIME_CLEANED="false"
 PYTHON_BIN="${PYTHON_BIN:-}"
 NODE_BIN="${NODE_BIN:-}"
+
+verify_runtime_configure_profile() {
+  VERIFY_RUNTIME_PROFILE="${SYSGRID_VERIFY_PROFILE:-normal-v1}"
+  case "$VERIFY_RUNTIME_PROFILE" in
+    normal-v1)
+      VERIFY_RUNTIME_SYSTEM_ROOT=""
+      VERIFY_RUNTIME_TEST_USER="${SYSGRID_VERIFY_USER_ID:-haewon.kim}"
+      ;;
+    root-preview)
+      [[ -n "${SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID:-}" ]] || {
+        echo "root-preview requires SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID; identity is never inferred from a username." >&2
+        return 1
+      }
+      VERIFY_RUNTIME_SYSTEM_ROOT="$SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID"
+      VERIFY_RUNTIME_TEST_USER="${SYSGRID_VERIFY_USER_ID:-$VERIFY_RUNTIME_SYSTEM_ROOT}"
+      [[ "$VERIFY_RUNTIME_TEST_USER" == "$VERIFY_RUNTIME_SYSTEM_ROOT" ]] || {
+        echo "root-preview requires SYSGRID_VERIFY_USER_ID to equal the configured System Root identity." >&2
+        return 1
+      }
+      ;;
+    *)
+      echo "Unsupported SYSGRID_VERIFY_PROFILE '$VERIFY_RUNTIME_PROFILE'. Use normal-v1 or root-preview." >&2
+      return 1
+      ;;
+  esac
+  export VERIFY_RUNTIME_PROFILE VERIFY_RUNTIME_TEST_USER VERIFY_RUNTIME_SYSTEM_ROOT
+}
 
 verify_runtime_resolve_python() {
   if [[ -n "$PYTHON_BIN" ]]; then
@@ -181,6 +209,7 @@ verify_runtime_prepare_environment() {
     "DEFAULT_USER_ID=$VERIFY_RUNTIME_TEST_USER"
     "AUTO_ADMIN_USER_IDS=$VERIFY_RUNTIME_TEST_USER"
     "SYSTEM_ROOT_USER_IDS=$VERIFY_RUNTIME_SYSTEM_ROOT"
+    "SYSGRID_VERIFY_PROFILE=$VERIFY_RUNTIME_PROFILE"
     "USER_ID_ENV_VAR=$VERIFY_RUNTIME_USER_ENV_VAR"
     "$VERIFY_RUNTIME_USER_ENV_VAR=$VERIFY_RUNTIME_TEST_USER"
     "DEFAULT_EMAIL_DOMAIN=sysgrid.test"
@@ -217,7 +246,7 @@ verify_runtime_prepare_disposable_data() {
     "${VERIFY_RUNTIME_ENV[@]}" "$PYTHON_BIN" -m app.reference_data
   )
 
-  if [[ -n "$VERIFY_RUNTIME_SYSTEM_ROOT" ]]; then
+  if [[ "$VERIFY_RUNTIME_PROFILE" == "root-preview" ]]; then
     echo "Provisioning explicit System Root preview capabilities for $VERIFY_RUNTIME_SYSTEM_ROOT..."
     (
       cd "$VERIFY_RUNTIME_BACKEND_DIR"
@@ -240,7 +269,10 @@ async def main() -> None:
         str(module["required_capability"]): 3
         for module in catalog["modules"]
         if module.get("required_capability")
+        and module.get("default_stage") == "preview"
+        and module.get("root_preview_allowed") is True
     }
+    capabilities["diagnostics"] = 1
     engine = create_async_engine(settings.DATABASE_URL)
     session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with session_factory() as session:
@@ -328,6 +360,7 @@ if missing:
 }
 
 verify_runtime_start() {
+  verify_runtime_configure_profile
   verify_runtime_resolve_python
   verify_runtime_resolve_node
 
@@ -353,6 +386,9 @@ verify_runtime_start() {
   export SYSGRID_VERIFY_BACKEND_PORT="$VERIFY_RUNTIME_BACKEND_PORT"
   export SYSGRID_VERIFY_FRONTEND_PORT="$VERIFY_RUNTIME_FRONTEND_PORT"
   export SYSGRID_VERIFY_RUNTIME_DIR="$VERIFY_RUNTIME_DIR"
+  export SYSGRID_VERIFY_ROOT_DIR="$VERIFY_RUNTIME_ROOT_DIR"
+  export SYSGRID_VERIFY_TENANT_DB="$VERIFY_RUNTIME_TENANT_DB"
+  export SYSGRID_VERIFY_PYTHON_BIN="$PYTHON_BIN"
   export PLAYWRIGHT_BASE_URL="$VERIFY_RUNTIME_FRONTEND_ORIGIN"
   export PW_API_BASE="$VERIFY_RUNTIME_BACKEND_ORIGIN/api/v1"
   export PW_TENANT_ID="$VERIFY_RUNTIME_TEST_TENANT"
@@ -361,7 +397,7 @@ verify_runtime_start() {
   verify_runtime_start_backend
   verify_runtime_assert_clean_fixture
   verify_runtime_start_frontend
-  echo "Owned verification runtime ready: backend=$VERIFY_RUNTIME_BACKEND_ORIGIN frontend=$VERIFY_RUNTIME_FRONTEND_ORIGIN logs=$VERIFY_RUNTIME_LOG_DIR"
+  echo "Owned verification runtime ready: profile=$VERIFY_RUNTIME_PROFILE backend=$VERIFY_RUNTIME_BACKEND_ORIGIN frontend=$VERIFY_RUNTIME_FRONTEND_ORIGIN logs=$VERIFY_RUNTIME_LOG_DIR"
 }
 
 verify_runtime_run_command() {

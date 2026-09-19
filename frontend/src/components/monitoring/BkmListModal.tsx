@@ -14,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MonitoringRecoveryDoc } from '../MonitoringGrid'
 import { showWorkspaceToast } from '../shared/WorkspaceToast'
 import { formatAppDate } from '../../utils/dateUtils'
+import { ModulePolicyButton } from '../../policy/ModulePolicy'
 
 
 export function BkmListModal({
@@ -54,7 +55,8 @@ export function BkmListModal({
 
   const { data: knowledgeEntries } = useQuery({
     queryKey: ['knowledge-entries', 'monitoring', monitorId],
-    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring&monitoring_id=${monitorId}`)).json()
+    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring&monitoring_id=${monitorId}`)).json(),
+    enabled: Boolean(monitorId),
   })
 
   const filteredKnowledge = useMemo(() => {
@@ -212,14 +214,15 @@ export function BkmListModal({
                       </button>
                    </div>
                    <div className="flex items-center gap-2">
-                      <button
+                      <ModulePolicyButton
+                        moduleId="knowledge"
                         onClick={() => onOpenKnowledge(doc.id)}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/20 bg-blue-500/10 px-2.5 py-2 text-[9px] font-black uppercase tracking-widest text-blue-300 transition-all hover:bg-blue-500/20"
                         title="Open Recovery BKM"
                       >
                          <ExternalLink size={12} />
                          <span>Open Recovery BKM</span>
-                      </button>
+                      </ModulePolicyButton>
                       <button 
                         onClick={() => toggleRecoveryDoc(doc.id)}
                         className="p-2 text-slate-700 hover:text-rose-500 transition-colors bg-white/[0.02] border border-white/5 rounded-lg"

@@ -17,6 +17,8 @@ test.describe('Dashboard Workflows', () => {
     await dashboard.verifyUrlTab('assets', '/asset');
     
     // Verify navigating to another tab
+    await page.goto('/');
+    await dashboard.waitForAppIdle();
     await dashboard.navigateToTab('Monitoring');
     await dashboard.verifyUrlTab('monitoring', '/monitoring');
   });

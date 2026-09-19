@@ -1,7 +1,8 @@
 import React, { ReactNode, useState } from 'react'
-import { Activity, AlertTriangle, BookOpen, Briefcase, ChevronDown, FileText, Globe, Layers, LayoutDashboard, Network, Package, Search, Server, Share2, Workflow, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { Activity, AlertTriangle, BookOpen, Briefcase, ChevronDown, FileText, Globe, Layers, LayoutDashboard, Network, Package, Search, Server, Share2, Workflow, type LucideIcon } from 'lucide-react'
 import { MODULE_CATALOG } from '../../policy/moduleCatalog'
+import { ModulePolicyLink, useModuleActionPolicy } from '../../policy/ModulePolicy'
 
 export type ShellNavigationItem = {
   moduleId: string
@@ -75,7 +76,7 @@ export function ShellNavItem({
   path,
   active,
   isOpen,
-  disabled = false,
+  disabled,
   unavailableReason,
 }: {
   icon: LucideIcon
@@ -87,12 +88,18 @@ export function ShellNavItem({
   disabled?: boolean
   unavailableReason?: string | null
 }) {
-  const displayLabel = disabled && unavailableReason === 'SYSTEM_ROOT_REQUIRED' ? `${label} (Preview)` : disabled ? `${label} (Unavailable)` : label
+  const effectiveModuleId = moduleId || 'home'
+  const action = useModuleActionPolicy(effectiveModuleId)
+  const isDisabled = disabled ?? action.disabled
+  const reason = unavailableReason || action.reason
+  const displayLabel = isDisabled && (unavailableReason === 'SYSTEM_ROOT_REQUIRED' || action.blockedReason === 'SYSTEM_ROOT_REQUIRED')
+    ? `${label} (Preview)`
+    : isDisabled ? `${label} (Unavailable)` : label
   const itemClassName = [
     'group relative flex min-h-10 w-full items-center rounded-md px-3 py-2.5',
     'text-sm transition-colors duration-150',
     isOpen ? 'justify-start gap-3' : 'justify-center',
-    disabled
+    isDisabled
       ? 'cursor-not-allowed text-[var(--text-disabled)] opacity-60'
       : active
         ? 'bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]'
@@ -108,31 +115,33 @@ export function ShellNavItem({
     </span>
   )
 
-  if (disabled) {
+  if (!moduleId) {
     return (
-      <div
-        className={itemClassName}
-        role="link"
-        aria-disabled="true"
-        aria-label={`${displayLabel} unavailable`}
-        title={`${displayLabel} is unavailable for the current account`}
+      <Link
+        to={path}
+        className="block rounded-md focus-visible:outline-none"
+        aria-current={active ? 'page' : undefined}
+        aria-label={isOpen ? undefined : displayLabel}
+        title={!isOpen ? label : undefined}
       >
-        <Icon size={18} aria-hidden="true" className="shrink-0" />
-        <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{displayLabel}</span>
-      </div>
+        {content}
+      </Link>
     )
   }
 
   return (
-    <Link
+    <ModulePolicyLink
+      moduleId={effectiveModuleId}
       to={path}
+      disabled={isDisabled}
+      disabledReason={reason}
       className="block rounded-md focus-visible:outline-none"
       aria-current={active ? 'page' : undefined}
-      aria-label={isOpen ? undefined : label}
+      aria-label={isOpen ? undefined : displayLabel}
       title={!isOpen ? label : undefined}
     >
       {content}
-    </Link>
+    </ModulePolicyLink>
   )
 }
 

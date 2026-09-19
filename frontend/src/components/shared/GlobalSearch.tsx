@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiClient';
 import metadata from '../../metadata.json';
-import { useModulePolicy } from '../../policy/ModulePolicy';
+import { ModulePolicyLink, resolveModuleActionState, useModulePolicy } from '../../policy/ModulePolicy';
+import { getCatalogModuleForPath } from '../../policy/moduleCatalog';
 
 interface SearchResult {
   id: number;
@@ -45,17 +46,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         try {
           const res = await apiFetch(`/api/v1/dashboard/search?q=${encodeURIComponent(trimmedQuery)}`);
           const data = await res.json();
-          const releasedModuleIds = new Set(['home', 'assets', 'monitoring', 'services', 'network', 'racks', 'logs', 'settings']);
-          const visibleResults = (data.results || []).filter((result: SearchResult) => {
-            const moduleId = result.module_id;
-            if (moduleId && modulePolicy.data?.modules?.[moduleId]) {
-              const module = modulePolicy.data.modules[moduleId];
-              if (modulePolicy.isLoading || modulePolicy.isError) return module.default_stage === 'production' && module.available;
-              return module.available;
-            }
-            return !modulePolicy.isError && !moduleId || releasedModuleIds.has(moduleId || result.type);
-          });
-          setResults(visibleResults);
+          setResults(data.results || []);
           setSelectedIndex(0);
         } catch (err) {
           console.error('Search failed:', err);
@@ -68,7 +59,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     }, 500); // Increased debounce for stability
 
     return () => clearTimeout(handler);
-  }, [query, modulePolicy.data, modulePolicy.isError]);
+  }, [query]);
 
   const groupedResults = useMemo(() => {
     const groups: Record<string, SearchResult[]> = {};
@@ -99,6 +90,8 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   };
 
   const handleSelect = (result: SearchResult) => {
+    const moduleId = result.module_id || getCatalogModuleForPath(result.path)?.id
+    if (moduleId && resolveModuleActionState(moduleId, modulePolicy).disabled) return
     // Append ID to path if not present for highlighting
     const finalPath = result.path.includes('?') ? `${result.path}&id=${result.id}` : `${result.path}?id=${result.id}`;
     navigate(finalPath);
@@ -183,10 +176,11 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                         const globalIndex = flattenedResults.indexOf(result);
                         const isSelected = globalIndex === selectedIndex;
                         return (
-                          <button
+                          <ModulePolicyLink
                             key={`${result.type}-${result.id}`}
+                            moduleId={result.module_id}
+                            to={result.path.includes('?') ? `${result.path}&id=${result.id}` : `${result.path}?id=${result.id}`}
                             onMouseEnter={() => setSelectedIndex(globalIndex)}
-                            onClick={() => handleSelect(result)}
                             aria-pressed={isSelected}
                             className={`w-full flex items-center justify-between p-3.5 rounded-lg transition-all ${
                               isSelected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'hover:bg-white/5 text-slate-300'
@@ -211,7 +205,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                               </span>
                               <ChevronRight size={14} className={isSelected ? 'text-white' : 'text-slate-700'} />
                             </div>
-                          </button>
+                          </ModulePolicyLink>
                         );
                       })}
                     </div>

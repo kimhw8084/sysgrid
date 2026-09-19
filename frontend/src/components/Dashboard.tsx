@@ -18,7 +18,7 @@ import { apiFetch } from '../api/apiClient'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
-import { useModulePolicy } from '../policy/ModulePolicy'
+import { ModulePolicyLink, useModuleActionPolicy } from '../policy/ModulePolicy'
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -164,7 +164,9 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [globalSearch, setGlobalSearch] = useState('');
-  const modulePolicy = useModulePolicy();
+  const [navigationNotice, setNavigationNotice] = useState('');
+  const farAction = useModuleActionPolicy('far');
+  const projectsAction = useModuleActionPolicy('projects');
 
   const handleNavigate = (tab: string) => {
     setSearchParams({ tab: tab.toLowerCase() });
@@ -235,6 +237,12 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
     e.preventDefault();
     if (!globalSearch) return;
     const term = globalSearch.toUpperCase();
+    const action = term.startsWith('FAR') ? farAction : term.startsWith('PROJ') ? projectsAction : null;
+    if (action?.disabled) {
+      setNavigationNotice(action.reason);
+      return;
+    }
+    setNavigationNotice('');
     if (term.startsWith('FAR')) navigate(`/far?id=${term.replace('FAR-', '')}`);
     else if (term.startsWith('PROJ')) navigate(`/projects?search=${term}`);
     else navigate(`/asset?search=${term}`);
@@ -368,6 +376,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
                   <MousePointer2 size={16} className="text-blue-500" />
                </div>
             </form>
+            {navigationNotice ? <p role="status" className="text-[9px] font-bold uppercase tracking-widest text-amber-400">{navigationNotice}</p> : null}
          </div>
       </div>
 
@@ -527,12 +536,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
                 { moduleId: 'far', title: 'Failure Forensics', items: metrics?.recent?.far, icon: AlertTriangle, color: 'text-rose-400', path: '/far' },
                 { moduleId: 'projects', title: 'Strategic Pipeline', items: metrics?.recent?.projects?.in_progress, icon: Briefcase, color: 'text-blue-400', path: '/projects' },
                 { moduleId: 'knowledge', title: 'Intel Knowledge', items: metrics?.recent?.knowledge, icon: BookOpen, color: 'text-amber-400', path: '/knowledge' }
-              ].filter((feed) => {
-                const policyModule = modulePolicy.data?.modules?.[feed.moduleId]
-                if (!policyModule) return false
-                if (modulePolicy.isLoading || modulePolicy.isError) return policyModule.default_stage === 'production' && policyModule.available
-                return policyModule.available
-              }).map((feed, i) => (
+              ].map((feed, i) => (
                 <div key={i} className="glass-panel rounded-lg border-white/5 bg-black/20 p-8 shadow-xl flex flex-col h-[400px]">
                    <div className="flex items-center justify-between mb-8">
                       <div className="flex items-center gap-4">
@@ -544,8 +548,9 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
                    </div>
                    <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1">
                       {feed.items?.map((item: any, idx: number) => (
-                        <Link 
+                        <ModulePolicyLink
                           key={item.id || idx} 
+                          moduleId={feed.moduleId}
                           to={`${feed.path}?id=${item.id}`}
                           className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/5 hover:border-blue-500/20 hover:bg-white/[0.05] transition-all group/item shadow-sm"
                         >
@@ -554,7 +559,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: string) =>
                             <span className="text-[8px] font-black text-slate-600 uppercase mt-1 tracking-widest">{formatAppDay(item.created_at || item.updated_at)}</span>
                           </div>
                           <ChevronRight size={12} className="text-slate-700 group-hover/item:translate-x-1 transition-transform" />
-                        </Link>
+                        </ModulePolicyLink>
                       ))}
                       {(!feed.items || feed.items.length === 0) && (
                          <div className="flex flex-col items-center justify-center h-full opacity-10">

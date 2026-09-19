@@ -7,6 +7,7 @@ import { showWorkspaceToast } from "./shared/WorkspaceToast"
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { ToolbarButton } from "./shared/LayoutPrimitives"
 import { useBodyModalFlag } from "./shared/OperationalWorkspacePrimitives"
+import { ModulePolicyLink } from "../policy/ModulePolicy"
 
 type RegistrySectionProps = {
   title: string
@@ -151,19 +152,19 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
               <div className="flex flex-wrap items-center gap-2 pl-11">
                 {description && <span className="text-[9px] font-semibold text-slate-500">{description}</span>}
                 {usageTargets.map((target) => (
-                  <button
+                  <ModulePolicyLink
                     key={`${category}-${target.path}`}
+                    to={target.path}
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation()
-                      window.location.href = target.path
                     }}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/20 bg-blue-500/10 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-blue-300 transition-all hover:bg-blue-500/20"
                     title={`Open ${target.label}`}
                   >
                     <ExternalLink size={10} />
                     <span>{target.label}</span>
-                  </button>
+                  </ModulePolicyLink>
                 ))}
               </div>
             )}

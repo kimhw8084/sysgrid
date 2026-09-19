@@ -8,7 +8,7 @@ test.describe('Assets workflows', () => {
 
   test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
-    const { stamp, systemName, primary, secondary, tertiary, monitoring, far } = await seedOperationalScenario(request)
+    const { stamp, systemName, primary, secondary, tertiary, monitoring } = await seedOperationalScenario(request)
 
     await page.goto('/asset')
     await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
@@ -28,10 +28,10 @@ test.describe('Assets workflows', () => {
 
     // Required Browser/E2E Scenario 10: Expand Table changes utility columns visibility (star/eye)
     // Required Browser/E2E Scenario 11: Favorite/watch toggles update icon state in grid without page refresh
-    const toggleIntelligenceButton = page.getByRole('button', { name: 'Toggle Intelligence' })
-    await expect(toggleIntelligenceButton).not.toHaveClass(/text-blue-400/)
+    const toggleIntelligenceButton = page.locator('button[title="Show Intelligence Columns"], button[title="Hide Intelligence Columns"]').first()
+    await expect(toggleIntelligenceButton).not.toHaveAttribute('aria-pressed')
     await toggleIntelligenceButton.click()
-    await expect(toggleIntelligenceButton).toHaveClass(/text-blue-400/)
+    await expect(toggleIntelligenceButton).toHaveAttribute('aria-pressed', 'true')
 
     // Toggle Pin/Watch while columns are visible
     const pinBtn = page.getByTitle('Pin asset').first()
@@ -43,15 +43,15 @@ test.describe('Assets workflows', () => {
 
     // Toggle back to collapsed state
     await toggleIntelligenceButton.click()
-    await expect(toggleIntelligenceButton).not.toHaveClass(/text-blue-400/)
+    await expect(toggleIntelligenceButton).not.toHaveAttribute('aria-pressed')
 
     const assetRowActions = page.getByTitle('More actions')
     const viewDetailsButtons = page.getByRole('button', { name: 'View Details', exact: true })
-    const openKnowledgeButton = page.getByRole('button', { name: 'Open Knowledge', exact: true })
-    const farRisksButton = page.getByRole('button', { name: 'FAR Risks', exact: true })
+    const openKnowledgeButton = page.locator('button[data-module-action="knowledge"]').first()
+    const farRisksButton = page.locator('button[data-module-action="far"]').first()
     const auditButton = page.getByRole('button', { name: 'Audit', exact: true })
     const bulkActionsButton = page.getByRole('button', { name: /Bulk Actions/i })
-    const compareVisibleButton = page.getByRole('button', { name: 'Compare', exact: true })
+    const compareVisibleButton = page.getByTitle('Compare selected assets')
 
     const primaryDetailsRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
     await primaryDetailsRow.action('More actions').click()
@@ -59,13 +59,19 @@ test.describe('Assets workflows', () => {
     await expect(page.getByText(primary.name).first()).toBeVisible({ timeout: 20000 })
     await expect(page.getByText('Suggested Runbooks Now')).toBeVisible()
     await expect(farRisksButton).toBeVisible()
-    await expect(farRisksButton).toBeEnabled()
+    await expect(farRisksButton).toBeDisabled()
     await expect(auditButton).toBeVisible()
     await expect(page.getByText(`PW-MON-${stamp}`)).toBeVisible()
     await expect(page.getByRole('button', { name: new RegExp(`PW-RUNBOOK-${stamp}`, 'i') }).first()).toBeVisible()
     await expect(page.getByText(`PW-MAINT-${stamp}`)).toBeVisible()
-    await openKnowledgeButton.click()
-    await expect(page).toHaveURL(new RegExp(`/knowledge\\?device_id=${primary.id}`))
+    if (process.env.SYSGRID_VERIFY_PROFILE === 'root-preview') {
+      await expect(openKnowledgeButton).toBeEnabled()
+      await expect(openKnowledgeButton).not.toHaveAttribute('aria-disabled', 'true')
+    } else {
+      await expect(openKnowledgeButton).toBeDisabled()
+      await expect(openKnowledgeButton).toHaveAttribute('aria-disabled', 'true')
+    }
+    await expect(page).toHaveURL(/\/asset/)
 
     await page.goto('/asset')
     await page.getByPlaceholder('Scan asset matrix...').fill(primary.name)
@@ -74,9 +80,8 @@ test.describe('Assets workflows', () => {
     await primaryDetailsRow.action('More actions').click()
     await viewDetailsButtons.filter({ visible: true }).click()
 
-    await expect(farRisksButton).toBeEnabled()
-    await farRisksButton.click()
-    await expect(page).toHaveURL(new RegExp(`/far\\?id=${far.id}`))
+    await expect(farRisksButton).toBeDisabled()
+    await expect(farRisksButton).toHaveAttribute('data-module-action', 'far')
 
     await page.goto('/asset')
     await page.getByPlaceholder('Scan asset matrix...').fill(primary.name)
@@ -143,14 +148,15 @@ test.describe('Assets workflows', () => {
     await expect(archiveCard).toBeVisible()
     await archiveCard.click()
 
-    // Confirm button inside expanded action card
-    const archiveActionBtn = page.getByRole('button', { name: 'Archive selected assets' })
+    // Preview button inside expanded action card; the current golden workflow
+    // opens a backend-authoritative preview before any destructive confirmation.
+    const archiveActionBtn = page.getByRole('button', { name: 'Preview Archive' })
     await expect(archiveActionBtn).toBeVisible()
     await archiveActionBtn.click()
-    await expect(page.getByRole('button', { name: 'Confirm Archive?' })).toBeVisible()
-
-    // Close bulk actions panel
-    await bulkActionsButton.click()
+    const bulkPreviewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+    await expect(bulkPreviewDialog).toBeVisible()
+    await expect(bulkPreviewDialog.getByRole('button', { name: 'Confirm Archive selection' })).toBeVisible()
+    await bulkPreviewDialog.getByRole('button', { name: 'Cancel' }).click()
 
     // Launch Compare Modal (proves shared Compare modal behavior and Escape dismissal)
     // The two rows are already semantically selected from above, unlocking the Compare action
@@ -198,7 +204,7 @@ test.describe('Assets workflows', () => {
     // Settle layouts
 
     // Target B.5: Import shared modal paste parsing and load to builder proof
-    await clickResilientButton(page, 'Import')
+    await page.getByRole('button', { name: 'Import asset rows' }).click()
     await expect(page.getByText('Assets Import')).toBeVisible()
     const importDialog = page.getByRole('dialog').filter({ has: page.getByText('Assets Import', { exact: true }) })
 
@@ -230,15 +236,27 @@ test.describe('Assets workflows', () => {
     const archiveRowAction = page.getByRole('button', { name: 'Archive', exact: true })
     await archiveRowAction.click()
 
-    const deleteRequestPromise = page.waitForRequest(request => request.url().includes('/api/v1/devices/bulk-action'))
-    const deleteResponsePromise = page.waitForResponse(response =>
+    const deletePreviewResponsePromise = page.waitForResponse(response =>
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
     )
     const confirmArchiveAction = page.getByRole('button', { name: 'Confirm Archive?', exact: true })
     await confirmArchiveAction.click()
+    await deletePreviewResponsePromise
+    const deletePreviewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+    await expect(deletePreviewDialog).toBeVisible()
+    const deleteRequestPromise = page.waitForRequest(request => {
+      if (!request.url().includes('/api/v1/devices/bulk-action')) return false
+      const body = request.postDataJSON() as { dry_run?: boolean } | null
+      return body?.dry_run !== true
+    })
+    const deleteResponsePromise = page.waitForResponse(response =>
+      response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
+    )
+    await deletePreviewDialog.getByRole('button', { name: 'Confirm Archive selection' }).click()
     const deleteRequest = await deleteRequestPromise
     await deleteResponsePromise
     expect(deleteRequest.postDataJSON()).toMatchObject({ ids: [secondary.id], action: 'delete' })
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
 
     // Restore the broader system scope before selecting a different asset.
     await fillGridSearch(page, 'Scan asset matrix...', systemName)
@@ -249,13 +267,13 @@ test.describe('Assets workflows', () => {
     await (await primaryLifecycleRow.cell('name')).click()
     await expect(primaryLifecycleRow.center!).toHaveClass(/ag-row-selected/)
 
-    const revertAction = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert', exact: true })
+    const revertAction = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
     await expect(revertAction).toBeVisible()
     await expect(revertAction).toBeEnabled()
     await revertAction.click()
     const revertConfirm = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
     await expect(revertConfirm).toBeVisible()
-    await expect(revertConfirm).toContainText(secondary.name)
+    await expect(revertConfirm).toContainText('completed archive operation')
     const restoreRequestPromise = page.waitForRequest(request => request.url().includes('/api/v1/devices/bulk-action'))
     const restoreResponsePromise = page.waitForResponse(response =>
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
@@ -270,11 +288,18 @@ test.describe('Assets workflows', () => {
     // Archive again so the existing purged-scope proof continues with the same row identity.
     await (await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)).action('More actions').click()
     await clickResilientButton(page, /^Archive$/)
-    const secondDeleteResponsePromise = page.waitForResponse(response =>
+    const secondDeletePreviewResponsePromise = page.waitForResponse(response =>
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
     )
     await clickResilientButton(page, /^Confirm Archive\?$/)
+    await secondDeletePreviewResponsePromise
+    const secondDeletePreviewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+    const secondDeleteResponsePromise = page.waitForResponse(response =>
+      response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
+    )
+    await secondDeletePreviewDialog.getByRole('button', { name: 'Confirm Archive selection' }).click()
     await secondDeleteResponsePromise
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
 
     // Settle React state before tab switch
 
@@ -303,18 +328,25 @@ test.describe('Assets workflows', () => {
     const purgeRowAction = page.getByRole('button', { name: 'Purge', exact: true })
     await purgeRowAction.click()
 
-    const purgeResponsePromise = page.waitForResponse(response =>
+    const purgePreviewResponsePromise = page.waitForResponse(response =>
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
     )
     const confirmPurgeAction = page.getByRole('button', { name: 'Confirm Purge?', exact: true })
     await confirmPurgeAction.click()
+    await purgePreviewResponsePromise
+    const purgePreviewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+    const purgeResponsePromise = page.waitForResponse(response =>
+      response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
+    )
+    await purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
     await purgeResponsePromise
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
 
     // Verify row has disappeared completely from Purged scope by reloading the page
     await page.goto('/asset')
     await openToolbarButton(page, /Purged/)
     await fillGridSearch(page, 'Scan asset matrix...', secondary.name)
-    await expect(page.getByText('No assets match the current working view')).toBeVisible()
+    await expect(page.getByText('No purged assets in scope')).toBeVisible()
 
     // Verify row has not returned to Existing scope either on clean reload
     await openToolbarButton(page, /Existing/)
@@ -330,7 +362,7 @@ test.describe('Assets workflows', () => {
     await page.mouse.click(10, 10)
 
     // Open and close import modal cleanly
-    await clickResilientButton(page, 'Import')
+    await page.getByRole('button', { name: 'Import asset rows' }).click()
     await expect(page.getByText('Assets Import')).toBeVisible()
     await importDialog.getByRole('button', { name: 'Close', exact: true }).filter({ hasText: 'Close' }).click()
     await expect(page.getByText('Assets Import')).not.toBeVisible()

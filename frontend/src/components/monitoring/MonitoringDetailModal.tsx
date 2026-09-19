@@ -30,15 +30,12 @@ export function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, on
     queryKey: ['monitoring-knowledge-suggestions', item.id, item.device_id],
     queryFn: async () => {
       const params = new URLSearchParams()
-      if (item.device_id) params.append('device_id', String(item.device_id))
       params.append('monitoring_id', String(item.id))
       params.append('embedded_consumer', 'monitoring')
       const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
       const linked = await response.json()
       if (Array.isArray(linked) && linked.length > 0) return linked
-      if (!item.device_id) return linked
-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.device_id}&embedded_consumer=monitoring&monitoring_id=${item.id}`)
-      return fallback.json()
+      return linked
     }
   })
 

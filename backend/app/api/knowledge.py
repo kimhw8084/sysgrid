@@ -283,10 +283,18 @@ async def get_entries(
         metadata = normalize_metadata({"metadata_json": entry.metadata_json}, entry.metadata_json)
         return target_id in (metadata.get("links", {}).get(link_key, []) or [])
 
+    # The monitoring embedded projection also authorizes recovery documents
+    # through the monitor's recovery_docs payload. Preserve those rows until
+    # _embedded_entry_is_in_scope() can apply that authoritative fallback;
+    # filtering them here by metadata-only monitoring_ids would discard valid
+    # linked procedures before the projection contract is evaluated.
+    monitoring_metadata_filter_applies = not (
+        embedded_consumer == "monitoring" and monitoring_id is not None
+    )
     entries = [
         entry for entry in entries
         if matches_link(entry, "service_ids", service_id)
-        and matches_link(entry, "monitoring_ids", monitoring_id)
+        and (not monitoring_metadata_filter_applies or matches_link(entry, "monitoring_ids", monitoring_id))
         and matches_link(entry, "far_ids", far_id)
         and matches_link(entry, "research_ids", research_id)
         and matches_link(entry, "vendor_ids", vendor_id)

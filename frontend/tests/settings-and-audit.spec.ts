@@ -34,10 +34,11 @@ test.describe('Settings and audit workflows', () => {
 
     await page.goto('/settings?tab=permissions')
     await expect(page.getByText('Identity Sync Pipeline')).toBeVisible()
-    await page.getByPlaceholder('Search identity, department, or team...').fill('admin_root')
-    const adminRow = page.locator('table > tbody > tr').filter({ hasText: 'admin_root' }).first()
+    const operatorId = process.env.SYSGRID_VERIFY_USER_ID || 'haewon.kim'
+    await page.getByPlaceholder('Search identity, department, or team...').fill(operatorId)
+    const adminRow = page.locator('table > tbody > tr').filter({ hasText: operatorId }).first()
     await expect(adminRow).toBeVisible()
-    await expect(adminRow).toContainText('Admin Root')
+    await expect(adminRow).toContainText(operatorId)
     await expect(page.getByText('No operators match the current filter')).not.toBeVisible()
 
     await page.getByPlaceholder('Search identity, department, or team...').fill('not-a-real-operator')
@@ -48,6 +49,10 @@ test.describe('Settings and audit workflows', () => {
     const tenantTable = page.locator('table').filter({
       has: page.getByRole('columnheader', { name: 'Tenant', exact: true })
     })
+    if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1') {
+      await expect(tenantTable.locator('tbody > tr')).toHaveCount(0)
+      return
+    }
     const existingTenantName = (await tenantTable.locator('tbody > tr').first().locator('td').first().locator('div.text-white').innerText()).trim()
     expect(existingTenantName).not.toBe('')
 

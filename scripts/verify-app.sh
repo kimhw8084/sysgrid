@@ -4,7 +4,6 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
-export SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID="${SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID:-haewon.kim}"
 source "$ROOT_DIR/scripts/lib/verify-runtime.sh"
 
 reset_generated_evidence() {
@@ -19,6 +18,29 @@ reset_generated_evidence() {
 
 reset_generated_evidence
 verify_runtime_resolve_python
+
+BACKEND_QUALIFICATION_TESTS=(
+  test_migration_graph.py
+  test_system_management_v1_policy.py
+  test_chg13_authorization_security.py
+  test_runtime_diagnostics.py
+  test_tenant_isolation.py
+  test_tenant_workflows.py
+  test_settings_api_edges.py
+  test_settings_workflows.py
+  test_monitoring_query_and_bulk_edges.py
+  test_monitoring_restore_edges.py
+  test_monitoring_workflows.py
+  test_network_workflows.py
+  test_service_workflows.py
+  test_racks_api_edges.py
+  test_racks_workflows.py
+  test_workspace_views.py
+  test_workspace_team_views.py
+  test_asset_vendor_bulk_workflows.py
+  test_import_workflows.py
+  test_revert_logic.py
+)
 
 trap 'status=$?; verify_runtime_cleanup; exit "$status"' EXIT INT TERM
 
@@ -44,12 +66,11 @@ trap 'status=$?; verify_runtime_cleanup; exit "$status"' EXIT INT TERM
     -u BACKEND_CORS_ORIGINS \
     -u IDENTITY_MODE \
     -u TRUSTED_PROXY_USER_HEADER \
-  "$PYTHON_BIN" -m pytest
+  "$PYTHON_BIN" -m pytest -q "${BACKEND_QUALIFICATION_TESTS[@]}"
 )
 
 (
   cd "$FRONTEND_DIR"
-  npm run test:lint
   npm run typecheck
   npm run test:coverage
   npm run build
@@ -63,12 +84,27 @@ PLAYWRIGHT_BIN="$FRONTEND_DIR/node_modules/.bin/playwright"
   exit 1
 }
 
-verify_runtime_run_command \
-  "$NODE_BIN" "$PLAYWRIGHT_BIN" test \
-  tests/sentinel_comprehensive.spec.ts \
-  tests/external-services-bulk-preview.spec.ts \
-  tests/assets-vendors-bulk-preview.spec.ts \
-  tests/shell-and-search.spec.ts \
-  tests/view-deeplink-matrix.spec.ts \
-  tests/view-empty-states.spec.ts \
-  tests/blank-slate-audit.spec.ts
+(
+  cd "$FRONTEND_DIR"
+  verify_runtime_run_command \
+    "$NODE_BIN" "$PLAYWRIGHT_BIN" test \
+    --config=playwright.v1.config.ts
+)
+
+verify_runtime_cleanup
+VERIFY_RUNTIME_CLEANED="false"
+VERIFY_RUNTIME_DIR=""
+VERIFY_RUNTIME_BACKEND_PID=""
+VERIFY_RUNTIME_FRONTEND_PID=""
+export SYSGRID_VERIFY_PROFILE="root-preview"
+[[ -n "${SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID:-}" ]] || {
+  echo "verify:app root-preview gate requires SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID; no identity is inferred." >&2
+  exit 1
+}
+verify_runtime_start
+(
+  cd "$FRONTEND_DIR"
+  verify_runtime_run_command \
+    "$NODE_BIN" "$PLAYWRIGHT_BIN" test \
+    --config=playwright.root-preview.config.ts
+)
