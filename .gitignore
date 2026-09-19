@@ -64,6 +64,7 @@ playwright-report/
 **/.turbo/
 **/stage*-evidence/
 **/llm-report.json
+frontend/OUT-*_EVIDENCE.html
 COMMAND_OUTPUTS/_SHIP_AI_REVIEW/
 # END SYSGRID SHIP-AI GENERATED ARTIFACT FIREWALL
 
