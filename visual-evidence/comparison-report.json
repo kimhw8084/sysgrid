@@ -1,0 +1,1198 @@
+{
+  "schema": "sysgrid.chg160.comparison-report.v1",
+  "project": "sysgrid",
+  "change": "CHG-160",
+  "operation": "VERIFY",
+  "request": "sysgrid-smv1-settings-privilege-authority-verify-v2",
+  "baseline": {
+    "sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c"
+  },
+  "candidate": {
+    "sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+    "tree": "9125f2be9c2c673c708fb77539894b43cabd811f"
+  },
+  "capture_policy": {
+    "browser": "Chromium",
+    "dpr": 1,
+    "locale": "en-US",
+    "theme": "nordic-frost-v1",
+    "timezone": "America/Chicago",
+    "fixture": "deterministic visual fixture",
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "identity": {
+        "id": "tenant-admin-no-diagnostics-no-control-plane",
+        "userId": "tenant-admin",
+        "tenantAdmin": true,
+        "settingsManage": true,
+        "diagnosticsRead": false,
+        "controlPlaneAdmin": false,
+        "profileIsAdmin": true
+      },
+      "expected_delta": [
+        "Candidate hides System Diagnostics when diagnostics.read=false.",
+        "Candidate hides Tenants when control_plane_admin=false.",
+        "Parameters, Permissions, Groups, Metadata, Analysis, Standards and personal theme controls remain visible.",
+        "Direct diagnostics and tenants deeplinks normalize to Parameters without startup-check, user/env-vars, or tenants/admin requests."
+      ],
+      "unexpected_delta": [],
+      "candidate_privileged_request_fail_closed": true,
+      "visual_pixel_review_required": true
+    },
+    {
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "identity": {
+        "id": "control-plane-admin-with-diagnostics",
+        "userId": "haewon.kim",
+        "tenantAdmin": true,
+        "settingsManage": true,
+        "diagnosticsRead": true,
+        "controlPlaneAdmin": true,
+        "profileIsAdmin": true
+      },
+      "expected_delta": [
+        "Exact configured control-plane identity with diagnostics.read retains Diagnostics and Tenants.",
+        "All authorized Settings tabs remain exposed; no candidate-only page overflow was measured.",
+        "Personal theme controls remain visible."
+      ],
+      "unexpected_delta": [],
+      "candidate_privileged_request_fail_closed": null,
+      "visual_pixel_review_required": true
+    }
+  ],
+  "captures": [
+    {
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "identity": {
+        "user_id": "tenant-admin",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": false,
+        "control_plane_admin": false,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "desktop",
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": true,
+        "Tenants": true,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 288,
+        "y": 171,
+        "width": 1089,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 240,
+        "y": 78,
+        "width": 1185,
+        "height": 790
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53402/settings?tab=diagnostics&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53402/settings?tab=tenants&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": [
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/all"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/settings"
+            }
+          ]
+        }
+      ],
+      "privileged_request_fail_closed": null,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": true,
+        "dark": true
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--desktop-1440x900.png",
+        "bytes": 127060,
+        "width": 1440,
+        "height": 900,
+        "sha256": "e2871dc0e1fa2f9c195f66bdf6f4df2eebb7ef3a2c3d09bbe0b2e1410db35d16"
+      },
+      "classification": "BASELINE_REFERENCE",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    },
+    {
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "identity": {
+        "user_id": "tenant-admin",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": false,
+        "control_plane_admin": false,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "mobile",
+          "width": 390,
+          "height": 844
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": true,
+        "Tenants": true,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 112,
+        "y": 361,
+        "width": 231,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 80,
+        "y": 224,
+        "width": 295,
+        "height": 539
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53402/settings?tab=diagnostics&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53402/settings?tab=tenants&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": [
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/all"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/settings"
+            }
+          ]
+        }
+      ],
+      "privileged_request_fail_closed": null,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": false,
+        "dark": false
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--mobile-390x844.png",
+        "bytes": 58372,
+        "width": 390,
+        "height": 844,
+        "sha256": "e727b41b919efff51870a320ef0785098775f03e3dd95d1282c7d13833e61052"
+      },
+      "classification": "BASELINE_REFERENCE",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    },
+    {
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "identity": {
+        "user_id": "tenant-admin",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": false,
+        "control_plane_admin": false,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "desktop",
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": false,
+        "Tenants": false,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 288,
+        "y": 171,
+        "width": 1089,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 240,
+        "y": 78,
+        "width": 1185,
+        "height": 790
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53401/settings?tab=environments&proof=visual",
+          "personal_preferences_visible": true,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53401/settings?tab=environments&proof=visual",
+          "personal_preferences_visible": true,
+          "forbidden_requests": []
+        }
+      ],
+      "privileged_request_fail_closed": true,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": true,
+        "dark": true
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--desktop-1440x900.png",
+        "bytes": 128512,
+        "width": 1440,
+        "height": 900,
+        "sha256": "ce1df865dc752fd6c891368f974706f5c4d967ba674e4a47bbdda3ebce38b648"
+      },
+      "classification": "EXPECTED_DELTA",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    },
+    {
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "identity": {
+        "user_id": "tenant-admin",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": false,
+        "control_plane_admin": false,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "mobile",
+          "width": 390,
+          "height": 844
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": false,
+        "Tenants": false,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 112,
+        "y": 361,
+        "width": 231,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 80,
+        "y": 224,
+        "width": 295,
+        "height": 539
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53401/settings?tab=environments&proof=visual",
+          "personal_preferences_visible": true,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53401/settings?tab=environments&proof=visual",
+          "personal_preferences_visible": true,
+          "forbidden_requests": []
+        }
+      ],
+      "privileged_request_fail_closed": true,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": true,
+        "dark": true
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--mobile-390x844.png",
+        "bytes": 58219,
+        "width": 390,
+        "height": 844,
+        "sha256": "e378c4e0f8030059ef5f9ad75919df51159afe09324b0d09e216b3048d55975c"
+      },
+      "classification": "EXPECTED_DELTA",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    },
+    {
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "identity": {
+        "user_id": "haewon.kim",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": true,
+        "control_plane_admin": true,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "desktop",
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": true,
+        "Tenants": true,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 288,
+        "y": 171,
+        "width": 1089,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 240,
+        "y": 78,
+        "width": 1185,
+        "height": 790
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53402/settings?tab=diagnostics&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53402/settings?tab=tenants&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": [
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/all"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/settings"
+            }
+          ]
+        }
+      ],
+      "privileged_request_fail_closed": null,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": true,
+        "dark": true
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--desktop-1440x900.png",
+        "bytes": 127134,
+        "width": 1440,
+        "height": 900,
+        "sha256": "22d9de988d99badca44bc9c2646c4ff6309f4f71a78fd4a3fbbb115e763a405e"
+      },
+      "classification": "BASELINE_REFERENCE",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    },
+    {
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "identity": {
+        "user_id": "haewon.kim",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": true,
+        "control_plane_admin": true,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "mobile",
+          "width": 390,
+          "height": 844
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": true,
+        "Tenants": true,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 112,
+        "y": 361,
+        "width": 231,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 80,
+        "y": 224,
+        "width": 295,
+        "height": 539
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53402/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59992/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53402/settings?tab=diagnostics&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53402/settings?tab=tenants&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": [
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/all"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/settings"
+            }
+          ]
+        }
+      ],
+      "privileged_request_fail_closed": null,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": false,
+        "dark": false
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--mobile-390x844.png",
+        "bytes": 58745,
+        "width": 390,
+        "height": 844,
+        "sha256": "f036387a7c62febed288c50d6a8134e9edef6cc43fcc4a1411008b6f010c3539"
+      },
+      "classification": "BASELINE_REFERENCE",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    },
+    {
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "identity": {
+        "user_id": "haewon.kim",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": true,
+        "control_plane_admin": true,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "desktop",
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": true,
+        "Tenants": true,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 288,
+        "y": 171,
+        "width": 1089,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 240,
+        "y": 78,
+        "width": 1185,
+        "height": 790
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53401/settings?tab=diagnostics&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53401/settings?tab=tenants&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": [
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/all"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/settings"
+            }
+          ]
+        }
+      ],
+      "privileged_request_fail_closed": null,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": true,
+        "dark": true
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--desktop-1440x900.png",
+        "bytes": 130327,
+        "width": 1440,
+        "height": 900,
+        "sha256": "9cbd8cc07bd9e13f68ae7d89c0956b1942c239d3f2c183a448df83ba7fea1bf9"
+      },
+      "classification": "NO_UNEXPECTED_DELTA",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    },
+    {
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "identity": {
+        "user_id": "haewon.kim",
+        "tenant_id": 1,
+        "tenant_admin": true,
+        "settings_manage": true,
+        "diagnostics_read": true,
+        "control_plane_admin": true,
+        "profile_is_admin": true
+      },
+      "capture_policy": {
+        "browser": "Chromium",
+        "dpr": 1,
+        "locale": "en-US",
+        "theme": "nordic-frost-v1",
+        "timezone": "America/Chicago",
+        "viewport": {
+          "label": "mobile",
+          "width": 390,
+          "height": 844
+        }
+      },
+      "runtime_ready": true,
+      "tab_visibility": {
+        "Parameters": true,
+        "Permissions": true,
+        "Groups": true,
+        "Metadata": true,
+        "Analysis": true,
+        "System Diagnostics": true,
+        "Tenants": true,
+        "Standards": true
+      },
+      "tab_strip_box": {
+        "x": 112,
+        "y": 361,
+        "width": 231,
+        "height": 46
+      },
+      "main_content_box": {
+        "x": 80,
+        "y": 224,
+        "width": 295,
+        "height": 539
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "devicePixelRatio": 1,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "POST",
+            "url": "http://127.0.0.1:53401/api/v1/observability/performance",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "url": "http://127.0.0.1:59991/api/v1/settings/bootstrap",
+            "failure": "net::ERR_ABORTED"
+          }
+        ],
+        "failedResponses": []
+      },
+      "direct_privileged_tab_proof": [
+        {
+          "requested_tab": "diagnostics",
+          "final_url": "http://127.0.0.1:53401/settings?tab=diagnostics&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": []
+        },
+        {
+          "requested_tab": "tenants",
+          "final_url": "http://127.0.0.1:53401/settings?tab=tenants&proof=visual",
+          "personal_preferences_visible": false,
+          "forbidden_requests": [
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/all"
+            },
+            {
+              "method": "GET",
+              "path": "/api/v1/tenants/admin/settings"
+            }
+          ]
+        }
+      ],
+      "privileged_request_fail_closed": null,
+      "global_config_error_visible": false,
+      "connectivity_failure_visible": false,
+      "personal_theme_controls_visible": {
+        "light": false,
+        "dark": false
+      },
+      "image": {
+        "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--mobile-390x844.png",
+        "bytes": 58742,
+        "width": 390,
+        "height": 844,
+        "sha256": "d16fd0e9df2dc9b58e49c761a0cade5feabf3f39e972644d11576c515d4c9506"
+      },
+      "classification": "NO_UNEXPECTED_DELTA",
+      "error_review": {
+        "raw_errors_recorded": true,
+        "expected_lifecycle_abort_count": 6,
+        "unexpected_request_failures": []
+      }
+    }
+  ],
+  "review_notes": [
+    "Mobile shell toolbar clipping is identical in baseline and candidate under the shared 390px shell; no candidate-only clipping or document overflow was measured.",
+    "The baseline revision predates the candidate Personal Preferences panel; that panel is recorded as the intended personal-theme preservation delta.",
+    "Visual GO is intentionally unset pending independent pixel review."
+  ],
+  "independent_pixel_review_required": true,
+  "self_certifies_visual_go": false,
+  "visual_go": null
+}

@@ -1,0 +1,235 @@
+{
+  "schema": "sysgrid.chg160.reader-index.v1",
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-settings-privilege-authority-verify-v2",
+  "pngs": [
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--desktop-1440x900.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 127060,
+      "sha256": "e2871dc0e1fa2f9c195f66bdf6f4df2eebb7ef3a2c3d09bbe0b2e1410db35d16"
+    },
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--mobile-390x844.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58372,
+      "sha256": "e727b41b919efff51870a320ef0785098775f03e3dd95d1282c7d13833e61052"
+    },
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--desktop-1440x900.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 128512,
+      "sha256": "ce1df865dc752fd6c891368f974706f5c4d967ba674e4a47bbdda3ebce38b648"
+    },
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--mobile-390x844.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58219,
+      "sha256": "e378c4e0f8030059ef5f9ad75919df51159afe09324b0d09e216b3048d55975c"
+    },
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--desktop-1440x900.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 127134,
+      "sha256": "22d9de988d99badca44bc9c2646c4ff6309f4f71a78fd4a3fbbb115e763a405e"
+    },
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--mobile-390x844.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "revision_tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58745,
+      "sha256": "f036387a7c62febed288c50d6a8134e9edef6cc43fcc4a1411008b6f010c3539"
+    },
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--desktop-1440x900.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 130327,
+      "sha256": "9cbd8cc07bd9e13f68ae7d89c0956b1942c239d3f2c183a448df83ba7fea1bf9"
+    },
+    {
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--mobile-390x844.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "revision_tree": "9125f2be9c2c673c708fb77539894b43cabd811f",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58742,
+      "sha256": "d16fd0e9df2dc9b58e49c761a0cade5feabf3f39e972644d11576c515d4c9506"
+    }
+  ],
+  "review_desktop_pdf": [
+    {
+      "page": 1,
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--desktop-1440x900.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 127060,
+      "sha256": "e2871dc0e1fa2f9c195f66bdf6f4df2eebb7ef3a2c3d09bbe0b2e1410db35d16"
+    },
+    {
+      "page": 2,
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--desktop-1440x900.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 128512,
+      "sha256": "ce1df865dc752fd6c891368f974706f5c4d967ba674e4a47bbdda3ebce38b648"
+    },
+    {
+      "page": 3,
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--desktop-1440x900.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 127134,
+      "sha256": "22d9de988d99badca44bc9c2646c4ff6309f4f71a78fd4a3fbbb115e763a405e"
+    },
+    {
+      "page": 4,
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--desktop-1440x900.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "viewport": {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "bytes": 130327,
+      "sha256": "9cbd8cc07bd9e13f68ae7d89c0956b1942c239d3f2c183a448df83ba7fea1bf9"
+    }
+  ],
+  "review_mobile_pdf": [
+    {
+      "page": 1,
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--mobile-390x844.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58372,
+      "sha256": "e727b41b919efff51870a320ef0785098775f03e3dd95d1282c7d13833e61052"
+    },
+    {
+      "page": 2,
+      "png": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--mobile-390x844.png",
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58219,
+      "sha256": "e378c4e0f8030059ef5f9ad75919df51159afe09324b0d09e216b3048d55975c"
+    },
+    {
+      "page": 3,
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--mobile-390x844.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58745,
+      "sha256": "f036387a7c62febed288c50d6a8134e9edef6cc43fcc4a1411008b6f010c3539"
+    },
+    {
+      "page": 4,
+      "png": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--mobile-390x844.png",
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "revision": "candidate",
+      "revision_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "viewport": {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 58742,
+      "sha256": "d16fd0e9df2dc9b58e49c761a0cade5feabf3f39e972644d11576c515d4c9506"
+    }
+  ]
+}
