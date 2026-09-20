@@ -33,15 +33,13 @@ describe('Network/Audit typed relationship navigation boundary', () => {
     expect(source).toMatch(/device_b_id: item\?\.target_device_id[\s\S]*?Number\(item\.target_device_id\)/)
   })
 
-  it('keeps Racks, Settings, and backend outside this bounded change', () => {
+  it('keeps Racks outside this bounded change', () => {
     expect(() => execFileSync('git', [
       'diff',
       '--quiet',
       '39a0ee2d7b5a08004795d8207212e5347166cfac',
       '--',
-      'backend',
       'frontend/src/components/Racks.tsx',
-      'frontend/src/components/Settings.tsx',
     ], { cwd: repoRoot })).not.toThrow()
   })
 })

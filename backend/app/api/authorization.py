@@ -135,6 +135,28 @@ def require_capability(capability: str, required_level: int = 1):
     return dependency
 
 
+async def is_control_plane_admin(
+    request: Request,
+    db: AsyncSession,
+) -> bool:
+    """Return whether the current identity has exact control-plane authority."""
+    user_id = get_current_user_id(request)
+    if user_id in settings.control_plane_admin_user_ids:
+        return True
+
+    if (
+        settings.CONTROL_PLANE_BOOTSTRAP_ENABLED
+        and settings.control_plane_bootstrap_user_id
+        and user_id == settings.control_plane_bootstrap_user_id
+    ):
+        from ..models.config import Tenant
+
+        tenant_count = await db.scalar(select(Tenant.id).limit(1))
+        return tenant_count is None
+
+    return False
+
+
 async def require_control_plane_admin(
     request: Request,
     db: AsyncSession = Depends(get_config_db),
@@ -146,19 +168,8 @@ async def require_control_plane_admin(
     confer steady-state global authority after the first tenant exists.
     """
     user_id = get_current_user_id(request)
-    if user_id in settings.control_plane_admin_user_ids:
+    if await is_control_plane_admin(request, db):
         return user_id
-
-    if (
-        settings.CONTROL_PLANE_BOOTSTRAP_ENABLED
-        and settings.control_plane_bootstrap_user_id
-        and user_id == settings.control_plane_bootstrap_user_id
-    ):
-        from ..models.config import Tenant
-
-        tenant_count = await db.scalar(select(Tenant.id).limit(1))
-        if tenant_count is None:
-            return user_id
 
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
