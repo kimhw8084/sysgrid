@@ -1,0 +1,69 @@
+{
+  "schema": "sysgrid.chg155.visual-evidence-reader-index.v1",
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-network-audit-typed-links-v1",
+  "baseline_sha": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+  "candidate_sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+  "pages": [
+    {
+      "scenario_id": "network-source-selector",
+      "side": "baseline",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "page": 1,
+      "pdf": "review-desktop.pdf",
+      "image": "screenshots/network-source-selector--baseline--desktop-1440x900.png",
+      "revision": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+      "sha256": "aecc8fc05e79b1e6df96ddd744bd1d80f41d95711ea5ecf9e0c383be317a29fd"
+    },
+    {
+      "scenario_id": "network-source-selector",
+      "side": "candidate",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "page": 1,
+      "pdf": "review-desktop.pdf",
+      "image": "screenshots/network-source-selector--candidate--desktop-1440x900.png",
+      "revision": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+      "sha256": "603eef92aadcab39c27ee6d36201a037c0d318a6fb6076ee9ca9a727881dff78"
+    },
+    {
+      "scenario_id": "network-source-selector",
+      "side": "baseline",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "page": 1,
+      "pdf": "review-mobile.pdf",
+      "image": "screenshots/network-source-selector--baseline--mobile-390x844.png",
+      "revision": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+      "sha256": "48784d187848b70756082101fd8baaa526431304a2f7a23072bd3709a8889e06"
+    },
+    {
+      "scenario_id": "network-source-selector",
+      "side": "candidate",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "page": 1,
+      "pdf": "review-mobile.pdf",
+      "image": "screenshots/network-source-selector--candidate--mobile-390x844.png",
+      "revision": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+      "sha256": "4f7d7e7dfc7a6b454a9e49aff6255b6ec9f4618ef00d0b0d5a8352a7411ad4d1"
+    }
+  ],
+  "pdf_sha256": {
+    "review-desktop.pdf": "f097390fcda2784f1ad86373a0c2c5db3e8f76f086b1f7363efacd3116978425",
+    "review-mobile.pdf": "7aa5b6fe0e378c6c11e70b2d10ad206ea25cf6289ae75b4838ac666f172ed8fa"
+  }
+}

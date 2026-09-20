@@ -1,0 +1,59 @@
+{
+  "capture_side": "baseline",
+  "connection_id": 1,
+  "source_device_id": 1,
+  "peer_device_id": 2,
+  "selected_value": "VISUAL-NETWORK-SOURCE",
+  "selected_value_persistence": true,
+  "outside_click_dismissed": true,
+  "trigger_box": {
+    "x": 82,
+    "y": 216.71875,
+    "width": 602.5,
+    "height": 38.5
+  },
+  "panel_box": {
+    "x": 82,
+    "y": 263.21875,
+    "width": 602.5,
+    "height": 116
+  },
+  "viewport_facts": {
+    "bodyScrollWidth": 1425,
+    "documentScrollWidth": 1425,
+    "pageHorizontalOverflow": false,
+    "pageVerticalOverflow": false,
+    "viewport": {
+      "devicePixelRatio": 1,
+      "height": 900,
+      "width": 1440
+    },
+    "triggerBox": {
+      "x": 82,
+      "y": 216.71875,
+      "width": 602.5,
+      "height": 38.5
+    },
+    "panelBox": {
+      "x": 82,
+      "y": 263.21875,
+      "width": 602.5,
+      "height": 116
+    },
+    "triggerInViewport": true,
+    "panelInViewport": true
+  },
+  "accessible_controls": [],
+  "accessible_inputs": [
+    {
+      "ariaLabel": null,
+      "placeholder": "Search options..."
+    }
+  ],
+  "runtime_errors": {
+    "consoleErrors": [],
+    "failedResponses": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

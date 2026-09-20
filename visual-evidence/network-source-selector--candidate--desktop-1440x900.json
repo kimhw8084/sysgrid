@@ -1,0 +1,63 @@
+{
+  "capture_side": "candidate",
+  "connection_id": 1,
+  "source_device_id": 1,
+  "peer_device_id": 2,
+  "selected_value": "VISUAL-NETWORK-SOURCE [Physical]",
+  "selected_value_persistence": true,
+  "outside_click_dismissed": true,
+  "trigger_box": {
+    "x": 82,
+    "y": 225,
+    "width": 602.5,
+    "height": 36
+  },
+  "panel_box": {
+    "x": 82,
+    "y": 269,
+    "width": 602.5,
+    "height": 171
+  },
+  "viewport_facts": {
+    "bodyScrollWidth": 1425,
+    "documentScrollWidth": 1425,
+    "pageHorizontalOverflow": false,
+    "pageVerticalOverflow": false,
+    "viewport": {
+      "devicePixelRatio": 1,
+      "height": 900,
+      "width": 1440
+    },
+    "triggerBox": {
+      "x": 82,
+      "y": 225,
+      "width": 602.5,
+      "height": 36
+    },
+    "panelBox": {
+      "x": 82,
+      "y": 269,
+      "width": 602.5,
+      "height": 171
+    },
+    "triggerInViewport": true,
+    "panelInViewport": true
+  },
+  "accessible_controls": [
+    "VISUAL-NETWORK-SYSTEM",
+    "No linked asset",
+    "VISUAL-NETWORK-SOURCEVISUAL-NETWORK-SYSTEM"
+  ],
+  "accessible_inputs": [
+    {
+      "ariaLabel": null,
+      "placeholder": "Search hostname or system..."
+    }
+  ],
+  "runtime_errors": {
+    "consoleErrors": [],
+    "failedResponses": [],
+    "pageErrors": [],
+    "requestFailures": []
+  }
+}

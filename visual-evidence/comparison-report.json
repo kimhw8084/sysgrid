@@ -1,0 +1,293 @@
+{
+  "schema": "sysgrid.chg155.visual-comparison.v1",
+  "change": "CHG-155",
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-network-audit-typed-links-v1",
+  "baseline_sha": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+  "candidate_sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+  "independent_review_required": true,
+  "classification_legend": {
+    "EXPECTED_DELTA": "Intentional Network Source/Peer selector adoption from AppDropdown to the accepted shared OperationalAssetSelector.",
+    "NO_INTENTIONAL_DELTA": "Surrounding Network modal geometry, fields, and unrelated controls should remain stable.",
+    "UNEXPECTED_DELTA": "Objective or visual difference requiring independent review."
+  },
+  "rows": [
+    {
+      "scenario_id": "network-source-selector",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "baseline": {
+        "revision": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+        "screenshot_sha256": "aecc8fc05e79b1e6df96ddd744bd1d80f41d95711ea5ecf9e0c383be317a29fd",
+        "trigger_box": {
+          "x": 82,
+          "y": 216.71875,
+          "width": 602.5,
+          "height": 38.5
+        },
+        "panel_box": {
+          "x": 82,
+          "y": 263.21875,
+          "width": 602.5,
+          "height": 116
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 1425,
+          "documentScrollWidth": 1425,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 900,
+            "width": 1440
+          },
+          "triggerBox": {
+            "x": 82,
+            "y": 216.71875,
+            "width": 602.5,
+            "height": 38.5
+          },
+          "panelBox": {
+            "x": 82,
+            "y": 263.21875,
+            "width": 602.5,
+            "height": 116
+          },
+          "triggerInViewport": true,
+          "panelInViewport": true
+        }
+      },
+      "candidate": {
+        "revision": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+        "screenshot_sha256": "603eef92aadcab39c27ee6d36201a037c0d318a6fb6076ee9ca9a727881dff78",
+        "trigger_box": {
+          "x": 82,
+          "y": 225,
+          "width": 602.5,
+          "height": 36
+        },
+        "panel_box": {
+          "x": 82,
+          "y": 269,
+          "width": 602.5,
+          "height": 171
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 1425,
+          "documentScrollWidth": 1425,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 900,
+            "width": 1440
+          },
+          "triggerBox": {
+            "x": 82,
+            "y": 225,
+            "width": 602.5,
+            "height": 36
+          },
+          "panelBox": {
+            "x": 82,
+            "y": 269,
+            "width": 602.5,
+            "height": 171
+          },
+          "triggerInViewport": true,
+          "panelInViewport": true
+        }
+      },
+      "classification": "EXPECTED_DELTA",
+      "expected_visual_difference": [
+        "Source Device remains in the same Network form location while changing from AppDropdown to OperationalAssetSelector.",
+        "Candidate adds the shared System Filter and Search Asset interaction panel.",
+        "Candidate remains bounded to the viewport on desktop and mobile."
+      ],
+      "objective_comparison": {
+        "screenshot_dimensions_match": true,
+        "baseline_overflow_or_clipping": false,
+        "candidate_overflow_or_clipping": false,
+        "baseline_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "candidate_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "baseline_interaction_checks": {
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true,
+          "selected_value_after_search": "VISUAL-NETWORK-SOURCE"
+        },
+        "candidate_interaction_checks": {
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true,
+          "selected_value_after_search": "VISUAL-NETWORK-SOURCE [Physical]"
+        },
+        "trigger_box_delta_candidate_minus_baseline": {
+          "x": 0,
+          "y": 8.28125,
+          "width": 0.0,
+          "height": -2.5
+        },
+        "panel_box_delta_candidate_minus_baseline": {
+          "x": 0,
+          "y": 5.78125,
+          "width": 0.0,
+          "height": 55
+        }
+      },
+      "unexpected_delta": [],
+      "visual_quality_self_certification": false
+    },
+    {
+      "scenario_id": "network-source-selector",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "baseline": {
+        "revision": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+        "screenshot_sha256": "48784d187848b70756082101fd8baaa526431304a2f7a23072bd3709a8889e06",
+        "trigger_box": {
+          "x": 58,
+          "y": 157,
+          "width": 253,
+          "height": 38.5
+        },
+        "panel_box": {
+          "x": 58,
+          "y": 203.5,
+          "width": 253,
+          "height": 116
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 844,
+            "width": 390
+          },
+          "triggerBox": {
+            "x": 58,
+            "y": 157,
+            "width": 253,
+            "height": 38.5
+          },
+          "panelBox": {
+            "x": 58,
+            "y": 203.5,
+            "width": 253,
+            "height": 116
+          },
+          "triggerInViewport": true,
+          "panelInViewport": true
+        }
+      },
+      "candidate": {
+        "revision": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+        "screenshot_sha256": "4f7d7e7dfc7a6b454a9e49aff6255b6ec9f4618ef00d0b0d5a8352a7411ad4d1",
+        "trigger_box": {
+          "x": 58,
+          "y": 157,
+          "width": 259.75,
+          "height": 33
+        },
+        "panel_box": {
+          "x": 12,
+          "y": 198,
+          "width": 366,
+          "height": 168
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 844,
+            "width": 390
+          },
+          "triggerBox": {
+            "x": 58,
+            "y": 157,
+            "width": 259.75,
+            "height": 33
+          },
+          "panelBox": {
+            "x": 12,
+            "y": 198,
+            "width": 366,
+            "height": 168
+          },
+          "triggerInViewport": true,
+          "panelInViewport": true
+        }
+      },
+      "classification": "EXPECTED_DELTA",
+      "expected_visual_difference": [
+        "Source Device remains in the same Network form location while changing from AppDropdown to OperationalAssetSelector.",
+        "Candidate adds the shared System Filter and Search Asset interaction panel.",
+        "Candidate remains bounded to the viewport on desktop and mobile."
+      ],
+      "objective_comparison": {
+        "screenshot_dimensions_match": true,
+        "baseline_overflow_or_clipping": false,
+        "candidate_overflow_or_clipping": false,
+        "baseline_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "candidate_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "baseline_interaction_checks": {
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true,
+          "selected_value_after_search": "VISUAL-NETWORK-SOURCE"
+        },
+        "candidate_interaction_checks": {
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true,
+          "selected_value_after_search": "VISUAL-NETWORK-SOURCE [Physical]"
+        },
+        "trigger_box_delta_candidate_minus_baseline": {
+          "x": 0,
+          "y": 0,
+          "width": 6.75,
+          "height": -5.5
+        },
+        "panel_box_delta_candidate_minus_baseline": {
+          "x": -46,
+          "y": -5.5,
+          "width": 113,
+          "height": 52
+        }
+      },
+      "unexpected_delta": [],
+      "visual_quality_self_certification": false
+    }
+  ],
+  "scenario_count": 2,
+  "screenshot_count": 4,
+  "visual_quality_verdict": null
+}
