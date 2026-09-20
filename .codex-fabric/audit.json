@@ -1,0 +1,460 @@
+{
+  "accepted_at": "2026-09-20T19:45:13Z",
+  "changed_files": [
+    {
+      "additions": 23,
+      "deletions": 12,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 22,
+      "deletions": 1,
+      "path": "backend/app/api/module_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 26,
+      "deletions": 1,
+      "path": "backend/test_chg13_authorization_security.py",
+      "status": "M"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 92,
+      "deletions": 40,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 68,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.ts",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 3,
+      "path": "frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 11,
+      "path": "frontend/tests/settings-and-audit.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 165,
+      "deletions": 0,
+      "path": "frontend/tests/settings-privilege.spec.ts",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files frontend/tests | rg '(settings|release-policy|monitoring|network)' | sort\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"webServer|BASE_URL|API|settings-and-audit|settings-privilege|release-policy|monitoring|network\" frontend/playwright*.ts frontend/tests/helpers frontend/tests/*.spec.ts scripts/run-e2e.sh | head -280'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,240p' frontend/playwright.config.ts 2>/dev/null; rtk sed -n '1,220p' frontend/playwright.v1.config.ts 2>/dev/null; rtk sed -n '1,180p' scripts/run-e2e.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q backend/test_system_management_v1_policy.py backend/test_chg13_authorization_security.py backend/test_settings_api_edges.py backend/test_settings_workflows.py backend/test_tenant_workflows.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 19,
+        "output_sha256": "e07e6b176e73133d973571fb8f1e6b5d73d7f225582a8d9225f99e70be009cf5",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts tests/settings-standards.spec.ts tests/release-policy-normal.spec.ts tests/release-policy-root-preview.spec.ts tests/monitoring-workflows.spec.ts tests/network-workflows.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' scripts/lib/verify-runtime.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' frontend/tests/settings-and-audit.spec.ts && rtk sed -n '1,220p' frontend/tests/helpers/sysgrid.ts | head -40\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"CONTROL_PLANE_ADMIN_USER_IDS|SYSGRID_VERIFY_USER_ID|Admin:|USER_ID|bootstrap\" scripts frontend/tests frontend | head -220'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '190,270p' scripts/lib/verify-runtime.sh && rtk sed -n '1,70p' scripts/start-local.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env CONTROL_PLANE_ADMIN_USER_IDS=haewon.kim bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"apiFetch|fetch\\\\(\\\" frontend/src/components/settings/SystemDiagnosticsPanel.tsx frontend/src/api/bootstrapDiagnostics.ts | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,120p' frontend/src/components/settings/SystemDiagnosticsPanel.tsx && rtk rg -n \\\"runSystemDiagnostics|settings/startup|user/env|diagnostic\\\" frontend/src/components/settings frontend/src/api | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba frontend/tests/settings-privilege.spec.ts | sed -n '100,180p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,120p' frontend/src/components/shared/TenantSelector.tsx && rtk rg -n \\\"tenants/|tenants\\\" frontend/src/components/shared frontend/src/App.tsx | head -120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env CONTROL_PLANE_ADMIN_USER_IDS=haewon.kim bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files | rg 'visual-evidence|artifact-bundle|review-desktop|comparison-report|reader-index|evidence' | head -240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"visual-evidence|artifact-bundle|project-os-artifacts|codex-fabric/evidence|comparison-report|reader-index\\\" . --glob '\"'!frontend/node_modules/**'\"' --glob '\"'!frontend/test-results/**'\"' | head -220\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba backend/test_system_management_v1_policy.py | sed -n '95,165p'\nrtk git diff --check\nrtk git status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q backend/test_system_management_v1_policy.py backend/test_chg13_authorization_security.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18,
+        "output_sha256": "19373b086229cd7c900e55936bea2586e163fad6b047eecae8f963c1a293ec9a",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat\nrtk git diff -- backend/app/api/authorization.py backend/app/api/module_policy.py frontend/src/policy/ModulePolicy.tsx frontend/src/components/Settings.tsx\nrtk git diff -- backend/test_chg13_authorization_security.py backend/test_system_management_v1_policy.py frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts frontend/tests/settings-and-audit.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,240p' frontend/src/components/settings/settingsPrivilegePolicy.ts\nrtk sed -n '1,280p' frontend/src/components/settings/settingsPrivilegePolicy.test.ts\nrtk sed -n '1,360p' frontend/tests/settings-privilege.spec.ts\nrtk rg -n \\\"userProfile\\\\?\\\\.is_admin|/api/v1/settings/global|/api/v1/settings/env/history|user-pool/versions|tenants/admin|diagnostics\\\" frontend/src/components/Settings.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '860,1115p' frontend/src/components/Settings.tsx\nrtk sed -n '2980,3070p' frontend/src/components/Settings.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"enabled: globalConfigManage|Analysis|tab === 'system'|requires global\\\" frontend/src/components/Settings.tsx frontend/src/components/settings/settingsPrivilegePolicy.ts frontend/src/components/settings/settingsPrivilegePolicy.test.ts\nrtk git diff --check\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- --run src/components/settings/settingsPrivilegePolicy.test.ts src/policy/ModulePolicy.test.ts src/components/settings/SystemDiagnosticsPanel.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q backend/test_system_management_v1_policy.py backend/test_chg13_authorization_security.py backend/test_settings_api_edges.py backend/test_settings_workflows.py backend/test_tenant_workflows.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 19,
+        "output_sha256": "e07e6b176e73133d973571fb8f1e6b5d73d7f225582a8d9225f99e70be009cf5",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' frontend/src/policy/ModulePolicy.tsx\nrtk sed -n '130,270p' backend/app/api/module_policy.py\nrtk sed -n '120,185p' backend/app/api/authorization.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts tests/settings-and-audit.spec.ts tests/settings-standards.spec.ts tests/release-policy-normal.spec.ts tests/release-policy-root-preview.spec.ts tests/monitoring-workflows.spec.ts tests/network-workflows.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/release-policy-root-preview.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,120p' frontend/tests/release-policy-root-preview.spec.ts\nrtk rg -n \\\"root-v1|SYSTEM_ROOT|system_root|SYSGRID_VERIFY_PROFILE|ROOT\\\" frontend/tests frontend/playwright* scripts backend/app | head -200\nrtk git diff -- backend/app/api/module_policy.py backend/app/api/authorization.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PROFILE=root-preview SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_USER_ID=haewon.kim USER_ID=haewon.kim bash scripts/run-e2e.sh --config=playwright.config.ts tests/release-policy-root-preview.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD\nrtk git rev-parse HEAD''^{tree}\nrtk git rev-parse main\nrtk git status --porcelain=v1\nrtk git diff --name-only\nrtk git diff --numstat -- frontend/src/components/Racks.tsx contracts/system_management_v1.json\nrtk git hash-object frontend/src/components/Racks.tsx\nrtk git rev-parse d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac:frontend/src/components/Racks.tsx\nrtk git hash-object contracts/system_management_v1.json\nrtk git rev-parse d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac:contracts/system_management_v1.json\nrtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git log --oneline --decorate -4 --all --simplify-by-decoration\nrtk git branch -vv\nrtk git remote -v\nrtk git diff --name-only --no-renames\nrtk git ls-files --others --exclude-standard\nrtk git diff -- frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git branch --show-current\nrtk git rev-parse refs/heads/main\nrtk git rev-parse refs/remotes/origin/main\nrtk git log --oneline --decorate -6 HEAD\nrtk git log --oneline --decorate -6 refs/heads/main\nrtk git merge-base HEAD refs/heads/main\nrtk git status --porcelain=v1 -uno\nrtk git diff --quiet -- frontend/src/components/Racks.tsx contracts/system_management_v1.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n --hidden --glob '\"'!frontend/node_modules/**'\"' --glob '\"'!frontend/test-results/**'\"' \\\"visual-evidence|artifact-bundle|review-desktop|comparison-report|reader-index|project-os-artifacts\\\" . | head -200\nrtk find . -maxdepth 3 -type d -name '*evidence*' -o -name 'visual-evidence'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files | rg '(\"'^|/)(visual-evidence|evidence|artifact|project-os)|review-(desktop|mobile)|comparison-report|reader-index'\"' | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add backend/app/api/authorization.py backend/app/api/module_policy.py backend/test_chg13_authorization_security.py backend/test_system_management_v1_policy.py frontend/src/components/Settings.tsx frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts frontend/src/components/settings/settingsPrivilegePolicy.ts frontend/src/components/settings/settingsPrivilegePolicy.test.ts frontend/src/policy/ModulePolicy.tsx frontend/tests/settings-and-audit.spec.ts frontend/tests/settings-privilege.spec.ts\nrtk git diff --cached --check\nrtk git diff --cached --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git commit -m \"feat: converge settings privilege authority\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:codex/sysgrid-smv1-settings-privilege-authority-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD\nrtk git rev-parse HEAD''^1\nrtk git rev-parse HEAD''^{tree}\nrtk git rev-parse refs/remotes/origin/main\nrtk git rev-parse refs/remotes/origin/codex/sysgrid-smv1-settings-privilege-authority-v1\nrtk git status --porcelain=v1 --branch\nrtk git diff --quiet HEAD''^ -- frontend/src/components/Racks.tsx contracts/system_management_v1.json\nrtk git hash-object frontend/src/components/Racks.tsx\nrtk git rev-parse HEAD''^:frontend/src/components/Racks.tsx\nrtk git hash-object contracts/system_management_v1.json\nrtk git rev-parse HEAD''^:contracts/system_management_v1.json\nrtk git show --stat --oneline --summary HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote --heads origin codex/sysgrid-smv1-settings-privilege-authority-v1\nrtk git ls-remote --heads origin project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-v1\nrtk git ls-remote --heads origin codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 305,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.38,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 25052672,
+      "fresh_input_tokens": 412103,
+      "input_tokens": 25464775,
+      "non_reasoning_output_tokens": 31212,
+      "output_tokens": 56729,
+      "reasoning_output_tokens": 25517,
+      "total_processed_tokens": 25521504
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "subject": "feat: converge settings privilege authority"
+    }
+  ],
+  "diff": {
+    "additions": 543,
+    "changed_files": 11,
+    "commit_count": 1,
+    "deletions": 68
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T20:15:16Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "branch": "codex/sysgrid-smv1-settings-privilege-authority-v1",
+    "detached_verify": false,
+    "head_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+    "remote_exact_head": true,
+    "remote_head_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "work_branch": "codex/sysgrid-smv1-settings-privilege-authority-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-1e1a68f49e074f2dd25d5bb6",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-settings-privilege-authority-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-20T19:45:14Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1802,
+    "queue_seconds": 1,
+    "total_seconds": 1803
+  },
+  "transport": {
+    "bytes": 16394,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 16050,
+    "prompt_sha256": "ec6dc5a24ecd4d63fca106e5e11ca5b3644ef4922f89858ec19599f04e224174",
+    "sha256": "1e1a68f49e074f2dd25d5bb6c93c9939ebdca3239b9fc1c834f4d40be885810e"
+  }
+}
