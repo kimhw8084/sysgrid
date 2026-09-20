@@ -1,0 +1,163 @@
+{
+  "schema": "sysgrid.chg151.visual-verify-final-report.v1",
+  "project": "sysgrid",
+  "repository": "kimhw8084/sysgrid",
+  "change": "CHG-151 — System Management V1 — golden capability extraction and Services parity adoption",
+  "request": "sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "candidate_fabric_job": "CF-8072fa72c2d17968041147ee",
+  "verify_branch": "codex/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "source_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+  "source_tree": "candidate tree equals exact candidate commit; no Product/source/test files changed",
+  "source_changed": false,
+  "baseline_sha": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+  "candidate_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+  "verify_branch_exact_head": true,
+  "scenario_count": 2,
+  "screenshot_count": 8,
+  "monitoring_expected_delta": "none",
+  "monitoring_objective_parity": {
+    "classification": "NO_INTENTIONAL_DELTA",
+    "desktop_and_mobile_box_deltas": "zero for trigger and panel",
+    "selected_value_persistence": true,
+    "runtime_ready": true,
+    "overflow_or_clipping": false,
+    "independent_visual_review_required": true
+  },
+  "services_expected_delta": {
+    "classification": "EXPECTED_DELTA",
+    "baseline_control": "AppDropdown options panel",
+    "candidate_control": "OperationalAssetSelector with System Filter and Search Asset",
+    "candidate_desktop_panel_box": {
+      "x": 86,
+      "y": 379,
+      "width": 420,
+      "height": 298
+    },
+    "candidate_mobile_panel_box": {
+      "x": 12,
+      "y": 375,
+      "width": 366,
+      "height": 295
+    },
+    "selected_value_persistence": true,
+    "surrounding_form_or_modal_runtime_errors": true
+  },
+  "services_unexpected_delta": [],
+  "mobile_overflow_clipping": false,
+  "accessibility_focus_findings": {
+    "focusable_controls_captured": true,
+    "all_captured_controls_have_accessible_names": true,
+    "selected_context_visible": true,
+    "outside_click_dismissal": true,
+    "escape_behavior": "not dismissed in inherited baseline or candidate capture; modal remained visible",
+    "finding": "No missing-name or inaccessible-critical-control finding observed in captured states."
+  },
+  "console_network_findings": {
+    "all_console_page_request_response_error_arrays_empty": true,
+    "by_capture": [
+      {
+        "scenario_id": "monitoring-selector",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      },
+      {
+        "scenario_id": "services-host",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      },
+      {
+        "scenario_id": "monitoring-selector",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      },
+      {
+        "scenario_id": "services-host",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      },
+      {
+        "scenario_id": "monitoring-selector",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      },
+      {
+        "scenario_id": "services-host",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      },
+      {
+        "scenario_id": "monitoring-selector",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      },
+      {
+        "scenario_id": "services-host",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "consoleErrors": 0,
+        "pageErrors": 0,
+        "requestFailures": 0,
+        "failedResponses": 0
+      }
+    ]
+  },
+  "git_artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "git_artifact_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca",
+  "deterministic_evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "git_package_verified": true,
+  "manifest_sha256": "9e667f7faf6a6ab90c079c9e8577489a16e7749b9b2b2cd90fc4ef929c7c4ccd",
+  "bundle_sha256": "895466fa3c7b7c927c3324ea351d6ed8e6b851a072eea9c9e277b0cbce260014",
+  "review_desktop_sha256": "640dca099d95dbda957e998b64e89dbbb46cb161f658dc72e2b3cec0ccfc45e3",
+  "review_mobile_sha256": "fdb11c1261abed2d488a06fbc76fb91026ddcf8c051abddb4fe523b7ab2d0784",
+  "main_unchanged": true,
+  "worktree_clean": true,
+  "error_code": null,
+  "blockers": [
+    "Independent multimodal visual GO remains a Project OS/ChatGPT decision; this VERIFY does not self-certify visual quality."
+  ],
+  "package_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca"
+}

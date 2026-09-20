@@ -1,0 +1,25 @@
+{
+  "schema": "sysgrid.chg151.visual-verify-transport-receipt.v1",
+  "project": "sysgrid",
+  "repository": "kimhw8084/sysgrid",
+  "request": "sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "candidate_fabric_job": "CF-8072fa72c2d17968041147ee",
+  "baseline_sha": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+  "candidate_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+  "source_changed": false,
+  "source_branch": "codex/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "deterministic_evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "artifact_carrier_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "package_files": {
+    "manifest_sha256": "9e667f7faf6a6ab90c079c9e8577489a16e7749b9b2b2cd90fc4ef929c7c4ccd",
+    "comparison_report_sha256": "c4c3743869128d653975990f447921fc8222fcd9fc10037e7b4fd0151bc32d65",
+    "reader_index_sha256": "dfb2b269cabdb69b8daf6ca336c42722931cf7a7d0df685a5867804dc2f92c5e",
+    "bundle_sha256": "895466fa3c7b7c927c3324ea351d6ed8e6b851a072eea9c9e277b0cbce260014",
+    "review_desktop_sha256": "640dca099d95dbda957e998b64e89dbbb46cb161f658dc72e2b3cec0ccfc45e3",
+    "review_mobile_sha256": "fdb11c1261abed2d488a06fbc76fb91026ddcf8c051abddb4fe523b7ab2d0784"
+  },
+  "package_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca",
+  "carrier_head_commit": null,
+  "remote_readback": false,
+  "package_verified": true
+}
