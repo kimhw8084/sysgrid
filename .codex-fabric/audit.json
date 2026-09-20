@@ -1,0 +1,409 @@
+{
+  "accepted_at": "2026-09-20T03:48:02Z",
+  "changed_files": [
+    {
+      "additions": 82,
+      "deletions": 40,
+      "path": "backend/app/api/audit.py",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": "backend/app/api/error_utils.py",
+      "status": "M"
+    },
+    {
+      "additions": 44,
+      "deletions": 17,
+      "path": "backend/app/api/monitoring.py",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "backend/app/domain/__init__.py",
+      "status": "A"
+    },
+    {
+      "additions": 87,
+      "deletions": 0,
+      "path": "backend/app/domain/monitoring_contract.py",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "backend/app/main.py",
+      "status": "M"
+    },
+    {
+      "additions": 14,
+      "deletions": 0,
+      "path": "backend/app/schemas/schemas.py",
+      "status": "M"
+    },
+    {
+      "additions": 83,
+      "deletions": 0,
+      "path": "backend/test_audit_integrity.py",
+      "status": "A"
+    },
+    {
+      "additions": 166,
+      "deletions": 0,
+      "path": "backend/test_monitoring_domain_contract.py",
+      "status": "A"
+    },
+    {
+      "additions": 25,
+      "deletions": 0,
+      "path": "contracts/monitoring_domain_contract_v1.json",
+      "status": "A"
+    },
+    {
+      "additions": 42,
+      "deletions": 23,
+      "path": "frontend/src/components/AuditLogs.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 6,
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 63,
+      "deletions": 0,
+      "path": "frontend/src/components/audit/auditQuery.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 102,
+      "deletions": 0,
+      "path": "frontend/src/components/audit/auditQuery.ts",
+      "status": "A"
+    },
+    {
+      "additions": 19,
+      "deletions": 0,
+      "path": "frontend/src/domain/monitoringContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 48,
+      "deletions": 0,
+      "path": "frontend/src/domain/monitoringContract.ts",
+      "status": "A"
+    },
+    {
+      "additions": 43,
+      "deletions": 2,
+      "path": "frontend/src/utils/monitoringValidation.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 12,
+      "deletions": 0,
+      "path": "frontend/src/utils/monitoringValidation.ts",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 0,
+      "path": "frontend/tests/audit-logs-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && printf '\\\\n--- LAW ---\\\\n' && sed -n '1,320p' /Users/haewonkim/.codex/law.md && printf '\\\\n--- STATUS ---\\\\n' && git status --short --branch && printf '\\\\n--- REMOTES ---\\\\n' && git remote -v\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set -e\nrtk git fetch origin main codex/sysgrid-smv1-api-integrity-contract-audit-fix-v5\nrtk git rev-parse --verify refs/remotes/origin/main\nrtk git rev-parse --verify refs/remotes/origin/codex/sysgrid-smv1-api-integrity-contract-audit-fix-v5\nrtk git show -s --format='candidate=%H%nparent=%P%ntree=%T' refs/remotes/origin/codex/sysgrid-smv1-api-integrity-contract-audit-fix-v5\nrtk git rev-parse --verify HEAD\nrtk git rev-parse --verify refs/heads/codex/sysgrid-smv1-api-integrity-contract-audit-verify-v6\nrtk git merge-base --is-ancestor 2074e8bffb50b90d379b23760e61017d5107e079 40329b35ed49f110d8fe66e1f93559d6e74c7695\nrtk git merge-base --is-ancestor 92e7d6b6e654d2518527855ae938c16484c2fc49 40329b35ed49f110d8fe66e1f93559d6e74c7695\nrtk git rev-list --count 2074e8bffb50b90d379b23760e61017d5107e079..40329b35ed49f110d8fe66e1f93559d6e74c7695\nrtk git log --oneline --decorate --max-count=4 40329b35ed49f110d8fe66e1f93559d6e74c7695\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -e\nrtk git merge --ff-only 40329b35ed49f110d8fe66e1f93559d6e74c7695\nrtk git rev-parse --verify HEAD\nrtk git status --short --branch\nrtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -e\nrtk --version\nrtk which rtk\nrtk git diff --name-only 2074e8bffb50b90d379b23760e61017d5107e079..40329b35ed49f110d8fe66e1f93559d6e74c7695\nrtk git diff --name-only 92e7d6b6e654d2518527855ae938c16484c2fc49..40329b35ed49f110d8fe66e1f93559d6e74c7695\nrtk git diff --stat 92e7d6b6e654d2518527855ae938c16484c2fc49..40329b35ed49f110d8fe66e1f93559d6e74c7695\nrtk shasum -a 256 frontend/package.json frontend/package-lock.json\nrtk test -d frontend/node_modules\nrtk /opt/anaconda3/bin/python --version\nrtk node --version\nrtk npm --version'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -ld frontend/node_modules\nrtk /opt/anaconda3/bin/python --version\nrtk node --version\nrtk npm --version'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -e\nrtk shasum -a 256 frontend/package.json frontend/package-lock.json\nrtk git status --short --branch\nrtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' frontend/package.json\nrtk sed -n '1,260p' frontend/playwright.v1.config.ts\nrtk rg -n 'test:unit|operational-contracts|typecheck|build|vitest|pytest|run-e2e' README.md package.json frontend/package.json scripts backend pyproject.toml 2>/dev/null\"",
+      "exit_code": 2,
+      "test_result": {
+        "exit_code": 2,
+        "framework": "pytest",
+        "outcome": "interrupted",
+        "output_bytes": 68357,
+        "output_sha256": "d0ffa0d39921930196ac2f4a104757f719e6e52da3a00c75f1c9838389463bf2",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- src/utils/monitoringValidation.test.ts src/domain/monitoringContract.test.ts src/components/audit/auditQuery.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /opt/anaconda3/bin/python -m pytest -q test_monitoring_domain_contract.py test_monitoring_query_and_bulk_edges.py test_monitoring_workflows.py test_audit_integrity.py test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 92,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 672,
+        "output_sha256": "d16b2dc1d54bb68fdf65a02c3aa8e99469e6965fdbc913b56afa3cfb1b7ee948",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash ../scripts/run-e2e.sh --config=playwright.v1.config.ts tests/audit-logs-workflows.spec.ts tests/monitoring-workflows.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash ../scripts/run-e2e.sh --config=playwright.v1.config.ts tests/audit-logs-workflows.spec.ts tests/monitoring-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 4 'MonitoringItemCreate|build_monitoring_payload|SysGrid_Audit|Export loaded CSV|export.*filename|loaded.*CSV|Content-Disposition' backend/app frontend/src backend/test_audit_integrity.py backend/test_monitoring_domain_contract.py frontend/src/components/audit/auditQuery.test.ts frontend/tests/audit-logs-workflows.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '210,270p' backend/app/schemas/schemas.py\nrtk sed -n '1,130p' backend/app/api/error_utils.py\nrtk git diff --unified=80 92e7d6b6e654d2518527855ae938c16484c2fc49..40329b35ed49f110d8fe66e1f93559d6e74c7695 -- backend/app/api/monitoring.py frontend/src/components/AuditLogs.tsx backend/app/api/error_utils.py backend/app/schemas/schemas.py frontend/src/components/audit/auditQuery.ts frontend/src/components/audit/auditQuery.test.ts backend/test_monitoring_domain_contract.py frontend/tests/audit-logs-workflows.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' backend/app/domain/monitoring_contract.py\nrtk sed -n '1,180p' frontend/src/components/audit/auditQuery.ts\nrtk sed -n '270,305p' frontend/src/components/AuditLogs.tsx\nrtk git diff --name-status 92e7d6b6e654d2518527855ae938c16484c2fc49..40329b35ed49f110d8fe66e1f93559d6e74c7695\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python -c 'import inspect; from app.main import app; from app.api import monitoring; from app.schemas import schemas; schema = app.openapi()[\\\"paths\\\"][\\\"/api/v1/monitoring\\\"][\\\"post\\\"][\\\"requestBody\\\"][\\\"content\\\"][\\\"application/json\\\"][\\\"schema\\\"]; assert schema[\\\"\"'$ref\"] == \"#/components/schemas/MonitoringItemCreate\", schema; assert inspect.signature(monitoring.create_monitoring_item).parameters[\"data\"].annotation is schemas.MonitoringItemCreate; print(\"OpenAPI typed request assertion passed: MonitoringItemCreate\")'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e 'const fs = require(\\\"fs\\\"); const query = fs.readFileSync(\\\"frontend/src/components/audit/auditQuery.ts\\\", \\\"utf8\\\"); const audit = fs.readFileSync(\\\"frontend/src/components/AuditLogs.tsx\\\", \\\"utf8\\\"); const unit = fs.readFileSync(\\\"frontend/src/components/audit/auditQuery.test.ts\\\", \\\"utf8\\\"); if (\"'!query.includes(\"AUDIT_EXPORT_FILENAME_PREFIX = '\"'SysGrid_AuditLoadedResult'\\\")) throw new Error(\\\"filename prefix missing\\\"); if (\"'!query.includes(\"`${AUDIT_EXPORT_FILENAME_PREFIX}_${date.toISOString().split('\"'T')[0]}.csv\"'`\")) throw new Error(\"date-bounded filename builder missing\"); if (!audit.includes(\"fileName: buildAuditExportFileName()\")) throw new Error(\"AuditLogs does not use loaded-result filename\"); if (!audit.includes(\"Export loaded CSV\")) throw new Error(\"loaded CSV button label missing\"); if (!unit.includes(\"SysGrid_AuditLoadedResult_2026-09-19.csv\")) throw new Error(\"truthful filename unit assertion missing\"); console.log(\"Audit export filename assertion passed: SysGrid_AuditLoadedResult_<YYYY-MM-DD>.csv\")'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e 'const fs = require(\\\"fs\\\"); const query = fs.readFileSync(\\\"frontend/src/components/audit/auditQuery.ts\\\", \\\"utf8\\\"); const audit = fs.readFileSync(\\\"frontend/src/components/AuditLogs.tsx\\\", \\\"utf8\\\"); const unit = fs.readFileSync(\\\"frontend/src/components/audit/auditQuery.test.ts\\\", \\\"utf8\\\"); if (\"'!query.includes(`AUDIT_EXPORT_FILENAME_PREFIX = '\"'SysGrid_AuditLoadedResult'\"'`)) throw new Error(\"filename prefix missing\"); if (!query.includes(\"`${AUDIT_EXPORT_FILENAME_PREFIX}_${date.toISOString().split('\"'T')[0]}.csv\"'`\")) throw new Error(\"date-bounded filename builder missing\"); if (!audit.includes(\"fileName: buildAuditExportFileName()\")) throw new Error(\"AuditLogs does not use loaded-result filename\"); if (!audit.includes(\"Export loaded CSV\")) throw new Error(\"loaded CSV button label missing\"); if (!unit.includes(\"SysGrid_AuditLoadedResult_2026-09-19.csv\")) throw new Error(\"truthful filename unit assertion missing\"); console.log(\"Audit export filename assertion passed: SysGrid_AuditLoadedResult_<YYYY-MM-DD>.csv\")'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e 'const fs = require(\\\"fs\\\"); const quote = String.fromCharCode(39); const query = fs.readFileSync(\\\"frontend/src/components/audit/auditQuery.ts\\\", \\\"utf8\\\"); const audit = fs.readFileSync(\\\"frontend/src/components/AuditLogs.tsx\\\", \\\"utf8\\\"); const unit = fs.readFileSync(\\\"frontend/src/components/audit/auditQuery.test.ts\\\", \\\"utf8\\\"); if (\"'!query.includes(\"AUDIT_EXPORT_FILENAME_PREFIX = \" + quote + \"SysGrid_AuditLoadedResult\" + quote)) throw new Error(\"filename prefix missing\"); if (!query.includes(\"date.toISOString().split(\" + quote + \"T\" + quote + \")[0]\") || !query.includes(\".csv\")) throw new Error(\"date-bounded filename builder missing\"); if (!audit.includes(\"fileName: buildAuditExportFileName()\")) throw new Error(\"AuditLogs does not use loaded-result filename\"); if (!audit.includes(\"Export loaded CSV\")) throw new Error(\"loaded CSV button label missing\"); if (!unit.includes(\"SysGrid_AuditLoadedResult_2026-09-19.csv\")) throw new Error(\"truthful filename unit assertion missing\"); console.log(\"Audit export filename assertion passed: SysGrid_AuditLoadedResult_<YYYY-MM-DD>.csv\")'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,90p' backend/app/api/monitoring.py\nrtk sed -n '280,390p' backend/app/api/monitoring.py\nrtk rg -n 'CHECK_INTERVAL_|ALERT_DURATION_|NOTIFICATION_THROTTLE_|check_interval.*(min|max)|alert_duration.*(min|max)|notification_throttle.*(min|max)' backend/app backend/test_monitoring_domain_contract.py contracts/monitoring_domain_contract_v1.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python -c 'import json, math; from app.api.error_utils import _sanitize_error_payload; from app.domain import monitoring_contract as contract; payload = {\\\"loc\\\": (\\\"body\\\", \\\"check_interval\\\"), \\\"ctx\\\": {\\\"nan\\\": math.nan, \\\"inf\\\": math.inf}, \\\"exc\\\": ValueError(\\\"bad value\\\")}; sanitized = _sanitize_error_payload(payload); assert sanitized == {\\\"loc\\\": [\\\"body\\\", \\\"check_interval\\\"], \\\"ctx\\\": {\\\"nan\\\": \\\"nan\\\", \\\"inf\\\": \\\"inf\\\"}, \\\"exc\\\": \\\"bad value\\\"}; json.dumps(sanitized, allow_nan=False); assert contract.CONTRACT_PATH.name == \\\"monitoring_domain_contract_v1.json\\\"; assert (contract.CHECK_INTERVAL_MIN, contract.CHECK_INTERVAL_MAX) == (15, 86400); assert (contract.ALERT_DURATION_MIN, contract.ALERT_DURATION_MAX) == (0, 86400); assert (contract.NOTIFICATION_THROTTLE_MIN, contract.NOTIFICATION_THROTTLE_MAX) == (60, 604800); print(\\\"Safe non-finite validation serialization and contract-bound ranges passed\\\")'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python -c 'import math; from pydantic import ValidationError; from app.schemas.schemas import MonitoringItemCreate; from app.domain.monitoring_contract import CHECK_INTERVAL_MIN, ALERT_DURATION_MAX, NOTIFICATION_THROTTLE_MIN; base = {\\\"category\\\": \\\"Infrastructure\\\", \\\"status\\\": \\\"Existing\\\", \\\"title\\\": \\\"DIRECT-INTEGER-CONTRACT\\\"}; invalid = [(\\\"check_interval\\\", True), (\\\"alert_duration\\\", \\\"60\\\"), (\\\"notification_throttle\\\", \\\"not-a-number\\\"), (\\\"check_interval\\\", 15.5), (\\\"alert_duration\\\", math.nan), (\\\"notification_throttle\\\", math.inf)]; for field, value in invalid: pass'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python -c 'import math; from pydantic import ValidationError; from app.schemas.schemas import MonitoringItemCreate; from app.domain.monitoring_contract import CHECK_INTERVAL_MIN, ALERT_DURATION_MAX, NOTIFICATION_THROTTLE_MIN; base = {\\\"category\\\": \\\"Infrastructure\\\", \\\"status\\\": \\\"Existing\\\", \\\"title\\\": \\\"DIRECT-INTEGER-CONTRACT\\\"}; invalid = [(\\\"check_interval\\\", True), (\\\"alert_duration\\\", \\\"60\\\"), (\\\"notification_throttle\\\", \\\"not-a-number\\\"), (\\\"check_interval\\\", 15.5), (\\\"alert_duration\\\", math.nan), (\\\"notification_throttle\\\", math.inf)]; exec(\\\"def rejected(item):\\\\n    try:\\\\n        MonitoringItemCreate.model_validate({**base, item[0]: item[1]})\\\\n    except ValidationError:\\\\n        return True\\\\n    return False\\\"); assert all(rejected(item) for item in invalid); valid = MonitoringItemCreate.model_validate({**base, \\\"check_interval\\\": CHECK_INTERVAL_MIN, \\\"alert_duration\\\": ALERT_DURATION_MAX, \\\"notification_throttle\\\": NOTIFICATION_THROTTLE_MIN}); assert valid.check_interval == CHECK_INTERVAL_MIN and valid.alert_duration == ALERT_DURATION_MAX and valid.notification_throttle == NOTIFICATION_THROTTLE_MIN; print(\\\"Strict integer pre-coercion assertion passed\\\")'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git fetch origin main codex/sysgrid-smv1-api-integrity-contract-audit-fix-v5\nrtk git rev-parse --verify refs/remotes/origin/main\nrtk git rev-parse --verify refs/heads/main\nrtk git rev-parse --verify HEAD\nrtk git rev-parse --verify HEAD''^{tree}\nrtk git rev-parse --verify HEAD''^1\nrtk git rev-parse --verify refs/remotes/origin/codex/sysgrid-smv1-api-integrity-contract-audit-fix-v5\nrtk git merge-base --is-ancestor 92e7d6b6e654d2518527855ae938c16484c2fc49 HEAD\nrtk git merge-base --is-ancestor 2074e8bffb50b90d379b23760e61017d5107e079 HEAD\nrtk git rev-list --count 2074e8bffb50b90d379b23760e61017d5107e079..HEAD\nrtk git diff --name-only 92e7d6b6e654d2518527855ae938c16484c2fc49..HEAD\nrtk shasum -a 256 frontend/package.json frontend/package-lock.json\nrtk git diff --check\nrtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git log --oneline --decorate --max-count=6 refs/heads/main\nrtk git reflog --format='%h %gs' --date=iso refs/heads/main -n 6\nrtk git show -s --format='origin-main=%H%nlocal-main=%h%nlocal-main-date=%ci%nlocal-main-subject=%s' refs/heads/main\nrtk git show -s --format='candidate=%H%ntree=%T%nparent=%P%nsubject=%s' HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 76,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 94.65,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1810176,
+      "fresh_input_tokens": 102362,
+      "input_tokens": 1912538,
+      "non_reasoning_output_tokens": 7694,
+      "output_tokens": 18375,
+      "reasoning_output_tokens": 10681,
+      "total_processed_tokens": 1930913
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "40329b35ed49f110d8fe66e1f93559d6e74c7695",
+      "subject": "fix: harden monitoring create and audit export contract"
+    },
+    {
+      "sha": "92e7d6b6e654d2518527855ae938c16484c2fc49",
+      "subject": "feat: converge monitoring and audit integrity contracts"
+    }
+  ],
+  "diff": {
+    "additions": 872,
+    "changed_files": 19,
+    "commit_count": 2,
+    "deletions": 89
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 1,
+    "items": [
+      {
+        "bytes": 610,
+        "path": "contracts/monitoring_domain_contract_v1.json",
+        "sha256": "be19c1fefdc01e89b42278e2778613446a2f1a6855813a817c6475b2b8c5be5c"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T03:58:19Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "branch": "codex/sysgrid-smv1-api-integrity-contract-audit-verify-v6",
+    "detached_verify": false,
+    "head_sha": "40329b35ed49f110d8fe66e1f93559d6e74c7695",
+    "remote_exact_head": true,
+    "remote_head_sha": "40329b35ed49f110d8fe66e1f93559d6e74c7695",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "work_branch": "codex/sysgrid-smv1-api-integrity-contract-audit-verify-v6",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-1c9f58dd566ab606bc0da9bc",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-api-integrity-contract-audit-verify-v6",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-api-integrity-contract-audit-verify-v6"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-api-integrity-contract-audit-verify-v6",
+  "schema_version": 1,
+  "started_at": "2026-09-20T03:48:02Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 617,
+    "queue_seconds": 0,
+    "total_seconds": 617
+  },
+  "transport": {
+    "bytes": 6452,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 6094,
+    "prompt_sha256": "3ff6d3f3a0d45884297564202b3703c14dc279f7d8701761c7a3fae03f6360c0",
+    "sha256": "1c9f58dd566ab606bc0da9bc62611159c15dcfeb8f916c01a4288f2538352b61"
+  }
+}
