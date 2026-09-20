@@ -1,0 +1,441 @@
+{
+  "accepted_at": "2026-09-20T13:18:46Z",
+  "changed_files": [
+    {
+      "additions": 1,
+      "deletions": 184,
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 40,
+      "deletions": 0,
+      "path": "frontend/src/components/ServiceRegistry.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 9,
+      "path": "frontend/src/components/ServiceRegistry.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/monitoring/BkmListModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 24,
+      "deletions": 5,
+      "path": "frontend/src/components/monitoring/MonitoringForm.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 0,
+      "path": "frontend/src/components/monitoring/MonitoringServicesParityContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 24,
+      "deletions": 0,
+      "path": "frontend/src/components/monitoring/monitoringWorkspaceContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 54,
+      "deletions": 0,
+      "path": "frontend/src/components/monitoring/monitoringWorkspaceContract.ts",
+      "status": "A"
+    },
+    {
+      "additions": 76,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalAssetSelector.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 152,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalAssetSelector.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 41,
+      "deletions": 0,
+      "path": "frontend/tests/monitoring-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 52,
+      "deletions": 0,
+      "path": "frontend/tests/service-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk rg -l 'sysgrid-smv1-golden-capability-services-parity-evidence-recovery-v3|CHG-151' /Users/haewonkim/.codex-fabric/jobs /Users/haewonkim/.codex-fabric/quarantine /Users/haewonkim/.codex-fabric/results 2>/dev/null | sed -n '1,200p' && printf '%s\\\\n' '--- likely helpers ---' && rtk find /Users/haewonkim/.codex-fabric -maxdepth 3 -type f \\\\( -iname '*artifact*' -o -iname '*notion*' -o -iname '*reader*' -o -iname '*bridge*' \\\\) -print 2>/dev/null | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find /Users/haewonkim/.codex-fabric -maxdepth 3 -type f -print | sed -n '1,260p' && printf '%s\\\\n' '--- result summary ---' && rtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/results/CF-067241308bb6548cafc7c9d5/job-summary.json && printf '%s\\\\n' '--- exact prior prompt ---' && rtk sed -n '1,220p' /Users/haewonkim/.codex-fabric/jobs/CF-067241308bb6548cafc7c9d5.executed/prompt.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy find /Users/haewonkim/.codex-fabric -maxdepth 4 -type f | rg -i 'artifact|bridge|reader|notion|stage|upload' | sed -n '1,260p' && printf '%s\\\\n' '--- installed codex tools ---' && rtk proxy find /Users/haewonkim/.codex -maxdepth 5 -type f | rg -i 'artifact|bridge|reader|notion|stage|upload' | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy find /Users/haewonkim/.codex-fabric/jobs/CF-671e62e356462b18d5f5ef0a.running -maxdepth 4 -type f | sed -n '1,260p' && printf '%s\\\\n' '--- prior successful stage receipt ---' && rtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/results/CF-717607f02dc14c00239c7fda/r3-stage-receipt.json && printf '%s\\\\n' '--- prior successful manifest ---' && rtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/results/CF-717607f02dc14c00239c7fda/r3-artifact-manifest.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/jobs/CF-671e62e356462b18d5f5ef0a.running/job.json && printf '%s\\\\n' '--- lease ---' && rtk sed -n '1,200p' /Users/haewonkim/.codex-fabric/jobs/CF-671e62e356462b18d5f5ef0a.running/lease.json && printf '%s\\\\n' '--- current job id references ---' && rtk rg -n 'CF-671e62e356462b18d5f5ef0a|evidence-recovery-v3' /Users/haewonkim/.codex-fabric/jobs/CF-671e62e356462b18d5f5ef0a.running /Users/haewonkim/.codex-fabric/results/CF-671e62e356462b18d5f5ef0a 2>/dev/null | sed -n '1,160p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk mktemp -d /tmp/sysgrid-chg151-r3.XXXXXX'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git archive 7789095122acf4abdc0b39215a2b69fedd9484b6 visual-evidence | rtk proxy tar -xf - -C /tmp/sysgrid-chg151-r3.8ABdEj && rtk proxy find /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence -type f | sort && rtk git status --short --branch && rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --fail --silent --show-error --request POST 'https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81fb-962d-00b258d913ac/send' --header 'authorization: Bearer [REDACTED_SECRET]' --form 'file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/manifest.json'\"",
+      "exit_code": 22,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk date -u '+%Y-%m-%dT%H:%M:%SZ'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST 'https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81fb-962d-00b258d913ac/send' --header 'authorization: Bearer [REDACTED_SECRET]' --form 'file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/manifest.json' --write-out '\\\\nstatus=%{http_code}\\\\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8127-bc8f-00b2de9c37c4/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/manifest.json\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81f5-9046-00b28747a1da/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/manifest.json\\\" --write-out '\\\\nstatus=%{http_code}\\\\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81f6-91e2-00b25bcaeaf1/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/manifest.json;type=application/json\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8111-8499-00b201f246e0/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/captures/baseline-capture.json;type=application/json\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8146-9951-00b2ba5a8057/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/captures/candidate-capture.json;type=application/json\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81ed-bf7d-00b24de62628/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/comparison-report.json;type=application/json\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8168-b320-00b29fd05727/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/reader-index.json;type=application/json\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-814d-a2e1-00b2d01f692e/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/review-desktop.pdf;type=application/pdf\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81ec-95b3-00b2d8693b47/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/review-mobile.pdf;type=application/pdf\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-813a-b91b-00b263a27055/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/monitoring-selector--baseline--desktop-1440x900.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8195-a194-00b238b319d9/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/monitoring-selector--baseline--mobile-390x844.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8198-837f-00b29497cc50/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/monitoring-selector--candidate--desktop-1440x900.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8161-bfe6-00b25d9d7523/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/monitoring-selector--candidate--mobile-390x844.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8113-9e3c-00b2081902a3/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/services-host--baseline--desktop-1440x900.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-8146-9347-00b2052a4f6b/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/services-host--baseline--mobile-390x844.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81f1-855a-00b229847ba0/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/services-host--candidate--desktop-1440x900.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-810f-bf68-00b21825d96e/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/services-host--candidate--mobile-390x844.png;type=image/png\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl --silent --show-error --request POST \\\"https://api.notion.com/v1/mcp/file_uploads/3e1c564c-8d04-81db-9e66-00b2d0a66f9a/send\\\" --header \\\"authorization: Bearer [REDACTED_SECRET]\\\" --form \\\"file=@/tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/artifact-bundle.zip;type=application/zip\\\" --output /dev/null --write-out '%{http_code}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'notion_notion_create_pages|Artifact Count|file_upload_id|source_change|Source Change' /Users/haewonkim/.codex-fabric/jobs/CF-339b8d9b51744cc551c8886c.executed /Users/haewonkim/.codex-fabric/results/CF-717607f02dc14c00239c7fda /Users/haewonkim/.codex-fabric/jobs/CF-2447fa57f30a3ddbce930b70.executed 2>/dev/null | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -o '.{0,120}(file-upload://|suggested_markdown|markdown_source|create_attachment|create_file_upload).{0,240}' /Users/haewonkim/.codex-fabric/results/CF-717607f02dc14c00239c7fda/codex.events.jsonl /Users/haewonkim/.codex-fabric/jobs/CF-339b8d9b51744cc551c8886c.executed /Users/haewonkim/.codex-fabric/results/CF-2447fa57f30a3ddbce930b70/codex.events.jsonl 2>/dev/null | sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'create_pages|Artifact Run|artifactRun|3dec564c-8d04-81a8-87a8-d2ed1d4c23af|uploadedBytes|Artifacts' /Users/haewonkim/.codex-fabric/results/CF-717607f02dc14c00239c7fda/codex.events.jsonl | sed -n '1,200p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq -r 'select((.item.command // .item.text // \\\"\\\") | contains(\\\"create_pages\\\")) | (.item.command // .item.text)' /Users/haewonkim/.codex-fabric/results/CF-717607f02dc14c00239c7fda/codex.events.jsonl | sed -n '1,60p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse 87f89b9f630cde7c96313b442343367cf7e743c3''^{tree} && rtk git diff --quiet HEAD --; rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk wc -c /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/manifest.json /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/captures/baseline-capture.json /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/captures/candidate-capture.json /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/comparison-report.json /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/reader-index.json /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/review-desktop.pdf /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/review-mobile.pdf /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/screenshots/*.png /tmp/sysgrid-chg151-r3.8ABdEj/visual-evidence/artifact-bundle.zip | tail -1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/87402a88-4db2-4a47-b6ec-d6235ba41846/chg151-r3-services-host--candidate--mobile-390x844.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/695d99e1-0ffe-4f8b-b771-07ec1e0c2eb6/chg151-r3-monitoring-selector--candidate--mobile-390x844.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/eab9dcd8-298c-4817-b642-296a426fedd0/chg151-r3-services-host--baseline--desktop-1440x900.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/4d4fee4d-4d72-4783-a210-94fcfdf57ecc/chg151-r3-monitoring-selector--baseline--mobile-390x844.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/57ac6b70-c915-486c-a72a-c5647af18dde/chg151-r3-monitoring-selector--baseline--desktop-1440x900.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/94345e05-1efb-4688-81dd-459edfacee41/chg151-r3-monitoring-selector--candidate--desktop-1440x900.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/078b9d4e-94a7-4f6d-8987-6f345c59a0a2/chg151-r3-services-host--baseline--mobile-390x844.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'curl --silent --show-error --location \"https://prod-files-secure.s3.us-west-2.amazonaws.com/0136ddae-d2a4-4fb1-9ab7-e0bc59e06e24/84b06644-41ac-4a5c-9b4b-e91f9c9b43f1/chg151-r3-services-host--candidate--desktop-1440x900.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466UCVU5V5Q%2F20260920%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260920T133208Z&X-Amz-Expires=300&X-Amz-Security-Token=[REDACTED_SECRET]\" | /usr/bin/shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "update_properties",
+      "type": "mcp_tool_call"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet 87f89b9f630cde7c96313b442343367cf7e743c3 HEAD --'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet HEAD --'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet e6144f7bd14ccca89ec6bfd0b1031f1091fe5583 7789095122acf4abdc0b39215a2b69fedd9484b6 -- visual-evidence'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 275,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 95.81,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 6788096,
+      "fresh_input_tokens": 296985,
+      "input_tokens": 7085081,
+      "non_reasoning_output_tokens": 17839,
+      "output_tokens": 31569,
+      "reasoning_output_tokens": 13730,
+      "total_processed_tokens": 7116650
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "subject": "fabric: capture completed model changes [CF-8072fa72c2d17968041147ee]"
+    }
+  ],
+  "diff": {
+    "additions": 500,
+    "changed_files": 12,
+    "commit_count": 1,
+    "deletions": 199
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T13:35:52Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+    "branch": "codex/sysgrid-smv1-golden-capability-services-parity-evidence-recovery-v3",
+    "detached_verify": false,
+    "head_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+    "remote_exact_head": true,
+    "remote_head_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+    "work_branch": "codex/sysgrid-smv1-golden-capability-services-parity-evidence-recovery-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-671e62e356462b18d5f5ef0a",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-golden-capability-services-parity-evidence-recovery-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-golden-capability-services-parity-evidence-recovery-v3"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-golden-capability-services-parity-evidence-recovery-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-20T13:18:46Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1026,
+    "queue_seconds": 0,
+    "total_seconds": 1026
+  },
+  "transport": {
+    "bytes": 7908,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7518,
+    "prompt_sha256": "d81619e95b832efc5dd20d4a0f86e6b5156d03e2bc09eebef72643a562a5d33c",
+    "sha256": "671e62e356462b18d5f5ef0a33d05af4541f6afbaf930bdf59fc7a86a83f66f1"
+  }
+}
