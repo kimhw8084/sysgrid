@@ -22,6 +22,8 @@
   "carrier_head_commit": null,
   "remote_readback": true,
   "package_verified": true,
-  "remote_readback_commit": "6422614c803b94364238d9748a5fe573b30af539",
-  "remote_readback_method": "git fetch by exact carrier ref, rev-parse equality, and remote tree inspection"
+  "remote_readback_commit": "e6144f7bd14ccca89ec6bfd0b1031f1091fe5583",
+  "remote_readback_method": "git fetch by exact carrier ref, rev-parse equality, and remote tree inspection",
+  "carrier_package_commit": "e6144f7bd14ccca89ec6bfd0b1031f1091fe5583",
+  "carrier_package_commit_remote_readback": true
 }

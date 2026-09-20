@@ -146,7 +146,7 @@
     ]
   },
   "git_artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
-  "git_artifact_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca",
+  "git_artifact_commit": "e6144f7bd14ccca89ec6bfd0b1031f1091fe5583",
   "deterministic_evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
   "git_package_verified": true,
   "manifest_sha256": "9e667f7faf6a6ab90c079c9e8577489a16e7749b9b2b2cd90fc4ef929c7c4ccd",
@@ -160,5 +160,7 @@
     "Independent multimodal visual GO remains a Project OS/ChatGPT decision; this VERIFY does not self-certify visual quality."
   ],
   "package_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca",
-  "artifact_carrier_remote_readback_commit": "6422614c803b94364238d9748a5fe573b30af539"
+  "artifact_carrier_remote_readback_commit": "e6144f7bd14ccca89ec6bfd0b1031f1091fe5583",
+  "artifact_package_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca",
+  "artifact_package_commit_remote_readback": true
 }
