@@ -1,0 +1,2425 @@
+{
+  "schema": "sysgrid.chg151.visual-capture.v1",
+  "phase": "baseline",
+  "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+  "base_url": "http://127.0.0.1:18101",
+  "browser": {
+    "name": "Chromium",
+    "version": "148.0.7778.96",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+  },
+  "role": "ADMIN",
+  "user_id": "haewon.kim",
+  "tenant_id": "1",
+  "theme": "nordic-frost-v1",
+  "locale": "en-US",
+  "timezone": "America/Chicago",
+  "fixture": {
+    "identity": "seed.py --seed-data / normal-v1 / admin / Local Demo-or-Playwright-Gate disposable tenant",
+    "asset": {
+      "id": 161,
+      "name": "BI-ANALYTICS-P-161",
+      "system": "BI-ANALYTICS",
+      "type": "Physical"
+    },
+    "monitoring": {
+      "id": 1,
+      "title": "BI-ANALYTICS-P-161: Auth Error",
+      "device_id": 161
+    },
+    "service_host": {
+      "id": 161,
+      "name": "BI-ANALYTICS-P-161",
+      "system": "BI-ANALYTICS",
+      "type": "Physical"
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "monitoring-selector",
+      "phase": "baseline",
+      "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "route": "/monitoring",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\nSYSGRID\n‹\nOperations\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nInfrastructure\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nConnectivity\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nAnalysis\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nResources\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nDARK\nLIGHT\n\nVersion 1.2.6\n\nPATCH NOTES\nSearch assets, projects"
+      },
+      "trigger_box": {
+        "x": 107,
+        "y": 549.63,
+        "width": 699.8,
+        "height": 36
+      },
+      "panel_box": {
+        "x": 107,
+        "y": 370.63,
+        "width": 699.8,
+        "height": 171
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 107,
+          "y": 549.63,
+          "width": 699.8,
+          "height": 36
+        },
+        "panelBox": {
+          "x": 107,
+          "y": 370.63,
+          "width": 699.8,
+          "height": 171
+        },
+        "bodyScrollWidth": 1425,
+        "documentScrollWidth": 1425
+      },
+      "focusable_controls": [
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS"
+        },
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search hostname or system..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "No linked asset"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161BI-ANALYTICS"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "selected_row_text": "BI-ANALYTICS-P-161\n\nBI-ANALYTICS"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/baseline/screenshots/monitoring-selector--baseline--1440x900.png",
+        "width": 1440,
+        "height": 900,
+        "sha256": "de51aadfd16b2975ce5ccb11cbbe67307ec5d42db95829d378803c996f2bf8e2"
+      },
+      "notes": {
+        "expected_delta": "NO_INTENTIONAL_DELTA"
+      },
+      "interaction_checks": {
+        "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "panel_closed_after_selection": true,
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "modal_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    },
+    {
+      "scenario_id": "services-host",
+      "phase": "baseline",
+      "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "route": "/services",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\nSYSGRID\n‹\nOperations\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nInfrastructure\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nConnectivity\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nAnalysis\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nResources\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nDARK\nLIGHT\n\nVersion 1.2.6\n\nPATCH NOTES\nSearch assets, projects"
+      },
+      "trigger_box": {
+        "x": 86,
+        "y": 326.72,
+        "width": 335.83,
+        "height": 38.5
+      },
+      "panel_box": {
+        "x": 86,
+        "y": 373.22,
+        "width": 335.83,
+        "height": 346
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 86,
+          "y": 326.72,
+          "width": 335.83,
+          "height": 38.5
+        },
+        "panelBox": {
+          "x": 86,
+          "y": 373.22,
+          "width": 335.83,
+          "height": 346
+        },
+        "bodyScrollWidth": 1425,
+        "documentScrollWidth": 1425
+      },
+      "focusable_controls": [
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search options..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-001 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-002 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-003 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-004 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-005 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-006 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-007 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-008 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-009 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-010 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-011 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-012 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-013 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-014 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-015 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-016 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-017 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-018 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-019 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-020 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-021 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-022 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-023 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-024 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-025 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-026 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-027 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-028 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-029 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-030 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-031 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-032 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-033 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-034 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-035 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-036 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-037 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-038 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-039 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-040 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-041 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-042 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-043 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-044 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-045 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-046 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-047 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-048 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-049 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-050 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-051 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-052 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-053 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-054 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-055 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-056 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-057 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-058 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-059 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-060 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-061 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-062 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-063 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-064 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-065 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-066 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-067 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-068 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-069 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-070 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-071 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-072 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-073 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-074 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-075 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-076 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-077 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-078 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-079 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-080 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-081 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-082 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-083 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-084 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-085 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-086 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-087 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-088 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-089 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-090 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-091 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-092 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-093 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-094 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-095 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-096 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-097 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-098 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-099 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-100 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-101 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-102 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-103 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-104 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-S-105 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-106 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-107 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-108 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-109 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-110 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-111 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-112 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-113 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-114 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-115 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-116 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-117 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-118 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-119 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-120 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-121 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-122 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-123 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-124 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-125 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-126 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-127 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-128 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-129 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-130 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-131 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-132 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-133 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-134 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-135 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-136 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-137 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-138 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-139 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-140 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-141 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-142 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-143 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-144 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-145 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-146 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-147 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-148 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-149 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-150 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-151 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-152 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-153 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-154 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-155 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-156 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-157 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-158 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-159 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-160 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-S-162 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-163 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-164 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-165 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-166 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-167 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-168 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-169 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-170 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-171 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-172 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-173 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-174 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-175 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-176 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-177 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-178 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-179 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-180 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-181 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-182 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-183 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-184 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-185 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-186 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-187 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-188 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-189 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-190 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-191 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-192 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-193 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-194 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-195 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-196 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-197 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-198 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-199 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-200 [Physical]"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "Select host node",
+        "selected_row_text": "BI-ANALYTICS-P-161 [Physical]"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/baseline/screenshots/services-host--baseline--1440x900.png",
+        "width": 1440,
+        "height": 900,
+        "sha256": "65bd2df5a7fb83e3884a8f00820b23ea125e4d64a31fb25a1c9f20dc32df3a12"
+      },
+      "notes": {
+        "expected_delta": "BASELINE_REFERENCE"
+      },
+      "interaction_checks": {
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "dialog_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    },
+    {
+      "scenario_id": "monitoring-selector",
+      "phase": "baseline",
+      "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "route": "/monitoring",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\n›\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nVersion 1.2.6\nPATCH NOTES\nSearch assets, projects, or incidents...\nCurrent tenant\nLocal Demo\nSystem status\nOperational87 ms\n1\nOB"
+      },
+      "trigger_box": {
+        "x": 83,
+        "y": 531.5,
+        "width": 203,
+        "height": 33
+      },
+      "panel_box": {
+        "x": 12,
+        "y": 355.5,
+        "width": 366,
+        "height": 168
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 83,
+          "y": 531.5,
+          "width": 203,
+          "height": 33
+        },
+        "panelBox": {
+          "x": 12,
+          "y": 355.5,
+          "width": 366,
+          "height": 168
+        },
+        "bodyScrollWidth": 375,
+        "documentScrollWidth": 375
+      },
+      "focusable_controls": [
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS"
+        },
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search hostname or system..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "No linked asset"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161BI-ANALYTICS"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "selected_row_text": "BI-ANALYTICS-P-161\n\nBI-ANALYTICS"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/baseline/screenshots/monitoring-selector--baseline--390x844.png",
+        "width": 390,
+        "height": 844,
+        "sha256": "47b7f251ff621b32a34b658a6020b0ec507e5247c6c920da9be51101dec55a1e"
+      },
+      "notes": {
+        "expected_delta": "NO_INTENTIONAL_DELTA"
+      },
+      "interaction_checks": {
+        "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "panel_closed_after_selection": true,
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "modal_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    },
+    {
+      "scenario_id": "services-host",
+      "phase": "baseline",
+      "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "route": "/services",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\n›\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nVersion 1.2.6\nPATCH NOTES\nSearch assets, projects, or incidents...\nCurrent tenant\nLocal Demo\nSystem status\nOperational205 ms\n1\nS"
+      },
+      "trigger_box": {
+        "x": 62,
+        "y": 323,
+        "width": 245,
+        "height": 38.5
+      },
+      "panel_box": {
+        "x": 62,
+        "y": 369.5,
+        "width": 245,
+        "height": 346
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 62,
+          "y": 323,
+          "width": 245,
+          "height": 38.5
+        },
+        "panelBox": {
+          "x": 62,
+          "y": 369.5,
+          "width": 245,
+          "height": 346
+        },
+        "bodyScrollWidth": 375,
+        "documentScrollWidth": 375
+      },
+      "focusable_controls": [
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search options..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-001 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-002 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-003 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-004 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-005 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-006 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-007 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-008 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-009 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-010 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-011 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-012 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-013 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-014 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-015 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-016 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-017 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-018 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-019 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-020 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-021 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-022 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-023 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-024 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-025 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-026 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-027 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-028 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-029 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-030 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-031 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-032 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-033 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-034 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-035 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-036 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-037 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-038 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-039 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-040 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-041 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-042 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-043 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-044 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-045 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-046 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-047 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-048 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-049 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-050 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-051 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-052 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-053 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-054 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-055 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-056 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-057 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-058 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-059 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-060 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-061 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-062 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-063 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-064 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-065 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-066 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-067 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-068 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-069 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-070 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-071 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-072 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-073 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-074 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-075 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-076 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-077 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-078 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-079 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-080 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-081 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-082 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-083 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-084 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-085 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-086 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-087 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-088 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-089 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-090 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-091 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-092 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-093 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-094 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-095 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-096 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-097 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-098 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-099 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-100 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-101 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-102 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-103 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-104 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-S-105 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-106 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-107 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-108 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-109 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-110 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-111 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-112 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-113 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-114 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-115 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-116 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-117 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-118 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-119 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-120 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-121 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-122 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-123 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-124 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-125 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-126 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-127 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-128 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-129 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-130 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-131 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-132 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-133 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-134 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-135 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-136 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-137 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-138 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-139 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-140 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-141 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-142 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-143 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-144 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-145 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-146 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-147 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-148 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-149 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-150 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-151 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-152 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-153 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-154 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-155 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-156 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-157 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-158 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-159 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-160 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-S-162 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-163 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-164 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-165 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-166 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-167 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-168 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-169 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-170 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-171 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-172 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-173 [Physical]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-174 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-175 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-176 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-177 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-178 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-179 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-180 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-181 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-182 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-183 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-184 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-185 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-186 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-187 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-188 [Storage]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-189 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-190 [Switch]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-191 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-192 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-193 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-194 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-195 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-196 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-197 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-198 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-199 [Virtual]"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-200 [Physical]"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "Select host node",
+        "selected_row_text": "BI-ANALYTICS-P-161 [Physical]"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/baseline/screenshots/services-host--baseline--390x844.png",
+        "width": 390,
+        "height": 844,
+        "sha256": "a1ece5eaff780c30ffa973a65737ede60ba437df95289fbedb9af36cd938408b"
+      },
+      "notes": {
+        "expected_delta": "BASELINE_REFERENCE"
+      },
+      "interaction_checks": {
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "dialog_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    }
+  ]
+}

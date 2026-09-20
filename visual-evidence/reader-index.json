@@ -1,0 +1,77 @@
+{
+  "baseline_sha": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+  "candidate_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+  "pages": [
+    {
+      "baseline_image": "screenshots/monitoring-selector--baseline--desktop-1440x900.png",
+      "baseline_revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "baseline_sha256": "de51aadfd16b2975ce5ccb11cbbe67307ec5d42db95829d378803c996f2bf8e2",
+      "candidate_image": "screenshots/monitoring-selector--candidate--desktop-1440x900.png",
+      "candidate_revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "candidate_sha256": "3f3065d0727bb2199335ba8daf373389882ef1a34d467591bd7e875e9508bf46",
+      "page": 1,
+      "pdf": "review-desktop.pdf",
+      "scenario_id": "monitoring-selector",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "width": 1440
+      }
+    },
+    {
+      "baseline_image": "screenshots/services-host--baseline--desktop-1440x900.png",
+      "baseline_revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "baseline_sha256": "65bd2df5a7fb83e3884a8f00820b23ea125e4d64a31fb25a1c9f20dc32df3a12",
+      "candidate_image": "screenshots/services-host--candidate--desktop-1440x900.png",
+      "candidate_revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "candidate_sha256": "50969443cb956de3a4d1857cf8c5b36469b96bcb8ab68a14941243a9694e6412",
+      "page": 2,
+      "pdf": "review-desktop.pdf",
+      "scenario_id": "services-host",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "width": 1440
+      }
+    },
+    {
+      "baseline_image": "screenshots/monitoring-selector--baseline--mobile-390x844.png",
+      "baseline_revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "baseline_sha256": "47b7f251ff621b32a34b658a6020b0ec507e5247c6c920da9be51101dec55a1e",
+      "candidate_image": "screenshots/monitoring-selector--candidate--mobile-390x844.png",
+      "candidate_revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "candidate_sha256": "dc9d29581505039240c405521bd8abd58db0e4c5a141a043f69b530b45f2f1ac",
+      "page": 1,
+      "pdf": "review-mobile.pdf",
+      "scenario_id": "monitoring-selector",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "width": 390
+      }
+    },
+    {
+      "baseline_image": "screenshots/services-host--baseline--mobile-390x844.png",
+      "baseline_revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+      "baseline_sha256": "a1ece5eaff780c30ffa973a65737ede60ba437df95289fbedb9af36cd938408b",
+      "candidate_image": "screenshots/services-host--candidate--mobile-390x844.png",
+      "candidate_revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "candidate_sha256": "66da2d52ef4713b958e664c8cb71260faed5af2a42fa541cdcedc5f71c9b5104",
+      "page": 2,
+      "pdf": "review-mobile.pdf",
+      "scenario_id": "services-host",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "width": 390
+      }
+    }
+  ],
+  "pdf_sha256": {
+    "review-desktop.pdf": "640dca099d95dbda957e998b64e89dbbb46cb161f658dc72e2b3cec0ccfc45e3",
+    "review-mobile.pdf": "fdb11c1261abed2d488a06fbc76fb91026ddcf8c051abddb4fe523b7ab2d0784"
+  },
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "schema": "sysgrid.chg151.visual-evidence-reader-index.v1"
+}

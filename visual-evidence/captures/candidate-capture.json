@@ -1,0 +1,2445 @@
+{
+  "schema": "sysgrid.chg151.visual-capture.v1",
+  "phase": "candidate",
+  "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+  "base_url": "http://127.0.0.1:18201",
+  "browser": {
+    "name": "Chromium",
+    "version": "148.0.7778.96",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36"
+  },
+  "role": "ADMIN",
+  "user_id": "haewon.kim",
+  "tenant_id": "1",
+  "theme": "nordic-frost-v1",
+  "locale": "en-US",
+  "timezone": "America/Chicago",
+  "fixture": {
+    "identity": "seed.py --seed-data / normal-v1 / admin / Local Demo-or-Playwright-Gate disposable tenant",
+    "asset": {
+      "id": 161,
+      "name": "BI-ANALYTICS-P-161",
+      "system": "BI-ANALYTICS",
+      "type": "Physical"
+    },
+    "monitoring": {
+      "id": 1,
+      "title": "BI-ANALYTICS-P-161: Auth Error",
+      "device_id": 161
+    },
+    "service_host": {
+      "id": 161,
+      "name": "BI-ANALYTICS-P-161",
+      "system": "BI-ANALYTICS",
+      "type": "Physical"
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "monitoring-selector",
+      "phase": "candidate",
+      "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "route": "/monitoring",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\nSYSGRID\n‹\nOperations\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nInfrastructure\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nConnectivity\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nAnalysis\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nResources\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nDARK\nLIGHT\n\nVersion 1.2.6\n\nPATCH NOTES\nSearch assets, projects"
+      },
+      "trigger_box": {
+        "x": 107,
+        "y": 549.63,
+        "width": 699.8,
+        "height": 36
+      },
+      "panel_box": {
+        "x": 107,
+        "y": 370.63,
+        "width": 699.8,
+        "height": 171
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 107,
+          "y": 549.63,
+          "width": 699.8,
+          "height": 36
+        },
+        "panelBox": {
+          "x": 107,
+          "y": 370.63,
+          "width": 699.8,
+          "height": 171
+        },
+        "bodyScrollWidth": 1425,
+        "documentScrollWidth": 1425
+      },
+      "focusable_controls": [
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS"
+        },
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search hostname or system..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "No linked asset"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161BI-ANALYTICS"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "selected_row_text": "BI-ANALYTICS-P-161\n\nBI-ANALYTICS"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/candidate/screenshots/monitoring-selector--candidate--1440x900.png",
+        "width": 1440,
+        "height": 900,
+        "sha256": "3f3065d0727bb2199335ba8daf373389882ef1a34d467591bd7e875e9508bf46"
+      },
+      "notes": {
+        "expected_delta": "NO_INTENTIONAL_DELTA"
+      },
+      "interaction_checks": {
+        "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "panel_closed_after_selection": true,
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "modal_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    },
+    {
+      "scenario_id": "services-host",
+      "phase": "candidate",
+      "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "route": "/services",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\nSYSGRID\n‹\nOperations\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nInfrastructure\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nConnectivity\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nAnalysis\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nResources\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nDARK\nLIGHT\n\nVersion 1.2.6\n\nPATCH NOTES\nSearch assets, projects"
+      },
+      "trigger_box": {
+        "x": 86,
+        "y": 335,
+        "width": 335.83,
+        "height": 36
+      },
+      "panel_box": {
+        "x": 86,
+        "y": 379,
+        "width": 420,
+        "height": 298
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 86,
+          "y": 335,
+          "width": 335.83,
+          "height": 36
+        },
+        "panelBox": {
+          "x": 86,
+          "y": 379,
+          "width": 420,
+          "height": 298
+        },
+        "bodyScrollWidth": 1425,
+        "documentScrollWidth": 1425
+      },
+      "focusable_controls": [
+        {
+          "tag": "button",
+          "role": "",
+          "name": "All Systems"
+        },
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search hostname or system..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "No linked asset"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-001FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-002MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-003BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-004MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-005MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-006MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-007MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-008SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-009SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-010MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-011ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-012MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-013MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-014MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-015FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-016BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-017MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-018MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-019MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-020FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-021FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-022MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-023MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-024BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-025BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-026ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-027SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-028SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-029MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-030MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-031ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-032SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-033MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-034MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-035SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-036MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-037MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-038BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-039MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-040BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-041FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-042FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-043MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-044SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-045K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-046SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-047SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-048FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-049K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-050MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-051BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-052SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-053ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-054SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-055MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-056BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-057MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-058MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-059MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-060MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-061FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-062K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-063ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-064MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-065FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-066SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-067BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-068MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-069BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-070FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-071SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-072MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-073MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-074K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-075SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-076ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-077BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-078FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-079FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-080FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-081SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-082K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-083MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-084K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-085MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-086MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-087FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-088MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-089BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-090BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-091MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-092BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-093MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-094K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-095FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-096K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-097FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-098SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-099BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-100MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-101BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-102MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-103BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-104MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-S-105SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-106SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-107SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-108K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-109MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-110ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-111FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-112MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-113SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-114SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-115FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-116MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-117FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-118MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-119MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-120ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-121MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-122K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-123ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-124SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-125MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-126BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-127SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-128SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-129SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-130FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-131FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-132MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-133ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-134BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-135K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-136MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-137MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-138MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-139BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-140K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-141SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-142MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-143SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-144K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-145SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-146MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-147MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-148MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-149K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-150FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-151ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-152BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-153MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-154BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-155K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-156ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-157FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-158K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-159K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-160FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-S-162SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-163ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-164MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-165SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-166FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-167MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-168BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-169MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-170BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-171SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-172K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-173K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-174SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-175BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-176MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-177FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-178SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-179FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-180SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-181FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-182K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-183FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-184MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-185SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-186ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-187SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-188MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-189MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-190BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-191MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-192K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-193FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-194SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-195SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-196SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-197K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-198MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-199FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-200FINANCE"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "Select host node",
+        "selected_row_text": "BI-ANALYTICS-P-161\n\nBI-ANALYTICS"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/candidate/screenshots/services-host--candidate--1440x900.png",
+        "width": 1440,
+        "height": 900,
+        "sha256": "50969443cb956de3a4d1857cf8c5b36469b96bcb8ab68a14941243a9694e6412"
+      },
+      "notes": {
+        "expected_delta": "EXPECTED_DELTA"
+      },
+      "interaction_checks": {
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "dialog_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    },
+    {
+      "scenario_id": "monitoring-selector",
+      "phase": "candidate",
+      "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "route": "/monitoring",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\n›\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nVersion 1.2.6\nPATCH NOTES\nSearch assets, projects, or incidents...\nCurrent tenant\nDefault tenant\nSystem status\nOperational77 ms\n"
+      },
+      "trigger_box": {
+        "x": 83,
+        "y": 531.5,
+        "width": 203,
+        "height": 33
+      },
+      "panel_box": {
+        "x": 12,
+        "y": 355.5,
+        "width": 366,
+        "height": 168
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 83,
+          "y": 531.5,
+          "width": 203,
+          "height": 33
+        },
+        "panelBox": {
+          "x": 12,
+          "y": 355.5,
+          "width": 366,
+          "height": 168
+        },
+        "bodyScrollWidth": 375,
+        "documentScrollWidth": 375
+      },
+      "focusable_controls": [
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS"
+        },
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search hostname or system..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "No linked asset"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161BI-ANALYTICS"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "selected_row_text": "BI-ANALYTICS-P-161\n\nBI-ANALYTICS"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/candidate/screenshots/monitoring-selector--candidate--390x844.png",
+        "width": 390,
+        "height": 844,
+        "sha256": "dc9d29581505039240c405521bd8abd58db0e4c5a141a043f69b530b45f2f1ac"
+      },
+      "notes": {
+        "expected_delta": "NO_INTENTIONAL_DELTA"
+      },
+      "interaction_checks": {
+        "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+        "panel_closed_after_selection": true,
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "modal_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    },
+    {
+      "scenario_id": "services-host",
+      "phase": "candidate",
+      "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "route": "/services",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dpr": 1,
+      "runtime_ready": {
+        "headingVisible": true,
+        "forbiddenHits": [],
+        "bodyTextSample": "Skip to content\n›\nHome\nProjects (Preview)\nSYSTEM_ROOT_REQUIRED\nMonitoring\nAssets\nRacks\nServices\nExternal (Preview)\nSYSTEM_ROOT_REQUIRED\nNetwork\nArchitecture (Preview)\nSYSTEM_ROOT_REQUIRED\nResearch (Preview)\nSYSTEM_ROOT_REQUIRED\nFAR (Preview)\nSYSTEM_ROOT_REQUIRED\nVendors (Preview)\nSYSTEM_ROOT_REQUIRED\nKnowledge (Preview)\nSYSTEM_ROOT_REQUIRED\nAudit logs\nSettings / Access\nVersion 1.2.6\nPATCH NOTES\nSearch assets, projects, or incidents...\nCurrent tenant\nDefault tenant\nSystem status\nOperational235 ms"
+      },
+      "trigger_box": {
+        "x": 62,
+        "y": 334,
+        "width": 245,
+        "height": 33
+      },
+      "panel_box": {
+        "x": 12,
+        "y": 375,
+        "width": 366,
+        "height": 295
+      },
+      "viewport_facts": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1
+        },
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false,
+        "triggerInViewport": true,
+        "panelInViewport": true,
+        "triggerBox": {
+          "x": 62,
+          "y": 334,
+          "width": 245,
+          "height": 33
+        },
+        "panelBox": {
+          "x": 12,
+          "y": 375,
+          "width": 366,
+          "height": 295
+        },
+        "bodyScrollWidth": 375,
+        "documentScrollWidth": 375
+      },
+      "focusable_controls": [
+        {
+          "tag": "button",
+          "role": "",
+          "name": "All Systems"
+        },
+        {
+          "tag": "input",
+          "role": "",
+          "name": "Search hostname or system..."
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "No linked asset"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-001FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-002MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-003BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-004MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-005MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-006MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-007MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-008SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-009SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-010MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-011ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-012MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-013MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-014MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-015FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-016BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-017MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-018MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-019MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-020FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-021FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-022MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-023MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-024BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-025BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-026ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-027SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-028SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-029MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-030MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-031ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-032SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-033MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-034MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-035SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-036MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-037MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-038BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-039MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-040BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-041FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-042FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-043MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-044SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-045K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-046SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-047SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-048FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-049K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-050MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-051BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-052SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-053ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-054SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-055MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-056BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-057MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-058MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-059MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-060MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-061FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-062K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-063ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-064MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-065FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-066SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-067BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-068MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-069BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-070FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-071SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-072MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-073MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-074K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-075SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-076ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-077BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-078FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-079FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-080FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-081SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-082K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-083MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-084K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-085MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-086MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-087FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-088MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-089BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-090BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-091MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-092BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-093MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-094K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-095FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-096K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-097FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-098SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-099BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-100MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-101BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-102MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-103BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-104MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-S-105SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-106SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-107SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-108K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-109MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-110ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-111FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-112MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-113SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-114SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-115FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-116MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-117FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-118MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-119MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-120ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-121MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-122K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-P-123ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-P-124SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-P-125MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-126BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-127SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-128SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-129SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-130FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-131FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-132MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-133ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-134BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-135K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-P-136MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-137MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-138MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-139BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-140K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-P-141SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-142MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-143SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-144K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-145SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-146MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-147MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-148MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-149K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-150FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-151ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-152BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-153MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-154BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-155K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-156ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-S-157FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-S-158K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-159K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-160FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-P-161BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-S-162SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-163ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-164MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-165SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-166FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-167MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-168BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-169MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-170BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-171SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-172K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-P-173K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-174SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-V-175BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-S-176MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-177FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-178SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-179FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-180SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-181FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-182K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-183FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-184MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-185SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "ERP-V-186ERP"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-187SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-S-188MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-189MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "BI-ANALYTICS-S-190BI-ANALYTICS"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MANUFACTURING-V-191MANUFACTURING"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-192K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-193FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-194SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SCADA-V-195SCADA"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "SECURITY-V-196SECURITY"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "K8S-CLUSTER-V-197K8S-CLUSTER"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "MES-V-198MES"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-V-199FINANCE"
+        },
+        {
+          "tag": "button",
+          "role": "",
+          "name": "FINANCE-P-200FINANCE"
+        }
+      ],
+      "selected_context": {
+        "asset_id": 161,
+        "asset_name": "BI-ANALYTICS-P-161",
+        "system": "BI-ANALYTICS",
+        "trigger_text": "Select host node",
+        "selected_row_text": "BI-ANALYTICS-P-161\n\nBI-ANALYTICS"
+      },
+      "screenshot": {
+        "path": "/tmp/sysgrid-chg151-evidence/candidate/screenshots/services-host--candidate--390x844.png",
+        "width": 390,
+        "height": 844,
+        "sha256": "66da2d52ef4713b958e664c8cb71260faed5af2a42fa541cdcedc5f71c9b5104"
+      },
+      "notes": {
+        "expected_delta": "EXPECTED_DELTA"
+      },
+      "interaction_checks": {
+        "selected_value_persistence": true,
+        "outside_click_dismissed": true,
+        "escape_dismissed": false,
+        "dialog_visible_after_escape": true
+      },
+      "console_network": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "requestFailures": [],
+        "failedResponses": []
+      }
+    }
+  ]
+}

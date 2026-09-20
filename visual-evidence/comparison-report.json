@@ -1,0 +1,575 @@
+{
+  "baseline_sha": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+  "candidate_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+  "change": "CHG-151",
+  "classification_legend": {
+    "EXPECTED_DELTA": "Intentional candidate-only Services Host selector change.",
+    "NO_INTENTIONAL_DELTA": "Monitoring selector is a non-regressible parity reference.",
+    "UNEXPECTED_DELTA": "Objective or visual difference requiring independent review; none asserted here."
+  },
+  "independent_review_required": true,
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "rows": [
+    {
+      "baseline": {
+        "panel_box": {
+          "height": 171,
+          "width": 699.8,
+          "x": 107,
+          "y": 370.63
+        },
+        "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+        "screenshot_sha256": "de51aadfd16b2975ce5ccb11cbbe67307ec5d42db95829d378803c996f2bf8e2",
+        "trigger_box": {
+          "height": 36,
+          "width": 699.8,
+          "x": 107,
+          "y": 549.63
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 1425,
+          "documentScrollWidth": 1425,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 171,
+            "width": 699.8,
+            "x": 107,
+            "y": 370.63
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 36,
+            "width": 699.8,
+            "x": 107,
+            "y": 549.63
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 900,
+            "width": 1440
+          }
+        }
+      },
+      "candidate": {
+        "panel_box": {
+          "height": 171,
+          "width": 699.8,
+          "x": 107,
+          "y": 370.63
+        },
+        "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+        "screenshot_sha256": "3f3065d0727bb2199335ba8daf373389882ef1a34d467591bd7e875e9508bf46",
+        "trigger_box": {
+          "height": 36,
+          "width": 699.8,
+          "x": 107,
+          "y": 549.63
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 1425,
+          "documentScrollWidth": 1425,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 171,
+            "width": 699.8,
+            "x": 107,
+            "y": 370.63
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 36,
+            "width": 699.8,
+            "x": 107,
+            "y": 549.63
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 900,
+            "width": 1440
+          }
+        }
+      },
+      "classification": "NO_INTENTIONAL_DELTA",
+      "expected_visual_difference": [],
+      "objective_comparison": {
+        "baseline_interaction_checks": {
+          "escape_dismissed": false,
+          "modal_visible_after_escape": true,
+          "outside_click_dismissed": true,
+          "panel_closed_after_selection": true,
+          "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+          "selected_value_persistence": true
+        },
+        "baseline_overflow_or_clipping": false,
+        "baseline_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "candidate_interaction_checks": {
+          "escape_dismissed": false,
+          "modal_visible_after_escape": true,
+          "outside_click_dismissed": true,
+          "panel_closed_after_selection": true,
+          "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+          "selected_value_persistence": true
+        },
+        "candidate_overflow_or_clipping": false,
+        "candidate_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "panel_box_delta_candidate_minus_baseline": {
+          "height": 0,
+          "width": 0.0,
+          "x": 0,
+          "y": 0.0
+        },
+        "screenshot_dimensions_match": true,
+        "trigger_box_delta_candidate_minus_baseline": {
+          "height": 0,
+          "width": 0.0,
+          "x": 0,
+          "y": 0.0
+        }
+      },
+      "scenario_id": "monitoring-selector",
+      "unexpected_delta": [],
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "width": 1440
+      },
+      "visual_quality_self_certification": false
+    },
+    {
+      "baseline": {
+        "panel_box": {
+          "height": 168,
+          "width": 366,
+          "x": 12,
+          "y": 355.5
+        },
+        "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+        "screenshot_sha256": "47b7f251ff621b32a34b658a6020b0ec507e5247c6c920da9be51101dec55a1e",
+        "trigger_box": {
+          "height": 33,
+          "width": 203,
+          "x": 83,
+          "y": 531.5
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 168,
+            "width": 366,
+            "x": 12,
+            "y": 355.5
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 33,
+            "width": 203,
+            "x": 83,
+            "y": 531.5
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 844,
+            "width": 390
+          }
+        }
+      },
+      "candidate": {
+        "panel_box": {
+          "height": 168,
+          "width": 366,
+          "x": 12,
+          "y": 355.5
+        },
+        "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+        "screenshot_sha256": "dc9d29581505039240c405521bd8abd58db0e4c5a141a043f69b530b45f2f1ac",
+        "trigger_box": {
+          "height": 33,
+          "width": 203,
+          "x": 83,
+          "y": 531.5
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 168,
+            "width": 366,
+            "x": 12,
+            "y": 355.5
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 33,
+            "width": 203,
+            "x": 83,
+            "y": 531.5
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 844,
+            "width": 390
+          }
+        }
+      },
+      "classification": "NO_INTENTIONAL_DELTA",
+      "expected_visual_difference": [],
+      "objective_comparison": {
+        "baseline_interaction_checks": {
+          "escape_dismissed": false,
+          "modal_visible_after_escape": true,
+          "outside_click_dismissed": true,
+          "panel_closed_after_selection": true,
+          "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+          "selected_value_persistence": true
+        },
+        "baseline_overflow_or_clipping": false,
+        "baseline_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "candidate_interaction_checks": {
+          "escape_dismissed": false,
+          "modal_visible_after_escape": true,
+          "outside_click_dismissed": true,
+          "panel_closed_after_selection": true,
+          "selected_value_after_search": "BI-ANALYTICS-P-161 [BI-ANALYTICS]",
+          "selected_value_persistence": true
+        },
+        "candidate_overflow_or_clipping": false,
+        "candidate_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "panel_box_delta_candidate_minus_baseline": {
+          "height": 0,
+          "width": 0,
+          "x": 0,
+          "y": 0.0
+        },
+        "screenshot_dimensions_match": true,
+        "trigger_box_delta_candidate_minus_baseline": {
+          "height": 0,
+          "width": 0,
+          "x": 0,
+          "y": 0.0
+        }
+      },
+      "scenario_id": "monitoring-selector",
+      "unexpected_delta": [],
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "width": 390
+      },
+      "visual_quality_self_certification": false
+    },
+    {
+      "baseline": {
+        "panel_box": {
+          "height": 346,
+          "width": 335.83,
+          "x": 86,
+          "y": 373.22
+        },
+        "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+        "screenshot_sha256": "65bd2df5a7fb83e3884a8f00820b23ea125e4d64a31fb25a1c9f20dc32df3a12",
+        "trigger_box": {
+          "height": 38.5,
+          "width": 335.83,
+          "x": 86,
+          "y": 326.72
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 1425,
+          "documentScrollWidth": 1425,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 346,
+            "width": 335.83,
+            "x": 86,
+            "y": 373.22
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 38.5,
+            "width": 335.83,
+            "x": 86,
+            "y": 326.72
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 900,
+            "width": 1440
+          }
+        }
+      },
+      "candidate": {
+        "panel_box": {
+          "height": 298,
+          "width": 420,
+          "x": 86,
+          "y": 379
+        },
+        "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+        "screenshot_sha256": "50969443cb956de3a4d1857cf8c5b36469b96bcb8ab68a14941243a9694e6412",
+        "trigger_box": {
+          "height": 36,
+          "width": 335.83,
+          "x": 86,
+          "y": 335
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 1425,
+          "documentScrollWidth": 1425,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 298,
+            "width": 420,
+            "x": 86,
+            "y": 379
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 36,
+            "width": 335.83,
+            "x": 86,
+            "y": 335
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 900,
+            "width": 1440
+          }
+        }
+      },
+      "classification": "EXPECTED_DELTA",
+      "expected_visual_difference": [
+        "Host control remains in the same Service form location while changing from AppDropdown to OperationalAssetSelector.",
+        "Candidate adds System Filter and Search Asset controls and uses the bounded shared floating panel.",
+        "Candidate panel is wider on desktop and bounded to the mobile viewport."
+      ],
+      "objective_comparison": {
+        "baseline_interaction_checks": {
+          "dialog_visible_after_escape": true,
+          "escape_dismissed": false,
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true
+        },
+        "baseline_overflow_or_clipping": false,
+        "baseline_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "candidate_interaction_checks": {
+          "dialog_visible_after_escape": true,
+          "escape_dismissed": false,
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true
+        },
+        "candidate_overflow_or_clipping": false,
+        "candidate_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "panel_box_delta_candidate_minus_baseline": {
+          "height": -48,
+          "width": 84.17,
+          "x": 0,
+          "y": 5.78
+        },
+        "screenshot_dimensions_match": true,
+        "trigger_box_delta_candidate_minus_baseline": {
+          "height": -2.5,
+          "width": 0.0,
+          "x": 0,
+          "y": 8.28
+        }
+      },
+      "scenario_id": "services-host",
+      "unexpected_delta": [],
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "width": 1440
+      },
+      "visual_quality_self_certification": false
+    },
+    {
+      "baseline": {
+        "panel_box": {
+          "height": 346,
+          "width": 245,
+          "x": 62,
+          "y": 369.5
+        },
+        "revision": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+        "screenshot_sha256": "a1ece5eaff780c30ffa973a65737ede60ba437df95289fbedb9af36cd938408b",
+        "trigger_box": {
+          "height": 38.5,
+          "width": 245,
+          "x": 62,
+          "y": 323
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 346,
+            "width": 245,
+            "x": 62,
+            "y": 369.5
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 38.5,
+            "width": 245,
+            "x": 62,
+            "y": 323
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 844,
+            "width": 390
+          }
+        }
+      },
+      "candidate": {
+        "panel_box": {
+          "height": 295,
+          "width": 366,
+          "x": 12,
+          "y": 375
+        },
+        "revision": "87f89b9f630cde7c96313b442343367cf7e743c3",
+        "screenshot_sha256": "66da2d52ef4713b958e664c8cb71260faed5af2a42fa541cdcedc5f71c9b5104",
+        "trigger_box": {
+          "height": 33,
+          "width": 245,
+          "x": 62,
+          "y": 334
+        },
+        "viewport_facts": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "pageHorizontalOverflow": false,
+          "pageVerticalOverflow": false,
+          "panelBox": {
+            "height": 295,
+            "width": 366,
+            "x": 12,
+            "y": 375
+          },
+          "panelInViewport": true,
+          "triggerBox": {
+            "height": 33,
+            "width": 245,
+            "x": 62,
+            "y": 334
+          },
+          "triggerInViewport": true,
+          "viewport": {
+            "devicePixelRatio": 1,
+            "height": 844,
+            "width": 390
+          }
+        }
+      },
+      "classification": "EXPECTED_DELTA",
+      "expected_visual_difference": [
+        "Host control remains in the same Service form location while changing from AppDropdown to OperationalAssetSelector.",
+        "Candidate adds System Filter and Search Asset controls and uses the bounded shared floating panel.",
+        "Candidate panel is wider on desktop and bounded to the mobile viewport."
+      ],
+      "objective_comparison": {
+        "baseline_interaction_checks": {
+          "dialog_visible_after_escape": true,
+          "escape_dismissed": false,
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true
+        },
+        "baseline_overflow_or_clipping": false,
+        "baseline_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "candidate_interaction_checks": {
+          "dialog_visible_after_escape": true,
+          "escape_dismissed": false,
+          "outside_click_dismissed": true,
+          "selected_value_persistence": true
+        },
+        "candidate_overflow_or_clipping": false,
+        "candidate_runtime_errors": {
+          "consoleErrors": [],
+          "failedResponses": [],
+          "pageErrors": [],
+          "requestFailures": []
+        },
+        "panel_box_delta_candidate_minus_baseline": {
+          "height": -51,
+          "width": 121,
+          "x": -50,
+          "y": 5.5
+        },
+        "screenshot_dimensions_match": true,
+        "trigger_box_delta_candidate_minus_baseline": {
+          "height": -5.5,
+          "width": 0,
+          "x": 0,
+          "y": 11
+        }
+      },
+      "scenario_id": "services-host",
+      "unexpected_delta": [],
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "width": 390
+      },
+      "visual_quality_self_certification": false
+    }
+  ],
+  "scenario_count": 2,
+  "schema": "sysgrid.chg151.visual-comparison.v1",
+  "screenshot_count": 8,
+  "visual_quality_verdict": null
+}
