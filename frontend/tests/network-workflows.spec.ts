@@ -32,6 +32,120 @@ async function dragHeaderResize(page: any, colId: string, deltaX: number) {
 }
 
 test.describe('Network workflows', () => {
+  test('opens exact source and peer assets from a connection and preserves network history', async ({ page, sysApi: request }) => {
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const source = await createAsset(request, {
+      name: `PW-NET-LINK-SRC-${stamp}`,
+      system: `PW-NET-LINK-SYS-${stamp}`,
+      status: 'Active',
+      model: 'R650',
+      type: 'Physical',
+      serial_number: `PW-NET-LINK-SRC-SN-${stamp}`,
+      asset_tag: `PW-NET-LINK-SRC-AT-${stamp}`,
+      owner: 'net-owner',
+      business_unit: 'Operations'
+    })
+    const peer = await createAsset(request, {
+      name: `PW-NET-LINK-PEER-${stamp}`,
+      system: `PW-NET-LINK-SYS-${stamp}`,
+      status: 'Active',
+      model: 'R650',
+      type: 'Physical',
+      serial_number: `PW-NET-LINK-PEER-SN-${stamp}`,
+      asset_tag: `PW-NET-LINK-PEER-AT-${stamp}`,
+      owner: 'net-owner',
+      business_unit: 'Operations'
+    })
+    const connection = await createConnection(request, {
+      device_a_id: source.id,
+      source_port: 'eth0',
+      device_b_id: peer.id,
+      target_port: 'eth1',
+      link_type: 'Data',
+      speed_gbps: 10,
+      unit: 'Gbps',
+      status: 'Active'
+    })
+
+    await page.goto(`/network?id=${connection.id}`)
+    const detailDialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Connection Forensics' }) })
+    await expect(detailDialog).toBeVisible()
+    const openAssetButtons = detailDialog.getByRole('button', { name: 'Open asset', exact: true })
+    await expect(openAssetButtons).toHaveCount(2)
+
+    await openAssetButtons.nth(0).click()
+    await expect(page).toHaveURL(new RegExp(`/asset\\?id=${source.id}(?:&|$)`))
+
+    await page.goBack()
+    await expect(page).toHaveURL(new RegExp(`/network\\?id=${connection.id}(?:&|$)`))
+    await expect(page.getByRole('heading', { name: 'Connection Forensics' })).toBeVisible()
+
+    const restoredDetailDialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Connection Forensics' }) })
+    await restoredDetailDialog.getByRole('button', { name: 'Open asset', exact: true }).nth(1).click()
+    await expect(page).toHaveURL(new RegExp(`/asset\\?id=${peer.id}(?:&|$)`))
+  })
+
+  test('uses the shared searchable system-filter selector for both network endpoints', async ({ page, sysApi: request }) => {
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const system = `PW-NET-SELECTOR-SYS-${stamp}`
+    const source = await createAsset(request, {
+      name: `PW-NET-SELECTOR-SRC-${stamp}`,
+      system,
+      status: 'Active',
+      model: 'R650',
+      type: 'Physical',
+      serial_number: `PW-NET-SELECTOR-SRC-SN-${stamp}`,
+      asset_tag: `PW-NET-SELECTOR-SRC-AT-${stamp}`,
+      owner: 'net-owner',
+      business_unit: 'Operations'
+    })
+    const peer = await createAsset(request, {
+      name: `PW-NET-SELECTOR-PEER-${stamp}`,
+      system,
+      status: 'Active',
+      model: 'R650',
+      type: 'Virtual',
+      serial_number: `PW-NET-SELECTOR-PEER-SN-${stamp}`,
+      asset_tag: `PW-NET-SELECTOR-PEER-AT-${stamp}`,
+      owner: 'net-owner',
+      business_unit: 'Operations'
+    })
+    const connection = await createConnection(request, {
+      device_a_id: source.id,
+      source_port: 'eth10',
+      device_b_id: peer.id,
+      target_port: 'eth11',
+      link_type: 'Data',
+      speed_gbps: 10,
+      unit: 'Gbps',
+      status: 'Active'
+    })
+
+    await page.goto(`/network?id=${connection.id}`)
+    await expect(page.getByRole('heading', { name: 'Connection Forensics' })).toBeVisible()
+    await clickResilientButton(page, 'Edit Connection')
+    const editModal = page.locator('.glass-panel').filter({ has: page.getByText('Edit Network Connection') })
+    const sourceTrigger = editModal.getByRole('button', { name: new RegExp(`${source.name} \\[Physical\\]`) })
+    await sourceTrigger.click()
+
+    const searchAsset = page.getByPlaceholder('Search hostname or system...')
+    await expect(searchAsset).toBeVisible()
+    await page.getByRole('button', { name: 'All Systems', exact: true }).last().click()
+    await page.getByRole('button', { name: system, exact: true }).last().click()
+    await searchAsset.fill(source.name)
+    const selectorPanel = page.locator('body > div').filter({ has: searchAsset }).last()
+    await expect(selectorPanel.getByRole('button', { name: new RegExp(`^${source.name}`) })).toBeVisible()
+    await selectorPanel.getByRole('button', { name: new RegExp(`^${source.name}`) }).click()
+    await expect(editModal.getByRole('button', { name: new RegExp(`${source.name} \\[Physical\\]`) })).toBeVisible()
+
+    const peerTrigger = editModal.getByRole('button', { name: new RegExp(`${peer.name} \\[Virtual\\]`) })
+    await peerTrigger.click()
+    await expect(page.getByPlaceholder('Search hostname or system...')).toBeVisible()
+    await expect(editModal.getByRole('button', { name: new RegExp(`${peer.name} \\[Virtual\\]`) })).toBeVisible()
+  })
+
   test('supports deep-linked forensics, unit edits, and bulk sever from the grid', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
     await page.setViewportSize({ width: 1920, height: 1080 })

@@ -16,22 +16,9 @@ import {
   getAuditQueryKey,
   parseAuditResponse,
 } from './audit/auditQuery'
+import { resolveOperationalObjectReference } from './shared/OperationalObjectReference'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
-
-const resolveAuditTarget = (log: any) => {
-  const table = String(log?.target_table || '').toLowerCase()
-  const targetId = log?.target_id
-  if (!targetId) return null
-  if (table.includes('device')) return { moduleId: 'assets', path: `/asset?id=${targetId}` }
-  if (table.includes('project')) return { moduleId: 'projects', path: `/projects?id=${targetId}` }
-  if (table.includes('far')) return { moduleId: 'far', path: `/far?id=${targetId}` }
-  if (table.includes('knowledge')) return { moduleId: 'knowledge', path: `/knowledge?id=${targetId}` }
-  if (table.includes('logical_service') || table.includes('service')) return { moduleId: 'services', path: `/services?id=${targetId}` }
-  if (table.includes('monitor')) return { moduleId: 'monitoring', path: `/monitoring?id=${targetId}` }
-  if (table.includes('port_connection') || table.includes('network')) return { moduleId: 'network', path: `/network?id=${targetId}` }
-  return null
-}
 
 export default function AuditLogs() {
   const navigate = useNavigate()
@@ -110,7 +97,7 @@ export default function AuditLogs() {
   }
 
   const openTarget = (log: any) => {
-    const target = resolveAuditTarget(log)
+    const target = resolveOperationalObjectReference(log?.target_table, log?.target_id)
     if (!target) return
     navigate(target.path)
   }
@@ -200,7 +187,7 @@ export default function AuditLogs() {
         width: 150,
         pinned: 'right' as const,
         cellRenderer: (params: any) => {
-          const target = resolveAuditTarget(params.data)
+          const target = resolveOperationalObjectReference(params.data?.target_table, params.data?.target_id)
           return (
             <div className="flex items-center justify-center gap-1">
               <ModulePolicyButton

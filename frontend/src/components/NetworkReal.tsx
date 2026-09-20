@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import CodeMirror from '@uiw/react-codemirror'
@@ -11,7 +10,7 @@ import {
   Globe, Bell, Info, ChevronRight, X, Check, Save,
   AlertCircle, Clock, Zap, Settings, ArrowRightLeft, Briefcase, UserCheck, Code,
   BookOpen, Eye, EyeOff, FileText, User, Users, Mail, MessageSquare, Monitor, MoreVertical,
-  Download, Copy, ChevronDown, ChevronUp, Layers, RefreshCcw, Tag, Sliders, Clipboard, Lightbulb, Maximize2, Minimize2, Star, GitCompare, Undo2, List, LayoutGrid, Upload, Terminal, History as HistoryIcon, Edit2 as EditIcon
+  Download, Copy, ChevronUp, Layers, RefreshCcw, Tag, Sliders, Clipboard, Lightbulb, Maximize2, Minimize2, Star, GitCompare, Undo2, List, LayoutGrid, Upload, Terminal, History as HistoryIcon, Edit2 as EditIcon
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -59,7 +58,6 @@ import {
   WorkspacePanelSubtitle as PanelSubtitle,
   WorkspacePanelTitle as PanelTitle,
   WorkspaceSectionCard,
-  WorkspaceSelectField as NetworkSelectField,
   WorkspaceValidationBanner,
   getWorkspaceModalFrameClass,
   getWorkspaceModalShellClass,
@@ -108,6 +106,8 @@ import { OPERATIONAL_ACTION_LABELS } from './shared/OperationalActionLabels'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail } from './shared/OperationalDataStatus'
 import { OperationalBulkPreviewModal } from './shared/OperationalBulkPreviewModal'
 import { useOperationalBulkWorkflow } from './shared/useOperationalBulkWorkflow'
+import { OperationalAssetSelector, type OperationalAssetRecord } from './shared/OperationalAssetSelector'
+import { resolveOperationalObjectReference } from './shared/OperationalObjectReference'
 
 const NETWORK_VIEW_STORAGE_KEY = 'sysgrid_network_views_v1'
 const NETWORK_ACTIVE_VIEW_KEY = 'sysgrid_network_active_view_v1'
@@ -543,6 +543,12 @@ const sanitizeNetworkConnectionPayload = (item: any) => ({
   farm: item?.farm ? String(item.farm).trim() : null,
   request_link: item?.request_link ? String(item.request_link).trim() : (item?.monitoring_url ? String(item.monitoring_url).trim() : null),
 })
+
+const normalizeNetworkDeviceId = (value: any): number | null => {
+  if (value == null || value === '') return null
+  const normalized = Number(value)
+  return Number.isFinite(normalized) ? normalized : null
+}
 
 const ObservabilityHUD = ({ items }: any) => {
   const stats = useMemo(() => {
@@ -2772,7 +2778,10 @@ export default function NetworkReal() {
                 closeNetworkDetail()
               }
             }}
-            onOpenAsset={(deviceId: number) => navigate(`/asset?id=${deviceId}`)}
+            onOpenAsset={(deviceId: number) => {
+              const target = resolveOperationalObjectReference('device', deviceId)
+              if (target) navigate(target.path)
+            }}
             onOpenKnowledge={(knowledgeId: number) => {
               if (!knowledgeAction.available) return
               navigate(`/knowledge?id=${knowledgeId}`)
@@ -3539,12 +3548,12 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
   const [isMaximized, setIsMaximized] = useState(false)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const initialFormState = useMemo(() => ({
-    source_device_id: item?.source_device_id ?? '',
+    source_device_id: normalizeNetworkDeviceId(item?.source_device_id),
     source_port: item?.source_port ?? '',
     source_ip: item?.source_ip ?? '',
     source_mac: item?.source_mac ?? '',
     source_vlan: item?.source_vlan ?? '',
-    target_device_id: item?.target_device_id ?? '',
+    target_device_id: normalizeNetworkDeviceId(item?.target_device_id),
     target_port: item?.target_port ?? '',
     target_ip: item?.target_ip ?? '',
     target_mac: item?.target_mac ?? '',
@@ -3566,7 +3575,14 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
     JSON.stringify(sanitizeNetworkConnectionPayload(formData)) !== initialDirtySnapshotRef.current
   ), [formData])
 
-  const deviceOptions = useMemo(() => (devices || []).map((device: any) => ({ value: String(device.id), label: device.name })), [devices])
+  const assetOptions = useMemo<OperationalAssetRecord[]>(() => (devices || [])
+    .map((device: any) => ({
+      id: Number(device.id),
+      name: String(device.name || device.hostname || `Asset ${device.id}`),
+      system: device.system || null,
+      type: device.type || null,
+    }))
+    .filter((device) => Number.isFinite(device.id) && device.id > 0), [devices])
   const mergedLinkPurposeOptions = useMemo(() => {
     const current = item?.link_type ? [{ value: item.link_type, label: item.link_type }] : []
     return Array.from(new Map([...(linkPurposeOptions || []), ...current].map((option: any) => [option.value, option])).values())
@@ -3719,15 +3735,16 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
             <section className="grid gap-4 xl:grid-cols-2">
               <WorkspaceSectionCard title="Source Endpoint">
                 <div className="space-y-4">
-                  <AppDropdown
+                  <OperationalAssetSelector
                     label="Source Device"
                     required
-                    value={String(formData.source_device_id)}
+                    assets={assetOptions}
+                    value={formData.source_device_id}
                     onChange={(value) => updateField('source_device_id', value)}
-                    options={deviceOptions}
+                    error={formErrors.source_device_id}
                     placeholder="Select source device"
+                    selectedAssetLabel={(asset) => `${asset.name} [${asset.type || asset.system || 'Asset'}]`}
                   />
-                  <FieldError message={formErrors.source_device_id} />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <FieldLabel label="Source Port" required />
@@ -3754,15 +3771,16 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
 
               <WorkspaceSectionCard title="Peer Endpoint">
                 <div className="space-y-4">
-                  <AppDropdown
+                  <OperationalAssetSelector
                     label="Peer Device"
                     required
-                    value={String(formData.target_device_id)}
+                    assets={assetOptions}
+                    value={formData.target_device_id}
                     onChange={(value) => updateField('target_device_id', value)}
-                    options={deviceOptions}
+                    error={formErrors.target_device_id}
                     placeholder="Select peer device"
+                    selectedAssetLabel={(asset) => `${asset.name} [${asset.type || asset.system || 'Asset'}]`}
                   />
-                  <FieldError message={formErrors.target_device_id} />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <FieldLabel label="Peer Port" required />
@@ -3875,124 +3893,6 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
     </WorkspaceModal>
   )
 }
-
-export function NetworkAssetField({
-  devices,
-  deviceId,
-  onChange,
-  error,
-}: {
-  devices: any[]
-  deviceId: number | null
-  onChange: (deviceId: number | null) => void
-  error?: string
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [systemFilter, setSystemFilter] = useState('ALL')
-  const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 420 })
-  const selectedDevice = devices?.find((device: any) => device.id === deviceId)
-  const systems = Array.from(new Set((devices || []).map((device: any) => device.system).filter(Boolean))).sort()
-  const filteredDevices = (devices || []).filter((device: any) => {
-    const matchesSystem = systemFilter === 'ALL' || device.system === systemFilter
-    const needle = `${device.name} ${device.system || ''}`.toLowerCase()
-    const matchesSearch = !search || needle.includes(search.toLowerCase())
-    return matchesSystem && matchesSearch
-  })
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (triggerRef.current?.contains(target) || panelRef.current?.contains(target)) return
-      setIsOpen(false)
-    }
-    window.addEventListener('mousedown', handleClick)
-
-    return () => {
-      window.removeEventListener('mousedown', handleClick)
-    }
-  }, [isOpen, panelRef, triggerRef])
-
-  return (
-    <div className="space-y-1.5">
-      <FieldLabel label="Registry Asset" />
-      <div>
-        <button
-          type="button"
-          onClick={() => setIsOpen((current) => !current)}
-          ref={(node) => {
-            triggerRef.current = node
-          }}
-          className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition-all ${error ? 'border-rose-500/60 bg-rose-500/10' : 'border-white/10 bg-slate-950/70 hover:border-blue-500/30'}`}
-        >
-          <span className={`text-[clamp(10px,0.85vw,12px)] font-black truncate pr-4 ${selectedDevice ? 'text-slate-100' : 'text-slate-500'}`}>
-            {selectedDevice ? `${selectedDevice.name} [${selectedDevice.system}]` : 'Select asset'}
-          </span>
-          <ChevronDown size={12} className={`shrink-0 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-        {isOpen && createPortal(
-          <div ref={panelRef} style={panelStyle}>
-            <WorkspaceFloatingPanel
-              kind="menu"
-              className="p-2"
-            >
-            <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-2">
-              <NetworkSelectField
-                label="System Filter"
-                value={systemFilter}
-                onChange={(value) => setSystemFilter(value)}
-                options={[{ value: 'all', label: 'All Systems' }, ...systems.map((system) => ({ value: system, label: system }))]}
-                placeholder="All Systems"
-                />
-              <div className="space-y-1.5">
-                <FieldLabel label="Search Asset" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search hostname or system..."
-                  className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] font-black text-slate-100 outline-none focus:border-blue-500/40"
-                />
-              </div>
-            </div>
-            <div className="mt-2 max-h-52 overflow-y-auto custom-scrollbar space-y-1 pr-1">
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(null)
-                  setIsOpen(false)
-                }}
-                className={`w-full rounded-lg border px-3 py-2 text-left transition-all ${deviceId == null ? 'border-blue-500/30 bg-blue-500/10' : 'border-white/5 bg-black/20 hover:border-white/10'}`}
-              >
-                <p className="text-[9px] font-black text-slate-200">No linked asset</p>
-              </button>
-              {filteredDevices.map((device: any) => (
-                <button
-                  key={device.id}
-                  type="button"
-                  onClick={() => {
-                    onChange(device.id)
-                    setIsOpen(false)
-                    setSearch('')
-                  }}
-                  className={`w-full rounded-lg border px-3 py-2 text-left transition-all ${device.id === deviceId ? 'border-blue-500/30 bg-blue-500/10' : 'border-white/5 bg-black/20 hover:border-white/10'}`}
-                >
-                  <p className={`text-[9px] font-black ${device.id === deviceId ? 'text-blue-300' : 'text-slate-200'}`}>{device.name}</p>
-                  <p className="mt-0.5 text-[8px] font-black text-slate-500 truncate">{device.system || 'No system'}</p>
-                </button>
-              ))}
-            </div>
-            </WorkspaceFloatingPanel>
-          </div>,
-          document.body
-        )}
-      </div>
-      <FieldError message={error} />
-    </div>
-  )
-}
-
-// Extracted to NetworkConnectionForm.tsx
 
 function NetworkHistoryModal({ item, onClose }: any) {
   useEscapeDismiss(onClose)
