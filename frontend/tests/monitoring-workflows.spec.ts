@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import { MonitoringView } from './pom/MonitoringView'
 import {
   clickResilientButton,
+  createAsset,
   createEmbeddedKnowledgeFixture,
   createMonitoring,
   expectToast,
@@ -209,6 +210,46 @@ test.describe('Monitoring workflows', () => {
     await expect(coldPage.getByRole('heading', { name: updatedTitle, exact: true }).first()).not.toBeVisible()
     await expect(coldPage).toHaveURL(/\/monitoring(?:\?.*)?$/)
     await coldPage.close()
+  })
+
+  test('keeps the golden asset selector searchable and system-filterable in add/edit form', async ({ page, request }) => {
+    await resetBrowserState(page)
+    const { monitoring, systemName } = await seedOperationalScenario(request)
+    const alternateSystem = `PW-SYS-ALT-${Date.now()}`
+    const alternateAsset = await createAsset(request, {
+      name: `PW-ASSET-ALT-${Date.now()}`,
+      system: alternateSystem,
+      status: 'Active',
+      model: 'R740',
+      type: 'Physical',
+      serial_number: `PW-ALT-SN-${Date.now()}`,
+      asset_tag: `PW-ALT-TAG-${Date.now()}`,
+      owner: 'playwright',
+      business_unit: 'Operations',
+    })
+
+    await gotoView(page, '/monitoring', 'Monitoring', 'monitoring')
+    await fillGridSearch(page, 'Scan matrix...', monitoring.title, 'monitoring')
+    await openMonitoringDetailFromLogicalRow(page, monitoring.title)
+    await clickResilientButton(page, 'Edit Monitor')
+    const updateDialog = page.getByRole('dialog').filter({ hasText: 'Update Monitoring' })
+    await expect(updateDialog).toBeVisible()
+
+    await updateDialog.getByRole('button', { name: new RegExp(`${systemName}`) }).click()
+    await page.getByRole('button', { name: 'All Systems', exact: true }).click()
+    await page.getByRole('button', { name: alternateSystem, exact: true }).click()
+    await page.getByPlaceholder('Search hostname or system...').fill(alternateAsset.name)
+    await expect(page.getByRole('button', { name: new RegExp(alternateAsset.name) })).toBeVisible()
+    await page.getByRole('button', { name: new RegExp(alternateAsset.name) }).click()
+
+    await expect(page.getByRole('button', { name: new RegExp(alternateAsset.name) })).toBeVisible()
+    await clickResilientButton(page, 'Save Monitoring')
+    await expect(page.getByText('Update Monitoring')).not.toBeVisible()
+    await expect.poll(async () => {
+      const response = await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })
+      const items = await response.json()
+      return Array.isArray(items) && items.some((item: any) => item.id === monitoring.id && item.device_id === alternateAsset.id)
+    }).toBeTruthy()
   })
 
   test('keeps default title sizing dynamic and preserves human resized widths only in saved views', async ({ page, request }) => {

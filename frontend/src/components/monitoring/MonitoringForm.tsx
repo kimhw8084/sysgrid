@@ -21,9 +21,27 @@ import { StatusPill } from '../shared/StatusPill'
 import { ToolbarButton } from '../shared/LayoutPrimitives'
 import { useOperationalFormDirty } from '../shared/OperationalFormContracts'
 import CodeMirror from '@uiw/react-codemirror'
-import { MonitoringAssetField } from '../MonitoringGrid'
+import { OperationalAssetSelector } from '../shared/OperationalAssetSelector'
 import { showWorkspaceToast } from '../shared/WorkspaceToast'
-import { STATUSES, LOGIC_TYPES, CHECK_INTERVAL_MIN, CHECK_INTERVAL_MAX, ALERT_DURATION_MIN, ALERT_DURATION_MAX, NOTIFICATION_THROTTLE_MIN, NOTIFICATION_THROTTLE_MAX, LOGIC_SUGGESTIONS, getLogicExtensions, MonitoringLogicEntry, MonitoringOwner, MonitoringFormErrors, MonitoringTeamOption, OperatorRecord } from '../MonitoringGrid'
+import {
+  STATUSES,
+  LOGIC_TYPES,
+  LOGIC_SUGGESTIONS,
+  getLogicExtensions,
+  type MonitoringLogicEntry,
+  type MonitoringOwner,
+  type MonitoringFormErrors,
+  type MonitoringTeamOption,
+  type OperatorRecord,
+} from './monitoringWorkspaceContract'
+import {
+  CHECK_INTERVAL_MIN,
+  CHECK_INTERVAL_MAX,
+  ALERT_DURATION_MIN,
+  ALERT_DURATION_MAX,
+  NOTIFICATION_THROTTLE_MIN,
+  NOTIFICATION_THROTTLE_MAX,
+} from '../../domain/monitoringContract'
 import { isMonitoringFieldRequired } from '../../utils/monitoringValidation'
 
 import { 
@@ -566,9 +584,10 @@ export function MonitoringForm({ item, devices, categories, severities, platform
                             </div>
 
                             <div className="space-y-4">
-                              <MonitoringAssetField
-                                devices={devices || []}
-                                deviceId={formData.device_id ?? null}
+                              <OperationalAssetSelector
+                                label="Registry Asset"
+                                assets={devices || []}
+                                value={formData.device_id ?? null}
                                 onChange={(deviceId) => updateFormData({ ...formData, device_id: deviceId, monitored_services: [] })}
                               />
 
