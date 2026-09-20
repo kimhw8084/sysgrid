@@ -20,6 +20,8 @@
   },
   "package_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca",
   "carrier_head_commit": null,
-  "remote_readback": false,
-  "package_verified": true
+  "remote_readback": true,
+  "package_verified": true,
+  "remote_readback_commit": "6422614c803b94364238d9748a5fe573b30af539",
+  "remote_readback_method": "git fetch by exact carrier ref, rev-parse equality, and remote tree inspection"
 }

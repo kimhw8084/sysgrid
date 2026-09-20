@@ -159,5 +159,6 @@
   "blockers": [
     "Independent multimodal visual GO remains a Project OS/ChatGPT decision; this VERIFY does not self-certify visual quality."
   ],
-  "package_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca"
+  "package_commit": "3a2092a861f03aa37300eb43ef7e7f1cddc8a2ca",
+  "artifact_carrier_remote_readback_commit": "6422614c803b94364238d9748a5fe573b30af539"
 }
