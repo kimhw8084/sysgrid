@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "kind": "codex-fabric-audit-evidence",
+  "operation": "FIX",
+  "project_id": "sysgrid",
+  "change": "CHG-51",
+  "request": "sysgrid-smv1-api-integrity-contract-audit-fix-v5",
+  "status": "EXECUTED_CHANGE",
+  "candidate": {
+    "sha": "40329b35ed49f110d8fe66e1f93559d6e74c7695",
+    "tree": "44d93dafc76da627241e3d23d515932dc5747a95",
+    "parent": "92e7d6b6e654d2518527855ae938c16484c2fc49",
+    "base_sha": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "base_tree": "3254e1802ec09511ea46469263995ed54874a0fd",
+    "candidate_is_new_descendant_of_r2": true,
+    "r2_source_candidate": "92e7d6b6e654d2518527855ae938c16484c2fc49",
+    "r4_used_as_source_candidate": false
+  },
+  "git": {
+    "target_branch": "main",
+    "target_head_observed_after_execution": "2074e8bffb50b90d379b23760e61017d5107e079",
+    "work_branch": "codex/sysgrid-smv1-api-integrity-contract-audit-fix-v5",
+    "evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-api-integrity-contract-audit-fix-v5",
+    "base_is_ancestor": true,
+    "main_unchanged": true,
+    "remote_exact_head": true,
+    "worktree_clean": true
+  },
+  "changed_files_vs_r2": [
+    "backend/app/api/error_utils.py",
+    "backend/app/api/monitoring.py",
+    "backend/app/schemas/schemas.py",
+    "backend/test_monitoring_domain_contract.py",
+    "frontend/src/components/AuditLogs.tsx",
+    "frontend/src/components/audit/auditQuery.test.ts",
+    "frontend/src/components/audit/auditQuery.ts",
+    "frontend/tests/audit-logs-workflows.spec.ts"
+  ],
+  "frontend_dependency_bootstrap": {
+    "node_modules_was_absent": true,
+    "command": "npm ci --prefix frontend",
+    "result": "exit 0",
+    "verification_python": "/opt/anaconda3/bin/python",
+    "lockfiles_unchanged": true
+  },
+  "monitoring_create_request_typed": true,
+  "monitoring_openapi_schema": "#/components/schemas/MonitoringItemCreate",
+  "strict_integer_precoercion_proof": {
+    "validator": "MonitoringItemCreate.validate_monitoring_integer_seconds",
+    "rejected_raw_forms": ["bool", "numeric string", "non-numeric string", "fractional", "NaN", "infinite"],
+    "valid_integer_boundaries": "check_interval min, alert_duration max, notification_throttle min",
+    "envelope": "standardized 422 validation response"
+  },
+  "audit_export_filename": "SysGrid_AuditLoadedResult_<YYYY-MM-DD>.csv",
+  "audit_export_filename_truthful": true,
+  "checks": [
+    {"name": "git diff --check", "exit_code": 0},
+    {"name": "focused frontend unit", "command": "monitoringValidation.test.ts monitoringContract.test.ts auditQuery.test.ts", "result": "3 files, 12 tests passed", "exit_code": 0},
+    {"name": "operational contracts", "command": "npm run check:operational-contracts --prefix frontend", "result": "exit 0", "exit_code": 0},
+    {"name": "frontend typecheck", "command": "npm run typecheck --prefix frontend", "result": "exit 0", "exit_code": 0},
+    {"name": "frontend build", "command": "npm run build --prefix frontend", "result": "exit 0", "exit_code": 0},
+    {"name": "focused backend pytest", "command": "test_monitoring_domain_contract.py test_monitoring_query_and_bulk_edges.py test_monitoring_workflows.py test_audit_integrity.py test_system_management_v1_policy.py", "result": "92 passed, 1 warning", "exit_code": 0},
+    {"name": "targeted normal-v1 browser", "command": "bash ../scripts/run-e2e.sh --config=playwright.v1.config.ts tests/audit-logs-workflows.spec.ts tests/monitoring-workflows.spec.ts", "result": "7 passed", "runtime": "normal-v1", "exit_code": 0},
+    {"name": "full frontend unit suite", "command": "npm run test:unit --prefix frontend", "result": "131 files, 697 tests passed", "exit_code": 0},
+    {"name": "direct OpenAPI typed-request assertion", "result": "2 passed, 19 deselected", "exit_code": 0},
+    {"name": "direct Audit export filename assertion", "result": "1 passed, 3 skipped", "exit_code": 0},
+    {"name": "forbidden-command scan", "result": "0 matches in staged patch", "exit_code": 0}
+  ],
+  "focused_frontend_result": "3 files, 12 tests passed",
+  "operational_contracts_result": "exit 0",
+  "typecheck_result": "exit 0",
+  "build_result": "exit 0",
+  "focused_backend_result": "92 passed, 1 warning",
+  "targeted_browser_result": "7 passed",
+  "full_frontend_unit_result": "131 files, 697 tests passed",
+  "main_unchanged": true,
+  "remote_exact_head": "40329b35ed49f110d8fe66e1f93559d6e74c7695",
+  "evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-api-integrity-contract-audit-fix-v5",
+  "worktree_clean": true,
+  "error_code": null,
+  "blockers": [],
+  "finished_at": "2026-09-20T03:35:14Z"
+}
