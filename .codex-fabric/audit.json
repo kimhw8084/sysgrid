@@ -1,0 +1,458 @@
+{
+  "accepted_at": "2026-09-20T04:43:52Z",
+  "changed_files": [
+    {
+      "additions": 1,
+      "deletions": 184,
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 40,
+      "deletions": 0,
+      "path": "frontend/src/components/ServiceRegistry.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 9,
+      "path": "frontend/src/components/ServiceRegistry.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/monitoring/BkmListModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 24,
+      "deletions": 5,
+      "path": "frontend/src/components/monitoring/MonitoringForm.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 0,
+      "path": "frontend/src/components/monitoring/MonitoringServicesParityContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 24,
+      "deletions": 0,
+      "path": "frontend/src/components/monitoring/monitoringWorkspaceContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 54,
+      "deletions": 0,
+      "path": "frontend/src/components/monitoring/monitoringWorkspaceContract.ts",
+      "status": "A"
+    },
+    {
+      "additions": 76,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalAssetSelector.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 152,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalAssetSelector.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 41,
+      "deletions": 0,
+      "path": "frontend/tests/monitoring-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 52,
+      "deletions": 0,
+      "path": "frontend/tests/service-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"from ['\\\\\\\"](?:\\\\.\\\\./)?MonitoringGrid['\\\\\\\"]|from ['\\\\\\\"]\\\\.\\\\/MonitoringGrid['\\\\\\\"]\\\" frontend/src frontend/tests --glob '*.ts' --glob '*.tsx'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff -- frontend/tests/monitoring-workflows.spec.ts frontend/tests/service-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk test -d frontend/node_modules && rtk test -f frontend/node_modules/.bin/vitest frontend/node_modules/.bin/tsc frontend/node_modules/.bin/playwright'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' frontend/tsconfig.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,75p' frontend/src/components/MonitoringGrid.tsx && rtk sed -n '1,70p' frontend/src/components/monitoring/MonitoringForm.tsx && rtk sed -n '1,35p' frontend/src/components/ServiceRegistry.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -ld frontend/node_modules frontend/node_modules/.bin/vitest frontend/node_modules/.bin/tsc frontend/node_modules/.bin/playwright'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- src/components/monitoring/monitoringWorkspaceContract.test.ts src/components/shared/OperationalAssetSelector.test.tsx src/components/ServiceRegistry.test.tsx src/components/monitoring/MonitoringServicesParityContract.test.ts src/domain/monitoringContract.test.ts src/utils/monitoringValidation.test.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- src/components/monitoring/monitoringWorkspaceContract.test.ts src/components/shared/OperationalAssetSelector.test.tsx src/components/ServiceRegistry.test.tsx src/components/monitoring/MonitoringServicesParityContract.test.ts src/domain/monitoringContract.test.ts src/utils/monitoringValidation.test.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- src/components/monitoring/monitoringWorkspaceContract.test.ts src/components/shared/OperationalAssetSelector.test.tsx src/components/ServiceRegistry.test.tsx src/components/monitoring/MonitoringServicesParityContract.test.ts src/domain/monitoringContract.test.ts src/utils/monitoringValidation.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- src/components/monitoring/monitoringWorkspaceContract.test.ts src/components/shared/OperationalAssetSelector.test.tsx src/components/ServiceRegistry.test.tsx src/components/monitoring/MonitoringServicesParityContract.test.ts src/domain/monitoringContract.test.ts src/utils/monitoringValidation.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,280p' scripts/run-e2e.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' frontend/playwright.v1.config.ts && rtk rg -n \\\"normal-v1|SYSGRID_VERIFY_PYTHON|run-e2e\\\" scripts frontend/playwright*.config.ts frontend/tests/qualification-suite.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps aux | rtk rg 'uvicorn|vite|npm run dev|playwright' | rtk rg -v 'rg '\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e --prefix frontend -- --config=playwright.v1.config.ts tests/monitoring-workflows.spec.ts tests/service-workflows.spec.ts tests/assets-workflows.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' frontend/test-results-v1/monitoring-workflows-Monit-bc272-persists-the-updated-fields/error-context.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,130p' frontend/tests/shell-and-search.spec.ts && rtk sed -n '1,120p' frontend/tests/eight-route-smoke.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' frontend/test-results-v1/service-workflows-Service--01a1b--selected-numeric-device-id/error-context.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 12 \\\"path=\\\\\\\"/services\\\\\\\"|ServiceRegistry|ModulePolicyGate\\\" frontend/src/App.tsx frontend/src/components --glob '*.tsx' | rtk sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' frontend/src/components/ServicesReal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '760,960p' frontend/src/components/ServicesReal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n -C 15 \"ServiceForm|Add Service|Create Service|Edit Service|data-testid|showService\" frontend/src/components/ServicesReal.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e --prefix frontend -- tests/service-workflows.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,190p' frontend/test-results-v1/service-workflows-Service--01a1b--selected-numeric-device-id/error-context.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '3020,3095p' frontend/src/components/ServicesReal.tsx && rtk sed -n '625,660p' frontend/src/components/ServiceRegistry.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e --prefix frontend -- tests/service-workflows.spec.ts --grep \"adopts searchable Host selection\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '2975,3015p' frontend/src/components/ServicesReal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e --prefix frontend -- tests/service-workflows.spec.ts --grep \"adopts searchable Host selection\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e --prefix frontend -- tests/monitoring-workflows.spec.ts --grep \"edits an existing monitor\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e --prefix frontend -- tests/monitoring-workflows.spec.ts tests/service-workflows.spec.ts tests/assets-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"''^(from|import).*MonitoringGrid|MonitoringAssetField|CHECK_INTERVAL_(MIN|MAX)'\"\\\\s*=|ALERT_DURATION_(MIN|MAX)\\\\s*=|NOTIFICATION_THROTTLE_(MIN|MAX)\\\\s*=\\\" frontend/src/components/monitoring/MonitoringForm.tsx frontend/src/components/MonitoringGrid.tsx frontend/src/components/ServiceRegistry.tsx frontend/src/components/monitoring/BkmListModal.tsx frontend/src/components/monitoring/monitoringWorkspaceContract.ts\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat && rtk git diff --numstat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git remote -v && rtk git branch --list 'codex/sysgrid-smv1-golden-capability-services-parity-v1' 'main' && rtk git log -1 --oneline --decorate --all --max-count=8\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"for file in frontend/src/components/ServiceRegistry.test.tsx frontend/src/components/monitoring/MonitoringServicesParityContract.test.ts frontend/src/components/monitoring/monitoringWorkspaceContract.test.ts frontend/src/components/monitoring/monitoringWorkspaceContract.ts frontend/src/components/shared/OperationalAssetSelector.test.tsx frontend/src/components/shared/OperationalAssetSelector.tsx; do printf '%s=' \\\"\"'$file\"; shasum -a 256 \"$file\" | cut -d'\"' ' -f1; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse --abbrev-ref HEAD && rtk git diff --name-only && rtk git ls-files --others --exclude-standard'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"for file in frontend/src/components/MonitoringGrid.tsx frontend/src/components/ServiceRegistry.tsx frontend/src/components/monitoring/BkmListModal.tsx frontend/src/components/monitoring/MonitoringForm.tsx frontend/tests/monitoring-workflows.spec.ts frontend/tests/service-workflows.spec.ts; do printf '%s base=' \\\"\"'$file\"; git show 0e3b49b8b98a09a1585907b2ea7db0a29dca1c12:\"$file\" | shasum -a 256 | cut -d'\"' ' -f1; printf '%s worktree=' \\\"\"'$file\"; shasum -a 256 \"$file\" | cut -d'\"' ' -f1; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse --abbrev-ref HEAD && rtk git diff --name-only && rtk git ls-files --others --exclude-standard'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat && rtk git diff --numstat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc 'if rg -n \\\"from ['\\\"'\\\"']\\\\.\\\\./MonitoringGrid|MonitoringAssetField\\\" frontend/src/components/monitoring/MonitoringForm.tsx frontend/src/components/MonitoringGrid.tsx; then echo \\\"FAIL: forbidden Monitoring coupling remains\\\"; exit 1; else echo \\\"PASS: MonitoringForm has no MonitoringGrid import and MonitoringGrid has no MonitoringAssetField\\\"; fi'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc 'if rg -n \\\"CHECK_INTERVAL_(MIN|MAX)|RETRY_(MIN|MAX)|TIMEOUT_(MIN|MAX)|MIN_.*(INTERVAL|RETRY|TIMEOUT)|MAX_.*(INTERVAL|RETRY|TIMEOUT)\\\" frontend/src/components/monitoring/monitoringWorkspaceContract.ts; then echo \\\"FAIL: numeric bounds redeclared in Monitoring workspace contract\\\"; exit 1; else echo \\\"PASS: numeric bounds remain outside Monitoring workspace contract\\\"; fi'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk git diff --name-only -- frontend/package.json frontend/package-lock.json package.json package-lock.json && rtk git status --short -- frontend/src/components frontend/tests frontend/package.json frontend/package-lock.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 277,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.59,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 23693824,
+      "fresh_input_tokens": 339386,
+      "input_tokens": 24033210,
+      "non_reasoning_output_tokens": 28583,
+      "output_tokens": 51612,
+      "reasoning_output_tokens": 23029,
+      "total_processed_tokens": 24084822
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+      "subject": "fabric: capture completed model changes [CF-8072fa72c2d17968041147ee]"
+    }
+  ],
+  "diff": {
+    "additions": 500,
+    "changed_files": 12,
+    "commit_count": 1,
+    "deletions": 199
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-8072fa72c2d17968041147ee]",
+    "commit_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+    "paths_before": 12,
+    "status_before": [
+      " M frontend/src/components/MonitoringGrid.tsx",
+      " M frontend/src/components/ServiceRegistry.tsx",
+      " M frontend/src/components/monitoring/BkmListModal.tsx",
+      " M frontend/src/components/monitoring/MonitoringForm.tsx",
+      " M frontend/tests/monitoring-workflows.spec.ts",
+      " M frontend/tests/service-workflows.spec.ts",
+      "?? frontend/src/components/ServiceRegistry.test.tsx",
+      "?? frontend/src/components/monitoring/MonitoringServicesParityContract.test.ts",
+      "?? frontend/src/components/monitoring/monitoringWorkspaceContract.test.ts",
+      "?? frontend/src/components/monitoring/monitoringWorkspaceContract.ts",
+      "?? frontend/src/components/shared/OperationalAssetSelector.test.tsx",
+      "?? frontend/src/components/shared/OperationalAssetSelector.tsx"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T05:09:48Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+    "branch": "codex/sysgrid-smv1-golden-capability-services-parity-v1",
+    "detached_verify": false,
+    "head_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+    "remote_exact_head": true,
+    "remote_head_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+    "work_branch": "codex/sysgrid-smv1-golden-capability-services-parity-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-8072fa72c2d17968041147ee",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-golden-capability-services-parity-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-golden-capability-services-parity-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-golden-capability-services-parity-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-20T04:43:52Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1556,
+    "queue_seconds": 0,
+    "total_seconds": 1556
+  },
+  "transport": {
+    "bytes": 13462,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 13108,
+    "prompt_sha256": "286e9091ec49349b7ffe86c6b22476a0894838ead73759e94c42fc1a4c9777cb",
+    "sha256": "8072fa72c2d17968041147ee7ce9dec7412aa3aa4dd118b96a21cb7ee536493a"
+  }
+}
