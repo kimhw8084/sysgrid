@@ -1,7 +1,6 @@
 import { BkmListModal, BkmDetailModal, MonitoringForm } from './monitoring/Modals'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail, classifyDataStatus, normalizeOperationalListResponse } from './shared/OperationalDataStatus'
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import CodeMirror from '@uiw/react-codemirror'
@@ -27,14 +26,7 @@ import {
   NOTIFICATION_THROTTLE_MAX,
   NOTIFICATION_THROTTLE_MIN,
 } from '../domain/monitoringContract'
-export {
-  ALERT_DURATION_MAX,
-  ALERT_DURATION_MIN,
-  CHECK_INTERVAL_MAX,
-  CHECK_INTERVAL_MIN,
-  NOTIFICATION_THROTTLE_MAX,
-  NOTIFICATION_THROTTLE_MIN,
-} from '../domain/monitoringContract'
+import { STATUSES, type MonitoringOwner, type OperatorRecord } from './monitoring/monitoringWorkspaceContract'
 import { monitoringSupportsRestorePurged } from '../utils/monitoringPurgeRevertCapability'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
@@ -46,8 +38,6 @@ import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
 import {
   WorkspaceCollapsibleHeader,
   WorkspaceEmptyState,
-  WorkspaceFieldError as FieldError,
-  WorkspaceFieldLabel as FieldLabel,
   WorkspaceFloatingPanel,
   WorkspaceInfoTooltip,
   WorkspaceSectionBadge,
@@ -57,7 +47,6 @@ import {
   WorkspacePanelSubtitle as PanelSubtitle,
   WorkspacePanelTitle as PanelTitle,
   WorkspaceSectionCard,
-  WorkspaceSelectField as MonitoringSelectField,
   WorkspaceSplitView,
   WorkspaceValidationBanner,
   getWorkspaceModalFrameClass,
@@ -152,56 +141,10 @@ const MONITORING_BULK_FIELD_LABELS: Record<string, string> = {
   severity: 'Severity',
   notification_method: 'Notification Method',
 }
-export const STATUSES = [
-  { value: 'Existing', label: 'Existing', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  { value: 'Planned', label: 'Planned', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  { value: 'Cancelled', label: 'Cancelled', color: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
-  { value: 'Decommissioned', label: 'Decommissioned', color: 'bg-slate-500/20 text-slate-400 border-white/20' },
-  { value: 'Deleted', label: 'Deleted', color: 'bg-slate-800 text-slate-500 border-white/5' }
-]
 
 const MONITORING_STATUS_COLORS: Record<string, string> = Object.fromEntries(
   STATUSES.map((status) => [status.label, status.color])
 )
-
-export const LOGIC_TYPES = ['Threshold', 'Anomaly', 'Availability']
-
-export const LOGIC_SUGGESTIONS: Record<string, string> = {
-  Threshold: 'CPU > 90%',
-  Anomaly: 'Trend analysis',
-  Availability: 'HTTP 200 check'
-}
-
-export const getLogicExtensions = (logicType?: string) => []
-
-export interface MonitoringLogicEntry {
-  id: number
-  type: string
-  description: string
-  logic_info: string
-}
-
-export interface MonitoringOwner {
-  operator_id: number
-  role: string
-  name: string
-  external_id: string
-}
-
-export type MonitoringFormErrors = Record<string, string>
-export interface MonitoringTeamOption {
-  id: number
-  name: string
-  operators: any[]
-}
-export interface OperatorRecord {
-  id: number
-  username: string
-  full_name: string
-  external_id: string
-  team_id?: number
-  team?: string
-}
 
 
 const MONITORING_SEVERITIES = [
@@ -377,12 +320,6 @@ const getMonitorGroupValue = (item: any, field: string) => {
 
 const readMonitoringUiState = () => {
   return readMonitoringWorkspaceStateFromLocalStorage()?.uiState ?? null
-}
-
-export interface MonitoringRecoveryDoc {
-  id: number
-  note?: string
-  added_at?: string
 }
 
 const sanitizeMonitoringPayload = (item: any) => {
@@ -3243,8 +3180,6 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
   )
 }
 
-// Shared monitoring form constants and types are declared at the top of this module.
-
 const stringifyOwnerUserIds = (owners: MonitoringOwner[] = []) =>
   owners
     .map((owner) => owner.external_id || owner.name || String(owner.operator_id))
@@ -3292,124 +3227,6 @@ const isMonitoringFieldRequired = (fieldName: string) => MONITORING_REQUIRED_FIE
 
 
 const monitoringInputClass = (error?: string) => getWorkspaceInputClass(error)
-
-export function MonitoringAssetField({
-  devices,
-  deviceId,
-  onChange,
-  error,
-}: {
-  devices: any[]
-  deviceId: number | null
-  onChange: (deviceId: number | null) => void
-  error?: string
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [systemFilter, setSystemFilter] = useState('ALL')
-  const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 420 })
-  const selectedDevice = devices?.find((device: any) => device.id === deviceId)
-  const systems = Array.from(new Set((devices || []).map((device: any) => device.system).filter(Boolean))).sort()
-  const filteredDevices = (devices || []).filter((device: any) => {
-    const matchesSystem = systemFilter === 'ALL' || device.system === systemFilter
-    const needle = `${device.name} ${device.system || ''}`.toLowerCase()
-    const matchesSearch = !search || needle.includes(search.toLowerCase())
-    return matchesSystem && matchesSearch
-  })
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (triggerRef.current?.contains(target) || panelRef.current?.contains(target)) return
-      setIsOpen(false)
-    }
-    window.addEventListener('mousedown', handleClick)
-
-    return () => {
-      window.removeEventListener('mousedown', handleClick)
-    }
-  }, [isOpen, panelRef, triggerRef])
-
-  return (
-    <div className="space-y-1.5">
-      <FieldLabel label="Registry Asset" />
-      <div>
-        <button
-          type="button"
-          onClick={() => setIsOpen((current) => !current)}
-          ref={(node) => {
-            triggerRef.current = node
-          }}
-          className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition-all ${error ? 'border-rose-500/60 bg-rose-500/10' : 'border-white/10 bg-slate-950/70 hover:border-blue-500/30'}`}
-        >
-          <span className={`text-[clamp(10px,0.85vw,12px)] font-black truncate pr-4 ${selectedDevice ? 'text-slate-100' : 'text-slate-500'}`}>
-            {selectedDevice ? `${selectedDevice.name} [${selectedDevice.system}]` : 'Select asset'}
-          </span>
-          <ChevronDown size={12} className={`shrink-0 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-        {isOpen && createPortal(
-          <div ref={panelRef} style={panelStyle}>
-            <WorkspaceFloatingPanel
-              kind="menu"
-              className="p-2"
-            >
-            <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-2">
-              <MonitoringSelectField
-                label="System Filter"
-                value={systemFilter}
-                onChange={(value) => setSystemFilter(value)}
-                options={[{ value: 'all', label: 'All Systems' }, ...systems.map((system) => ({ value: system, label: system }))]}
-                placeholder="All Systems"
-                />
-              <div className="space-y-1.5">
-                <FieldLabel label="Search Asset" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search hostname or system..."
-                  className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] font-black text-slate-100 outline-none focus:border-blue-500/40"
-                />
-              </div>
-            </div>
-            <div className="mt-2 max-h-52 overflow-y-auto custom-scrollbar space-y-1 pr-1">
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(null)
-                  setIsOpen(false)
-                }}
-                className={`w-full rounded-lg border px-3 py-2 text-left transition-all ${deviceId == null ? 'border-blue-500/30 bg-blue-500/10' : 'border-white/5 bg-black/20 hover:border-white/10'}`}
-              >
-                <p className="text-[9px] font-black text-slate-200">No linked asset</p>
-              </button>
-              {filteredDevices.map((device: any) => (
-                <button
-                  key={device.id}
-                  type="button"
-                  onClick={() => {
-                    onChange(device.id)
-                    setIsOpen(false)
-                    setSearch('')
-                  }}
-                  className={`w-full rounded-lg border px-3 py-2 text-left transition-all ${device.id === deviceId ? 'border-blue-500/30 bg-blue-500/10' : 'border-white/5 bg-black/20 hover:border-white/10'}`}
-                >
-                  <p className={`text-[9px] font-black ${device.id === deviceId ? 'text-blue-300' : 'text-slate-200'}`}>{device.name}</p>
-                  <p className="mt-0.5 text-[8px] font-black text-slate-500 truncate">{device.system || 'No system'}</p>
-                </button>
-              ))}
-            </div>
-            </WorkspaceFloatingPanel>
-          </div>,
-          document.body
-        )}
-      </div>
-      <FieldError message={error} />
-    </div>
-  )
-}
-
-// Extracted to MonitoringForm.tsx
 
 function MonitoringHistoryModal({ item, onClose }: any) {
   useEscapeDismiss(onClose)

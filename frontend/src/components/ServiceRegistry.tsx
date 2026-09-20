@@ -15,6 +15,7 @@ import { WorkspaceValidationBanner } from "./shared/OperationalWorkspacePrimitiv
 import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY } from './shared/OperationalGridSizing'
 import { StyledSelect } from "./shared/StyledSelect"
 import { AppDropdown } from "./shared/AppDropdown"
+import { OperationalAssetSelector } from './shared/OperationalAssetSelector'
 import { mergeOperationalFieldErrors } from './shared/OperationalFieldValidation'
 import { useOperationalFormDirty } from './shared/OperationalFormContracts'
 
@@ -423,11 +424,6 @@ export const ServiceForm = ({
   const resolvedServiceTypeOptions = serviceTypeOptions.length > 0 ? serviceTypeOptions : ['Database', 'Application', 'OS', 'Middleware', 'API'].map((value) => ({ value, label: value }))
   const resolvedCurrencyOptions = SERVICE_CURRENCY_OPTIONS.map((value) => ({ value, label: value }))
   const resolvedLicenseOptions = SERVICE_LICENSE_OPTIONS.map((value) => ({ value, label: value }))
-  const hostOptions = (devices || []).map((device: any) => ({
-    value: String(device.id),
-    label: `${device.name} [${device.type || device.system || 'Asset'}]`,
-  }))
-
   useEffect(() => {
     if (initialData.id) return
     const selectedType = getOptions('ServiceType').find((entry: any) => entry.value === formData.service_type)
@@ -525,14 +521,15 @@ export const ServiceForm = ({
               {fieldErrors.name && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.name}</p>}
             </div>
             <div className="space-y-1.5">
-              <AppDropdown
+              <OperationalAssetSelector
                 label="Host"
                 required
-                value={formData.device_id ? String(formData.device_id) : ''}
-                onChange={(value) => updateField('device_id', value ? parseInt(String(value), 10) : null)}
-                options={hostOptions}
+                value={formData.device_id ? Number(formData.device_id) : null}
+                onChange={(deviceId) => updateField('device_id', deviceId)}
+                assets={devices || []}
                 placeholder="Select host node"
                 error={fieldErrors.device_id}
+                selectedAssetLabel={(device) => `${device.name} [${device.type || device.system || 'Asset'}]`}
               />
             </div>
             <div className="space-y-1.5">
