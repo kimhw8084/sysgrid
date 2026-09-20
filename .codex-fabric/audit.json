@@ -1,0 +1,412 @@
+{
+  "accepted_at": "2026-09-20T14:15:09Z",
+  "changed_files": [
+    {
+      "additions": 3,
+      "deletions": 16,
+      "path": "frontend/src/components/AuditLogs.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 33,
+      "deletions": 133,
+      "path": "frontend/src/components/NetworkReal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 47,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 38,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalObjectReference.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 84,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalObjectReference.ts",
+      "status": "A"
+    },
+    {
+      "additions": 51,
+      "deletions": 2,
+      "path": "frontend/tests/audit-logs-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 114,
+      "deletions": 0,
+      "path": "frontend/tests/network-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-tree -r --name-only origin/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2 | sed -n '1,240p' && printf '\\\\n--- manifest ---\\\\n' && rtk git show origin/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2:visual-evidence/manifest.json && printf '\\\\n--- comparison ---\\\\n' && rtk git show origin/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2:visual-evidence/comparison-report.json && printf '\\\\n--- reader ---\\\\n' && rtk git show origin/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2:visual-evidence/reader-index.json && printf '\\\\n--- transport ---\\\\n' && rtk git show origin/project-os-artifacts/sysgrid/sysgrid-smv1-golden-capability-services-parity-visual-verify-v2:artifact-stage/transport-receipt.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps -ef | rg 'uvicorn|vite|playwright|sysgrid' | sed -n '1,160p' || true && printf '\\\\n--- playwright config ---\\\\n' && rtk sed -n '1,260p' frontend/playwright.v1.config.ts && printf '\\\\n--- run e2e ---\\\\n' && rtk sed -n '1,260p' scripts/run-e2e.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend && rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh tests/network-workflows.spec.ts tests/audit-logs-workflows.spec.ts tests/assets-workflows.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"@router.post|build_audit_log|log_audit|target_table\\\" backend/app/api/devices.py | sed -n '1,180p' && rtk sed -n '80,170p' backend/app/api/devices.py && rtk sed -n '1,180p' frontend/test-results/audit-logs-workflows-Audit-2ad63-ns* 2>/dev/null || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '285,365p' backend/app/api/devices.py && rtk sed -n '1,140p' backend/app/api/utils.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '350,430p' backend/app/api/devices.py && rtk rg -n \\\"AuditLog|build_audit_log|audit\\\" backend/app/api/devices.py\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"target_table|build_audit_log|AuditLog\\\" backend/app/operational_actions backend/app/api/devices.py backend/app | rg 'device|target_table|AuditLog|build_audit' | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '420,460p' backend/app/api/racks.py && rtk sed -n '615,655p' backend/app/api/racks.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh tests/audit-logs-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short && rtk git diff --name-only && rtk git diff --check && printf '\\\\n--- scope diff against base ---\\\\n' && rtk git diff --name-only 39a0ee2d7b5a08004795d8207212e5347166cfac && printf '\\\\n--- protected file hashes ---\\\\n' && shasum -a 256 frontend/src/components/Racks.tsx frontend/src/components/Settings.tsx && printf '\\\\n--- protected backend diff ---\\\\n' && rtk git diff --quiet 39a0ee2d7b5a08004795d8207212e5347166cfac -- backend && echo backend-unchanged\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add frontend/src/components/AuditLogs.tsx frontend/src/components/NetworkReal.tsx frontend/src/components/shared/OperationalObjectReference.ts frontend/src/components/shared/OperationalObjectReference.test.ts frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts frontend/tests/audit-logs-workflows.spec.ts frontend/tests/network-workflows.spec.ts && rtk git diff --cached --check && rtk git diff --cached --stat && rtk git diff --cached --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git commit -m \"feat: converge network and audit typed links\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^ && rtk git push origin HEAD:codex/sysgrid-smv1-network-audit-typed-links-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' frontend/src/components/shared/AppDropdown.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree add --detach /tmp/sysgrid-smv1-network-audit-typed-links-v1-baseline 39a0ee2d7b5a08004795d8207212e5347166cfac && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ln -s /Users/haewonkim/.codex-fabric/worktrees/CF-966ee88a7dd3c4103f386d1c/frontend/tests/visual-network-r1-capture.tmp.spec.ts /tmp/sysgrid-smv1-network-audit-typed-links-v1-baseline/frontend/tests/visual-network-r1-capture.tmp.spec.ts && rtk ls -l /tmp/sysgrid-smv1-network-audit-typed-links-v1-baseline/frontend/tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ln -s /Users/haewonkim/.codex-fabric/worktrees/CF-966ee88a7dd3c4103f386d1c/frontend/node_modules /tmp/sysgrid-smv1-network-audit-typed-links-v1-baseline/frontend/node_modules && rtk ls -ld /tmp/sysgrid-smv1-network-audit-typed-links-v1-baseline/frontend/node_modules'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=baseline VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rm /tmp/sysgrid-smv1-network-audit-typed-links-v1-baseline/frontend/tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=baseline VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=baseline VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=candidate VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence -maxdepth 2 -type f | sort && printf '\\\\n--- captures ---\\\\n' && for f in /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/network-source-selector-*.json; do echo --- \"'$f; rtk sed -n '\"'1,240p' \\\"\"'$f\"; done && printf '\"'\\\\n--- screenshot dimensions/hashes ---\\\\n' && for f in /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/screenshots/*.png; do file \\\"\"'$f\"; shasum -a 256 \"$f\"; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=baseline VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=candidate VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for f in /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/network-source-selector-*.json; do echo --- $f; rtk rg -n '\"'selected_value|outside_click|trigger_box|panel_box|accessible|runtime_errors|requestFailures|failedResponses' \\\"\"'$f\"; done && for f in /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/screenshots/*.png; do shasum -a 256 \"$f\"; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=baseline VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VISUAL_CAPTURE_SIDE=candidate VISUAL_OUTPUT_DIR=/tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence bash scripts/run-e2e.sh tests/visual-network-r1-capture.tmp.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,280p' /Users/haewonkim/.codex/plugins/cache/openai-primary-runtime/pdf/26.905.11957/skills/pdf/SKILL.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find /Users/haewonkim/.codex -name mark_artifact_operation_started.mjs -print 2>/dev/null | head -n 20'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find /Users/haewonkim -name mark_artifact_operation_started.mjs -print 2>/dev/null | head -n 20'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk node /Users/haewonkim/.codex/plugins/cache/openai-primary-runtime/pdf/26.905.11957/skills/pdf/container_tools/mark_artifact_operation_started.mjs --operation-kind create --expected-output-count 2 --output-format pdf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python3 /tmp/build_sysgrid_chg155_visual_package.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pdfinfo /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/review-desktop.pdf && rtk pdfinfo /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/review-mobile.pdf && rtk mkdir -p /tmp/sysgrid-smv1-network-audit-typed-links-v1/pdf-renders && rtk pdftoppm -png -r 144 /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/review-desktop.pdf /tmp/sysgrid-smv1-network-audit-typed-links-v1/pdf-renders/desktop && rtk pdftoppm -png -r 144 /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/review-mobile.pdf /tmp/sysgrid-smv1-network-audit-typed-links-v1/pdf-renders/mobile && rtk find /tmp/sysgrid-smv1-network-audit-typed-links-v1/pdf-renders -maxdepth 1 -type f -print'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git worktree remove /tmp/sysgrid-smv1-network-audit-typed-links-v1-baseline && rtk git worktree list --porcelain | sed -n '1,100p' && rtk git status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if [ -e /tmp/sysgrid-chg155-artifact-carrier ]; then echo 'carrier path already exists'; exit 1; fi\nrtk mkdir -p /tmp/sysgrid-chg155-artifact-carrier\nrtk cp -R /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence /tmp/sysgrid-chg155-artifact-carrier/visual-evidence\nrtk git init -q /tmp/sysgrid-chg155-artifact-carrier\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier remote add origin https://github.com/kimhw8084/sysgrid.git\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier add visual-evidence\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier diff --cached --check\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier commit -m \\\"artifacts: CHG-155 Network selector visual evidence\\\"\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier status --short --branch\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier ls-tree -r --name-only HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-chg155-artifact-carrier push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"ARTIFACT_REF='refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1'\nREMOTE_HEAD=\"'$(rtk git -C /tmp/sysgrid-chg155-artifact-carrier ls-remote origin \"$ARTIFACT_REF\" | awk '\"'{print \"'$1}'\"')\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier fetch origin \\\"\"'$ARTIFACT_REF\"\nFETCHED_HEAD=$(rtk git -C /tmp/sysgrid-chg155-artifact-carrier rev-parse FETCH_HEAD)\necho \"remote_head=$REMOTE_HEAD\"\necho \"fetched_head=$FETCHED_HEAD\"\ntest \"$REMOTE_HEAD\" = \"$FETCHED_HEAD\"\nrtk git -C /tmp/sysgrid-chg155-artifact-carrier ls-tree -r --name-only FETCH_HEAD\nprintf '\"'\\\\n--- bundle ---\\\\n'\nrtk unzip -l /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/artifact-bundle.zip\nprintf '\\\\n--- package hashes ---\\\\n'\nshasum -a 256 /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/manifest.json /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/comparison-report.json /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/reader-index.json /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/artifact-bundle.zip\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh tests/network-workflows.spec.ts tests/audit-logs-workflows.spec.ts tests/assets-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/manifest.json /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/comparison-report.json /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/reader-index.json /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/artifact-bundle.zip && rtk unzip -l /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/artifact-bundle.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^ && rtk git diff --check && rtk git diff --quiet 39a0ee2d7b5a08004795d8207212e5347166cfac -- backend frontend/src/components/Racks.tsx frontend/src/components/Settings.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-network-audit-typed-links-v1 refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-chg155-artifact-carrier status --short --branch && rtk git -C /tmp/sysgrid-chg155-artifact-carrier ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1 && rtk git -C /tmp/sysgrid-chg155-artifact-carrier rev-parse HEAD && rtk git -C /tmp/sysgrid-chg155-artifact-carrier ls-tree -r --name-only HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-chg155-artifact-carrier fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1 && rtk git -C /tmp/sysgrid-chg155-artifact-carrier rev-parse FETCH_HEAD && rtk git -C /tmp/sysgrid-chg155-artifact-carrier diff --quiet FETCH_HEAD HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show --format= --name-only HEAD && rtk git show --stat --oneline --decorate HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff 39a0ee2d7b5a08004795d8207212e5347166cfac -- frontend/src/components/shared/OperationalObjectReference.ts frontend/src/components/AuditLogs.tsx frontend/src/components/NetworkReal.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show-ref refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-v1'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"target_table|far_failure|knowledge_entries|project_tasks\" backend frontend/src/components/AuditLogs.tsx | head -120'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq '{schema,change,candidate_sha,candidate_tree,candidate_parent,artifact_ref,independent_visual_review_required,visual_quality_self_certification,items:(.items|length)}' /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/manifest.json && rtk jq '{visual_quality_verdict,expected_delta_only,unexpected_delta_detected,console_errors,page_errors,request_errors}' /tmp/sysgrid-smv1-network-audit-typed-links-v1/visual-evidence/comparison-report.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 232,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.44,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 24754688,
+      "fresh_input_tokens": 391425,
+      "input_tokens": 25146113,
+      "non_reasoning_output_tokens": 40905,
+      "output_tokens": 69541,
+      "reasoning_output_tokens": 28636,
+      "total_processed_tokens": 25215654
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+      "subject": "feat: converge network and audit typed links"
+    }
+  ],
+  "diff": {
+    "additions": 370,
+    "changed_files": 7,
+    "commit_count": 1,
+    "deletions": 151
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T14:50:30Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+    "branch": "codex/sysgrid-smv1-network-audit-typed-links-v1",
+    "detached_verify": false,
+    "head_sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+    "remote_exact_head": true,
+    "remote_head_sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+    "work_branch": "codex/sysgrid-smv1-network-audit-typed-links-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-966ee88a7dd3c4103f386d1c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-network-audit-typed-links-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-20T14:15:10Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2120,
+    "queue_seconds": 1,
+    "total_seconds": 2121
+  },
+  "transport": {
+    "bytes": 13608,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 13270,
+    "prompt_sha256": "28fa3418911b858ffeb53b54754261d76d29ed04d740b29e0ddadae8681d87cd",
+    "sha256": "966ee88a7dd3c4103f386d1c1b88fc83cc0e9dd83712b14d900dbbdd075db2a7"
+  }
+}
