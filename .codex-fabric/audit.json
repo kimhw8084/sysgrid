@@ -1,0 +1,412 @@
+{
+  "accepted_at": "2026-09-20T18:04:10Z",
+  "changed_files": [
+    {
+      "additions": 124,
+      "deletions": 52,
+      "path": "frontend/src/components/Racks.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 51,
+      "deletions": 0,
+      "path": "frontend/src/components/RacksTruthAndTypedLinks.contract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 2,
+      "deletions": 3,
+      "path": "frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 17,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalObjectReference.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 25,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalObjectReference.ts",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 0,
+      "path": "frontend/tests/audit-logs-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 43,
+      "deletions": 0,
+      "path": "frontend/tests/racks-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'PATH=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/anaconda3/bin:/opt/homebrew/bin:/usr/bin:/bin /Users/haewonkim/.local/bin/rtk /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/npm ci --ignore-scripts --no-audit --no-fund'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'BASE_WT=/tmp/sysgrid-chg158-baseline-r3; test -L \"$BASE_WT/frontend/node_modules\" || { echo '\"'expected baseline dependency symlink missing' >&2; exit 1; }; rm \\\"\"'$BASE_WT/frontend/node_modules\"; ln -s /Users/haewonkim/.codex-fabric/worktrees/CF-ab935803822ab2f6391d3f3c/frontend/node_modules \"$BASE_WT/frontend/node_modules\"; for p in lucide-react tailwindcss framer-motion; do test -e \"$BASE_WT/frontend/node_modules/$p\" || { echo \"missing $p\" >&2; exit 1; }; done; rtk git -C \"$BASE_WT\" status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '4190,4250p' frontend/src/components/Racks.tsx; rtk rg -n 'function WorkspaceModal|role=\\\"dialog\\\"|aria-labelledby' frontend/src/components/shared/WorkspaceModal.tsx | head -100; sed -n '1,220p' frontend/src/components/shared/WorkspaceModal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"curl -sS -H 'X-User-Id: haewon.kim' -H 'X-Tenant-Id: 1' 'http://127.0.0.1:56782/api/v1/racks?include_deleted=true' | sed 's/},{/},\\\\n{/g' | head -20; echo; curl -sS -H 'X-User-Id: haewon.kim' -H 'X-Tenant-Id: 1' 'http://127.0.0.1:56782/api/v1/racks/?include_deleted=true' | head -c 400\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'OUT=/tmp/chg158-r3-baseline; SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=\"$OUT\" CHG158_REVISION=baseline rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,340p' frontend/src/api/apiClient.ts | rg -n 'normalize|trailing|apiFetch|url|fetch' -C 3; rtk rg -n \\\"racks-all|apiFetch\\\\('/api/v1/racks\\\" frontend/src/components/Racks.tsx frontend/src | head -60\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'OUT=/tmp/chg158-r3-baseline; SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=\"$OUT\" CHG158_REVISION=baseline rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '112,166p' /tmp/chg158-r3-capture.mjs\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find /tmp/chg158-r3-baseline -maxdepth 2 -type f -print | sort; if [ -f /tmp/chg158-r3-baseline/screenshots/rack-summary-power-truth--baseline--desktop-1440x900.png ]; then shasum -a 256 /tmp/chg158-r3-baseline/screenshots/rack-summary-power-truth--baseline--desktop-1440x900.png; fi'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'OUT=/tmp/chg158-r3-baseline; SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=\"$OUT\" CHG158_REVISION=baseline rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'OUT=/tmp/chg158-r3-baseline; SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=\"$OUT\" CHG158_REVISION=baseline rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'PATH=/opt/anaconda3/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=/tmp/chg158-r3-baseline CHG158_REVISION=baseline /Users/haewonkim/.local/bin/rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'PATH=/opt/anaconda3/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=/tmp/chg158-r3-candidate CHG158_REVISION=candidate /Users/haewonkim/.local/bin/rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 5 'typical_power|open_audit|summaryModal|modalText' /tmp/chg158-r3-capture.mjs\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 2 'Open Audit Logs|Typical Power Estimate|Configured Rack Ceiling' frontend/src/components/Racks.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '220,340p' frontend/src/components/shared/WorkspaceModal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '340,420p' frontend/src/components/shared/WorkspaceModal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 3 '68|LOAD STATUS|load status|NOMINAL|OVERLOADED' frontend/src/components/Racks.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '70,160p' /tmp/chg158-r3-capture.mjs\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'PATH=/opt/anaconda3/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=/tmp/chg158-r3-baseline CHG158_REVISION=baseline /Users/haewonkim/.local/bin/rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'PATH=/opt/anaconda3/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_USER_ID=haewon.kim SYSGRID_VERIFY_TEMP_ROOT=/tmp CHG158_OUT_DIR=/tmp/chg158-r3-candidate CHG158_REVISION=candidate /Users/haewonkim/.local/bin/rtk bash scripts/run-owned-runtime.sh /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg158-r3-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' /tmp/chg158-r3-candidate/capture.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/opt/anaconda3/bin/python /tmp/chg158-r3-package.py /tmp/chg158-r3-baseline /tmp/chg158-r3-candidate /tmp/chg158-r3-package'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find /tmp/chg158-r3-package/visual-evidence -maxdepth 2 -type f -print | sort && rtk jq '{screenshot_count, artifacts: (.artifacts|length), candidate, baseline, native_fabric_job_id}' /tmp/chg158-r3-package/visual-evidence/manifest.json && rtk jq '{desktop_pages:(.review_desktop_pdf|length), mobile_pages:(.review_mobile_pdf|length), pngs:(.pngs|length)}' /tmp/chg158-r3-package/visual-evidence/reader-index.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nimport hashlib,json,zipfile\nfrom pathlib import Path\nfrom pypdf import PdfReader\nroot=Path('/tmp/chg158-r3-package')/'visual-evidence'\nm=json.loads((root/'manifest.json').read_text())\nchecks=[]\nfor item in m['artifacts']:\n    p=Path('/tmp/chg158-r3-package')/item['path']\n    b=p.read_bytes()\n    checks.append((item['path'],hashlib.sha256(b).hexdigest()==item['sha256'],len(b)==item['bytes']))\nwith zipfile.ZipFile(root/'artifact-bundle.zip') as z:\n    names=sorted(z.namelist())\nprint(json.dumps({\n 'all_manifest_hashes_and_bytes_match': all(x[1] and x[2] for x in checks),\n 'artifact_count':len(checks),\n 'bundle_entries':len(names),\n 'bundle_has_8_pngs':sum(n.endswith('.png') for n in names)==8,\n 'bundle_has_reports_and_pdfs':all(n in names for n in ['visual-evidence/comparison-report.json','visual-evidence/reader-index.json','visual-evidence/review-desktop.pdf','visual-evidence/review-mobile.pdf']),\n 'desktop_pdf_pages':len(PdfReader(str(root/'review-desktop.pdf')).pages),\n 'mobile_pdf_pages':len(PdfReader(str(root/'review-mobile.pdf')).pages),\n 'errors':[x[0] for x in checks if not (x[1] and x[2])],\n},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nfrom pypdf import PdfReader\nfrom pathlib import Path\nroot=Path('/tmp/chg158-r3-package/visual-evidence')\nfor name in ['review-desktop.pdf','review-mobile.pdf']:\n r=PdfReader(str(root/name))\n print(name, [tuple(float(v) for v in p.mediabox) for p in r.pages])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree add --detach /tmp/sysgrid-chg158-r3-artifact-carrier 1e191468ba16d9d59c5eab75c823ce4237f12d80'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cp -R /tmp/chg158-r3-package/visual-evidence /tmp/sysgrid-chg158-r3-artifact-carrier/visual-evidence && rtk git status --short --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env GIT_INDEX_FILE=/tmp/chg158-r3-index git read-tree --empty'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env GIT_INDEX_FILE=/tmp/chg158-r3-index git add -f visual-evidence'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env GIT_INDEX_FILE=/tmp/chg158-r3-index git write-tree'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git commit-tree 7f06474ed488151badd17510175028ffbdfc34ad -m 'artifacts: CHG-158 visual verify v3'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git update-ref refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3 f38f07e9db1ddba7acc8bcca272f25a2e060c78c'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin f38f07e9db1ddba7acc8bcca272f25a2e060c78c:refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3:refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nimport hashlib,json,subprocess\nfrom pathlib import Path\nref='refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3'\ncommit=subprocess.check_output(['git','rev-parse',ref],text=True).strip()\nroot=Path('/tmp/chg158-r3-package')\nmanifest=json.loads((root/'visual-evidence/manifest.json').read_text())\nremote_paths=subprocess.check_output(['git','ls-tree','-r','--name-only',ref],text=True).splitlines()\nresults=[]\nfor item in manifest['artifacts']:\n    rel=item['path'].replace('visual-evidence/','visual-evidence/',1)\n    remote_path=item['path']\n    blob=subprocess.check_output(['git','show',f'{ref}:{remote_path}'])\n    local=(root/item['path']).read_bytes()\n    results.append({'path':item['path'],'same_bytes':blob==local,'same_sha':hashlib.sha256(blob).hexdigest()==item['sha256'],'same_size':len(blob)==item['bytes']})\nprint(json.dumps({\n 'remote_commit':commit,\n 'expected_commit':'f38f07e9db1ddba7acc8bcca272f25a2e060c78c',\n 'commit_match':commit=='f38f07e9db1ddba7acc8bcca272f25a2e060c78c',\n 'remote_tree_paths':len(remote_paths),\n 'expected_tree_paths':14,\n 'tree_paths_match':len(remote_paths)==14 and all(p.startswith('visual-evidence/') for p in remote_paths),\n 'all_artifacts_readback_match':all(x['same_bytes'] and x['same_sha'] and x['same_size'] for x in results),\n 'mismatches':[x['path'] for x in results if not (x['same_bytes'] and x['same_sha'] and x['same_size'])],\n},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk fabricctl status CF-ab935803822ab2f6391d3f3c'",
+      "exit_code": 127,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk command -v fabricctl || true; rtk rg --files /Users/haewonkim/.codex-fabric | rtk rg '/fabricctl\"'$'\"' | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-ab935803822ab2f6391d3f3c'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /Users/haewonkim/.codex-fabric/bin/fabricctl --help'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nimport json, subprocess\n\ndef git(*args):\n    return subprocess.check_output(['git', *args], text=True).strip()\nbranch=git('branch','--show-current')\nhead=git('rev-parse','HEAD')\ntree=git('rev-parse','HEAD\"'^{tree}'\"')\nbase=git('rev-parse','origin/main')\nbase_tree=git('rev-parse','origin/main\"'^{tree}'\"')\ncandidate=git('rev-parse','origin/codex/sysgrid-smv1-racks-truth-links-v1')\ncandidate_tree=git('rev-parse','origin/codex/sysgrid-smv1-racks-truth-links-v1\"'^{tree}'\"')\nparent=git('rev-parse','origin/codex/sysgrid-smv1-racks-truth-links-v1\"'^'\"')\ndiff=git('diff','--name-only','1e191468ba16d9d59c5eab75c823ce4237f12d80','HEAD')\nstatus=subprocess.check_output(['git','status','--short','--untracked-files=all'],text=True)\nprint(json.dumps({\n 'branch':branch,\n 'head':head,\n 'head_tree':tree,\n 'head_exact_candidate':head=='1e191468ba16d9d59c5eab75c823ce4237f12d80',\n 'tree_exact_candidate':tree=='e43f4a18fc6b992bc41065913c2fea153ed5a7a1',\n 'origin_main_exact':base=='d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac',\n 'origin_main_tree_exact':base_tree=='c4f12f15584e82f5b02a3c1f98edac358ed1868c',\n 'origin_candidate_exact':candidate=='1e191468ba16d9d59c5eab75c823ce4237f12d80',\n 'origin_candidate_tree_exact':candidate_tree=='e43f4a18fc6b992bc41065913c2fea153ed5a7a1',\n 'candidate_parent_exact_base':parent=='d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac',\n 'product_diff_from_candidate':diff.splitlines(),\n 'worktree_clean':status=='',\n},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nallrows=json.loads((Path('/tmp/chg158-r3-baseline')/'capture.json').read_text())['rows']+json.loads((Path('/tmp/chg158-r3-candidate')/'capture.json').read_text())['rows']\nprint(json.dumps({\n 'rows':len(allrows),\n 'all_runtime_ready':all(r['runtime_ready'] for r in allrows),\n 'all_no_overflow':all(not r['page_body_overflow']['pageHorizontalOverflow'] and not r['page_body_overflow']['pageVerticalOverflow'] for r in allrows),\n 'all_no_console_page_request_errors':all(not any(r['console_page_request_errors'].values()) for r in allrows),\n 'candidate_elevation_checks':[r['functional_checks'] for r in allrows if r['revision']=='candidate' and r['scenario_id']=='rack-elevation-power-truth'],\n 'candidate_summary_checks':[r['functional_checks'] for r in allrows if r['revision']=='candidate' and r['scenario_id']=='rack-summary-power-truth'],\n},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-ab935803822ab2f6391d3f3c'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove --force /tmp/sysgrid-chg158-r3-baseline'",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree list'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove --force /private/tmp/sysgrid-chg158-baseline-r3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove --force /private/tmp/sysgrid-chg158-r3-artifact-carrier'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --untracked-files=all; rtk git rev-parse HEAD; rtk /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-ab935803822ab2f6391d3f3c'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 /tmp/chg158-r3-package/visual-evidence/manifest.json /tmp/chg158-r3-package/visual-evidence/artifact-bundle.zip /tmp/chg158-r3-package/visual-evidence/review-desktop.pdf /tmp/chg158-r3-package/visual-evidence/review-mobile.pdf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 236,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.13,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 19147904,
+      "fresh_input_tokens": 364627,
+      "input_tokens": 19512531,
+      "non_reasoning_output_tokens": 29933,
+      "output_tokens": 46213,
+      "reasoning_output_tokens": 16280,
+      "total_processed_tokens": 19558744
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "subject": "fabric: capture completed model changes [CF-8051f00106a529c01ece8618]"
+    }
+  ],
+  "diff": {
+    "additions": 278,
+    "changed_files": 7,
+    "commit_count": 1,
+    "deletions": 55
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T18:26:45Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "branch": "codex/sysgrid-smv1-racks-truth-links-visual-verify-v3",
+    "detached_verify": false,
+    "head_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+    "remote_exact_head": true,
+    "remote_head_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "work_branch": "codex/sysgrid-smv1-racks-truth-links-visual-verify-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-ab935803822ab2f6391d3f3c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-racks-truth-links-visual-verify-v3"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-racks-truth-links-visual-verify-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-20T18:04:10Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1355,
+    "queue_seconds": 0,
+    "total_seconds": 1355
+  },
+  "transport": {
+    "bytes": 9768,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 9418,
+    "prompt_sha256": "267af543594cd0d92118ce510207f5c9f4f20af650604abc80b0dbce72b1c777",
+    "sha256": "ab935803822ab2f6391d3f3c70708cbfb0f39657e3faf292ec24999d0df98fa5"
+  }
+}
