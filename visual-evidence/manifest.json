@@ -1,0 +1,128 @@
+{
+  "artifacts": [
+    {
+      "bytes": 15469,
+      "path": "visual-evidence/comparison-report.json",
+      "sha256": "1c8577323e5a586193a1b003ded97f5d06cdff48b910b6aa045bd8b33c61e68f"
+    },
+    {
+      "bytes": 8116,
+      "path": "visual-evidence/reader-index.json",
+      "sha256": "7df6dd6bc9b1b77db5dc873567d89fd1d8205f76d3650e28d2aae898299753e8"
+    },
+    {
+      "bytes": 540719,
+      "path": "visual-evidence/review-desktop.pdf",
+      "sha256": "71356b0ce9c8a91da7d5db60af44df33f550992a51cfdcd7b6543c512f73a30d"
+    },
+    {
+      "bytes": 282702,
+      "path": "visual-evidence/review-mobile.pdf",
+      "sha256": "e6639e878bef737f5964fcfb0a1d960a4f3e9b7d9842b6a526b4382598023c5a"
+    },
+    {
+      "bytes": 131282,
+      "path": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--desktop-1440x900.png",
+      "sha256": "965e7a05fde00e7751d87564ef624c833380e8d5cd33f1048309b3b781253f13"
+    },
+    {
+      "bytes": 61255,
+      "path": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--mobile-390x844.png",
+      "sha256": "bd83ea8f693dbb26a75c0192872bdee937dd428bb9e8f6066be069fa6472ff1c"
+    },
+    {
+      "bytes": 133056,
+      "path": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--desktop-1440x900.png",
+      "sha256": "c06ea0b7199cd53e9a633680ed0e370307589950f9f4ddb4f2972ab0e2308785"
+    },
+    {
+      "bytes": 62065,
+      "path": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--mobile-390x844.png",
+      "sha256": "e2db56ff33f93f387125f690d3fe06bc3efd7f3419108bb233b0f7a538d47694"
+    },
+    {
+      "bytes": 108235,
+      "path": "visual-evidence/screenshots/rack-summary-power-truth--baseline--desktop-1440x900.png",
+      "sha256": "ecf1b1cefa6392180aae1daf00493c1604f4b77ddd77c97f6aec757ed9f3cc99"
+    },
+    {
+      "bytes": 65323,
+      "path": "visual-evidence/screenshots/rack-summary-power-truth--baseline--mobile-390x844.png",
+      "sha256": "727993a3c1da63acea9d5620b27bcc77118d9aad78e87343f002176ca6c06861"
+    },
+    {
+      "bytes": 109347,
+      "path": "visual-evidence/screenshots/rack-summary-power-truth--candidate--desktop-1440x900.png",
+      "sha256": "54d5ec763169f12d007d589552557a9856ceace373aa6e57d7282940991ffb1b"
+    },
+    {
+      "bytes": 71207,
+      "path": "visual-evidence/screenshots/rack-summary-power-truth--candidate--mobile-390x844.png",
+      "sha256": "e4b3e50e3ccab2aa18950cb82873c68b9c7539ca40277f95e11be5293c74ea0b"
+    },
+    {
+      "bytes": 1396285,
+      "path": "visual-evidence/artifact-bundle.zip",
+      "sha256": "01eb5b0ceb3e642fdeead69480f9351ab50d4ae5a081f11bcbe6b2ea65f0e5e0"
+    }
+  ],
+  "baseline": {
+    "sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c"
+  },
+  "candidate": {
+    "sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+    "tree": "e43f4a18fc6b992bc41065913c2fea153ed5a7a1"
+  },
+  "capture_policy": {
+    "browser": "Chromium",
+    "dpr": 1,
+    "identity": "haewon.kim",
+    "locale": "en-US",
+    "profile": "normal-v1",
+    "role": "ADMIN",
+    "tenant_id": 1,
+    "theme": "nordic-frost-v1",
+    "timezone": "America/Chicago"
+  },
+  "change": "CHG-158",
+  "fixture_identity": {
+    "device": {
+      "asset_tag": "CHG158-VISUAL-TAG",
+      "business_unit": "Infrastructure",
+      "model": "R640",
+      "name": "CHG158 VISUAL DEVICE",
+      "owner": "haewon.kim",
+      "power_max_w": 900,
+      "power_typical_w": 650,
+      "serial_number": "CHG158-VISUAL-SN",
+      "status": "Active",
+      "system": "CHG158 VISUAL SYSTEM",
+      "type": "Physical"
+    },
+    "rack": {
+      "aisle": "A",
+      "max_power_kw": 10,
+      "name": "CHG158 VISUAL RACK",
+      "pdu_a_cap_kw": 10,
+      "pdu_a_name": "PDU-A",
+      "pdu_b_cap_kw": 10,
+      "pdu_b_name": "PDU-B",
+      "row": "1",
+      "total_u": 12
+    },
+    "site": {
+      "address": "R3 visual hall",
+      "color": "#2563eb",
+      "name": "CHG158 VISUAL SITE"
+    }
+  },
+  "independent_pixel_review_required": true,
+  "native_fabric_job_id": "CF-ab935803822ab2f6391d3f3c",
+  "operation": "VERIFY",
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-racks-truth-links-visual-verify-v3",
+  "schema": "sysgrid.chg158.visual-evidence-manifest.v1",
+  "screenshot_count": 8,
+  "visual_go": null
+}

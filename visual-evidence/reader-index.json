@@ -1,0 +1,243 @@
+{
+  "pngs": [
+    {
+      "bytes": 108235,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--baseline--desktop-1440x900.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "ecf1b1cefa6392180aae1daf00493c1604f4b77ddd77c97f6aec757ed9f3cc99",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "bytes": 131282,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--desktop-1440x900.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "965e7a05fde00e7751d87564ef624c833380e8d5cd33f1048309b3b781253f13",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "bytes": 65323,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--baseline--mobile-390x844.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "727993a3c1da63acea9d5620b27bcc77118d9aad78e87343f002176ca6c06861",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "bytes": 61255,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--mobile-390x844.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "bd83ea8f693dbb26a75c0192872bdee937dd428bb9e8f6066be069fa6472ff1c",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "bytes": 109347,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--candidate--desktop-1440x900.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "54d5ec763169f12d007d589552557a9856ceace373aa6e57d7282940991ffb1b",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "bytes": 133056,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--desktop-1440x900.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "c06ea0b7199cd53e9a633680ed0e370307589950f9f4ddb4f2972ab0e2308785",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "bytes": 71207,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--candidate--mobile-390x844.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "e4b3e50e3ccab2aa18950cb82873c68b9c7539ca40277f95e11be5293c74ea0b",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "bytes": 62065,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--mobile-390x844.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "e2db56ff33f93f387125f690d3fe06bc3efd7f3419108bb233b0f7a538d47694",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    }
+  ],
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-racks-truth-links-visual-verify-v3",
+  "review_desktop_pdf": [
+    {
+      "bytes": 131282,
+      "page": 1,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--desktop-1440x900.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "965e7a05fde00e7751d87564ef624c833380e8d5cd33f1048309b3b781253f13",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "bytes": 133056,
+      "page": 2,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--desktop-1440x900.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "c06ea0b7199cd53e9a633680ed0e370307589950f9f4ddb4f2972ab0e2308785",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "bytes": 108235,
+      "page": 3,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--baseline--desktop-1440x900.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "ecf1b1cefa6392180aae1daf00493c1604f4b77ddd77c97f6aec757ed9f3cc99",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "bytes": 109347,
+      "page": 4,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--candidate--desktop-1440x900.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "54d5ec763169f12d007d589552557a9856ceace373aa6e57d7282940991ffb1b",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    }
+  ],
+  "review_mobile_pdf": [
+    {
+      "bytes": 61255,
+      "page": 1,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--mobile-390x844.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "bd83ea8f693dbb26a75c0192872bdee937dd428bb9e8f6066be069fa6472ff1c",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "bytes": 62065,
+      "page": 2,
+      "png": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--mobile-390x844.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-elevation-power-truth",
+      "sha256": "e2db56ff33f93f387125f690d3fe06bc3efd7f3419108bb233b0f7a538d47694",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "bytes": 65323,
+      "page": 3,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--baseline--mobile-390x844.png",
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "727993a3c1da63acea9d5620b27bcc77118d9aad78e87343f002176ca6c06861",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "bytes": 71207,
+      "page": 4,
+      "png": "visual-evidence/screenshots/rack-summary-power-truth--candidate--mobile-390x844.png",
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "scenario_id": "rack-summary-power-truth",
+      "sha256": "e4b3e50e3ccab2aa18950cb82873c68b9c7539ca40277f95e11be5293c74ea0b",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    }
+  ],
+  "schema": "sysgrid.chg158.reader-index.v1"
+}

@@ -1,0 +1,506 @@
+{
+  "baseline": {
+    "sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "tree": "c4f12f15584e82f5b02a3c1f98edac358ed1868c"
+  },
+  "candidate": {
+    "sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+    "tree": "e43f4a18fc6b992bc41065913c2fea153ed5a7a1"
+  },
+  "capture_policy": {
+    "browser": "Chromium",
+    "dpr": 1,
+    "identity": "haewon.kim",
+    "locale": "en-US",
+    "profile": "normal-v1",
+    "role": "ADMIN",
+    "tenant_id": 1,
+    "theme": "nordic-frost-v1",
+    "timezone": "America/Chicago"
+  },
+  "captures": [
+    {
+      "classification": "NO_INTENTIONAL_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_rack_ceiling_visible": false,
+        "live_rack_pdu_telemetry_unavailable_visible": false,
+        "open_audit_logs_visible": false,
+        "typical_power_estimate_visible": false
+      },
+      "image": {
+        "bytes": 108235,
+        "height": 900,
+        "path": "visual-evidence/screenshots/rack-summary-power-truth--baseline--desktop-1440x900.png",
+        "sha256": "ecf1b1cefa6392180aae1daf00493c1604f4b77ddd77c97f6aec757ed9f3cc99",
+        "width": 1440
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "relevant_box": {
+        "height": 581.2660827636719,
+        "width": 975.7646484375,
+        "x": 224.61767578125,
+        "y": 178.20889282226562
+      },
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "runtime_ready": true,
+      "scenario_id": "rack-summary-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "classification": "NO_INTENTIONAL_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_capacity_visible": false,
+        "elevation_slots_visible": true,
+        "fixed_utilization_visible": true,
+        "nominal_visible": true,
+        "overloaded_visible": false,
+        "pdu_edge_count": 2,
+        "telemetry_unavailable_visible": false
+      },
+      "image": {
+        "bytes": 131282,
+        "height": 900,
+        "path": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--desktop-1440x900.png",
+        "sha256": "965e7a05fde00e7751d87564ef624c833380e8d5cd33f1048309b3b781253f13",
+        "width": 1440
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "pdu_tooltip_box": {
+        "height": 111,
+        "width": 140,
+        "x": 302,
+        "y": 607.375
+      },
+      "relevant_box": {
+        "height": 445.5,
+        "width": 322.03125,
+        "x": 276,
+        "y": 374.5
+      },
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "runtime_ready": true,
+      "scenario_id": "rack-elevation-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "classification": "NO_INTENTIONAL_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_rack_ceiling_visible": false,
+        "live_rack_pdu_telemetry_unavailable_visible": false,
+        "open_audit_logs_visible": false,
+        "typical_power_estimate_visible": false
+      },
+      "image": {
+        "bytes": 65323,
+        "height": 844,
+        "path": "visual-evidence/screenshots/rack-summary-power-truth--baseline--mobile-390x844.png",
+        "sha256": "727993a3c1da63acea9d5620b27bcc77118d9aad78e87343f002176ca6c06861",
+        "width": 390
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "relevant_box": {
+        "height": 684.476318359375,
+        "width": 326.98521423339844,
+        "x": 24.007400512695312,
+        "y": 98.43798828125
+      },
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "runtime_ready": true,
+      "scenario_id": "rack-summary-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "classification": "NO_INTENTIONAL_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_capacity_visible": false,
+        "elevation_slots_visible": true,
+        "fixed_utilization_visible": true,
+        "nominal_visible": true,
+        "overloaded_visible": false,
+        "pdu_edge_count": 2,
+        "telemetry_unavailable_visible": false
+      },
+      "image": {
+        "bytes": 61255,
+        "height": 844,
+        "path": "visual-evidence/screenshots/rack-elevation-power-truth--baseline--mobile-390x844.png",
+        "sha256": "bd83ea8f693dbb26a75c0192872bdee937dd428bb9e8f6066be069fa6472ff1c",
+        "width": 390
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "pdu_tooltip_box": {
+        "height": 111,
+        "width": 140,
+        "x": 130,
+        "y": 621.25
+      },
+      "relevant_box": {
+        "height": 137,
+        "width": 249,
+        "x": 100,
+        "y": 594
+      },
+      "revision": "baseline",
+      "revision_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+      "runtime_ready": true,
+      "scenario_id": "rack-elevation-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "classification": "EXPECTED_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_rack_ceiling_visible": true,
+        "live_rack_pdu_telemetry_unavailable_visible": true,
+        "open_audit_logs_visible": true,
+        "typical_power_estimate_visible": true
+      },
+      "image": {
+        "bytes": 109347,
+        "height": 900,
+        "path": "visual-evidence/screenshots/rack-summary-power-truth--candidate--desktop-1440x900.png",
+        "sha256": "54d5ec763169f12d007d589552557a9856ceace373aa6e57d7282940991ffb1b",
+        "width": 1440
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "relevant_box": {
+        "height": 611.745361328125,
+        "width": 977.837646484375,
+        "x": 223.5811767578125,
+        "y": 162.15948486328125
+      },
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "runtime_ready": true,
+      "scenario_id": "rack-summary-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "classification": "EXPECTED_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_capacity_visible": true,
+        "elevation_slots_visible": true,
+        "fixed_utilization_visible": false,
+        "nominal_visible": false,
+        "overloaded_visible": false,
+        "pdu_edge_count": 2,
+        "telemetry_unavailable_visible": true
+      },
+      "image": {
+        "bytes": 133056,
+        "height": 900,
+        "path": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--desktop-1440x900.png",
+        "sha256": "c06ea0b7199cd53e9a633680ed0e370307589950f9f4ddb4f2972ab0e2308785",
+        "width": 1440
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 900,
+        "bodyScrollWidth": 1425,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 900,
+        "documentScrollWidth": 1425,
+        "innerHeight": 900,
+        "innerWidth": 1440,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "pdu_tooltip_box": {
+        "height": 111.5,
+        "width": 140,
+        "x": 306,
+        "y": 612.375
+      },
+      "relevant_box": {
+        "height": 445.5,
+        "width": 322.03125,
+        "x": 276,
+        "y": 374.5
+      },
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "runtime_ready": true,
+      "scenario_id": "rack-elevation-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 900,
+        "label": "desktop",
+        "width": 1440
+      }
+    },
+    {
+      "classification": "EXPECTED_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_rack_ceiling_visible": true,
+        "live_rack_pdu_telemetry_unavailable_visible": true,
+        "open_audit_logs_visible": true,
+        "typical_power_estimate_visible": true
+      },
+      "image": {
+        "bytes": 71207,
+        "height": 844,
+        "path": "visual-evidence/screenshots/rack-summary-power-truth--candidate--mobile-390x844.png",
+        "sha256": "e4b3e50e3ccab2aa18950cb82873c68b9c7539ca40277f95e11be5293c74ea0b",
+        "width": 390
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "relevant_box": {
+        "height": 708.9356689453125,
+        "width": 327.39842224121094,
+        "x": 23.800796508789062,
+        "y": 85.7264404296875
+      },
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "runtime_ready": true,
+      "scenario_id": "rack-summary-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    },
+    {
+      "classification": "EXPECTED_DELTA",
+      "console_page_request_errors": {
+        "consoleErrors": [],
+        "failedResponses": [],
+        "pageErrors": [],
+        "requestFailures": []
+      },
+      "functional_checks": {
+        "configured_capacity_visible": true,
+        "elevation_slots_visible": true,
+        "fixed_utilization_visible": false,
+        "nominal_visible": false,
+        "overloaded_visible": false,
+        "pdu_edge_count": 2,
+        "telemetry_unavailable_visible": true
+      },
+      "image": {
+        "bytes": 62065,
+        "height": 844,
+        "path": "visual-evidence/screenshots/rack-elevation-power-truth--candidate--mobile-390x844.png",
+        "sha256": "e2db56ff33f93f387125f690d3fe06bc3efd7f3419108bb233b0f7a538d47694",
+        "width": 390
+      },
+      "page_body_overflow": {
+        "bodyScrollHeight": 844,
+        "bodyScrollWidth": 375,
+        "devicePixelRatio": 1,
+        "documentScrollHeight": 844,
+        "documentScrollWidth": 375,
+        "innerHeight": 844,
+        "innerWidth": 390,
+        "pageHorizontalOverflow": false,
+        "pageVerticalOverflow": false
+      },
+      "pdu_tooltip_box": {
+        "height": 111.5,
+        "width": 140,
+        "x": 130,
+        "y": 621.5
+      },
+      "relevant_box": {
+        "height": 137,
+        "width": 249,
+        "x": 100,
+        "y": 594
+      },
+      "revision": "candidate",
+      "revision_sha": "1e191468ba16d9d59c5eab75c823ce4237f12d80",
+      "runtime_ready": true,
+      "scenario_id": "rack-elevation-power-truth",
+      "viewport": {
+        "dpr": 1,
+        "height": 844,
+        "label": "mobile",
+        "width": 390
+      }
+    }
+  ],
+  "change": "CHG-158",
+  "fixture": {
+    "device": {
+      "asset_tag": "CHG158-VISUAL-TAG",
+      "business_unit": "Infrastructure",
+      "model": "R640",
+      "name": "CHG158 VISUAL DEVICE",
+      "owner": "haewon.kim",
+      "power_max_w": 900,
+      "power_typical_w": 650,
+      "serial_number": "CHG158-VISUAL-SN",
+      "status": "Active",
+      "system": "CHG158 VISUAL SYSTEM",
+      "type": "Physical"
+    },
+    "rack": {
+      "aisle": "A",
+      "max_power_kw": 10,
+      "name": "CHG158 VISUAL RACK",
+      "pdu_a_cap_kw": 10,
+      "pdu_a_name": "PDU-A",
+      "pdu_b_cap_kw": 10,
+      "pdu_b_name": "PDU-B",
+      "row": "1",
+      "total_u": 12
+    },
+    "site": {
+      "address": "R3 visual hall",
+      "color": "#2563eb",
+      "name": "CHG158 VISUAL SITE"
+    }
+  },
+  "independent_pixel_review_required": true,
+  "objective_deltas": {
+    "rack-elevation-power-truth": {
+      "expected_delta": [
+        "Candidate PDU tooltip replaces NOMINAL/OVERLOADED and fixed 68% presentation with CONFIGURED CAPACITY and Live PDU load telemetry unavailable.",
+        "Rack card retains authoritative U fill, elevation slots, devices, PDU edge placement, toolbar/site controls, and stable surrounding workspace."
+      ],
+      "unexpected_delta": []
+    },
+    "rack-summary-power-truth": {
+      "expected_delta": [
+        "Candidate replaces Power Consumption with Typical Power Estimate and Configured Rack Ceiling.",
+        "Candidate exposes estimate provenance, unavailable live rack/PDU telemetry, and Open Audit Logs under normal-v1 policy.",
+        "Space utilization/distribution hierarchy and modal usability remain comparable with no detected page overflow."
+      ],
+      "unexpected_delta": []
+    }
+  },
+  "project": "sysgrid",
+  "request": "sysgrid-smv1-racks-truth-links-visual-verify-v3",
+  "schema": "sysgrid.chg158.comparison-report.v1",
+  "self_certifies_visual_go": false,
+  "visual_go": null
+}
