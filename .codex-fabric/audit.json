@@ -1,0 +1,262 @@
+{
+  "accepted_at": "2026-09-20T15:07:15Z",
+  "changed_files": [
+    {
+      "additions": 3,
+      "deletions": 16,
+      "path": "frontend/src/components/AuditLogs.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 33,
+      "deletions": 133,
+      "path": "frontend/src/components/NetworkReal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 47,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 38,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalObjectReference.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 84,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalObjectReference.ts",
+      "status": "A"
+    },
+    {
+      "additions": 51,
+      "deletions": 2,
+      "path": "frontend/tests/audit-logs-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 114,
+      "deletions": 0,
+      "path": "frontend/tests/network-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && printf '%s\\\\n' '--- RTK.md ---' && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && printf '%s\\\\n' '--- law.md ---' && sed -n '1,260p' /Users/haewonkim/.codex/law.md && printf '%s\\\\n' '--- git status ---' && git status --short --branch && printf '%s\\\\n' '--- remotes ---' && git remote -v\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git fetch --prune origin main codex/sysgrid-smv1-network-audit-typed-links-v1 && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse --verify refs/remotes/origin/main && rtk git rev-parse --verify refs/remotes/origin/codex/sysgrid-smv1-network-audit-typed-links-v1 && rtk git show -s --format='%H%n%T%n%P' f930a5162e674f7faee9d46b0d7cf2ff94f765bd && rtk git show-ref --verify refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-v1\"",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-verify-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-v1 && rtk git branch -r --contains f930a5162e674f7faee9d46b0d7cf2ff94f765bd && rtk git merge-base --is-ancestor HEAD f930a5162e674f7faee9d46b0d7cf2ff94f765bd; printf 'ancestor_exit=%s\\\\n' \"'$?'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1:refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1 && rtk git merge --ff-only f930a5162e674f7faee9d46b0d7cf2ff94f765bd && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git show -s --format='%H%n%T%n%P' HEAD && rtk git show-ref --verify refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-tree -r --name-only 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa | sed -n '1,160p' && printf '%s\\\\n' '--- commit ---' && rtk git show --stat --oneline --decorate --no-renames 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git rev-parse refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1 && rtk git cat-file blob 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa:visual-evidence/manifest.json | rtk sha256sum && rtk git cat-file blob 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa:visual-evidence/artifact-bundle.zip | rtk sha256sum && rtk test -d frontend/node_modules && rtk git diff --check && rtk git diff --quiet 39a0ee2d7b5a08004795d8207212e5347166cfac HEAD -- backend/ frontend/src/components/Racks.tsx frontend/src/components/Settings.tsx; printf 'protected_scope_exit=%s\\\\n' \"'$?'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk --version; rtk gain; rtk proxy test -d frontend/node_modules; printf 'node_modules_exit=%s\\\\n' \"'$?; rtk git diff --check; printf '\"'diff_check_exit=%s\\\\n' \"'$?; rtk git diff --quiet 39a0ee2d7b5a08004795d8207212e5347166cfac HEAD -- backend/ frontend/src/components/Racks.tsx frontend/src/components/Settings.tsx; printf '\"'protected_scope_exit=%s\\\\n' \"'$?'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- src/components/shared/OperationalObjectReference.test.ts src/components/shared/NetworkAuditTypedLinksContract.test.ts src/components/shared/OperationalAssetSelector.test.tsx src/components/audit/auditQuery.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python rtk bash scripts/run-e2e.sh tests/network-workflows.spec.ts tests/audit-logs-workflows.spec.ts tests/assets-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git fetch --prune origin main codex/sysgrid-smv1-network-audit-typed-links-v1 && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-network-audit-typed-links-v1 && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^ && rtk git rev-parse refs/remotes/origin/main && rtk git rev-parse refs/remotes/origin/codex/sysgrid-smv1-network-audit-typed-links-v1 && rtk git diff --quiet f930a5162e674f7faee9d46b0d7cf2ff94f765bd && printf '\"'candidate_unchanged_exit=%s\\\\n' \"'$?; rtk git diff --quiet 39a0ee2d7b5a08004795d8207212e5347166cfac HEAD -- backend/ frontend/src/components/Racks.tsx frontend/src/components/Settings.tsx && printf '\"'protected_scope_exit=%s\\\\n' \"'$?; rtk git diff --quiet 39a0ee2d7b5a08004795d8207212e5347166cfac HEAD -- frontend/src && printf '\"'frontend_source_diff_from_base_exit=%s\\\\n' \"'$?; rtk git diff --check && printf '\"'diff_check_exit=%s\\\\n' \"'$?; rtk git status --porcelain=v1; printf '\"'worktree_status_exit=%s\\\\n' \"'$?; rtk git diff --name-only 39a0ee2d7b5a08004795d8207212e5347166cfac HEAD; printf '\"'%s\\\\n' '--- forbidden-command scan (scripts/package manifests) ---'; rtk git grep -n -I -E '(\"'^|[[:space:]/])(codex|opencode|chatgpt|openai|llm|langchain)([[:space:]/]|$)'\"' -- scripts package.json frontend/package.json; printf 'forbidden_scan_exit=%s\\\\n' \"'$?'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if rtk git grep -n -I -E '(\"'^|[[:space:]/])(codex|opencode|chatgpt|openai|llm|langchain)([[:space:]/]|$)'\"' -- scripts package.json frontend/package.json; then printf 'forbidden_scan=FAIL_matches_found\\\\n'; exit 1; else scan_status=\"'$?; if rtk test \"$scan_status\" -eq 1; then printf '\"'forbidden_scan=PASS_no_matches\\\\n'; else printf 'forbidden_scan=ERROR_exit_%s\\\\n' \\\"\"'$scan_status\"; exit \"$scan_status\"; fi; fi'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if rtk git grep -n -I -E '(\"'^|[[:space:]/])(codex|opencode|chatgpt|openai|llm|langchain)([[:space:]/]|$)'\"' -- scripts package.json frontend/package.json; then printf 'forbidden_scan=FAIL_matches_found\\\\n'; exit 1; else scan_status=\"'$?; if rtk proxy test \"$scan_status\" -eq 1; then printf '\"'forbidden_scan=PASS_no_matches\\\\n'; else printf 'forbidden_scan=ERROR_exit_%s\\\\n' \\\"\"'$scan_status\"; exit \"$scan_status\"; fi; fi'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- candidate/base proof ---'; rtk git rev-parse --abbrev-ref HEAD; rtk git rev-parse HEAD; rtk git rev-parse HEAD\"'^{tree}; rtk git rev-parse HEAD''^; printf '\"'%s\\\\n' '--- remote proof ---'; rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-network-audit-typed-links-v1 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-verify-v2; printf '%s\\\\n' '--- artifact readback ---'; rtk git rev-parse refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-network-audit-typed-links-v1; rtk git cat-file blob 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa:visual-evidence/manifest.json | rtk sha256sum; rtk git cat-file blob 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa:visual-evidence/artifact-bundle.zip | rtk sha256sum; printf '%s\\\\n' '--- final cleanliness/scope ---'; rtk git diff --quiet f930a5162e674f7faee9d46b0d7cf2ff94f765bd; printf 'candidate_unchanged=true (exit=%s)\\\\n' \"'$?; rtk git diff --quiet 39a0ee2d7b5a08004795d8207212e5347166cfac HEAD -- backend/ frontend/src/components/Racks.tsx frontend/src/components/Settings.tsx; printf '\"'protected_scope_unchanged=true (exit=%s)\\\\n' \"'$?; rtk git diff --check; printf '\"'diff_check=pass (exit=%s)\\\\n' \"'$?; rtk git status --porcelain=v1; printf '\"'worktree_clean=expected_empty_above\\\\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find .codex-fabric scripts -maxdepth 3 -type f -print 2>/dev/null | sed -n '1,160p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -I 'codex-fabric|UPLOAD_THIS_TO_CHATGPT|deterministic evidence' . --glob '\"'!frontend/node_modules/**'\"' --glob '\"'!frontend/dist/**'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 53,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 93.21,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 981760,
+      "fresh_input_tokens": 71574,
+      "input_tokens": 1053334,
+      "non_reasoning_output_tokens": 5652,
+      "output_tokens": 13304,
+      "reasoning_output_tokens": 7652,
+      "total_processed_tokens": 1066638
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+      "subject": "feat: converge network and audit typed links"
+    }
+  ],
+  "diff": {
+    "additions": 370,
+    "changed_files": 7,
+    "commit_count": 1,
+    "deletions": 151
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T15:13:53Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+    "branch": "codex/sysgrid-smv1-network-audit-typed-links-verify-v2",
+    "detached_verify": false,
+    "head_sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+    "remote_exact_head": true,
+    "remote_head_sha": "f930a5162e674f7faee9d46b0d7cf2ff94f765bd",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "39a0ee2d7b5a08004795d8207212e5347166cfac",
+    "work_branch": "codex/sysgrid-smv1-network-audit-typed-links-verify-v2",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-5de226df60506ec5c2d86e75",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-verify-v2",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-network-audit-typed-links-verify-v2"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-network-audit-typed-links-verify-v2",
+  "schema_version": 1,
+  "started_at": "2026-09-20T15:07:15Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 398,
+    "queue_seconds": 0,
+    "total_seconds": 398
+  },
+  "transport": {
+    "bytes": 6763,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 6411,
+    "prompt_sha256": "0a2bc71b37227f1ab28fc94c8dd093cfc075a57272d50c93f60936378e20ee09",
+    "sha256": "5de226df60506ec5c2d86e7599613309a5fc72d2881d966080d9a01cfa7270b4"
+  }
+}
