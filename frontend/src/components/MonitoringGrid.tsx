@@ -19,6 +19,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { showWorkspaceRevertToast, showWorkspaceToast } from './shared/WorkspaceToast'
 import { apiFetch } from '../api/apiClient'
 import { buildMonitoringFormErrors, getMonitoringTabErrorCounts } from '../utils/monitoringValidation'
+import {
+  ALERT_DURATION_MAX,
+  ALERT_DURATION_MIN,
+  CHECK_INTERVAL_MAX,
+  CHECK_INTERVAL_MIN,
+  NOTIFICATION_THROTTLE_MAX,
+  NOTIFICATION_THROTTLE_MIN,
+} from '../domain/monitoringContract'
+export {
+  ALERT_DURATION_MAX,
+  ALERT_DURATION_MIN,
+  CHECK_INTERVAL_MAX,
+  CHECK_INTERVAL_MIN,
+  NOTIFICATION_THROTTLE_MAX,
+  NOTIFICATION_THROTTLE_MIN,
+} from '../domain/monitoringContract'
 import { monitoringSupportsRestorePurged } from '../utils/monitoringPurgeRevertCapability'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
@@ -149,12 +165,6 @@ const MONITORING_STATUS_COLORS: Record<string, string> = Object.fromEntries(
 )
 
 export const LOGIC_TYPES = ['Threshold', 'Anomaly', 'Availability']
-export const CHECK_INTERVAL_MIN = 30
-export const CHECK_INTERVAL_MAX = 86400
-export const ALERT_DURATION_MIN = 0
-export const ALERT_DURATION_MAX = 3600
-export const NOTIFICATION_THROTTLE_MIN = 60
-export const NOTIFICATION_THROTTLE_MAX = 86400
 
 export const LOGIC_SUGGESTIONS: Record<string, string> = {
   Threshold: 'CPU > 90%',

@@ -128,7 +128,7 @@ app.add_middleware(
     allow_credentials=allow_creds,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=EXPOSED_DOWNLOAD_HEADERS + ["X-Request-ID"],
+    expose_headers=EXPOSED_DOWNLOAD_HEADERS + audit.AUDIT_SCOPE_HEADER_NAMES + ["X-Request-ID"],
 )
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
 app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=1)

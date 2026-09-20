@@ -3,6 +3,7 @@ from typing import List, Optional, Any, Dict, Literal
 from datetime import datetime
 from urllib.parse import urlparse
 from ipaddress import ip_address
+from math import isfinite
 import re
 
 class BaseSchema(BaseModel):
@@ -231,6 +232,19 @@ class MonitoringItemBase(BaseModel):
 
 class MonitoringItemCreate(MonitoringItemBase):
     owners: List[MonitoringOwnerCreate] = Field(default_factory=list)
+
+    @field_validator("check_interval", "alert_duration", "notification_throttle", mode="before")
+    @classmethod
+    def validate_monitoring_integer_seconds(cls, value: Any) -> Any:
+        invalid_numeric_value = (
+            value is None
+            or isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or (isinstance(value, float) and (not isfinite(value) or not value.is_integer()))
+        )
+        if invalid_numeric_value:
+            raise ValueError("must be a finite integer number of seconds")
+        return value
 
 class MonitoringItemResponse(MonitoringItemBase, BaseSchema):
     is_deleted: bool = False
