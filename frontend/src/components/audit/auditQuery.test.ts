@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  AUDIT_EXPORT_FILENAME_PREFIX,
+  buildAuditExportFileName,
   buildAuditQueryUrl,
   createAuditQueryDescriptor,
   getAuditQueryKey,
@@ -52,5 +54,10 @@ describe('audit query contract', () => {
       'X-SysGrid-Result-Complete': 'true',
     })
     expect(parseAuditScopeHeaders(complete, descriptor).complete).toBe(true)
+  })
+
+  it('names exports as the currently loaded bounded result', () => {
+    expect(buildAuditExportFileName(new Date('2026-09-19T12:00:00.000Z'))).toBe('SysGrid_AuditLoadedResult_2026-09-19.csv')
+    expect(AUDIT_EXPORT_FILENAME_PREFIX).toContain('Loaded')
   })
 })

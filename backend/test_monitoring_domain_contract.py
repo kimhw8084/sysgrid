@@ -90,7 +90,7 @@ async def test_monitoring_create_update_and_bulk_share_numeric_validation(seeded
         json={**base_payload, "check_interval": 15.5},
         headers=headers,
     )
-    assert create_invalid.status_code == 400
+    assert create_invalid.status_code == 422
     assert "check_interval" in str(create_invalid.json()["detail"])
 
     created = await client.post("/api/v1/monitoring", json=base_payload, headers=headers)
@@ -112,3 +112,55 @@ async def test_monitoring_create_update_and_bulk_share_numeric_validation(seeded
     )
     assert bulk_invalid.status_code == 400
     assert "notification_throttle" in str(bulk_invalid.json()["detail"])
+
+
+@pytest.mark.anyio
+async def test_monitoring_create_uses_typed_request_and_rejects_raw_numeric_forms(seeded_admin_tenant):
+    client = seeded_admin_tenant["client"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(seeded_admin_tenant["tenant_id"])}
+    openapi = await client.get("/openapi.json")
+    assert openapi.status_code == 200, openapi.text
+    request_schema = openapi.json()["paths"]["/api/v1/monitoring"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+    assert request_schema["$ref"].endswith("/MonitoringItemCreate")
+
+    base_payload = {
+        "category": "Infrastructure",
+        "status": "Existing",
+        "title": "TYPED-NUMERIC-CONTRACT",
+    }
+    invalid_values = [
+        ("check_interval", True),
+        ("alert_duration", "60"),
+        ("notification_throttle", "not-a-number"),
+        ("check_interval", 15.5),
+        ("alert_duration", math.nan),
+        ("notification_throttle", math.inf),
+    ]
+    for field_name, invalid_value in invalid_values:
+        response = await client.post(
+            "/api/v1/monitoring",
+            json={**base_payload, "title": f"{base_payload['title']}-{field_name}", field_name: invalid_value},
+            headers=headers,
+        )
+        assert response.status_code == 422, response.text
+        assert any(field_name in str(error["loc"]) for error in response.json()["detail"])
+
+    valid = await client.post(
+        "/api/v1/monitoring",
+        json={
+            **base_payload,
+            "check_interval": CHECK_INTERVAL_MIN,
+            "alert_duration": ALERT_DURATION_MAX,
+            "notification_throttle": NOTIFICATION_THROTTLE_MIN,
+        },
+        headers=headers,
+    )
+    assert valid.status_code == 200, valid.text
+    assert {
+        field_name: valid.json()[field_name]
+        for field_name in ("check_interval", "alert_duration", "notification_throttle")
+    } == {
+        "check_interval": CHECK_INTERVAL_MIN,
+        "alert_duration": ALERT_DURATION_MAX,
+        "notification_throttle": NOTIFICATION_THROTTLE_MIN,
+    }

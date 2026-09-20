@@ -11,6 +11,7 @@ import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../uti
 import { ModulePolicyButton } from '../policy/ModulePolicy'
 import {
   buildAuditQueryUrl,
+  buildAuditExportFileName,
   createAuditQueryDescriptor,
   getAuditQueryKey,
   parseAuditResponse,
@@ -102,7 +103,8 @@ export default function AuditLogs() {
   const handleExportCSV = () => {
     if (gridRef.current?.api) {
       gridRef.current.api.exportDataAsCsv({
-        fileName: `SysGrid_AuditLedger_${new Date().toISOString().split('T')[0]}.csv`
+        fileName: buildAuditExportFileName(),
+        onlySelected: false,
       })
     }
   }

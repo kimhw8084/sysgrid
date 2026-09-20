@@ -1,6 +1,11 @@
 export const AUDIT_DEFAULT_LIMIT = 200
 export const AUDIT_MIN_LIMIT = 1
 export const AUDIT_MAX_LIMIT = 500
+export const AUDIT_EXPORT_FILENAME_PREFIX = 'SysGrid_AuditLoadedResult'
+
+export const buildAuditExportFileName = (date = new Date()) => (
+  `${AUDIT_EXPORT_FILENAME_PREFIX}_${date.toISOString().split('T')[0]}.csv`
+)
 
 export interface AuditQueryDescriptor {
   start_date: string

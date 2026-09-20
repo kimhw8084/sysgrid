@@ -740,8 +740,8 @@ async def get_monitoring_items(device_id: Optional[int] = None, include_deleted:
     return res
 
 @router.post("", response_model=schemas.MonitoringItemResponse)
-async def create_monitoring_item(data: dict[str, Any], db: AsyncSession = Depends(get_db), user_id: str = Header(None, alias="X-User-Id")):
-    item_data, owners_data = await build_monitoring_payload(db, data, partial=False)
+async def create_monitoring_item(data: schemas.MonitoringItemCreate, db: AsyncSession = Depends(get_db), user_id: str = Header(None, alias="X-User-Id")):
+    item_data, owners_data = await build_monitoring_payload(db, data.model_dump(), partial=False)
     await ensure_monitoring_item_uniqueness(db, item_data=item_data)
 
     db_obj = models.MonitoringItem(**item_data)

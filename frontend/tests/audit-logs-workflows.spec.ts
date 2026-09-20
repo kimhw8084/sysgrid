@@ -25,6 +25,10 @@ test.describe('Audit Logs Workflows', () => {
     await page.goto('/logs?target_table=devices&target_id=A');
     await expect(page.getByText('Scoped: devices // A')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Export loaded CSV' })).toBeVisible();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export loaded CSV' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/^SysGrid_AuditLoadedResult_\d{4}-\d{2}-\d{2}\.csv$/);
 
     await page.goto('/logs?target_table=devices&target_id=B');
     await expect(page.getByText('Scoped: devices // B')).toBeVisible();
