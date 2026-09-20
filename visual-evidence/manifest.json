@@ -1,0 +1,141 @@
+{
+  "baseline_sha": "0e3b49b8b98a09a1585907b2ea7db0a29dca1c12",
+  "browser": {
+    "name": "Chromium",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+    "version": "148.0.7778.96"
+  },
+  "candidate_fabric_job": "CF-8072fa72c2d17968041147ee",
+  "candidate_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+  "candidate_source_request": "sysgrid-smv1-golden-capability-services-parity-v1",
+  "change": "CHG-151",
+  "deterministic_fixture": {
+    "asset": {
+      "id": 161,
+      "name": "BI-ANALYTICS-P-161",
+      "system": "BI-ANALYTICS",
+      "type": "Physical"
+    },
+    "identity": "seed.py --seed-data / normal-v1 / admin / Local Demo-or-Playwright-Gate disposable tenant",
+    "monitoring": {
+      "device_id": 161,
+      "id": 1,
+      "title": "BI-ANALYTICS-P-161: Auth Error"
+    },
+    "service_host": {
+      "id": 161,
+      "name": "BI-ANALYTICS-P-161",
+      "system": "BI-ANALYTICS",
+      "type": "Physical"
+    }
+  },
+  "fixture_identity": "seed.py --seed-data / normal-v1 / admin / Local Demo-or-Playwright-Gate disposable tenant",
+  "independent_visual_review_required": true,
+  "items": [
+    {
+      "bytes": 59749,
+      "path": "captures/baseline-capture.json",
+      "sha256": "5cc7198b9c37954a89844ff9405aaabdf1a6d28abe2f9e009622fff0eefb9edc"
+    },
+    {
+      "bytes": 59247,
+      "path": "captures/candidate-capture.json",
+      "sha256": "18188fe3969ef3b11dafe99b623aafc52de1f60d0e75c08fc38e395439f3b150"
+    },
+    {
+      "bytes": 17078,
+      "path": "comparison-report.json",
+      "sha256": "c4c3743869128d653975990f447921fc8222fcd9fc10037e7b4fd0151bc32d65"
+    },
+    {
+      "bytes": 3328,
+      "path": "reader-index.json",
+      "sha256": "dfb2b269cabdb69b8daf6ca336c42722931cf7a7d0df685a5867804dc2f92c5e"
+    },
+    {
+      "bytes": 598693,
+      "path": "review-desktop.pdf",
+      "sha256": "640dca099d95dbda957e998b64e89dbbb46cb161f658dc72e2b3cec0ccfc45e3"
+    },
+    {
+      "bytes": 249745,
+      "path": "review-mobile.pdf",
+      "sha256": "fdb11c1261abed2d488a06fbc76fb91026ddcf8c051abddb4fe523b7ab2d0784"
+    },
+    {
+      "bytes": 132363,
+      "path": "screenshots/monitoring-selector--baseline--desktop-1440x900.png",
+      "sha256": "de51aadfd16b2975ce5ccb11cbbe67307ec5d42db95829d378803c996f2bf8e2"
+    },
+    {
+      "bytes": 58625,
+      "path": "screenshots/monitoring-selector--baseline--mobile-390x844.png",
+      "sha256": "47b7f251ff621b32a34b658a6020b0ec507e5247c6c920da9be51101dec55a1e"
+    },
+    {
+      "bytes": 132389,
+      "path": "screenshots/monitoring-selector--candidate--desktop-1440x900.png",
+      "sha256": "3f3065d0727bb2199335ba8daf373389882ef1a34d467591bd7e875e9508bf46"
+    },
+    {
+      "bytes": 58612,
+      "path": "screenshots/monitoring-selector--candidate--mobile-390x844.png",
+      "sha256": "dc9d29581505039240c405521bd8abd58db0e4c5a141a043f69b530b45f2f1ac"
+    },
+    {
+      "bytes": 134710,
+      "path": "screenshots/services-host--baseline--desktop-1440x900.png",
+      "sha256": "65bd2df5a7fb83e3884a8f00820b23ea125e4d64a31fb25a1c9f20dc32df3a12"
+    },
+    {
+      "bytes": 66651,
+      "path": "screenshots/services-host--baseline--mobile-390x844.png",
+      "sha256": "a1ece5eaff780c30ffa973a65737ede60ba437df95289fbedb9af36cd938408b"
+    },
+    {
+      "bytes": 124501,
+      "path": "screenshots/services-host--candidate--desktop-1440x900.png",
+      "sha256": "50969443cb956de3a4d1857cf8c5b36469b96bcb8ab68a14941243a9694e6412"
+    },
+    {
+      "bytes": 52055,
+      "path": "screenshots/services-host--candidate--mobile-390x844.png",
+      "sha256": "66da2d52ef4713b958e664c8cb71260faed5af2a42fa541cdcedc5f71c9b5104"
+    }
+  ],
+  "locale": "en-US",
+  "operation": "VERIFY",
+  "optional_assets_reference": {
+    "captured": false,
+    "reason": "Asset source is unchanged and source/behavior evidence already passed; no full Assets visual matrix was manufactured."
+  },
+  "project": "sysgrid",
+  "repository": "kimhw8084/sysgrid",
+  "request": "sysgrid-smv1-golden-capability-services-parity-visual-verify-v2",
+  "role": "ADMIN",
+  "scenario_ids": [
+    "monitoring-selector",
+    "services-host"
+  ],
+  "schema": "sysgrid.chg151.visual-evidence-manifest.v1",
+  "source_immutability": {
+    "candidate_tree_sha": "87f89b9f630cde7c96313b442343367cf7e743c3",
+    "product_source_changed": false
+  },
+  "tenant_header": "1",
+  "theme": "nordic-frost-v1",
+  "timezone": "America/Chicago",
+  "user_id": "haewon.kim",
+  "viewports": [
+    {
+      "dpr": 1,
+      "height": 900,
+      "width": 1440
+    },
+    {
+      "dpr": 1,
+      "height": 844,
+      "width": 390
+    }
+  ]
+}
