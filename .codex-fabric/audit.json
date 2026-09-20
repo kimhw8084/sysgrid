@@ -1,0 +1,420 @@
+{
+  "accepted_at": "2026-09-20T21:46:37Z",
+  "changed_files": [
+    {
+      "additions": 23,
+      "deletions": 12,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 22,
+      "deletions": 1,
+      "path": "backend/app/api/module_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 26,
+      "deletions": 1,
+      "path": "backend/test_chg13_authorization_security.py",
+      "status": "M"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 92,
+      "deletions": 40,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 68,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.ts",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 3,
+      "path": "frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 11,
+      "path": "frontend/tests/settings-and-audit.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 165,
+      "deletions": 0,
+      "path": "frontend/tests/settings-privilege.spec.ts",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && printf '%s\\\\n' '--- RTK.md ---' && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && printf '%s\\\\n' '--- law.md ---' && sed -n '1,260p' /Users/haewonkim/.codex/law.md && printf '%s\\\\n' '--- top-level ---' && rg --files -g 'AGENTS.md' -g '\"'!node_modules'\"' -g '\"'!frontend/node_modules'\"' | sort && printf '%s\\\\n' '--- git ---' && git status --short --branch && git log -1 --oneline --decorate\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git remote -v && rtk git show-ref --heads --tags | rtk rg 'b43fa904|codex-fabric/evidence|sysgrid-smv1|origin/main' || true && rtk git branch -a --contains b43fa9041cb365bb98740036178655adc4491e2c || true && rtk rg -n --hidden -g '\"'!node_modules'\"' -g '\"'!frontend/node_modules'\"' -g '\"'!*.lock'\"' 'audit\\\\.json|codex-fabric|run-e2e|Fabric|UPLOAD_THIS_TO_CHATGPT|artifact' . | head -240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk command -v rtk && rtk command -v codex-fabric || true && rtk command -v sgd || true && rtk command -v fabric || true && rtk command -v cf || true && rtk command -v npm && rtk command -v node && rtk command -v python3 && rtk command -v git && rtk ls -la .codex-fabric 2>/dev/null || true && rtk find .. -maxdepth 3 -type f \\\\( -name '*fabric*' -o -name 'audit.json' -o -name '*evidence*' \\\\) -print | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sgd --help 2>&1 | head -240 && rtk sgd help 2>&1 | head -240 || true && rtk ls -la /Users/haewonkim/.codex-fabric && rtk proxy find /Users/haewonkim/.codex-fabric -maxdepth 4 -type f -name 'audit.json' -print | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk sgd verify --help 2>&1 | head -260 && rtk sgd audit --help 2>&1 | head -260 && rtk sgd use --help 2>&1 | head -160 && rtk sgd doctor --help 2>&1 | head -220 && rtk sgd audit-status --help 2>&1 | head -180 && rtk sgd verify-status --help 2>&1 | head -180'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk sgd --version && rtk sgd doctor --repo \"$PWD\" --json && rtk sgd status --repo \"$PWD\" 2>&1 | head -260 && rtk git status --porcelain=v1 && rtk git rev-parse --abbrev-ref HEAD && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"set -o pipefail\nrtk git fetch --prune origin main\nrtk git rev-parse refs/remotes/origin/main\nrtk git show -s --format='%H%n%T%n%P' refs/remotes/origin/main\nrtk git show -s --format='%H%n%T%n%P' b43fa9041cb365bb98740036178655adc4491e2c\nrtk git show-ref --verify refs/heads/codex/sysgrid-smv1-settings-privilege-authority-v1\nrtk git show-ref --verify refs/heads/codex/sysgrid-smv1-settings-privilege-authority-verify-v2\nrtk git diff --exit-code d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac b43fa9041cb365bb98740036178655adc4491e2c -- frontend/src/components/Racks.tsx contracts/system_management_v1.json\nrtk git status --porcelain=v1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git merge --ff-only b43fa9041cb365bb98740036178655adc4491e2c && rtk git status --porcelain=v1 --branch && rtk git show -s --format='%H%n%T%n%P' HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --porcelain=v1 --branch\nrtk git diff --stat d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac..HEAD\nrtk sed -n '1,240p' frontend/package.json\nrtk sed -n '1,260p' scripts/run-e2e.sh\nrtk rtkpath=\"'$(rtk command -v sgd); true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -la /Users/haewonkim/.codex-fabric/current\nrtk rg -n 'native|Fabric|job_id|run-e2e|audit\\\\.json|evidence ref|artifact ref|UPLOAD_THIS_TO_CHATGPT|direct exit_code' /Users/haewonkim/.codex-fabric/current -g '*.py' -g '*.md' -g '*.sh' -g '*.json' | head -300\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -la /Users/haewonkim/.codex-fabric/current/bin /Users/haewonkim/.codex-fabric/current/libexec\nrtk sed -n '1,220p' /Users/haewonkim/.codex-fabric/current/README.md\nrtk rg -n '\"'^def main|argparse|subparsers|receive|status|publish|audit'\"' /Users/haewonkim/.codex-fabric/current/fabric.py | tail -160\nrtk sed -n '2890,3190p' /Users/haewonkim/.codex-fabric/current/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -l /Users/haewonkim/.local/bin/sgd && rtk sed -n '1,80p' /Users/haewonkim/.local/bin/sgd && rtk rg -n 'audit\\\\.json|evidence ref|codex-fabric|run-e2e|profile|decisive' /Users/haewonkim/.local /Users/haewonkim/.codex-fabric/current -g '*.py' -g '*.sh' -g '*.md' -g '*.json' | head -260\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -lt /Users/haewonkim/.codex-fabric/jobs | head -80\nrtk ls -lt /Users/haewonkim/.codex-fabric/results | head -80\nrtk rtk_status=1; true\nrtk git ls-remote origin 'refs/heads/codex-fabric/evidence/sysgrid/*settings-privilege*' 'refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-verify-v2'\nrtk git ls-remote origin 'refs/heads/codex/sysgrid-smv1-settings-privilege-authority*'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find /Users/haewonkim/.codex-fabric/jobs/CF-db31258a0a551b0216cbc4b1.running -maxdepth 2 -type f -print 2>/dev/null | head -100 || true\nrtk ls -la /Users/haewonkim/.codex-fabric/jobs/CF-db31258a0a551b0216cbc4b1.running\nrtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/jobs/CF-db31258a0a551b0216cbc4b1.running/job.json\nrtk ls -la /Users/haewonkim/.codex-fabric/results/CF-db31258a0a551b0216cbc4b1\nrtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/results/CF-db31258a0a551b0216cbc4b1/result.json 2>/dev/null || true\nrtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/results/CF-db31258a0a551b0216cbc4b1/job-summary.json 2>/dev/null || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/jobs/CF-db31258a0a551b0216cbc4b1.running/prompt.md\nrtk sed -n '1,160p' /Users/haewonkim/.codex-fabric/jobs/CF-db31258a0a551b0216cbc4b1.running/lease.json\nrtk ps -Ao pid,ppid,stat,etime,command | rtk rg 'fabric|codex|CF-db312|run-e2e|playwright|sgd' | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --porcelain=v1 --branch && rtk test -d frontend/node_modules && rtk test -x frontend/node_modules/.bin/playwright && rtk test -d backend/.venv && rtk test -x /opt/anaconda3/bin/python && rtk git status --porcelain=v1'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -d frontend/node_modules frontend/node_modules/.bin/playwright && rtk /opt/anaconda3/bin/python -m pytest --version && rtk git status --porcelain=v1 && rtk git diff --name-only'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 16,
+        "output_sha256": "057291f302160e4e13f77932100ab2999ddbf22508869b941f87b400ae6e6a1c",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,300p' scripts/lib/verify-runtime.sh && rtk sed -n '1,240p' frontend/playwright.config.ts && rtk sed -n '1,180p' frontend/playwright.v1.config.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '300,640p' scripts/lib/verify-runtime.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nimport importlib.util\nrequired = ('pytest','alembic','sqlalchemy','aiosqlite','fastapi','uvicorn')\nmissing = [name for name in required if importlib.util.find_spec(name) is None]\nprint('missing=' + ','.join(missing))\nPY\nrtk python3 - <<'PY'\nimport importlib.util\nrequired = ('pytest','alembic','sqlalchemy','aiosqlite','fastapi','uvicorn')\nmissing = [name for name in required if importlib.util.find_spec(name) is None]\nprint('missing=' + ','.join(missing))\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18,
+        "output_sha256": "b30e359190b73da1229a61fb4a18b1d60f84a8f484b3f920b18a852a944ed192",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts tests/settings-standards.spec.ts tests/release-policy-normal.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PROFILE=root-preview SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_USER_ID=haewon.kim USER_ID=haewon.kim rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/release-policy-root-preview.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'CONTROL_PLANE_ADMIN_USER_IDS=haewon.kim rtk bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/run-e2e.sh --config=playwright.config.ts tests/monitoring-workflows.spec.ts tests/network-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- --run src/components/settings/settingsPrivilegePolicy.test.ts src/policy/ModulePolicy.test.ts src/components/settings/SystemDiagnosticsPanel.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q backend/test_system_management_v1_policy.py backend/test_chg13_authorization_security.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18,
+        "output_sha256": "19373b086229cd7c900e55936bea2586e163fad6b047eecae8f963c1a293ec9a",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-verify-v2 && rtk git fetch --no-tags origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-verify-v2 && rtk git rev-parse FETCH_HEAD && rtk git cat-file -p FETCH_HEAD''^{commit} | head -12 && rtk git ls-tree -r --name-only FETCH_HEAD | head -200'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show FETCH_HEAD:visual-evidence/manifest.json && rtk git show FETCH_HEAD:visual-evidence/reader-index.json && rtk git show FETCH_HEAD:visual-evidence/comparison-report.json | head -80'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show FETCH_HEAD:visual-evidence/artifact-bundle.zip | rtk shasum -a 256\nrtk git show FETCH_HEAD:visual-evidence/review-desktop.pdf | rtk shasum -a 256\nrtk git show FETCH_HEAD:visual-evidence/review-mobile.pdf | rtk shasum -a 256\nrtk git ls-tree -r --name-only FETCH_HEAD -- 'visual-evidence/screenshots/*.png' | rtk wc -l\nfor p in \"'$(rtk git ls-tree -r --name-only FETCH_HEAD -- '\"'visual-evidence/screenshots/*.png'); do rtk git show \\\"FETCH_HEAD:\"'$p\" | rtk shasum -a 256 | rtk awk -v path=\"$p\" '\"'{print \"'$1\"  \"path}'\"'; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git cat-file -s FETCH_HEAD:visual-evidence/artifact-bundle.zip\nrtk git cat-file -s FETCH_HEAD:visual-evidence/review-desktop.pdf\nrtk git cat-file -s FETCH_HEAD:visual-evidence/review-mobile.pdf\nrtk git ls-tree -r --name-only FETCH_HEAD | rtk rg 'screenshots|artifact-bundle|review-desktop|review-mobile'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git show FETCH_HEAD:visual-evidence/artifact-bundle.zip | rtk proxy shasum -a 256\nrtk proxy git show FETCH_HEAD:visual-evidence/review-desktop.pdf | rtk proxy shasum -a 256\nrtk proxy git show FETCH_HEAD:visual-evidence/review-mobile.pdf | rtk proxy shasum -a 256\nrtk proxy git ls-tree -r --name-only FETCH_HEAD visual-evidence/screenshots | rtk proxy wc -l\nfor p in $(rtk proxy git ls-tree -r --name-only FETCH_HEAD visual-evidence/screenshots); do rtk proxy git show \"FETCH_HEAD:$p\" | rtk proxy shasum -a 256 | rtk proxy awk -v path=\"$p\" '\"'{print \"'$1\"  \"path}'\"'; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -lc '\nset -eu\nref=FETCH_HEAD\ntest \\\"\"'$(git rev-parse \"$ref\")\" = e41bc5dca41fc9fca570418201785c45ef323470\ncheck_hash() {\n  path=\"$1\"\n  expected=\"$2\"\n  actual=\"$(git show \"$ref:$path\" | shasum -a 256 | awk \"{print '\"\\\\\\\\\"'$1}\")\"\n  test \"$actual\" = \"$expected\"\n}\ncheck_size() {\n  path=\"$1\"\n  expected=\"$2\"\n  actual=\"$(git cat-file -s \"$ref:$path\")\"\n  test \"$actual\" = \"$expected\"\n}\ncheck_hash visual-evidence/comparison-report.json 90d07192ed098b321579f8d9a659c59dd7d65b2ec943db276b08c8ee0782e189\ncheck_size visual-evidence/comparison-report.json 37358\ncheck_hash visual-evidence/reader-index.json bea0f1b1aae5e92aa0cd4b9a791a8ccef135ac0cd3dd356ed3bf85428f1285ff\ncheck_size visual-evidence/reader-index.json 9168\ncheck_hash visual-evidence/artifact-bundle.zip 4273372b474123a6e477b8c2cf9e319ed5c2d464ca7f0cd40f37550f0d58abcd\ncheck_size visual-evidence/artifact-bundle.zip 1358525\ncheck_hash visual-evidence/review-desktop.pdf 848532d21b521cba787d798f4ce6ad597436462440af8d819a4a9039293bdd9a\ncheck_size visual-evidence/review-desktop.pdf 544864\ncheck_hash visual-evidence/review-mobile.pdf dc20252abdec2830c554a55c69b55841c9934a5b9b9debaeb97bdc5869882523\ncheck_size visual-evidence/review-mobile.pdf 240915\npngs=(\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--mobile-390x844.png\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--mobile-390x844.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--mobile-390x844.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--mobile-390x844.png\n)\ntest \"$(git ls-tree -r --name-only \"$ref\" visual-evidence/screenshots | wc -l | tr -d \" \")\" = 8\nhashes=(\ne2871dc0e1fa2f9c195f66bdf6f4df2eebb7ef3a2c3d09bbe0b2e1410db35d16\ne727b41b919efff51870a320ef0785098775f03e3dd95d1282c7d13833e61052\nce1df865dc752fd6c891368f974706f5c4d967ba674e4a47bbdda3ebce38b648\ne378c4e0f8030059ef5f9ad75919df51159afe09324b0d09e216b3048d55975c\n22d9de988d99badca44bc9c2646c4ff6309f4f71a78fd4a3fbbb115e763a405e\nf036387a7c62febed288c50d6a8134e9edef6cc43fcc4a1411008b6f010c3539\n9cbd8cc07bd9e13f68ae7d89c0956b1942c239d3f2c183a448df83ba7fea1bf9\nd16fd0e9df2dc9b58e49c761a0cade5feabf3f39e972644d11576c515d4c9506\n)\nfor i in \"${!pngs[@]}\"; do check_hash \"${pngs[$i]}\" \"${hashes[$i]}\"; done\nprintf \"%s'\"\\\\\\\\n\\\" \\\"R2 artifact readback passed: commit, manifest artifacts, 8 PNG hashes, bundle, desktop PDF, mobile PDF\\\"\n'\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -lc '\nset -eu\nref=FETCH_HEAD\ncheck_hash() {\n  path=\\\"\"'$1\"\n  expected=\"$2\"\n  actual=\"$(git show \"$ref:$path\" | shasum -a 256)\"\n  actual=\"${actual%% *}\"\n  test \"$actual\" = \"$expected\"\n}\ncheck_size() {\n  path=\"$1\"\n  expected=\"$2\"\n  actual=\"$(git cat-file -s \"$ref:$path\")\"\n  test \"$actual\" = \"$expected\"\n}\ntest \"$(git rev-parse \"$ref\")\" = e41bc5dca41fc9fca570418201785c45ef323470\ncheck_hash visual-evidence/comparison-report.json 90d07192ed098b321579f8d9a659c59dd7d65b2ec943db276b08c8ee0782e189\ncheck_size visual-evidence/comparison-report.json 37358\ncheck_hash visual-evidence/reader-index.json bea0f1b1aae5e92aa0cd4b9a791a8ccef135ac0cd3dd356ed3bf85428f1285ff\ncheck_size visual-evidence/reader-index.json 9168\ncheck_hash visual-evidence/artifact-bundle.zip 4273372b474123a6e477b8c2cf9e319ed5c2d464ca7f0cd40f37550f0d58abcd\ncheck_size visual-evidence/artifact-bundle.zip 1358525\ncheck_hash visual-evidence/review-desktop.pdf 848532d21b521cba787d798f4ce6ad597436462440af8d819a4a9039293bdd9a\ncheck_size visual-evidence/review-desktop.pdf 544864\ncheck_hash visual-evidence/review-mobile.pdf dc20252abdec2830c554a55c69b55841c9934a5b9b9debaeb97bdc5869882523\ncheck_size visual-evidence/review-mobile.pdf 240915\npngs=(\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--mobile-390x844.png\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--mobile-390x844.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--mobile-390x844.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--desktop-1440x900.png\nvisual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--mobile-390x844.png\n)\nhashes=(\ne2871dc0e1fa2f9c195f66bdf6f4df2eebb7ef3a2c3d09bbe0b2e1410db35d16\ne727b41b919efff51870a320ef0785098775f03e3dd95d1282c7d13833e61052\nce1df865dc752fd6c891368f974706f5c4d967ba674e4a47bbdda3ebce38b648\ne378c4e0f8030059ef5f9ad75919df51159afe09324b0d09e216b3048d55975c\n22d9de988d99badca44bc9c2646c4ff6309f4f71a78fd4a3fbbb115e763a405e\nf036387a7c62febed288c50d6a8134e9edef6cc43fcc4a1411008b6f010c3539\n9cbd8cc07bd9e13f68ae7d89c0956b1942c239d3f2c183a448df83ba7fea1bf9\nd16fd0e9df2dc9b58e49c761a0cade5feabf3f39e972644d11576c515d4c9506\n)\ntest \"$(git ls-tree -r --name-only \"$ref\" visual-evidence/screenshots | wc -l | tr -d \" \")\" = 8\nfor i in \"${!pngs[@]}\"; do check_hash \"${pngs[$i]}\" \"${hashes[$i]}\"; done\nprintf \"%s'\"\\\\\\\\n\\\" \\\"R2 artifact readback passed: commit, manifest artifacts, 8 PNG hashes, bundle, desktop PDF, mobile PDF\\\"\n'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -lc '\nset -eux\nref=FETCH_HEAD\npath=visual-evidence/artifact-bundle.zip\nactual=\\\"\"'$(git show \"$ref:$path\" | shasum -a 256)\"\nactual=\"${actual%% *}\"\nprintf \"actual=%s'\"\\\\\\\\n\\\" \\\"\"'$actual\"\ntest \"$actual\" = 4273372b474123a6e477b8c2cf9e319ed5c2d464ca7f0cd40f37550f0d58abcd\nprintf \"%s'\"\\\\\\\\n\\\" ok\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -lc '\nset -eu\nbase=d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac\nbase_tree=c4f12f15584e82f5b02a3c1f98edac358ed1868c\ncandidate=b43fa9041cb365bb98740036178655adc4491e2c\ncandidate_tree=9125f2be9c2c673c708fb77539894b43cabd811f\nbranch=codex/sysgrid-smv1-settings-privilege-authority-qualification-v3\ntest \\\"\"'$(git ls-remote origin refs/heads/main | cut -f1)\" = \"$base\"\ntest \"$(git rev-parse refs/remotes/origin/main)\" = \"$base\"\ntest \"$(git rev-parse HEAD)\" = \"$candidate\"\ntest \"$(git rev-parse HEAD''^{tree})\" = \"$candidate_tree\"\ntest \"$(git rev-parse HEAD''^)\" = \"$base\"\ntest \"$(git branch --show-current)\" = \"$branch\"\ntest \"$(git rev-parse refs/heads/codex/sysgrid-smv1-settings-privilege-authority-v1)\" = \"$candidate\"\ntest \"$(git rev-parse refs/heads/codex/sysgrid-smv1-settings-privilege-authority-verify-v2)\" = \"$candidate\"\ntest \"$(git rev-parse refs/remotes/origin/main)\" = \"$base\"\ngit diff --quiet \"$base\" HEAD -- frontend/src/components/Racks.tsx contracts/system_management_v1.json\ngit diff --quiet \"$candidate\" --\ngit diff --cached --quiet\ntest -z \"$(git status --porcelain=v1)\"\nprintf \"%s'\"\\\\\\\\n\\\" \\\"source identity, protected paths, candidate head/tree/parent, origin/main, zero candidate diff, and clean worktree passed\\\"\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n --hidden -g '\"'!node_modules'\"' -g '\"'!frontend/node_modules'\"' -g '\"'!*.lock'\"' 'forbidden.*command|FORBIDDEN.*COMMAND|agent execution|codex|opencode|openai' scripts .github AGENTS.md | head -240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -lc '\nset -eu\nref=FETCH_HEAD\ntest \\\"\"'$(git rev-parse \"$ref\")\" = e41bc5dca41fc9fca570418201785c45ef323470\ntest \"$(git cat-file -s \"$ref:visual-evidence/artifact-bundle.zip\")\" = 1358525\ntest \"$(git show \"$ref:visual-evidence/artifact-bundle.zip\" | shasum -a 256)\" = \"4273372b474123a6e477b8c2cf9e319ed5c2d464ca7f0cd40f37550f0d58abcd  -\"\ntest \"$(git cat-file -s \"$ref:visual-evidence/review-desktop.pdf\")\" = 544864\ntest \"$(git show \"$ref:visual-evidence/review-desktop.pdf\" | shasum -a 256)\" = \"848532d21b521cba787d798f4ce6ad597436462440af8d819a4a9039293bdd9a  -\"\ntest \"$(git cat-file -s \"$ref:visual-evidence/review-mobile.pdf\")\" = 240915\ntest \"$(git show \"$ref:visual-evidence/review-mobile.pdf\" | shasum -a 256)\" = \"dc20252abdec2830c554a55c69b55841c9934a5b9b9debaeb97bdc5869882523  -\"\ntest \"$(git ls-tree -r --name-only \"$ref\" visual-evidence/screenshots | wc -l | tr -d \" \")\" = 8\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--desktop-1440x900.png\" | shasum -a 256)\" = \"22d9de988d99badca44bc9c2646c4ff6309f4f71a78fd4a3fbbb115e763a405e  -\"\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--mobile-390x844.png\" | shasum -a 256)\" = \"f036387a7c62febed288c50d6a8134e9edef6cc43fcc4a1411008b6f010c3539  -\"\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--desktop-1440x900.png\" | shasum -a 256)\" = \"9cbd8cc07bd9e13f68ae7d89c0956b1942c239d3f2c183a448df83ba7fea1bf9  -\"\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--mobile-390x844.png\" | shasum -a 256)\" = \"d16fd0e9df2dc9b58e49c761a0cade5feabf3f39e972644d11576c515d4c9506  -\"\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--desktop-1440x900.png\" | shasum -a 256)\" = \"e2871dc0e1fa2f9c195f66bdf6f4df2eebb7ef3a2c3d09bbe0b2e1410db35d16  -\"\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--mobile-390x844.png\" | shasum -a 256)\" = \"e727b41b919efff51870a320ef0785098775f03e3dd95d1282c7d13833e61052  -\"\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--desktop-1440x900.png\" | shasum -a 256)\" = \"ce1df865dc752fd6c891368f974706f5c4d967ba674e4a47bbdda3ebce38b648  -\"\ntest \"$(git show \"$ref:visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--mobile-390x844.png\" | shasum -a 256)\" = \"e378c4e0f8030059ef5f9ad75919df51159afe09324b0d09e216b3048d55975c  -\"\nprintf \"%s'\"\\\\\\\\n\\\" \\\"R2 artifact readback passed: e41bc5dca41fc9fca570418201785c45ef323470, 8 PNGs, bundle, desktop PDF, mobile PDF\\\"\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 99,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.45,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 6463488,
+      "fresh_input_tokens": 169044,
+      "input_tokens": 6632532,
+      "non_reasoning_output_tokens": 12712,
+      "output_tokens": 27176,
+      "reasoning_output_tokens": 14464,
+      "total_processed_tokens": 6659708
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+      "subject": "feat: converge settings privilege authority"
+    }
+  ],
+  "diff": {
+    "additions": 543,
+    "changed_files": 11,
+    "commit_count": 1,
+    "deletions": 68
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.3-resume-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.3-resume-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-20T22:01:13Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "branch": "codex/sysgrid-smv1-settings-privilege-authority-qualification-v3",
+    "detached_verify": false,
+    "head_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+    "remote_exact_head": true,
+    "remote_head_sha": "b43fa9041cb365bb98740036178655adc4491e2c",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac",
+    "work_branch": "codex/sysgrid-smv1-settings-privilege-authority-qualification-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-db31258a0a551b0216cbc4b1",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v3"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.3-resume-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-settings-privilege-authority-qualification-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-20T21:46:37Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 876,
+    "queue_seconds": 0,
+    "total_seconds": 876
+  },
+  "transport": {
+    "bytes": 8339,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7967,
+    "prompt_sha256": "788962dfe3598d2e4caba0096e70e3f52bceeae86ee9e805285dc485f4a87e3c",
+    "sha256": "db31258a0a551b0216cbc4b1d0e55d95a101f3990493dca2f4f464e905ccbfb0"
+  }
+}
