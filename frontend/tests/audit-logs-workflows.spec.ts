@@ -1,6 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { AuditLogsView } from './pom/AuditLogsView';
-import { resetBrowserState } from './helpers/sysgrid';
+import { createConnection, resetBrowserState, seedOperationalScenario, seedRackScenario } from './helpers/sysgrid';
+import { test } from './helpers/sysgrid-test';
+
+const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1';
 
 test.describe('Audit Logs Workflows', () => {
   test.beforeEach(async ({ page }) => {
@@ -35,5 +38,51 @@ test.describe('Audit Logs Workflows', () => {
 
     expect(auditRequests.some((url) => url.searchParams.get('target_id') === 'A')).toBe(true);
     expect(auditRequests.some((url) => url.searchParams.get('target_id') === 'B')).toBe(true);
+  });
+
+  test('opens exact device and port connection targets while leaving unsupported targets disabled', async ({ page, sysApi: request }) => {
+    await resetBrowserState(page);
+    const { primary, secondary, maintenance } = await seedOperationalScenario(request);
+    const { devicePrimary } = await seedRackScenario(request);
+    const connection = await createConnection(request, {
+      device_a_id: primary.id,
+      source_port: 'eth20',
+      device_b_id: secondary.id,
+      target_port: 'eth21',
+      link_type: 'Data',
+      speed_gbps: 10,
+      unit: 'Gbps',
+      status: 'Active',
+    });
+    const updateResponse = await request.put(`${apiBase}/networks/connections/${connection.id}`, {
+      data: {
+        source_device_id: primary.id,
+        source_port: 'eth20',
+        target_device_id: secondary.id,
+        target_port: 'eth21',
+        link_type: 'Data',
+      },
+    });
+    expect(updateResponse.ok()).toBeTruthy();
+
+    await page.goto(`/logs?target_table=devices&target_id=${devicePrimary.id}`);
+    await expect(page.getByText(`Scoped: devices // ${devicePrimary.id}`)).toBeVisible();
+    const deviceTargetButton = page.getByRole('button', { name: 'Open target record' }).first();
+    await expect(deviceTargetButton).toBeEnabled();
+    await deviceTargetButton.click();
+    await expect(page).toHaveURL(new RegExp(`/asset\\?id=${devicePrimary.id}(?:&|$)`));
+
+    await page.goto(`/logs?target_table=port_connections&target_id=${connection.id}`);
+    await expect(page.getByText(`Scoped: port_connections // ${connection.id}`)).toBeVisible();
+    const networkTargetButton = page.getByRole('button', { name: 'Open target record' }).first();
+    await expect(networkTargetButton).toBeEnabled();
+    await networkTargetButton.click();
+    await expect(page).toHaveURL(new RegExp(`/network\\?id=${connection.id}(?:&|$)`));
+
+    await page.goto(`/logs?target_table=maintenance_windows&target_id=${maintenance.id}`);
+    await expect(page.getByText(`Scoped: maintenance_windows // ${maintenance.id}`)).toBeVisible();
+    const unsupportedTargetButton = page.getByRole('button', { name: 'Open target record' }).first();
+    await expect(unsupportedTargetButton).toBeDisabled();
+    await expect(unsupportedTargetButton).toHaveAttribute('title', 'No target route recorded.');
   });
 });
