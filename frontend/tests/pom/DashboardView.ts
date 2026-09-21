@@ -7,7 +7,7 @@ export class DashboardView extends BaseView {
   }
 
   async navigateToTab(tabName: string) {
-    const cardTitle = tabName === 'Assets' ? 'Infrastructure Assets' : 'Critical Monitors'
+    const cardTitle = tabName === 'Assets' ? 'Infrastructure assets' : 'Monitoring definitions'
     await this.page.getByText(cardTitle, { exact: true }).click()
     await this.waitForAppIdle()
   }

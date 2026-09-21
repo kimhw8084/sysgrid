@@ -9,8 +9,8 @@ test.describe('App shell and global search', () => {
     await resetBrowserState(page)
 
     await page.goto('/')
-    await expect(page.getByText('Stability Pulse')).toBeVisible()
-    await expect(page.getByText('Defense Status')).toBeVisible()
+    await expect(page.getByText('Observed health history (24h)')).toBeVisible()
+    await expect(page.getByText('Operational observation boundary')).toBeVisible()
 
     await clickResilientButton(page, /Patch Notes/i)
     await expect(page.getByText('Registry Updates')).toBeVisible()
@@ -19,12 +19,12 @@ test.describe('App shell and global search', () => {
   test('navigates to seeded records through global search', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
     const { service, monitoring, knowledge } = await seedOperationalScenario(request)
-    const searchInput = page.getByPlaceholder(/Search Assets, Projects, FAR, Services, Monitoring/i)
-    const searchTrigger = page.locator('button').filter({ hasText: /Search assets, projects, or incidents/i }).first()
+    const searchInput = page.getByPlaceholder(/Search released and authorized records/i)
+    const searchTrigger = page.locator('button').filter({ hasText: /Search released and authorized records/i }).first()
 
     await page.goto('/')
     await waitForAppIdle(page)
-    await expect(page.getByText('Stability Pulse')).toBeVisible()
+    await expect(page.getByText('Observed health history (24h)')).toBeVisible()
 
     await searchTrigger.click()
     await expect(searchInput).toBeVisible()
@@ -66,7 +66,7 @@ test.describe('App shell and global search', () => {
       await knowledgeResult.click()
       await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
     } else {
-      await expect(page.getByText(`Zero records found for "${knowledge.title}"`, { exact: true })).toBeVisible()
+      await expect(page.getByText(`No released or authorized records found for "${knowledge.title}"`, { exact: true })).toBeVisible()
     }
   })
 })

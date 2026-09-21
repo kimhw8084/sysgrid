@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Search, X, Loader2, Server, Briefcase, AlertTriangle, ChevronRight, Activity, Layers, BookOpen, Network } from 'lucide-react';
+import { Search, X, Loader2, Server, Briefcase, AlertTriangle, ChevronRight, Activity, Layers, BookOpen, Network, MapPin, ScrollText, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiClient';
@@ -9,18 +9,21 @@ import { getCatalogModuleForPath } from '../../policy/moduleCatalog';
 
 interface SearchResult {
   id: number;
-  type: 'asset' | 'project' | 'far' | 'service' | 'monitoring' | 'knowledge' | 'network';
+  type: 'asset' | 'project' | 'far' | 'service' | 'monitoring' | 'knowledge' | 'network' | 'rack' | 'audit';
   title: string;
   subtitle: string;
   tag: string;
   path: string;
   module_id?: string;
+  module_label?: string;
+  module_stage?: string;
 }
 
 export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -32,6 +35,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     const focusTimeout = window.setTimeout(() => inputRef.current?.focus(), 100)
     setQuery('');
     setResults([]);
+    setSearchError(false);
     return () => {
       window.clearTimeout(focusTimeout)
       previousFocus?.focus()
@@ -43,18 +47,23 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
       const trimmedQuery = query.trim();
       if (trimmedQuery.length >= 2) {
         setIsLoading(true);
+        setSearchError(false);
         try {
           const res = await apiFetch(`/api/v1/dashboard/search?q=${encodeURIComponent(trimmedQuery)}`);
+          if (!res.ok) throw new Error(`Search failed with status ${res.status}`);
           const data = await res.json();
           setResults(data.results || []);
           setSelectedIndex(0);
         } catch (err) {
           console.error('Search failed:', err);
+          setResults([]);
+          setSearchError(true);
         } finally {
           setIsLoading(false);
         }
       } else {
         setResults([]);
+        setSearchError(false);
       }
     }, 500); // Increased debounce for stability
 
@@ -107,6 +116,8 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
       case 'monitoring': return <Activity size={14} className="text-rose-400" />;
       case 'knowledge': return <BookOpen size={14} className="text-sky-400" />;
       case 'network': return <Network size={14} className="text-indigo-400" />;
+      case 'rack': return <MapPin size={14} className="text-amber-400" />;
+      case 'audit': return <ScrollText size={14} className="text-slate-400" />;
       default: return <ChevronRight size={14} />;
     }
   };
@@ -120,6 +131,8 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
       case 'monitoring': return 'Monitoring Coverage';
       case 'knowledge': return 'Knowledge Base';
       case 'network': return 'Network Fabric';
+      case 'rack': return 'Rack Inventory';
+      case 'audit': return 'Audit Activity';
       default: return 'Records';
     }
   };
@@ -146,13 +159,13 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           >
             <div className="flex items-center border-b border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-5">
               <Search size={20} aria-hidden="true" className="mr-4 text-[var(--text-muted)]" />
-              <input
+                <input
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Search Assets, Projects, FAR, Services, Monitoring..."
-                aria-label="Search assets, projects, FAR, services, and monitoring"
+                placeholder="Search released and authorized records..."
+                aria-label="Search released and authorized records"
                 className="flex-1 border-none bg-transparent text-sm font-medium tracking-[0.02em] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
               />
               {isLoading ? (
@@ -175,6 +188,8 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                       {items.map((result) => {
                         const globalIndex = flattenedResults.indexOf(result);
                         const isSelected = globalIndex === selectedIndex;
+                        const policyModule = result.module_id ? modulePolicy.data?.modules[result.module_id] : undefined;
+                        const isPreview = policyModule?.stage === 'preview' || result.module_stage === 'preview';
                         return (
                           <ModulePolicyLink
                             key={`${result.type}-${result.id}`}
@@ -195,6 +210,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                                 <p className={`text-[9px] font-bold tracking-tight ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
                                   {result.subtitle}
                                 </p>
+                                {isPreview ? <p className={`mt-1 text-[8px] font-black uppercase tracking-widest ${isSelected ? 'text-amber-100' : 'text-amber-400'}`}>Preview / unreleased</p> : null}
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -211,12 +227,19 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     </div>
                   ))}
                 </div>
+              ) : query.length >= 2 && !isLoading && searchError ? (
+                <div className="p-16 text-center">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10">
+                    <Info size={20} className="text-amber-400" />
+                  </div>
+                  <p className="text-[10px] font-black tracking-[0.08em] text-slate-500">Search unavailable; no destination was inferred.</p>
+                </div>
               ) : query.length >= 2 && !isLoading ? (
                 <div className="p-16 text-center">
                   <div className="w-12 h-12 bg-rose-500/10 rounded-lg flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
                     <X size={20} className="text-rose-500" />
                   </div>
-                  <p className="text-[10px] font-black text-slate-500 tracking-[0.08em]">Zero records found for "{query}"</p>
+                  <p className="text-[10px] font-black text-slate-500 tracking-[0.08em]">No released or authorized records found for "{query}"</p>
                 </div>
               ) : (
                 <div className="p-12 flex flex-col items-center gap-4 opacity-40">

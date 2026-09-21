@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.dashboard import group_by_status
 from app.database import get_tenant_engine
+from app.core.config import settings
 from app.models import models
 from app.models.config import Tenant
 
@@ -224,19 +225,22 @@ async def test_dashboard_metrics_rolls_up_seeded_operational_data(seeded_admin_t
     assert metrics["rack_overview"]["total_racked_assets"] >= 1
     assert metrics["asset_overview"]["total"] >= 1
     assert metrics["service_overview"]["total"] >= 1
-    assert metrics["external_overview"]["total"] >= 1
     assert metrics["network_overview"]["total"] >= 1
     assert metrics["monitoring_overview"]["total"] >= 1
-    assert metrics["stability_score"] < 100
-    assert any(item["title"] == "METRICS-RESEARCH" for item in metrics["recent"]["research"])
-    assert any(item["title"] == "METRICS-FAR" for item in metrics["recent"]["far"])
-    assert any(item["title"] == "METRICS-KNOWLEDGE" for item in metrics["recent"]["knowledge"])
-    assert any(item["title"] == "METRICS-FLOW" for item in metrics["recent"]["architecture"])
-    assert any(item["title"] == "METRICS-PROJECT-LIVE" for item in metrics["recent"]["projects"]["in_progress"])
-    assert any(item["title"] == "METRICS-PROJECT-DONE" for item in metrics["recent"]["projects"]["completed"])
-    assert any(alert["title"] == "METRICS-MONITOR" for alert in metrics["critical_alerts"])
+    assert metrics["stability_score"] is None
+    assert "critical_alerts" not in metrics
+    assert metrics["observed_health"]["history"]["available"] is False
+    assert metrics["observed_health"]["history"]["unavailable_reason"] == "NO_AUTHORITATIVE_OBSERVATION_SOURCE"
+    assert metrics["observed_health"]["availability"]["kind"] == "observed_health"
+    assert metrics["monitoring_overview"]["truth"]["kind"] == "configuration"
+    assert metrics["monitoring_overview"]["truth"]["source"].startswith("monitoring_items table")
+    assert "research" not in metrics["recent"]
+    assert "far" not in metrics["recent"]
+    assert "knowledge" not in metrics["recent"]
+    assert "projects" not in metrics["recent"]
     assert metrics["recent"]["activity"]
     assert all("target" in activity for activity in metrics["recent"]["activity"])
+    assert all(activity["truth"]["kind"] == "activity" for activity in metrics["recent"]["activity"])
 
 
 @pytest.mark.anyio
@@ -369,3 +373,53 @@ async def test_dashboard_search_returns_cross_domain_matches(seeded_admin_tenant
 
     result_types = {item["type"] for item in results}
     assert {"asset", "project", "far", "service", "monitoring", "knowledge", "network"} <= result_types
+
+
+@pytest.mark.anyio
+async def test_dashboard_empty_inventory_is_distinct_from_unavailable_observations(seeded_admin_tenant):
+    client = seeded_admin_tenant["client"]
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
+
+    response = await client.get("/api/v1/dashboard/metrics", headers=headers)
+    assert response.status_code == 200, response.text
+    metrics = response.json()
+
+    assert metrics["asset_overview"]["total"] == 0
+    assert metrics["asset_overview"]["truth"]["value"] == 0
+    assert metrics["asset_overview"]["truth"]["kind"] == "inventory"
+    assert metrics["observed_health"]["history"]["value"] is None
+    assert metrics["observed_health"]["history"]["freshness"] == "unavailable"
+    assert metrics["incident_summary"]["value"] is None
+    assert metrics["incident_summary"]["unavailable_reason"] == "NO_AUTHORITATIVE_INCIDENT_SOURCE"
+
+
+@pytest.mark.anyio
+async def test_normal_home_search_does_not_expose_preview_records(seeded_admin_tenant, setup_db, monkeypatch):
+    client = seeded_admin_tenant["client"]
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
+    monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "")
+
+    config_session_factory = setup_db[1]
+    async with config_session_factory() as config_db:
+        tenant = (await config_db.execute(select(Tenant).filter(Tenant.id == tenant_id))).scalar_one()
+        tenant_db_url = tenant.db_url
+
+    tenant_engine = get_tenant_engine(tenant_db_url)
+    tenant_session_factory = async_sessionmaker(bind=tenant_engine, autoflush=False, expire_on_commit=False, class_=AsyncSession)
+    async with tenant_session_factory() as tenant_db:
+        tenant_db.add(
+            models.Project(
+                name="NORMAL-PREVIEW-PROJECT",
+                type="Strategic",
+                status="In Progress",
+                priority="High",
+                description="Preview-only record",
+            )
+        )
+        await tenant_db.commit()
+
+    search_res = await client.get("/api/v1/dashboard/search?q=NORMAL-PREVIEW", headers=headers)
+    assert search_res.status_code == 200, search_res.text
+    assert search_res.json()["results"] == []
