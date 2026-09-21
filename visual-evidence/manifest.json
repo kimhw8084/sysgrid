@@ -1,0 +1,68 @@
+{
+  "baseline_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+  "candidate_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+  "candidate_tree": "2a30643cdedbbd7e278d5fbfb8353d28197f3d40",
+  "change": "CHG-49",
+  "created_at_utc": "2026-09-21T16:04:37Z",
+  "members": [
+    {
+      "bytes": 181074,
+      "path": "screenshots/2256ce8942d2--normal-v1-empty-no-observation-authority--desktop-1440x900.png",
+      "sha256": "9108d152ce2819edecbb60cfaf7bb61de0c047741cfee99aaf5e9ee9fbdd7e29"
+    },
+    {
+      "bytes": 66434,
+      "path": "screenshots/2256ce8942d2--normal-v1-empty-no-observation-authority--mobile-390x844.png",
+      "sha256": "f1b0ebf3063ffcfd8e58dfebd425f3c16d19e9f35255dea6e394676883619a95"
+    },
+    {
+      "bytes": 174991,
+      "path": "screenshots/2256ce8942d2--normal-v1-populated-no-observation-authority--desktop-1440x900.png",
+      "sha256": "fa5c772e2df7e110682db665153a1ce30e212a800e3ece3addb77ad3bb5c3020"
+    },
+    {
+      "bytes": 66410,
+      "path": "screenshots/2256ce8942d2--normal-v1-populated-no-observation-authority--mobile-390x844.png",
+      "sha256": "db9151cb1bbe22948cd69b1fc54b79d3b63666c91abe95b53cfff25c046e8684"
+    },
+    {
+      "bytes": 158878,
+      "path": "screenshots/8d71e114c395--normal-v1-empty-no-observation-authority--desktop-1440x900.png",
+      "sha256": "a33f1dfdeb0a70f525bc8489f47fb0f8e13d746b684ec6b342cd05d9e472cee7"
+    },
+    {
+      "bytes": 68457,
+      "path": "screenshots/8d71e114c395--normal-v1-empty-no-observation-authority--mobile-390x844.png",
+      "sha256": "a296e3d5ae8145972115f3e90e63d4197ad2cdcce7b70a6247535202fa249f2e"
+    },
+    {
+      "bytes": 156302,
+      "path": "screenshots/8d71e114c395--normal-v1-populated-no-observation-authority--desktop-1440x900.png",
+      "sha256": "c67a4e32d6a0666fe5b7848cfcfcf40323304b5244ec379d4ec07677e458bccc"
+    },
+    {
+      "bytes": 68878,
+      "path": "screenshots/8d71e114c395--normal-v1-populated-no-observation-authority--mobile-390x844.png",
+      "sha256": "30ec20b0d0dc3c0c2f5b5cec48ec819045662040ac109d476618b128a5e966bf"
+    },
+    {
+      "bytes": 738904,
+      "path": "review-desktop.pdf",
+      "sha256": "76beba7d2d3a30b3b561592bfa5120885cb8a1890412f2383ee3bfc1982e288e"
+    },
+    {
+      "bytes": 279687,
+      "path": "review-mobile.pdf",
+      "sha256": "c5c3b41c4bef2154da9511dff54419c3eee02218cbdb403d341b6757fd487b7e"
+    },
+    {
+      "bytes": 1743506,
+      "path": "artifact-bundle.zip",
+      "sha256": "e91e61909351c73bdc92310c0fd445f85d6bb62f9f34a0a6f1bb12d846f87be3"
+    }
+  ],
+  "pixel_acceptance": "Project OS audit required; no self-certification",
+  "schema_version": "chg49-visual-manifest-v2",
+  "screenshot_count": 8,
+  "visual_bundle_sha256": "e91e61909351c73bdc92310c0fd445f85d6bb62f9f34a0a6f1bb12d846f87be3"
+}

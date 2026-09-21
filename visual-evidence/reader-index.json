@@ -1,0 +1,35 @@
+{
+  "reading_order": [
+    {
+      "path": "comparison-report.json",
+      "purpose": "Scenario, source identity, capture contract, geometry, console/request diagnostics, and baseline/candidate delta."
+    },
+    {
+      "path": "review-desktop.pdf",
+      "purpose": "Four-page desktop visual review: empty baseline/candidate followed by populated baseline/candidate."
+    },
+    {
+      "path": "review-mobile.pdf",
+      "purpose": "Four-page mobile visual review: empty baseline/candidate followed by populated baseline/candidate."
+    },
+    {
+      "path": "screenshots/",
+      "purpose": "Eight exact PNG captures with dimensions and SHA-256 values recorded in the comparison report."
+    },
+    {
+      "path": "manifest.json",
+      "purpose": "Immutable artifact member inventory and hashes."
+    },
+    {
+      "path": "artifact-bundle.zip",
+      "purpose": "Portable bundle containing the PDFs and eight screenshots."
+    }
+  ],
+  "review_notes": [
+    "Baseline images intentionally preserve the pre-candidate synthetic Home truth defects for comparison.",
+    "Candidate images are captured from the unchanged candidate SHA and are not a GO decision.",
+    "Pixel acceptance belongs to the Project OS audit."
+  ],
+  "schema_version": "chg49-reader-index-v2",
+  "title": "CHG-49 Home truth visual evidence"
+}

@@ -1,0 +1,1314 @@
+{
+  "artifact_bundle_sha256": "e91e61909351c73bdc92310c0fd445f85d6bb62f9f34a0a6f1bb12d846f87be3",
+  "baseline": {
+    "candidate_parent": true,
+    "sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "tree": "72a2ef5c1275a25b4d46fbd049789b68c9087649"
+  },
+  "candidate": {
+    "candidate_parent": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "tree": "2a30643cdedbbd7e278d5fbfb8353d28197f3d40"
+  },
+  "capture_contract": {
+    "browser": "Chromium",
+    "dpr": 1,
+    "fixture_authority": "repository disposable Playwright runtime with fixed API-created records",
+    "locale": "en-US",
+    "theme": "nordic-frost-v1",
+    "timezone": "America/Chicago",
+    "viewports": [
+      "1440x900",
+      "390x844"
+    ]
+  },
+  "captures": [
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 0,
+          "monitoring_definitions": 0,
+          "network_connections": 0,
+          "racks": 0,
+          "services": 0,
+          "sites": 0
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 790,
+          "width": 1185,
+          "x": 240,
+          "y": 78
+        },
+        "document": {
+          "bodyScrollWidth": 1425,
+          "clientWidth": 1440,
+          "scrollWidth": 1425
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 900,
+          "width": 1440
+        }
+      },
+      "image": {
+        "bytes": 158878,
+        "dimensions": {
+          "height": 900,
+          "width": 1440
+        },
+        "path": "screenshots/8d71e114c395--normal-v1-empty-no-observation-authority--desktop-1440x900.png",
+        "sha256": "a33f1dfdeb0a70f525bc8489f47fb0f8e13d746b684ec6b342cd05d9e472cee7"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-empty-no-observation-authority",
+      "source_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+      "source_tree": "72a2ef5c1275a25b4d46fbd049789b68c9087649",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [],
+        "releasedSectionText": "",
+        "truthStateLabels": [],
+        "unavailableLabels": []
+      },
+      "visible_truth_labels_expected": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ]
+    },
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 0,
+          "monitoring_definitions": 0,
+          "network_connections": 0,
+          "racks": 0,
+          "services": 0,
+          "sites": 0
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 539,
+          "width": 295,
+          "x": 80,
+          "y": 224
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "clientWidth": 390,
+          "scrollWidth": 375
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 844,
+          "width": 390
+        }
+      },
+      "image": {
+        "bytes": 68457,
+        "dimensions": {
+          "height": 844,
+          "width": 390
+        },
+        "path": "screenshots/8d71e114c395--normal-v1-empty-no-observation-authority--mobile-390x844.png",
+        "sha256": "a296e3d5ae8145972115f3e90e63d4197ad2cdcce7b70a6247535202fa249f2e"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-empty-no-observation-authority",
+      "source_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+      "source_tree": "72a2ef5c1275a25b4d46fbd049789b68c9087649",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [],
+        "releasedSectionText": "",
+        "truthStateLabels": [],
+        "unavailableLabels": []
+      },
+      "visible_truth_labels_expected": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ]
+    },
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 2,
+          "monitoring_definitions": 1,
+          "network_connections": 1,
+          "racks": 1,
+          "services": 1,
+          "sites": 1
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 790,
+          "width": 1185,
+          "x": 240,
+          "y": 78
+        },
+        "document": {
+          "bodyScrollWidth": 1425,
+          "clientWidth": 1440,
+          "scrollWidth": 1425
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 900,
+          "width": 1440
+        }
+      },
+      "image": {
+        "bytes": 156302,
+        "dimensions": {
+          "height": 900,
+          "width": 1440
+        },
+        "path": "screenshots/8d71e114c395--normal-v1-populated-no-observation-authority--desktop-1440x900.png",
+        "sha256": "c67a4e32d6a0666fe5b7848cfcfcf40323304b5244ec379d4ec07677e458bccc"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-populated-no-observation-authority",
+      "source_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+      "source_tree": "72a2ef5c1275a25b4d46fbd049789b68c9087649",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [],
+        "releasedSectionText": "",
+        "truthStateLabels": [],
+        "unavailableLabels": []
+      },
+      "visible_truth_labels_expected": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ]
+    },
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 2,
+          "monitoring_definitions": 1,
+          "network_connections": 1,
+          "racks": 1,
+          "services": 1,
+          "sites": 1
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 539,
+          "width": 295,
+          "x": 80,
+          "y": 224
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "clientWidth": 390,
+          "scrollWidth": 375
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 844,
+          "width": 390
+        }
+      },
+      "image": {
+        "bytes": 68878,
+        "dimensions": {
+          "height": 844,
+          "width": 390
+        },
+        "path": "screenshots/8d71e114c395--normal-v1-populated-no-observation-authority--mobile-390x844.png",
+        "sha256": "30ec20b0d0dc3c0c2f5b5cec48ec819045662040ac109d476618b128a5e966bf"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-populated-no-observation-authority",
+      "source_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+      "source_tree": "72a2ef5c1275a25b4d46fbd049789b68c9087649",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [],
+        "releasedSectionText": "",
+        "truthStateLabels": [],
+        "unavailableLabels": []
+      },
+      "visible_truth_labels_expected": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "SEC-LVL: ALPHA-01",
+        "Stability Index",
+        "Active Incidents",
+        "Stability Pulse (24h)",
+        "Hardened",
+        "Sentinel Active",
+        "V-SCAN: 100%",
+        "Search Matrix Context"
+      ]
+    },
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 0,
+          "monitoring_definitions": 0,
+          "network_connections": 0,
+          "racks": 0,
+          "services": 0,
+          "sites": 0
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 790,
+          "width": 1185,
+          "x": 240,
+          "y": 78
+        },
+        "document": {
+          "bodyScrollWidth": 1425,
+          "clientWidth": 1440,
+          "scrollWidth": 1425
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 900,
+          "width": 1440
+        }
+      },
+      "image": {
+        "bytes": 181074,
+        "dimensions": {
+          "height": 900,
+          "width": 1440
+        },
+        "path": "screenshots/2256ce8942d2--normal-v1-empty-no-observation-authority--desktop-1440x900.png",
+        "sha256": "9108d152ce2819edecbb60cfaf7bb61de0c047741cfee99aaf5e9ee9fbdd7e29"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-empty-no-observation-authority",
+      "source_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+      "source_tree": "2a30643cdedbbd7e278d5fbfb8353d28197f3d40",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [
+          "Assets",
+          "Monitoring",
+          "Services",
+          "Network",
+          "Racks",
+          "Audit Logs",
+          "Settings / Access"
+        ],
+        "releasedSectionText": "Released entry pointsDestinations are enabled by effective server policyAssetsPersisted device inventoryMonitoringMonitoring definitions and coverageServicesPersisted logical servicesNetworkPersisted port connectionsRacksSites, rooms, and racksAudit LogsRecent recorded activitySettings / AccessConfiguration and accessPreview and unreleased modules are not Home entry points.",
+        "truthStateLabels": [
+          "Unavailable",
+          "Unavailable"
+        ],
+        "unavailableLabels": [
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unknown"
+        ]
+      },
+      "visible_truth_labels_expected": [
+        "Unavailable",
+        "Unknown",
+        "No chart is rendered from monitoring definitions."
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "Unavailable",
+        "Unavailable",
+        "Unknown",
+        "Observed health history (24h)"
+      ]
+    },
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 0,
+          "monitoring_definitions": 0,
+          "network_connections": 0,
+          "racks": 0,
+          "services": 0,
+          "sites": 0
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 539,
+          "width": 295,
+          "x": 80,
+          "y": 224
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "clientWidth": 390,
+          "scrollWidth": 375
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 844,
+          "width": 390
+        }
+      },
+      "image": {
+        "bytes": 66434,
+        "dimensions": {
+          "height": 844,
+          "width": 390
+        },
+        "path": "screenshots/2256ce8942d2--normal-v1-empty-no-observation-authority--mobile-390x844.png",
+        "sha256": "f1b0ebf3063ffcfd8e58dfebd425f3c16d19e9f35255dea6e394676883619a95"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-empty-no-observation-authority",
+      "source_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+      "source_tree": "2a30643cdedbbd7e278d5fbfb8353d28197f3d40",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [
+          "Assets",
+          "Monitoring",
+          "Services",
+          "Network",
+          "Racks",
+          "Audit Logs",
+          "Settings / Access"
+        ],
+        "releasedSectionText": "Released entry pointsDestinations are enabled by effective server policyAssetsPersisted device inventoryMonitoringMonitoring definitions and coverageServicesPersisted logical servicesNetworkPersisted port connectionsRacksSites, rooms, and racksAudit LogsRecent recorded activitySettings / AccessConfiguration and accessPreview and unreleased modules are not Home entry points.",
+        "truthStateLabels": [
+          "Unavailable",
+          "Unavailable"
+        ],
+        "unavailableLabels": [
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unknown"
+        ]
+      },
+      "visible_truth_labels_expected": [
+        "Unavailable",
+        "Unknown",
+        "No chart is rendered from monitoring definitions."
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "Unavailable",
+        "Unavailable",
+        "Unknown",
+        "Observed health history (24h)"
+      ]
+    },
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 2,
+          "monitoring_definitions": 1,
+          "network_connections": 1,
+          "racks": 1,
+          "services": 1,
+          "sites": 1
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 790,
+          "width": 1185,
+          "x": 240,
+          "y": 78
+        },
+        "document": {
+          "bodyScrollWidth": 1425,
+          "clientWidth": 1440,
+          "scrollWidth": 1425
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 900,
+          "width": 1440
+        }
+      },
+      "image": {
+        "bytes": 174991,
+        "dimensions": {
+          "height": 900,
+          "width": 1440
+        },
+        "path": "screenshots/2256ce8942d2--normal-v1-populated-no-observation-authority--desktop-1440x900.png",
+        "sha256": "fa5c772e2df7e110682db665153a1ce30e212a800e3ece3addb77ad3bb5c3020"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-populated-no-observation-authority",
+      "source_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+      "source_tree": "2a30643cdedbbd7e278d5fbfb8353d28197f3d40",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [
+          "Assets",
+          "Monitoring",
+          "Services",
+          "Network",
+          "Racks",
+          "Audit Logs",
+          "Settings / Access"
+        ],
+        "releasedSectionText": "Released entry pointsDestinations are enabled by effective server policyAssetsPersisted device inventoryMonitoringMonitoring definitions and coverageServicesPersisted logical servicesNetworkPersisted port connectionsRacksSites, rooms, and racksAudit LogsRecent recorded activitySettings / AccessConfiguration and accessPreview and unreleased modules are not Home entry points.",
+        "truthStateLabels": [
+          "Unavailable",
+          "Unavailable"
+        ],
+        "unavailableLabels": [
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unknown"
+        ]
+      },
+      "visible_truth_labels_expected": [
+        "Unavailable",
+        "Unknown",
+        "No chart is rendered from monitoring definitions."
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "Unavailable",
+        "Unavailable",
+        "Unknown",
+        "Observed health history (24h)"
+      ]
+    },
+    {
+      "browser": "Chromium",
+      "console_messages": [
+        {
+          "text": "INDEX.HTML: Body Executing",
+          "type": "log"
+        },
+        {
+          "text": "[vite] connecting...",
+          "type": "debug"
+        },
+        {
+          "text": "[vite] connected.",
+          "type": "debug"
+        },
+        {
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+          "type": "info"
+        },
+        {
+          "text": "MAIN.TSX: Initializing React Root",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Fetching system configuration...",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: System ready, launching application layer",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Configuration received {API_ENDPOINT: /api/v1, PORT: 8000, VITE_API_BASE_URL: , DEFAULT_USER_ID: haewon.kim, app_name: SYSGRID ENGINE}",
+          "type": "log"
+        },
+        {
+          "text": "BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.",
+          "type": "log"
+        },
+        {
+          "text": "\u26a0\ufe0f React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        },
+        {
+          "text": "The width(-1) and height(-1) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+          "type": "warning"
+        }
+      ],
+      "dpr": 1,
+      "failed_requests": [],
+      "failed_responses": [],
+      "fixture": {
+        "observations": "no authoritative observed health or incident source",
+        "persisted_counts": {
+          "assets": 2,
+          "monitoring_definitions": 1,
+          "network_connections": 1,
+          "racks": 1,
+          "services": 1,
+          "sites": 1
+        }
+      },
+      "geometry": {
+        "contentRect": {
+          "height": 539,
+          "width": 295,
+          "x": 80,
+          "y": 224
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "clientWidth": 390,
+          "scrollWidth": 375
+        },
+        "horizontalOverflow": false,
+        "viewport": {
+          "dpr": 1,
+          "height": 844,
+          "width": 390
+        }
+      },
+      "image": {
+        "bytes": 66410,
+        "dimensions": {
+          "height": 844,
+          "width": 390
+        },
+        "path": "screenshots/2256ce8942d2--normal-v1-populated-no-observation-authority--mobile-390x844.png",
+        "sha256": "db9151cb1bbe22948cd69b1fc54b79d3b63666c91abe95b53cfff25c046e8684"
+      },
+      "locale": "en-US",
+      "page_errors": [],
+      "profile": "normal-v1",
+      "scenario": "normal-v1-populated-no-observation-authority",
+      "source_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+      "source_tree": "2a30643cdedbbd7e278d5fbfb8353d28197f3d40",
+      "theme": "nordic-frost-v1",
+      "timezone": "America/Chicago",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      },
+      "visible_truth": {
+        "previewEntryLabelsInReleasedSection": [],
+        "previewEntryPathsVisible": false,
+        "releasedEntryLabels": [
+          "Assets",
+          "Monitoring",
+          "Services",
+          "Network",
+          "Racks",
+          "Audit Logs",
+          "Settings / Access"
+        ],
+        "releasedSectionText": "Released entry pointsDestinations are enabled by effective server policyAssetsPersisted device inventoryMonitoringMonitoring definitions and coverageServicesPersisted logical servicesNetworkPersisted port connectionsRacksSites, rooms, and racksAudit LogsRecent recorded activitySettings / AccessConfiguration and accessPreview and unreleased modules are not Home entry points.",
+        "truthStateLabels": [
+          "Unavailable",
+          "Unavailable"
+        ],
+        "unavailableLabels": [
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unavailable",
+          "Unknown"
+        ]
+      },
+      "visible_truth_labels_expected": [
+        "Unavailable",
+        "Unknown",
+        "No chart is rendered from monitoring definitions."
+      ],
+      "visible_truth_labels_observed_by_source_audit": [
+        "Unavailable",
+        "Unavailable",
+        "Unknown",
+        "Observed health history (24h)"
+      ]
+    }
+  ],
+  "change": "CHG-49",
+  "expected_unexpected_delta": {
+    "console_warnings": "React Router future-flag warnings are present in all captures; Recharts width(-1)/height(-1) warnings occur on legacy and populated Home captures and are recorded as warnings, not page/request failures",
+    "failed_requests": "none observed in all eight captures",
+    "failed_responses": "none observed in all eight captures",
+    "horizontal_overflow": "none observed at desktop or mobile for either source; baseline mobile content remains visually clipped by the legacy hero layout while candidate stacks the Home content coherently",
+    "page_errors": "none observed in all eight captures",
+    "released_entry_paths": "candidate retains Assets, Monitoring, Services, Network, Racks, Audit Logs, and Settings / Access; preview entry paths absent from the Home released-entry section",
+    "truth_projection": "baseline synthetic health/security/incident labels replaced by candidate unavailable/unknown states with persisted configuration counts retained"
+  },
+  "operation": "VERIFY",
+  "profile": "normal-v1",
+  "schema_version": "chg49-visual-evidence-v2",
+  "visual_acceptance": "not self-certified; Project OS audit owns pixel acceptance",
+  "visual_manifest_sha256": "e3ea210b64c580860ba16d7961c2dfb6f0779bacdf53e1e9c250ad0964e041c3"
+}
