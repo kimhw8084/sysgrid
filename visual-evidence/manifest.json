@@ -1,0 +1,162 @@
+{
+  "schema": "sysgrid.chg160.visual-evidence-manifest.v1",
+  "project": "sysgrid",
+  "change": "CHG-160",
+  "operation": "FIX",
+  "request": "sysgrid-smv1-settings-privilege-authority-rebase-fix-v4",
+  "artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4",
+  "baseline": {
+    "sha": "e604d4790dd06e0ace5547ab3169789ca8577c0c",
+    "tree": "e43f4a18fc6b992bc41065913c2fea153ed5a7a1"
+  },
+  "candidate": {
+    "sha": "da5bb3a7f8563cbd242034f83b83f05de6a15053",
+    "tree": "72a2ef5c1275a25b4d46fbd049789b68c9087649"
+  },
+  "capture_policy": {
+    "browser": "Chromium",
+    "dpr": 1,
+    "locale": "en-US",
+    "theme": "nordic-frost-v1",
+    "timezone": "America/Chicago",
+    "fixture": "deterministic route-controlled fixture",
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      {
+        "label": "mobile",
+        "width": 390,
+        "height": 844
+      }
+    ]
+  },
+  "fixture_identity": {
+    "tenant_id": 1,
+    "tenant_name": "Visual Fixture Tenant",
+    "domain_rows": 0,
+    "scenario_count": 2,
+    "identities": [
+      "tenant-admin",
+      "haewon.kim"
+    ],
+    "api_source": "deterministic route-controlled fixture"
+  },
+  "scenarios": [
+    {
+      "scenario_id": "tenant-admin-no-diagnostics-no-control-plane",
+      "identity": {
+        "id": "tenant-admin-no-diagnostics-no-control-plane",
+        "userId": "tenant-admin",
+        "tenantAdmin": true,
+        "settingsManage": true,
+        "diagnosticsRead": false,
+        "controlPlaneAdmin": false,
+        "profileIsAdmin": true
+      },
+      "expected_delta": [
+        "Candidate hides System Diagnostics when diagnostics.read=false.",
+        "Candidate hides Tenants when control_plane_admin=false.",
+        "Authorized Settings tabs, Parameters, Standards, and personal theme controls remain available.",
+        "Unauthorized direct diagnostics and tenants deeplinks normalize to Parameters without forbidden privileged requests."
+      ],
+      "unexpected_delta": [],
+      "candidate_privileged_request_fail_closed": true,
+      "visual_pixel_review_required": true
+    },
+    {
+      "scenario_id": "control-plane-admin-with-diagnostics",
+      "identity": {
+        "id": "control-plane-admin-with-diagnostics",
+        "userId": "haewon.kim",
+        "tenantAdmin": true,
+        "settingsManage": true,
+        "diagnosticsRead": true,
+        "controlPlaneAdmin": true,
+        "profileIsAdmin": true
+      },
+      "expected_delta": [
+        "Exact configured control-plane identity with diagnostics.read retains Diagnostics and Tenants.",
+        "Authorized Settings tabs remain contained without candidate-only document overflow.",
+        "Personal theme controls remain available."
+      ],
+      "unexpected_delta": [],
+      "candidate_privileged_request_fail_closed": false,
+      "visual_pixel_review_required": true
+    }
+  ],
+  "native_evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4",
+  "artifacts": [
+    {
+      "path": "visual-evidence/comparison-report.json",
+      "bytes": 30677,
+      "sha256": "717e0337cf218038067749008f82a6748537a559d1310ec3e2ca46614ee1ea97"
+    },
+    {
+      "path": "visual-evidence/reader-index.json",
+      "bytes": 9172,
+      "sha256": "7a131b1e561df76dd724c08f4700f3eac1233e1f8ae4b44170b1a8497ef5e990"
+    },
+    {
+      "path": "visual-evidence/review-desktop.pdf",
+      "bytes": 454509,
+      "sha256": "db7a10eb47ca2cca04f583d0d0970af7a27da6bf41137e7262d82c1bb36195fd"
+    },
+    {
+      "path": "visual-evidence/review-mobile.pdf",
+      "bytes": 221098,
+      "sha256": "9752614783ab2c81c36c30ed0a013bc08ef420b80ccee015b843553cff3fb3f8"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--desktop-1440x900.png",
+      "bytes": 103670,
+      "sha256": "38ae10e9e65d750d8ccd20e5b9220c28547329b33e73fbd098329c63ca3fb26e"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--baseline--mobile-390x844.png",
+      "bytes": 53739,
+      "sha256": "166dd35e13436afaedde43c0b89def69da4d96cad5e9057deec5a12934821d8d"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--desktop-1440x900.png",
+      "bytes": 110706,
+      "sha256": "08e17420aec54ce0eb9eeb466253f65cd0be53ff6f5bf438a8ae93a31335f0ff"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--control-plane-admin-with-diagnostics--candidate--mobile-390x844.png",
+      "bytes": 53259,
+      "sha256": "765936ac4677691e55bfa8670ccaee80c1db2e4b751dc69ca95a8f038699b350"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--desktop-1440x900.png",
+      "bytes": 103466,
+      "sha256": "33226a7456dee6773eded815f81e858d2d969d4545ba5a471588ecb3d8623467"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--baseline--mobile-390x844.png",
+      "bytes": 53172,
+      "sha256": "33fc3a4f47201d0a22f95389be935468e6ea1b875fec804cbc04a8476f5d9a77"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--desktop-1440x900.png",
+      "bytes": 109251,
+      "sha256": "082888db1bb90fcd8227053c18edacdba06fc2570f12d139bba4f58b132b7d2a"
+    },
+    {
+      "path": "visual-evidence/screenshots/settings-privilege--tenant-admin-no-diagnostics-no-control-plane--candidate--mobile-390x844.png",
+      "bytes": 52758,
+      "sha256": "59b02aa50e66437a51e4ecb9ae64d3e5191f0b10bf01623119ae557ba811d26b"
+    },
+    {
+      "path": "visual-evidence/artifact-bundle.zip",
+      "bytes": 1156647,
+      "sha256": "5c723967b1677216512bfe26fe2d64ef3ee3f28e5f3a31f694aeeb48f4bf5775"
+    }
+  ],
+  "screenshot_count": 8,
+  "independent_pixel_review_required": true,
+  "self_certifies_visual_go": false,
+  "visual_go": null
+}
