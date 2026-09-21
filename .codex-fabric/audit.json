@@ -1,0 +1,442 @@
+{
+  "accepted_at": "2026-09-21T02:38:19Z",
+  "changed_files": [
+    {
+      "additions": 23,
+      "deletions": 12,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 22,
+      "deletions": 1,
+      "path": "backend/app/api/module_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 26,
+      "deletions": 1,
+      "path": "backend/test_chg13_authorization_security.py",
+      "status": "M"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 0,
+      "deletions": 12,
+      "path": "frontend/src/components/RacksTruthAndTypedLinks.contract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 92,
+      "deletions": 40,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 68,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.ts",
+      "status": "A"
+    },
+    {
+      "additions": 0,
+      "deletions": 12,
+      "path": "frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 11,
+      "path": "frontend/tests/settings-and-audit.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 165,
+      "deletions": 0,
+      "path": "frontend/tests/settings-privilege.spec.ts",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk run 'npm run dev -- --host 127.0.0.1 --port 4173'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk node --version'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy npm run dev -- --host 127.0.0.1 --port 4173'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy node ./node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/sh -c 'nohup node ./node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173 >/tmp/sysgrid-vite-candidate.log 2>&1 & echo \"'$!'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /tmp/sysgrid-vite-candidate.log && rtk curl -s http://127.0.0.1:4173/settings | head -5'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'node ./node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc 'ls -l /opt/homebrew/opt/simdutf/lib 2>/dev/null || true; find /opt/homebrew/Cellar/simdutf -maxdepth 3 -type f -name \\\"libsimdutf*\\\" -print 2>/dev/null | head -20; ls -l /opt/homebrew/Cellar/merve/1.2.2_1/lib 2>/dev/null || true'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc '\nset -eu\nmkdir -p /tmp/sysgrid-merve-libs\nln -sf /opt/homebrew/Cellar/simdutf/9.0.0/lib/libsimdutf.34.0.0.dylib /tmp/sysgrid-merve-libs/libsimdutf.34.dylib\nprintf \\\"DYLD_LIBRARY_PATH=%s\\\\\\\\n\\\" /tmp/sysgrid-merve-libs\nDYLD_LIBRARY_PATH=/tmp/sysgrid-merve-libs /opt/homebrew/Cellar/merve/1.2.2_1/bin/merve --version 2>&1 || true\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc 'DYLD_LIBRARY_PATH=/tmp/sysgrid-merve-libs rtk git status --short --branch'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'DYLD_LIBRARY_PATH=/tmp/sysgrid-merve-libs rtk proxy npm run dev -- --host 127.0.0.1 --port 4173'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env BASELINE_FRONTEND=/tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend VISUAL_EVIDENCE_DIR=/tmp/sysgrid-chg160-visual-evidence BASELINE_SHA=e604d4790dd06e0ace5547ab3169789ca8577c0c BASELINE_TREE=e43f4a18fc6b992bc41065913c2fea153ed5a7a1 CANDIDATE_SHA=da5bb3a7f8563cbd242034f83b83f05de6a15053 CANDIDATE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 rtk npx playwright test --config=playwright.visual-evidence.config.ts'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -80 \"$HOME/Library/Application Support/rtk/tee/1789959435_playwright.log\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ln -sf /Users/haewonkim/.codex-fabric/worktrees/CF-fd8e24c3598de37d9801970c/frontend/tests/settings-privilege-visual-evidence.spec.ts /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts && rtk ls -l /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env CAPTURE_REVISION=candidate VISUAL_EVIDENCE_DIR=/tmp/sysgrid-chg160-visual-evidence/candidate BASELINE_SHA=e604d4790dd06e0ace5547ab3169789ca8577c0c BASELINE_TREE=e43f4a18fc6b992bc41065913c2fea153ed5a7a1 CANDIDATE_SHA=da5bb3a7f8563cbd242034f83b83f05de6a15053 CANDIDATE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env CAPTURE_REVISION=baseline VISUAL_EVIDENCE_DIR=/tmp/sysgrid-chg160-visual-evidence/baseline BASELINE_SHA=e604d4790dd06e0ace5547ab3169789ca8577c0c BASELINE_TREE=e43f4a18fc6b992bc41065913c2fea153ed5a7a1 CANDIDATE_SHA=da5bb3a7f8563cbd242034f83b83f05de6a15053 CANDIDATE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cp /Users/haewonkim/.codex-fabric/worktrees/CF-fd8e24c3598de37d9801970c/frontend/tests/settings-privilege-visual-evidence.spec.ts /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts && rtk wc -c /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy unlink /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts && rtk proxy cp /Users/haewonkim/.codex-fabric/worktrees/CF-fd8e24c3598de37d9801970c/frontend/tests/settings-privilege-visual-evidence.spec.ts /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts && rtk wc -c /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env CAPTURE_REVISION=baseline VISUAL_EVIDENCE_DIR=/tmp/sysgrid-chg160-visual-evidence/baseline BASELINE_SHA=e604d4790dd06e0ace5547ab3169789ca8577c0c BASELINE_TREE=e43f4a18fc6b992bc41065913c2fea153ed5a7a1 CANDIDATE_SHA=da5bb3a7f8563cbd242034f83b83f05de6a15053 CANDIDATE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const fs=require('fs'); for(const rev of ['baseline','candidate']){const p='/tmp/sysgrid-chg160-visual-evidence/'+rev+'/capture-report-'+rev+'.json';const j=JSON.parse(fs.readFileSync(p));console.log(rev,j.captures.map(c=>({s:c.scenario_id,v:c.capture_policy.viewport.label,sha:c.image.sha256,bytes:c.image.bytes,dims:[c.image.width,c.image.height],tabs:c.tab_visibility,overflow:c.page_body_overflow.pageHorizontalOverflow,forbidden:c.direct_privileged_tab_proof.flatMap(x=>x.forbiddenRequests)})));}\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const fs=require('fs'); for(const rev of ['baseline','candidate']){const j=JSON.parse(fs.readFileSync('/tmp/sysgrid-chg160-visual-evidence/'+rev+'/capture-report-'+rev+'.json')); console.log(rev); for(const c of j.captures) console.log(c.scenario_id,c.capture_policy.viewport.label,'console',c.console_page_request_errors.consoleErrors.length,'page',c.console_page_request_errors.pageErrors.length,'failed',c.console_page_request_errors.requestFailures.length,'responses',c.console_page_request_errors.failedResponses.length,'tabbox',JSON.stringify(c.tab_strip_box),'mainbox',JSON.stringify(c.main_content_box),'overflow',JSON.stringify(c.page_body_overflow),'direct',JSON.stringify(c.direct_privileged_tab_proof),'theme',JSON.stringify(c.personal_theme_controls_visible));}\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1560,1610p' frontend/src/components/Settings.tsx && rtk rg -n \\\"Personal Preferences|themeOptions|aria-label|Light|Dark\\\" frontend/src/components/Settings.tsx | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"TopTab|topTab|overflow-x|tab.*strip|Tabs\\\" frontend/src/components/Settings.tsx | head -100 && rtk sed -n '360,520p' frontend/src/components/Settings.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,80p' frontend/src/components/Settings.tsx && rtk rg -n \\\"function .*Tab|const .*Tab|TabStrip|TopTabs|ViewSwitcher|Workspace.*Tab\\\" frontend/src/components frontend/src/components/shared | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '640,735p' frontend/src/components/shared/OperationalWorkspacePrimitives.tsx && rtk rg -n \\\"function ToolbarSegmented|const ToolbarSegmented|export.*ToolbarSegmented\\\" frontend/src/components/shared/LayoutPrimitives.tsx && rtk sed -n '420,500p' frontend/src/components/shared/LayoutPrimitives.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '190,260p' frontend/src/components/shared/LayoutPrimitives.tsx && rtk sed -n '1710,1760p' frontend/src/components/Settings.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cp /Users/haewonkim/.codex-fabric/worktrees/CF-fd8e24c3598de37d9801970c/frontend/tests/settings-privilege-visual-evidence.spec.ts /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe/frontend/tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env CAPTURE_REVISION=candidate VISUAL_EVIDENCE_DIR=/tmp/sysgrid-chg160-visual-evidence/candidate BASELINE_SHA=e604d4790dd06e0ace5547ab3169789ca8577c0c BASELINE_TREE=e43f4a18fc6b992bc41065913c2fea153ed5a7a1 CANDIDATE_SHA=da5bb3a7f8563cbd242034f83b83f05de6a15053 CANDIDATE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env CAPTURE_REVISION=baseline VISUAL_EVIDENCE_DIR=/tmp/sysgrid-chg160-visual-evidence/baseline BASELINE_SHA=e604d4790dd06e0ace5547ab3169789ca8577c0c BASELINE_TREE=e43f4a18fc6b992bc41065913c2fea153ed5a7a1 CANDIDATE_SHA=da5bb3a7f8563cbd242034f83b83f05de6a15053 CANDIDATE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege-visual-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const fs=require('fs'); for(const rev of ['baseline','candidate']){const j=JSON.parse(fs.readFileSync('/tmp/sysgrid-chg160-visual-evidence/'+rev+'/capture-report-'+rev+'.json')); console.log(rev); for(const c of j.captures) console.log(c.scenario_id,c.capture_policy.viewport.label,'sha',c.image.sha256,'bytes',c.image.bytes,'tabbox',JSON.stringify(c.tab_strip_box),'overflow',c.page_body_overflow.pageHorizontalOverflow,'theme',JSON.stringify(c.personal_theme_controls_visible),'direct',JSON.stringify(c.direct_privileged_tab_proof));}\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python /opt/anaconda3/bin/python -c 'import reportlab; print(reportlab.Version)'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const fs=require('fs'); for(const rev of ['baseline','candidate']){const j=JSON.parse(fs.readFileSync('/tmp/sysgrid-chg160-visual-evidence/'+rev+'/capture-report-'+rev+'.json')); console.log(rev); for(const c of j.captures){console.log(c.scenario_id,c.capture_policy.viewport.label,JSON.stringify(c.console_page_request_errors));}}\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python /opt/anaconda3/bin/python scripts/build_chg160_visual_evidence.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc '\nset -eu\nartifact=/tmp/sysgrid-chg160-visual-evidence/artifact/visual-evidence\nfind \\\"\"'$artifact\" -type f -maxdepth 2 -print | sort\nprintf \"--- bytes/hashes ---'\"\\\\\\\\n\\\"\nfor file in \\\"\"'$artifact\"/manifest.json \"$artifact\"/comparison-report.json \"$artifact\"/reader-index.json \"$artifact\"/review-desktop.pdf \"$artifact\"/review-mobile.pdf \"$artifact\"/artifact-bundle.zip \"$artifact\"/screenshots/*.png; do\n  printf \"%s %s %s'\"\\\\\\\\n\\\" \\\"\"'$(basename \"$file\")\" \"$(wc -c < \"$file\" | tr -d \" \")\" \"$(shasum -a 256 \"$file\" | cut -d \" \" -f1)\"\ndone\nprintf \"--- zip listing ---'\"\\\\\\\\n\\\"\nunzip -Z1 \\\"\"'$artifact/artifact-bundle.zip\" | sort\n'\"'\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc '\nset -eu\nartifact=/tmp/sysgrid-chg160-visual-evidence/artifact/visual-evidence\nprintf \\\"%s\\\\\\\\n\\\" \\\"bytes/hashes\\\"\nfor file in \\\"\"'$artifact\"/manifest.json \"$artifact\"/comparison-report.json \"$artifact\"/reader-index.json \"$artifact\"/review-desktop.pdf \"$artifact\"/review-mobile.pdf \"$artifact\"/artifact-bundle.zip \"$artifact\"/screenshots/*.png; do\n  printf \"%s %s %s'\"\\\\\\\\n\\\" \\\"\"'$(basename \"$file\")\" \"$(wc -c < \"$file\" | tr -d \" \")\" \"$(shasum -a 256 \"$file\" | cut -d \" \" -f1)\"\ndone\nprintf \"%s'\"\\\\\\\\n\\\" \\\"zip listing\\\"\nunzip -Z1 \\\"\"'$artifact/artifact-bundle.zip\" | sort\n'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const fs=require('fs'),crypto=require('crypto'),path=require('path');const d='/tmp/sysgrid-chg160-visual-evidence/artifact/visual-evidence';const m=JSON.parse(fs.readFileSync(path.join(d,'manifest.json')));for(const a of m.artifacts){const f=path.join('/tmp/sysgrid-chg160-visual-evidence/artifact',a.path);const b=fs.readFileSync(f);const h=crypto.createHash('sha256').update(b).digest('hex');if(h\"'!==a.sha256||b.length!==a.bytes)throw Error(a.path);};console.log('\"'manifest-artifacts-verified',m.artifacts.length,m.screenshot_count);const c=JSON.parse(fs.readFileSync(path.join(d,'comparison-report.json'));const bad=c.captures.filter(x=>x.image.width\"'!==(x.capture_policy.viewport.width)||x.image.height!==x.capture_policy.viewport.height);console.log('\"'comparison-captures',c.captures.length,'dimension-mismatches',bad.length);\\\"\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const fs=require('fs'),crypto=require('crypto'),path=require('path');const d='/tmp/sysgrid-chg160-visual-evidence/artifact/visual-evidence';const m=JSON.parse(fs.readFileSync(path.join(d,'manifest.json')));for(const a of m.artifacts){const f=path.join('/tmp/sysgrid-chg160-visual-evidence/artifact',a.path);const b=fs.readFileSync(f);const h=crypto.createHash('sha256').update(b).digest('hex');if(h\"'!==a.sha256||b.length!==a.bytes)throw Error(a.path)};console.log('\"'manifest-artifacts-verified',m.artifacts.length,m.screenshot_count);const c=JSON.parse(fs.readFileSync(path.join(d,'comparison-report.json')));const bad=c.captures.filter(x=>x.image.width\"'!==x.capture_policy.viewport.width||x.image.height!==x.capture_policy.viewport.height);console.log('\"'comparison-captures',c.captures.length,'dimension-mismatches',bad.length);\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 refs/heads/codex/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc '\nset -eu\nartifact_repo=\"'$(mktemp -d /tmp/sysgrid-chg160-artifact-repo.XXXXXX)\ncp -R /tmp/sysgrid-chg160-visual-evidence/artifact/visual-evidence \"$artifact_repo/\"\ngit -C \"$artifact_repo\" init -q\ngit -C \"$artifact_repo\" config user.name \"Haewon Kim\"\ngit -C \"$artifact_repo\" config user.email \"kimhw8084@gmail.com\"\ngit -C \"$artifact_repo\" add visual-evidence\ngit -C \"$artifact_repo\" commit -q -m \"artifacts: CHG-160 settings privilege authority rebase fix v4\"\nremote=$(git -C /Users/haewonkim/.codex-fabric/worktrees/CF-fd8e24c3598de37d9801970c remote get-url origin)\ngit -C \"$artifact_repo\" remote add origin \"$remote\"\ncommit=$(git -C \"$artifact_repo\" rev-parse HEAD)\ntree=$(git -C \"$artifact_repo\" rev-parse HEAD''^{tree})\nprintf \"artifact_repo=%s'\"\\\\\\\\nartifact_commit=%s\\\\\\\\nartifact_tree=%s\\\\\\\\n\\\" \\\"\"'$artifact_repo\" \"$commit\" \"$tree\"\ngit -C \"$artifact_repo\" push origin \"HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4\"\n'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push --set-upstream origin HEAD:codex/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -la .codex-fabric 2>/dev/null || true && rtk rg -n --hidden --glob '\"'!.git/**'\"' --glob '\"'!frontend/node_modules/**'\"' \\\"codex-fabric|audit.json|CF-\\\" . | head -240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find /Users/haewonkim/.codex-fabric -maxdepth 3 -type f -name '*fabric*' -o -name 'audit.json' -o -name '*evidence*' | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy find /Users/haewonkim/.codex-fabric -maxdepth 4 \\\\( -name audit.json -o -iname '*fabric*' -o -iname '*evidence*' \\\\) -print | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /Users/haewonkim/.codex-fabric/bin/fabricctl --help && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl evidence --help 2>/dev/null || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"publish-evidence|publish-pending-evidence|record|job\\\" /Users/haewonkim/.codex-fabric/releases/1.2.3-resume-candidate/fabric.py | head -120 && rtk sed -n '1,220p' /Users/haewonkim/.codex-fabric/releases/1.2.3-resume-candidate/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -1 /Users/haewonkim/.codex-fabric/jobs | tail -40 && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-db31258a0a551b0216cbc4b1 2>/dev/null || true && rtk cat /Users/haewonkim/.codex-fabric/audit.json | tail -80'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' /Users/haewonkim/.codex-fabric/jobs/CF-fd8e24c3598de37d9801970c.running/job.json && printf '%s\\\\n' '--- prompt head ---' && rtk sed -n '1,180p' /Users/haewonkim/.codex-fabric/jobs/CF-fd8e24c3598de37d9801970c.running/prompt.md 2>/dev/null || true && printf '%s\\\\n' '--- result files ---' && rtk find /Users/haewonkim/.codex-fabric/results/CF-fd8e24c3598de37d9801970c -maxdepth 2 -type f -print 2>/dev/null | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove --force /tmp/sysgrid-chg160-visual-baseline.Jj5Kqe && rtk git status --short --branch && rtk git worktree list --porcelain | head -60 && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 && rtk /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-fd8e24c3598de37d9801970c 2>/dev/null || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git fetch --no-tags origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 && rtk git rev-parse FETCH_HEAD && rtk git cat-file -p FETCH_HEAD | head -3 && rtk git show FETCH_HEAD:visual-evidence/manifest.json | rtk rg -n 'candidate|artifact_ref|screenshot_count|visual_go|native_evidence_ref' | head -30 && rtk proxy bash -lc '\nset -eu\nref=FETCH_HEAD\nartifact=/tmp/sysgrid-chg160-visual-evidence/artifact/visual-evidence\nfor path in visual-evidence/manifest.json visual-evidence/comparison-report.json visual-evidence/reader-index.json visual-evidence/review-desktop.pdf visual-evidence/review-mobile.pdf visual-evidence/artifact-bundle.zip; do\n  local=\\\"\"'$artifact/${path#visual-evidence/}\"\n  remote_hash=$(git show \"$ref:$path\" | shasum -a 256 | awk \"{print '\"\\\\\"'$1}\")\n  local_hash=$(shasum -a 256 \"$local\" | awk \"{print '\"\\\\\"'$1}\")\n  test \"$remote_hash\" = \"$local_hash\"\n  remote_size=$(git cat-file -s \"$ref:$path\")\n  local_size=$(wc -c < \"$local\" | tr -d \" \")\n  test \"$remote_size\" = \"$local_size\"\n  printf \"%s %s %s'\"\\\\\\\\n\\\" \\\"\"'$path\" \"$remote_size\" \"$remote_hash\"\ndone\nfor path in $(git ls-tree -r --name-only \"$ref\" visual-evidence/screenshots); do\n  local=\"$artifact/${path#visual-evidence/}\"\n  remote_hash=$(git show \"$ref:$path\" | shasum -a 256 | awk \"{print '\"\\\\\"'$1}\")\n  local_hash=$(shasum -a 256 \"$local\" | awk \"{print '\"\\\\\"'$1}\")\n  test \"$remote_hash\" = \"$local_hash\"\n  printf \"%s %s'\"\\\\\\\\n\\\" \\\"\"'$path\" \"$remote_hash\"\ndone\n'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc '\nset -eu\nbase=e604d4790dd06e0ace5547ab3169789ca8577c0c\ncandidate=da5bb3a7f8563cbd242034f83b83f05de6a15053\naccepted=b43fa9041cb365bb98740036178655adc4491e2c\n[ \\\"\"'$(git rev-parse HEAD)\" = \"$candidate\" ]\n[ \"$(git rev-parse HEAD''^)\" = \"$base\" ]\n[ \"$(git rev-parse HEAD''^{tree})\" = \"72a2ef5c1275a25b4d46fbd049789b68c9087649\" ]\n[ \"$(git ls-remote origin refs/heads/main | cut -f1)\" = \"$base\" ]\n[ \"$(git ls-remote origin refs/heads/codex/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 | cut -f1)\" = \"$candidate\" ]\ngit diff --check HEAD''^ HEAD\nfor file in backend/app/api/authorization.py backend/app/api/module_policy.py backend/test_chg13_authorization_security.py backend/test_system_management_v1_policy.py frontend/src/components/Settings.tsx frontend/src/policy/ModulePolicy.tsx frontend/tests/settings-and-audit.spec.ts frontend/src/components/settings/settingsPrivilegePolicy.test.ts frontend/src/components/settings/settingsPrivilegePolicy.ts frontend/tests/settings-privilege.spec.ts; do\n  [ \"$(git rev-parse \"$accepted:$file\")\" = \"$(git rev-parse \"$candidate:$file\")\" ]\ndone\nfor file in frontend/src/components/Racks.tsx frontend/src/components/shared/OperationalObjectReference.ts frontend/src/components/shared/OperationalObjectReference.test.ts frontend/tests/racks-workflows.spec.ts frontend/tests/audit-logs-workflows.spec.ts contracts/system_management_v1.json; do\n  [ \"$(git rev-parse \"$base:$file\")\" = \"$(git rev-parse \"$candidate:$file\")\" ]\ndone\nprintf \"%s'\"\\\\\\\\n\\\" \\\"final identity/equivalence/protected-scope checks passed\\\"\nprintf \\\"%s\\\\\\\\n\\\" \\\"changed files\\\"\ngit diff-tree --no-commit-id --name-status -r HEAD\nprintf \\\"%s\\\\\\\\n\\\" \\\"history assertions in committed contracts\\\"\nif rg -n \\\"execFileSync|git.*diff|outside this bounded change|outside the candidate diff|keeps Racks|keeps Settings\\\" <(git show \\\"\"'$candidate:frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts\") <(git show \"$candidate:frontend/src/components/RacksTruthAndTypedLinks.contract.test.ts\"); then exit 1; else printf \"%s'\"\\\\\\\\n\\\" \\\"none\\\"; fi\nprintf \\\"%s\\\\\\\\n\\\" \\\"forbidden terminal-side AI/agent strings in committed source diff\\\"\nif git show --format= --no-ext-diff --no-color \\\"\"'$candidate\" | rg -n -i \"(codex|opencode|chatgpt|openai|llm|autonomous agent|model cli|generate.*patch)\"; then exit 1; else printf \"%s'\"\\\\\\\\n\\\" \\\"none\\\"; fi\n[ -z \\\"\"'$(git status --porcelain=v1)\" ]\nprintf \"%s'\"\\\\\\\\n\\\" \\\"worktree clean\\\"\n'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 235,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.31,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 20128512,
+      "fresh_input_tokens": 345435,
+      "input_tokens": 20473947,
+      "non_reasoning_output_tokens": 36477,
+      "output_tokens": 62500,
+      "reasoning_output_tokens": 26023,
+      "total_processed_tokens": 20536447
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "da5bb3a7f8563cbd242034f83b83f05de6a15053",
+      "subject": "fix: rebase settings privilege authority onto integrated main"
+    }
+  ],
+  "diff": {
+    "additions": 542,
+    "changed_files": 12,
+    "commit_count": 1,
+    "deletions": 89
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-21T03:09:02Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "e604d4790dd06e0ace5547ab3169789ca8577c0c",
+    "branch": "codex/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4",
+    "detached_verify": false,
+    "head_sha": "da5bb3a7f8563cbd242034f83b83f05de6a15053",
+    "remote_exact_head": true,
+    "remote_head_sha": "da5bb3a7f8563cbd242034f83b83f05de6a15053",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "e604d4790dd06e0ace5547ab3169789ca8577c0c",
+    "work_branch": "codex/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-fd8e24c3598de37d9801970c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-settings-privilege-authority-rebase-fix-v4",
+  "schema_version": 1,
+  "started_at": "2026-09-21T02:38:19Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1843,
+    "queue_seconds": 0,
+    "total_seconds": 1843
+  },
+  "transport": {
+    "bytes": 14464,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 14100,
+    "prompt_sha256": "3f987450008a767526bf3d0abfcf27a6a2ecaa06bb1109be02b4ee4e185e2388",
+    "sha256": "fd8e24c3598de37d9801970c370cfac680e6ab7f8a62374d6c22419404e35958"
+  }
+}
