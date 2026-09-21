@@ -1,0 +1,398 @@
+{
+  "accepted_at": "2026-09-21T19:54:17Z",
+  "changed_files": [
+    {
+      "additions": 699,
+      "deletions": 283,
+      "path": "backend/app/api/dashboard.py",
+      "status": "M"
+    },
+    {
+      "additions": 63,
+      "deletions": 9,
+      "path": "backend/test_dashboard_metrics.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 31,
+      "deletions": 0,
+      "path": "frontend/src/components/Dashboard.truth.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 440,
+      "deletions": 504,
+      "path": "frontend/src/components/Dashboard.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 6,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 83,
+      "deletions": 0,
+      "path": "frontend/tests/home-truth.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tests/pom/DashboardView.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/tests/release-policy-normal.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 26,
+      "deletions": 6,
+      "path": "frontend/tests/release-policy-root-preview.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 6,
+      "path": "frontend/tests/shell-and-search.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && sed -n '1,260p' /Users/haewonkim/.codex/law.md && printf '\\\\n--- repo files ---\\\\n' && rg --files -g 'AGENTS.md' -g '.codex-fabric/**' -g 'scripts/**' -g 'package.json' -g 'frontend/package.json' -g 'pyproject.toml' -g 'backend/test_dashboard_metrics.py' -g 'backend/test_system_management_v1_policy.py' -g 'playwright*.config.ts' | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD HEAD''^ HEAD''^{tree} && rtk git rev-parse refs/remotes/origin/main 2>/dev/null || true && rtk git show-ref --heads --dereference | rg '\"'main|sysgrid-smv1-home-observability-truth-qualification-v3|project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2|codex-fabric/evidence' || true && printf '\\\\n--- AGENTS ---\\\\n' && sed -n '1,280p' AGENTS.md && printf '\\\\n--- codex-fabric inventory ---\\\\n' && rtk find .codex-fabric -maxdepth 3 -type f -print 2>/dev/null | sort | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git cat-file -t 2256ce8942d20f245021613d76f02e1035cc5f9d && rtk git rev-parse 2256ce8942d20f245021613d76f02e1035cc5f9d''^ 2256ce8942d20f245021613d76f02e1035cc5f9d''^{tree} && rtk git log -1 --format='\"'%H%n%P%n%T%n%s' 2256ce8942d20f245021613d76f02e1035cc5f9d && rtk git remote -v && rtk git branch -a --contains 2256ce8942d20f245021613d76f02e1035cc5f9d || true && rtk git ls-remote origin 'refs/heads/main' 'refs/heads/codex/sysgrid-smv1-home-observability-truth-qualification-v3' 'refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2' 'refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-qualification-v3'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git merge --ff-only 2256ce8942d20f245021613d76f02e1035cc5f9d && rtk git status --short --branch && rtk git rev-parse HEAD HEAD''^ HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if test -d frontend/node_modules; then echo 'frontend/node_modules: present'; else echo 'frontend/node_modules: absent'; fi && rtk git diff --check 8d71e114c395bd964f78f9d86dd438984aac1dd9..2256ce8942d20f245021613d76f02e1035cc5f9d\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python /opt/anaconda3/bin/python -m pytest -q backend/test_dashboard_metrics.py backend/test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 67,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 600,
+        "output_sha256": "4968be2fecdc963775c6c5e842b3813f7860d30e4395287fd75546a7480ee180",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- src/components/Dashboard.truth.test.ts src/policy/ModulePolicy.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/home-truth.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/release-policy-normal.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/shell-and-search.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PROFILE=root-preview SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=admin_root SYSGRID_VERIFY_USER_ID=admin_root SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.root-preview.config.ts tests/release-policy-root-preview.spec.ts tests/shell-and-search.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/monitoring-workflows.spec.ts tests/network-workflows.spec.ts tests/racks-workflows.spec.ts tests/audit-logs-workflows.spec.ts tests/settings-and-audit.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- candidate-owned paths ---' && rtk git diff --name-only 8d71e114c395bd964f78f9d86dd438984aac1dd9..2256ce8942d20f245021613d76f02e1035cc5f9d && printf '%s\\\\n' '--- CHG history matches ---' && rtk git log --all --format='%H%x09%s' --grep='CHG-155\\\\|CHG-158\\\\|CHG-160' -i -n 40 && printf '%s\\\\n' '--- current worktree delta ---' && rtk git status --short && printf '%s\\\\n' '--- current diff hash ---' && rtk git diff --no-ext-diff --binary | shasum -a 256\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for ref in efab9d64694003dc7cf6a5ee5d63c94b771665b3 e41bc5dca41fc9fca570418201785c45ef323470 f38f07e9db1ddba7acc8bcca272f25a2e060c78c 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa; do echo \"--- $ref ---\"; rtk git show --stat --oneline --decorate --no-renames \"$ref\"; rtk git ls-tree -r --name-only \"$ref\"; done'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for ref in 8eb1d85a4c7a2c874e329ae8274bbc3d16f587fa f38f07e9db1ddba7acc8bcca272f25a2e060c78c efab9d64694003dc7cf6a5ee5d63c94b771665b3; do echo \"--- $ref manifest ---\"; rtk git show \"$ref:visual-evidence/manifest.json\" | rg -n '\"'candidate|baseline|source|scope|path|sha|tree|commit|branch|changed|file|route'; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"echo 'candidate 2256..base'; rtk git diff --name-only 8d71e114c395bd964f78f9d86dd438984aac1dd9..2256ce8942d20f245021613d76f02e1035cc5f9d | sort; echo 'CHG-155 source candidate f930'; rtk git diff --name-only 39a0ee2d7b5a08004795d8207212e5347166cfac..f930a5162e674f7faee9d46b0d7cf2ff94f765bd | sort; echo 'CHG-158 source candidate 1e191'; rtk git diff --name-only d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac..1e191468ba16d9d59c5eab75c823ce4237f12d80 | sort; echo 'CHG-160 source candidate da5bb'; rtk git diff --name-only e604d4790dd06e0ace5547ab3169789ca8577c0c..da5bb3a7f8563cbd242034f83b83f05de6a15053 | sort; echo 'verify delta'; rtk git diff --name-only 2256ce8942d20f245021613d76f02e1035cc5f9d; rtk git diff --cached --name-only; rtk git status --porcelain=v1 --untracked-files=all\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk zsh -c '\nset -e\nexact_base=8d71e114c395bd964f78f9d86dd438984aac1dd9\nexact_candidate=2256ce8942d20f245021613d76f02e1035cc5f9d\ncandidate_paths=( \"'$(rtk git diff --name-only \"$exact_base..$exact_candidate\") )\nfor spec in \"CHG-155|39a0ee2d7b5a08004795d8207212e5347166cfac|f930a5162e674f7faee9d46b0d7cf2ff94f765bd\" \"CHG-158|d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac|1e191468ba16d9d59c5eab75c823ce4237f12d80\" \"CHG-160|e604d4790dd06e0ace5547ab3169789ca8577c0c|da5bb3a7f8563cbd242034f83b83f05de6a15053\"; do\n  IFS=\"|\" read label protected_base protected_candidate <<< \"$spec\"\n  protected_paths=( $(rtk git diff --name-only \"$protected_base..$protected_candidate\") )\n  intersection=()\n  for path in \"${candidate_paths[@]}\"; do\n    if (( ${protected_paths[(Ie)$path]} > 0 )); then intersection+=(\"$path\"); fi\n  done\n  if (( ${#intersection[@]} )); then\n    echo \"$label intersection:\"\n    printf \"  %s'\"\\\\\\\\n\\\" \\\"\"'${intersection[@]}\"\n    exit 1\n  fi\n  echo \"$label intersection: empty\"\ndone\nif [[ -n \"$(rtk git diff --name-only \"$exact_candidate\")\" || -n \"$(rtk git diff --cached --name-only)\" || -n \"$(rtk git status --porcelain=v1 --untracked-files=all)\" ]]; then\n  echo \"verify mutation: detected\"\n  exit 1\nfi\necho \"verify mutation: none\"\n'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk zsh -c '\nset -e\nexact_base=8d71e114c395bd964f78f9d86dd438984aac1dd9\nexact_candidate=2256ce8942d20f245021613d76f02e1035cc5f9d\ncandidate_paths=( \"'$(rtk proxy git diff --name-only \"$exact_base..$exact_candidate\") )\nfor spec in \"CHG-155|39a0ee2d7b5a08004795d8207212e5347166cfac|f930a5162e674f7faee9d46b0d7cf2ff94f765bd\" \"CHG-158|d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac|1e191468ba16d9d59c5eab75c823ce4237f12d80\" \"CHG-160|e604d4790dd06e0ace5547ab3169789ca8577c0c|da5bb3a7f8563cbd242034f83b83f05de6a15053\"; do\n  IFS=\"|\" read label protected_base protected_candidate <<< \"$spec\"\n  protected_paths=( $(rtk proxy git diff --name-only \"$protected_base..$protected_candidate\") )\n  intersection=()\n  for path in \"${candidate_paths[@]}\"; do\n    if (( ${protected_paths[(Ie)$path]} > 0 )); then intersection+=(\"$path\"); fi\n  done\n  if (( ${#intersection[@]} )); then\n    echo \"$label intersection:\"\n    printf \"  %s'\"\\\\\\\\n\\\" \\\"\"'${intersection[@]}\"\n    exit 1\n  fi\n  echo \"$label intersection: empty\"\ndone\nif [[ -n \"$(rtk proxy git diff --name-only \"$exact_candidate\")\" || -n \"$(rtk proxy git diff --cached --name-only)\" || -n \"$(rtk proxy git status --porcelain=v1 --untracked-files=all)\" ]]; then\n  echo \"verify mutation: detected\"\n  exit 1\nfi\necho \"verify mutation: none\"\n'\"'\"",
+      "exit_code": 127,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -c '\nset -e\nexact_base=8d71e114c395bd964f78f9d86dd438984aac1dd9\nexact_candidate=2256ce8942d20f245021613d76f02e1035cc5f9d\ncandidate_paths=( \"'$(git diff --name-only \"$exact_base..$exact_candidate\") )\nfor spec in \"CHG-155|39a0ee2d7b5a08004795d8207212e5347166cfac|f930a5162e674f7faee9d46b0d7cf2ff94f765bd\" \"CHG-158|d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac|1e191468ba16d9d59c5eab75c823ce4237f12d80\" \"CHG-160|e604d4790dd06e0ace5547ab3169789ca8577c0c|da5bb3a7f8563cbd242034f83b83f05de6a15053\"; do\n  IFS=\"|\" read label protected_base protected_candidate <<< \"$spec\"\n  protected_paths=( $(git diff --name-only \"$protected_base..$protected_candidate\") )\n  intersection=()\n  for path in \"${candidate_paths[@]}\"; do\n    if (( ${protected_paths[(Ie)$path]} > 0 )); then intersection+=(\"$path\"); fi\n  done\n  if (( ${#intersection[@]} )); then\n    echo \"$label intersection:\"\n    printf \"  %s'\"\\\\\\\\n\\\" \\\"\"'${intersection[@]}\"\n    exit 1\n  fi\n  echo \"$label intersection: empty\"\ndone\nif [[ -n \"$(git diff --name-only \"$exact_candidate\")\" || -n \"$(git diff --cached --name-only)\" || -n \"$(git status --porcelain=v1 --untracked-files=all)\" ]]; then\n  echo \"verify mutation: detected\"\n  exit 1\nfi\necho \"verify mutation: none\"\n'\"'\"",
+      "exit_code": 127,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -c '\nset -e\nexact_base=8d71e114c395bd964f78f9d86dd438984aac1dd9\nexact_candidate=2256ce8942d20f245021613d76f02e1035cc5f9d\ncandidate_paths=( \"'$(/usr/bin/git diff --name-only \"$exact_base..$exact_candidate\") )\nfor spec in \"CHG-155|39a0ee2d7b5a08004795d8207212e5347166cfac|f930a5162e674f7faee9d46b0d7cf2ff94f765bd\" \"CHG-158|d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac|1e191468ba16d9d59c5eab75c823ce4237f12d80\" \"CHG-160|e604d4790dd06e0ace5547ab3169789ca8577c0c|da5bb3a7f8563cbd242034f83b83f05de6a15053\"; do\n  IFS=\"|\" read label protected_base protected_candidate <<< \"$spec\"\n  protected_paths=( $(/usr/bin/git diff --name-only \"$protected_base..$protected_candidate\") )\n  intersection=()\n  for path in \"${candidate_paths[@]}\"; do\n    if (( ${protected_paths[(Ie)$path]} > 0 )); then intersection+=(\"$path\"); fi\n  done\n  if (( ${#intersection[@]} )); then\n    echo \"$label intersection:\"\n    printf \"  %s'\"\\\\\\\\n\\\" \\\"\"'${intersection[@]}\"\n    exit 1\n  fi\n  echo \"$label intersection: empty\"\ndone\nif [[ -n \"$(/usr/bin/git diff --name-only \"$exact_candidate\")\" || -n \"$(/usr/bin/git diff --cached --name-only)\" || -n \"$(/usr/bin/git status --porcelain=v1 --untracked-files=all)\" ]]; then\n  echo \"verify mutation: detected\"\n  exit 1\nfi\necho \"verify mutation: none\"\n'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"scan='Math\\\\\\\\.random|Stability Pulse|Stability Index|Active Incidents|Hardened|Sentinel Active|V-SCAN|SEC-LVL|Regional Synchronizer|Initializing Matrix|Sector-01|Data Orchestrator|mock.{0,80}critical_alerts|critical_alerts.{0,80}mock|active-monitor-ratio|(?:FAR|PROJ).{0,80}(?:prefix|route)|(?:prefix|route).{0,80}(?:FAR|PROJ)'; if rtk proxy rg -n -i -- \\\"\"'$scan\" backend/app/api/dashboard.py frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/App.tsx; then echo '\"'truth_source_scan: unexpected match'; exit 1; else rc=\"'$?; if test \"$rc\" -eq 1; then echo '\"'truth_source_scan: clean (all forbidden markers absent)'; else echo \\\"truth_source_scan: rg_error=\"'$rc\"; exit \"$rc\"; fi; fi'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"scan='Math\\\\\\\\.random|Stability Pulse|Stability Index|Active Incidents|Hardened|Sentinel Active|V-SCAN|SEC-LVL|Regional Synchronizer|Initializing Matrix|Sector-01|Data Orchestrator|mock.{0,80}critical_alerts|critical_alerts.{0,80}mock|active-monitor-ratio|(?:pathname|location\\\\\\\\.pathname|routePath|route).{0,100}(?:startsWith|endsWith|includes|match|test).{0,100}(?:/far|/projects|FAR|PROJ)|(?:/far|/projects|FAR|PROJ).{0,100}(?:startsWith|endsWith|includes|match|test)|(?:prefix|route[_-]?prefix).{0,100}(?:/far|/projects|FAR|PROJ)|(?:/far|/projects|FAR|PROJ).{0,100}(?:prefix|route[_-]?prefix)'; if rtk proxy rg -n -i -- \\\"\"'$scan\" backend/app/api/dashboard.py frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/App.tsx; then echo '\"'truth_source_scan: unexpected match'; exit 1; else rc=\"'$?; if test \"$rc\" -eq 1; then echo '\"'truth_source_scan: clean (all forbidden markers absent)'; else echo \\\"truth_source_scan: rg_error=\"'$rc\"; exit \"$rc\"; fi; fi'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"artifact_ref='refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2'; artifact_commit=\"'$(rtk proxy git rev-parse \"$artifact_ref\"); echo \"artifact_commit=$artifact_commit\"; echo '\"'--- manifest ---'; rtk proxy git show \\\"\"'$artifact_commit:visual-evidence/manifest.json\"; echo '\"'--- comparison identity ---'; rtk proxy git show \\\"\"'$artifact_commit:visual-evidence/comparison-report.json\" | rg -n '\"'baseline|candidate|tree|sha|screenshot|identity|profile|route|comparison' | sed -n '1,120p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2:refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2 && rtk proxy git rev-parse refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'artifact_commit=$(rtk proxy git rev-parse refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2); echo \"artifact_commit=$artifact_commit\"; echo '\"'--- manifest ---'; rtk proxy git show \\\"\"'$artifact_commit:visual-evidence/manifest.json\"; echo '\"'--- comparison identity ---'; rtk proxy git show \\\"\"'$artifact_commit:visual-evidence/comparison-report.json\" | rg -n '\"'baseline|candidate|tree|sha|screenshot|identity|profile|route|comparison' | sed -n '1,160p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/zsh -c '\nset -e\nref=refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2\nexpected_ref=f99de70a8e001dee46a6e50c19570b76f75753e5\nremote_ref=\"'$(/usr/bin/git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2 | /usr/bin/awk \"{print '\"\\\\\\\\\"'$1}\")\ntest \"$remote_ref\" = \"$expected_ref\"\ntmpdir=$(/usr/bin/mktemp -d)\ntrap \"/bin/rm -rf '\"\\\\\\\"\"'$tmpdir'\"\\\\\\\"\\\" EXIT\n/usr/bin/git archive --format=tar \\\"\"'$ref\" | /usr/bin/tar -xf - -C \"$tmpdir\"\n/opt/anaconda3/bin/python - \"$tmpdir\" <<\"PY\"\nimport hashlib, json, os, sys\nroot = sys.argv[1]\nmanifest_path = os.path.join(root, \"visual-evidence\", \"manifest.json\")\nreport_path = os.path.join(root, \"visual-evidence\", \"comparison-report.json\")\nmanifest = json.load(open(manifest_path, encoding=\"utf-8\"))\nreport = json.load(open(report_path, encoding=\"utf-8\"))\nexpected_base = \"8d71e114c395bd964f78f9d86dd438984aac1dd9\"\nexpected_candidate = \"2256ce8942d20f245021613d76f02e1035cc5f9d\"\nexpected_tree = \"2a30643cdedbbd7e278d5fbfb8353d28197f3d40\"\nexpected_manifest_sha = \"e3ea210b64c580860ba16d7961c2dfb6f0779bacdf53e1e9c250ad0964e041c3\"\nexpected_bundle_sha = \"e91e61909351c73bdc92310c0fd445f85d6bb62f9f34a0a6f1bb12d846f87be3\"\nassert manifest[\"baseline_sha\"] == expected_base\nassert manifest[\"candidate_sha\"] == expected_candidate\nassert manifest[\"candidate_tree\"] == expected_tree\nassert manifest[\"screenshot_count\"] == 8\nassert sum(1 for m in manifest[\"members\"] if m[\"path\"].startswith(\"screenshots/\")) == 8\nactual_manifest_sha = hashlib.sha256(open(manifest_path, \"rb\").read()).hexdigest()\nassert actual_manifest_sha == expected_manifest_sha, (actual_manifest_sha, expected_manifest_sha)\nchecked = 0\nfor member in manifest[\"members\"]:\n    path = os.path.join(root, \"visual-evidence\", member[\"path\"])\n    data = open(path, \"rb\").read()\n    assert len(data) == member[\"bytes\"], member[\"path\"]\n    assert hashlib.sha256(data).hexdigest() == member[\"sha256\"], member[\"path\"]\n    checked += 1\nbundle_path = os.path.join(root, \"visual-evidence\", \"artifact-bundle.zip\")\nactual_bundle_sha = hashlib.sha256(open(bundle_path, \"rb\").read()).hexdigest()\nassert actual_bundle_sha == expected_bundle_sha\nassert manifest[\"visual_bundle_sha256\"] == expected_bundle_sha\nassert report[\"artifact_bundle_sha256\"] == expected_bundle_sha\nassert report[\"visual_manifest_sha256\"] == expected_manifest_sha\nassert report[\"baseline\"][\"sha\"] == expected_base\nassert report[\"baseline\"][\"tree\"] == \"72a2ef5c1275a25b4d46fbd049789b68c9087649\"\nassert report[\"baseline\"][\"candidate_parent\"] is True\nassert report[\"candidate\"][\"sha\"] == expected_candidate\nassert report[\"candidate\"][\"tree\"] == expected_tree\nassert report[\"candidate\"][\"candidate_parent\"] == expected_base\nprint(\"existing_visual_ref: remote match\")\nprint(f\"existing_visual_manifest_sha256: {actual_manifest_sha}\")\nprint(f\"existing_visual_bundle_sha256: {actual_bundle_sha}\")\nprint(f\"existing_visual_member_hashes: {checked}/{len(manifest['\"'members'])} verified\\\")\nprint(f\\\"existing_visual_screenshot_count: {manifest['screenshot_count']}\\\")\nprint(\\\"existing_visual_candidate_match: true\\\")\nprint(\\\"comparison_report_identity: true\\\")\nPY\n'\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/zsh -c '\nset -e\nref=refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2\nexpected_ref=f99de70a8e001dee46a6e50c19570b76f75753e5\nremote_line=\"'$(/usr/bin/git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2)\nremote_ref=${remote_line%%$'\"'\\\\\\\\t'*}\ntest \\\"\"'$remote_ref\" = \"$expected_ref\"\ntmpdir=$(/usr/bin/mktemp -d)\ntrap \"/bin/rm -rf '\"\\\\\\\"\"'$tmpdir'\"\\\\\\\"\\\" EXIT\n/usr/bin/git archive --format=tar \\\"\"'$ref\" | /usr/bin/tar -xf - -C \"$tmpdir\"\n/opt/anaconda3/bin/python - \"$tmpdir\" <<\"PY\"\nimport hashlib, json, os, sys\nroot = sys.argv[1]\nmanifest_path = os.path.join(root, \"visual-evidence\", \"manifest.json\")\nreport_path = os.path.join(root, \"visual-evidence\", \"comparison-report.json\")\nmanifest = json.load(open(manifest_path, encoding=\"utf-8\"))\nreport = json.load(open(report_path, encoding=\"utf-8\"))\nexpected_base = \"8d71e114c395bd964f78f9d86dd438984aac1dd9\"\nexpected_candidate = \"2256ce8942d20f245021613d76f02e1035cc5f9d\"\nexpected_tree = \"2a30643cdedbbd7e278d5fbfb8353d28197f3d40\"\nexpected_manifest_sha = \"e3ea210b64c580860ba16d7961c2dfb6f0779bacdf53e1e9c250ad0964e041c3\"\nexpected_bundle_sha = \"e91e61909351c73bdc92310c0fd445f85d6bb62f9f34a0a6f1bb12d846f87be3\"\nassert manifest[\"baseline_sha\"] == expected_base\nassert manifest[\"candidate_sha\"] == expected_candidate\nassert manifest[\"candidate_tree\"] == expected_tree\nassert manifest[\"screenshot_count\"] == 8\nassert sum(1 for m in manifest[\"members\"] if m[\"path\"].startswith(\"screenshots/\")) == 8\nactual_manifest_sha = hashlib.sha256(open(manifest_path, \"rb\").read()).hexdigest()\nassert actual_manifest_sha == expected_manifest_sha, (actual_manifest_sha, expected_manifest_sha)\nchecked = 0\nfor member in manifest[\"members\"]:\n    path = os.path.join(root, \"visual-evidence\", member[\"path\"])\n    data = open(path, \"rb\").read()\n    assert len(data) == member[\"bytes\"], member[\"path\"]\n    assert hashlib.sha256(data).hexdigest() == member[\"sha256\"], member[\"path\"]\n    checked += 1\nbundle_path = os.path.join(root, \"visual-evidence\", \"artifact-bundle.zip\")\nactual_bundle_sha = hashlib.sha256(open(bundle_path, \"rb\").read()).hexdigest()\nassert actual_bundle_sha == expected_bundle_sha\nassert manifest[\"visual_bundle_sha256\"] == expected_bundle_sha\nassert report[\"artifact_bundle_sha256\"] == expected_bundle_sha\nassert report[\"visual_manifest_sha256\"] == expected_manifest_sha\nassert report[\"baseline\"][\"sha\"] == expected_base\nassert report[\"baseline\"][\"tree\"] == \"72a2ef5c1275a25b4d46fbd049789b68c9087649\"\nassert report[\"baseline\"][\"candidate_parent\"] is True\nassert report[\"candidate\"][\"sha\"] == expected_candidate\nassert report[\"candidate\"][\"tree\"] == expected_tree\nassert report[\"candidate\"][\"candidate_parent\"] == expected_base\nprint(\"existing_visual_ref: remote match\")\nprint(f\"existing_visual_manifest_sha256: {actual_manifest_sha}\")\nprint(f\"existing_visual_bundle_sha256: {actual_bundle_sha}\")\nprint(f\"existing_visual_member_hashes: {checked}/{len(manifest['\"'members'])} verified\\\")\nprint(f\\\"existing_visual_screenshot_count: {manifest['screenshot_count']}\\\")\nprint(\\\"existing_visual_candidate_match: true\\\")\nprint(\\\"comparison_report_identity: true\\\")\nPY\n'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"echo visual_validator_probe && rtk proxy git rev-parse refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2 && rtk proxy git ls-tree -r --name-only refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2 | sed -n '1,20p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/zsh -c 'echo hello && /usr/bin/git rev-parse refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/zsh -c '\nset -e\necho start\nremote_line=\"'$(/usr/bin/git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2)\necho \"remote_line=$remote_line\"\nremote_ref=${remote_line%%$'\"'\\\\\\\\t'*}\necho \\\"remote_ref=\"'$remote_ref\"\ntest \"$remote_ref\" = f99de70a8e001dee46a6e50c19570b76f75753e5\necho checked\n'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/zsh -c '\nset -e\nref=refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2\nremote_line=\"'$(/usr/bin/git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2)\nremote_ref=${remote_line%%[[:space:]]*}\ntest \"$remote_ref\" = f99de70a8e001dee46a6e50c19570b76f75753e5\ntmpdir=$(/usr/bin/mktemp -d)\ntrap \"/bin/rm -rf '\"\\\\\\\"\"'$tmpdir'\"\\\\\\\"\\\" EXIT\n/usr/bin/git archive --format=tar \\\"\"'$ref\" | /usr/bin/tar -xf - -C \"$tmpdir\"\n/opt/anaconda3/bin/python - \"$tmpdir\" <<\"PY\"\nimport hashlib, json, os, sys\nroot = sys.argv[1]\nmanifest_path = os.path.join(root, \"visual-evidence\", \"manifest.json\")\nreport_path = os.path.join(root, \"visual-evidence\", \"comparison-report.json\")\nmanifest = json.load(open(manifest_path, encoding=\"utf-8\"))\nreport = json.load(open(report_path, encoding=\"utf-8\"))\nexpected_base = \"8d71e114c395bd964f78f9d86dd438984aac1dd9\"\nexpected_candidate = \"2256ce8942d20f245021613d76f02e1035cc5f9d\"\nexpected_tree = \"2a30643cdedbbd7e278d5fbfb8353d28197f3d40\"\nexpected_manifest_sha = \"e3ea210b64c580860ba16d7961c2dfb6f0779bacdf53e1e9c250ad0964e041c3\"\nexpected_bundle_sha = \"e91e61909351c73bdc92310c0fd445f85d6bb62f9f34a0a6f1bb12d846f87be3\"\nassert manifest[\"baseline_sha\"] == expected_base\nassert manifest[\"candidate_sha\"] == expected_candidate\nassert manifest[\"candidate_tree\"] == expected_tree\nassert manifest[\"screenshot_count\"] == 8\nassert sum(1 for m in manifest[\"members\"] if m[\"path\"].startswith(\"screenshots/\")) == 8\nactual_manifest_sha = hashlib.sha256(open(manifest_path, \"rb\").read()).hexdigest()\nassert actual_manifest_sha == expected_manifest_sha, (actual_manifest_sha, expected_manifest_sha)\nchecked = 0\nfor member in manifest[\"members\"]:\n    path = os.path.join(root, \"visual-evidence\", member[\"path\"])\n    data = open(path, \"rb\").read()\n    assert len(data) == member[\"bytes\"], member[\"path\"]\n    assert hashlib.sha256(data).hexdigest() == member[\"sha256\"], member[\"path\"]\n    checked += 1\nbundle_path = os.path.join(root, \"visual-evidence\", \"artifact-bundle.zip\")\nactual_bundle_sha = hashlib.sha256(open(bundle_path, \"rb\").read()).hexdigest()\nassert actual_bundle_sha == expected_bundle_sha\nassert manifest[\"visual_bundle_sha256\"] == expected_bundle_sha\nassert report[\"artifact_bundle_sha256\"] == expected_bundle_sha\nassert report[\"visual_manifest_sha256\"] == expected_manifest_sha\nassert report[\"baseline\"][\"sha\"] == expected_base\nassert report[\"baseline\"][\"tree\"] == \"72a2ef5c1275a25b4d46fbd049789b68c9087649\"\nassert report[\"baseline\"][\"candidate_parent\"] is True\nassert report[\"candidate\"][\"sha\"] == expected_candidate\nassert report[\"candidate\"][\"tree\"] == expected_tree\nassert report[\"candidate\"][\"candidate_parent\"] == expected_base\nprint(\"existing_visual_ref: remote match\")\nprint(f\"existing_visual_manifest_sha256: {actual_manifest_sha}\")\nprint(f\"existing_visual_bundle_sha256: {actual_bundle_sha}\")\nprint(f\"existing_visual_member_hashes: {checked}/{len(manifest['\"'members'])} verified\\\")\nprint(f\\\"existing_visual_screenshot_count: {manifest['screenshot_count']}\\\")\nprint(\\\"existing_visual_candidate_match: true\\\")\nprint(\\\"comparison_report_identity: true\\\")\nPY\n'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/zsh -c '\nset -e\nref=refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2\nremote_line=\"'$(/usr/bin/git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2)\nremote_ref=${remote_line%%[[:space:]]*}\ntest \"$remote_ref\" = f99de70a8e001dee46a6e50c19570b76f75753e5\ntmpdir=$(/usr/bin/mktemp -d)\ntrap \"/bin/rm -rf '\"\\\\\\\"\"'$tmpdir'\"\\\\\\\"\\\" EXIT\n/usr/bin/git archive --format=tar \\\"\"'$ref\" | /usr/bin/tar -xf - -C \"$tmpdir\"\n/opt/anaconda3/bin/python - \"$tmpdir\" <<\"PY\"\nimport hashlib, json, os, sys\nroot = sys.argv[1]\nmanifest_path = os.path.join(root, \"visual-evidence\", \"manifest.json\")\nreport_path = os.path.join(root, \"visual-evidence\", \"comparison-report.json\")\nmanifest = json.load(open(manifest_path, encoding=\"utf-8\"))\nreport = json.load(open(report_path, encoding=\"utf-8\"))\nexpected_base = \"8d71e114c395bd964f78f9d86dd438984aac1dd9\"\nexpected_candidate = \"2256ce8942d20f245021613d76f02e1035cc5f9d\"\nexpected_tree = \"2a30643cdedbbd7e278d5fbfb8353d28197f3d40\"\nexpected_manifest_sha = \"e3ea210b64c580860ba16d7961c2dfb6f0779bacdf53e1e9c250ad0964e041c3\"\nexpected_bundle_sha = \"e91e61909351c73bdc92310c0fd445f85d6bb62f9f34a0a6f1bb12d846f87be3\"\nassert manifest[\"baseline_sha\"] == expected_base\nassert manifest[\"candidate_sha\"] == expected_candidate\nassert manifest[\"candidate_tree\"] == expected_tree\nassert manifest[\"screenshot_count\"] == 8\nassert sum(1 for m in manifest[\"members\"] if m[\"path\"].startswith(\"screenshots/\")) == 8\nactual_manifest_sha = hashlib.sha256(open(manifest_path, \"rb\").read()).hexdigest()\nassert actual_manifest_sha == expected_manifest_sha, (actual_manifest_sha, expected_manifest_sha)\nchecked = 0\nfor member in manifest[\"members\"]:\n    path = os.path.join(root, \"visual-evidence\", member[\"path\"])\n    data = open(path, \"rb\").read()\n    assert len(data) == member[\"bytes\"], member[\"path\"]\n    assert hashlib.sha256(data).hexdigest() == member[\"sha256\"], member[\"path\"]\n    checked += 1\nbundle_path = os.path.join(root, \"visual-evidence\", \"artifact-bundle.zip\")\nactual_bundle_sha = hashlib.sha256(open(bundle_path, \"rb\").read()).hexdigest()\nassert actual_bundle_sha == expected_bundle_sha\nassert manifest[\"visual_bundle_sha256\"] == expected_bundle_sha\nassert report[\"artifact_bundle_sha256\"] == expected_bundle_sha\nassert report[\"visual_manifest_sha256\"] == expected_manifest_sha\nassert report[\"baseline\"][\"sha\"] == expected_base\nassert report[\"baseline\"][\"tree\"] == \"72a2ef5c1275a25b4d46fbd049789b68c9087649\"\nassert report[\"baseline\"][\"candidate_parent\"] is True\nassert report[\"candidate\"][\"sha\"] == expected_candidate\nassert report[\"candidate\"][\"tree\"] == expected_tree\nassert report[\"candidate\"][\"candidate_parent\"] == expected_base\nprint(\"existing_visual_ref: remote match\")\nprint(\"existing_visual_manifest_sha256: \" + actual_manifest_sha)\nprint(\"existing_visual_bundle_sha256: \" + actual_bundle_sha)\nprint(\"existing_visual_member_hashes: %d/%d verified\" % (checked, len(manifest[\"members\"])))\nprint(\"existing_visual_screenshot_count: %d\" % manifest[\"screenshot_count\"])\nprint(\"existing_visual_candidate_match: true\")\nprint(\"comparison_report_identity: true\")\nPY\n'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-smv1-home-observability-truth-qualification-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /bin/zsh -c '\nset -e\nbase=8d71e114c395bd964f78f9d86dd438984aac1dd9\ncandidate=2256ce8942d20f245021613d76f02e1035cc5f9d\ntree=2a30643cdedbbd7e278d5fbfb8353d28197f3d40\nwork_ref=refs/heads/codex/sysgrid-smv1-home-observability-truth-qualification-v3\nremote_main=\"'$(/usr/bin/git ls-remote origin refs/heads/main | /usr/bin/cut -f1)\nremote_work=$(/usr/bin/git ls-remote origin \"$work_ref\" | /usr/bin/cut -f1)\ntest \"$(/usr/bin/git rev-parse HEAD)\" = \"$candidate\"\ntest \"$(/usr/bin/git rev-parse HEAD''^)\" = \"$base\"\ntest \"$(/usr/bin/git rev-parse HEAD''^{tree})\" = \"$tree\"\ntest \"$remote_main\" = \"$base\"\ntest \"$remote_work\" = \"$candidate\"\ntest -z \"$(/usr/bin/git status --porcelain=v1 --untracked-files=all)\"\ntest -z \"$(/usr/bin/git diff --name-only HEAD)\"\ntest -z \"$(/usr/bin/git diff --cached --name-only)\"\necho \"HEAD=$(/usr/bin/git rev-parse HEAD)\"\necho \"HEAD''^=$(/usr/bin/git rev-parse HEAD''^)\"\necho \"HEAD''^{tree}=$(/usr/bin/git rev-parse HEAD''^{tree})\"\necho \"remote_main=$remote_main\"\necho \"remote_work=$remote_work\"\necho \"worktree_clean=true\"\necho \"r3_source_test_config_lockfile_mutation=false\"\n'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"echo '--- R3 evidence ref availability ---' && rtk proxy git ls-remote origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-qualification-v3 || true && echo '--- local native audit files ---' && rtk proxy find .codex-fabric -maxdepth 3 -type f -print 2>/dev/null | sort | sed -n '1,40p' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 97,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 94.74,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 3630080,
+      "fresh_input_tokens": 201689,
+      "input_tokens": 3831769,
+      "non_reasoning_output_tokens": 16041,
+      "output_tokens": 31239,
+      "reasoning_output_tokens": 15198,
+      "total_processed_tokens": 3863008
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+      "subject": "fabric: capture completed model changes [CF-6651cff0d46dc871bc841504]"
+    }
+  ],
+  "diff": {
+    "additions": 1382,
+    "changed_files": 11,
+    "commit_count": 1,
+    "deletions": 819
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-21T20:11:38Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "branch": "codex/sysgrid-smv1-home-observability-truth-qualification-v3",
+    "detached_verify": false,
+    "head_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "remote_exact_head": true,
+    "remote_head_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "work_branch": "codex/sysgrid-smv1-home-observability-truth-qualification-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-59f3435fcb707c11c0d72b5d",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-qualification-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-qualification-v3"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-home-observability-truth-qualification-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-21T19:54:17Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1041,
+    "queue_seconds": 0,
+    "total_seconds": 1041
+  },
+  "transport": {
+    "bytes": 8296,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7932,
+    "prompt_sha256": "877a391cedc565388a78509a10ebc70557bc23eba3a4fda7cd34b9cb7d8ccf91",
+    "sha256": "59f3435fcb707c11c0d72b5df1b10112d37ea51b1b33dbcf4e02832bf2a5e311"
+  }
+}
