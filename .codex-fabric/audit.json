@@ -1,0 +1,507 @@
+{
+  "accepted_at": "2026-09-21T14:49:10Z",
+  "changed_files": [
+    {
+      "additions": 699,
+      "deletions": 283,
+      "path": "backend/app/api/dashboard.py",
+      "status": "M"
+    },
+    {
+      "additions": 63,
+      "deletions": 9,
+      "path": "backend/test_dashboard_metrics.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 31,
+      "deletions": 0,
+      "path": "frontend/src/components/Dashboard.truth.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 440,
+      "deletions": 504,
+      "path": "frontend/src/components/Dashboard.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 6,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 83,
+      "deletions": 0,
+      "path": "frontend/tests/home-truth.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tests/pom/DashboardView.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/tests/release-policy-normal.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 26,
+      "deletions": 6,
+      "path": "frontend/tests/release-policy-root-preview.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 6,
+      "path": "frontend/tests/shell-and-search.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '150,420p' backend/app/api/dashboard.py\nrtk sed -n '1,380p' backend/app/api/module_policy.py\nrtk sed -n '1,260p' frontend/src/components/Dashboard.tsx\nrtk sed -n '260,620p' frontend/src/components/Dashboard.tsx\nrtk sed -n '1,260p' frontend/src/policy/ModulePolicy.tsx\nrtk sed -n '1,260p' frontend/src/policy/moduleCatalog.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' frontend/src/components/Dashboard.tsx\nrtk sed -n '221,460p' frontend/src/components/Dashboard.tsx\nrtk sed -n '1,180p' backend/test_dashboard_metrics.py\nrtk sed -n '180,430p' backend/test_dashboard_metrics.py\nrtk sed -n '1,260p' backend/test_system_management_v1_policy.py\nrtk sed -n '1,180p' frontend/tests/pom/DashboardView.ts\nrtk sed -n '1,260p' frontend/tests/release-policy-normal.spec.ts\nrtk sed -n '1,320p' frontend/tests/release-policy-root-preview.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk nl -ba frontend/src/components/Dashboard.tsx | sed -n '1,220p'\nrtk nl -ba frontend/src/components/Dashboard.tsx | sed -n '221,440p'\nrtk nl -ba frontend/src/components/Dashboard.tsx | sed -n '441,700p'\nrtk nl -ba backend/test_dashboard_metrics.py | sed -n '1,280p'\nrtk nl -ba backend/test_dashboard_metrics.py | sed -n '280,520p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '340,580p' frontend/src/components/Dashboard.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nimport json\nfrom pathlib import Path\np=json.loads(Path('contracts/system_management_v1.json').read_text())\nfor m in p['modules']:\n    print(m['id'], m['label'], m['canonical_route'], m['default_stage'], m['required_capability'], m['root_preview_allowed'])\nPY\nrtk sed -n '300,460p' backend/app/api/module_policy.py\nrtk rg -n \\\"dashboard/metrics|Dashboard\\\\(|onNavigate|globalSearch|Search Matrix|Stability Pulse|Critical Monitors|recent\\\\.\\\" frontend/src frontend/tests backend -g '\"'!*.md'\"' | sed -n '1,300p'\nrtk rg -n \\\"class (Site|Rack|PortConnection|Device|LogicalService|AuditLog|MonitoringItem)|tenant_id|db_url\\\" backend/app/models/models.py | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' backend/app/models/models.py\nrtk sed -n '420,520p' backend/app/models/models.py\nrtk sed -n '640,710p' backend/app/models/models.py\nrtk sed -n '1,220p' backend/app/models/base.py 2>/dev/null || true\nrtk sed -n '1,220p' frontend/tests/shell-and-search.spec.ts\nrtk sed -n '1,240p' frontend/src/App.tsx | sed -n '1,220p'\nrtk rg -n \\\"function.*navigate|onNavigate|searchParams|/api/v1/dashboard/search|navigate\\\\(\\\" frontend/src/App.tsx frontend/src/components -g '*.tsx' | sed -n '1,300p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' frontend/src/components/shared/GlobalSearch.tsx\nrtk sed -n '560,700p' frontend/src/App.tsx\nrtk sed -n '1,260p' frontend/src/App.tsx | tail -n 80\nrtk rg -n \\\"<GlobalSearch|GlobalSearch\\\" frontend/src -g '*.tsx'\nrtk sed -n '1,220p' frontend/src/policy/ModulePolicy.test.ts\nrtk cat frontend/package.json\nrtk cat backend/pyproject.toml 2>/dev/null || true\nrtk rg -n \\\"pytest|test:unit|check:operational-contracts|playwright\\\" frontend/package.json backend/pyproject.toml backend/pytest.ini pytest.ini 2>/dev/null\"",
+      "exit_code": 2,
+      "test_result": {
+        "exit_code": 2,
+        "framework": "pytest",
+        "outcome": "interrupted",
+        "output_bytes": 30379,
+        "output_sha256": "d3eb51213dbaa0b006fa19fcece139a07a9387faf111fe0caf5460733b2b7ad2",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' frontend/src/components/shared/GlobalSearch.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m compileall -q backend/app/api/dashboard.py && rtk pytest -q backend/test_dashboard_metrics.py'",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 655,
+        "output_sha256": "26e51174cdc53470a68cd4a770524ff749c4e35c7d876a33c14145c38d58ee7f",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"def seeded_admin_tenant|seeded_admin_tenant|admin_root|haewon.kim|system_root\\\" backend/conftest.py backend -g 'conftest.py' -g '*.py' | sed -n '1,260p'\nrtk sed -n '210,250p' backend/test_dashboard_metrics.py\nrtk sed -n '360,390p' backend/test_dashboard_metrics.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '330,430p' backend/conftest.py\nrtk sed -n '1,130p' backend/conftest.py\nrtk rg -n \\\"class UserTenantAccess|class Operator|def has_capability\\\" backend/app/models backend/app/api/authorization.py | sed -n '1,180p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q backend/test_dashboard_metrics.py backend/test_system_management_v1_policy.py'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 18,
+        "output_sha256": "1e94e34c6719a4c091ab01dd37055dbe0fee4c66df8c81fd023183af8b14b27b",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 127,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -d frontend/node_modules frontend/package-lock.json frontend/pnpm-lock.yaml frontend/yarn.lock 2>/dev/null || true\nrtk which node npm npx tsc pnpm yarn 2>/dev/null || true\nrtk git diff --check\nrtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"Math\\\\.random|Stability Pulse|Stability Index|Active Incidents|Hardened|Sentinel|V-SCAN|SEC-LVL|Matrix|Sector|Orchestrator|Regional Synchronizer|critical_alerts|stability_score|recent\\\\.(research|far|knowledge|projects|architecture)|startsWith\\\\(['\\\\\\\"](FAR|PROJ)\\\" frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx backend/app/api/dashboard.py || true\nrtk git diff --stat && rtk git diff -- backend/app/api/dashboard.py | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"asset_module|asset_path|service_module|service_path|network_module|network_path|monitoring_module|monitoring_path|racks_module|racks_path|logs_module|logs_path|sites_count|racks_count|racked_assets\\\" backend/app/api/dashboard.py frontend/src/components/Dashboard.tsx | sed -n '1,220p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend && rtk npm run test:unit --prefix frontend -- src/components/Dashboard.truth.test.ts src/policy/ModulePolicy.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pytest -q backend/test_dashboard_metrics.py backend/test_system_management_v1_policy.py && rtk git diff --check'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 19,
+        "output_sha256": "2f98c6967c77ce5b3e652ebf8d0acb6e3f3b66ed89c1575e0d8171e2ad3f04be",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend && rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,140p' frontend/tests/shell-and-search.spec.ts\nrtk sed -n '1,120p' frontend/playwright.release.config.ts\nrtk sed -n '1,160p' frontend/playwright.root-preview.config.ts\nrtk rg -n \\\"Stability Pulse|Critical Monitors|Failure Forensics|Strategic Pipeline|Intel Knowledge|data-module-action=\\\\\\\"(projects|far|knowledge|vendors|external|research|architecture)\\\\\\\"\\\" frontend/tests frontend/audit -g '*.spec.ts' | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,130p' frontend/tests/helpers/sysgrid-test.ts\nrtk sed -n '1,180p' frontend/tests/helpers/sysgrid.ts\nrtk sed -n '1,180p' frontend/playwright.config.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"root-preview|SYSGRID_VERIFY_USER_ID|USER_ID\\\" scripts frontend -g '*.sh' -g '*.ts' -g '*.cjs' | sed -n '1,260p'\nrtk sed -n '1,180p' scripts/run-e2e.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"Stability Pulse|Defense Status|Infrastructure Assets|Critical Monitors|Search Assets, Projects, FAR, Services, Monitoring|Search assets, projects, or incidents|Zero records found|data-module-action=\\\\\\\"far\\\\\\\"\\\" frontend/tests frontend/audit -g '*.ts' | sed -n '1,240p'\nrtk git diff --check && rtk git status --short\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,460p' scripts/lib/verify-runtime.sh | sed -n '1,260p'\nrtk sed -n '260,450p' scripts/lib/verify-runtime.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/release-policy-normal.spec.ts tests/shell-and-search.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/release-policy-normal.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PROFILE=root-preview SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=admin_root SYSGRID_VERIFY_USER_ID=admin_root SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.root-preview.config.ts tests/release-policy-root-preview.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"export async function seedOperationalScenario\\\" -A120 frontend/tests/helpers/sysgrid.ts\nrtk sed -n '1,120p' frontend/tests/helpers/sysgrid.ts | tail -n 10\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"export async function (createAsset|createMonitoring|createSite|createRack|createConnection)\" frontend/tests/helpers/sysgrid.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '175,285p' frontend/tests/helpers/sysgrid.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend && rtk npm run test:unit --prefix frontend -- src/components/Dashboard.truth.test.ts src/policy/ModulePolicy.test.ts && rtk git diff --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend && rtk npm run test:unit --prefix frontend -- src/components/Dashboard.truth.test.ts src/policy/ModulePolicy.test.ts && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/home-truth.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show --no-renames --format='%H%n%s' --name-only da5bb3a7f8563cbd242034f83b83f05de6a15053 | sed -n '1,220p'\nrtk git diff --name-only 8d71e114c395bd964f78f9d86dd438984aac1dd9 -- | sort\nrtk git log --oneline --all --decorate --max-count=30\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -e\nbase=8d71e114c395bd964f78f9d86dd438984aac1dd9\nchanged=\"$(rtk git diff --name-only \"$base\" --)\"\nprotected=\"$(\n  for rev in d5fe0e5d e604d4790 da5bb3a7; do\n    rtk git diff-tree --no-commit-id --root -m -r --name-only \"$rev\"\n  done\n)\"\nconflicts=\"$(comm -12 <(printf '\"'%s\\\\n' \\\"\"'$changed\" | sort -u) <(printf '\"'%s\\\\n' \\\"\"'$protected\" | sort -u))\"\nprintf '\"'%s\\\\n' \\\"changed_files=\"'$(printf '\"'%s\\\\n' \\\"\"'$changed\" | sed '\"'/\"'^$/d'\"' | wc -l | tr -d ' ')\\\" \\\"protected_scope_conflicts=\"'$(printf '\"'%s\\\\n' \\\"\"'$conflicts\" | sed '\"'/\"'^$/d'\"' | wc -l | tr -d ' ')\\\"\nif [ -n \\\"\"'$conflicts\" ]; then printf '\"'%s\\\\n' \\\"\"'$conflicts\"; exit 1; fi\nprintf '\"'%s\\\\n' \\\"protected_scope_result=unchanged\\\" \\\"commits_checked=d5fe0e5d,e604d4790,da5bb3a7\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --name-status 8d71e114c395bd964f78f9d86dd438984aac1dd9 --\nrtk git diff --numstat 8d71e114c395bd964f78f9d86dd438984aac1dd9 --\nrtk rg -n \\\"Math\\\\.random|Stability Pulse|Stability Index|Active Incidents|Hardened|Sentinel Active|V-SCAN|SEC-LVL|Regional Synchronizer|Initializing Matrix|Sector-01|Data Orchestrator|Critical Alerts|critical_alerts.*append|stability.*active_mon|active_mon|FAR.*startsWith|PROJ.*startsWith\\\" frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx backend/app/api/dashboard.py || true\nrtk git diff --check\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend && rtk npm run build --prefix frontend && rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python /opt/anaconda3/bin/python -m pytest -q backend/test_dashboard_metrics.py backend/test_system_management_v1_policy.py && rtk git diff --check'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 67,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 2108,
+        "output_sha256": "3c75b8ce1d5e09a9059bd291842a4973051d4c75e3e7ad56ca81938e504dc829",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --branch\nrtk git diff --check\nrtk git diff --name-only 8d71e114c395bd964f78f9d86dd438984aac1dd9 --\nrtk rg -n \\\"Math\\\\.random|Stability Pulse|Stability Index|Active Incidents|Hardened|Sentinel Active|V-SCAN|SEC-LVL|Regional Synchronizer|Initializing Matrix|Sector-01|Data Orchestrator|critical_alerts.*for|active_mon\\\" frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx backend/app/api/dashboard.py || true\nrtk git diff -- backend/test_dashboard_metrics.py frontend/src/App.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/tests/release-policy-normal.spec.ts frontend/tests/release-policy-root-preview.spec.ts frontend/tests/shell-and-search.spec.ts frontend/tests/pom/DashboardView.ts | sed -n '1,360p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,460p' backend/app/api/dashboard.py\nrtk sed -n '1,220p' frontend/src/components/Dashboard.tsx\nrtk sed -n '220,520p' frontend/src/components/Dashboard.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"critical_alerts|Critical Alerts|critical alerts|Math\\\\.random|Stability Pulse|Stability Index|Active Incidents|Hardened|Sentinel Active|V-SCAN|SEC-LVL|Regional Synchronizer|Initializing Matrix|Sector-01|Data Orchestrator\\\" backend/app/api/dashboard.py frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/App.tsx || true\nrtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python /opt/anaconda3/bin/python -m pytest -q backend/test_dashboard_metrics.py backend/test_system_management_v1_policy.py\nrtk npm run typecheck --prefix frontend\nrtk git diff --check\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 67,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 616,
+        "output_sha256": "2209e24b1401b58bc0424159df81f085faa4bbb771cf9a7489387f27c9b9c9b5",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend && rtk npm run test:unit --prefix frontend -- src/components/Dashboard.truth.test.ts src/policy/ModulePolicy.test.ts && rtk npm run check:operational-contracts --prefix frontend && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.release.config.ts tests/home-truth.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --branch\nrtk git rev-parse origin/main\nrtk git show -s --format='%H%n%T%n%P' HEAD\nrtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-home-observability-truth-v1 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-v1 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-v1\nrtk git diff --check\nrtk rg -n \\\"Math\\\\.random|Stability Pulse|Stability Index|Active Incidents|Hardened|Sentinel Active|V-SCAN|SEC-LVL|Regional Synchronizer|Initializing Matrix|Sector-01|Data Orchestrator|critical_alerts|startsWith\\\\(['\\\\\\\"]FAR|startsWith\\\\(['\\\\\\\"]PROJ\\\" backend/app/api/dashboard.py frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/src/App.tsx || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"class HomeTruth|class DashboardMetrics|async def get_metrics|async def global_search|def dashboardTruthLabel|export default function Dashboard|const releasedSurfaces|export const GlobalSearch|normal-v1 empty inventory|test\\\\('opens only\\\" backend/app/api/dashboard.py frontend/src/components/Dashboard.tsx frontend/src/components/shared/GlobalSearch.tsx frontend/tests/home-truth.spec.ts frontend/tests/release-policy-root-preview.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 178,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.59,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 22626560,
+      "fresh_input_tokens": 324318,
+      "input_tokens": 22950878,
+      "non_reasoning_output_tokens": 44575,
+      "output_tokens": 68343,
+      "reasoning_output_tokens": 23768,
+      "total_processed_tokens": 23019221
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+      "subject": "fabric: capture completed model changes [CF-6651cff0d46dc871bc841504]"
+    }
+  ],
+  "diff": {
+    "additions": 1382,
+    "changed_files": 11,
+    "commit_count": 1,
+    "deletions": 819
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-6651cff0d46dc871bc841504]",
+    "commit_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "paths_before": 11,
+    "status_before": [
+      " M backend/app/api/dashboard.py",
+      " M backend/test_dashboard_metrics.py",
+      " M frontend/src/App.tsx",
+      " M frontend/src/components/Dashboard.tsx",
+      " M frontend/src/components/shared/GlobalSearch.tsx",
+      " M frontend/tests/pom/DashboardView.ts",
+      " M frontend/tests/release-policy-normal.spec.ts",
+      " M frontend/tests/release-policy-root-preview.spec.ts",
+      " M frontend/tests/shell-and-search.spec.ts",
+      "?? frontend/src/components/Dashboard.truth.test.ts",
+      "?? frontend/tests/home-truth.spec.ts"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-21T15:29:44Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "branch": "codex/sysgrid-smv1-home-observability-truth-v1",
+    "detached_verify": false,
+    "head_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "remote_exact_head": true,
+    "remote_head_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "work_branch": "codex/sysgrid-smv1-home-observability-truth-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-6651cff0d46dc871bc841504",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-home-observability-truth-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-21T14:49:11Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2433,
+    "queue_seconds": 1,
+    "total_seconds": 2434
+  },
+  "transport": {
+    "bytes": 16647,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 16311,
+    "prompt_sha256": "04e3ffcd99e57bc601893762dc49ddc4ca4b61287ec192a8d9ad81bbff9853a3",
+    "sha256": "6651cff0d46dc871bc84150423c3d17cbbfae513e9c86adc71de4b798f70b04c"
+  }
+}
