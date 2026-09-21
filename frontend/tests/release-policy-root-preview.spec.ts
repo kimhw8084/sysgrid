@@ -21,12 +21,32 @@ test.describe('CHG-120 root-preview release policy', () => {
     }
 
     await page.goto('/')
-    await expect(page.getByText('Stability Pulse')).toBeVisible()
-    await expect(page.locator('[data-module-action="far"][aria-disabled="true"]')).toHaveCount(0)
-    expect(await page.locator('[data-module-action="far"][data-module-action-state="root-preview"]').count()).toBeGreaterThan(0)
+    await expect(page.getByText('Observed health history (24h)')).toBeVisible()
+    expect(await page.locator('[data-sg-content-panel="true"] [data-module-action="far"]').count()).toBe(0)
 
-    await page.goto('/far')
-    await expect(page.locator('[data-sg-state="permission-denied"]')).not.toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Failure Matrix', exact: true })).toBeVisible()
+    const farTitle = `ROOT-PREVIEW-FAR-${Date.now()}`
+    const farResponse = await request.post(`${apiBase}/far/modes`, {
+      headers,
+      data: {
+        system_name: 'ROOT-PREVIEW-SYSTEM',
+        title: farTitle,
+        effect: 'Preview search proof',
+        severity: 8,
+        occurrence: 4,
+        detection: 3,
+      },
+    })
+    expect(farResponse.ok()).toBeTruthy()
+    const far = await farResponse.json()
+
+    const searchTrigger = page.locator('button').filter({ hasText: /Search released and authorized records/i }).first()
+    await searchTrigger.click()
+    const searchInput = page.getByPlaceholder(/Search released and authorized records/i)
+    await searchInput.fill(farTitle)
+    const previewResult = page.getByRole('link', { name: new RegExp(farTitle) }).first()
+    await expect(previewResult).toBeVisible()
+    await expect(page.getByText('Preview / unreleased')).toBeVisible()
+    await previewResult.click()
+    await expect(page).toHaveURL(new RegExp(`/far\\?id=${far.id}`))
   })
 })

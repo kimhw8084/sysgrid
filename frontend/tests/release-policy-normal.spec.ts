@@ -22,9 +22,9 @@ test.describe('CHG-120 normal-v1 release policy', () => {
     }
 
     await page.goto('/')
-    await expect(page.getByText('Stability Pulse')).toBeVisible()
+    await expect(page.getByText('Observed health history (24h)')).toBeVisible()
     for (const moduleId of ['projects', 'far', 'knowledge', 'vendors', 'external', 'research', 'architecture']) {
-      await expect(page.locator(`[data-module-action="${moduleId}"][aria-disabled="true"]`).first(), moduleId).toBeVisible()
+      await expect(page.locator(`[data-sg-content-panel="true"] [data-module-action="${moduleId}"]`), moduleId).toHaveCount(0)
     }
 
     await page.goto('/far')

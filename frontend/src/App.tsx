@@ -603,10 +603,10 @@ function MainLayout() {
               <ToolbarButton onClick={() => setShowPatchNotes(true)}>Patch Notes</ToolbarButton>
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="group flex min-w-0 max-w-full flex-1 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 text-[var(--text-secondary)] transition-colors hover:border-[var(--action-primary)] hover:text-[var(--text-primary)] md:min-w-[320px]" data-sg-app-search="true" aria-label="Search assets, projects, or incidents"
+                className="group flex min-w-0 max-w-full flex-1 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 text-[var(--text-secondary)] transition-colors hover:border-[var(--action-primary)] hover:text-[var(--text-primary)] md:min-w-[320px]" data-sg-app-search="true" aria-label="Search released and authorized records"
               >
                 <Search size={16} aria-hidden="true" className="shrink-0 transition-colors group-hover:text-[var(--accent-primary)]" />
-                <span className="min-w-0 flex-1 truncate text-left text-sm">Search assets, projects, or incidents...</span>
+                <span className="min-w-0 flex-1 truncate text-left text-sm">Search released and authorized records...</span>
                 <div className="hidden items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100 sm:flex">
                   <span className="rounded border border-[var(--border-subtle)] bg-[var(--surface-base)] px-1.5 py-0.5 text-[10px]">⌘</span>
                   <span className="rounded border border-[var(--border-subtle)] bg-[var(--surface-base)] px-1.5 py-0.5 text-[10px]">K</span>
