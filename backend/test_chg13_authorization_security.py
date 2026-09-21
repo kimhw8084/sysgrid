@@ -3,12 +3,13 @@ from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.authorization import (
     has_capability,
+    is_control_plane_admin,
     merge_operator_permissions,
     require_capability,
     resolve_current_operator,
@@ -103,6 +104,30 @@ async def test_explicit_control_plane_admin_succeeds(seeded_admin_tenant, monkey
     )
 
     assert response.status_code == 200, response.text
+
+
+@pytest.mark.anyio
+async def test_control_plane_predicate_keeps_tenant_admin_and_root_separate(
+    seeded_admin_tenant,
+    setup_db,
+    monkeypatch,
+):
+    monkeypatch.setattr(settings, "CONTROL_PLANE_ADMIN_USER_IDS", "deployment-admin")
+    monkeypatch.setattr(settings, "CONTROL_PLANE_BOOTSTRAP_ENABLED", False)
+    monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "admin_root")
+
+    async with setup_db[1]() as config_db:
+        request = Request({
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/policy/module-availability",
+            "headers": [(b"x-user-id", b"admin_root")],
+            "query_string": b"",
+            "client": ("test", 1),
+            "server": ("test", 80),
+            "scheme": "http",
+        })
+        assert await is_control_plane_admin(request, config_db) is False
 
 
 @pytest.mark.anyio

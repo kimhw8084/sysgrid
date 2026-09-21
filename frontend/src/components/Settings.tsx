@@ -26,6 +26,13 @@ import { WorkspaceFlyoutActionCard, WorkspaceFlyoutDropdownEditor } from "./shar
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { WorkspaceHistoryShell } from "./shared/WorkspaceModalShells"
 import { SystemDiagnosticsPanel } from "./settings/SystemDiagnosticsPanel"
+import { useModulePolicy } from "../policy/ModulePolicy"
+import {
+  canViewSettingsTab,
+  isSettingsTab,
+  resolveSettingsPrivilegePolicy,
+  type SettingsTab,
+} from "./settings/settingsPrivilegePolicy"
 import { normalizeTheme } from './shared/theme'
 
 const PERMISSION_COMMIT_DEBOUNCE_MS = 900
@@ -682,18 +689,32 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
 import { ConfigSection } from "./ConfigRegistry"
 
 export default function SettingsPage() {
-  const [topTab, setTopTab] = useState<'environments' | 'permissions' | 'groups' | 'system' | 'diagnostics' | 'tenants' | 'standards' | 'metadata'>('environments')
-  
-  // Use URL search params to set the initial tab if provided
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get('tab');
-    if (tab && ['environments', 'permissions', 'groups', 'system', 'diagnostics', 'tenants', 'standards', 'metadata'].includes(tab)) {
-      setTopTab(tab as any);
-    }
-  }, []);
-
+  const [topTab, setTopTab] = useState<SettingsTab>('environments')
+  const [requestedTab] = useState<SettingsTab | null>(() => {
+    if (typeof window === 'undefined') return null
+    const tab = new URLSearchParams(window.location.search).get('tab')
+    return isSettingsTab(tab) ? tab : null
+  })
   const queryClient = useQueryClient()
+  const modulePolicyQuery = useModulePolicy()
+  const settingsPrivileges = resolveSettingsPrivilegePolicy(modulePolicyQuery.data, modulePolicyQuery)
+  const { policyReady, settingsManage, globalConfigManage, diagnosticsRead, controlPlaneAdmin } = settingsPrivileges
+
+  useEffect(() => {
+    if (!policyReady) return
+    const nextTab = requestedTab && canViewSettingsTab(requestedTab, settingsPrivileges)
+      ? requestedTab
+      : 'environments'
+    setTopTab(nextTab)
+
+    if (requestedTab && nextTab !== requestedTab && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      params.set('tab', nextTab)
+      const query = params.toString()
+      window.history.replaceState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`)
+    }
+  }, [policyReady, requestedTab, settingsManage, globalConfigManage, diagnosticsRead, controlPlaneAdmin])
+
   const { data: options } = useQuery({ 
       queryKey: ["settings-options"], 
       queryFn: async () => (await (await apiFetch("/api/v1/settings/options")).json()) 
@@ -881,12 +902,13 @@ export default function SettingsPage() {
       });
       return data
     },
-    retry: 1
+    retry: 1,
+    enabled: globalConfigManage && (topTab === 'environments' || topTab === 'system'),
   })
 
   const [localEnv, setLocalEnv] = useState<any>({})
 
-  const isDisconnected = isEnvError && !isEnvLoading;
+  const isDisconnected = globalConfigManage && isEnvError && !isEnvLoading;
 
   const handleApplyOverride = () => {
     setApiOverride(emergencyUrl);
@@ -1011,7 +1033,7 @@ export default function SettingsPage() {
       const res = await apiFetch(`/api/v1/settings/teams/${selectedTeamId}/audit`)
       return res.json()
     },
-    enabled: !!selectedTeamId
+    enabled: settingsManage && topTab === 'groups' && !!selectedTeamId
   })
 
   const { data: poolVersions } = useQuery({
@@ -1019,7 +1041,8 @@ export default function SettingsPage() {
     queryFn: async () => {
       const res = await apiFetch("/api/v1/settings/user-pool/versions")
       return res.json()
-    }
+    },
+    enabled: settingsManage && topTab === 'permissions',
   })
 
   const { data: envHistory } = useQuery({
@@ -1029,7 +1052,7 @@ export default function SettingsPage() {
       const res = await apiFetch(`/api/v1/settings/env/history?field=${historyField}`)
       return res.json()
     },
-    enabled: !!historyField
+    enabled: globalConfigManage && !!historyField
   })
 
   const backupTenantMutation = useMutation({
@@ -1050,7 +1073,7 @@ export default function SettingsPage() {
       const res = await apiFetch("/api/v1/tenants/admin/all")
       return res.json()
     },
-    enabled: topTab === 'tenants'
+    enabled: controlPlaneAdmin && topTab === 'tenants'
   })
 
   const { data: tenantAdminSettings } = useQuery({
@@ -1059,7 +1082,7 @@ export default function SettingsPage() {
       const res = await apiFetch("/api/v1/tenants/admin/settings")
       return res.json()
     },
-    enabled: topTab === 'tenants'
+    enabled: controlPlaneAdmin && topTab === 'tenants'
   })
 
   useEffect(() => {
@@ -1137,12 +1160,6 @@ export default function SettingsPage() {
       return res.json();
     }
   });
-
-  useEffect(() => {
-    if (topTab === 'diagnostics' && !userProfile?.is_admin) {
-      setTopTab('environments')
-    }
-  }, [topTab, userProfile?.is_admin])
 
   const operatorMutation = useMutation({
     mutationFn: async (op: any) => {
@@ -1704,7 +1721,7 @@ export default function SettingsPage() {
                   <span>Golden Template</span>
               </ToolbarButton>
             )}
-            {topTab === 'environments' && (
+            {topTab === 'environments' && globalConfigManage && (
               <ToolbarButton
                   onClick={() => envMutation.mutate(getPersistableEnvSettings())}
                   variant="secondary"
@@ -1721,21 +1738,26 @@ export default function SettingsPage() {
       <ToolbarSegmented 
         options={[
           { label: 'Parameters', value: 'environments' },
-          { label: 'Permissions', value: 'permissions' },
-          { label: 'Groups', value: 'groups' },
-          { label: 'Metadata', value: 'metadata' },
-          { label: 'Analysis', value: 'system' },
-          ...(userProfile?.is_admin ? [{ label: 'System Diagnostics', value: 'diagnostics' as const }] : []),
-          { label: 'Tenants', value: 'tenants' },
+          ...(settingsManage ? [
+            { label: 'Permissions', value: 'permissions' as const },
+            { label: 'Groups', value: 'groups' as const },
+            { label: 'Metadata', value: 'metadata' as const },
+            ...(globalConfigManage ? [{ label: 'Analysis', value: 'system' as const }] : []),
+          ] : []),
+          ...(diagnosticsRead ? [{ label: 'System Diagnostics', value: 'diagnostics' as const }] : []),
+          ...(controlPlaneAdmin ? [{ label: 'Tenants', value: 'tenants' as const }] : []),
           { label: 'Standards', value: 'standards' }
         ]}
         value={topTab}
-        onChange={(val: any) => setTopTab(val)}
+        onChange={(val: any) => {
+          const nextTab = val as SettingsTab
+          setTopTab(canViewSettingsTab(nextTab, settingsPrivileges) ? nextTab : 'environments')
+        }}
       />
 
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
         <AnimatePresence mode="wait">
-          {topTab === 'metadata' && (
+          {topTab === 'metadata' && settingsManage && (
              <motion.div key="metadata" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
                 <PageToolbar
                   left={
@@ -1872,6 +1894,29 @@ export default function SettingsPage() {
           )}
           {topTab === 'environments' && (
             <motion.div key="environments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
+               <div className="rounded-lg border border-white/5 bg-black/20 p-4" data-settings-personal-preferences="true">
+                 <div className="flex flex-wrap items-center justify-between gap-3">
+                   <div>
+                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-300">Personal Preferences</p>
+                     <p className="mt-1 text-[9px] font-semibold text-slate-500">Choose the visual mode for your operator session.</p>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     {themeOptions.map((theme) => (
+                       <button
+                         key={theme.id}
+                         type="button"
+                         aria-pressed={currentTheme === theme.id}
+                         onClick={() => changeTheme(theme.id)}
+                         className={`rounded-lg border px-3 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${currentTheme === theme.id ? 'border-blue-500/40 bg-blue-500/15 text-blue-300' : 'border-white/10 bg-black/20 text-slate-400 hover:border-white/20 hover:text-white'}`}
+                       >
+                         {theme.label}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+               </div>
+
+               {globalConfigManage ? (<>
                {/* Unified Parameter Toolbar */}
                <PageToolbar
                   left={
@@ -1983,10 +2028,17 @@ export default function SettingsPage() {
                     </div>
                   )}
                </div>
+               </>) : (
+                 <div className="rounded-lg border border-dashed border-white/10 bg-black/10 px-4 py-8 text-center" data-settings-privilege-state="global-config-unavailable">
+                   <Lock size={20} className="mx-auto mb-3 text-slate-600" />
+                   <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Global configuration unavailable</p>
+                   <p className="mt-2 text-[9px] font-semibold text-slate-600">Tenant administrator and Settings management authority are required for environment parameters.</p>
+                 </div>
+               )}
             </motion.div>
           )}
 
-          {topTab === 'permissions' && (
+          {topTab === 'permissions' && settingsManage && (
             <motion.div key="permissions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
                {/* Identity Sync Pipeline - Collapsed by default */}
                <div className="rounded-lg border border-white/5 bg-black/20 overflow-hidden">
@@ -2479,7 +2531,7 @@ export default function SettingsPage() {
             </motion.div>
           )}
 
-          {topTab === 'tenants' && (
+          {topTab === 'tenants' && controlPlaneAdmin && (
             <motion.div key="tenants" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
                <PageToolbar
                   left={
@@ -2749,7 +2801,7 @@ export default function SettingsPage() {
             </motion.div>
           )}
 
-          {topTab === 'groups' && (
+          {topTab === 'groups' && settingsManage && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-2">
               <PageToolbar
                 left={
@@ -2949,7 +3001,7 @@ export default function SettingsPage() {
             </motion.div>
           )}
 
-          {topTab === 'system' && (
+          {topTab === 'system' && globalConfigManage && (
              <motion.div key="system" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
                 <PageToolbar
                   left={
@@ -3068,7 +3120,7 @@ export default function SettingsPage() {
              </motion.div>
           )}
 
-          {topTab === 'diagnostics' && userProfile?.is_admin && (
+          {topTab === 'diagnostics' && diagnosticsRead && (
             <motion.div key="diagnostics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               <SystemDiagnosticsPanel />
             </motion.div>
@@ -3081,7 +3133,7 @@ export default function SettingsPage() {
       </div>
 
       {/* History Modal for Parameters */}
-      {historyField && (
+      {globalConfigManage && historyField && (
         <ConfigHistoryModal 
           field={historyField} 
           versions={envHistory || []} 
@@ -3095,13 +3147,13 @@ export default function SettingsPage() {
       )}
 
       {/* Permission Registry History */}
-      {showPermissionHistory && (
+      {settingsManage && showPermissionHistory && (
          <PermissionHistoryModal versions={poolVersions || []} allViews={allViews} onClose={() => setShowPermissionHistory(false)} />
       )}
 
       {/* Snapshot Data Modal */}
       <AnimatePresence>
-        {viewVersionData && (
+        {settingsManage && viewVersionData && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewVersionData(null)} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]" />
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[80vh] bg-[#0c121e] border border-white/10 rounded-lg shadow-2xl z-[201] flex flex-col overflow-hidden">
@@ -3141,7 +3193,7 @@ export default function SettingsPage() {
 
       {/* Script History Modal */}
       <AnimatePresence>
-        {viewVersionScript && (
+        {settingsManage && viewVersionScript && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewVersionScript(null)} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]" />
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] bg-[#0c121e] border border-white/10 rounded-lg shadow-2xl z-[201] flex flex-col overflow-hidden">

@@ -4,6 +4,12 @@ import { test } from './helpers/sysgrid-test';
 import { resetBrowserState, seedOperationalScenario } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+const testUserId = process.env.SYSGRID_VERIFY_USER_ID || 'haewon.kim'
+const hasControlPlaneAuthority = () => (process.env.CONTROL_PLANE_ADMIN_USER_IDS || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean)
+  .includes(testUserId)
 
 test.describe('Settings and audit workflows', () => {
   test('persists theme and loads major settings sections', async ({ page }) => {
@@ -24,9 +30,13 @@ test.describe('Settings and audit workflows', () => {
     await expect(page.getByText('Identity Sync Pipeline')).toBeVisible()
     await expect(page.getByPlaceholder('Search identity, department, or team...')).toBeVisible()
 
-    await clickResilientButton(page, /Tenants/i)
-    await expect(page.getByText('Tenant Registry')).toBeVisible()
-    await expect(page.getByRole('button', { name: /Create Tenant/i })).toBeVisible()
+    if (hasControlPlaneAuthority()) {
+      await clickResilientButton(page, /Tenants/i)
+      await expect(page.getByText('Tenant Registry')).toBeVisible()
+      await expect(page.getByRole('button', { name: /Create Tenant/i })).toBeVisible()
+    } else {
+      await expect(page.getByRole('button', { name: /Tenants/i })).not.toBeVisible()
+    }
   })
 
   test('filters operators and keeps tenant input after a failed create attempt', async ({ page }) => {
@@ -34,25 +44,25 @@ test.describe('Settings and audit workflows', () => {
 
     await page.goto('/settings?tab=permissions')
     await expect(page.getByText('Identity Sync Pipeline')).toBeVisible()
-    const operatorId = process.env.SYSGRID_VERIFY_USER_ID || 'haewon.kim'
-    await page.getByPlaceholder('Search identity, department, or team...').fill(operatorId)
-    const adminRow = page.locator('table > tbody > tr').filter({ hasText: operatorId }).first()
+    await page.getByPlaceholder('Search identity, department, or team...').fill(testUserId)
+    const adminRow = page.locator('table > tbody > tr').filter({ hasText: testUserId }).first()
     await expect(adminRow).toBeVisible()
-    await expect(adminRow).toContainText(operatorId)
+    await expect(adminRow).toContainText(testUserId)
     await expect(page.getByText('No operators match the current filter')).not.toBeVisible()
 
     await page.getByPlaceholder('Search identity, department, or team...').fill('not-a-real-operator')
     await expect(page.getByText('No operators match the current filter')).toBeVisible()
+
+    if (!hasControlPlaneAuthority()) {
+      await expect(page.getByRole('button', { name: /Tenants/i })).not.toBeVisible()
+      return
+    }
 
     await clickResilientButton(page, /Tenants/i)
     await expect(page.getByText('Tenant Registry')).toBeVisible()
     const tenantTable = page.locator('table').filter({
       has: page.getByRole('columnheader', { name: 'Tenant', exact: true })
     })
-    if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1') {
-      await expect(tenantTable.locator('tbody > tr')).toHaveCount(0)
-      return
-    }
     const existingTenantName = (await tenantTable.locator('tbody > tr').first().locator('td').first().locator('div.text-white').innerText()).trim()
     expect(existingTenantName).not.toBe('')
 
