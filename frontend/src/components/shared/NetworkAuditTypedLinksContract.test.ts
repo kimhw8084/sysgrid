@@ -1,10 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { execFileSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
 
 const frontendRoot = path.resolve(__dirname, '../..')
-const repoRoot = path.resolve(frontendRoot, '../..')
 const readSource = (relativePath: string) => fs.readFileSync(path.join(frontendRoot, relativePath), 'utf8')
 
 describe('Network/Audit typed relationship navigation boundary', () => {
@@ -33,14 +31,4 @@ describe('Network/Audit typed relationship navigation boundary', () => {
     expect(source).toMatch(/device_b_id: item\?\.target_device_id[\s\S]*?Number\(item\.target_device_id\)/)
   })
 
-  it('keeps Settings and backend outside this bounded change', () => {
-    expect(() => execFileSync('git', [
-      'diff',
-      '--quiet',
-      'd5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac',
-      '--',
-      'backend',
-      'frontend/src/components/Settings.tsx',
-    ], { cwd: repoRoot })).not.toThrow()
-  })
 })

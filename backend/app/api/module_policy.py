@@ -16,11 +16,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.authorization import (
     has_capability,
+    is_control_plane_admin,
     merge_operator_permissions,
     resolve_current_operator,
 )
 from ..core.config import settings
-from ..database import get_db
+from ..database import ConfigSessionLocal, get_db
 from ..models import models
 from .utils import get_current_user_id
 
@@ -158,6 +159,14 @@ def _build_module_entry(
             else has_capability(operator, capability, 2)
         )
     )
+    has_manage = bool(
+        capability
+        and (
+            _explicit_capability(operator, capability, 3)
+            if root_preview_requires_explicit_capability
+            else has_capability(operator, capability, 3)
+        )
+    )
     root_preview = bool(
         stage == "preview"
         and system_root
@@ -196,6 +205,7 @@ def _build_module_entry(
         "actions": {
             "read": available,
             "write": bool(available and has_write),
+            "manage": bool(available and has_manage),
             "import": bool(available and has_write),
             "export": bool(available),
             "preview": root_preview,
@@ -204,9 +214,19 @@ def _build_module_entry(
 
 
 async def build_effective_policy(request: Request, db: AsyncSession) -> dict[str, Any]:
+    async with ConfigSessionLocal() as config_db:
+        return await _build_effective_policy(request, db, config_db)
+
+
+async def _build_effective_policy(
+    request: Request,
+    db: AsyncSession,
+    config_db: AsyncSession,
+) -> dict[str, Any]:
     user_id = get_current_user_id(request)
     operator = await resolve_current_operator(request, db)
     system_root = is_system_root_user_id(user_id)
+    control_plane_admin = await is_control_plane_admin(request, config_db)
     modules = {
         module_id: _build_module_entry(module, operator=operator, system_root=system_root)
         for module_id, module in MODULES.items()
@@ -221,6 +241,7 @@ async def build_effective_policy(request: Request, db: AsyncSession) -> dict[str
             "operator_role": operator.role.name if operator and operator.role else None,
             "tenant_admin": bool(operator and operator.is_admin),
             "system_root": system_root,
+            "control_plane_admin": control_plane_admin,
         },
         "actions": {
             "diagnostics": {

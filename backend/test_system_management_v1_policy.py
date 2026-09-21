@@ -80,6 +80,48 @@ def test_tenant_admin_and_wildcard_do_not_become_system_root(monkeypatch):
     assert has_capability(_operator(permissions={"all": 3}), "system.preview", 1) is False
 
 
+def test_module_manage_action_uses_level_three_capability_without_inventing_no_capability_authority():
+    settings_module = next(item for item in CATALOG["modules"] if item["id"] == "settings")
+    reader = _build_module_entry(settings_module, operator=_operator(permissions={"settings": 1}), system_root=False)
+    manager = _build_module_entry(settings_module, operator=_operator(permissions={"settings": 3}), system_root=False)
+    no_capability = next(item for item in CATALOG["modules"] if item["required_capability"] is None)
+    neutral = _build_module_entry(no_capability, operator=_operator(is_admin=True), system_root=False)
+
+    assert reader["actions"]["manage"] is False
+    assert manager["actions"]["manage"] is True
+    assert neutral["actions"]["manage"] is False
+
+
+@pytest.mark.anyio
+async def test_effective_policy_projects_control_plane_identity_and_explicit_diagnostics(
+    seeded_admin_tenant,
+    monkeypatch,
+):
+    monkeypatch.setattr(settings, "CONTROL_PLANE_BOOTSTRAP_ENABLED", False)
+    monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "admin_root")
+
+    configured_response = await seeded_admin_tenant["client"].get(
+        "/api/v1/policy/module-availability",
+        headers={"X-User-Id": "admin_root"},
+    )
+    assert configured_response.status_code == 200, configured_response.text
+    assert configured_response.json()["identity"]["control_plane_admin"] is True
+
+    monkeypatch.setattr(settings, "CONTROL_PLANE_ADMIN_USER_IDS", "deployment-admin")
+    response = await seeded_admin_tenant["client"].get(
+        "/api/v1/policy/module-availability",
+        headers={"X-User-Id": "admin_root"},
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["identity"]["tenant_admin"] is True
+    assert payload["identity"]["system_root"] is True
+    assert payload["identity"]["control_plane_admin"] is False
+    assert payload["actions"]["diagnostics"]["read"] is True
+    assert payload["modules"]["settings"]["actions"]["manage"] is True
+
+
 def test_reserved_root_identity_cannot_be_manufactured_by_tenant_settings(monkeypatch):
     monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "haewon.kim")
     with pytest.raises(HTTPException) as exc:

@@ -16,6 +16,7 @@ export type EffectiveModulePolicy = {
   actions?: {
     read?: boolean
     write?: boolean
+    manage?: boolean
     import?: boolean
     export?: boolean
     preview?: boolean
@@ -32,6 +33,7 @@ export type EffectiveModulePolicyProjection = {
     operator_role: string | null
     tenant_admin: boolean
     system_root: boolean
+    control_plane_admin: boolean
   }
   actions: { diagnostics?: { read?: boolean } }
   modules: Record<string, EffectiveModulePolicy>
