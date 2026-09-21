@@ -1,0 +1,436 @@
+{
+  "accepted_at": "2026-09-21T15:45:42Z",
+  "changed_files": [
+    {
+      "additions": 699,
+      "deletions": 283,
+      "path": "backend/app/api/dashboard.py",
+      "status": "M"
+    },
+    {
+      "additions": 63,
+      "deletions": 9,
+      "path": "backend/test_dashboard_metrics.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/App.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 31,
+      "deletions": 0,
+      "path": "frontend/src/components/Dashboard.truth.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 440,
+      "deletions": 504,
+      "path": "frontend/src/components/Dashboard.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 6,
+      "path": "frontend/src/components/shared/GlobalSearch.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 83,
+      "deletions": 0,
+      "path": "frontend/tests/home-truth.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tests/pom/DashboardView.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/tests/release-policy-normal.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 26,
+      "deletions": 6,
+      "path": "frontend/tests/release-policy-root-preview.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 6,
+      "path": "frontend/tests/shell-and-search.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"export async function (createAsset|createService|createMonitoring|createSite|createRack|createConnection)\" -A90 frontend/tests/helpers/sysgrid.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,520p' frontend/src/components/Dashboard.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,320p' /Users/haewonkim/.codex/plugins/cache/openai-primary-runtime/pdf/26.905.11957/skills/pdf/SKILL.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -i \\\"nordic|theme|frost\\\" frontend/src frontend/tests contracts -g '*.tsx' -g '*.ts' -g '*.json' | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '270,520p' frontend/src/App.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"sg-main-content|<main|mainContentRef\\\" frontend/src/App.tsx | head -40 && rtk sed -n '680,780p' frontend/src/App.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '590,650p' frontend/src/App.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-tree --name-only f38f07e9db1ddba7acc8bcca272f25a2e060c78c && rtk git show --stat --oneline f38f07e9db1ddba7acc8bcca272f25a2e060c78c | head -80 && rtk git ls-tree -r --name-only f38f07e9db1ddba7acc8bcca272f25a2e060c78c | head -100'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show -s --format='%H%n%T%n%P%n%s' f38f07e9db1ddba7acc8bcca272f25a2e060c78c && rtk git cat-file -p f38f07e9db1ddba7acc8bcca272f25a2e060c78c | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if [ -e /tmp/sysgrid-chg49-baseline ]; then rtk printf 'baseline path already exists; refusing to overwrite\\\\\\\\n'; exit 1; fi\nrtk git worktree add --detach /tmp/sysgrid-chg49-baseline 8d71e114c395bd964f78f9d86dd438984aac1dd9\nrtk npm ci --prefix /tmp/sysgrid-chg49-baseline/frontend\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"createSite\\\\(|createRack\\\\(|mountRackDevice\\\\(|createConnection\\\\(\\\" frontend/tests -g '*.spec.ts' | head -80\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '35,80p' frontend/tests/network-workflows.spec.ts && rtk sed -n '1,80p' frontend/tests/golden-eight-seeded-visual-matrix.spec.ts && rtk rg -n \\\"createSite\\\\(|createRack\\\\(\\\" frontend/tests -g '*.spec.ts' | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"@.*(post|get).*racks|def create_rack|RackCreate|site_id\\\" backend/app/api backend/app/schemas backend/test_racks* -g '*.py' | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,120p' backend/test_racks_workflows.py && rtk sed -n '1,110p' backend/app/api/sites.py && rtk sed -n '190,255p' backend/app/api/racks.py && rtk sed -n '35,75p' backend/app/schemas/schemas.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,40p' /tmp/chg49-visual-capture.mjs && rtk wc -l /tmp/chg49-visual-capture.mjs\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SOURCE_SHA=2256ce8942d20f245021613d76f02e1035cc5f9d SOURCE_TREE=2a30643cdedbbd7e278d5fbfb8353d28197f3d40 SCENARIO=normal-v1-empty-no-observation-authority BASE_URL=http://127.0.0.1:6702 API_BASE=http://127.0.0.1:6701/api/v1 OUTPUT_DIR=/tmp/chg49-visual-work/screenshots PLAYWRIGHT_MODULE=/Users/haewonkim/.codex-fabric/worktrees/CF-f39c4a31585af3446cb9c436/frontend/node_modules/playwright/index.mjs USER_ID=haewon.kim TENANT_ID=1 rtk node /tmp/chg49-visual-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VERIFY_RUNTIME_ROOT_DIR=/Users/haewonkim/.codex-fabric/worktrees/CF-f39c4a31585af3446cb9c436 SYSGRID_VERIFY_BACKEND_PORT=6701 SYSGRID_VERIFY_FRONTEND_PORT=6702 rtk bash -lc 'source scripts/lib/verify-runtime.sh; verify_runtime_start; rtk printf \\\"VISUAL_RUNTIME_READY base=%s api=%s runtime=%s\\\\\\\\n\\\" \\\"\"'$VERIFY_RUNTIME_FRONTEND_ORIGIN\" \"$VERIFY_RUNTIME_BACKEND_ORIGIN/api/v1\" \"$VERIFY_RUNTIME_DIR\"; while :; do sleep 30; done'\"'\"",
+      "exit_code": 130,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SOURCE_SHA=2256ce8942d20f245021613d76f02e1035cc5f9d SOURCE_TREE=2a30643cdedbbd7e278d5fbfb8353d28197f3d40 SCENARIO=normal-v1-populated-no-observation-authority BASE_URL=http://127.0.0.1:6712 API_BASE=http://127.0.0.1:6711/api/v1 OUTPUT_DIR=/tmp/chg49-visual-work/screenshots PLAYWRIGHT_MODULE=/Users/haewonkim/.codex-fabric/worktrees/CF-f39c4a31585af3446cb9c436/frontend/node_modules/playwright/index.mjs USER_ID=haewon.kim TENANT_ID=1 rtk node /tmp/chg49-visual-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VERIFY_RUNTIME_ROOT_DIR=/Users/haewonkim/.codex-fabric/worktrees/CF-f39c4a31585af3446cb9c436 SYSGRID_VERIFY_BACKEND_PORT=6711 SYSGRID_VERIFY_FRONTEND_PORT=6712 rtk bash -lc 'source scripts/lib/verify-runtime.sh; verify_runtime_start; rtk printf \\\"VISUAL_RUNTIME_READY base=%s api=%s runtime=%s\\\\\\\\n\\\" \\\"\"'$VERIFY_RUNTIME_FRONTEND_ORIGIN\" \"$VERIFY_RUNTIME_BACKEND_ORIGIN/api/v1\" \"$VERIFY_RUNTIME_DIR\"; while :; do sleep 30; done'\"'\"",
+      "exit_code": 130,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python VERIFY_RUNTIME_ROOT_DIR=/tmp/sysgrid-chg49-baseline SYSGRID_VERIFY_BACKEND_PORT=6721 SYSGRID_VERIFY_FRONTEND_PORT=6722 rtk bash -lc 'source scripts/lib/verify-runtime.sh; verify_runtime_start; rtk printf \\\"VISUAL_RUNTIME_READY base=%s api=%s runtime=%s\\\\\\\\n\\\" \\\"\"'$VERIFY_RUNTIME_FRONTEND_ORIGIN\" \"$VERIFY_RUNTIME_BACKEND_ORIGIN/api/v1\" \"$VERIFY_RUNTIME_DIR\"; while :; do sleep 30; done'\"'\"",
+      "exit_code": 130,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SOURCE_SHA=8d71e114c395bd964f78f9d86dd438984aac1dd9 SOURCE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SCENARIO=normal-v1-empty-no-observation-authority BASE_URL=http://127.0.0.1:6732 API_BASE=http://127.0.0.1:6731/api/v1 OUTPUT_DIR=/tmp/chg49-visual-work/screenshots PLAYWRIGHT_MODULE=/tmp/sysgrid-chg49-baseline/frontend/node_modules/playwright/index.mjs USER_ID=haewon.kim TENANT_ID=1 rtk node /tmp/chg49-visual-capture.mjs'",
+      "exit_code": 134,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SOURCE_SHA=8d71e114c395bd964f78f9d86dd438984aac1dd9 SOURCE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SCENARIO=normal-v1-empty-no-observation-authority BASE_URL=http://127.0.0.1:6732 API_BASE=http://127.0.0.1:6731/api/v1 OUTPUT_DIR=/tmp/chg49-visual-work/screenshots PLAYWRIGHT_MODULE=/tmp/sysgrid-chg49-baseline/frontend/node_modules/playwright/index.mjs USER_ID=haewon.kim TENANT_ID=1 rtk /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg49-visual-capture.mjs'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SOURCE_SHA=8d71e114c395bd964f78f9d86dd438984aac1dd9 SOURCE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SCENARIO=normal-v1-empty-no-observation-authority BASE_URL=http://127.0.0.1:6732 API_BASE=http://127.0.0.1:6731/api/v1 OUTPUT_DIR=/tmp/chg49-visual-work/screenshots PLAYWRIGHT_MODULE=/tmp/sysgrid-chg49-baseline/frontend/node_modules/playwright/index.mjs USER_ID=haewon.kim TENANT_ID=1 rtk /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg49-visual-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_NODE=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node VERIFY_RUNTIME_ROOT_DIR=/tmp/sysgrid-chg49-baseline SYSGRID_VERIFY_BACKEND_PORT=6731 SYSGRID_VERIFY_FRONTEND_PORT=6732 rtk bash -lc 'source scripts/lib/verify-runtime.sh; verify_runtime_start; rtk printf \\\"VISUAL_RUNTIME_READY base=%s api=%s runtime=%s\\\\\\\\n\\\" \\\"\"'$VERIFY_RUNTIME_FRONTEND_ORIGIN\" \"$VERIFY_RUNTIME_BACKEND_ORIGIN/api/v1\" \"$VERIFY_RUNTIME_DIR\"; while :; do sleep 30; done'\"'\"",
+      "exit_code": 130,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SOURCE_SHA=8d71e114c395bd964f78f9d86dd438984aac1dd9 SOURCE_TREE=72a2ef5c1275a25b4d46fbd049789b68c9087649 SCENARIO=normal-v1-populated-no-observation-authority BASE_URL=http://127.0.0.1:6742 API_BASE=http://127.0.0.1:6741/api/v1 OUTPUT_DIR=/tmp/chg49-visual-work/screenshots PLAYWRIGHT_MODULE=/tmp/sysgrid-chg49-baseline/frontend/node_modules/playwright/index.mjs USER_ID=haewon.kim TENANT_ID=1 rtk /Users/haewonkim/.nvm/versions/node/v20.19.4/bin/node /tmp/chg49-visual-capture.mjs'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk unzip -l <(rtk git show f38f07e9db1ddba7acc8bcca272f25a2e060c78c:visual-evidence/artifact-bundle.zip) 2>/dev/null | head -80 || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk node container_tools/mark_artifact_operation_started.mjs --operation-kind create --expected-output-count 2 --output-format pdf'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find /Users/haewonkim -path '*/container_tools/mark_artifact_operation_started.mjs' -print 2>/dev/null | head -20\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find /opt /usr/local /Users/haewonkim/.codex -name mark_artifact_operation_started.mjs -print 2>/dev/null | head -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk mdfind -name mark_artifact_operation_started.mjs | head -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find /private/tmp /tmp -name mark_artifact_operation_started.mjs -print 2>/dev/null | head -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -l \"mark_artifact_operation_started\" /Users/haewonkim/.codex /Users/haewonkim/.codex-fabric /opt 2>/dev/null | head -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk node /Users/haewonkim/.codex/plugins/cache/openai-primary-runtime/pdf/26.905.11957/skills/pdf/container_tools/mark_artifact_operation_started.mjs --operation-kind create --expected-output-count 2 --output-format pdf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find /tmp/chg49-visual-work/screenshots -maxdepth 1 -type f -print | sort'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show f38f07e9db1ddba7acc8bcca272f25a2e060c78c:visual-evidence/artifact-bundle.zip > /tmp/chg49-reference-bundle.zip && rtk unzip -l /tmp/chg49-reference-bundle.zip | head -100'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find / -name mark_artifact_operation_started.mjs -print 2>/dev/null | head -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python rtk /opt/anaconda3/bin/python /tmp/chg49-build-visual-artifacts.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk pdfinfo /tmp/chg49-visual-work/visual-evidence/review-desktop.pdf && rtk pdfinfo /tmp/chg49-visual-work/visual-evidence/review-mobile.pdf && rtk mkdir -p /tmp/chg49-visual-work/pdf-render && rtk pdftoppm -png /tmp/chg49-visual-work/visual-evidence/review-desktop.pdf /tmp/chg49-visual-work/pdf-render/desktop && rtk pdftoppm -png /tmp/chg49-visual-work/visual-evidence/review-mobile.pdf /tmp/chg49-visual-work/pdf-render/mobile && rtk find /tmp/chg49-visual-work/pdf-render -maxdepth 1 -type f | sort'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python rtk /opt/anaconda3/bin/python /tmp/chg49-build-visual-artifacts.py && rtk rm -f /tmp/chg49-visual-work/pdf-render/desktop-*.png /tmp/chg49-visual-work/pdf-render/mobile-*.png && rtk pdftoppm -png /tmp/chg49-visual-work/visual-evidence/review-desktop.pdf /tmp/chg49-visual-work/pdf-render/desktop && rtk pdftoppm -png /tmp/chg49-visual-work/visual-evidence/review-mobile.pdf /tmp/chg49-visual-work/pdf-render/mobile'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nimport hashlib, json, zipfile\nfrom pathlib import Path\nfrom pypdf import PdfReader\nroot=Path('/tmp/chg49-visual-work/visual-evidence')\ndef sha(p):\n    h=hashlib.sha256()\n    with p.open('rb') as f:\n        for chunk in iter(lambda:f.read(1<<20),b''): h.update(chunk)\n    return h.hexdigest()\nmanifest=json.loads((root/'manifest.json').read_text())\nreport=json.loads((root/'comparison-report.json').read_text())\nreader=json.loads((root/'reader-index.json').read_text())\nassert manifest['screenshot_count']==8\nassert report['candidate']['sha']=='2256ce8942d20f245021613d76f02e1035cc5f9d'\nassert report['baseline']['sha']=='8d71e114c395bd964f78f9d86dd438984aac1dd9'\nassert report['visual_manifest_sha256']==sha(root/'manifest.json')\nassert report['artifact_bundle_sha256']==sha(root/'artifact-bundle.zip')\nassert manifest['visual_bundle_sha256']==sha(root/'artifact-bundle.zip')\nfor member in manifest['members']:\n    p=root/member['path']\n    assert p.is_file(), p\n    assert p.stat().st_size==member['bytes'], member['path']\n    assert sha(p)==member['sha256'], member['path']\nassert len(list((root/'screenshots').glob('*.png')))==8\nfor p in (root/'screenshots').glob('*.png'):\n    b=p.read_bytes(); assert b[:8]==b'\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n'\n    assert int.from_bytes(b[16:20],'big') in (1440,390)\n    assert int.from_bytes(b[20:24],'big') in (900,844)\nassert len(PdfReader(str(root/'review-desktop.pdf')).pages)==4\nassert len(PdfReader(str(root/'review-mobile.pdf')).pages)==4\nwith zipfile.ZipFile(root/'artifact-bundle.zip') as z:\n    names=sorted(z.namelist())\n    assert len(names)==10, names\n    assert 'review-desktop.pdf' in names and 'review-mobile.pdf' in names\n    assert sum(n.endswith('.png') for n in names)==8\nprint(json.dumps({'manifest_sha256':sha(root/'manifest.json'),'bundle_sha256':sha(root/'artifact-bundle.zip'),'screenshot_count':8,'desktop_pdf_pages':4,'mobile_pdf_pages':4,'bundle_members':len(names)},sort_keys=True))\nPY\nrtk unzip -t /tmp/chg49-visual-work/visual-evidence/artifact-bundle.zip\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if [ -e /tmp/chg49-artifact-repo ]; then rtk printf 'artifact repo path already exists; refusing to overwrite\\\\\\\\n'; exit 1; fi\nrtk mkdir -p /tmp/chg49-artifact-repo\nrtk git -C /tmp/chg49-artifact-repo init --quiet\nrtk cp -R /tmp/chg49-visual-work/visual-evidence /tmp/chg49-artifact-repo/visual-evidence\nrtk git -C /tmp/chg49-artifact-repo add visual-evidence\nrtk git -C /tmp/chg49-artifact-repo -c user.name='Haewon Kim' -c user.email='kimhw8084@gmail.com' commit -m 'artifacts: CHG-49 Home observability truth verify v2'\nrtk git -C /tmp/chg49-artifact-repo show -s --format='%H%n%T%n%P%n%s' HEAD\nrtk git -C /tmp/chg49-artifact-repo push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2\"",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/chg49-artifact-repo remote add origin https://github.com/kimhw8084/sysgrid.git && rtk git -C /tmp/chg49-artifact-repo push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2 && rtk git -C /tmp/chg49-artifact-repo ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"if [ -e /tmp/chg49-artifact-remote-checkout ]; then rtk printf 'remote checkout path already exists; refusing to overwrite\\\\\\\\n'; exit 1; fi\nrtk git -C /tmp/chg49-artifact-repo fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2\nrtk git -C /tmp/chg49-artifact-repo worktree add --detach /tmp/chg49-artifact-remote-checkout FETCH_HEAD\nrtk /opt/anaconda3/bin/python - <<'PY'\nimport hashlib, json, subprocess\nfrom pathlib import Path\nroot=Path('/tmp/chg49-artifact-remote-checkout/visual-evidence')\ndef sha(p):\n    h=hashlib.sha256()\n    with p.open('rb') as f:\n        for chunk in iter(lambda:f.read(1<<20),b''): h.update(chunk)\n    return h.hexdigest()\nmanifest=json.loads((root/'manifest.json').read_text())\nfor m in manifest['members']:\n    p=root/m['path']\n    assert p.stat().st_size==m['bytes'], m['path']\n    assert sha(p)==m['sha256'], m['path']\nref='refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2'\ncommit=subprocess.check_output(['git','-C','/tmp/chg49-artifact-repo','rev-parse','origin/'+ref]).decode().strip()\nprint(json.dumps({'remote_ref':ref,'remote_commit':commit,'remote_bundle_sha256':sha(root/'artifact-bundle.zip'),'manifest_bundle_sha256':manifest['visual_bundle_sha256'],'remote_screenshot_count':len(list((root/'screenshots').glob('*.png')))},sort_keys=True))\nassert sha(root/'artifact-bundle.zip')==manifest['visual_bundle_sha256']\nassert len(list((root/'screenshots').glob('*.png')))==8\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nimport hashlib, json, subprocess\nfrom pathlib import Path\nroot=Path('/tmp/chg49-artifact-remote-checkout/visual-evidence')\ndef sha(p):\n    h=hashlib.sha256()\n    with p.open('rb') as f:\n        for chunk in iter(lambda:f.read(1<<20),b''): h.update(chunk)\n    return h.hexdigest()\nmanifest=json.loads((root/'manifest.json').read_text())\nfor m in manifest['members']:\n    p=root/m['path']\n    assert p.stat().st_size==m['bytes'], m['path']\n    assert sha(p)==m['sha256'], m['path']\nref='refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2'\nremote_line=subprocess.check_output(['git','-C','/tmp/chg49-artifact-repo','ls-remote','origin',ref],text=True).strip()\nremote_commit=remote_line.split()[0]\ncheckout_commit=subprocess.check_output(['git','-C','/tmp/chg49-artifact-repo','rev-parse','FETCH_HEAD'],text=True).strip()\nassert remote_commit==checkout_commit\nbundle_sha=sha(root/'artifact-bundle.zip')\nassert bundle_sha==manifest['visual_bundle_sha256']\nassert len(list((root/'screenshots').glob('*.png')))==8\nprint(json.dumps({'remote_ref':ref,'remote_commit':remote_commit,'remote_bundle_sha256':bundle_sha,'manifest_bundle_sha256':manifest['visual_bundle_sha256'],'remote_screenshot_count':8},sort_keys=True))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc 'set -e\nrtk git status --short --branch\nrtk git rev-parse HEAD\nrtk git rev-parse HEAD\"'^\nrtk git rev-parse HEAD''^{tree}\nrtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-home-observability-truth-verify-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2\nrtk git diff --check 8d71e114c395bd964f78f9d86dd438984aac1dd9..2256ce8942d20f245021613d76f02e1035cc5f9d\nrtk git diff --name-only 8d71e114c395bd964f78f9d86dd438984aac1dd9..2256ce8942d20f245021613d76f02e1035cc5f9d\nrtk printf \"%s'\"\\\\\\\\n\\\" worktree_clean=true main_unchanged=true candidate_exact=true'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc 'set -e\ntargets=(scripts/run-e2e.sh scripts/lib/verify-runtime.sh frontend/package.json)\npattern=\\\"\\\\\\\\b(codex|opencode|chatgpt|openai|llm|agent loop|model cli|ai api)\\\\\\\\b\\\"\nset +e\nrtk rg -n -i \\\"\"'$pattern\" \"${targets[@]}\"\nstatus=$?\nset -e\nif [ \"$status\" -eq 0 ]; then rtk printf \"%s'\"\\\\\\\\n\\\" forbidden_command_scan=FAILED; exit 1; fi\nif [ \\\"\"'$status\" -ne 1 ]; then rtk printf \"forbidden_command_scan=ERROR status=%s'\"\\\\\\\\n\\\" \\\"\"'$status\"; exit \"$status\"; fi\nrtk printf \"%s'\"\\\\\\\\n\\\" forbidden_command_scan=clean scanned=scripts/run-e2e.sh,scripts/lib/verify-runtime.sh,frontend/package.json'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove --force /tmp/sysgrid-chg49-baseline && rtk git worktree prune && rtk git worktree list --porcelain && rtk git status --short --branch'",
+      "exit_code": 255,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk find /tmp/sysgrid-chg49-baseline -maxdepth 2 -mindepth 1 | head -80 && rtk git worktree list --porcelain'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la /tmp/sysgrid-chg49-baseline'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rm -rf /tmp/sysgrid-chg49-baseline && rtk git worktree prune && rtk git worktree list --porcelain && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 192,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.11,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 15642752,
+      "fresh_input_tokens": 302148,
+      "input_tokens": 15944900,
+      "non_reasoning_output_tokens": 25532,
+      "output_tokens": 45738,
+      "reasoning_output_tokens": 20206,
+      "total_processed_tokens": 15990638
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+      "subject": "fabric: capture completed model changes [CF-6651cff0d46dc871bc841504]"
+    }
+  ],
+  "diff": {
+    "additions": 1382,
+    "changed_files": 11,
+    "commit_count": 1,
+    "deletions": 819
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-21T16:07:59Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "branch": "codex/sysgrid-smv1-home-observability-truth-verify-v2",
+    "detached_verify": false,
+    "head_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "remote_exact_head": true,
+    "remote_head_sha": "2256ce8942d20f245021613d76f02e1035cc5f9d",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "8d71e114c395bd964f78f9d86dd438984aac1dd9",
+    "work_branch": "codex/sysgrid-smv1-home-observability-truth-verify-v2",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-f39c4a31585af3446cb9c436",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-home-observability-truth-verify-v2"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-home-observability-truth-verify-v2",
+  "schema_version": 1,
+  "started_at": "2026-09-21T15:45:43Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1336,
+    "queue_seconds": 1,
+    "total_seconds": 1337
+  },
+  "transport": {
+    "bytes": 9222,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 8872,
+    "prompt_sha256": "607fa8a69fcb881930b073c4851fbee105d86eb151b59813c5116af06e02d7b3",
+    "sha256": "f39c4a31585af3446cb9c436a0aa86283e6a3898267c557df9b2c43793a1f0cc"
+  }
+}
