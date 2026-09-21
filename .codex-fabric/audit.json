@@ -1,0 +1,394 @@
+{
+  "accepted_at": "2026-09-21T13:34:14Z",
+  "changed_files": [
+    {
+      "additions": 23,
+      "deletions": 12,
+      "path": "backend/app/api/authorization.py",
+      "status": "M"
+    },
+    {
+      "additions": 22,
+      "deletions": 1,
+      "path": "backend/app/api/module_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 26,
+      "deletions": 1,
+      "path": "backend/test_chg13_authorization_security.py",
+      "status": "M"
+    },
+    {
+      "additions": 42,
+      "deletions": 0,
+      "path": "backend/test_system_management_v1_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 0,
+      "deletions": 12,
+      "path": "frontend/src/components/RacksTruthAndTypedLinks.contract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 92,
+      "deletions": 40,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 68,
+      "deletions": 0,
+      "path": "frontend/src/components/settings/settingsPrivilegePolicy.ts",
+      "status": "A"
+    },
+    {
+      "additions": 0,
+      "deletions": 12,
+      "path": "frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/policy/ModulePolicy.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 11,
+      "path": "frontend/tests/settings-and-audit.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 165,
+      "deletions": 0,
+      "path": "frontend/tests/settings-privilege.spec.ts",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && sed -n '1,260p' /Users/haewonkim/.codex/law.md && printf '\\\\n--- repo status ---\\\\n' && git status --short --branch && printf '\\\\n--- remotes ---\\\\n' && git remote -v\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD HEAD''^ HEAD''^{tree} && rtk git rev-parse refs/heads/main refs/heads/codex/sysgrid-smv1-settings-privilege-authority-qualification-v5 2>&1 && rtk git show-ref --verify --hash refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v5 2>&1 && rtk git show-ref --verify --hash refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 2>&1 && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-settings-privilege-authority-qualification-v5 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v5 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 && printf '\"'\\\\n--- candidate/base ancestry ---\\\\n' && rtk git merge-base --is-ancestor e604d4790dd06e0ace5547ab3169789ca8577c0c da5bb3a7f8563cbd242034f83b83f05de6a15053; printf 'merge_base_exit=%s\\\\n' \\\"\"'$?\" && rtk git show --no-patch --format='\"'%H%n%P%n%T' da5bb3a7f8563cbd242034f83b83f05de6a15053\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git merge --ff-only da5bb3a7f8563cbd242034f83b83f05de6a15053 && rtk git status --short --branch && rtk git rev-parse HEAD HEAD''^ HEAD''^{tree} refs/heads/main && rtk git show --no-patch --format='\"'%H%n%P%n%T' HEAD && printf '\\\\n--- remote refs ---\\\\n' && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-settings-privilege-authority-qualification-v5 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v5 refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git fetch --no-tags origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 && printf '%s\\\\n' '--- visual ref tree ---' && rtk git ls-tree -r --name-only FETCH_HEAD && printf '%s\\\\n' '--- candidate files ---' && rtk rg --files -g 'package.json' -g 'scripts/**' -g '.codex-fabric/**' -g '*evidence*' -g '*manifest*' | head -200 && printf '%s\\\\n' '--- fabric references ---' && rtk rg -n -i 'UPLOAD_THIS_TO_CHATGPT|codex-fabric|evidence ref|audit\\\\.json|visual artifact|bundle sha' . --glob '\"'!frontend/node_modules/**'\"' --glob '\"'!frontend/test-results/**'\"' --glob '\"'!frontend/playwright-report/**'\"' | head -240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- visual manifest ---' && rtk git show FETCH_HEAD:visual-evidence/manifest.json && printf '%s\\\\n' '--- visual bundle hash ---' && rtk git show FETCH_HEAD:visual-evidence/artifact-bundle.zip | shasum -a 256 && printf '%s\\\\n' '--- visual ref commit ---' && rtk git show --no-patch --format='%H%n%P%n%T%n%s' FETCH_HEAD && printf '%s\\\\n' '--- package availability ---' && if [ -d frontend/node_modules ]; then echo 'frontend/node_modules=present'; else echo 'frontend/node_modules=absent'; fi && rtk git diff --check e604d4790dd06e0ace5547ab3169789ca8577c0c..da5bb3a7f8563cbd242034f83b83f05de6a15053\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'VISUAL_BLOB=$(rtk git rev-parse FETCH_HEAD:visual-evidence/artifact-bundle.zip) && echo \"visual_bundle_blob=$VISUAL_BLOB\" && rtk proxy git cat-file blob \"$VISUAL_BLOB\" | shasum -a 256 && rtk npm ci --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find .codex-fabric -maxdepth 3 -type f -print 2>/dev/null | sort | head -200 && printf '\\\\n--- scripts and workflow hints ---\\\\n' && rtk rg -n 'codex-fabric/evidence|audit\\\\.json|evidence_ref|focused_backend_result|protected_scope_result|candidate_sha' . --glob '\"'!frontend/node_modules/**'\"' --glob '\"'!sysgrid-machine-*/**'\"' --glob '\"'!frontend/test-results/**'\"' --glob '\"'!frontend/playwright-report/**'\"' --glob '\"'!*.png'\"' --glob '\"'!*.zip'\"' | head -200 && printf '\\\\n--- branch config ---\\\\n' && rtk git config --get-regexp 'branch\\\\..*|remote\\\\..*' | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- local fabric refs ---' && rtk git for-each-ref --format='%(refname) %(objectname)' 'refs/heads/codex-fabric/*' | head -100 && printf '%s\\\\n' '--- remote fabric refs (names only) ---' && rtk git ls-remote --heads origin 'refs/heads/codex-fabric/evidence/sysgrid/*' | head -100 && printf '%s\\\\n' '--- other worktree fabric files ---' && rtk rg --files /Users/haewonkim/.codex-fabric --hidden -g '.codex-fabric/**' -g '\"'!**/node_modules/**'\"' | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git fetch --no-tags origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-verify-v2 && printf '%s\\\\n' '--- prior verify evidence tree ---' && rtk git ls-tree -r --name-only FETCH_HEAD && printf '%s\\\\n' '--- prior verify audit ---' && rtk git show FETCH_HEAD:.codex-fabric/audit.json && printf '%s\\\\n' '--- prior verify summary candidates ---' && rtk git ls-tree -r --name-only FETCH_HEAD | rtk rg 'summary|report|manifest|log|audit' | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- local fabric runtime candidates ---' && rtk ls -la /Users/haewonkim/.codex-fabric | head -100 && printf '%s\\\\n' '--- executable candidates ---' && rtk command -v codex-fabric fabric sysgrid-fabric 2>&1 || true && printf '%s\\\\n' '--- baseline diff check ---' && rtk git diff --check e604d4790dd06e0ace5547ab3169789ca8577c0c..da5bb3a7f8563cbd242034f83b83f05de6a15053\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- fabric current release ---' && rtk ls -la /Users/haewonkim/.codex-fabric/current && rtk rg --files /Users/haewonkim/.codex-fabric/current -g '*.py' -g '*.sh' -g '*.mjs' -g '*.json' | head -200 && printf '%s\\\\n' '--- fabric audit header ---' && rtk sed -n '1,220p' /Users/haewonkim/.codex-fabric/audit.json && printf '%s\\\\n' '--- job directories ---' && rtk ls -lt /Users/haewonkim/.codex-fabric/jobs /Users/haewonkim/.codex-fabric/results /Users/haewonkim/.codex-fabric/evidence | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- current job files ---' && rtk find /Users/haewonkim/.codex-fabric/jobs/CF-2d8d42059686542eb9199553 -maxdepth 3 -type f -print 2>/dev/null | sort | head -200 && printf '%s\\\\n' '--- current job result/evidence files ---' && rtk find /Users/haewonkim/.codex-fabric/results/CF-2d8d42059686542eb9199553 /Users/haewonkim/.codex-fabric/evidence/CF-2d8d42059686542eb9199553 -maxdepth 3 -type f -print 2>/dev/null | sort | head -200 && printf '%s\\\\n' '--- fabric script commands ---' && rtk rg -n 'evidence|audit|job_id|COMMAND_OUTPUTS|git push|artifact' /Users/haewonkim/.codex-fabric/current/fabric.py /Users/haewonkim/.codex-fabric/current/regression.py /Users/haewonkim/.codex-fabric/current/holdouts.py | head -240\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python pytest -q backend/test_system_management_v1_policy.py backend/test_chg13_authorization_security.py backend/test_settings_api_edges.py backend/test_settings_workflows.py backend/test_tenant_workflows.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 117,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 681,
+        "output_sha256": "9ba4db0fe18bbad3d3e1300aa1d00363e904ae78b1ba419dacb0fd3bb98e98d9",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend -- --run src/components/settings/settingsPrivilegePolicy.test.ts src/policy/ModulePolicy.test.ts src/components/settings/SystemDiagnosticsPanel.test.tsx src/components/shared/NetworkAuditTypedLinksContract.test.ts src/components/shared/OperationalObjectReference.test.ts src/components/RacksTruthAndTypedLinks.contract.test.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts tests/settings-standards.spec.ts tests/release-policy-normal.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python SYSGRID_VERIFY_PROFILE=root-preview SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=haewon.kim SYSGRID_VERIFY_USER_ID=haewon.kim USER_ID=haewon.kim bash scripts/run-e2e.sh --config=playwright.config.ts tests/release-policy-root-preview.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python CONTROL_PLANE_ADMIN_USER_IDS=haewon.kim bash scripts/run-e2e.sh --config=playwright.v1.config.ts tests/settings-and-audit.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python bash scripts/run-e2e.sh --config=playwright.config.ts tests/monitoring-workflows.spec.ts tests/network-workflows.spec.ts tests/racks-workflows.spec.ts tests/audit-logs-workflows.spec.ts tests/assets-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit --prefix frontend'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- candidate diff files ---' && rtk git diff --name-status e604d4790dd06e0ace5547ab3169789ca8577c0c da5bb3a7f8563cbd242034f83b83f05de6a15053 && printf '%s\\\\n' '--- predecessor accepted diff files ---' && rtk git diff --name-status b43fa9041cb365bb98740036178655adc4491e2c\"'^ b43fa9041cb365bb98740036178655adc4491e2c && printf '\"'%s\\\\n' '--- predecessor parents/tree ---' && rtk git show --no-patch --format='%H%n%P%n%T' b43fa9041cb365bb98740036178655adc4491e2c && printf '%s\\\\n' '--- target protected candidates against base ---' && for f in frontend/src/components/Racks.tsx frontend/src/components/shared/OperationalObjectReference.ts frontend/src/components/shared/OperationalObjectReference.test.ts frontend/tests/racks-workflows.spec.ts frontend/tests/audit-logs-workflows.spec.ts contracts/system_management_v1.json; do printf '%s ' \\\"\"'$f\"; rtk git diff --quiet e604d4790dd06e0ace5547ab3169789ca8577c0c da5bb3a7f8563cbd242034f83b83f05de6a15053 -- \"$f\"; printf '\"'diff_exit=%s\\\\n' \\\"\"'$?\"; done && printf '\"'%s\\\\n' '--- history assertion search ---' && rtk rg -n 'e604d4790dd06e0ace5547ab3169789ca8577c0c|d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac|b43fa9041cb365bb98740036178655adc4491e2c|da5bb3a7f8563cbd242034f83b83f05de6a15053' frontend backend contracts --glob '\"'!frontend/node_modules/**'\"' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'semantic_files=(backend/app/api/authorization.py backend/app/api/module_policy.py backend/test_chg13_authorization_security.py backend/test_system_management_v1_policy.py frontend/src/components/Settings.tsx frontend/src/components/settings/settingsPrivilegePolicy.test.ts frontend/src/components/settings/settingsPrivilegePolicy.ts frontend/src/policy/ModulePolicy.tsx frontend/tests/settings-and-audit.spec.ts frontend/tests/settings-privilege.spec.ts frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts) ; overall=0; for f in \"${semantic_files[@]}\"; do rtk git diff --quiet b43fa9041cb365bb98740036178655adc4491e2c HEAD -- \"$f\"; rc=$?; if [ \"$rc\" -eq 0 ]; then echo \"EXACT predecessor $f\"; else echo \"DIFF predecessor $f\"; overall=1; rtk git diff --unified=3 b43fa9041cb365bb98740036178655adc4491e2c HEAD -- \"$f\" | head -160; fi; done; printf '\"'semantic_compare_exit=%s\\\\n' \\\"\"'$overall\"; exit 0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for f in frontend/src/components/RacksTruthAndTypedLinks.contract.test.ts frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts; do echo \"--- $f ---\"; rtk git diff --unified=3 b43fa9041cb365bb98740036178655adc4491e2c HEAD -- \"$f\"; done; printf '\"'%s\\\\n' '--- candidate history-literal scan across all tracked files ---'; rtk git grep -n -E '39a0ee2d7b5a08004795d8207212e5347166cfac|d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac|9125f2be9c2c673c708fb77539894b43cabd811f|b43fa9041cb365bb98740036178655adc4491e2c' HEAD -- ':\"'!sysgrid-machine-*'\"' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- intentional history-removal diffs against fresh base ---' && for f in frontend/src/components/RacksTruthAndTypedLinks.contract.test.ts frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts; do echo \\\"--- \"'$f ---\"; rtk git diff --unified=3 e604d4790dd06e0ace5547ab3169789ca8577c0c HEAD -- \"$f\"; done && printf '\"'%s\\\\n' '--- protected fresh-base hashes ---' && protected_files=(frontend/src/components/Racks.tsx frontend/src/components/shared/OperationalObjectReference.ts frontend/src/components/shared/OperationalObjectReference.test.ts frontend/tests/racks-workflows.spec.ts frontend/tests/audit-logs-workflows.spec.ts contracts/system_management_v1.json) ; for f in \\\"\"'${protected_files[@]}\"; do base_hash=$(rtk git rev-parse e604d4790dd06e0ace5547ab3169789ca8577c0c:\"$f\"); head_hash=$(rtk git rev-parse HEAD:\"$f\"); printf '\"'%s base=%s head=%s ' \\\"\"'$f\" \"$base_hash\" \"$head_hash\"; if [ \"$base_hash\" = \"$head_hash\" ]; then echo '\"'MATCH'; else echo 'MISMATCH'; fi; done\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- permanent git-history assertion scan ---' && if rtk git grep -n -E \\\"exec(File)?Sync\\\\(['\\\\\\\"]git|git[[:space:]]+diff[[:space:]]+--quiet|git[[:space:]]+show[[:space:]]+|git[[:space:]]+rev-parse\\\" HEAD -- '*.ts' '*.tsx' '*.py' '*.json' '*.cjs' '*.mjs' '*.sh' | rtk rg -v '\"'^frontend/node_modules/'\"'; then exit 1; else echo 'no permanent git-history assertions found in tracked source/test/config files'; fi\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"target_files=(frontend/src/components/RacksTruthAndTypedLinks.contract.test.ts frontend/src/components/shared/NetworkAuditTypedLinksContract.test.ts frontend/src/components/Racks.tsx frontend/src/components/shared/OperationalObjectReference.ts frontend/src/components/shared/OperationalObjectReference.test.ts frontend/tests/racks-workflows.spec.ts frontend/tests/audit-logs-workflows.spec.ts contracts/system_management_v1.json backend/app/api/authorization.py backend/app/api/module_policy.py backend/test_chg13_authorization_security.py backend/test_system_management_v1_policy.py frontend/src/components/Settings.tsx frontend/src/components/settings/settingsPrivilegePolicy.test.ts frontend/src/components/settings/settingsPrivilegePolicy.ts frontend/src/policy/ModulePolicy.tsx frontend/tests/settings-and-audit.spec.ts frontend/tests/settings-privilege.spec.ts); if rtk rg -n -i 'execfilesync|git[[:space:]]+(diff|show|rev-parse)|39a0ee2d7b5a08004795d8207212e5347166cfac|d5fe0e5d5b92fcd1d9e33f4689a362e9c5946aac|b43fa9041cb365bb98740036178655adc4491e2c' \\\"\"'${target_files[@]}\"; then echo '\"'stale-history-assertion-scan=FAIL'; exit 1; else echo 'stale-history-assertion-scan=PASS'; fi\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --branch && rtk git push origin HEAD:refs/heads/codex/sysgrid-smv1-settings-privilege-authority-qualification-v5 && printf '%s\\\\n' '--- final exact identity ---' && rtk git rev-parse HEAD HEAD\"'^ HEAD''^{tree} refs/heads/main && printf '\"'%s\\\\n' '--- remote exact heads ---' && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-settings-privilege-authority-qualification-v5 && printf '%s\\\\n' '--- final worktree ---' && rtk git status --porcelain=v1 --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- current Fabric job state ---' && rtk ls -la /Users/haewonkim/.codex-fabric/jobs | rtk rg 'CF-2d8d42059686542eb9199553' || true && printf '%s\\\\n' '--- current worktree hidden state ---' && rtk ls -la . | head -80 && printf '%s\\\\n' '--- current job event tail ---' && rtk tail -n 20 codex.events.jsonl 2>/dev/null || true && rtk tail -n 40 codex.stderr.log 2>/dev/null || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -la /Users/haewonkim/.codex-fabric/jobs/CF-2d8d42059686542eb9199553.running && rtk sed -n '1,240p' /Users/haewonkim/.codex-fabric/jobs/CF-2d8d42059686542eb9199553.running 2>/dev/null || true && printf '\\\\n--- results ---\\\\n' && rtk ls -la /Users/haewonkim/.codex-fabric/results/CF-2d8d42059686542eb9199553 2>/dev/null || true && printf '\\\\n--- job events size ---\\\\n' && rtk wc -l /Users/haewonkim/.codex-fabric/worktrees/CF-2d8d42059686542eb9199553/codex.events.jsonl /Users/haewonkim/.codex-fabric/worktrees/CF-2d8d42059686542eb9199553/codex.stderr.log 2>/dev/null || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- job metadata ---' && rtk sed -n '1,220p' /Users/haewonkim/.codex-fabric/jobs/CF-2d8d42059686542eb9199553.running/job.json && printf '%s\\\\n' '--- lease ---' && rtk sed -n '1,180p' /Users/haewonkim/.codex-fabric/jobs/CF-2d8d42059686542eb9199553.running/lease.json && printf '%s\\\\n' '--- result event tail ---' && rtk tail -n 8 /Users/haewonkim/.codex-fabric/results/CF-2d8d42059686542eb9199553/codex.events.jsonl && printf '%s\\\\n' '--- result stderr ---' && rtk cat /Users/haewonkim/.codex-fabric/results/CF-2d8d42059686542eb9199553/codex.stderr.log\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- forbidden-command scan ---' && if rtk rg -n -i '(\"'^|[[:space:]/])(codex|opencode|chatgpt|openai|llm[[:space:]]+api|model[[:space:]]+cli|agent[[:space:]]+loop)([[:space:]]|$)'\"' scripts/run-e2e.sh scripts/lib/verify-runtime.sh scripts/production-preflight.py scripts/preflight.py; then echo 'forbidden-command-scan=FAIL'; exit 1; else echo 'forbidden-command-scan=PASS'; fi && printf '%s\\\\n' '--- final identity proof ---' && test \\\"\"'$(rtk git rev-parse HEAD)\" = da5bb3a7f8563cbd242034f83b83f05de6a15053 && test \"$(rtk git rev-parse HEAD''^)\" = e604d4790dd06e0ace5547ab3169789ca8577c0c && test \"$(rtk git rev-parse HEAD''^{tree})\" = 72a2ef5c1275a25b4d46fbd049789b68c9087649 && test \"$(rtk git rev-parse refs/heads/main)\" = 0e3b49b8b98a09a1585907b2ea7db0a29dca1c12 && test \"$(rtk git ls-remote origin refs/heads/main | awk '\"'{print \"'$1}'\"')\\\" = e604d4790dd06e0ace5547ab3169789ca8577c0c && test \\\"\"'$(rtk git ls-remote origin refs/heads/codex/sysgrid-smv1-settings-privilege-authority-qualification-v5 | awk '\"'{print \"'$1}'\"')\\\" = da5bb3a7f8563cbd242034f83b83f05de6a15053 && echo 'identity-proof=PASS' && printf '%s\\\\n' '--- final worktree proof ---' && if [ -z \\\"\"'$(rtk git status --porcelain=v1)\" ]; then echo '\"'worktree_clean=true'; else echo 'worktree_clean=false'; exit 1; fi && printf '%s\\\\n' '--- visual artifact readback ---' && test \\\"\"'$(rtk git rev-parse FETCH_HEAD:visual-evidence/artifact-bundle.zip | xargs -I{} rtk proxy git cat-file blob {} | shasum -a 256 | awk '\"'{print \"'$1}'\"')\\\" = 5c723967b1677216512bfe26fe2d64ef3ee3f28e5f3a31f694aeeb48f4bf5775 && echo 'existing_visual_bundle_sha256=5c723967b1677216512bfe26fe2d64ef3ee3f28e5f3a31f694aeeb48f4bf5775' && echo 'existing_visual_candidate_match=true'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --untracked-files=all && printf '%s\\\\n' '--- ignored generated paths ---' && rtk git status --short --ignored | head -200\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'VISUAL_REF=refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4 && rtk git fetch --no-tags origin refs/heads/project-os-artifacts/sysgrid/sysgrid-smv1-settings-privilege-authority-rebase-fix-v4:\"$VISUAL_REF\" && test \"$(rtk proxy git rev-parse HEAD)\" = da5bb3a7f8563cbd242034f83b83f05de6a15053 && test \"$(rtk proxy git rev-parse HEAD''^)\" = e604d4790dd06e0ace5547ab3169789ca8577c0c && test \"$(rtk proxy git rev-parse '\"'HEAD\"'^{tree}'\"')\\\" = 72a2ef5c1275a25b4d46fbd049789b68c9087649 && test \\\"\"'$(rtk proxy git ls-remote origin refs/heads/main | awk '\"'{print \"'$1}'\"')\\\" = e604d4790dd06e0ace5547ab3169789ca8577c0c && test \\\"\"'$(rtk proxy git ls-remote origin refs/heads/codex/sysgrid-smv1-settings-privilege-authority-qualification-v5 | awk '\"'{print \"'$1}'\"')\\\" = da5bb3a7f8563cbd242034f83b83f05de6a15053 && test -z \\\"\"'$(rtk proxy git status --porcelain=v1)\" && test \"$(rtk proxy git show \"$VISUAL_REF:visual-evidence/manifest.json\" | jq -r '\"'.baseline.sha')\\\" = e604d4790dd06e0ace5547ab3169789ca8577c0c && test \\\"\"'$(rtk proxy git show \"$VISUAL_REF:visual-evidence/manifest.json\" | jq -r '\"'.baseline.tree')\\\" = e43f4a18fc6b992bc41065913c2fea153ed5a7a1 && test \\\"\"'$(rtk proxy git show \"$VISUAL_REF:visual-evidence/manifest.json\" | jq -r '\"'.candidate.sha')\\\" = da5bb3a7f8563cbd242034f83b83f05de6a15053 && test \\\"\"'$(rtk proxy git show \"$VISUAL_REF:visual-evidence/manifest.json\" | jq -r '\"'.candidate.tree')\\\" = 72a2ef5c1275a25b4d46fbd049789b68c9087649 && test \\\"\"'$(rtk proxy git show \"$VISUAL_REF:visual-evidence/manifest.json\" | jq -r '\"'.screenshot_count')\\\" = 8 && test \\\"\"'$(rtk proxy git rev-parse \"$VISUAL_REF:visual-evidence/artifact-bundle.zip\" | xargs -I{} rtk proxy git cat-file blob {} | shasum -a 256 | awk '\"'{print \"'$1}'\"')\\\" = 5c723967b1677216512bfe26fe2d64ef3ee3f28e5f3a31f694aeeb48f4bf5775 && echo 'final_identity=PASS' && echo 'remote_main_exact=e604d4790dd06e0ace5547ab3169789ca8577c0c' && echo 'remote_work_branch_exact=da5bb3a7f8563cbd242034f83b83f05de6a15053' && echo 'worktree_clean=true' && echo 'existing_visual_candidate_match=true' && echo 'existing_visual_bundle_sha256=5c723967b1677216512bfe26fe2d64ef3ee3f28e5f3a31f694aeeb48f4bf5775'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- native evidence ref observation ---' && rtk proxy git ls-remote origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v5 && printf '%s\\\\n' '--- Fabric job state observation ---' && rtk ls -la /Users/haewonkim/.codex-fabric/jobs | rtk rg 'CF-2d8d42059686542eb9199553' && rtk ls -la /Users/haewonkim/.codex-fabric/results/CF-2d8d42059686542eb9199553 | head -40\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'subparsers|add_parser|publish-evidence|finish|worker|dispatch|main\\\\(' /Users/haewonkim/.codex-fabric/current/fabric.py | tail -120 && printf '%s\\\\n' '--- fabric cli tail ---' && rtk tail -n 180 /Users/haewonkim/.codex-fabric/current/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 91,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.5,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 6635008,
+      "fresh_input_tokens": 170097,
+      "input_tokens": 6805105,
+      "non_reasoning_output_tokens": 12550,
+      "output_tokens": 23303,
+      "reasoning_output_tokens": 10753,
+      "total_processed_tokens": 6828408
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "da5bb3a7f8563cbd242034f83b83f05de6a15053",
+      "subject": "fix: rebase settings privilege authority onto integrated main"
+    }
+  ],
+  "diff": {
+    "additions": 542,
+    "changed_files": 12,
+    "commit_count": 1,
+    "deletions": 89
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-21T13:46:05Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "e604d4790dd06e0ace5547ab3169789ca8577c0c",
+    "branch": "codex/sysgrid-smv1-settings-privilege-authority-qualification-v5",
+    "detached_verify": false,
+    "head_sha": "da5bb3a7f8563cbd242034f83b83f05de6a15053",
+    "remote_exact_head": true,
+    "remote_head_sha": "da5bb3a7f8563cbd242034f83b83f05de6a15053",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "e604d4790dd06e0ace5547ab3169789ca8577c0c",
+    "work_branch": "codex/sysgrid-smv1-settings-privilege-authority-qualification-v5",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-2d8d42059686542eb9199553",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v5",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-settings-privilege-authority-qualification-v5"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-settings-privilege-authority-qualification-v5",
+  "schema_version": 1,
+  "started_at": "2026-09-21T13:34:14Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 711,
+    "queue_seconds": 0,
+    "total_seconds": 711
+  },
+  "transport": {
+    "bytes": 6928,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 6556,
+    "prompt_sha256": "2a75399242ac56c25daf9cebc5d52c8988367aee60f5212a1643fac72696c188",
+    "sha256": "2d8d42059686542eb91995533af1d30c8c8363ebbb6d19b169ee437f72b9a9b5"
+  }
+}
