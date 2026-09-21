@@ -27,6 +27,9 @@ import { ConfirmationModal } from './shared/ConfirmationModal'
 import { StyledSelect } from './shared/StyledSelect'
 import { ConnectionForensicsModal } from './shared/ConnectionForensicsModal'
 import { ConnectionsListModal } from './shared/ConnectionsListModal'
+import { ModulePolicyLink } from '../policy/ModulePolicy'
+import { resolveOperationalAuditNavigation, resolveOperationalObjectReference } from './shared/OperationalObjectReference'
+import { useSearchParams } from 'react-router-dom'
 
 // ─── Constants & Helpers ──────────────────────────────────────────────────────
 
@@ -144,7 +147,7 @@ const RackStatusBar = ({ rack, siteColor }: { rack: any; siteColor?: string }) =
 
 // ─── Power / Fill Mini Bar ─────────────────────────────────────────────────────
 
-const MiniBar = ({ value, max, colorFn, label, unit }: { value: number; max: number; colorFn: (p: number) => string; label: string; unit: string }) => {
+const MiniBar = ({ value, max, colorFn, label, unit, overflowLabel = 'CAPACITY ALERT' }: { value: number; max: number; colorFn: (p: number) => string; label: string; unit: string; overflowLabel?: string }) => {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0
   const isOverflow = pct >= 100
   
@@ -152,7 +155,7 @@ const MiniBar = ({ value, max, colorFn, label, unit }: { value: number; max: num
     <div className="space-y-0.5 group/bar relative">
       <div className="flex justify-between items-center">
         <span className={`text-[7px] uppercase font-bold tracking-wider ${isOverflow ? 'text-rose-400 animate-pulse' : 'text-slate-500'}`}>
-          {label} {isOverflow && <span className="text-[6px] font-black ml-1">[CAPACITY ALERT]</span>}
+          {label} {isOverflow && <span className="text-[6px] font-black ml-1">[{overflowLabel}]</span>}
         </span>
         <span className={`text-[8px] font-black tabular-nums transition-colors ${isOverflow ? 'text-rose-500' : 'text-slate-300'}`}>
           {value.toFixed(1)}<span className="text-slate-500 font-normal">/{max}{unit}</span>
@@ -178,7 +181,7 @@ const MiniBar = ({ value, max, colorFn, label, unit }: { value: number; max: num
 
 // ─── PDU Bar ───────────────────────────────────────────────────────────
 
-const PduBar = ({ side, isOver, name, capacity, load, onClick }: { side: 'A' | 'B'; isOver: boolean; name?: string; capacity?: number; load?: number; onClick?: () => void }) => {
+const PduBar = ({ side, name, capacity, onClick }: { side: 'A' | 'B'; name?: string; capacity?: number; onClick?: () => void }) => {
   const hasPdu = !!name && name !== 'None'
   return (
     <div 
@@ -186,29 +189,23 @@ const PduBar = ({ side, isOver, name, capacity, load, onClick }: { side: 'A' | '
       className={`absolute ${side === 'A' ? 'left-1' : 'right-1'} top-1 bottom-1 w-2.5 rounded-lg bg-slate-900 border border-white/10 flex flex-col items-center justify-around py-4 cursor-pointer hover:bg-slate-800 transition-all z-20 group/pdu ${!hasPdu ? 'opacity-30 grayscale' : ''}`}
     >
       {Array.from({ length: 14 }).map((_, i) => (
-        <div key={i} className={`w-1.5 h-1 rounded-lg transition-all duration-300 ${!hasPdu ? 'bg-slate-700' : isOver ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500/50 group-hover/pdu:bg-emerald-400'}`} />
+        <div key={i} className={`w-1.5 h-1 rounded-lg transition-all duration-300 ${!hasPdu ? 'bg-slate-700' : 'bg-slate-500/70 group-hover/pdu:bg-blue-400'}`} />
       ))}
       
       {/* Tooltip on hover */}
-      {hasPdu && (
+      {(
         <div className={`absolute top-1/2 -translate-y-1/2 ${side === 'A' ? 'left-6' : 'right-6'} opacity-0 group-hover/pdu:opacity-100 pointer-events-none transition-all duration-200 z-50`}>
           <div className="bg-slate-950/95 backdrop-blur-2xl border border-white/10 p-3 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.8)] min-w-[140px]">
             <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Zap size={10} /> {name}
+              <Zap size={10} /> {name || `PDU-${side}`}
             </p>
             <div className="space-y-2">
-              <div className="flex justify-between text-[7px] font-black">
-                <span className="text-slate-500 uppercase">LOAD STATUS</span>
-                <span className={isOver ? 'text-rose-500 animate-pulse' : 'text-emerald-400'}>{isOver ? 'OVERLOADED' : 'NOMINAL'}</span>
-              </div>
-              <div className="h-1 bg-white/10 rounded-lg overflow-hidden">
-                <div className={`h-full ${isOver ? 'bg-rose-500' : 'bg-emerald-500'} w-[68%]`} />
-              </div>
               <div className="flex justify-between text-[7px] font-bold text-slate-400">
-                <span>CAPACITY</span>
-                <span>{capacity || 10}kW</span>
+                <span>CONFIGURED CAPACITY</span>
+                <span>{typeof capacity === 'number' ? `${capacity}kW` : 'Not set'}</span>
               </div>
-              <p className="text-[6px] text-slate-500 mt-2 border-t border-white/5 pt-1.5 text-center">Click to configure mapping</p>
+              <p className="text-[7px] text-amber-300 border-t border-white/5 pt-2 text-center">Live PDU load telemetry unavailable</p>
+              <p className="text-[6px] text-slate-500 text-center">Click to configure mapping</p>
             </div>
           </div>
         </div>
@@ -1073,7 +1070,7 @@ interface RackElevationProps {
   const isHighlighted = (device: any) =>
    !!searchTerm && device?.name?.toLowerCase().includes(searchTerm.toLowerCase())
 
-  const isPowerOver = estimatedPowerKw >= effectivePowerCapKw
+  const isPlanningEstimateOver = estimatedPowerKw > effectivePowerCapKw
   const isFillOver = occupiedU >= totalU
 
   return (
@@ -1083,7 +1080,7 @@ interface RackElevationProps {
      className={`glass-panel flex-shrink-0 rounded-lg overflow-hidden flex flex-col border transition-all group relative
      ${isSelected ? 'border-blue-500/60 shadow-blue-500/15 shadow-2xl bg-blue-900/[0.07]' : 'border-white/[0.07] hover:border-white/20'}
      ${isDeleted ? 'opacity-60 grayscale-[0.4]' : ''}
-     ${(isPowerOver || isFillOver) ? 'ring-1 ring-rose-500/50' : ''}
+     ${isFillOver ? 'ring-1 ring-rose-500/50' : ''}
      h-full max-h-full ${className}
    `}>      
       <RackStatusBar rack={rack} siteColor={rack.site_color} />
@@ -1190,11 +1187,19 @@ interface RackElevationProps {
              </div>
              <div className="flex gap-2">
                 <span className={`text-[7px] font-black uppercase ${isFillOver ? 'text-rose-500' : 'text-slate-500'}`}>{Math.round((occupiedU/totalU)*100)}% SLOT</span>
-                <span className={`text-[7px] font-black uppercase ${isPowerOver ? 'text-rose-500' : 'text-slate-500'}`}>{Math.round((estimatedPowerKw/effectivePowerCapKw)*100)}% PWR</span>
+                <span className="text-[7px] font-black uppercase text-slate-500">CEILING {effectivePowerCapKw.toFixed(1)}kW</span>
+                <span className={`text-[7px] font-black uppercase ${isPlanningEstimateOver ? 'text-rose-500' : 'text-slate-500'}`}>TYP EST {Math.round((estimatedPowerKw/effectivePowerCapKw)*100)}%</span>
              </div>
           </div>
           <MiniBar value={occupiedU} max={totalU} colorFn={fillColor} label="Fill" unit="U" />
-          <MiniBar value={estimatedPowerKw} max={effectivePowerCapKw} colorFn={powerColor} label="Power" unit="kW" />
+          <MiniBar
+            value={estimatedPowerKw}
+            max={effectivePowerCapKw}
+            colorFn={powerColor}
+            label="Typical estimate"
+            unit="kW"
+            overflowLabel="PLANNING ESTIMATE > CONFIGURED CEILING"
+          />
         </div>
       </div>
 
@@ -1203,7 +1208,6 @@ interface RackElevationProps {
         {/* Fixed PDU Bar A */}
         <PduBar 
           side="A" 
-          isOver={isPowerOver} 
           name={rack.pdu_a_name} 
           capacity={rack.pdu_a_cap_kw} 
           onClick={() => onEdit(rack)} 
@@ -1212,7 +1216,6 @@ interface RackElevationProps {
         {/* Fixed PDU Bar B */}
         <PduBar 
           side="B" 
-          isOver={isPowerOver} 
           name={rack.pdu_b_name} 
           capacity={rack.pdu_b_cap_kw} 
           onClick={() => onEdit(rack)} 
@@ -1785,8 +1788,8 @@ const SiteCapacityBar = ({ racks }: { racks: any[] }) => {
     { label: 'Racks',     value: String(racks.length),                icon: <Server size={12}/>,      color: 'text-blue-400' },
     { label: 'Assets',    value: String(totalDevices),                 icon: <Package size={12}/>,     color: 'text-violet-400' },
     { label: 'Fill',      value: `${fillPct}%`,                        icon: <BarChart3 size={12}/>,   color: fillPct >= 90 ? 'text-rose-400' : fillPct >= 70 ? 'text-amber-400' : 'text-emerald-400' },
-    { label: 'Power Est.',value: `${estimatedPowerKw.toFixed(1)}kW`,   icon: <Zap size={12}/>,         color: 'text-sky-400' },
-    { label: 'Capacity',  value: `${totalPowerCapKw.toFixed(0)}kW`,    icon: <TrendingUp size={12}/>,  color: 'text-slate-400' },
+    { label: 'Typical Est.', value: `${estimatedPowerKw.toFixed(1)}kW`, icon: <Zap size={12}/>,        color: 'text-sky-400' },
+    { label: 'Configured Ceiling', value: `${totalPowerCapKw.toFixed(0)}kW`, icon: <TrendingUp size={12}/>, color: 'text-slate-400' },
   ]
 
   return (
@@ -1859,6 +1862,7 @@ const DeviceDetailModal = ({ device, loc, rack, onClose, onUnmount, onUpdateMoun
 
   const statusCfg = getStatusCfg(device?.status, device?.is_reservation)
   const typeCfg = getTypeCfg(device?.type)
+  const assetNavigation = resolveOperationalObjectReference('device', device.id)
 
   const infoRows = [
     { label: 'System',        value: device?.system },
@@ -1991,9 +1995,9 @@ const DeviceDetailModal = ({ device, loc, rack, onClose, onUnmount, onUpdateMoun
           </div>
         </div>
 
-        {/* Power consumption (editable) */}
+        {/* Power planning fields (editable) */}
         <div className="px-6 py-4 bg-white/[0.02] border-t border-white/[0.06] space-y-3">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Power Consumption (W)</span>
+          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Power Planning Fields (W)</span>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[8px] font-black text-slate-600 uppercase block mb-1">Avg (Typical)</label>
@@ -2028,12 +2032,24 @@ const DeviceDetailModal = ({ device, loc, rack, onClose, onUnmount, onUpdateMoun
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-white/[0.06] flex items-center justify-between gap-3">
-          <button
-            onClick={() => setConfirmUnmount(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg text-[9px] font-black uppercase hover:bg-rose-500/20 transition-all"
-          >
-            <Trash2 size={11} /> {device?.is_reservation ? 'Cancel Reservation' : 'Unmount Asset'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setConfirmUnmount(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg text-[9px] font-black uppercase hover:bg-rose-500/20 transition-all"
+            >
+              <Trash2 size={11} /> {device?.is_reservation ? 'Cancel Reservation' : 'Unmount Asset'}
+            </button>
+            <ModulePolicyLink
+              moduleId={assetNavigation?.moduleId || 'assets'}
+              to={assetNavigation?.path || '/asset'}
+              disabled={!assetNavigation}
+              disabledReason="Asset route unavailable."
+              aria-label="Open Asset"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[9px] font-black uppercase hover:bg-blue-500/20 transition-all"
+            >
+              <ExternalLink size={11} /> Open Asset
+            </ModulePolicyLink>
+          </div>
           <button onClick={onClose} className="px-4 py-2.5 text-[9px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">
             Close
           </button>
@@ -2103,9 +2119,10 @@ const RackInfoModal = ({ rack, onClose }: { rack: any; onClose: () => void }) =>
   const freeU = totalU - occupiedU
   const fillPct = Math.round((occupiedU / totalU) * 100)
   
-  const totalPowerW = (rack.device_locations || []).reduce((acc: number, l: any) => acc + (l.device?.power_typical_w || 0), 0)
-  const powerLimitW = (rack.max_power_kw || 10) * 1000
-  const powerPct = Math.round((totalPowerW / powerLimitW) * 100)
+  const typicalPowerW = (rack.device_locations || []).reduce((acc: number, l: any) => acc + (l.device?.power_typical_w || 0), 0)
+  const configuredRackCeilingKw = rack.max_power_kw || 10
+  const typicalEstimatePct = Math.round((typicalPowerW / (configuredRackCeilingKw * 1000)) * 100)
+  const auditNavigation = resolveOperationalAuditNavigation('rack', rack.id)
 
   const distribution = useMemo(() => {
     const stats: Record<string, Record<string, number>> = {
@@ -2136,7 +2153,19 @@ const RackInfoModal = ({ rack, onClose }: { rack: any; onClose: () => void }) =>
       subtitle={`${rack.site_name} · Deployment Unit Report`}
       icon={<BarChart3 size={20} />}
       footerRight={
-        <ToolbarButton onClick={onClose}>Close</ToolbarButton>
+        <div className="flex items-center gap-2">
+          <ModulePolicyLink
+            moduleId={auditNavigation?.moduleId || 'logs'}
+            to={auditNavigation?.path || '/logs'}
+            disabled={!auditNavigation}
+            disabledReason="Audit route unavailable."
+            aria-label="Open Audit Logs"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] transition-all hover:border-[var(--border-default)] hover:text-[var(--text-primary)]"
+          >
+            <Activity size={14} /> Open Audit Logs
+          </ModulePolicyLink>
+          <ToolbarButton onClick={onClose}>Close</ToolbarButton>
+        </div>
       }
     >
       <div className="pt-8 space-y-8">
@@ -2159,19 +2188,25 @@ const RackInfoModal = ({ rack, onClose }: { rack: any; onClose: () => void }) =>
           </div>
 
           <div className="bg-black/40 rounded-lg p-6 border border-white/5 space-y-4">
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-end gap-4">
               <div>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Power Consumption</p>
-                <p className="text-2xl font-black text-white">{powerPct}%</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Typical Power Estimate</p>
+                <p className="text-2xl font-black text-white">{(typicalPowerW / 1000).toFixed(2)} kW</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold text-slate-600 uppercase mb-1">{(totalPowerW/1000).toFixed(2)} kW</p>
-                <p className="text-[10px] font-bold text-blue-400 uppercase">{rack.max_power_kw || 10} kW Cap</p>
+                <p className="text-[10px] font-bold text-slate-600 uppercase mb-1">Configured Rack Ceiling</p>
+                <p className="text-[10px] font-bold text-blue-400 uppercase">{configuredRackCeilingKw} kW</p>
               </div>
             </div>
             <div className="h-1.5 bg-white/5 rounded-lg overflow-hidden">
-              <div className={`h-full rounded-lg transition-all ${powerColor(powerPct)}`} style={{ width: `${powerPct}%` }} />
+              <div className={`h-full rounded-lg transition-all ${powerColor(typicalEstimatePct)}`} style={{ width: `${Math.min(typicalEstimatePct, 100)}%` }} />
             </div>
+            <p className="text-[9px] leading-relaxed text-slate-500">
+              Estimate uses mounted device typical-power fields. Live rack/PDU load telemetry unavailable.
+            </p>
+            {typicalEstimatePct > 100 && (
+              <p className="text-[9px] font-bold uppercase tracking-wide text-amber-300">Planning estimate exceeds configured rack ceiling; this is not a measured-load alarm.</p>
+            )}
           </div>
         </div>
 
@@ -2289,15 +2324,15 @@ const SpatialMap = ({ racks, onRackClick, siteColor }: { racks: any[]; onRackCli
                                    {(() => {
                                       const estPowerKw = (rack.device_locations || []).reduce((a: number, l: any) => a + ((l.device?.power_typical_w || 0) / 1000), 0)
                                       const powerCapKw = rack.max_power_kw || 10
-                                      const powerPct = Math.round((estPowerKw / powerCapKw) * 100)
+                                      const typicalEstimatePct = Math.round((estPowerKw / powerCapKw) * 100)
                                       return (
                                         <div className="space-y-1">
                                           <div className="flex justify-between items-center px-0.5">
-                                            <span className="text-[7px] font-black text-slate-500 uppercase">Power Load</span>
-                                            <span className={`text-[8px] font-black tabular-nums ${powerPct >= 90 ? 'text-rose-500' : 'text-sky-400'}`}>{powerPct}%</span>
+                                            <span className="text-[7px] font-black text-slate-500 uppercase">Typical Est. / Ceiling {powerCapKw}kW</span>
+                                            <span className={`text-[8px] font-black tabular-nums ${typicalEstimatePct >= 100 ? 'text-rose-500' : 'text-sky-400'}`}>TYP EST {typicalEstimatePct}%</span>
                                           </div>
                                           <div className="w-full h-1.5 bg-white/5 rounded-lg overflow-hidden">
-                                            <div className={`h-full ${powerColor(powerPct)} transition-all duration-500`} style={{ width: `${powerPct}%` }} />
+                                            <div className={`h-full ${powerColor(typicalEstimatePct)} transition-all duration-500`} style={{ width: `${Math.min(typicalEstimatePct, 100)}%` }} />
                                           </div>
                                         </div>
                                       )
@@ -2329,6 +2364,7 @@ const SpatialMap = ({ racks, onRackClick, siteColor }: { racks: any[]; onRackCli
 export default function Racks() {
   const [showImportModal, setShowImportModal] = useState(false)
   const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
   const { data: sites } = useQuery({ queryKey: ['sites'], queryFn: async () => (await (await apiFetch('/api/v1/sites/')).json()) })
@@ -2496,6 +2532,42 @@ export default function Racks() {
     queryKey: ['racks-all'],
     queryFn: async () => (await (await apiFetch('/api/v1/racks/?include_deleted=true')).json())
   })
+
+  const openRackInfo = useCallback((rack: any) => {
+    setShowingRackInfo(rack)
+    const nextSearchParams = new URLSearchParams(searchParams)
+    nextSearchParams.set('id', String(rack.id))
+    setSearchParams(nextSearchParams)
+  }, [searchParams, setSearchParams])
+
+  const closeRackInfo = useCallback(() => {
+    setShowingRackInfo(null)
+    const nextSearchParams = new URLSearchParams(searchParams)
+    nextSearchParams.delete('id')
+    setSearchParams(nextSearchParams)
+  }, [searchParams, setSearchParams])
+
+  useEffect(() => {
+    if (!allRacks) return
+    const requestedRackId = searchParams.get('id')
+    if (!requestedRackId) {
+      if (showingRackInfo) setShowingRackInfo(null)
+      return
+    }
+
+    const authoritativeRack = allRacks.find((rack: any) => String(rack.id) === requestedRackId)
+    if (!authoritativeRack) {
+      setShowingRackInfo(null)
+      const nextSearchParams = new URLSearchParams(searchParams)
+      nextSearchParams.delete('id')
+      setSearchParams(nextSearchParams, { replace: true })
+      return
+    }
+
+    setActiveTab(authoritativeRack.is_deleted ? 'deleted' : 'active')
+    setActiveSite(authoritativeRack.site_id ?? null)
+    setShowingRackInfo((current) => current === authoritativeRack ? current : authoritativeRack)
+  }, [allRacks, searchParams, setSearchParams, showingRackInfo])
 
   const { activeRacks, deletedRacks } = useMemo(() => {
     if (!allRacks) return { activeRacks: [], deletedRacks: [] }
@@ -3283,7 +3355,7 @@ export default function Racks() {
                                     onToggleSelect={() => {}}
                                     onDelete={id => isPlanInitialized ? null : {}}
                                     onEdit={rack => isPlanInitialized ? setIsEditingRack({ ...rack, total_u: rack.total_u }) : {}}
-                                    onShowInfo={rack => setShowingRackInfo(rack)}
+                                    onShowInfo={rack => openRackInfo(rack)}
                                     onMount={(rackId, u) => isPlanInitialized ? setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' }) : null}
                                     onManageDevice={(device, l, e) => {
                                       setOptionsMenu({ x: e.clientX, y: e.clientY, device, loc: l, rack: r })
@@ -3315,7 +3387,7 @@ export default function Racks() {
                           }
                         }}
                         onEdit={rack => setIsEditingRack({ ...rack, total_u: rack.total_u })}
-                        onShowInfo={rack => setShowingRackInfo(rack)}
+                        onShowInfo={rack => openRackInfo(rack)}
                         onMount={(rackId, u) => { setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' }); setProvisionMode('asset') }}
                         onManageDevice={(device, l, e) => {
                           setOptionsMenu({ x: e.clientX, y: e.clientY, device, loc: l, rack: r })
@@ -3366,7 +3438,7 @@ export default function Racks() {
                         }
                       }}
                       onEdit={rack => setIsEditingRack({ ...rack, total_u: rack.total_u })}
-                      onShowInfo={rack => setShowingRackInfo(rack)}
+                      onShowInfo={rack => openRackInfo(rack)}
                       onMount={(rackId, u) => { setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' }); setProvisionMode('asset') }}
                       onManageDevice={(device, l, e) => {
                         setOptionsMenu({ x: e.clientX, y: e.clientY, device, loc: l, rack: r })
@@ -3917,7 +3989,7 @@ export default function Racks() {
                   <h2 className="text-lg font-black uppercase tracking-tight text-white">
                     {isEditingRack ? 'Configure Rack' : 'Deploy New Rack'}
                   </h2>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Physical Slot & Power Management</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Physical Slot & Power Configuration</p>
                 </div>
               </div>
               <div className="space-y-4 relative z-10">
@@ -3966,7 +4038,7 @@ export default function Racks() {
                       className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500/60 transition-colors font-mono text-white" />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Total Max Power (kW)</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Configured Rack Ceiling (kW)</label>
                     <input type="number" min={0} max={1000} step={0.5}
                       value={isEditingRack ? (isEditingRack.max_power_kw ?? 10.0) : newRack.max_power_kw}
                       onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, max_power_kw: parseFloat(e.target.value) }) : setNewRack({ ...newRack, max_power_kw: parseFloat(e.target.value) })}
@@ -4147,7 +4219,7 @@ export default function Racks() {
         {showingRackInfo && (
           <RackInfoModal
             rack={showingRackInfo}
-            onClose={() => setShowingRackInfo(null)}
+            onClose={closeRackInfo}
           />
         )}
 

@@ -85,4 +85,20 @@ test.describe('Audit Logs Workflows', () => {
     await expect(unsupportedTargetButton).toBeDisabled();
     await expect(unsupportedTargetButton).toHaveAttribute('title', 'No target route recorded.');
   });
+
+  test('round-trips a Rack summary through scoped Audit Logs', async ({ page, sysApi: request }) => {
+    const { rackA1 } = await seedRackScenario(request);
+
+    await page.goto(`/racks?id=${rackA1.id}`);
+    await expect(page.getByText(`${rackA1.name} Summary`, { exact: true })).toBeVisible();
+    await page.getByRole('link', { name: 'Open Audit Logs', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/logs\\?target_table=racks&target_id=${rackA1.id}$`));
+    await expect(page.getByText(`Scoped: racks // ${rackA1.id}`)).toBeVisible();
+
+    const rackTargetButton = page.getByRole('button', { name: 'Open target record' }).first();
+    await expect(rackTargetButton).toBeEnabled();
+    await rackTargetButton.click();
+    await expect(page).toHaveURL(new RegExp(`/racks\\?id=${rackA1.id}$`));
+    await expect(page.getByText(`${rackA1.name} Summary`, { exact: true })).toBeVisible();
+  });
 });
