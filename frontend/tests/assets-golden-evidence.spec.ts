@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { test } from './helpers/sysgrid-test.ts'
 import { clickResilientButton, fillGridSearch, resetBrowserState, seedOperationalScenario, waitForAppIdle } from './helpers/sysgrid.ts'
+import { isExpectedTelemetryRequest } from '../src/observability/browserFailurePolicy'
 
 type ScreenshotType = 'full-page' | 'full-viewport'
 type RouteKey = 'asset' | 'monitoring' | 'asset-real'
@@ -223,6 +224,13 @@ const buildWarningLedger = (route: string, events: RuntimeConsoleEvent[]): Route
 }
 
 const classifyRequestFailure = (entry: Omit<RequestFailureEntry, 'count' | 'classification' | 'justification'>): Pick<RequestFailureEntry, 'classification' | 'justification'> => {
+  if (isExpectedTelemetryRequest(entry)) {
+    return {
+      classification: 'unrelated',
+      justification: 'The exact privacy-safe performance telemetry endpoint may abort during Playwright navigation; it is unrelated to route validity and lock eligibility.',
+    }
+  }
+
   if (/net::ERR_ABORTED/i.test(entry.failureText || '') && /\/api\/v1\/settings\/user\/settings$/.test(entry.url)) {
     return {
       classification: 'unrelated',
@@ -552,6 +560,7 @@ const openDetailPanel = async (page: any, routeKey: RouteKey, detailPath: string
   if (routeKey === 'asset') {
     note('goto /asset')
     await page.goto('/asset')
+    await ensureWorkspaceVisible(page, 'Assets')
     await fillGridSearch(page, 'Scan asset matrix...', recordText)
     note(`fill search Scan asset matrix... => ${recordText}`)
     const moreActions = page.getByTitle('More actions').first()
@@ -571,6 +580,7 @@ const openDetailPanel = async (page: any, routeKey: RouteKey, detailPath: string
   } else if (routeKey === 'monitoring') {
     note('goto /monitoring')
     await page.goto('/monitoring')
+    await ensureWorkspaceVisible(page, 'Monitoring')
     await fillGridSearch(page, 'Scan matrix...', recordText)
     note(`fill search Scan matrix... => ${recordText}`)
     const viewDetails = page.getByTitle('View Details').first()
