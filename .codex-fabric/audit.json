@@ -1,0 +1,339 @@
+{
+  "accepted_at": "2026-09-21T23:46:28Z",
+  "changed_files": [
+    {
+      "additions": 7,
+      "deletions": 0,
+      "path": ".github/required-checks.json",
+      "status": "A"
+    },
+    {
+      "additions": 179,
+      "deletions": 0,
+      "path": ".github/workflows/application-ci.yml",
+      "status": "A"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": ".gitignore",
+      "status": "M"
+    },
+    {
+      "additions": 118,
+      "deletions": 0,
+      "path": "scripts/tests/test_application_ci_contract.py",
+      "status": "A"
+    },
+    {
+      "additions": 4,
+      "deletions": 0,
+      "path": "scripts/verify-app.sh",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && printf '%s\\\\n' '--- RTK ---' && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && printf '%s\\\\n' '--- law ---' && sed -n '1,280p' /Users/haewonkim/.codex/law.md && printf '%s\\\\n' '--- top-level ---' && rg --files -g 'AGENTS.md' -g '\"'!node_modules'\"' -g '\"'!frontend/node_modules'\"' | sort && printf '%s\\\\n' '--- status ---' && git status --short --branch && printf '%s\\\\n' '--- remotes ---' && git remote -v\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' AGENTS.md && printf '%s\\\\n' '--- preflight ---' && rtk git rev-parse --abbrev-ref HEAD && rtk git rev-parse HEAD && rtk git status --porcelain=v1 && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-v1 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-v1 && printf '%s\\\\n' '--- main tree ---' && rtk git rev-parse 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167\"'^{tree} && printf '\"'%s\\\\n' '--- workflows ---' && (rtk find .github/workflows -maxdepth 1 -type f -print | sort || true) && printf '%s\\\\n' '--- branch files ---' && (rtk find . -maxdepth 3 -type f -name '*branch*' -o -name '*protection*' | sort || true)\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- branch API ---' && rtk curl -fsSL https://api.github.com/repos/kimhw8084/sysgrid/branches/main && printf '%s\\\\n' '--- rulesets API ---' && rtk curl -fsSL https://api.github.com/repos/kimhw8084/sysgrid/rulesets && printf '%s\\\\n' '--- verify-app ---' && rtk sed -n '1,280p' scripts/verify-app.sh && printf '%s\\\\n' '--- runtime ---' && rtk sed -n '1,360p' scripts/lib/verify-runtime.sh && printf '%s\\\\n' '--- package scripts ---' && rtk node -e 'const p=require(\\\"./frontend/package.json\\\"); console.log(JSON.stringify({engines:p.engines,scripts:p.scripts},null,2))' && printf '%s\\\\n' '--- backend lock header ---' && rtk sed -n '1,60p' backend/requirements.lock && printf '%s\\\\n' '--- existing tests ---' && rtk rg --files tests scripts | sort | sed -n '1,240p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- existing workflows ---' && rtk sed -n '1,280p' .github/workflows/ai-review-packet.yml && rtk sed -n '1,320p' .github/workflows/sysgrid-public-outbox-relay.yml && printf '%s\\\\n' '--- ignore ---' && rtk sed -n '1,260p' .gitignore && printf '%s\\\\n' '--- test/layout conventions ---' && rtk find scripts/tests -maxdepth 2 -type f | sort | while read -r f; do echo \\\"--- \"'$f\"; rtk sed -n '\"'1,260p' \\\"\"'$f\"; done && printf '\"'%s\\\\n' '--- app verifier remainder/runtime exports ---' && rtk sed -n '280,520p' scripts/verify-app.sh && rtk sed -n '300,700p' scripts/lib/verify-runtime.sh\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- test files ---' && rtk rg --files scripts/tests | sort && for f in \"'$(rtk rg --files scripts/tests | sort); do printf '\"'%s\\\\n' \\\"--- \"'$f\"; rtk sed -n '\"'1,260p' \\\"\"'$f\"; done && printf '\"'%s\\\\n' '--- runtime tail ---' && rtk sed -n '300,760p' scripts/lib/verify-runtime.sh && printf '%s\\\\n' '--- all root files relevant ---' && rtk rg --files -g '\"'!node_modules'\"' -g '\"'!frontend/node_modules'\"' | rg '(\"'^|/)(package(-lock)?'\"\\\\.json|requirements\\\\.lock|pyproject\\\\.toml|Makefile|Justfile|tox\\\\.ini|pytest\\\\.ini|\\\\.yamllint|actionlint|\\\\.github|scripts/.*test)' | sort | sed -n '1,300p'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 353,
+        "output_sha256": "721a25f868c24ae84f1b625b7e90ef76202d89a63119bbeda8d5d150dee3dee5",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- backend dashboard test ---' && rtk rg --files backend | rg 'test_dashboard_metrics|test_(migration_graph|network_workflows|racks_workflows|settings_workflows)\\\\.py\"'$'\"' | sort && printf '%s\\\\n' '--- lock metadata ---' && rtk tail -80 backend/requirements.lock && printf '%s\\\\n' '--- node lock metadata ---' && rtk sed -n '1,35p' frontend/package-lock.json && printf '%s\\\\n' '--- action refs ---' && for pair in actions/checkout:v4 actions/setup-node:v4 actions/setup-python:v5 actions/upload-artifact:v4; do repo=\"'${pair%:*}; ref=${pair#*:}; printf '\"'%s ' \\\"\"'$pair\"; rtk curl -fsSL \"https://api.github.com/repos/$repo/git/ref/tags/$ref\" | rtk node -e '\"'let s=\\\"\\\";process.stdin.on(\\\"data\\\",d=>s+=d).on(\\\"end\\\",()=>{const j=JSON.parse(s); console.log(j.object?.sha||j.message||\\\"unknown\\\")})'; done && printf '%s\\\\n' '--- available validators ---' && (command -v actionlint || true) && (command -v ruby || true) && (command -v node || true) && (command -v python3 || true) && rtk python3 - <<'PY'\ntry:\n    import yaml\nexcept Exception as exc:\n    print(f'PyYAML unavailable: {exc}')\nelse:\n    print(f'PyYAML available: {yaml.__version__}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --check && printf '%s\\\\n' '--- diff stat ---' && rtk git diff --stat && printf '%s\\\\n' '--- new workflow ---' && rtk sed -n '1,320p' .github/workflows/application-ci.yml && printf '%s\\\\n' '--- contract test ---' && rtk sed -n '1,300p' scripts/tests/test_application_ci_contract.py && printf '%s\\\\n' '--- status ---' && rtk git status --short\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 scripts/tests/test_application_ci_contract.py && rtk python3 - <<'PY'\nfrom pathlib import Path\nimport yaml\npath = Path('.github/workflows/application-ci.yml')\nwith path.open(encoding='utf-8') as handle:\n    document = yaml.safe_load(handle)\nassert document['jobs']['required']['name'] == 'required'\nassert document['permissions'] == {'contents': 'read'}\nprint('workflow YAML parse: PASS')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- local tool versions ---' && rtk node --version && rtk python3 --version && printf '%s\\\\n' '--- dependency dirs ---' && if [[ -d frontend/node_modules ]]; then echo frontend/node_modules-present; else echo frontend/node_modules-absent; fi && if [[ -x backend/venv/bin/python ]]; then echo backend/venv-present; else echo backend/venv-absent; fi && printf '%s\\\\n' '--- actionlint ---' && if command -v actionlint >/dev/null 2>&1; then actionlint -version; else echo actionlint-unavailable; fi\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend --no-audit --no-fund'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk type -ap python3.14 || true && rtk type -ap python3.13 || true && rtk type -ap python3.12 || true && rtk type -ap python3.11 || true && rtk type -ap uv || true'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /opt/homebrew/bin/python3.14 -m venv backend/venv && rtk backend/venv/bin/python -m pip install --disable-pip-version-check --require-hashes --no-cache-dir -r backend/requirements.lock'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk frontend/node_modules/.bin/playwright install chromium'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk git diff --check\nstatus_diff=$?\nrtk python3 scripts/tests/test_application_ci_contract.py\nstatus_contract=$?\nrtk python3 - <<'\"'PY'\nfrom pathlib import Path\nimport yaml\nwith (Path('.github/workflows/application-ci.yml')).open(encoding='utf-8') as handle:\n    doc = yaml.safe_load(handle)\nassert doc['jobs']['required']['name'] == 'required'\nassert doc['permissions'] == {'contents': 'read'}\nassert doc['on'] if 'on' in doc else True\nprint('workflow YAML parse: PASS')\nPY\nstatus_yaml=\"'$?\nprintf '\"'EXIT git_diff_check=%s\\\\nEXIT ci_contract=%s\\\\nEXIT workflow_yaml=%s\\\\n' \\\"\"'$status_diff\" \"$status_contract\" \"$status_yaml\"\nexit $(( status_diff || status_contract || status_yaml ))'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk npm run check:operational-contracts --prefix frontend\nstatus=$?\nprintf '\"'EXIT operational_contracts=%s\\\\n' \\\"\"'$status\"\nexit \"$status\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk npm run check:operational-contracts --prefix frontend\nrc=$?\nprintf '\"'EXIT operational_contracts=%s\\\\n' \\\"\"'$rc\"\nexit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk npm run typecheck --prefix frontend\nrc_typecheck=$?\nprintf '\"'EXIT typecheck=%s\\\\n' \\\"\"'$rc_typecheck\"\nexit \"$rc_typecheck\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk npm run test:coverage --prefix frontend\nrc_coverage=$?\nprintf '\"'EXIT frontend_coverage=%s\\\\n' \\\"\"'$rc_coverage\"\nexit \"$rc_coverage\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk npm run build --prefix frontend\nrc_build=$?\nprintf '\"'EXIT build=%s\\\\n' \\\"\"'$rc_build\"\nexit \"$rc_build\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nPYTHON_BIN=\"$PWD/backend/venv/bin/python\" '\"\\\\\nNODE_BIN=\\\"\"'$(command -v node)\" '\"\\\\\nSYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=ci-system-root \\\\\nSYSGRID_VERIFY_USER_ID=ci-system-root \\\\\nSYSGRID_VERIFY_KEEP_LOGS=0 \\\\\nrtk ./scripts/verify-app.sh\nrc_verify_app=\"'$?\nprintf '\"'EXIT verify_app=%s\\\\n' \\\"\"'$rc_verify_app\"\nexit \"$rc_verify_app\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"printf '%s\\\\n' '--- playwright configs ---' && rtk sed -n '1,260p' frontend/playwright.v1.config.ts && rtk sed -n '1,260p' frontend/playwright.root-preview.config.ts && printf '%s\\\\n' '--- config references ---' && rtk rg -n \\\"testMatch|testIgnore|stage3|stage31|stage33|stage34|stage35|stage36|playwright\\\\.v1|root-preview|Database: Default|Database: Existing\\\" frontend/playwright*.ts frontend/tests scripts/verify-app.sh scripts/lib/verify-runtime.sh | sed -n '1,300p' && printf '%s\\\\n' '--- git tracked generated status ---' && rtk git status --short --untracked-files=all | sed -n '1,160p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 scripts/tests/test_application_ci_contract.py && rtk git diff --check && rtk git diff -- .github/workflows/application-ci.yml scripts/tests/test_application_ci_contract.py | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nPYTHON_BIN=\"$PWD/backend/venv/bin/python\" '\"\\\\\nNODE_BIN=\\\"\"'$(command -v node)\" '\"\\\\\nSYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=ci-system-root \\\\\nSYSGRID_VERIFY_KEEP_LOGS=0 \\\\\nrtk ./scripts/verify-app.sh\nrc_verify_app_final_env=\"'$?\nprintf '\"'EXIT verify_app_final_env=%s\\\\n' \\\"\"'$rc_verify_app_final_env\"\nexit \"$rc_verify_app_final_env\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,320p' scripts/run-e2e.sh && printf '%s\\\\n' '--- owned runtime wrapper ---' && rtk sed -n '1,320p' scripts/run-owned-runtime.sh && printf '%s\\\\n' '--- base config ---' && rtk sed -n '1,260p' frontend/playwright.config.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nPYTHON_BIN=\"$PWD/backend/venv/bin/python\" '\"\\\\\nNODE_BIN=\\\"\"'$(command -v node)\" '\"\\\\\nSYSGRID_VERIFY_PROFILE=root-preview \\\\\nSYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=ci-system-root \\\\\nSYSGRID_VERIFY_USER_ID=ci-system-root \\\\\nrtk ./scripts/run-e2e.sh --config=playwright.root-preview.config.ts\nrc_root_preview=\"'$?\nprintf '\"'EXIT root_preview=%s\\\\n' \\\"\"'$rc_root_preview\"\nexit \"$rc_root_preview\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk git diff --check\nrc_diff=$?\nrtk python3 scripts/tests/test_application_ci_contract.py\nrc_contract=$?\nrtk python3 - <<'\"'PY'\nfrom pathlib import Path\nimport yaml\nwith (Path('.github/workflows/application-ci.yml')).open(encoding='utf-8') as handle:\n    workflow = yaml.safe_load(handle)\nassert workflow['jobs']['required']['name'] == 'required'\nassert workflow['permissions'] == {'contents': 'read'}\nprint('workflow YAML parse: PASS')\nPY\nrc_yaml=\"'$?\nif rtk rg -n -i '\"'codex|opencode|chatgpt|openai|llm|agent' .github/workflows/application-ci.yml scripts/tests/test_application_ci_contract.py scripts/verify-app.sh >/tmp/sysgrid-forbidden-scan.out 2>&1; then\n  rc_forbidden=1\n  rtk sed -n '1,80p' /tmp/sysgrid-forbidden-scan.out\nelse\n  rc_forbidden=0\n  echo 'forbidden command scan: PASS'\nfi\ntracked_generated=\\\"\"'$(rtk git ls-files -- ci-evidence backend/test-results frontend/test-results frontend/test-results-v1 frontend/playwright-report frontend/blob-report frontend/coverage frontend/stage31-evidence frontend/stage34-evidence frontend/stage35-evidence frontend/stage36-evidence frontend/llm-report.json)\"\nif [[ -n \"$tracked_generated\" ]]; then\n  rc_hygiene=1\n  printf '\"'%s\\\\n' 'generated evidence hygiene: FAIL' \\\"\"'$tracked_generated\"\nelse\n  rc_hygiene=0\n  echo '\"'generated evidence hygiene: PASS (no Product-tracked generated evidence/report paths)'\nfi\nprintf 'EXIT git_diff_check=%s\\\\nEXIT ci_contract=%s\\\\nEXIT workflow_yaml=%s\\\\nEXIT forbidden_scan=%s\\\\nEXIT generated_evidence_hygiene=%s\\\\n' \\\"\"'$rc_diff\" \"$rc_contract\" \"$rc_yaml\" \"$rc_forbidden\" \"$rc_hygiene\"\nexit $(( rc_diff || rc_contract || rc_yaml || rc_forbidden || rc_hygiene ))'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set +e\nrtk git diff --check\nrc_diff=$?\nrtk python3 scripts/tests/test_application_ci_contract.py\nrc_contract=$?\nrtk python3 - <<'\"'PY'\nfrom pathlib import Path\nimport yaml\nwith (Path('.github/workflows/application-ci.yml')).open(encoding='utf-8') as handle:\n    workflow = yaml.safe_load(handle)\nassert workflow['jobs']['required']['name'] == 'required'\nassert workflow['permissions'] == {'contents': 'read'}\nprint('workflow YAML parse: PASS')\nPY\nrc_yaml=\"'$?\nif rtk rg -n -i '\"'(\"'^|[[:space:]])(codex|opencode|chatgpt|openai)([[:space:]]|$)|(''^|[[:space:]])llm([[:space:]]|$)|(''^|[[:space:]])agent([[:space:]]|$)'\"' .github/workflows/application-ci.yml scripts/tests/test_application_ci_contract.py scripts/verify-app.sh >/tmp/sysgrid-forbidden-scan.out 2>&1; then\n  rc_forbidden=1\n  rtk sed -n '1,80p' /tmp/sysgrid-forbidden-scan.out\nelse\n  rc_forbidden=0\n  echo 'forbidden command scan: PASS'\nfi\ntracked_generated=\\\"\"'$(rtk git ls-files -- ci-evidence backend/test-results frontend/test-results frontend/test-results-v1 frontend/test-results-root-preview frontend/playwright-report frontend/blob-report frontend/coverage frontend/stage31-evidence frontend/stage34-evidence frontend/stage35-evidence frontend/stage36-evidence frontend/llm-report.json)\"\nif [[ -n \"$tracked_generated\" ]]; then\n  rc_hygiene=1\n  printf '\"'%s\\\\n' 'generated evidence hygiene: FAIL' \\\"\"'$tracked_generated\"\nelse\n  rc_hygiene=0\n  echo '\"'generated evidence hygiene: PASS (no Product-tracked generated evidence/report paths)'\nfi\nprintf 'EXIT git_diff_check=%s\\\\nEXIT ci_contract=%s\\\\nEXIT workflow_yaml=%s\\\\nEXIT forbidden_scan=%s\\\\nEXIT generated_evidence_hygiene=%s\\\\n' \\\"\"'$rc_diff\" \"$rc_contract\" \"$rc_yaml\" \"$rc_forbidden\" \"$rc_hygiene\"\nexit $(( rc_diff || rc_contract || rc_yaml || rc_forbidden || rc_hygiene ))'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git add .gitignore .github/required-checks.json .github/workflows/application-ci.yml scripts/verify-app.sh scripts/tests/test_application_ci_contract.py && printf '%s\\\\n' '--- staged paths ---' && rtk git diff --cached --name-status && printf '%s\\\\n' '--- protected scope diff ---' && rtk git diff --cached --name-only -- frontend backend && printf '%s\\\\n' '--- staged diff check ---' && rtk git diff --cached --check && printf '%s\\\\n' '--- staged stat ---' && rtk git diff --cached --stat\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --cached -- .github/required-checks.json .github/workflows/application-ci.yml .gitignore scripts/verify-app.sh scripts/tests/test_application_ci_contract.py | sed -n '1,520p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git commit -m \"ci: add SHA-bound application gate\" && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^ && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:codex/sysgrid-smv1-protected-application-ci-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\ncandidate=\"$(rtk git rev-parse HEAD)\"\ncandidate_tree=\"$(rtk git rev-parse HEAD''^{tree})\"\ncandidate_parent=\"$(rtk git rev-parse HEAD''^1)\"\nremote_lines=\"$(rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-v1 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-v1)\"\nprintf '\"'%s\\\\n' '--- candidate identity ---'\nprintf 'candidate_sha=%s\\\\ncandidate_tree=%s\\\\ncandidate_parent=%s\\\\n' \\\"\"'$candidate\" \"$candidate_tree\" \"$candidate_parent\"\nprintf '\"'%s\\\\n' '--- remote refs ---'\nprintf '%s\\\\n' \\\"\"'$remote_lines\"\n[[ \"$candidate_parent\" == 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 ]]\n[[ \"$(printf '\"'%s\\\\n' \\\"\"'$remote_lines\" | rtk awk '\"'\"'$2==\"refs/heads/main\" {print $1}'\"')\\\" == 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 ]]\n[[ \\\"\"'$(printf '\"'%s\\\\n' \\\"\"'$remote_lines\" | rtk awk '\"'\"'$2==\"refs/heads/codex/sysgrid-smv1-protected-application-ci-v1\" {print $1}'\"')\\\" == \\\"\"'$candidate\" ]]\n[[ -z \"$(printf '\"'%s\\\\n' \\\"\"'$remote_lines\" | rtk awk '\"'\"'$2==\"refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-v1\" {print $1}'\"')\\\" ]]\n[[ -z \\\"\"'$(rtk git diff --name-only 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 \"$candidate\" -- frontend backend)\" ]]\nprintf '\"'%s\\\\n' 'protected scope regression: PASS (frontend/backend Product behavior paths unchanged)'\nprintf '%s\\\\n' '--- candidate changed files ---'\nrtk git show --format= --name-only \\\"\"'$candidate\" | sort\nprintf '\"'%s\\\\n' '--- tree/ref checks ---'\nrtk git diff --check 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 \\\"\"'$candidate\"\nrtk git status --porcelain=v1 --branch\nprintf '\"'%s\\\\n' '--- main control plane ---'\nrtk curl -fsSL https://api.github.com/repos/kimhw8084/sysgrid/branches/main | rtk python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps({\\\"sha\\\":d[\\\"commit\\\"][\\\"sha\\\"],\\\"tree\\\":d[\\\"commit\\\"][\\\"commit\\\"][\\\"tree\\\"][\\\"sha\\\"],\\\"protected\\\":d[\\\"protected\\\"],\\\"required_status_checks\\\":d[\\\"protection\\\"][\\\"required_status_checks\\\"]}, sort_keys=True))'\nrtk curl -fsSL https://api.github.com/repos/kimhw8084/sysgrid/rulesets\nprintf '%s\\\\n' '--- generated path ignore ---'\nfor path in ci-evidence/ci-identity.json frontend/test-results-v1/marker frontend/test-results-root-preview/marker frontend/playwright-report/marker; do\n  rtk git check-ignore --no-index -q \\\"\"'$path\"\n  printf '\"'ignored=%s\\\\n' \\\"\"'$path\"\ndone\nprintf '\"'%s\\\\n' 'final ref/tree checks: PASS'\"",
+      "exit_code": 127,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'set -euo pipefail\nfor path in ci-evidence/ci-identity.json frontend/test-results-v1/marker frontend/test-results-root-preview/marker frontend/playwright-report/marker; do\n  rtk proxy git check-ignore --no-index -q \"$path\"\n  printf '\"'ignored=%s\\\\n' \\\"\"'$path\"\ndone\nprintf '\"'%s\\\\n' 'final generated-path ignore checks: PASS'\nrtk git status --porcelain=v1 --branch\"",
+      "exit_code": 127,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'command -v rtk || true; which rtk || true; rtk --version'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^1 && rtk git diff --check HEAD''^1 HEAD && rtk python3 scripts/tests/test_application_ci_contract.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 95,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.23,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 14155776,
+      "fresh_input_tokens": 254788,
+      "input_tokens": 14410564,
+      "non_reasoning_output_tokens": 18832,
+      "output_tokens": 41535,
+      "reasoning_output_tokens": 22703,
+      "total_processed_tokens": 14452099
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1",
+      "subject": "ci: add SHA-bound application gate"
+    }
+  ],
+  "diff": {
+    "additions": 311,
+    "changed_files": 5,
+    "commit_count": 1,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 1,
+    "items": [
+      {
+        "bytes": 214,
+        "path": ".github/required-checks.json",
+        "sha256": "ea701a46636bc2e0c0afe87334af473b1cc225d231df236fc920d4ff4fb19097"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-22T00:18:54Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "branch": "codex/sysgrid-smv1-protected-application-ci-v1",
+    "detached_verify": false,
+    "head_sha": "3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1",
+    "remote_exact_head": true,
+    "remote_head_sha": "3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "work_branch": "codex/sysgrid-smv1-protected-application-ci-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-cd7eec681b463b1515c3dced",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-protected-application-ci-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-21T23:46:29Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1945,
+    "queue_seconds": 1,
+    "total_seconds": 1946
+  },
+  "transport": {
+    "bytes": 15662,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 15326,
+    "prompt_sha256": "5fabb06f50a8b5b1c074e86ce58c9828483e6936f60bb47d8ebecd98771a50f0",
+    "sha256": "cd7eec681b463b1515c3dced28ab712e27a4593aadf8988c0dd7083ce2507289"
+  }
+}
