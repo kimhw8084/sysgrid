@@ -3,17 +3,18 @@ import { test } from './helpers/sysgrid-test'
 import { clickResilientButton, resetBrowserState } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
-const multiSelectModifier = process.platform === 'darwin' ? 'Meta' : 'Control'
 
 async function selectRowsByNames(page: any, names: string[]) {
-  for (const [index, name] of names.entries()) {
+  for (const name of names) {
     const row = page
       .locator('.ag-pinned-left-cols-container .ag-row, .ag-center-cols-container .ag-row')
-      .filter({ hasText: name })
+      .filter({ has: page.getByText(name, { exact: true }) })
       .first()
     await expect(row).toBeVisible({ timeout: 15_000 })
-    const nameCell = row.locator('.ag-cell[col-id="name"], .ag-cell').first()
-    await nameCell.click(index === 0 ? undefined : { modifiers: [multiSelectModifier] })
+    const selectionCell = row.getByRole('gridcell', { name: /Press Space to toggle row selection/ })
+    await expect(selectionCell).toBeVisible()
+    await selectionCell.click()
+    await expect(row).toHaveAttribute('aria-selected', 'true')
     await expect(row).toHaveClass(/ag-row-selected/)
   }
 }
