@@ -1,0 +1,483 @@
+{
+  "accepted_at": "2026-09-22T01:08:39Z",
+  "changed_files": [
+    {
+      "additions": 7,
+      "deletions": 0,
+      "path": ".github/required-checks.json",
+      "status": "A"
+    },
+    {
+      "additions": 179,
+      "deletions": 0,
+      "path": ".github/workflows/application-ci.yml",
+      "status": "A"
+    },
+    {
+      "additions": 3,
+      "deletions": 0,
+      "path": ".gitignore",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/playwright.v1.config.ts",
+      "status": "M"
+    },
+    {
+      "additions": 10,
+      "deletions": 0,
+      "path": "frontend/tests/assets-golden-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/tests/assets-stage35-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/tests/assets-stage36-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 23,
+      "deletions": 1,
+      "path": "frontend/tests/home-truth.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/tests/smoke.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 118,
+      "deletions": 0,
+      "path": "scripts/tests/test_application_ci_contract.py",
+      "status": "A"
+    },
+    {
+      "additions": 4,
+      "deletions": 0,
+      "path": "scripts/verify-app.sh",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short && rtk git diff --stat && rtk git diff --check 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 && rtk git diff --name-only 3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1 && rtk git log -2 --oneline --decorate'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff -- frontend/playwright.v1.config.ts frontend/tests/smoke.spec.ts frontend/tests/home-truth.spec.ts frontend/tests/assets-golden-evidence.spec.ts frontend/tests/assets-stage33-evidence.spec.ts frontend/tests/assets-stage34-evidence.spec.ts frontend/tests/assets-stage35-evidence.spec.ts frontend/tests/assets-stage36-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-files | rtk rg '(\"'^|/)(ci-evidence|test-results|test-results-v1|test-results-root-preview|playwright-report|coverage)/'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 -- frontend/src backend/app'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet 3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1 -- .github/workflows/application-ci.yml .github/required-checks.json scripts/verify-app.sh scripts/tests/test_application_ci_contract.py .gitignore'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python scripts/tests/test_application_ci_contract.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --unified=0 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 -- frontend/playwright.v1.config.ts frontend/tests | rtk rg -ni '(codex|opencode|chatgpt|llm|openai|model-cli|autonomous agent|generated prompt)'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import yaml, pathlib; p=pathlib.Path('.github/workflows/application-ci.yml'); d=yaml.safe_load(p.read_text()); assert d['name']=='Application CI'; assert d['jobs']['required']['name']=='Application CI / required'; print('YAML_OK')\\\"\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import yaml, pathlib, pprint; d=yaml.safe_load(pathlib.Path('.github/workflows/application-ci.yml').read_text()); print(d['name']); print(list(d['jobs'])); pprint.pp({k:v.get('name') for k,v in d['jobs'].items()})\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c \\\"import yaml, pathlib; p=pathlib.Path('.github/workflows/application-ci.yml'); d=yaml.safe_load(p.read_text()); assert d['name']=='Application CI'; assert d['jobs']['required']['name']=='required'; print('YAML_PARSE_OK')\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add frontend/playwright.v1.config.ts frontend/tests/smoke.spec.ts frontend/tests/home-truth.spec.ts frontend/tests/assets-golden-evidence.spec.ts frontend/tests/assets-stage33-evidence.spec.ts frontend/tests/assets-stage34-evidence.spec.ts frontend/tests/assets-stage35-evidence.spec.ts frontend/tests/assets-stage36-evidence.spec.ts && rtk git commit -m \"fix: repair canonical application CI browser gate\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^ && rtk git diff-tree --no-commit-id --name-only -r HEAD && rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-smv1-protected-application-ci-fix-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh auth status'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr create --repo kimhw8084/sysgrid --base main --head codex/sysgrid-smv1-protected-application-ci-fix-v2 --title \"[CHG-57] Application CI qualification for R2 candidate\" --body \"Temporary non-merge qualification PR for CHG-57 System Management V1 Slice 6. Exact candidate: e7f067401a7126f7437977a3c6395100ab526737. Base: main at 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167. Close after Application CI evidence is captured; do not merge.\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run list --repo kimhw8084/sysgrid --workflow application-ci.yml --branch codex/sysgrid-smv1-protected-application-ci-fix-v2 --event pull_request --limit 5 --json databaseId,headSha,headBranch,baseBranch,event,status,conclusion,workflowName,url'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run list --repo kimhw8084/sysgrid --workflow application-ci.yml --branch codex/sysgrid-smv1-protected-application-ci-fix-v2 --event pull_request --limit 5 --json databaseId,headSha,headBranch,event,status,conclusion,workflowName,url,createdAt,updatedAt'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run list --repo kimhw8084/sysgrid --workflow application-ci.yml --branch codex/sysgrid-smv1-protected-application-ci-fix-v2 --event pull_request --limit 5 --json databaseId,headSha,headBranch,event,status,conclusion,workflowName,url,createdAt,updatedAt'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr view 14 --repo kimhw8084/sysgrid --json number,state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,statusCheckRollup,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh workflow list --repo kimhw8084/sysgrid --all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run list --repo kimhw8084/sysgrid --workflow 363814186 --limit 10 --json databaseId,headSha,headBranch,event,status,conclusion,workflowName,url,createdAt,updatedAt'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run view 35677287400 --repo kimhw8084/sysgrid --json databaseId,headSha,headBranch,event,status,conclusion,workflowName,jobs,url --log-failed'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run view 35677287400 --repo kimhw8084/sysgrid --log-failed'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh api repos/kimhw8084/sysgrid/actions/runs/35677287400/jobs --paginate'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/actions/runs/35677287400 --jq '{id,run_number,event,status,conclusion,head_sha,head_branch,run_attempt,workflow_id,workflow_name,created_at,updated_at}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' .github/workflows/application-ci.yml\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run view 35677287400 --repo kimhw8084/sysgrid --verbose'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh api repos/kimhw8084/sysgrid/actions/runs/35677287400'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh api repos/kimhw8084/sysgrid/check-suites/96594369591'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/pulls/14/checks --jq '.check_runs[] | {name,status,conclusion,details_url}'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/commits/e7f067401a7126f7437977a3c6395100ab526737/check-runs --jq '.check_runs[] | {name,status,conclusion,details_url,started_at,completed_at,app:.app.slug}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr checks 14 --repo kimhw8084/sysgrid --required'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk actionlint .github/workflows/application-ci.yml'",
+      "exit_code": 127,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/contents/.github/workflows/application-ci.yml?ref=main --jq '{name,sha,path}'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/contents/.github/workflows/application-ci.yml?ref=e7f067401a7126f7437977a3c6395100ab526737 --jq '{name,sha,path}'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/actions/workflows/363814186 --jq '{id,name,path,state,updated_at}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api 'repos/kimhw8084/sysgrid/contents/.github/workflows/application-ci.yml?ref=main' --jq '{name,sha,path}'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api 'repos/kimhw8084/sysgrid/contents/.github/workflows/application-ci.yml?ref=e7f067401a7126f7437977a3c6395100ab526737' --jq '{name,sha,path}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/issues/14/events --paginate --jq '.[] | {event,created_at,actor:.actor.login,commit_id,workflow_run}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr close 14 --repo kimhw8084/sysgrid'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr reopen 14 --repo kimhw8084/sysgrid'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh run list --repo kimhw8084/sysgrid --workflow 363814186 --branch codex/sysgrid-smv1-protected-application-ci-fix-v2 --limit 10 --json databaseId,headSha,headBranch,event,status,conclusion,workflowName,url,createdAt,updatedAt'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr checks 14 --repo kimhw8084/sysgrid'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr close 14 --repo kimhw8084/sysgrid'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git merge-base --is-ancestor 3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1 HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-fix-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/rulesets --paginate --jq '.[] | {id,name,enforcement,conditions,rules}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh api repos/kimhw8084/sysgrid/branches/main/protection'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr view 14 --repo kimhw8084/sysgrid --json number,state,headRefOid,baseRefOid,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 214,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.28,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 29608448,
+      "fresh_input_tokens": 519406,
+      "input_tokens": 30127854,
+      "non_reasoning_output_tokens": 30305,
+      "output_tokens": 47863,
+      "reasoning_output_tokens": 17558,
+      "total_processed_tokens": 30175717
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "e7f067401a7126f7437977a3c6395100ab526737",
+      "subject": "fix: repair canonical application CI browser gate"
+    },
+    {
+      "sha": "3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1",
+      "subject": "ci: add SHA-bound application gate"
+    }
+  ],
+  "diff": {
+    "additions": 354,
+    "changed_files": 13,
+    "commit_count": 2,
+    "deletions": 3
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 6,
+    "items": [
+      {
+        "bytes": 214,
+        "path": ".github/required-checks.json",
+        "sha256": "ea701a46636bc2e0c0afe87334af473b1cc225d231df236fc920d4ff4fb19097"
+      },
+      {
+        "bytes": 38624,
+        "path": "frontend/tests/assets-golden-evidence.spec.ts",
+        "sha256": "1c4a6125f30b16d8acec8f73fd1cae14307fa06629363187ee046f57569504bd"
+      },
+      {
+        "bytes": 41461,
+        "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+        "sha256": "1e530e1bb25600cf7f90c365ea27f40d045313a6a92af4ee9643aa2c638bb631"
+      },
+      {
+        "bytes": 45777,
+        "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+        "sha256": "124d9a4315853bb662954af70a5e7e313d10b24bf26c4079e2851739fa3f6a66"
+      },
+      {
+        "bytes": 45744,
+        "path": "frontend/tests/assets-stage35-evidence.spec.ts",
+        "sha256": "30b11512fe0c850c43a4b65f1f5119402a5f46469ea12d6f311d702f2173174a"
+      },
+      {
+        "bytes": 56855,
+        "path": "frontend/tests/assets-stage36-evidence.spec.ts",
+        "sha256": "41196acc7f80c51eb81e9344404279c40e8e05c6065cc0e49313e97eeac30c50"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-22T01:55:19Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "branch": "codex/sysgrid-smv1-protected-application-ci-fix-v2",
+    "detached_verify": false,
+    "head_sha": "e7f067401a7126f7437977a3c6395100ab526737",
+    "remote_exact_head": true,
+    "remote_head_sha": "e7f067401a7126f7437977a3c6395100ab526737",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "work_branch": "codex/sysgrid-smv1-protected-application-ci-fix-v2",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-cfa8dae00d78970d8ba8a57b",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v2",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v2"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-protected-application-ci-fix-v2",
+  "schema_version": 1,
+  "started_at": "2026-09-22T01:08:39Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2800,
+    "queue_seconds": 0,
+    "total_seconds": 2800
+  },
+  "transport": {
+    "bytes": 11130,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 10788,
+    "prompt_sha256": "bd9d92895a8ecb715084afadda471e5d05ac389beae43a3d044ddd88f83cff70",
+    "sha256": "cfa8dae00d78970d8ba8a57b9a9ca8d5fbb6e18a72b5e4fc2ef295437386d34e"
+  }
+}
