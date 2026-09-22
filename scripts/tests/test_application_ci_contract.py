@@ -122,6 +122,16 @@ def main() -> None:
     )
     assert check_ignore.returncode == 0
     assert "ci-evidence/" in gitignore
+
+    staged_files = subprocess.run(
+        ["git", "ls-files", "--stage"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+    assert not any(line.startswith("160000 ") for line in staged_files)
+    assert not (REPO_ROOT / ".gitmodules").exists()
     print("application CI contract: PASS")
 
 
