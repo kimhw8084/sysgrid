@@ -41,6 +41,10 @@ def main() -> None:
     assert "    name: required\n" in required_job
     assert "runs-on: ubuntu-24.04" in required_job
     assert "continue-on-error" not in required_job
+    job_env = required_job.split("    steps:\n", 1)[0]
+    assert "runner" not in job_env
+    assert "SYSGRID_VERIFY_TEMP_ROOT" not in job_env
+    assert "CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" in job_env
 
     decisive_steps = (
         "Check candidate whitespace",
@@ -60,6 +64,8 @@ def main() -> None:
     assert "--require-hashes" in required_job
     assert "-r backend/requirements.lock" in required_job
     assert '"$GITHUB_WORKSPACE/scripts/verify-app.sh"' in required_job
+    verifier_step = step_block(required_job, "Run canonical application verifier")
+    assert 'SYSGRID_VERIFY_TEMP_ROOT="$RUNNER_TEMP/sysgrid-verification"' in verifier_step
     assert "SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID: ci-system-root" in workflow
     assert "SYSGRID_VERIFY_USER_ID" not in workflow
     assert "SYSGRID_VERIFY_PROFILE=root-preview" not in workflow
@@ -76,12 +82,17 @@ def main() -> None:
     assert "if: always()" in required_job
     assert "ci-evidence/ci-identity.json" in required_job
     assert "final_required_gate_result" in required_job
+    evidence_step = step_block(required_job, "Collect SHA-bound CI evidence")
+    assert '"github_sha": os.environ["GITHUB_SHA"]' in evidence_step
+    assert '"tested_trigger_sha": os.environ["GITHUB_SHA"]' in evidence_step
+    assert '"candidate_sha": os.environ["CANDIDATE_SHA"]' in evidence_step
+    assert "pr_base_sha" in evidence_step
     assert "backend/test-results" in required_job
     assert "frontend/test-results" in required_job
     assert "frontend/test-results-v1" in required_job
     assert "frontend/test-results-root-preview" in required_job
     assert "owned-runtime" in required_job
-    assert "application-ci-evidence-${{ github.sha }}" in required_job
+    assert "application-ci-evidence-${{ env.CANDIDATE_SHA }}" in required_job
     assert "actions/upload-artifact@" in required_job
     assert all(
         re.search(rf"uses: {re.escape(action)}@[0-9a-f]{{40}}", workflow)

@@ -22,7 +22,7 @@ jobs:
     env:
       SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID: ci-system-root
       SYSGRID_VERIFY_KEEP_LOGS: "1"
-      SYSGRID_VERIFY_TEMP_ROOT: ${{ runner.temp }}/sysgrid-verification
+      CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - name: Checkout full history
@@ -89,7 +89,7 @@ jobs:
           NODE_BIN="$(command -v node)" \
           SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID="$SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID" \
           SYSGRID_VERIFY_KEEP_LOGS="$SYSGRID_VERIFY_KEEP_LOGS" \
-          SYSGRID_VERIFY_TEMP_ROOT="$SYSGRID_VERIFY_TEMP_ROOT" \
+          SYSGRID_VERIFY_TEMP_ROOT="$RUNNER_TEMP/sysgrid-verification" \
           "$GITHUB_WORKSPACE/scripts/verify-app.sh"
 
       - name: Collect SHA-bound CI evidence
@@ -131,6 +131,8 @@ jobs:
               "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
               "event": os.environ["GITHUB_EVENT_NAME"],
               "github_sha": os.environ["GITHUB_SHA"],
+              "tested_trigger_sha": os.environ["GITHUB_SHA"],
+              "candidate_sha": os.environ["CANDIDATE_SHA"],
               "pr_base_sha": os.environ.get("BASE_SHA") or None,
               "ref": os.environ["GITHUB_REF"],
               "head_ref": os.environ["HEAD_REF"],
@@ -172,7 +174,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: application-ci-evidence-${{ github.sha }}
+          name: application-ci-evidence-${{ env.CANDIDATE_SHA }}
           path: ci-evidence
           if-no-files-found: error
           include-hidden-files: false
