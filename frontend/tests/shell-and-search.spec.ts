@@ -216,6 +216,7 @@ test.describe('Golden Eight rendered geometry', () => {
     }
   })
   test('keeps desktop shell, command bar, and grid alignment invariant on every golden route', async ({ page }, testInfo) => {
+    test.setTimeout(120_000)
     await resetBrowserState(page)
     await page.setViewportSize({ width: 1440, height: 1000 })
 

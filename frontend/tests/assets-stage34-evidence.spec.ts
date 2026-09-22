@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { test } from './helpers/sysgrid-test.ts'
 import { clickResilientButton, fillGridSearch, resetBrowserState, seedOperationalScenario, waitForAppIdle } from './helpers/sysgrid.ts'
+import { isExpectedTelemetryRequest } from '../src/observability/browserFailurePolicy'
 
 type RouteKey = 'asset' | 'monitoring' | 'asset-real'
 type Verdict = 'pass' | 'fail' | 'not-applicable'
@@ -445,6 +446,7 @@ const classifyEvent = (routeLabel: string, event: RuntimeEvent): Omit<Classifica
   if (event.kind === 'request-failure') {
     const exactMessage = `${event.method} ${event.url} :: ${event.failureText || 'unknown failure'}`
     const unrelated =
+      isExpectedTelemetryRequest(event) ||
       (/net::ERR_ABORTED/i.test(event.failureText || '') && /\/api\/v1\/settings\/user\/settings$/.test(event.url)) ||
       (/net::ERR_ABORTED/i.test(event.failureText || '') && event.method === 'GET' && /\/api\/v1\//.test(event.url))
     return {

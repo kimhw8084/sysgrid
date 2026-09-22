@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test'
+import { expect, type APIRequestContext } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { createAsset, createMonitoring, createService, resetBrowserState } from './helpers/sysgrid'
 
@@ -8,9 +8,31 @@ const headers = {
   'X-Tenant-Id': process.env.PW_TENANT_ID || '1',
 }
 
+async function deleteActiveRows(request: APIRequestContext, path: string) {
+  const response = await request.get(apiBase + path, { headers })
+  expect(response.ok()).toBeTruthy()
+  const rows = await response.json()
+  expect(Array.isArray(rows)).toBeTruthy()
+
+  for (const row of rows) {
+    const deletion = await request.delete(
+      apiBase + path + '/' + row.id,
+      { headers },
+    )
+    expect(deletion.ok()).toBeTruthy()
+  }
+}
+
+async function clearActiveHomeInventory(request: APIRequestContext) {
+  await deleteActiveRows(request, '/logical-services')
+  await deleteActiveRows(request, '/monitoring')
+  await deleteActiveRows(request, '/devices')
+}
+
 test.describe('CHG-49 Home truth projection', () => {
   test('normal-v1 empty inventory keeps observations unavailable', async ({ page, request }) => {
     await resetBrowserState(page)
+    await clearActiveHomeInventory(request)
     const response = await request.get(`${apiBase}/dashboard/metrics`, { headers })
     expect(response.ok()).toBeTruthy()
     const metrics = await response.json()

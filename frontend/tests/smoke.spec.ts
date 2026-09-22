@@ -29,7 +29,7 @@ test.describe('Smoke Tests', () => {
 
   // Legacy/Dashboard coverage
   const otherRoutes = [
-    { path: '/', expectedText: /Stability Index/i },
+    { path: '/', expectedText: /Observed health history \(24h\)/i },
     { path: '/projects', expectedText: /Access unavailable/i },
     { path: '/racks', expectedText: /Racks/i },
   ]

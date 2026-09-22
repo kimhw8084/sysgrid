@@ -1,0 +1,181 @@
+name: Application CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  required:
+    name: required
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID: ci-system-root
+      SYSGRID_VERIFY_KEEP_LOGS: "1"
+      CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python 3.14
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.14"
+
+      - name: Check candidate whitespace
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          EVENT_BEFORE: ${{ github.event.before || '' }}
+        run: |
+          set -euo pipefail
+
+          base_sha="${PR_BASE_SHA:-}"
+          if [[ -z "$base_sha" ]]; then
+            base_sha="${EVENT_BEFORE:-}"
+          fi
+
+          if [[ -n "$base_sha" && "$base_sha" != "$GITHUB_SHA" ]] && git cat-file -e "$base_sha^{commit}" 2>/dev/null; then
+            git diff --check "$base_sha" "$GITHUB_SHA"
+          else
+            git diff --check 4b825dc642cb6eb9a060e54bf8d69288fbee4904 "$GITHUB_SHA"
+          fi
+
+      - name: Install frontend dependencies
+        shell: bash
+        run: npm ci --prefix frontend --no-audit --no-fund
+
+      - name: Install backend dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv backend/venv
+          backend/venv/bin/python -m pip install \
+            --disable-pip-version-check \
+            --require-hashes \
+            --no-cache-dir \
+            -r backend/requirements.lock
+
+      - name: Install Playwright Chromium
+        shell: bash
+        run: frontend/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Run canonical application verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHON_BIN="$GITHUB_WORKSPACE/backend/venv/bin/python" \
+          NODE_BIN="$(command -v node)" \
+          SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID="$SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID" \
+          SYSGRID_VERIFY_KEEP_LOGS="$SYSGRID_VERIFY_KEEP_LOGS" \
+          SYSGRID_VERIFY_TEMP_ROOT="$RUNNER_TEMP/sysgrid-verification" \
+          "$GITHUB_WORKSPACE/scripts/verify-app.sh"
+
+      - name: Collect SHA-bound CI evidence
+        if: always()
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          EVENT_BEFORE: ${{ github.event.before || '' }}
+          FINAL_REQUIRED_GATE_RESULT: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          mkdir -p ci-evidence
+
+          node_version="$(node --version 2>&1 || true)"
+          python_bin="$GITHUB_WORKSPACE/backend/venv/bin/python"
+          if [[ ! -x "$python_bin" ]]; then
+            python_bin="$(command -v python || command -v python3 || true)"
+          fi
+          python_version="unavailable"
+          if [[ -n "$python_bin" ]]; then
+            python_version="$("$python_bin" --version 2>&1 || true)"
+          fi
+
+          export NODE_VERSION="$node_version"
+          export PYTHON_BIN_USED="$python_bin"
+          export PYTHON_VERSION="$python_version"
+          export HEAD_REF="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          export BASE_SHA="${PR_BASE_SHA:-${EVENT_BEFORE:-}}"
+
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          evidence = {
+              "schema_version": "sysgrid.application-ci.evidence.v1",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow_name": os.environ["GITHUB_WORKFLOW"],
+              "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "event": os.environ["GITHUB_EVENT_NAME"],
+              "github_sha": os.environ["GITHUB_SHA"],
+              "tested_trigger_sha": os.environ["GITHUB_SHA"],
+              "candidate_sha": os.environ["CANDIDATE_SHA"],
+              "pr_base_sha": os.environ.get("BASE_SHA") or None,
+              "ref": os.environ["GITHUB_REF"],
+              "head_ref": os.environ["HEAD_REF"],
+              "node_version": os.environ["NODE_VERSION"],
+              "python_bin": os.environ["PYTHON_BIN_USED"],
+              "python_version": os.environ["PYTHON_VERSION"],
+              "final_required_gate_result": os.environ["FINAL_REQUIRED_GATE_RESULT"],
+          }
+          Path("ci-evidence/ci-identity.json").write_text(
+              json.dumps(evidence, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          copy_tree() {
+            local source="$1"
+            local target="$2"
+            if [[ -d "$source" ]]; then
+              mkdir -p "$target"
+              cp -R "$source/." "$target/"
+            fi
+          }
+
+          copy_tree backend/test-results ci-evidence/backend-test-results
+          copy_tree frontend/test-results ci-evidence/frontend-test-results
+          copy_tree frontend/test-results-v1 ci-evidence/frontend-test-results-v1
+          copy_tree frontend/test-results-root-preview ci-evidence/frontend-test-results-root-preview
+          copy_tree frontend/playwright-report ci-evidence/frontend-playwright-report
+          copy_tree frontend/blob-report ci-evidence/frontend-blob-report
+
+          shopt -s nullglob
+          runtime_logs=("$RUNNER_TEMP"/sysgrid-verification/sysgrid-verify.*/logs)
+          for source in "${runtime_logs[@]}"; do
+            runtime_name="$(basename "$(dirname "$source")")"
+            copy_tree "$source" "ci-evidence/owned-runtime/$runtime_name"
+          done
+
+      - name: Upload SHA-bound CI evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: application-ci-evidence-${{ env.CANDIDATE_SHA }}
+          path: ci-evidence
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 14
