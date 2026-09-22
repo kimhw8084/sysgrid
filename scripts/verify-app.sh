@@ -10,6 +10,8 @@ reset_generated_evidence() {
   rm -rf \
     "$BACKEND_DIR/test-results" \
     "$FRONTEND_DIR/test-results" \
+    "$FRONTEND_DIR/test-results-v1" \
+    "$FRONTEND_DIR/test-results-root-preview" \
     "$FRONTEND_DIR/playwright-report" \
     "$FRONTEND_DIR/blob-report"
   rm -f "$FRONTEND_DIR/llm-report.json"
@@ -24,6 +26,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_system_management_v1_policy.py
   test_chg13_authorization_security.py
   test_runtime_diagnostics.py
+  test_dashboard_metrics.py
   test_tenant_isolation.py
   test_tenant_workflows.py
   test_settings_api_edges.py
@@ -71,6 +74,7 @@ trap 'status=$?; verify_runtime_cleanup; exit "$status"' EXIT INT TERM
 
 (
   cd "$FRONTEND_DIR"
+  npm run check:operational-contracts
   npm run typecheck
   npm run test:coverage
   npm run build

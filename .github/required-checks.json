@@ -1,0 +1,7 @@
+{
+  "schema_version": "sysgrid.required-checks.v1",
+  "target_branch": "main",
+  "required_check": "Application CI / required",
+  "workflow": ".github/workflows/application-ci.yml",
+  "protection_required": true
+}

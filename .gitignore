@@ -49,6 +49,9 @@ playwright-report/
 # Generated coverage data
 **/.coverage
 
+# GitHub Actions application-gate evidence (uploaded as a run artifact)
+ci-evidence/
+
 # BEGIN SYSGRID SHIP-AI GENERATED ARTIFACT FIREWALL
 **/.DS_Store
 **/.coverage
