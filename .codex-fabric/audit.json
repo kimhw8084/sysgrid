@@ -1,0 +1,244 @@
+{
+  "accepted_at": "2026-09-22T02:43:11Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && sed -n '1,240p' /Users/haewonkim/.codex/RTK.md && sed -n '1,260p' /Users/haewonkim/.codex/law.md && git status --short --branch && git log --oneline --decorate -8 && git rev-parse HEAD && git rev-parse HEAD\"'^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git branch -a --no-color && rtk git show-ref --head | tail -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git cat-file -t 3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1 && rtk git cat-file -t e7f067401a7126f7437977a3c6395100ab526737 && rtk git cat-file -t 29d6385f38dc174327dfef475101ccfa6c6b73a1 && rtk git cat-file -p 29d6385f38dc174327dfef475101ccfa6c6b73a1 | sed -n '1,12p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-tree -r 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 | awk '\"'$1 ~ /''^160000$/ {print}'\"' && rtk git ls-tree -r 29d6385f38dc174327dfef475101ccfa6c6b73a1 | awk '\"'$1 ~ /''^160000$/ {print}'\"' && rtk git show 29d6385f38dc174327dfef475101ccfa6c6b73a1:.github/workflows/application-ci.yml | sed -n '1,280p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --stat 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 29d6385f38dc174327dfef475101ccfa6c6b73a1 && rtk git diff --name-status 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 29d6385f38dc174327dfef475101ccfa6c6b73a1 && rtk git show 29d6385f38dc174327dfef475101ccfa6c6b73a1:scripts/tests/test_application_ci_contract.py | sed -n '1,260p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'tmp_repo=\"'$(mktemp -d -t sysgrid-r4-author.XXXXXX); rtk git worktree add --detach \"$tmp_repo\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-worktree.log; printf \"%s'\"\\\\n\\\" \\\"\"'$tmp_repo\"'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs ls-files --stage -- SysGrid scripts/tests/test_application_ci_contract.py && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs rm -- SysGrid && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs diff --stat && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs diff --name-status && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs diff --cached --name-status'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'author=/var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs; patch=/tmp/sysgrid-r4-approved.patch; git -C \\\"\"'$author\" diff HEAD --binary > \"$patch\"; sha256sum \"$patch\"; wc -c \"$patch\"; sed -n \"1,180p\" \"$patch\"'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'patch=/tmp/sysgrid-r4-approved.patch; printf \\\"PATCH_SHA=\\\"; shasum -a 256 \\\"\"'$patch\" | awk \"{print '\"\\\\\"'$1}\"; printf \"PATCH_B64=\"; base64 < \"$patch\" | tr -d \"'\"\\\\\\\\n\\\"; printf \\\"\\\\\\\\n\\\"; git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs diff HEAD --name-status; printf \\\"\\\\\\\\n\\\"; git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs diff HEAD --summary'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'repo=/Users/haewonkim/.codex-fabric/worktrees/CF-3584346783d77cb5246551ea; clean=\"'$(mktemp -d -t sysgrid-r4-check.XXXXXX); rtk git -C \"$repo\" worktree add --detach \"$clean\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-check-worktree.log; rtk git -C \"$clean\" apply --check /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" apply /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" diff --check HEAD; test \"$(rtk git -C \"$clean\" ls-files --stage | awk \"$1 == 160000 {count++} END {print count+0}\")\" = 0; test ! -e \"$clean/.gitmodules\"; test \"$(rtk git -C \"$clean\" diff HEAD --name-only | sort | tr \"'\"\\\\\\\\n\\\" \\\" \\\")\\\" = \\\"SysGrid scripts/tests/test_application_ci_contract.py \\\"; rtk git -C \\\"\"'$clean\" diff HEAD --summary; printf \"CHECK_WORKTREE=%s'\"\\\\\\\\n\\\" \\\"\"'$clean\"'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'set -euo pipefail; repo=/Users/haewonkim/.codex-fabric/worktrees/CF-3584346783d77cb5246551ea; clean=\"'$(mktemp -d -t sysgrid-r4-check2.XXXXXX); rtk git -C \"$repo\" worktree add --detach \"$clean\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-check2-worktree.log; rtk git -C \"$clean\" apply --check /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" apply /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" diff --check HEAD; gitlink_lines=$(rtk git -C \"$clean\" ls-files --stage | sed -n \"/''^160000 /p\"); test -z \"$gitlink_lines\"; test ! -e \"$clean/.gitmodules\"; changed=$(rtk git -C \"$clean\" diff HEAD --name-only | tr \"'\"\\\\\\\\n\\\" \\\" \\\"); test \\\"\"'$changed\" = \"SysGrid scripts/tests/test_application_ci_contract.py \"; printf \"APPLY_CHECK=PASS'\"\\\\\\\\nDIFF_CHECK=PASS\\\\\\\\nGITLINK_COUNT=0\\\\\\\\nGITMODULES_PRESENT=false\\\\\\\\nSCOPE=%s\\\\\\\\n\\\" \\\"\"'$changed\"'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'set -euo pipefail; repo=/Users/haewonkim/.codex-fabric/worktrees/CF-3584346783d77cb5246551ea; clean=\"'$(mktemp -d -t sysgrid-r4-check3.XXXXXX); rtk git -C \"$repo\" worktree add --detach \"$clean\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-check3-worktree.log; rtk git -C \"$clean\" apply --check /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" apply /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" diff --check HEAD; gitlink_lines=$(rtk git -C \"$clean\" ls-files --stage | sed -n \"/''^160000 /p\"); test -z \"$gitlink_lines\"; test ! -e \"$clean/.gitmodules\"; changed=$(rtk git -C \"$clean\" diff HEAD --name-only | tr \"'\"\\\\\\\\n\\\" \\\" \\\"); test \\\"\"'$changed\" = \"SysGrid scripts/tests/test_application_ci_contract.py \"; printf \"APPLY_CHECK=PASS'\"\\\\\\\\nDIFF_CHECK=PASS\\\\\\\\nGITLINK_COUNT=0\\\\\\\\nGITMODULES_PRESENT=false\\\\\\\\nSCOPE=%s\\\\\\\\n\\\" \\\"\"'$changed\"'\"' ; printf 'EXIT=%s\\\\n' \\\"\"'$?\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree list --porcelain | tail -80 && rtk git status --short --branch && rtk git diff --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check3.XXXXXX.Mnj3rIIsN4 status --short && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check3.XXXXXX.Mnj3rIIsN4 diff --name-only | od -An -t x1 && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check3.XXXXXX.Mnj3rIIsN4 ls-files --stage | rg '\"'^160000 '\"' || true && test -e /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check3.XXXXXX.Mnj3rIIsN4/.gitmodules; printf 'gitmodules_test_exit=%s\\\\n' \\\"\"'$?\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'set -euo pipefail; repo=/Users/haewonkim/.codex-fabric/worktrees/CF-3584346783d77cb5246551ea; clean=\"'$(mktemp -d -t sysgrid-r4-check4.XXXXXX); rtk git -C \"$repo\" worktree add --detach \"$clean\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-check4-worktree.log; rtk git -C \"$clean\" apply --check /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" apply --index /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" diff --check HEAD; gitlink_lines=$(rtk git -C \"$clean\" ls-files --stage | sed -n \"/''^160000 /p\"); test -z \"$gitlink_lines\"; test ! -e \"$clean/.gitmodules\"; changed=$(rtk git -C \"$clean\" diff --cached --name-only | tr \"'\"\\\\\\\\n\\\" \\\" \\\"); test \\\"\"'$changed\" = \"SysGrid scripts/tests/test_application_ci_contract.py \"; printf \"APPLY_CHECK=PASS'\"\\\\\\\\nINDEXED_APPLY=PASS\\\\\\\\nDIFF_CHECK=PASS\\\\\\\\nGITLINK_COUNT=0\\\\\\\\nGITMODULES_PRESENT=false\\\\\\\\nSCOPE=%s\\\\\\\\n\\\" \\\"\"'$changed\"'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree list --porcelain | tail -40'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check4.XXXXXX.B28T3bzQ3D status --short && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check4.XXXXXX.B28T3bzQ3D diff --cached --name-only | od -An -t x1 && rtk git -C /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check4.XXXXXX.B28T3bzQ3D ls-files --stage | rg '\"'^160000 '\"' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'set -euo pipefail; repo=/Users/haewonkim/.codex-fabric/worktrees/CF-3584346783d77cb5246551ea; clean=\"'$(mktemp -d -t sysgrid-r4-check5.XXXXXX); rtk git -C \"$repo\" worktree add --detach \"$clean\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-check5-worktree.log; rtk git -C \"$clean\" apply --check /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" apply --index /tmp/sysgrid-r4-approved.patch; rtk git -C \"$clean\" diff --check HEAD; gitlink_lines=$(rtk git -C \"$clean\" ls-files --stage | sed -n \"/''^160000 /p\"); test -z \"$gitlink_lines\"; test ! -e \"$clean/.gitmodules\"; names=$(rtk git -C \"$clean\" diff --cached --name-only); test \"$(printf \"%s'\"\\\\\\\\n\\\" \\\"\"'$names\" | wc -l | tr -d \" \")\" = 2; test \"$(printf \"%s'\"\\\\\\\\n\\\" \\\"\"'$names\" | sed -n \"1p\")\" = SysGrid; test \"$(printf \"%s'\"\\\\\\\\n\\\" \\\"\"'$names\" | sed -n \"2p\")\" = scripts/tests/test_application_ci_contract.py; printf \"APPLY_CHECK=PASS'\"\\\\\\\\nINDEXED_APPLY=PASS\\\\\\\\nDIFF_CHECK=PASS\\\\\\\\nGITLINK_COUNT=0\\\\\\\\nGITMODULES_PRESENT=false\\\\\\\\nSCOPE=SysGrid,scripts/tests/test_application_ci_contract.py\\\\\\\\n\\\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'set -x; repo=/Users/haewonkim/.codex-fabric/worktrees/CF-3584346783d77cb5246551ea; clean=\"'$(mktemp -d -t sysgrid-r4-check6.XXXXXX); rtk git -C \"$repo\" worktree add --detach \"$clean\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-check6-worktree.log; rtk proxy git -C \"$clean\" apply --check /tmp/sysgrid-r4-approved.patch; rtk proxy git -C \"$clean\" apply --index /tmp/sysgrid-r4-approved.patch; rtk proxy git -C \"$clean\" diff --check HEAD; gitlink_lines=$(rtk proxy git -C \"$clean\" ls-files --stage | sed -n \"/''^160000 /p\"); test -z \"$gitlink_lines\"; test ! -e \"$clean/.gitmodules\"; names=$(rtk proxy git -C \"$clean\" diff --cached --name-only); printf \"NAMES=[%s]'\"\\\\\\\\n\\\" \\\"\"'$names\"; count=$(printf \"%s'\"\\\\\\\\n\\\" \\\"\"'$names\" | awk \"NF {n++} END {print n+0}\"); printf \"COUNT=%s'\"\\\\\\\\n\\\" \\\"\"'$count\"; test \"$count\" = 2; printf \"CHECKS_PASS'\"\\\\\\\\n\\\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check.XXXXXX.BVeuQ1gGSE && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check2.XXXXXX.jL0F3Qxfji && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check3.XXXXXX.Mnj3rIIsN4 && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check4.XXXXXX.B28T3bzQ3D && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check5.XXXXXX.jhJ9bD8S2n && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check6.XXXXXX.llFSyt03hh && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs && rtk git worktree list --porcelain | tail -40'",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree list --porcelain | tail -50'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check5.XXXXXX.1W6gjR8y3d && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-check6.XXXXXX.llFSyt03hh && rtk git worktree remove --force /var/folders/nz/6q2p_ldx3txdbw_gttbpnwjr0000gn/T/sysgrid-r4-author.XXXXXX.rAVD0wElKs && rtk git worktree list --porcelain | tail -30'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-fix-v3 refs/heads/codex/sysgrid-smv1-protected-application-ci-fix-v2 && rtk git merge-base --is-ancestor 3f2b592a9c7d486369ac724c8f30d1e8be9a2bd1 29d6385f38dc174327dfef475101ccfa6c6b73a1 && rtk git merge-base --is-ancestor e7f067401a7126f7437977a3c6395100ab526737 29d6385f38dc174327dfef475101ccfa6c6b73a1 && rtk git merge-base --is-ancestor 29d6385f38dc174327dfef475101ccfa6c6b73a1 29d6385f38dc174327dfef475101ccfa6c6b73a1 && rtk git show -s --format='\"'%H%n%T%n%P' 29d6385f38dc174327dfef475101ccfa6c6b73a1 && rtk git diff --name-only 72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167 29d6385f38dc174327dfef475101ccfa6c6b73a1 | sed -n '1,30p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'set -euo pipefail; repo=/Users/haewonkim/.codex-fabric/worktrees/CF-3584346783d77cb5246551ea; clean=\"'$(mktemp -d -t sysgrid-r4-hash.XXXXXX); rtk git -C \"$repo\" worktree add --detach \"$clean\" 29d6385f38dc174327dfef475101ccfa6c6b73a1 >/tmp/sysgrid-r4-hash-worktree.log; rtk proxy git -C \"$clean\" apply --index /tmp/sysgrid-r4-approved.patch; printf \"TEST_BLOB=\"; rtk proxy git -C \"$clean\" hash-object scripts/tests/test_application_ci_contract.py; printf \"INDEX_BLOB=\"; rtk proxy git -C \"$clean\" rev-parse :scripts/tests/test_application_ci_contract.py; printf \"TREE=\"; rtk proxy git -C \"$clean\" write-tree; printf \"GITLINKS=\"; rtk proxy git -C \"$clean\" ls-files --stage | rtk proxy rg -c \"''^160000 \" || true; rtk git worktree remove --force \"$clean\"'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sh -lc 'set -euo pipefail; patch=/tmp/sysgrid-r4-approved.patch; actual=\"'$(shasum -a 256 \"$patch\" | awk \"{print '\"\\\\\"'$1}\"); test \"$actual\" = 5e46a4c3dbb0786c5b2a790cb65678a54513f3d5da090403be3ac0ea577babc0; if rtk proxy rg -n -i \"codex|opencode|chatgpt|openai|llm|model|agent\" \"$patch\"; then exit 1; else true; fi; printf \"PATCH_SHA=%s'\"\\\\\\\\nFORBIDDEN_SCAN=PASS\\\\\\\\n\\\" \\\"\"'$actual\"'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-5.6-luna",
+    "event_count": 61,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 94.46,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 876288,
+      "fresh_input_tokens": 51345,
+      "input_tokens": 927633,
+      "non_reasoning_output_tokens": 8392,
+      "output_tokens": 23914,
+      "reasoning_output_tokens": 15522,
+      "total_processed_tokens": 951547
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.4-quota-recovery-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.4-quota-recovery-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-22T02:51:05Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "branch": "codex/sysgrid-smv1-protected-application-ci-fix-v4",
+    "detached_verify": false,
+    "head_sha": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "remote_exact_head": true,
+    "remote_head_sha": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "72e0c551dddf9e6f3e1ab68250c4e8a3d4c15167",
+    "work_branch": "codex/sysgrid-smv1-protected-application-ci-fix-v4",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-3584346783d77cb5246551ea",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v4",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v4"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.4-quota-recovery-candidate",
+    "policy_sha256": "a642c9f63bab2cb555704bdb0b9d1f28222591f133f934c1d0f93cc5a25ab8a1",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-protected-application-ci-fix-v4",
+  "schema_version": 1,
+  "started_at": "2026-09-22T02:43:12Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 473,
+    "queue_seconds": 1,
+    "total_seconds": 474
+  },
+  "transport": {
+    "bytes": 11202,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 10860,
+    "prompt_sha256": "838c0f936b7e1834d67423fac6d59207ef998a1c156f662b35fde81749533c7a",
+    "sha256": "3584346783d77cb5246551eab5948660fbf3b5617a23f8652fbfaa9408d1dd7f"
+  }
+}
