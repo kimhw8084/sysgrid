@@ -963,6 +963,43 @@ export async function getWorkspaceLogicalRowByText(page: Page, workspace: Worksp
   }
 }
 
+function workspaceLogicalRowFragments(row: LogicalGridRow): Locator[] {
+  return [row.pinned, row.center].filter((fragment): fragment is Locator => fragment !== null)
+}
+
+export async function expectWorkspaceLogicalRowSelected(row: LogicalGridRow) {
+  const fragments = workspaceLogicalRowFragments(row)
+  if (fragments.length === 0) {
+    throw new Error(`Logical row ${row.rowKey} has no pinned or center fragments.`)
+  }
+
+  for (const fragment of fragments) {
+    await expect(fragment).toHaveAttribute('aria-selected', 'true')
+    await expect(fragment).toHaveClass(/ag-row-selected/)
+  }
+}
+
+export async function selectWorkspaceLogicalRow(row: LogicalGridRow) {
+  const fragments = workspaceLogicalRowFragments(row)
+  const checkboxCandidates = fragments.map((fragment) =>
+    fragment.getByRole('checkbox', { name: /Press Space to toggle row selection/ }),
+  )
+  const counts = await Promise.all(checkboxCandidates.map((checkbox) => checkbox.count()))
+  const total = counts.reduce((sum, count) => sum + count, 0)
+
+  if (total !== 1) {
+    throw new Error(`Expected exactly one row-selection checkbox for logical row ${row.rowKey}; found ${total}.`)
+  }
+
+  const checkbox = checkboxCandidates[counts.findIndex((count) => count === 1)]
+  await expect(checkbox).toBeVisible()
+  await expect(checkbox).toBeEnabled()
+  await expect(checkbox).not.toBeChecked()
+  await checkbox.check()
+  await expect(checkbox).toBeChecked()
+  await expectWorkspaceLogicalRowSelected(row)
+}
+
 export function getWorkspaceRowByText(page: Page, workspace: WorkspaceId, text: string | RegExp): Locator {
   return getWorkspaceRoot(page, workspace)
     .locator('.ag-pinned-left-cols-container .ag-row, .ag-center-cols-container .ag-row')

@@ -57,8 +57,28 @@ def main() -> None:
         block = step_block(required_job, name)
         assert "if:" not in block, name
 
-    assert "git diff --check" in required_job
-    assert "4b825dc642cb6eb9a060e54bf8d69288fbee4904" in required_job
+    whitespace_step = step_block(required_job, "Check candidate whitespace")
+    assert 'pull_request)' in whitespace_step
+    assert 'base_sha="${PR_BASE_SHA:-}"' in whitespace_step
+    assert 'if [[ -z "$base_sha" ]] || ! git cat-file -e "$base_sha^{commit}" 2>/dev/null;' in whitespace_step
+    assert 'push)' in whitespace_step
+    assert 'event_before="${EVENT_BEFORE:-}"' in whitespace_step
+    assert '[[ -n "$event_before" && ! "$event_before" =~ ^0+$' in whitespace_step
+    assert '"$event_before" != "$GITHUB_SHA"' in whitespace_step
+    assert 'git cat-file -e "$event_before^{commit}" 2>/dev/null' in whitespace_step
+    assert 'workflow_dispatch)' in whitespace_step
+    assert 'if [[ "$GITHUB_REF_NAME" == "main" ]]' in whitespace_step
+    assert 'base_sha="$(git rev-parse "$GITHUB_SHA^" 2>/dev/null || true)"' in whitespace_step
+    assert 'git show-ref --verify --quiet refs/remotes/origin/main' in whitespace_step
+    assert 'git merge-base "$GITHUB_SHA" origin/main' in whitespace_step
+    assert 'if [[ -z "$base_sha" ]]; then' in whitespace_step
+    assert 'if git rev-parse "$GITHUB_SHA^" >/dev/null 2>&1; then' in whitespace_step
+    empty_tree_fallback = 'base_sha="4b825dc642cb6eb9a060e54bf8d69288fbee4904"'
+    assert empty_tree_fallback in whitespace_step
+    assert whitespace_step.index(empty_tree_fallback) > whitespace_step.index('if git rev-parse "$GITHUB_SHA^" >/dev/null 2>&1; then')
+    assert 'echo "SYSGRID_CANDIDATE_BASE_SHA=$base_sha" >> "$GITHUB_ENV"' in whitespace_step
+    assert 'git diff --check "$base_sha..$GITHUB_SHA"' in whitespace_step
+    assert 'git diff --check 4b825dc642cb6eb9a060e54bf8d69288fbee4904' not in whitespace_step
     assert "npm ci --prefix frontend" in required_job
     assert "frontend/package-lock.json" in required_job
     assert "--require-hashes" in required_job
@@ -87,6 +107,9 @@ def main() -> None:
     assert '"tested_trigger_sha": os.environ["GITHUB_SHA"]' in evidence_step
     assert '"candidate_sha": os.environ["CANDIDATE_SHA"]' in evidence_step
     assert "pr_base_sha" in evidence_step
+    assert '"candidate_base_sha": os.environ.get("SYSGRID_CANDIDATE_BASE_SHA") or None' in evidence_step
+    assert '"pr_base_sha": os.environ.get("PR_BASE_SHA") or None' in evidence_step
+    assert '"BASE_SHA"' not in evidence_step
     assert "backend/test-results" in required_job
     assert "frontend/test-results" in required_job
     assert "frontend/test-results-v1" in required_job
