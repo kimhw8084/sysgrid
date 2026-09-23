@@ -1,0 +1,400 @@
+{
+  "accepted_at": "2026-09-23T03:24:45Z",
+  "changed_files": [
+    {
+      "additions": 47,
+      "deletions": 10,
+      "path": ".github/workflows/application-ci.yml",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 4,
+      "path": "frontend/tests/assets-revert.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 8,
+      "deletions": 15,
+      "path": "frontend/tests/assets-vendors-bulk-preview.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 37,
+      "deletions": 0,
+      "path": "frontend/tests/helpers/sysgrid.ts",
+      "status": "M"
+    },
+    {
+      "additions": 25,
+      "deletions": 2,
+      "path": "scripts/tests/test_application_ci_contract.py",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git check-ignore -v ci-evidence/ci-identity.json frontend/test-results-v1/results.json frontend/test-results-root-preview/results.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --quiet 5c4d253c456ac8162fa4371341c7c52b7490fe45...HEAD -- frontend/src backend/app && rtk proxy git diff --check 5c4d253c456ac8162fa4371341c7c52b7490fe45...HEAD && rtk proxy git ls-files --stage'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git status --short --branch && rtk proxy git rev-parse HEAD && rtk proxy git rev-parse HEAD''^{tree} && rtk proxy git show -s --format=%P HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-verify-v12 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-verify-v12'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh pr list -R kimhw8084/sysgrid --state all --head codex/sysgrid-smv1-protected-application-ci-verify-v12 --base main --json number,title,state,headRefOid,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git push --set-upstream origin refs/heads/codex/sysgrid-smv1-protected-application-ci-verify-v12:refs/heads/codex/sysgrid-smv1-protected-application-ci-verify-v12'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy gh pr create --repo kimhw8084/sysgrid --base main --head codex/sysgrid-smv1-protected-application-ci-verify-v12 --title 'CHG-57: verify immutable R11 candidate' --body 'Temporary verification-only PR for CHG-57. The head is immutable R11 candidate 011ca4f76c33c364af026ddd79f444a892a854c7; no source changes were made during verification. This PR will remain unmerged and be closed after both required Actions event shapes pass.'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh workflow run application-ci.yml --repo kimhw8084/sysgrid --ref codex/sysgrid-smv1-protected-application-ci-verify-v12'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh pr view 21 --repo kimhw8084/sysgrid --json number,state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run list --repo kimhw8084/sysgrid --workflow application-ci.yml --event pull_request --branch codex/sysgrid-smv1-protected-application-ci-verify-v12 --limit 5 --json databaseId,status,conclusion,event,headSha,headBranch,name,workflowName,createdAt,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run view 35815590360 --repo kimhw8084/sysgrid --json databaseId,status,conclusion,event,headSha,headBranch,name,workflowName,jobs,createdAt,updatedAt,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy gh api repos/kimhw8084/sysgrid/actions/jobs/107036273299 --jq '{status, steps: [.steps[] | {name, status, conclusion, started_at, completed_at}]}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy gh api repos/kimhw8084/sysgrid/actions/jobs/107036311872 --jq '{status, steps: [.steps[] | {name, status, conclusion, started_at, completed_at}]}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run view --help'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -o pipefail -c 'rtk proxy gh run view --repo kimhw8084/sysgrid --log --job 107036311872 2>&1 | tee /tmp/sysgrid-chg57-r12-verify/actions-dispatch-live.log | tail -n 35'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy bash -o pipefail -c 'rtk proxy gh run view --repo kimhw8084/sysgrid --log --job 107036273299 2>&1 | tee /tmp/sysgrid-chg57-r12-verify/actions-pr-live.log | tail -n 35'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run watch 35815577498 --repo kimhw8084/sysgrid --interval 10 --exit-status'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run watch 35815590360 --repo kimhw8084/sysgrid --interval 10 --exit-status'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy gh api repos/kimhw8084/sysgrid/actions/runs/35815577498/artifacts --jq '.artifacts[] | {id, name, digest, size_in_bytes, expired, created_at}'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run view 35815577498 --repo kimhw8084/sysgrid --json status,conclusion,event,headSha,headBranch,jobs,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run view 35815577498 --repo kimhw8084/sysgrid --log > /tmp/sysgrid-chg57-r12-verify/actions-pr.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy gh run download 35815577498 --repo kimhw8084/sysgrid --dir /tmp/sysgrid-chg57-r12-verify/pr-artifact'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /tmp/sysgrid-chg57-r12-verify/pr-artifact/ci-evidence/ci-identity.json'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 100 /tmp/sysgrid-chg57-r12-verify/actions-pr.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n -i \"failed|error|timed out|timeout|✘|AssertionError|Error:\" /tmp/sysgrid-chg57-r12-verify/actions-pr.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg --files /tmp/sysgrid-chg57-r12-verify/pr-artifact'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /tmp/sysgrid-chg57-r12-verify/pr-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/frontend-test-results-v1/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/error-context.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,340p' frontend/tests/assets-workflows.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /tmp/sysgrid-chg57-r12-verify/pr-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/ci-identity.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1870,1910p' /tmp/sysgrid-chg57-r12-verify/actions-pr.log && rtk sed -n '1968,2008p' /tmp/sysgrid-chg57-r12-verify/actions-pr.log\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '95,255p' frontend/tests/assets-workflows.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 140 /tmp/sysgrid-chg57-r12-verify/pr-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/frontend-test-results-v1/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/error-context.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n -i \"call log|timeout|waiting for|locator|selectWorkspaceLogicalRow|selectWorkspace\" /tmp/sysgrid-chg57-r12-verify/pr-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/frontend-test-results-v1/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/error-context.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff 5c4d253c456ac8162fa4371341c7c52b7490fe45...011ca4f76c33c364af026ddd79f444a892a854c7 -- frontend/tests/helpers/sysgrid.ts frontend/tests/assets-revert.spec.ts frontend/tests/assets-vendors-bulk-preview.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,35p' /tmp/sysgrid-chg57-r12-verify/pr-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/frontend-test-results-v1/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/error-context.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1980,2005p' /tmp/sysgrid-chg57-r12-verify/actions-pr.log\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"selectWorkspaceLogicalRow|function selectWorkspaceLogicalRow|error\" frontend/tests/helpers/sysgrid.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy unzip -o /tmp/sysgrid-chg57-r12-verify/pr-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/frontend-test-results-v1/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/trace.zip -d /tmp/sysgrid-chg57-r12-verify/pr-trace && rtk rg --files /tmp/sysgrid-chg57-r12-verify/pr-trace && rtk tail -n 25 /tmp/sysgrid-chg57-r12-verify/pr-trace/trace.trace'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 40 /tmp/sysgrid-chg57-r12-verify/pr-trace/test.trace && rtk tail -n 30 /tmp/sysgrid-chg57-r12-verify/pr-trace/1-trace.trace'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3 -c 'import json, pathlib; p=pathlib.Path(\\\"/tmp/sysgrid-chg57-r12-verify/pr-trace/test.trace\\\"); rows=[json.loads(line) for line in p.open() if line.strip()]; before={d.get(\\\"callId\\\"):d for d in rows if d.get(\\\"type\\\")==\\\"before\\\"}; after={d.get(\\\"callId\\\"):d for d in rows if d.get(\\\"type\\\")==\\\"after\\\"}; target=[d for d in before.values() if d.get(\\\"class\\\")==\\\"Test\\\" and d.get(\\\"method\\\")==\\\"test\\\" and \\\"simulates the changed Assets workflows\\\" in d.get(\\\"title\\\", \\\"\\\")]; print(\\\"TEST_START\\\", [(d.get(\\\"callId\\\"),d.get(\\\"startTime\\\"),d.get(\\\"title\\\")) for d in target]); start=target[0].get(\\\"startTime\\\",0) if target else 0; end=start+61000; calls=[d for d in before.values() if start <= d.get(\\\"startTime\\\",0) <= end and d.get(\\\"class\\\") in (\\\"Frame\\\",\\\"Test\\\")]; calls.sort(key=lambda d:d.get(\\\"startTime\\\",0)); print(\\\"CALL_COUNT\\\",len(calls)); [(print(round(d.get(\\\"startTime\\\",0)-start,1), d.get(\\\"class\\\"), d.get(\\\"method\\\"), (d.get(\\\"title\\\") or d.get(\\\"apiName\\\") or \\\"\\\")[:110], str(d.get(\\\"params\\\",{}).get(\\\"selector\\\", d.get(\\\"params\\\",{}).get(\\\"url\\\",\\\"\\\")))[:100], \\\"line\\\", ((d.get(\\\"stack\\\") or [{}])[0].get(\\\"line\\\")))) for d in calls]'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3 -c 'import json,pathlib; rows=[json.loads(x) for x in pathlib.Path(\\\"/tmp/sysgrid-chg57-r12-verify/pr-trace/test.trace\\\").open() if x.strip()]; xs=[d for d in rows if d.get(\\\"type\\\")==\\\"before\\\" and (\\\"assets-workflows.spec.ts\\\" in str(d.get(\\\"stack\\\")) or d.get(\\\"class\\\")==\\\"Test\\\")]; print(\\\"count\\\",len(xs)); [(print(d.get(\\\"type\\\"),d.get(\\\"callId\\\"),d.get(\\\"startTime\\\"),d.get(\\\"class\\\"),d.get(\\\"method\\\"),d.get(\\\"title\\\"),((d.get(\\\"stack\\\") or [{}])[0].get(\\\"file\\\")),((d.get(\\\"stack\\\") or [{}])[0].get(\\\"line\\\")))) for d in xs[-150:]]'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport json, zipfile\np='/tmp/sysgrid-chg57-r12-verify/pr-trace/test.trace'\ntry:\n    with open(p) as f:\n        data=json.load(f)\nexcept Exception as e:\n    print('TRACE_LOAD_ERROR',e)\n    raise SystemExit\nprint('TRACE_TYPE',type(data).__name__)\nif isinstance(data,dict):\n    events=data.get('events',[])\nelse:\n    events=data\nfor i,e in enumerate(events):\n    if not isinstance(e,dict) or e.get('type') not in ('before','after','error'):\n        continue\n    stack=e.get('stack') or []\n    matches=[s for s in stack if isinstance(s,dict) and s.get('file','').endswith('assets-workflows.spec.ts')]\n    if not matches: continue\n    line=matches[0].get('line')\n    title=e.get('title') or e.get('class') or e.get('method') or ''\n    print(e.get('type'), 'time=',e.get('startTime'), 'line=',line, 'title=',title)\nPY\nrtk gh run view 35815590360 --repo kimhw8084/sysgrid --json status,conclusion,headSha,event,headBranch,jobs,url\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport json\np='/tmp/sysgrid-chg57-r12-verify/pr-trace/test.trace'\nwith open(p) as f:\n    for raw in f:\n        try: e=json.loads(raw)\n        except Exception: continue\n        if not isinstance(e,dict) or e.get('type') not in ('before','after','error'): continue\n        matches=[s for s in (e.get('stack') or []) if isinstance(s,dict) and s.get('file','').endswith('assets-workflows.spec.ts')]\n        if matches:\n            print(e.get('type'),'time=',e.get('startTime'),'line=',matches[0].get('line'),'title=',e.get('title') or e.get('class') or e.get('method') or '')\nPY\nrtk rg -n -C 3 'FAILED|failed|Error:|timed out|timeout|Golden Eight|desktop geometry|Assets workflows' /tmp/sysgrid-chg57-r12-verify/actions-pr.log\nrtk gh api repos/kimhw8084/sysgrid/actions/runs/35815590360/artifacts --jq '.artifacts[] | {id,name,expired,size_in_bytes,digest}'\nrtk gh run download 35815590360 --repo kimhw8084/sysgrid --dir /tmp/sysgrid-chg57-r12-verify/dispatch-artifact\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find /tmp/sysgrid-chg57-r12-verify/dispatch-artifact -maxdepth 3 -type f\nrtk python3 - <<'PY'\nimport json, pathlib\nroot=pathlib.Path('/tmp/sysgrid-chg57-r12-verify/dispatch-artifact')\nfor p in root.rglob('ci-identity.json'):\n print('IDENTITY_FILE',p)\n print(p.read_text())\nfor p in root.rglob('test-results.json'):\n try:\n  data=json.loads(p.read_text())\n except Exception: continue\n print('TEST_RESULTS',p)\n def walk(x):\n  if isinstance(x,dict):\n   if x.get('status') in ('failed','timedOut') or x.get('error'):\n    print('RESULT', {k:x.get(k) for k in ('file','title','line','status','duration','retry') if k in x})\n   for v in x.values(): walk(v)\n  elif isinstance(x,list):\n   for v in x: walk(v)\n walk(data)\nPY\nrtk gh run view 35815590360 --repo kimhw8084/sysgrid --log > /tmp/sysgrid-chg57-r12-verify/actions-dispatch.log\nrtk rg -n -C 2 'FAILED|failed|timed out|timeout|candidate_base_sha|Golden Eight|desktop shell|ci-identity|final_required_gate_result|workflow_dispatch|Check candidate whitespace' /tmp/sysgrid-chg57-r12-verify/actions-dispatch.log\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show 011ca4f76c33c364af026ddd79f444a892a854c7:frontend/tests/helpers/sysgrid.ts\nrtk git diff 5c4d253c456ac8162fa4371341c7c52b7490fe45 011ca4f76c33c364af026ddd79f444a892a854c7 -- frontend/tests/helpers/sysgrid.ts frontend/tests/assets-revert.spec.ts frontend/tests/assets-vendors-bulk-preview.spec.ts\nrtk python3 - <<'PY'\nimport pathlib\nroot=pathlib.Path('/tmp/sysgrid-chg57-r12-verify/dispatch-artifact')\nfor p in sorted(root.rglob('*')):\n if p.is_file(): print(p, p.stat().st_size)\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -C 14 'getByRole\\\\(.checkbox|\\\\.check\\\\(|toBeChecked|selectLogical|logical row selection|aria-selected' frontend/tests/helpers/sysgrid.ts frontend/tests/assets-revert.spec.ts frontend/tests/assets-vendors-bulk-preview.spec.ts\nrtk sed -n '1,125p' /tmp/sysgrid-chg57-r12-verify/dispatch-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/frontend-test-results-v1/assets-revert-Assets-Rever-3c90c-ion-after-selection-changes/error-context.md\nrtk sed -n '1,125p' /tmp/sysgrid-chg57-r12-verify/dispatch-artifact/application-ci-evidence-011ca4f76c33c364af026ddd79f444a892a854c7/frontend-test-results-v1/assets-vendors-bulk-previe-f2d39-undoes-exact-shared-changes/error-context.md\nrtk git status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh run view 35815577498 --repo kimhw8084/sysgrid --json status,conclusion,headSha,event,headBranch,jobs,url\nrtk gh api repos/kimhw8084/sysgrid/actions/runs/35815577498/artifacts --jq '.artifacts[] | {id,name,expired,size_in_bytes,digest}'\nrtk gh pr view 21 --repo kimhw8084/sysgrid --json number,state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,url\nrtk python3 - <<'PY'\nimport json, pathlib\nfor label,root in [('PR','/tmp/sysgrid-chg57-r12-verify/pr-artifact'),('DISPATCH','/tmp/sysgrid-chg57-r12-verify/dispatch-artifact')]:\n p=next(pathlib.Path(root).rglob('ci-identity.json'))\n d=json.loads(p.read_text())\n print(label, {k:d.get(k) for k in ('repository','workflow_name','workflow_run_id','event','candidate_sha','candidate_base_sha','pr_base_sha','github_sha','tested_trigger_sha','head_ref','ref','node_version','python_version','final_required_gate_result')})\nfor label,p in [('PR','/tmp/sysgrid-chg57-r12-verify/actions-pr.log'),('DISPATCH','/tmp/sysgrid-chg57-r12-verify/actions-dispatch.log')]:\n lines=pathlib.Path(p).read_text(errors='replace').splitlines()\n print(label,'SUMMARY')\n for line in lines:\n  if any(x in line for x in ('failed (',' passed (','failed\\\\n','Golden Eight rendered geometry › keeps desktop shell')):\n   if 'required\\\\tRun canonical' in line: print(line[-280:])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD HEAD''^{tree} HEAD''^ origin/main\nrtk git status --porcelain=v1 --branch\nrtk git diff --name-only 5c4d253c456ac8162fa4371341c7c52b7490fe45..HEAD\nrtk git diff --check 5c4d253c456ac8162fa4371341c7c52b7490fe45..HEAD\nrtk git merge-base HEAD origin/main\nrtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-verify-v12 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-verify-v12\nrtk git ls-tree -r HEAD | rtk rg '\"'\"'^160000 '\"'\nrtk git cat-file -e HEAD:.gitmodules\nrtk gh pr view 21 --repo kimhw8084/sysgrid --json state,mergedAt,headRefOid,baseRefOid\nrtk rg -n -C 1 '1 failed|Test timeout|toBeChecked|assets-workflows.spec.ts' /tmp/sysgrid-chg57-r12-verify/actions-pr.log\nrtk rg -n -C 1 '1\\\\) tests/assets-revert|2\\\\) tests/assets-vendors|3\\\\) tests/assets-workflows|toBeChecked|timed out|failed \\\\(' /tmp/sysgrid-chg57-r12-verify/actions-dispatch.log\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n --hidden 'codex-fabric/evidence|evidence_ref|Evidence ref' . --glob '\"'!frontend/node_modules/**'\"' --glob '\"'!backend/venv/**'\"' --glob '\"'!frontend/playwright-report/**'\"' --glob '\"'!**/.git/**'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/branches/main/protection\nrtk gh api 'repos/kimhw8084/sysgrid/rulesets?per_page=100'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.155.1",
+    "configured_model": "gpt-6-luna",
+    "event_count": 224,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.15,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 20100096,
+      "fresh_input_tokens": 379314,
+      "input_tokens": 20479410,
+      "non_reasoning_output_tokens": 24656,
+      "output_tokens": 67981,
+      "reasoning_output_tokens": 43325,
+      "total_processed_tokens": 20547391
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "011ca4f76c33c364af026ddd79f444a892a854c7",
+      "subject": "fabric: capture completed model changes [CF-8b0758a83be320befa964d21]"
+    }
+  ],
+  "diff": {
+    "additions": 122,
+    "changed_files": 5,
+    "commit_count": 1,
+    "deletions": 31
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-23T04:19:19Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "branch": "codex/sysgrid-smv1-protected-application-ci-verify-v12",
+    "detached_verify": false,
+    "head_sha": "011ca4f76c33c364af026ddd79f444a892a854c7",
+    "remote_exact_head": true,
+    "remote_head_sha": "011ca4f76c33c364af026ddd79f444a892a854c7",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "work_branch": "codex/sysgrid-smv1-protected-application-ci-verify-v12",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-cde4d9a4b49afafdf43a38c3",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-verify-v12",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-verify-v12"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "cfc765f3211c37c7967a138f3b2d89a99341939b15b2623f92744d007f625d6f"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-protected-application-ci-verify-v12",
+  "schema_version": 1,
+  "started_at": "2026-09-23T03:24:45Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 3274,
+    "queue_seconds": 0,
+    "total_seconds": 3274
+  },
+  "transport": {
+    "bytes": 6637,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 6285,
+    "prompt_sha256": "a131ecd3f34d25109fa87121420b5839925c7f127d216edc688c95a3fd1ef8f9",
+    "sha256": "cde4d9a4b49afafdf43a38c3f01f22e23b6098ca2c4f9790a07d2d8c475d8b63"
+  }
+}
