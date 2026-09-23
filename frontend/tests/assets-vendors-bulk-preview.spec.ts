@@ -13,7 +13,8 @@ async function selectRowsByNames(page: any, names: string[]) {
     await expect(row).toBeVisible({ timeout: 15_000 })
     const selectionCell = row.getByRole('gridcell', { name: /Press Space to toggle row selection/ })
     await expect(selectionCell).toBeVisible()
-    await selectionCell.click()
+    await expect(row).toHaveAttribute('aria-selected', 'false')
+    await selectionCell.press('Space')
     await expect(row).toHaveAttribute('aria-selected', 'true')
     await expect(row).toHaveClass(/ag-row-selected/)
   }
