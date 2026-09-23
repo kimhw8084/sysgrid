@@ -995,7 +995,7 @@ export async function selectWorkspaceLogicalRow(row: LogicalGridRow) {
   await expect(checkbox).toHaveCount(1)
   await expect(checkbox).toBeEnabled()
   await expect(checkbox).not.toBeChecked()
-  await checkbox.click()
+  await checkbox.press('Space')
   await expect(checkbox).toBeChecked()
   await expectWorkspaceLogicalRowSelected(row)
 }
