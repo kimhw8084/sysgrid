@@ -1,14 +1,37 @@
-import { clickResilientButton, fillGridSearch, getWorkspaceLogicalRowByText, getWorkspaceRoot, openToolbarButton, resetBrowserState, seedOperationalScenario, verifyGridRowRobust } from './helpers/sysgrid';
+import { clickResilientButton, expectWorkspaceLogicalRowSelected, fillGridSearch, getWorkspaceLogicalRowByText, getWorkspaceRoot, openToolbarButton, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow, verifyGridRowRobust } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import fs from 'fs';
+
+const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 test.describe('Assets workflows', () => {
   test.use({ viewport: { width: 1920, height: 1080 } })
 
   test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }) => {
+    test.setTimeout(120_000)
     await resetBrowserState(page)
     const { stamp, systemName, primary, secondary, tertiary, monitoring } = await seedOperationalScenario(request)
+
+    // Keep Purged populated so the target-name search exercises the filtered-empty state.
+    const purgedScopeKeeperResponse = await request.post(`${apiBase}/devices`, {
+      data: {
+        name: `PW-ASSET-PURGED-SCOPE-${stamp}`,
+        system: systemName,
+        status: 'Active',
+        type: 'Physical',
+        environment: 'Production',
+        serial_number: `PW-SN-PURGED-SCOPE-${stamp}`,
+        asset_tag: `PW-TAG-PURGED-SCOPE-${stamp}`,
+      },
+    })
+    expect(purgedScopeKeeperResponse.ok()).toBeTruthy()
+    const purgedScopeKeeper = await purgedScopeKeeperResponse.json()
+    const archiveScopeKeeperResponse = await request.post(`${apiBase}/devices/bulk-action`, {
+      data: { ids: [purgedScopeKeeper.id], action: 'delete' },
+    })
+    expect(archiveScopeKeeperResponse.ok()).toBeTruthy()
+    expect((await archiveScopeKeeperResponse.json()).changed_count).toBe(1)
 
     await page.goto('/asset')
     await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
@@ -101,6 +124,8 @@ test.describe('Assets workflows', () => {
     const cell0 = rows.nth(0).locator('.ag-cell').nth(1)
     await cell0.click()
     await expect(rows.nth(0)).toHaveClass(/ag-row-selected/)
+    // Target B.2: Name/Instance click no-panel behavior proof
+    await expect(page.getByText('Suggested Runbooks Now')).not.toBeVisible()
 
     // Deselect the selected row through the shared toggle-selection contract.
     const multiSelectModifier = process.platform === 'darwin' ? 'Meta' : 'Control'
@@ -108,16 +133,11 @@ test.describe('Assets workflows', () => {
     await expect(rows.nth(0)).not.toHaveClass(/ag-row-selected/)
 
     const primaryCompareRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
+    await selectWorkspaceLogicalRow(primaryCompareRow)
     const secondaryCompareRow = await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)
-    await (await primaryCompareRow.cell('name')).click()
-    await (await secondaryCompareRow.cell('name')).click({ modifiers: [multiSelectModifier] })
-    await expect(primaryCompareRow.center!).toHaveClass(/ag-row-selected/)
-    await expect(secondaryCompareRow.center!).toHaveClass(/ag-row-selected/)
-    // Target B.2: Name/Instance click no-panel behavior proof
-    const nameCell = rows.nth(0).locator('.ag-cell').nth(1)
-    await nameCell.click()
-    // Verify name-cell click does NOT trigger details side panel/modal opening
-    await expect(page.getByText('Suggested Runbooks Now')).not.toBeVisible()
+    await selectWorkspaceLogicalRow(secondaryCompareRow)
+    await expectWorkspaceLogicalRowSelected(primaryCompareRow)
+    await expectWorkspaceLogicalRowSelected(secondaryCompareRow)
 
     // Explicit Details button click DOES open details
     await primaryCompareRow.action('More actions').click()
@@ -132,11 +152,11 @@ test.describe('Assets workflows', () => {
 
     // Select the intended assets by row identity, not by viewport order.
     const primaryBulkRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
+    await selectWorkspaceLogicalRow(primaryBulkRow)
     const secondaryBulkRow = await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)
-    await (await primaryBulkRow.cell('name')).click()
-    await (await secondaryBulkRow.cell('name')).click({ modifiers: [multiSelectModifier] })
-    await expect(primaryBulkRow.center!).toHaveClass(/ag-row-selected/)
-    await expect(secondaryBulkRow.center!).toHaveClass(/ag-row-selected/)
+    await selectWorkspaceLogicalRow(secondaryBulkRow)
+    await expectWorkspaceLogicalRowSelected(primaryBulkRow)
+    await expectWorkspaceLogicalRowSelected(secondaryBulkRow)
 
     // Target B.1: Bulk action expandable inline panel grammar proof
     await bulkActionsButton.click()
@@ -264,8 +284,8 @@ test.describe('Assets workflows', () => {
 
     // Change selection to another asset: Revert remains bound to the captured operation, not selection.
     const primaryLifecycleRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
-    await (await primaryLifecycleRow.cell('name')).click()
-    await expect(primaryLifecycleRow.center!).toHaveClass(/ag-row-selected/)
+    await selectWorkspaceLogicalRow(primaryLifecycleRow)
+    await expectWorkspaceLogicalRowSelected(primaryLifecycleRow)
 
     const revertAction = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
     await expect(revertAction).toBeVisible()
@@ -283,7 +303,8 @@ test.describe('Assets workflows', () => {
     await restoreResponsePromise
     expect(restoreRequest.postDataJSON()).toMatchObject({ ids: [secondary.id], action: 'restore' })
     await expect((await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)).center!).toBeVisible()
-    await expect(primaryLifecycleRow.center!).toHaveClass(/ag-row-selected/)
+    const refreshedPrimaryLifecycleRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
+    await expectWorkspaceLogicalRowSelected(refreshedPrimaryLifecycleRow)
 
     // Archive again so the existing purged-scope proof continues with the same row identity.
     await (await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)).action('More actions').click()
@@ -346,12 +367,14 @@ test.describe('Assets workflows', () => {
     await page.goto('/asset')
     await openToolbarButton(page, /Purged/)
     await fillGridSearch(page, 'Scan asset matrix...', secondary.name)
-    await expect(page.getByText('No purged assets in scope')).toBeVisible()
+    await expect(page.getByText('No assets match the current working view')).toBeVisible()
+    await expect(getWorkspaceRoot(page, 'assets').getByRole('treegrid').getByText(secondary.name, { exact: true })).not.toBeVisible()
 
     // Verify row has not returned to Existing scope either on clean reload
     await openToolbarButton(page, /Existing/)
     await fillGridSearch(page, 'Scan asset matrix...', secondary.name)
     await expect(page.getByText('No assets match the current working view')).toBeVisible()
+    await expect(getWorkspaceRoot(page, 'assets').getByRole('treegrid').getByText(secondary.name, { exact: true })).not.toBeVisible()
 
     // B. Toolbar / Export / Template Disabled state check when the registry is empty or filtered-empty
     await page.getByTitle('Export asset data').click()

@@ -981,21 +981,21 @@ export async function expectWorkspaceLogicalRowSelected(row: LogicalGridRow) {
 
 export async function selectWorkspaceLogicalRow(row: LogicalGridRow) {
   const fragments = workspaceLogicalRowFragments(row)
-  const checkboxCandidates = fragments.map((fragment) =>
-    fragment.getByRole('checkbox', { name: /Press Space to toggle row selection/ }),
-  )
-  const counts = await Promise.all(checkboxCandidates.map((checkbox) => checkbox.count()))
+  const wrapperCandidates = fragments.map((fragment) => fragment.locator('.ag-selection-checkbox'))
+  const counts = await Promise.all(wrapperCandidates.map((wrapper) => wrapper.count()))
   const total = counts.reduce((sum, count) => sum + count, 0)
 
   if (total !== 1) {
-    throw new Error(`Expected exactly one row-selection checkbox for logical row ${row.rowKey}; found ${total}.`)
+    throw new Error(`Expected exactly one row-selection checkbox wrapper for logical row ${row.rowKey}; found ${total}.`)
   }
 
-  const checkbox = checkboxCandidates[counts.findIndex((count) => count === 1)]
-  await expect(checkbox).toBeVisible()
+  const wrapper = wrapperCandidates[counts.findIndex((count) => count === 1)]
+  const checkbox = wrapper.getByRole('checkbox', { name: /Press Space to toggle row selection/ })
+  await expect(wrapper).toBeVisible()
+  await expect(checkbox).toHaveCount(1)
   await expect(checkbox).toBeEnabled()
   await expect(checkbox).not.toBeChecked()
-  await checkbox.check()
+  await checkbox.click()
   await expect(checkbox).toBeChecked()
   await expectWorkspaceLogicalRowSelected(row)
 }
