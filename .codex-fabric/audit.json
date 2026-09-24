@@ -1,0 +1,369 @@
+{
+  "accepted_at": "2026-09-24T22:54:04Z",
+  "changed_files": [
+    {
+      "additions": 47,
+      "deletions": 10,
+      "path": ".github/workflows/application-ci.yml",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 4,
+      "path": "frontend/tests/assets-revert.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 39,
+      "deletions": 13,
+      "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 50,
+      "deletions": 21,
+      "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 9,
+      "deletions": 16,
+      "path": "frontend/tests/assets-vendors-bulk-preview.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 45,
+      "deletions": 19,
+      "path": "frontend/tests/assets-workflows.spec.ts",
+      "status": "M"
+    },
+    {
+      "additions": 27,
+      "deletions": 0,
+      "path": "frontend/tests/helpers/sysgrid.ts",
+      "status": "M"
+    },
+    {
+      "additions": 25,
+      "deletions": 2,
+      "path": "scripts/tests/test_application_ci_contract.py",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'cat /Users/haewonkim/.codex/RTK.md && cat /Users/haewonkim/.codex/law.md && pwd && git status --short --branch && git rev-parse HEAD && git rev-parse HEAD''^{tree} && git rev-parse HEAD''^ && git branch --show-current && git remote -v'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git branch -a --contains efa70b881f1d1884c7e69c5525a9430afc83214b && rtk git cat-file -t efa70b881f1d1884c7e69c5525a9430afc83214b && rtk git show -s --format='%H%n%T%n%P' efa70b881f1d1884c7e69c5525a9430afc83214b && rtk rg --files -g 'AGENTS.md' -g 'scripts/**' -g 'frontend/package.json' -g 'backend/requirements.lock' -g '.github/workflows/application-ci.yml' -g '*R23*' -g '*evidence*' | head -100 && rtk git status --porcelain=v1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk cat AGENTS.md && rtk cat frontend/package.json && rtk sed -n '1,240p' scripts/run-owned-runtime.sh && rtk sed -n '1,220p' scripts/tests/test_application_ci_contract.py && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-verify-v24 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-verify-v24\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git switch --detach efa70b881f1d1884c7e69c5525a9430afc83214b && rtk git branch --force codex/sysgrid-smv1-protected-application-ci-verify-v24 efa70b881f1d1884c7e69c5525a9430afc83214b && rtk git switch codex/sysgrid-smv1-protected-application-ci-verify-v24 && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend --no-audit --no-fund'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python3.14 -m venv /tmp/sysgrid-chg57-r24-py314 && rtk /tmp/sysgrid-chg57-r24-py314/bin/python -m pip install --require-hashes --no-cache-dir -r backend/requirements.lock; rc=$?; rtk printf '\"'backend_hash_lock_install_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,240p' scripts/lib/verify-runtime.sh && rtk rg -n 'Stage 33|Stage 34|stage33|stage34|structured|evidence' frontend/tests/assets-stage33-evidence.spec.ts frontend/tests/assets-stage34-evidence.spec.ts && rtk rg -n 'yaml|js-yaml|PyYAML|ruamel' frontend/package.json frontend/package-lock.json backend/requirements.lock\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '240,520p' scripts/lib/verify-runtime.sh && rtk sed -n '724,920p' frontend/tests/assets-stage33-evidence.spec.ts && rtk sed -n '743,940p' frontend/tests/assets-stage34-evidence.spec.ts && rtk rg -n 'stage33-evidence|stage34-evidence' .gitignore frontend/.gitignore\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /tmp/sysgrid-chg57-r24-py314/bin/python scripts/tests/test_application_ci_contract.py; rc=$?; rtk printf '\"'ci_contract_test_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node --input-type=module -e 'import fs from \\\"node:fs\\\"; import { parseDocument } from \\\"./frontend/node_modules/yaml/dist/index.js\\\"; const doc = parseDocument(fs.readFileSync(\\\".github/workflows/application-ci.yml\\\", \\\"utf8\\\")); if (doc.errors.length) { for (const error of doc.errors) console.error(error); process.exit(1); } doc.toJS(); console.log(\\\"application-ci.yml YAML parse: PASS\\\");'; rc=\"'$?; rtk printf '\"'workflow_syntax_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ls --prefix frontend yaml js-yaml --all'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ruby -e 'require \\\"yaml\\\"; YAML.load_file(\\\".github/workflows/application-ci.yml\\\"); puts \\\"application-ci.yml YAML parse: PASS\\\"'; rc=\"'$?; rtk printf '\"'workflow_syntax_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run check:operational-contracts --prefix frontend; rc=$?; rtk printf '\"'operational_contracts_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck --prefix frontend; rc=$?; rtk printf '\"'typecheck_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:coverage --prefix frontend; rc=$?; rtk printf '\"'frontend_coverage_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build --prefix frontend; rc=$?; rtk printf '\"'build_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-chg57-r24-py314/bin/python SYSGRID_VERIFY_TEMP_ROOT=/tmp/sysgrid-chg57-r24/repeat1 rtk scripts/run-owned-runtime.sh -- /bin/zsh -c 'cd frontend && exec ./node_modules/.bin/playwright test tests/assets-stage33-evidence.spec.ts tests/assets-stage34-evidence.spec.ts'; rc=\"'$?; rtk printf '\"'stage33_stage34_repeat1_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-chg57-r24-py314/bin/python SYSGRID_VERIFY_TEMP_ROOT=/tmp/sysgrid-chg57-r24/repeat2 rtk scripts/run-owned-runtime.sh -- /bin/zsh -c 'cd frontend && exec ./node_modules/.bin/playwright test tests/assets-stage33-evidence.spec.ts tests/assets-stage34-evidence.spec.ts'; rc=\"'$?; rtk printf '\"'stage33_stage34_repeat2_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-chg57-r24-py314/bin/python SYSGRID_VERIFY_TEMP_ROOT=/tmp/sysgrid-chg57-r24/repeat3 rtk scripts/run-owned-runtime.sh -- /bin/zsh -c 'cd frontend && exec ./node_modules/.bin/playwright test tests/assets-stage33-evidence.spec.ts tests/assets-stage34-evidence.spec.ts'; rc=\"'$?; rtk printf '\"'stage33_stage34_repeat3_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-chg57-r24-py314/bin/python SYSGRID_VERIFY_TEMP_ROOT=/tmp/sysgrid-chg57-r24/repeat4 rtk scripts/run-owned-runtime.sh -- /bin/zsh -c 'cd frontend && exec ./node_modules/.bin/playwright test tests/assets-stage33-evidence.spec.ts tests/assets-stage34-evidence.spec.ts'; rc=\"'$?; rtk printf '\"'stage33_stage34_repeat4_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,200p' frontend/playwright.config.ts && rtk sed -n '1,160p' frontend/playwright.root-preview.config.ts && rtk rg -n 'timeout\\\\(|setTimeout|expect\\\\.configure|retries|workers|Golden Eight|120000' frontend/tests/assets-golden-evidence.spec.ts frontend/tests/assets-workflows.spec.ts frontend/tests/assets-revert.spec.ts frontend/tests/assets-vendors-bulk-preview.spec.ts frontend/playwright*.config.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-chg57-r24-py314/bin/python SYSGRID_VERIFY_TEMP_ROOT=/tmp/sysgrid-chg57-r24/core-assets-normal rtk scripts/run-owned-runtime.sh -- /bin/zsh -c 'cd frontend && exec ./node_modules/.bin/playwright test tests/assets-revert.spec.ts tests/assets-vendors-bulk-preview.spec.ts tests/assets-workflows.spec.ts'; rc=\"'$?; rtk printf '\"'core_assets_normal_v1_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_VERIFY_PROFILE=root-preview SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=ci-system-root SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-chg57-r24-py314/bin/python SYSGRID_VERIFY_TEMP_ROOT=/tmp/sysgrid-chg57-r24/root-preview rtk scripts/run-owned-runtime.sh -- /bin/zsh -c 'cd frontend && exec ./node_modules/.bin/playwright test tests/assets-vendors-bulk-preview.spec.ts tests/assets-workflows.spec.ts'; rc=\"'$?; rtk printf '\"'root_preview_regression_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk cat frontend/test-results/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/error-context.md && rtk rg -n '\\\"status\\\"|\\\"error\\\"|\\\"message\\\"|\\\"expected\\\"|\\\"actual\\\"' frontend/test-results/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/test-failed-1.png frontend/test-results/.last-run.json frontend/test-results/playwright-report/data/*\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'interface .*Evidence|type .*Evidence|rowClickProof|logicalRowSelected|centerRowAriaSelected|centerRowSelectedClass|bulkActionsEnabled|seeded|summary|writeFile|JSON_EVIDENCE_PATH' frontend/tests/assets-stage33-evidence.spec.ts frontend/tests/assets-stage34-evidence.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '45,125p' frontend/tests/assets-stage33-evidence.spec.ts && rtk sed -n '985,1038p' frontend/tests/assets-stage33-evidence.spec.ts && rtk sed -n '45,125p' frontend/tests/assets-stage34-evidence.spec.ts && rtk sed -n '1058,1128p' frontend/tests/assets-stage34-evidence.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '530,595p' frontend/tests/assets-stage33-evidence.spec.ts && rtk sed -n '535,605p' frontend/tests/assets-stage34-evidence.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-chg57-r24-py314/bin/python -c 'import json; from pathlib import Path; files=[(\\\"stage33\\\",Path(\\\"frontend/stage33-evidence/stage33-evidence.json\\\")),(\\\"stage34\\\",Path(\\\"frontend/stage34-evidence/stage34-evidence.json\\\"))]; [(lambda s, p, n: print(json.dumps({\\\"stage\\\":n,\\\"seeded\\\":s.get(\\\"seeded\\\"),\\\"captureVerdict\\\":s.get(\\\"hardChecks\\\",{}).get(\\\"rowClickVerdict\\\"),\\\"proof\\\":p.get(\\\"rowClickProof\\\",{}).get(\\\"details\\\")},separators=(\\\",\\\",\\\":\\\")))(json.loads(p.read_text()),json.loads(p.read_text())[\\\"captures\\\"][\\\"asset-row-click\\\"],n) for n,p in files]'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-chg57-r24-py314/bin/python -c 'import json; from pathlib import Path; files=[(\\\"stage33\\\",Path(\\\"frontend/stage33-evidence/stage33-evidence.json\\\")),(\\\"stage34\\\",Path(\\\"frontend/stage34-evidence/stage34-evidence.json\\\"))]; [print(json.dumps({\\\"stage\\\":n,\\\"seeded\\\":s.get(\\\"seeded\\\"),\\\"captureVerdict\\\":s.get(\\\"hardChecks\\\",{}).get(\\\"rowClickVerdict\\\"),\\\"proof\\\":s[\\\"captures\\\"][\\\"asset-row-click\\\"][\\\"rowClickProof\\\"][\\\"details\\\"]},separators=(\\\",\\\",\\\":\\\"))) for n,p in files for s in [json.loads(p.read_text())]]'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-chg57-r24-py314/bin/python -c 'import json; from pathlib import Path; cases=[(\\\"stage33\\\",Path(\\\"frontend/stage33-evidence/stage33-evidence.json\\\")),(\\\"stage34\\\",Path(\\\"frontend/stage34-evidence/stage34-evidence.json\\\"))]; summaries=[]\nfor stage,path in cases:\n data=json.loads(path.read_text()); proof=data[\\\"captures\\\"][\\\"asset-row-click\\\"][\\\"rowClickProof\\\"]; details=proof[\\\"details\\\"]; identity=bool(details[\\\"nameCellVisible\\\"] and details[\\\"exactNameCellText\\\"] and details[\\\"recordText\\\"]==details[\\\"nameCellText\\\"] and details[\\\"recordText\\\"].startswith(\\\"PW-ASSET-A-\\\") and str(details[\\\"rowKey\\\"])==str(data[\\\"seeded\\\"][\\\"primaryAssetId\\\"])); checks={\\\"verdict\\\":proof[\\\"verdict\\\"]==\\\"pass\\\" and data[\\\"hardChecks\\\"][\\\"rowClickVerdict\\\"]==\\\"pass\\\",\\\"exact_seeded_recordText_name_identity\\\":identity,\\\"logicalRowSelected\\\":details[\\\"logicalRowSelected\\\"] is True,\\\"centerRowAriaSelected\\\":details[\\\"centerRowAriaSelected\\\"]==\\\"true\\\",\\\"centerRowSelectedClass\\\":details[\\\"centerRowSelectedClass\\\"] is True,\\\"bulkActionsEnabled\\\":details[\\\"bulkActionsEnabled\\\"] is True}; summaries.append({\\\"stage\\\":stage,\\\"recordText\\\":details[\\\"recordText\\\"],\\\"nameCellText\\\":details[\\\"nameCellText\\\"],**{key:(\\\"pass\\\" if key==\\\"verdict\\\" and value else value) for key,value in checks.items()}})\nprint(json.dumps(summaries,separators=(\\\",\\\",\\\":\\\")))\nif not all(all(checks.values()) for checks in [{\\\"verdict\\\":x[\\\"verdict\\\"]==\\\"pass\\\",\\\"exact_seeded_recordText_name_identity\\\":x[\\\"exact_seeded_recordText_name_identity\\\"],\\\"logicalRowSelected\\\":x[\\\"logicalRowSelected\\\"],\\\"centerRowAriaSelected\\\":x[\\\"centerRowAriaSelected\\\"],\\\"centerRowSelectedClass\\\":x[\\\"centerRowSelectedClass\\\"],\\\"bulkActionsEnabled\\\":x[\\\"bulkActionsEnabled\\\"]} for x in summaries]): raise SystemExit(1)' ; rc=\"'$?; rtk printf '\"'structured_stage_evidence_exit=%s\\\\n' \\\"\"'$rc\"; exit \"$rc\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git log --all --oneline --decorate --max-count=24 && rtk git diff --name-only main..efa70b881f1d1884c7e69c5525a9430afc83214b && rtk git diff --name-only e9e4fa23c5bb672194a76237ba834e5d3188aab9..efa70b881f1d1884c7e69c5525a9430afc83214b'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'Golden Eight|120_000|120000' frontend/tests\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-chg57-r24-py314/bin/python - <<'PY'\nimport json, re, subprocess\nfrom pathlib import Path\n\nCANDIDATE = \\\"efa70b881f1d1884c7e69c5525a9430afc83214b\\\"\nTREE = \\\"bb734b95e4c77429312a9cb812157596d62efd5d\\\"\nPARENT = \\\"e9e4fa23c5bb672194a76237ba834e5d3188aab9\\\"\nBASE = \\\"5c4d253c456ac8162fa4371341c7c52b7490fe45\\\"\nBRANCH = \\\"codex/sysgrid-smv1-protected-application-ci-verify-v24\\\"\n\ndef git(*args):\n    return subprocess.run([\\\"git\\\", *args], text=True, capture_output=True, check=False)\ndef out(*args):\n    result = git(*args)\n    if result.returncode:\n        raise RuntimeError(f\\\"git {' '.join(args)} failed: {result.stderr.strip()}\\\")\n    return result.stdout.strip()\ndef tree_file(rev, path):\n    result = git(\\\"show\\\", f\\\"{rev}:{path}\\\")\n    return result.stdout if result.returncode == 0 else None\n\nchecks = {}\nchecks[\\\"diff_check_main_candidate\\\"] = git(\\\"diff\\\", \\\"--check\\\", \\\"main..\\\" + CANDIDATE).returncode == 0\nchecks[\\\"diff_check_r20_candidate\\\"] = git(\\\"diff\\\", \\\"--check\\\", PARENT + \\\"..\\\" + CANDIDATE).returncode == 0\nchecks[\\\"head_exact_candidate\\\"] = out(\\\"rev-parse\\\", \\\"HEAD\\\") == CANDIDATE\nchecks[\\\"tree_exact_candidate\\\"] = out(\\\"rev-parse\\\", \\\"HEAD\"'^{tree}\") == TREE\nchecks[\"parent_exact_candidate\"] = out(\"rev-parse\", \"HEAD''^\") == PARENT\nr20_files = out(\"diff\", \"--name-only\", PARENT + \"..\" + CANDIDATE).splitlines()\nchecks[\"r20_changed_files_exact_stage33_stage34\"] = set(r20_files) == {\"frontend/tests/assets-stage33-evidence.spec.ts\", \"frontend/tests/assets-stage34-evidence.spec.ts\"}\nmain_files = out(\"diff\", \"--name-only\", \"main..\" + CANDIDATE).splitlines()\nproduct_prefixes = (\"frontend/src/\", \"backend/app/\", \"backend/contracts/\", \"frontend/public/\")\nchecks[\"main_diff_exact_eight_nonproduct_files\"] = len(main_files) == 8 and not any(p.startswith(product_prefixes) for p in main_files)\nchecks[\"no_product_path_diff\"] = not any(p.startswith(product_prefixes) for p in main_files)\nindex = out(\"ls-files\", \"--stage\").splitlines()\nchecks[\"zero_gitlinks_no_tracked_gitmodules\"] = not any(line.startswith(\"160000 \") for line in index) and \".gitmodules\" not in out(\"ls-files\").splitlines()\nevidence_paths = [\n    \"frontend/stage33-evidence/stage33-evidence.json\",\n    \"frontend/stage34-evidence/stage34-evidence.json\",\n    \"frontend/OUT-26_ITERATION_35_STAGE33_EVIDENCE.html\",\n    \"frontend/OUT-26_ITERATION_36_STAGE34_EVIDENCE.html\",\n    \"frontend/test-results\",\n    \"frontend/playwright-report\",\n    \"frontend/llm-report.json\",\n    \"frontend/coverage\",\n    \"frontend/dist\",\n]\nchecks[\"generated_evidence_paths_ignored\"] = all(git(\"check-ignore\", \"--no-index\", \"-q\", path).returncode == 0 for path in evidence_paths)\n\ngolden = \"frontend/tests/shell-and-search.spec.ts\"\nworkflows = \"frontend/tests/assets-workflows.spec.ts\"\nchecks[\"golden_eight_timeout_120000_preserved\"] = all((text := tree_file(rev, golden)) is not None and re.search(r\"test'\"\\\\.setTimeout\\\\(120_000\\\\)\\\", text) for rev in (PARENT, CANDIDATE)) and tree_file(PARENT, golden) == tree_file(CANDIDATE, golden)\nchecks[\\\"assets_workflows_timeout_120000_preserved\\\"] = all((text := tree_file(rev, workflows)) is not None and re.search(r\\\"test\\\\.setTimeout\\\\(120_000\\\\)\\\", text) for rev in (PARENT, CANDIDATE)) and tree_file(PARENT, workflows) == tree_file(CANDIDATE, workflows)\nplaywright_configs = (\\\"frontend/playwright.config.ts\\\", \\\"frontend/playwright.v1.config.ts\\\")\nchecks[\\\"global_retry_worker_unchanged\\\"] = all(tree_file(PARENT, path) == tree_file(CANDIDATE, path) and tree_file(CANDIDATE, path) is not None for path in playwright_configs)\nchecks[\\\"workflow_source_ready\\\"] = Path(\\\".github/workflows/application-ci.yml\\\").is_file()\nrequired = json.loads(Path(\\\".github/required-checks.json\\\").read_text())\nchecks[\\\"required_check_contract_ready\\\"] = required == {\\\"schema_version\\\":\\\"sysgrid.required-checks.v1\\\",\\\"target_branch\\\":\\\"main\\\",\\\"required_check\\\":\\\"Application CI / required\\\",\\\"workflow\\\":\\\".github/workflows/application-ci.yml\\\",\\\"protection_required\\\":True}\nlocal_main = out(\\\"rev-parse\\\", \\\"refs/heads/main\\\")\nremote_main_line = out(\\\"ls-remote\\\", \\\"origin\\\", \\\"refs/heads/main\\\")\nremote_main = remote_main_line.split()[0] if remote_main_line else \\\"\\\"\nchecks[\\\"main_unchanged\\\"] = local_main == BASE and remote_main == BASE\nremote_branch_line = out(\\\"ls-remote\\\", \\\"origin\\\", f\\\"refs/heads/{BRANCH}\\\")\nremote_branch = remote_branch_line.split()[0] if remote_branch_line else \\\"absent\\\"\nchecks[\\\"remote_branch_exact_candidate\\\"] = remote_branch == CANDIDATE\nstatus = out(\\\"status\\\", \\\"--porcelain=v1\\\", \\\"--untracked-files=all\\\")\nchecks[\\\"worktree_clean\\\"] = status == \\\"\\\"\nchecks[\\\"source_unchanged\\\"] = checks[\\\"head_exact_candidate\\\"] and checks[\\\"tree_exact_candidate\\\"] and checks[\\\"worktree_clean\\\"]\n\nprint(json.dumps({\\\"checks\\\":checks,\\\"main_diff_file_count\\\":len(main_files),\\\"main_diff_contains_product_paths\\\":any(p.startswith(product_prefixes) for p in main_files),\\\"r20_diff_files\\\":r20_files,\\\"main_sha\\\":local_main,\\\"remote_main_sha\\\":remote_main,\\\"remote_r24_branch\\\":remote_branch,\\\"worktree_status\\\":status},separators=(\\\",\\\",\\\":\\\")))\nif not all(checks.values()):\n    raise SystemExit(1)\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-chg57-r24-py314/bin/python - <<'PY'\nimport json, re, subprocess\nfrom pathlib import Path\n\nCANDIDATE = \\\"efa70b881f1d1884c7e69c5525a9430afc83214b\\\"\nTREE = \\\"bb734b95e4c77429312a9cb812157596d62efd5d\\\"\nPARENT = \\\"e9e4fa23c5bb672194a76237ba834e5d3188aab9\\\"\nBASE = \\\"5c4d253c456ac8162fa4371341c7c52b7490fe45\\\"\nBRANCH = \\\"codex/sysgrid-smv1-protected-application-ci-verify-v24\\\"\n\ndef git(*args): return subprocess.run([\\\"git\\\", *args], text=True, capture_output=True, check=False)\ndef out(*args):\n    result = git(*args)\n    if result.returncode: raise RuntimeError(f\\\"git {' '.join(args)} failed: {result.stderr.strip()}\\\")\n    return result.stdout.strip()\ndef tree_file(rev, path):\n    result = git(\\\"show\\\", f\\\"{rev}:{path}\\\")\n    return result.stdout if result.returncode == 0 else None\n\nchecks = {}\nchecks[\\\"diff_check_main_candidate\\\"] = git(\\\"diff\\\", \\\"--check\\\", BASE + \\\"..\\\" + CANDIDATE).returncode == 0\nchecks[\\\"diff_check_r20_candidate\\\"] = git(\\\"diff\\\", \\\"--check\\\", PARENT + \\\"..\\\" + CANDIDATE).returncode == 0\nchecks[\\\"head_exact_candidate\\\"] = out(\\\"rev-parse\\\", \\\"HEAD\\\") == CANDIDATE\nchecks[\\\"tree_exact_candidate\\\"] = out(\\\"rev-parse\\\", \\\"HEAD\"'^{tree}\") == TREE\nchecks[\"parent_exact_candidate\"] = out(\"rev-parse\", \"HEAD''^\") == PARENT\nr20_files = out(\"diff\", \"--name-only\", PARENT + \"..\" + CANDIDATE).splitlines()\nchecks[\"r20_changed_files_exact_stage33_stage34\"] = set(r20_files) == {\"frontend/tests/assets-stage33-evidence.spec.ts\", \"frontend/tests/assets-stage34-evidence.spec.ts\"}\nbase_files = out(\"diff\", \"--name-only\", BASE + \"..\" + CANDIDATE).splitlines()\nproduct_prefixes = (\"frontend/src/\", \"backend/app/\", \"backend/contracts/\", \"frontend/public/\")\nchecks[\"main_diff_exact_eight_nonproduct_files\"] = len(base_files) == 8 and not any(p.startswith(product_prefixes) for p in base_files)\nchecks[\"no_product_path_diff\"] = not any(p.startswith(product_prefixes) for p in base_files)\nindex = out(\"ls-files\", \"--stage\").splitlines()\nchecks[\"zero_gitlinks_no_tracked_gitmodules\"] = not any(line.startswith(\"160000 \") for line in index) and \".gitmodules\" not in out(\"ls-files\").splitlines()\nevidence_paths = [\"frontend/stage33-evidence/stage33-evidence.json\",\"frontend/stage34-evidence/stage34-evidence.json\",\"frontend/OUT-26_ITERATION_35_STAGE33_EVIDENCE.html\",\"frontend/OUT-26_ITERATION_36_STAGE34_EVIDENCE.html\",\"frontend/test-results\",\"frontend/playwright-report\",\"frontend/llm-report.json\",\"frontend/coverage\",\"frontend/dist\"]\nchecks[\"generated_evidence_paths_ignored\"] = all(git(\"check-ignore\", \"--no-index\", \"-q\", path).returncode == 0 for path in evidence_paths)\ngolden = \"frontend/tests/shell-and-search.spec.ts\"\nworkflows = \"frontend/tests/assets-workflows.spec.ts\"\nchecks[\"golden_eight_timeout_120000_preserved\"] = all((text := tree_file(rev, golden)) is not None and re.search(r\"test'\"\\\\.setTimeout\\\\(120_000\\\\)\\\", text) for rev in (PARENT, CANDIDATE)) and tree_file(PARENT, golden) == tree_file(CANDIDATE, golden)\nchecks[\\\"assets_workflows_timeout_120000_preserved\\\"] = all((text := tree_file(rev, workflows)) is not None and re.search(r\\\"test\\\\.setTimeout\\\\(120_000\\\\)\\\", text) for rev in (PARENT, CANDIDATE)) and tree_file(PARENT, workflows) == tree_file(CANDIDATE, workflows)\nconfigs = (\\\"frontend/playwright.config.ts\\\", \\\"frontend/playwright.v1.config.ts\\\")\nchecks[\\\"global_retry_worker_unchanged\\\"] = all(tree_file(PARENT, path) == tree_file(CANDIDATE, path) and tree_file(CANDIDATE, path) is not None for path in configs)\nchecks[\\\"workflow_source_ready\\\"] = Path(\\\".github/workflows/application-ci.yml\\\").is_file()\nrequired = json.loads(Path(\\\".github/required-checks.json\\\").read_text())\nchecks[\\\"required_check_contract_ready\\\"] = required == {\\\"schema_version\\\":\\\"sysgrid.required-checks.v1\\\",\\\"target_branch\\\":\\\"main\\\",\\\"required_check\\\":\\\"Application CI / required\\\",\\\"workflow\\\":\\\".github/workflows/application-ci.yml\\\",\\\"protection_required\\\":True}\norigin_main = out(\\\"rev-parse\\\", \\\"refs/remotes/origin/main\\\")\nremote_main_line = out(\\\"ls-remote\\\", \\\"origin\\\", \\\"refs/heads/main\\\")\nremote_main = remote_main_line.split()[0] if remote_main_line else \\\"\\\"\nchecks[\\\"main_unchanged\\\"] = origin_main == BASE and remote_main == BASE\nlocal_main = out(\\\"rev-parse\\\", \\\"refs/heads/main\\\")\nremote_branch_line = out(\\\"ls-remote\\\", \\\"origin\\\", f\\\"refs/heads/{BRANCH}\\\")\nremote_branch = remote_branch_line.split()[0] if remote_branch_line else \\\"absent\\\"\nchecks[\\\"remote_branch_exact_candidate\\\"] = remote_branch == CANDIDATE\nstatus = out(\\\"status\\\", \\\"--porcelain=v1\\\", \\\"--untracked-files=all\\\")\nchecks[\\\"worktree_clean\\\"] = status == \\\"\\\"\nchecks[\\\"source_unchanged\\\"] = checks[\\\"head_exact_candidate\\\"] and checks[\\\"tree_exact_candidate\\\"] and checks[\\\"worktree_clean\\\"]\nprint(json.dumps({\\\"checks\\\":checks,\\\"main_diff_file_count\\\":len(base_files),\\\"main_diff_contains_product_paths\\\":any(p.startswith(product_prefixes) for p in base_files),\\\"main_diff_files\\\":base_files,\\\"r20_diff_files\\\":r20_files,\\\"origin_main_sha\\\":origin_main,\\\"remote_main_sha\\\":remote_main,\\\"local_main_ref_sha\\\":local_main,\\\"remote_r24_branch\\\":remote_branch,\\\"worktree_status\\\":status},separators=(\\\",\\\",\\\":\\\")))\nif not all(checks.values()): raise SystemExit(1)\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.156.1",
+    "configured_model": "gpt-6-luna",
+    "event_count": 83,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 96.21,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 4111104,
+      "fresh_input_tokens": 161897,
+      "input_tokens": 4273001,
+      "non_reasoning_output_tokens": 10278,
+      "output_tokens": 47264,
+      "reasoning_output_tokens": 36986,
+      "total_processed_tokens": 4320265
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "efa70b881f1d1884c7e69c5525a9430afc83214b",
+      "subject": "test: stabilize Stage 33 and 34 row-click evidence"
+    },
+    {
+      "sha": "e9e4fa23c5bb672194a76237ba834e5d3188aab9",
+      "subject": "test: use row-click selection contract"
+    },
+    {
+      "sha": "75ab1c5c3fde098359f051a4dcbaf6103edaaa67",
+      "subject": "test: click AG Grid selection wrapper"
+    },
+    {
+      "sha": "13365fe17ce3be31af8d7f53f6c613b728c35440",
+      "subject": "fabric: capture completed model changes [CF-b14a06a65b8a67717ce3c692]"
+    },
+    {
+      "sha": "9808354170ca8b40ddea782f25661ace8dd4b0b2",
+      "subject": "test: stabilize Assets workflow browser interactions"
+    },
+    {
+      "sha": "011ca4f76c33c364af026ddd79f444a892a854c7",
+      "subject": "fabric: capture completed model changes [CF-8b0758a83be320befa964d21]"
+    }
+  ],
+  "diff": {
+    "additions": 247,
+    "changed_files": 8,
+    "commit_count": 6,
+    "deletions": 85
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 2,
+    "items": [
+      {
+        "bytes": 42562,
+        "path": "frontend/tests/assets-stage33-evidence.spec.ts",
+        "sha256": "bdd08bdff63f99c0cd29329663f65fe598bc774ce5ef0d67260b7f7b393a11bb"
+      },
+      {
+        "bytes": 47301,
+        "path": "frontend/tests/assets-stage34-evidence.spec.ts",
+        "sha256": "672838f46820b8a966330ee8f9ff7490357c7ad857d1b1401b6dd37950c9c485"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-24T23:14:20Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "branch": "codex/sysgrid-smv1-protected-application-ci-verify-v24",
+    "detached_verify": false,
+    "head_sha": "efa70b881f1d1884c7e69c5525a9430afc83214b",
+    "remote_exact_head": true,
+    "remote_head_sha": "efa70b881f1d1884c7e69c5525a9430afc83214b",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "work_branch": "codex/sysgrid-smv1-protected-application-ci-verify-v24",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-58e67848c6ad7fdb68883ea5",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-verify-v24",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-verify-v24"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-protected-application-ci-verify-v24",
+  "schema_version": 1,
+  "started_at": "2026-09-24T22:54:04Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 1216,
+    "queue_seconds": 0,
+    "total_seconds": 1216
+  },
+  "transport": {
+    "bytes": 7581,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7229,
+    "prompt_sha256": "a15763b2cd4a71ca0b0c41ee24455d6aba95b5eb83d78ad3c152745453a65d78",
+    "sha256": "58e67848c6ad7fdb68883ea5576333a263e68f690694a76b99ed52eca680836c"
+  }
+}
