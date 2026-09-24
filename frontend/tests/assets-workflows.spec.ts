@@ -135,7 +135,7 @@ test.describe('Assets workflows', () => {
     const primaryCompareRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
     await selectWorkspaceLogicalRow(primaryCompareRow)
     const secondaryCompareRow = await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)
-    await selectWorkspaceLogicalRow(secondaryCompareRow)
+    await selectWorkspaceLogicalRow(secondaryCompareRow, { additive: true })
     await expectWorkspaceLogicalRowSelected(primaryCompareRow)
     await expectWorkspaceLogicalRowSelected(secondaryCompareRow)
 
@@ -154,7 +154,7 @@ test.describe('Assets workflows', () => {
     const primaryBulkRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
     await selectWorkspaceLogicalRow(primaryBulkRow)
     const secondaryBulkRow = await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)
-    await selectWorkspaceLogicalRow(secondaryBulkRow)
+    await selectWorkspaceLogicalRow(secondaryBulkRow, { additive: true })
     await expectWorkspaceLogicalRowSelected(primaryBulkRow)
     await expectWorkspaceLogicalRowSelected(secondaryBulkRow)
 
@@ -245,7 +245,10 @@ test.describe('Assets workflows', () => {
 
     // Close import modal cleanly (handling dirty state guard)
     await importDialog.getByRole('button', { name: 'Close', exact: true }).filter({ hasText: 'Close' }).click()
-    await clickResilientButton(page, 'Discard Changes')
+    const importDirtyGuard = page.getByRole('alertdialog', { name: 'Unsaved Changes' })
+    await expect(importDirtyGuard).toBeVisible({ timeout: 15_000 })
+    await expect(importDirtyGuard).toHaveAccessibleDescription('You have unsaved changes. Close this window and discard them?')
+    await importDirtyGuard.getByRole('button', { name: 'Discard Changes', exact: true }).click()
     await expect(page.getByText('Assets Import')).not.toBeVisible()
 
     // Settle layout before action click

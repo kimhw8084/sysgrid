@@ -5,10 +5,10 @@ import { clickResilientButton, getWorkspaceLogicalRowByText, resetBrowserState, 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 async function selectRowsByNames(page: Page, workspace: 'assets' | 'vendors', names: string[]) {
-  for (const name of names) {
+  for (const [index, name] of names.entries()) {
     const row = await getWorkspaceLogicalRowByText(page, workspace, name)
     await expect(await row.cell('name')).toHaveText(name)
-    await selectWorkspaceLogicalRow(row)
+    await selectWorkspaceLogicalRow(row, { additive: index > 0 })
   }
 }
 
