@@ -1,0 +1,219 @@
+{
+  "accepted_at": "2026-09-24T14:20:35Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"pwd && git status --short --branch && git rev-parse HEAD && git rev-parse main && git remote -v && rg --files -g 'AGENTS.md' -g 'RTK.md' -g 'law.md' -g 'assets-stage33-evidence.spec.ts' -g 'assets-stage34-evidence.spec.ts'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'cat /Users/haewonkim/.codex/RTK.md && cat /Users/haewonkim/.codex/law.md && cat AGENTS.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,260p' frontend/tests/assets-stage33-evidence.spec.ts && sed -n '1,280p' frontend/tests/assets-stage34-evidence.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rg -n \"getWorkspaceLogicalRowByText|selectWorkspaceLogicalRow|expectWorkspaceLogicalRowSelected|captureAssetRowClick\" frontend/tests'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-fix-v21 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v21 && rtk sed -n '520,620p' frontend/tests/assets-stage33-evidence.spec.ts && rtk sed -n '900,930p' frontend/tests/assets-stage33-evidence.spec.ts && rtk sed -n '525,630p' frontend/tests/assets-stage34-evidence.spec.ts && rtk sed -n '962,988p' frontend/tests/assets-stage34-evidence.spec.ts && rtk sed -n '850,965p' frontend/tests/helpers/sysgrid.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"selectWorkspaceLogicalRow|expectWorkspaceLogicalRowSelected|type LogicalGridRow\\\" frontend/tests/helpers/sysgrid.ts && rtk sed -n '790,855p' frontend/tests/helpers/sysgrid.ts && rtk sed -n '930,1010p' frontend/tests/helpers/sysgrid.ts && rtk git status --porcelain=v1 && rtk git show -s --format='%H%n%T%n%P' e9e4fa23c5bb672194a76237ba834e5d3188aab9 2>&1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/helpers/sysgrid.ts | rtk rg -n \\\"LogicalGridRow|selectWorkspaceLogicalRow|expectWorkspaceLogicalRowSelected|getWorkspaceLogicalRowByText\\\" && rtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-workflows.spec.ts | rtk sed -n '1,25p;125,155p' && rtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-stage33-evidence.spec.ts | rtk sed -n '1,14p;535,585p;912,925p' && rtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-stage34-evidence.spec.ts | rtk sed -n '1,14p;538,600p;972,988p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-workflows.spec.ts | rtk rg -n -C 3 \\\"\\\\.cell\\\\(|selectWorkspaceLogicalRow|expectWorkspaceLogicalRowSelected\\\" && rtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/helpers/sysgrid.ts | rtk sed -n '10,30p;960,1005p' && rtk rg -n \\\"colId: 'name'|colId: \\\\\\\"name\\\\\\\"|field: 'name'|field: \\\\\\\"name\\\\\\\"\\\" frontend/src\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD:frontend/tests/assets-stage33-evidence.spec.ts e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-stage33-evidence.spec.ts HEAD:frontend/tests/assets-stage34-evidence.spec.ts e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-stage34-evidence.spec.ts && rtk git merge-base --is-ancestor 5c4d253c456ac8162fa4371341c7c52b7490fe45 e9e4fa23c5bb672194a76237ba834e5d3188aab9; rtk git ls-remote origin refs/pull/25/head && rtk gh pr view 25 --repo kimhw8084/sysgrid --json number,state,headRefName,headRefOid,baseRefName,baseRefOid,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk tee /tmp/sysgrid-chg57-r21.patch <<'PATCH'\ndiff --git a/frontend/tests/assets-stage33-evidence.spec.ts b/frontend/tests/assets-stage33-evidence.spec.ts\n--- a/frontend/tests/assets-stage33-evidence.spec.ts\n+++ b/frontend/tests/assets-stage33-evidence.spec.ts\n@@ -2,7 +2,7 @@\n import fs from 'node:fs/promises'\n import path from 'node:path'\n import { test } from './helpers/sysgrid-test.ts'\n-import { clickResilientButton, fillGridSearch, resetBrowserState, seedOperationalScenario, waitForAppIdle } from './helpers/sysgrid.ts'\n+import { clickResilientButton, expectWorkspaceLogicalRowSelected, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow, waitForAppIdle } from './helpers/sysgrid.ts'\n import { isExpectedTelemetryRequest } from '../src/observability/browserFailurePolicy'\n@@ -536,25 +536,42 @@\n   } satisfies InteractionProof\n }\n \n-const captureAssetRowClick = async (page: any) => {\n+const captureAssetRowClick = async (page: any, recordName: string) => {\n   const attempts: string[] = []\n-  const firstRow = page.locator('.ag-center-cols-container .ag-row').first()\n-  const interactionCell = firstRow.locator('.ag-cell').nth(2)\n-  attempts.push('click first visible asset row')\n-  await interactionCell.click({ force: true })\n+  const row = await getWorkspaceLogicalRowByText(page, 'assets', recordName)\n+  const nameCell = await row.cell('name')\n+  const rowFragment = row.center ?? row.pinned\n+  const rowBounds = toRect(rowFragment ? await rowFragment.boundingBox() : null)\n+  const nameCellBounds = toRect(await nameCell.boundingBox())\n+  attempts.push(\"'`resolved seeded Assets logical row ${recordName} (${row.rowKey})`)\n+  attempts.push(`rowBounds=${JSON.stringify(rowBounds)}`)\n+  attempts.push(`nameCellBounds=${JSON.stringify(nameCellBounds)}`)\n+  let selectionError: string | null = null\n+  try {\n+    await selectWorkspaceLogicalRow(row)\n+  } catch (error) {\n+    selectionError = error instanceof Error ? error.message : String(error)\n+    attempts.push(`selectionError=${selectionError}`)\n+  }\n+  const logicalRowSelected = await expectWorkspaceLogicalRowSelected(row).then(() => true).catch(() => false)\n   const bulkActionsButton = page.getByRole('\"'button', { name: /Bulk Actions/i })\n   await expect(bulkActionsButton).toBeEnabled({ timeout: 3_000 }).catch(() => {})\n-  const selectedRowCount = await page.locator('.ag-row-selected, .ag-row[aria-selected=\\\"true\\\"]').count()\n   const bulkActionsEnabled = await bulkActionsButton.isEnabled().catch(() => false)\n-  attempts.push(\"'`selectedRowCount=${selectedRowCount}`)\n+  attempts.push(`exactLogicalRowSelected=${String(logicalRowSelected)}`)\n   attempts.push(`bulkActionsEnabled=${String(bulkActionsEnabled)}`)\n   return {\n-    verdict: selectedRowCount > 0 && bulkActionsEnabled ? '\"'pass' : 'fail',\n+    verdict: logicalRowSelected && bulkActionsEnabled ? 'pass' : 'fail',\n     attempts,\n-    bounds: toRect(await firstRow.boundingBox()),\n+    bounds: nameCellBounds,\n     details: {\n-      selectedRowCount,\n+      recordName,\n+      rowKey: row.rowKey,\n+      rowBounds,\n+      nameCellBounds,\n+      logicalRowSelected,\n       bulkActionsEnabled,\n-      selectedText: await interactionCell.textContent(),\n+      selectionError,\n     },\n   } satisfies InteractionProof\n }\n@@ -915,7 +932,7 @@\n       ensureRecordText: seeded.primary.name,\n       viewport: DESKTOP_VIEWPORT,\n       fullPage: false,\n       interaction: async (currentPage) => ({\n-        rowClickProof: await captureAssetRowClick(currentPage),\n+        rowClickProof: await captureAssetRowClick(currentPage, seeded.primary.name),\n       }),\n     })\ndiff --git a/frontend/tests/assets-stage34-evidence.spec.ts b/frontend/tests/assets-stage34-evidence.spec.ts\n--- a/frontend/tests/assets-stage34-evidence.spec.ts\n+++ b/frontend/tests/assets-stage34-evidence.spec.ts\n@@ -2,7 +2,7 @@\n import fs from 'node:fs/promises'\n import path from 'node:path'\n import { test } from './helpers/sysgrid-test.ts'\n-import { clickResilientButton, fillGridSearch, resetBrowserState, seedOperationalScenario, waitForAppIdle } from './helpers/sysgrid.ts'\n+import { clickResilientButton, expectWorkspaceLogicalRowSelected, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow, waitForAppIdle } from './helpers/sysgrid.ts'\n import { isExpectedTelemetryRequest } from '../src/observability/browserFailurePolicy'\n@@ -540,35 +540,47 @@\n   } satisfies InteractionProof\n }\n \n-const captureAssetRowClick = async (page: any) => {\n+const captureAssetRowClick = async (page: any, recordName: string) => {\n   const attempts: string[] = []\n-  console.log(\"'`[Interaction] Starting row click capture`)\n-  const firstRow = page.locator('\"'.ag-center-cols-container .ag-row').first()\n-  const interactionCell = firstRow.locator('.ag-cell').nth(2)\n-  attempts.push('click first visible asset row')\n-  await interactionCell.click({ force: true })\n-  \n-  await page.waitForTimeout(500)\n-  \n-  const selectedRowCount = await page.locator('.ag-row-selected, .ag-row[aria-selected=\\\"true\\\"]').count()\n-  attempts.push(\"'`selectedRowCount=${selectedRowCount}`)\n-  \n-  const selectionBadge = page.locator('\"'div').filter({ text: /selected/i }).first()\n-  const selectionBadgeVisible = await selectionBadge.isVisible({ timeout: 2000 }).catch(() => false)\n-  attempts.push(\"'`selectionBadgeVisible=${String(selectionBadgeVisible)}`)\n-  \n-  console.log(`[Interaction] Row click result: selectedCount=${selectedRowCount}, badgeVisible=${selectionBadgeVisible}`)\n+  console.log(`[Interaction] Starting row click capture for ${recordName}`)\n+  const row = await getWorkspaceLogicalRowByText(page, '\"'assets', recordName)\n+  const nameCell = await row.cell('name')\n+  const rowFragment = row.center ?? row.pinned\n+  const rowBounds = toRect(rowFragment ? await rowFragment.boundingBox() : null)\n+  const nameCellBounds = toRect(await nameCell.boundingBox())\n+  attempts.push(\"'`resolved seeded Assets logical row ${recordName} (${row.rowKey})`)\n+  attempts.push(`rowBounds=${JSON.stringify(rowBounds)}`)\n+  attempts.push(`nameCellBounds=${JSON.stringify(nameCellBounds)}`)\n+  let selectionError: string | null = null\n+  try {\n+    await selectWorkspaceLogicalRow(row)\n+  } catch (error) {\n+    selectionError = error instanceof Error ? error.message : String(error)\n+    attempts.push(`selectionError=${selectionError}`)\n+  }\n+  const logicalRowSelected = await expectWorkspaceLogicalRowSelected(row).then(() => true).catch(() => false)\n+  const bulkActionsButton = page.getByRole('\"'button', { name: /Bulk Actions/i })\n+  await expect(bulkActionsButton).toBeEnabled({ timeout: 3_000 }).catch(() => {})\n+  const bulkActionsEnabled = await bulkActionsButton.isEnabled().catch(() => false)\n+  attempts.push(\"'`exactLogicalRowSelected=${String(logicalRowSelected)}`)\n+  attempts.push(`bulkActionsEnabled=${String(bulkActionsEnabled)}`)\n+  console.log(`[Interaction] Row click result: exactLogicalRowSelected=${logicalRowSelected}, bulkActionsEnabled=${bulkActionsEnabled}`)\n   return {\n-    verdict: selectedRowCount > 0 ? '\"'pass' : 'fail',\n+    verdict: logicalRowSelected && bulkActionsEnabled ? 'pass' : 'fail',\n     attempts,\n-    bounds: toRect(await firstRow.boundingBox()),\n+    bounds: nameCellBounds,\n     details: {\n-      selectedRowCount,\n-      selectionBadgeVisible,\n-      selectedText: await interactionCell.textContent(),\n+      recordName,\n+      rowKey: row.rowKey,\n+      rowBounds,\n+      nameCellBounds,\n+      logicalRowSelected,\n+      bulkActionsEnabled,\n+      selectionError,\n     },\n   } satisfies InteractionProof\n }\n@@ -979,7 +991,7 @@\n       ensureRecordText: seeded.primary.name,\n       viewport: DESKTOP_VIEWPORT,\n       fullPage: false,\n       interaction: async (currentPage) => ({\n-        rowClickProof: await captureAssetRowClick(currentPage),\n+        rowClickProof: await captureAssetRowClick(currentPage, seeded.primary.name),\n       }),\n     })\nPATCH\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sha256sum /tmp/sysgrid-chg57-r21.patch && rtk git apply --check --whitespace=error-all /tmp/sysgrid-chg57-r21.patch && rtk git apply --stat /tmp/sysgrid-chg57-r21.patch && rtk rg -n '\"'^diff --git '\"' /tmp/sysgrid-chg57-r21.patch && rtk rg -n -i 'codex|opencode|chatgpt|llm|autonomous agent|model cli' /tmp/sysgrid-chg57-r21.patch\"",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' /tmp/sysgrid-chg57-r21.patch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport re\npath = Path('/tmp/sysgrid-chg57-r21.patch')\nlines = path.read_text().splitlines(keepends=True)\nresult = []\ni = 0\nwhile i < len(lines):\n    line = lines[i]\n    if line.startswith('@@ '):\n        match = re.match(r'@@ -(\\\\d+)(?:,\\\\d+)? \\\\+(\\\\d+)(?:,\\\\d+)? @@(.*)', line.rstrip('\\\\n'))\n        if not match:\n            raise SystemExit(f'bad hunk header: {line\"'!r}'\"')\n        j = i + 1\n        old_count = new_count = 0\n        while j < len(lines) and not lines[j].startswith(('@@ ', 'diff --git ')):\n            body = lines[j]\n            if body.startswith(' '):\n                old_count += 1\n                new_count += 1\n            elif body.startswith('-') and not body.startswith('--- '):\n                old_count += 1\n            elif body.startswith('+') and not body.startswith('+++ '):\n                new_count += 1\n            elif body.startswith('\\\\\\\\'):\n                pass\n            else:\n                raise SystemExit(f'unexpected hunk line: {body\"'!r}'\"')\n            j += 1\n        start_old, start_new, suffix = match.groups()\n        result.append(f'@@ -{start_old},{old_count} +{start_new},{new_count} @@{suffix}\\\\n')\n        result.extend(lines[i + 1:j])\n        i = j\n    else:\n        result.append(line)\n        i += 1\npath.write_text(''.join(result))\nPY\nrtk sha256sum /tmp/sysgrid-chg57-r21.patch\nrtk git apply --check --whitespace=error-all /tmp/sysgrid-chg57-r21.patch\nrtk git apply --stat /tmp/sysgrid-chg57-r21.patch\nrtk rg -n '\"'^diff --git '\"' /tmp/sysgrid-chg57-r21.patch\nrtk rg -n -i 'codex|opencode|chatgpt|llm|autonomous agent|model cli' /tmp/sysgrid-chg57-r21.patch\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk mkdir -p /tmp/sysgrid-chg57-r21-verify/frontend/tests\nrtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-stage33-evidence.spec.ts > /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage33-evidence.spec.ts\nrtk git show e9e4fa23c5bb672194a76237ba834e5d3188aab9:frontend/tests/assets-stage34-evidence.spec.ts > /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage34-evidence.spec.ts\nrtk git -C /tmp/sysgrid-chg57-r21-verify apply --check --whitespace=error-all /tmp/sysgrid-chg57-r21.patch\nrtk git -C /tmp/sysgrid-chg57-r21-verify apply /tmp/sysgrid-chg57-r21.patch\nrtk sha256sum /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage33-evidence.spec.ts /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage34-evidence.spec.ts\nrtk git hash-object /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage33-evidence.spec.ts /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage34-evidence.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk gh pr close 25 --repo kimhw8084/sysgrid && rtk gh pr view 25 --repo kimhw8084/sysgrid --json number,state,headRefOid,baseRefOid,url'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api repos/kimhw8084/sysgrid/branches/main/protection && rtk gh api 'repos/kimhw8084/sysgrid/rulesets?per_page=100' && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-fix-v21 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v21 && rtk git status --short --branch && rtk gh pr view 25 --repo kimhw8084/sysgrid --json state,headRefOid,baseRefOid\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk gh api 'repos/kimhw8084/sysgrid/rulesets?per_page=100'\nrtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-smv1-protected-application-ci-fix-v21 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v21\nrtk git status --short --branch\nrtk gh pr view 25 --repo kimhw8084/sysgrid --json state,headRefOid,baseRefOid\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-tree -rz --full-tree -r e9e4fa23c5bb672194a76237ba834e5d3188aab9 > /tmp/sysgrid-r20-treeentries\nrtk git hash-object /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage33-evidence.spec.ts /tmp/sysgrid-chg57-r21-verify/frontend/tests/assets-stage34-evidence.spec.ts\nrtk python3 - <<'PY'\nfrom pathlib import Path\nfrom hashlib import sha1\n\nexpected_files = {\n    b'frontend/tests/assets-stage33-evidence.spec.ts': bytes.fromhex('629c438cef3781ce5d2db7d8e56e92c4ae99deed'),\n    b'frontend/tests/assets-stage34-evidence.spec.ts': bytes.fromhex('64bf55ea8036f53ed08103103b9f34e848ce2f90'),\n}\nentries = {}\nfor record in Path('/tmp/sysgrid-r20-treeentries').read_bytes().split(b'\\\\0'):\n    if not record:\n        continue\n    meta, path = record.split(b'\\\\t', 1)\n    mode, kind, oid = meta.split(b' ')\n    entries[path] = (mode, bytes.fromhex(oid.decode()))\n\n\ndef tree_hash(prefix=b''):\n    children = {}\n    for path, value in entries.items():\n        if not path.startswith(prefix):\n            continue\n        rest = path[len(prefix):]\n        if not rest:\n            continue\n        name, sep, tail = rest.partition(b'/')\n        if sep:\n            children[name] = ('tree', None)\n        else:\n            mode, oid = value\n            children[name] = ('file', (mode, expected_files.get(path, oid)))\n    serialized = bytearray()\n    ordered = sorted(children.items(), key=lambda item: item[0] + (b'/' if item[1][0] == 'tree' else b'\\\\0'))\n    for name, (kind, value) in ordered:\n        if kind == 'tree':\n            mode, oid = b'40000', tree_hash(prefix + name + b'/')\n        else:\n            mode, oid = value\n        serialized.extend(mode + b' ' + name + b'\\\\0' + oid)\n    return sha1(b'tree ' + str(len(serialized)).encode() + b'\\\\0' + serialized).digest()\n\noriginal = tree_hash().hex()\nprint(f'R20 recomputed tree: {original}')\nif original \"'!= '\"'a6f643dc9691ed311372b3abd7caea2785c1103d':\n    raise SystemExit('R20 tree recomputation mismatch')\nprint(f'Expected patched tree: {tree_hash().hex()}')\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nfrom hashlib import sha1\n\nreplacements = {\n    b'frontend/tests/assets-stage33-evidence.spec.ts': bytes.fromhex('629c438cef3781ce5d2db7d8e56e92c4ae99deed'),\n    b'frontend/tests/assets-stage34-evidence.spec.ts': bytes.fromhex('64bf55ea8036f53ed08103103b9f34e848ce2f90'),\n}\nentries = {}\nfor record in Path('/tmp/sysgrid-r20-treeentries').read_bytes().split(b'\\\\0'):\n    if not record:\n        continue\n    meta, path = record.split(b'\\\\t', 1)\n    mode, kind, oid = meta.split(b' ')\n    entries[path] = (mode, bytes.fromhex(oid.decode()))\n\n\ndef tree_hash(replace=False, prefix=b''):\n    children = {}\n    for path, value in entries.items():\n        if not path.startswith(prefix):\n            continue\n        rest = path[len(prefix):]\n        if not rest:\n            continue\n        name, sep, tail = rest.partition(b'/')\n        if sep:\n            children[name] = ('tree', None)\n        else:\n            mode, oid = value\n            if replace:\n                oid = replacements.get(path, oid)\n            children[name] = ('file', (mode, oid))\n    serialized = bytearray()\n    ordered = sorted(children.items(), key=lambda item: item[0] + (b'/' if item[1][0] == 'tree' else b'\\\\0'))\n    for name, (kind, value) in ordered:\n        if kind == 'tree':\n            mode, oid = b'40000', tree_hash(replace, prefix + name + b'/')\n        else:\n            mode, oid = value\n        serialized.extend(mode + b' ' + name + b'\\\\0' + oid)\n    return sha1(b'tree ' + str(len(serialized)).encode() + b'\\\\0' + serialized).digest()\n\noriginal = tree_hash().hex()\nprint(f'R20 recomputed tree: {original}')\nif original \"'!= '\"'a6f643dc9691ed311372b3abd7caea2785c1103d':\n    raise SystemExit('R20 tree recomputation mismatch')\nprint(f'Expected patched tree: {tree_hash(True).hex()}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /tmp/sysgrid-chg57-r21.patch && rtk sha256sum /tmp/sysgrid-chg57-r21.patch && rtk git apply --check --whitespace=error-all /tmp/sysgrid-chg57-r21.patch && rtk git diff --check e9e4fa23c5bb672194a76237ba834e5d3188aab9 -- frontend/tests/assets-stage33-evidence.spec.ts frontend/tests/assets-stage34-evidence.spec.ts && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk sha256sum frontend/tests/assets-stage33-evidence.spec.ts frontend/tests/assets-stage34-evidence.spec.ts\nrtk git rev-parse HEAD\nrtk git rev-parse e9e4fa23c5bb672194a76237ba834e5d3188aab9''^{tree}\nrtk git rev-parse e9e4fa23c5bb672194a76237ba834e5d3188aab9''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.156.1",
+    "configured_model": "gpt-6-luna",
+    "event_count": 51,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 92.09,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 891904,
+      "fresh_input_tokens": 76641,
+      "input_tokens": 968545,
+      "non_reasoning_output_tokens": 11224,
+      "output_tokens": 39708,
+      "reasoning_output_tokens": 28484,
+      "total_processed_tokens": 1008253
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-24T14:34:14Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "branch": "codex/sysgrid-smv1-protected-application-ci-fix-v21",
+    "detached_verify": false,
+    "head_sha": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "remote_exact_head": true,
+    "remote_head_sha": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "5c4d253c456ac8162fa4371341c7c52b7490fe45",
+    "work_branch": "codex/sysgrid-smv1-protected-application-ci-fix-v21",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-f88c1f5f682b66149962b14c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v21",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-protected-application-ci-fix-v21"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-protected-application-ci-fix-v21",
+  "schema_version": 1,
+  "started_at": "2026-09-24T14:20:36Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 818,
+    "queue_seconds": 1,
+    "total_seconds": 819
+  },
+  "transport": {
+    "bytes": 8330,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7987,
+    "prompt_sha256": "ecb1e9ec81895f9eea4d2ed7526e3311bc96d7d8afe58df27987c66ce40db4ee",
+    "sha256": "f88c1f5f682b66149962b14c2b2421f68b2b3100d01a7ccd15f5e1adf1df05da"
+  }
+}
