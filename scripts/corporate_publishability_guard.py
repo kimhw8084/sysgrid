@@ -11,6 +11,7 @@ company-specific URLs, network access, or live deployment credentials.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
@@ -73,7 +74,7 @@ class Guard:
 
     def check_backend(self) -> None:
         requirements = self.require_file("backend/requirements.txt")
-        self.require_file("backend/requirements.lock")
+        lock_path = self.require_file("backend/requirements.lock")
         self.require_file("backend/app/main.py")
         self.require_file("backend/app/core/config.py")
 
@@ -83,8 +84,10 @@ class Guard:
                 "app = FastAPI",
                 "/health",
                 "/readiness",
+                "status_code=200 if ready else 503",
+                "settings.startup_schema_management_enabled",
             ),
-            "backend-fastapi-entrypoint",
+            "backend-startup-readiness-contract",
         )
         self.require_tokens(
             "backend/app/core/config.py",
@@ -118,6 +121,58 @@ class Guard:
                 )
             else:
                 self.pass_("backend-native-installer-pinning", "requirements.txt is fully pinned")
+        if requirements and lock_path:
+            self.check_backend_lock_contract(requirements, lock_path)
+
+    def check_backend_lock_contract(self, requirements: Path, lock_path: Path) -> None:
+        direct: dict[str, str | None] = {}
+        for raw in requirements.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or line.startswith("-"):
+                continue
+            match = re.match(r"([A-Za-z0-9_.-]+)(.*)", line)
+            if not match:
+                self.fail("backend-lock-contract", "requirements.txt contains an unreadable direct dependency")
+                return
+            name = re.sub(r"[-_.]+", "-", match.group(1)).lower()
+            pin_match = re.search(r"(?:===|==)\s*([^\s;,]+)", match.group(2))
+            direct[name] = pin_match.group(1) if pin_match else None
+
+        locked: dict[str, tuple[str, bool]] = {}
+        current_name: str | None = None
+        current_version = ""
+        current_has_hash = False
+        top_level = re.compile(r"^([A-Za-z0-9_.-]+)==([^\s\\]+)")
+        for raw in lock_path.read_text(encoding="utf-8").splitlines():
+            match = top_level.match(raw)
+            if match:
+                if current_name is not None:
+                    locked[current_name] = (current_version, current_has_hash)
+                current_name = re.sub(r"[-_.]+", "-", match.group(1)).lower()
+                current_version = match.group(2)
+                current_has_hash = "--hash=sha256:" in raw
+            elif current_name is not None and "--hash=sha256:" in raw:
+                current_has_hash = True
+        if current_name is not None:
+            locked[current_name] = (current_version, current_has_hash)
+
+        missing = sorted(set(direct) - set(locked))
+        pin_mismatches = sorted(
+            name for name, version in direct.items()
+            if version is not None and name in locked and locked[name][0] != version
+        )
+        unhashed = sorted(name for name, (_, has_hash) in locked.items() if not has_hash)
+        if missing or pin_mismatches or unhashed:
+            problems = []
+            if missing:
+                problems.append("missing direct packages: " + ", ".join(missing))
+            if pin_mismatches:
+                problems.append("pinned versions differ: " + ", ".join(pin_mismatches))
+            if unhashed:
+                problems.append("packages without SHA-256 hashes: " + ", ".join(unhashed))
+            self.fail("backend-lock-contract", "; ".join(problems))
+        else:
+            self.pass_("backend-lock-contract", "requirements.lock covers direct dependencies with pinned, hashed packages")
 
     def check_frontend(self) -> None:
         package_path = self.require_file("frontend/package.json")
@@ -169,6 +224,21 @@ class Guard:
                     self.pass_("frontend-lockfile", f"npm lockfileVersion {version}")
                 else:
                     self.fail("frontend-lockfile", "package-lock.json must use lockfileVersion 2 or newer")
+                if package_path and package_path.is_file() and isinstance(version, int) and version >= 2:
+                    try:
+                        package = json.loads(package_path.read_text(encoding="utf-8"))
+                        locked_root = (lock.get("packages") or {}).get("") or {}
+                    except (OSError, json.JSONDecodeError):
+                        package = {}
+                        locked_root = {}
+                    matches = all(
+                        locked_root.get(section, {}) == package.get(section, {})
+                        for section in ("dependencies", "devDependencies")
+                    )
+                    if matches:
+                        self.pass_("frontend-lock-contract", "package-lock root dependencies match package.json")
+                    else:
+                        self.fail("frontend-lock-contract", "package-lock root dependencies do not match package.json")
 
         self.require_tokens(
             "frontend/src/api/apiClient.ts",
@@ -176,10 +246,12 @@ class Guard:
                 "VITE_API_BASE_URL",
                 "VITE_IDENTITY_MODE",
                 "trusted_proxy",
+                "shouldAttachUserIdHeader",
                 "credentials:",
             ),
             "frontend-separate-service-url-contract",
         )
+        self.check_browser_proxy_identity_boundary()
         self.require_tokens(
             "frontend/src/main.tsx",
             (
@@ -189,6 +261,66 @@ class Guard:
             ),
             "frontend-bootstrap-routing-contract",
         )
+
+    def production_required_env_names(self) -> set[str]:
+        config_path = self.root / "backend/app/core/config.py"
+        try:
+            module = ast.parse(config_path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            self.fail("production-env-authority", "backend Settings production policy cannot be read")
+            return set()
+        for node in module.body:
+            if isinstance(node, ast.Assign) and any(
+                isinstance(target, ast.Name) and target.id == "PRODUCTION_REQUIRED_ENV"
+                for target in node.targets
+            ):
+                try:
+                    names = ast.literal_eval(node.value)
+                except (ValueError, TypeError):
+                    break
+                if isinstance(names, tuple) and all(isinstance(name, str) for name in names):
+                    self.pass_("production-env-authority", "required production keys come from Settings policy")
+                    return set(names)
+                break
+        self.fail("production-env-authority", "Settings must define a literal PRODUCTION_REQUIRED_ENV tuple")
+        return set()
+
+    @staticmethod
+    def parse_env_values(path: Path) -> dict[str, str]:
+        values: dict[str, str] = {}
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key.strip()):
+                values[key.strip()] = value.strip()
+        return values
+
+    @staticmethod
+    def has_operator_placeholder(value: str) -> bool:
+        return bool(re.search(r"(?:replace-with|operator-supplied|inject-from|<[^>]+>)", value, re.I))
+
+    def check_browser_proxy_identity_boundary(self) -> None:
+        source_root = self.root / "frontend/src"
+        if not source_root.is_dir():
+            self.fail("browser-proxy-identity-boundary", "frontend source directory is missing")
+            return
+        forbidden = re.compile(
+            r"(?:['\"]X-Authenticated-User['\"]|TRUSTED_PROXY_USER_HEADER\s*[:=])",
+            re.IGNORECASE,
+        )
+        paths = list(source_root.rglob("*.ts")) + list(source_root.rglob("*.tsx"))
+        for path in paths:
+            try:
+                source = path.read_text(encoding="utf-8")
+            except OSError:
+                self.fail("browser-proxy-identity-boundary", "frontend source cannot be read")
+                return
+            if forbidden.search(source):
+                self.fail("browser-proxy-identity-boundary", "browser sources must not set the trusted proxy identity header")
+                return
+        self.pass_("browser-proxy-identity-boundary", "browser source does not set the trusted proxy identity header")
 
     @staticmethod
     def parse_env_keys(path: Path) -> set[str]:
@@ -205,22 +337,33 @@ class Guard:
     def check_env_examples(self) -> None:
         backend_path = self.require_file("deploy/backend.env.production.example")
         frontend_path = self.require_file("deploy/frontend.env.production.example")
+        required = self.production_required_env_names()
         if backend_path:
-            required = {
-                "ENVIRONMENT",
-                "BACKEND_CORS_ORIGINS",
-                "ALLOWED_HOSTS",
-                "IDENTITY_MODE",
-                "TRUSTED_PROXY_USER_HEADER",
-                "DATABASE_URL",
-                "CONFIG_DATABASE_URL",
-                "TENANT_STORAGE_ROOT",
-            }
             missing = sorted(required - self.parse_env_keys(backend_path))
             if missing:
                 self.fail("backend-env-example", "missing keys: " + ", ".join(missing))
             else:
-                self.pass_("backend-env-example", "production backend environment contract is documented")
+                self.pass_("backend-env-example", "Settings-required production keys are documented")
+            values = self.parse_env_values(backend_path)
+            placeholder_keys = {
+                "DATABASE_URL",
+                "CONFIG_DATABASE_URL",
+                "TENANT_STORAGE_ROOT",
+                "DEFAULT_USER_ID",
+                "CONTROL_PLANE_ADMIN_USER_IDS",
+                "SYSTEM_ROOT_USER_IDS",
+                "SCHEDULE_PREVIEW_SIGNING_KEY",
+                "PV1_RELEASE_CANDIDATE_SHA",
+                "PV1_RELEASE_ID",
+            }
+            unsafe = sorted(
+                key for key in placeholder_keys
+                if not self.has_operator_placeholder(values.get(key, ""))
+            )
+            if unsafe:
+                self.fail("backend-env-example-safety", "operator placeholders are required for: " + ", ".join(unsafe))
+            else:
+                self.pass_("backend-env-example-safety", "examples contain no usable identity, secret, release, or data path")
         if frontend_path:
             required = {"VITE_API_BASE_URL", "VITE_IDENTITY_MODE"}
             missing = sorted(required - self.parse_env_keys(frontend_path))
@@ -228,6 +371,14 @@ class Guard:
                 self.fail("frontend-env-example", "missing keys: " + ", ".join(missing))
             else:
                 self.pass_("frontend-env-example", "separate corporate backend URL and identity mode are documented")
+            values = self.parse_env_values(frontend_path)
+            if (
+                self.has_operator_placeholder(values.get("VITE_API_BASE_URL", ""))
+                and values.get("VITE_IDENTITY_MODE") == "trusted_proxy"
+            ):
+                self.pass_("frontend-env-example-safety", "frontend example uses a replaceable origin and proxy identity mode")
+            else:
+                self.fail("frontend-env-example-safety", "frontend example must use a placeholder backend origin and trusted proxy mode")
 
     def check_docs(self) -> None:
         deployment = self.require_file("DEPLOYMENT.md")

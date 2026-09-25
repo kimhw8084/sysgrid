@@ -281,11 +281,17 @@ async def get_db(request: Request):
         finally:
             await session.close()
 
-async def init_config_db():
-    from .models.config import ConfigBase, Tenant, MasterSystemSetting
-    """Initializes the master configuration database."""
+async def create_config_schema():
+    """Create missing config tables without seeding or changing registry rows."""
+    from .models.config import ConfigBase
     async with config_engine.begin() as conn:
         await conn.run_sync(ConfigBase.metadata.create_all)
+
+
+async def init_config_db():
+    from .models.config import Tenant, MasterSystemSetting
+    """Initializes the master configuration database and its default settings."""
+    await create_config_schema()
     
     # Seed default data
     async with ConfigSessionLocal() as db:

@@ -1,8 +1,41 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 import os
 import re
+
+
+PRODUCTION_REQUIRED_ENV = (
+    "ENVIRONMENT",
+    "BACKEND_CORS_ORIGINS",
+    "ALLOWED_HOSTS",
+    "IDENTITY_MODE",
+    "TRUSTED_PROXY_USER_HEADER",
+    "DATABASE_URL",
+    "CONFIG_DATABASE_URL",
+    "TENANT_STORAGE_ROOT",
+    "PUBLIC_READONLY_ENABLED",
+    "ALLOW_PUBLIC_READONLY_IN_PRODUCTION",
+    "DEFAULT_USER_ID",
+    "AUTO_ADMIN_USER_IDS",
+    "ALLOW_AUTO_ADMIN_IN_PRODUCTION",
+    "CONTROL_PLANE_ADMIN_USER_IDS",
+    "CONTROL_PLANE_BOOTSTRAP_ENABLED",
+    "CONTROL_PLANE_BOOTSTRAP_USER_ID",
+    "SYSTEM_ROOT_USER_IDS",
+    "SCHEDULE_PREVIEW_SIGNING_KEY",
+    "PV1_RELEASE_CANDIDATE_SHA",
+    "PV1_RELEASE_ID",
+    "AUTO_MIGRATE_ON_STARTUP",
+    "ALLOW_AUTO_MIGRATE_IN_PRODUCTION",
+)
+
+_UNRESOLVED_PRODUCTION_VALUE = re.compile(
+    r"(?:<[^>]+>|placeholder|replace[-_ ]?(?:me|with)|example|todo|change[-_ ]?me|"
+    r"operator[-_ ]supplied|inject[-_ ])",
+    re.IGNORECASE,
+)
 
 
 class Settings(BaseSettings):
@@ -140,6 +173,9 @@ class Settings(BaseSettings):
             return []
 
         errors: list[str] = []
+        for env_name in PRODUCTION_REQUIRED_ENV:
+            if env_name not in self.model_fields_set:
+                errors.append(f"{env_name} must be explicitly configured in production.")
         if self.is_testing:
             errors.append("TESTING mode must not be enabled in production.")
         if self.identity_mode != "trusted_proxy":
@@ -159,12 +195,65 @@ class Settings(BaseSettings):
         else:
             for origin in origins:
                 parsed = urlparse(origin)
-                if parsed.scheme != "https" or not parsed.hostname:
-                    errors.append(f"Production CORS origin must be an explicit HTTPS origin: {origin}")
+                if (
+                    parsed.scheme != "https"
+                    or not parsed.hostname
+                    or parsed.path not in {"", "/"}
+                    or parsed.username is not None
+                    or parsed.password is not None
+                    or parsed.query
+                    or parsed.fragment
+                ):
+                    errors.append("Production CORS origin must be an explicit HTTPS origin.")
 
         hosts = self.allowed_hosts
         if not hosts or "*" in hosts:
             errors.append("ALLOWED_HOSTS must contain explicit deployment hostnames; wildcard hosts are forbidden in production.")
+
+        configured_database_paths: list[tuple[str, Path]] = []
+        repository_root = Path(__file__).resolve().parents[3]
+        for env_name, database_url in (
+            ("DATABASE_URL", self.DATABASE_URL),
+            ("CONFIG_DATABASE_URL", self.CONFIG_DATABASE_URL),
+        ):
+            prefix = "sqlite+aiosqlite:///"
+            if not database_url.startswith(prefix):
+                errors.append(f"{env_name} must use a file-backed sqlite+aiosqlite URL in production.")
+                continue
+            database_path = database_url[len(prefix):]
+            if (
+                not database_path
+                or database_path == ":memory:"
+                or "?" in database_path
+                or "#" in database_path
+                or not os.path.isabs(database_path)
+                or ".." in Path(database_path).parts
+            ):
+                errors.append(f"{env_name} must point to an absolute persistent SQLite file path in production.")
+                continue
+            resolved_path = Path(database_path).resolve()
+            configured_database_paths.append((env_name, resolved_path))
+            if resolved_path.is_relative_to(repository_root):
+                errors.append(f"{env_name} must not store production data inside the application checkout.")
+
+        if (
+            not os.path.isabs(self.TENANT_STORAGE_ROOT)
+            or ".." in Path(self.TENANT_STORAGE_ROOT).parts
+        ):
+            errors.append("TENANT_STORAGE_ROOT must be an absolute persistent directory in production.")
+        else:
+            tenant_root = Path(self.TENANT_STORAGE_ROOT).resolve()
+            if tenant_root.is_relative_to(repository_root):
+                errors.append("TENANT_STORAGE_ROOT must not store production data inside the application checkout.")
+            for env_name, database_path in configured_database_paths:
+                if database_path.is_relative_to(tenant_root):
+                    errors.append(f"{env_name} must be stored separately from TENANT_STORAGE_ROOT.")
+
+        if (
+            len(configured_database_paths) == 2
+            and configured_database_paths[0][1] == configured_database_paths[1][1]
+        ):
+            errors.append("DATABASE_URL and CONFIG_DATABASE_URL must identify distinct persistent SQLite files.")
 
         if self.PUBLIC_READONLY_ENABLED and not self.ALLOW_PUBLIC_READONLY_IN_PRODUCTION:
             errors.append("PUBLIC_READONLY_ENABLED must be false in production unless explicitly acknowledged.")
@@ -180,12 +269,31 @@ class Settings(BaseSettings):
             errors.append("CONTROL_PLANE_BOOTSTRAP_USER_ID must be empty in production.")
         if self.DEFAULT_USER_ID.strip().lower() == "admin_root":
             errors.append("DEFAULT_USER_ID must not remain admin_root in production.")
-        if len(self.SCHEDULE_PREVIEW_SIGNING_KEY.strip()) < 32 or self.SCHEDULE_PREVIEW_SIGNING_KEY == "development-only-schedule-preview-key":
+        if (
+            len(self.SCHEDULE_PREVIEW_SIGNING_KEY.strip()) < 32
+            or self.SCHEDULE_PREVIEW_SIGNING_KEY == "development-only-schedule-preview-key"
+            or _UNRESOLVED_PRODUCTION_VALUE.search(self.SCHEDULE_PREVIEW_SIGNING_KEY)
+        ):
             errors.append("SCHEDULE_PREVIEW_SIGNING_KEY must be a deployment-specific secret of at least 32 characters.")
 
-        for env_name in ("DATABASE_URL", "CONFIG_DATABASE_URL", "TENANT_STORAGE_ROOT"):
-            if not os.getenv(env_name):
-                errors.append(f"{env_name} must be explicitly configured in production.")
+        operator_values = {
+            "BACKEND_CORS_ORIGINS": self.BACKEND_CORS_ORIGINS,
+            "ALLOWED_HOSTS": self.ALLOWED_HOSTS,
+            "DATABASE_URL": self.DATABASE_URL,
+            "CONFIG_DATABASE_URL": self.CONFIG_DATABASE_URL,
+            "TENANT_STORAGE_ROOT": self.TENANT_STORAGE_ROOT,
+            "DEFAULT_USER_ID": self.DEFAULT_USER_ID,
+            "CONTROL_PLANE_ADMIN_USER_IDS": self.CONTROL_PLANE_ADMIN_USER_IDS,
+            "SYSTEM_ROOT_USER_IDS": self.SYSTEM_ROOT_USER_IDS,
+            "PV1_RELEASE_ID": self.PV1_RELEASE_ID,
+        }
+        for env_name, value in operator_values.items():
+            if _UNRESOLVED_PRODUCTION_VALUE.search(value):
+                errors.append(f"{env_name} contains an unresolved production placeholder.")
+        if self.AUTO_MIGRATE_ON_STARTUP and not self.ALLOW_AUTO_MIGRATE_IN_PRODUCTION:
+            errors.append(
+                "AUTO_MIGRATE_ON_STARTUP requires ALLOW_AUTO_MIGRATE_IN_PRODUCTION=true in production."
+            )
         return errors
 
     def assert_production_safe(self) -> None:
