@@ -139,7 +139,13 @@ with production-safe configuration injected by the platform. Use the target
 candidate's trusted release identity. Keep the service stopped or in the
 approved no-write maintenance state during a planned schema upgrade.
 
-1. Run configuration, frontend, backend, and operational contract checks:
+The production preflight proves source, configuration, and deployment
+readiness. `scripts/verify-app.sh`, enforced by Application CI, remains the
+canonical release-critical application gate. The lifecycle qualification and
+rehearsal prove source-side snapshot, restore, migration, and readiness recovery;
+real company-domain and pilot evidence must be collected separately.
+
+1. Run the source/configuration/deployment readiness preflight:
 
    ```bash
    python scripts/production-preflight.py --json
@@ -147,8 +153,10 @@ approved no-write maintenance state during a planned schema upgrade.
 
    The preflight evaluates `Settings.production_guard_errors()` and emits only
    statuses and error counts. It runs frontend typecheck/build/contracts/unit
-   tests and backend pytest; the backend harness isolates test databases from
-   configured persistent data.
+   checks and an explicit bounded backend deployment suite for production
+   startup policy and migration compatibility. Its backend harness isolates
+   test databases from configured persistent data; it does not run the whole
+   backend suite or replace the canonical application gate.
 
 2. Run the canonical source-side lifecycle. The backup root must already be
    provisioned with mode `0700`:

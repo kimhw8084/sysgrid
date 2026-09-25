@@ -13,6 +13,12 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 CHECKS: list[dict[str, object]] = []
 QUIET = False
+BACKEND_DEPLOYMENT_TESTS = (
+    "test_production_startup_policy.py",
+    "test_startup_migrations.py",
+    "test_migration_graph.py",
+    "test_p11_legacy_migration.py",
+)
 
 
 def message(value: str) -> None:
@@ -116,6 +122,10 @@ def backend_test_environment(test_data_root: Path) -> dict[str, str]:
     return environment
 
 
+def backend_deployment_test_command() -> list[str]:
+    return [sys.executable, "-m", "pytest", "-q", *BACKEND_DEPLOYMENT_TESTS]
+
+
 def frontend_check_environment() -> dict[str, str]:
     environment = {
         name: os.environ[name]
@@ -173,8 +183,8 @@ def main(argv: list[str] | None = None) -> int:
     ]
     with tempfile.TemporaryDirectory(prefix="sysgrid-preflight-backend-") as backend_data:
         checks.append(run(
-            "Backend tests",
-            [sys.executable, "-m", "pytest", "-q"],
+            "Backend deployment tests",
+            backend_deployment_test_command(),
             ROOT / "backend",
             env=backend_test_environment(Path(backend_data)),
         ))
