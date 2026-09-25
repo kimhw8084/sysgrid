@@ -1,0 +1,546 @@
+{
+  "accepted_at": "2026-09-25T15:42:16Z",
+  "changed_files": [
+    {
+      "additions": 255,
+      "deletions": 273,
+      "path": "DEPLOYMENT.md",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 1,
+      "path": "README.md",
+      "status": "M"
+    },
+    {
+      "additions": 114,
+      "deletions": 6,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 9,
+      "deletions": 3,
+      "path": "backend/app/database.py",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 0,
+      "path": "backend/app/schema_tools.py",
+      "status": "A"
+    },
+    {
+      "additions": 92,
+      "deletions": 1,
+      "path": "backend/test_production_startup_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 6,
+      "path": "deploy/backend.env.production.example",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 1,
+      "path": "deploy/frontend.env.production.example",
+      "status": "M"
+    },
+    {
+      "additions": 333,
+      "deletions": 0,
+      "path": "docs/OUT-13-historical-deployment-readiness.md",
+      "status": "A"
+    },
+    {
+      "additions": 163,
+      "deletions": 12,
+      "path": "scripts/corporate_publishability_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 448,
+      "deletions": 0,
+      "path": "scripts/production-lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 186,
+      "deletions": 45,
+      "path": "scripts/production-preflight.py",
+      "status": "M"
+    },
+    {
+      "additions": 457,
+      "deletions": 14,
+      "path": "scripts/production_data_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 205,
+      "deletions": 0,
+      "path": "scripts/rehearse-production-lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 92,
+      "deletions": 17,
+      "path": "scripts/tests/test_corporate_publishability_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 319,
+      "deletions": 5,
+      "path": "scripts/tests/test_production_data_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 108,
+      "deletions": 0,
+      "path": "scripts/tests/test_production_lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 209,
+      "deletions": 0,
+      "path": "scripts/tests/test_production_preflight.py",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'cat /Users/haewonkim/.codex/RTK.md && cat /Users/haewonkim/.codex/law.md && git status --short --branch && git rev-parse HEAD && git branch --show-current && git remote -v'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git cat-file -t 6ff0febba890567b98fad38d495a9c7e02a144cf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --porcelain=v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git log --oneline --decorate --graph -4 6ff0febba890567b98fad38d495a9c7e02a144cf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show --stat --oneline --decorate --no-renames 6ff0febba890567b98fad38d495a9c7e02a144cf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,280p' scripts/production-preflight.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-list --parents -n 1 6ff0febba890567b98fad38d495a9c7e02a144cf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' scripts/tests/test_production_preflight.py\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' scripts/verify-app.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat 6fd8c37269ad51ab2155a8a3e5632df79b16ead3..6ff0febba890567b98fad38d495a9c7e02a144cf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'production-preflight|verify-app|lifecycle rehearsal|release-critical|Application CI' DEPLOYMENT.md README.md .github/workflows scripts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git reset --hard 6ff0febba890567b98fad38d495a9c7e02a144cf && rtk git status --short --branch && rtk sed -n '1,280p' scripts/production-preflight.py && rtk sed -n '1,260p' scripts/tests/test_production_preflight.py && rtk sed -n '155,215p' DEPLOYMENT.md && rtk sed -n '245,275p' README.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk find backend -maxdepth 2 -type f -name 'test_*.py' -print\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '100,205p' DEPLOYMENT.md\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'def test_|readiness|startup|migration|preflight' backend/test_*.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff 6fd8c37269ad51ab2155a8a3e5632df79b16ead3..HEAD -- scripts/production-preflight.py scripts/tests/test_production_preflight.py DEPLOYMENT.md README.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk shasum -a 256 scripts/verify-app.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show HEAD:scripts/verify-app.sh | rtk shasum -a 256'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff -- scripts/production-preflight.py scripts/tests/test_production_preflight.py DEPLOYMENT.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c 'import pytest, fastapi, sqlalchemy, alembic; print(\\\"backend dependencies available\\\")'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 31,
+        "output_sha256": "74278a9e2cadf79dd77617a95e4c410280bb4bd25b9cc8a82fcee02fa7e3efdd",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m pytest -q scripts/tests/test_production_preflight.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 8
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 98,
+        "output_sha256": "4389b56885d24ad3c0212124adcac5049cd8550cd047de2185842dbf63b1bd56",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport subprocess\nimport sys\nimport tempfile\n\nscript = Path('scripts/production-preflight.py').resolve()\nspec = importlib.util.spec_from_file_location('production_preflight_direct', script)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nwith tempfile.TemporaryDirectory(prefix='sysgrid-backend-deployment-tests-') as isolated_root:\n    result = subprocess.run(\n        module.backend_deployment_test_command(),\n        cwd=module.ROOT / 'backend',\n        env=module.backend_test_environment(Path(isolated_root)),\n        check=False,\n    )\nraise SystemExit(result.returncode)\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport subprocess\nimport sys\n\nroot = Path.cwd()\ntests = root / 'scripts/tests/test_production_preflight.py'\nspec = importlib.util.spec_from_file_location('production_preflight_tests', tests)\ntest_module = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(test_module)\nresult = subprocess.run(\n    [sys.executable, str(root / 'scripts/production-preflight.py'), '--config-only', '--json'],\n    cwd=root,\n    env=test_module.safe_environment(),\n    check=False,\n)\nraise SystemExit(result.returncode)\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport subprocess\nimport sys\nimport tempfile\n\nroot = Path.cwd()\ntests = root / 'scripts/tests/test_production_preflight.py'\nspec = importlib.util.spec_from_file_location('production_preflight_tests', tests)\ntest_module = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(test_module)\nwith tempfile.TemporaryDirectory(prefix='sysgrid-full-preflight-') as isolated_root:\n    data_root = Path(isolated_root).resolve()\n    environment = test_module.safe_environment()\n    environment.update({\n        'DATABASE_URL': f\\\"sqlite+aiosqlite:///{data_root / 'default.db'}\\\",\n        'CONFIG_DATABASE_URL': f\\\"sqlite+aiosqlite:///{data_root / 'config.db'}\\\",\n        'TENANT_STORAGE_ROOT': str(data_root / 'tenants'),\n    })\n    assert Path(environment['DATABASE_URL'].split('///', 1)[1]).is_absolute()\n    assert Path(environment['CONFIG_DATABASE_URL'].split('///', 1)[1]).is_absolute()\n    assert Path(environment['TENANT_STORAGE_ROOT']).is_absolute()\n    if 'PATH' in os.environ:\n        environment['PATH'] = os.environ['PATH']\n    result = subprocess.run(\n        [sys.executable, str(root / 'scripts/production-preflight.py'), '--json'],\n        cwd=root,\n        env=environment,\n        capture_output=True,\n        text=True,\n        check=False,\n    )\n    print(result.stdout, end='')\n    if result.stderr:\n        print('preflight stderr was captured and withheld from sanitized report output')\n    if result.returncode == 0:\n        report = json.loads(result.stdout)\n        if report.get('status') \"'!= '\"'PASS':\n            raise SystemExit('preflight returned zero without JSON PASS')\n    raise SystemExit(result.returncode)\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -d frontend/node_modules frontend/node_modules/.bin'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk which npm'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls frontend/node_modules/.bin/tsc frontend/node_modules/.bin/vitest'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python -c 'import os; print(os.environ.get(\\\"PATH\\\", \\\"\\\"))'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm --version'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport subprocess\nimport sys\nimport tempfile\n\nroot = Path.cwd()\ntests = root / 'scripts/tests/test_production_preflight.py'\nspec = importlib.util.spec_from_file_location('production_preflight_tests', tests)\ntest_module = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(test_module)\nwith tempfile.TemporaryDirectory(prefix='sysgrid-full-preflight-') as isolated_root:\n    data_root = Path(isolated_root).resolve()\n    environment = test_module.safe_environment()\n    environment.update({\n        'DATABASE_URL': f\\\"sqlite+aiosqlite:///{data_root / 'default.db'}\\\",\n        'CONFIG_DATABASE_URL': f\\\"sqlite+aiosqlite:///{data_root / 'config.db'}\\\",\n        'TENANT_STORAGE_ROOT': str(data_root / 'tenants'),\n    })\n    assert Path(environment['DATABASE_URL'].split('///', 1)[1]).is_absolute()\n    assert Path(environment['CONFIG_DATABASE_URL'].split('///', 1)[1]).is_absolute()\n    assert Path(environment['TENANT_STORAGE_ROOT']).is_absolute()\n    if 'PATH' in os.environ:\n        environment['PATH'] = os.environ['PATH']\n    result = subprocess.run(\n        [sys.executable, str(root / 'scripts/production-preflight.py'), '--json'],\n        cwd=root,\n        env=environment,\n        capture_output=True,\n        text=True,\n        check=False,\n    )\n    print(result.stdout, end='')\n    if result.stderr:\n        print('preflight stderr was captured and withheld from sanitized report output')\n    if result.returncode == 0:\n        report = json.loads(result.stdout)\n        if report.get('status') \"'!= '\"'PASS':\n            raise SystemExit('preflight returned zero without JSON PASS')\n    raise SystemExit(result.returncode)\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m pytest -q scripts/tests/test_corporate_publishability_guard.py scripts/tests/test_production_preflight.py scripts/tests/test_production_data_guard.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 47
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 99,
+        "output_sha256": "29c3786db24da4ea4ba3c23f593c7e04519b70db9d1f9029ebbff1ca85632528",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python -m pytest -q scripts/tests/test_production_lifecycle.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 5
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 98,
+        "output_sha256": "e679025b3f3052da2f2d9b9bf80b31049e204748c3d12c80f8457bca206c0c67",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python - <<'PY'\nfrom hashlib import sha256\nfrom io import BytesIO\nfrom pathlib import Path\nimport re\nimport subprocess\nimport tarfile\nimport tempfile\n\nbase = '6ff0febba890567b98fad38d495a9c7e02a144cf'\nexpected_paths = {\n    'DEPLOYMENT.md',\n    'scripts/production-preflight.py',\n    'scripts/tests/test_production_preflight.py',\n}\npatch = subprocess.run(['git', 'diff', '--binary', base], check=True, capture_output=True).stdout\nchanged = set(subprocess.run(['git', 'diff', '--name-only', base], check=True, capture_output=True, text=True).stdout.splitlines())\nif changed \"'!= expected_paths:\n    raise SystemExit(f'\"'unexpected changed paths: {sorted(changed)}')\nhead = subprocess.run(['git', 'archive', base], check=True, capture_output=True).stdout\nwith tempfile.TemporaryDirectory(prefix='sysgrid-chg56-patch-check-') as temporary:\n    root = Path(temporary) / 'base'\n    root.mkdir()\n    with tarfile.open(fileobj=BytesIO(head), mode='r:') as archive:\n        archive.extractall(root)\n    patch_path = Path(temporary) / 'r3.patch'\n    patch_path.write_bytes(patch)\n    apply_check = subprocess.run(['git', 'apply', '--check', str(patch_path)], cwd=root, capture_output=True, text=True)\n    if apply_check.returncode:\n        raise SystemExit(apply_check.stderr or f'git apply --check exit {apply_check.returncode}')\n\nforbidden = re.compile(r'(?i)\\\\b(?:codex|opencode|chatgpt|claude|gemini|llm|autonomous agent)\\\\b|/v1/(?:responses|chat/completions)')\nif forbidden.search(patch.decode()):\n    raise SystemExit('forbidden terminal-side AI/agent command reference found in patch')\nsecret_patterns = [\n    re.compile(r'AKIA[0-9A-Z]{16}'),\n    re.compile(r'(?i)-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),\n    re.compile(r'(?i)\\\\bgh[pousr]_[A-Za-z0-9]{20,}\\\\b'),\n    re.compile(r'(?i)\\\\bsk-[A-Za-z0-9]{24,}\\\\b'),\n]\nif any(pattern.search(patch.decode()) for pattern in secret_patterns):\n    raise SystemExit('credential pattern found in patch')\nif re.search(r'/Users/[\"'^/]+/|/private/var/|/tmp/'\"', patch.decode()):\n    raise SystemExit('local absolute path found in patch')\nprint(f'patch_sha256={sha256(patch).hexdigest()}')\nprint(f'changed_files={\\\",\\\".join(sorted(changed))}')\nprint('git_apply_check=PASS')\nprint('forbidden_command_scan=PASS')\nprint('credential_and_local_path_scan=PASS')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse --abbrev-ref HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-list --parents -n 1 6ff0febba890567b98fad38d495a9c7e02a144cf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'production-preflight|production_preflight' scripts/production-lifecycle.py scripts/rehearse-production-lifecycle.py\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet HEAD -- scripts/production-lifecycle.py scripts/rehearse-production-lifecycle.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet HEAD -- scripts/verify-app.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --ignored --short frontend/node_modules'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.156.1",
+    "configured_model": "gpt-6-luna",
+    "event_count": 118,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 93.26,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1020160,
+      "fresh_input_tokens": 73673,
+      "input_tokens": 1093833,
+      "non_reasoning_output_tokens": 7924,
+      "output_tokens": 34677,
+      "reasoning_output_tokens": 26753,
+      "total_processed_tokens": 1128510
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "fcd29342e73841cbda8ecdd424fb673331711cf9",
+      "subject": "fabric: capture completed model changes [CF-0102be29ddb380170d2e7670]"
+    },
+    {
+      "sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+      "subject": "fabric: capture completed model changes [CF-cfa961d3affd6ceb79ad0f4f]"
+    }
+  ],
+  "diff": {
+    "additions": 3037,
+    "changed_files": 18,
+    "commit_count": 2,
+    "deletions": 384
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 3,
+    "items": [
+      {
+        "bytes": 14167,
+        "path": "DEPLOYMENT.md",
+        "sha256": "369fe54a598854c2cda9370e2ac1a7e987d94c8cc692862d942aab026897863d"
+      },
+      {
+        "bytes": 7719,
+        "path": "README.md",
+        "sha256": "e4fd836fd5d748fdab211e5f8a425f6253e3c2a55d85f50dddb1c093c79b4d65"
+      },
+      {
+        "bytes": 15439,
+        "path": "docs/OUT-13-historical-deployment-readiness.md",
+        "sha256": "09e42d507f83a55088a76b35fdad1369e9363bd11e82944546351e21c8436598"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-0102be29ddb380170d2e7670]",
+    "commit_sha": "fcd29342e73841cbda8ecdd424fb673331711cf9",
+    "paths_before": 3,
+    "status_before": [
+      " M DEPLOYMENT.md",
+      " M scripts/production-preflight.py",
+      " M scripts/tests/test_production_preflight.py"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-25T15:54:41Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "6fd8c37269ad51ab2155a8a3e5632df79b16ead3",
+    "branch": "codex/sysgrid-smv1-deployment-recovery-fix-v3",
+    "detached_verify": false,
+    "head_sha": "fcd29342e73841cbda8ecdd424fb673331711cf9",
+    "remote_exact_head": true,
+    "remote_head_sha": "fcd29342e73841cbda8ecdd424fb673331711cf9",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "6fd8c37269ad51ab2155a8a3e5632df79b16ead3",
+    "work_branch": "codex/sysgrid-smv1-deployment-recovery-fix-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-0102be29ddb380170d2e7670",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-fix-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-fix-v3"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-deployment-recovery-fix-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-25T15:42:17Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 744,
+    "queue_seconds": 1,
+    "total_seconds": 745
+  },
+  "transport": {
+    "bytes": 9756,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 9425,
+    "prompt_sha256": "1a56e176d4d92d9358c874b529b2470ded939873dcb8f0a29c2cd0a08209ec19",
+    "sha256": "0102be29ddb380170d2e76704a9d55a2c4def63aeef0495ee90266f6607043cf"
+  }
+}
