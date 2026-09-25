@@ -1,0 +1,597 @@
+{
+  "accepted_at": "2026-09-25T14:08:23Z",
+  "changed_files": [
+    {
+      "additions": 247,
+      "deletions": 273,
+      "path": "DEPLOYMENT.md",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 1,
+      "path": "README.md",
+      "status": "M"
+    },
+    {
+      "additions": 114,
+      "deletions": 6,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 9,
+      "deletions": 3,
+      "path": "backend/app/database.py",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 0,
+      "path": "backend/app/schema_tools.py",
+      "status": "A"
+    },
+    {
+      "additions": 92,
+      "deletions": 1,
+      "path": "backend/test_production_startup_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 6,
+      "path": "deploy/backend.env.production.example",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 1,
+      "path": "deploy/frontend.env.production.example",
+      "status": "M"
+    },
+    {
+      "additions": 333,
+      "deletions": 0,
+      "path": "docs/OUT-13-historical-deployment-readiness.md",
+      "status": "A"
+    },
+    {
+      "additions": 163,
+      "deletions": 12,
+      "path": "scripts/corporate_publishability_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 448,
+      "deletions": 0,
+      "path": "scripts/production-lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 176,
+      "deletions": 45,
+      "path": "scripts/production-preflight.py",
+      "status": "M"
+    },
+    {
+      "additions": 457,
+      "deletions": 14,
+      "path": "scripts/production_data_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 205,
+      "deletions": 0,
+      "path": "scripts/rehearse-production-lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 92,
+      "deletions": 17,
+      "path": "scripts/tests/test_corporate_publishability_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 319,
+      "deletions": 5,
+      "path": "scripts/tests/test_production_data_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 108,
+      "deletions": 0,
+      "path": "scripts/tests/test_production_lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 126,
+      "deletions": 0,
+      "path": "scripts/tests/test_production_preflight.py",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'cat /Users/haewonkim/.codex/RTK.md && cat /Users/haewonkim/.codex/law.md && git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk --version && rtk proxy git status --porcelain=v1 && rtk proxy git show-ref --heads --tags | rtk proxy rg '6ff0febba890567b98fad38d495a9c7e02a144cf|codex/sysgrid-smv1-deployment-recovery-verify-v2' && rtk proxy git merge-base 6ff0febba890567b98fad38d495a9c7e02a144cf 6fd8c37269ad51ab2155a8a3e5632df79b16ead3 && rtk proxy git show -s --format='%H %P %D' 6ff0febba890567b98fad38d495a9c7e02a144cf && rtk proxy git ls-remote origin refs/heads/main\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ls -la && rtk proxy rg --files -g 'AGENTS.md' -g '*fabric*' -g '*audit*' -g 'production-preflight.py' /Users/haewonkim/.codex-fabric /Users/haewonkim/.codex 2>/dev/null | rtk proxy head -200 && rtk proxy env | rtk proxy rg -i 'fabric|job|audit|worktree'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy cat AGENTS.md && rtk proxy /Users/haewonkim/.codex-fabric/bin/fabricctl --help && rtk proxy jq '{job_id,request_id,repo,branch,head,evidence_ref,operation,events: (.events|length), keys: keys}' /Users/haewonkim/.codex-fabric/audit.json && rtk proxy ls -la .codex-fabric\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-42bcbc555d159729992dc3f8 && rtk proxy ls -la /Users/haewonkim/.codex-fabric/jobs && rtk proxy ls -la /Users/haewonkim/.codex-fabric/artifacts/CF-42bcbc555d159729992dc3f8 && rtk proxy cat /Users/haewonkim/.codex-fabric/audit.json'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ls -la /Users/haewonkim/.codex-fabric/jobs/CF-42bcbc555d159729992dc3f8.running && rtk proxy find /Users/haewonkim/.codex-fabric/jobs/CF-42bcbc555d159729992dc3f8.running -maxdepth 3 -type f -print && rtk proxy jq 'keys' /Users/haewonkim/.codex-fabric/audit.json && rtk proxy jq '.[-1]' /Users/haewonkim/.codex-fabric/audit.json\"",
+      "exit_code": 5,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy cat /Users/haewonkim/.codex-fabric/jobs/CF-42bcbc555d159729992dc3f8.running/job.json && rtk proxy cat /Users/haewonkim/.codex-fabric/jobs/CF-cfa961d3affd6ceb79ad0f4f.executed/job.json && rtk proxy jq '{identity, fabric_job, audit, result, notes, decision}' /Users/haewonkim/.codex-fabric/audit.json && rtk proxy rg -n 'production_preflight|append.*audit|audit.json|record.*audit|native audit' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy cat /Users/haewonkim/.codex-fabric/jobs/CF-42bcbc555d159729992dc3f8.running/prompt.md && rtk proxy cat /Users/haewonkim/.codex-fabric/jobs/CF-cfa961d3affd6ceb79ad0f4f.executed/job.json && rtk proxy ls -la /Users/haewonkim/.codex-fabric/jobs/CF-cfa961d3affd6ceb79ad0f4f.executed && rtk proxy rg -n 'sysgrid-smv1-deployment-recovery-verify-v2|CHG-56|R2' /Users/haewonkim/.codex-fabric\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy git ls-remote origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-v1 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-verify-v2 && rtk proxy git cat-file -e 6ff0febba890567b98fad38d495a9c7e02a144cf:.codex-fabric/audit.json && rtk proxy sed -n '3600,4010p' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py\"",
+      "exit_code": 128,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n 'publish-evidence|finalize|audit.json|result|summary|evidence_ref_for|def cmd_' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py | rtk proxy tail -100 && rtk proxy git show-ref | rtk proxy rg 'evidence/sysgrid|verify-v2|origin/main' && rtk proxy git ls-tree -r 6ff0febba890567b98fad38d495a9c7e02a144cf | rtk proxy rg 'production-preflight|audit.json|deployment'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git update-ref refs/heads/codex/sysgrid-smv1-deployment-recovery-verify-v2 6ff0febba890567b98fad38d495a9c7e02a144cf 6fd8c37269ad51ab2155a8a3e5632df79b16ead3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git switch --detach 6ff0febba890567b98fad38d495a9c7e02a144cf'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git restore --source=6ff0febba890567b98fad38d495a9c7e02a144cf --staged --worktree -- .'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git switch codex/sysgrid-smv1-deployment-recovery-verify-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy git status --short --branch && rtk proxy git rev-parse HEAD && rtk proxy git merge-base HEAD 6fd8c37269ad51ab2155a8a3e5632df79b16ead3 && rtk proxy git rev-list --count 6fd8c37269ad51ab2155a8a3e5632df79b16ead3..HEAD && rtk proxy git ls-remote origin refs/heads/main && rtk proxy command -v python3.14 && rtk proxy python3.14 --version && rtk proxy sed -n '1,300p' scripts/production-preflight.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3.14 -c 'import importlib.util, pathlib, sys; print(\\\"python\\\", sys.version.split()[0]); print(\\\"modules\\\", {name: bool(importlib.util.find_spec(name)) for name in (\\\"pytest\\\", \\\"fastapi\\\", \\\"pydantic\\\", \\\"sqlalchemy\\\", \\\"aiosqlite\\\")}); print(\\\"frontend_node_modules\\\", pathlib.Path(\\\"frontend/node_modules\\\").is_dir())' && rtk proxy npm --version && rtk proxy node --version\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 16,
+        "output_sha256": "664a9494b821bd58031f1112aa16525b08c3e94fe845669963dc99bb5f6f873b",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy mktemp -d /tmp/sysgrid-chg56-r2-verify.XXXXXX'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python3.14 -m venv /tmp/sysgrid-chg56-r2-verify.BhgjuJ/backend-venv'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy npm ci --prefix frontend --no-audit --no-fund'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /tmp/sysgrid-chg56-r2-verify.BhgjuJ/backend-venv/bin/pip install --require-hashes --no-cache-dir -r backend/requirements.lock'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy mktemp -d /tmp/sysgrid-chg56-r2-production.XXXXXX'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy mkdir -p /tmp/sysgrid-chg56-r2-production.ZS0P7y/tenant-storage'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy env -i PATH='/tmp/sysgrid-chg56-r2-verify.BhgjuJ/backend-venv/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin' PYTHONDONTWRITEBYTECODE=1 ENVIRONMENT=production BACKEND_CORS_ORIGINS=https://frontend.invalid ALLOWED_HOSTS=backend.invalid IDENTITY_MODE=trusted_proxy TRUSTED_PROXY_USER_HEADER=X-Authenticated-User DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-r2-production.ZS0P7y/default.db CONFIG_DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-r2-production.ZS0P7y/config.db TENANT_STORAGE_ROOT=/tmp/sysgrid-chg56-r2-production.ZS0P7y/tenant-storage PUBLIC_READONLY_ENABLED=false ALLOW_PUBLIC_READONLY_IN_PRODUCTION=false DEFAULT_USER_ID=svc-sysgrid AUTO_ADMIN_USER_IDS= ALLOW_AUTO_ADMIN_IN_PRODUCTION=false CONTROL_PLANE_ADMIN_USER_IDS=ops-admin CONTROL_PLANE_BOOTSTRAP_ENABLED=false CONTROL_PLANE_BOOTSTRAP_USER_ID= SYSTEM_ROOT_USER_IDS=system-root SCHEDULE_PREVIEW_SIGNING_KEY=synthetic-deployment-key-0123456789abcdef PV1_RELEASE_CANDIDATE_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa PV1_RELEASE_ID=synthetic-release-1 AUTO_MIGRATE_ON_STARTUP=false ALLOW_AUTO_MIGRATE_IN_PRODUCTION=false scripts/production-preflight.py --config-only --json\"",
+      "exit_code": 126,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy env -i PATH='/tmp/sysgrid-chg56-r2-verify.BhgjuJ/backend-venv/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin' PYTHONDONTWRITEBYTECODE=1 ENVIRONMENT=production BACKEND_CORS_ORIGINS=https://frontend.invalid ALLOWED_HOSTS=backend.invalid IDENTITY_MODE=trusted_proxy TRUSTED_PROXY_USER_HEADER=X-Authenticated-User DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-r2-production.ZS0P7y/default.db CONFIG_DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-r2-production.ZS0P7y/config.db TENANT_STORAGE_ROOT=/tmp/sysgrid-chg56-r2-production.ZS0P7y/tenant-storage PUBLIC_READONLY_ENABLED=false ALLOW_PUBLIC_READONLY_IN_PRODUCTION=false DEFAULT_USER_ID=svc-sysgrid AUTO_ADMIN_USER_IDS= ALLOW_AUTO_ADMIN_IN_PRODUCTION=false CONTROL_PLANE_ADMIN_USER_IDS=ops-admin CONTROL_PLANE_BOOTSTRAP_ENABLED=false CONTROL_PLANE_BOOTSTRAP_USER_ID= SYSTEM_ROOT_USER_IDS=system-root SCHEDULE_PREVIEW_SIGNING_KEY=synthetic-deployment-key-0123456789abcdef PV1_RELEASE_CANDIDATE_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa PV1_RELEASE_ID=synthetic-release-1 AUTO_MIGRATE_ON_STARTUP=false ALLOW_AUTO_MIGRATE_IN_PRODUCTION=false python scripts/production-preflight.py --config-only --json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -axo pid,etime,stat,command | rtk proxy rg 'production-preflight|pytest|vite|vitest|npm run|node' | rtk proxy tail -30\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 4715,
+        "output_sha256": "2a15593466112e4fcb52cdca5ec3a24da40250b6e0b66c027361f86dc14afe19",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy ps -axo pid,etime,stat,command | rtk proxy rg 'sysgrid-chg56|production|backend-venv|python3.14|/python ' | rtk proxy tail -40\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy pgrep -alf 'sysgrid|production-preflight|backend-venv|npm|pytest|vitest|tsc|vite'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1650,
+        "output_sha256": "ddabc3c487bb116d4148625288dc21150f7190a59493cf393604b216f10e5d64",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy env -i PATH='/tmp/sysgrid-chg56-r2-verify.BhgjuJ/backend-venv/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin' PYTHONDONTWRITEBYTECODE=1 ENVIRONMENT=production BACKEND_CORS_ORIGINS=https://frontend.invalid ALLOWED_HOSTS=backend.invalid IDENTITY_MODE=trusted_proxy TRUSTED_PROXY_USER_HEADER=X-Authenticated-User DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-r2-production.ZS0P7y/default.db CONFIG_DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-r2-production.ZS0P7y/config.db TENANT_STORAGE_ROOT=/tmp/sysgrid-chg56-r2-production.ZS0P7y/tenant-storage PUBLIC_READONLY_ENABLED=false ALLOW_PUBLIC_READONLY_IN_PRODUCTION=false DEFAULT_USER_ID=svc-sysgrid AUTO_ADMIN_USER_IDS= ALLOW_AUTO_ADMIN_IN_PRODUCTION=false CONTROL_PLANE_ADMIN_USER_IDS=ops-admin CONTROL_PLANE_BOOTSTRAP_ENABLED=false CONTROL_PLANE_BOOTSTRAP_USER_ID= SYSTEM_ROOT_USER_IDS=system-root SCHEDULE_PREVIEW_SIGNING_KEY=synthetic-deployment-key-0123456789abcdef PV1_RELEASE_CANDIDATE_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa PV1_RELEASE_ID=synthetic-release-1 AUTO_MIGRATE_ON_STARTUP=false ALLOW_AUTO_MIGRATE_IN_PRODUCTION=false python scripts/production-preflight.py --json\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy mktemp -d /tmp/sysgrid-chg56-r2-candidate-backend.XXXXXX'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy pgrep -alf 'candidate_preflight|pytest -q|candidate-backend'\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 219,
+        "output_sha256": "4a6110c98634b4332a3d5873a1cba298c0e442b3eef490a6103f2a9ad42e866d",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy env -i PATH='/tmp/sysgrid-chg56-r2-verify.BhgjuJ/backend-venv/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin' python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport subprocess\nimport sys\nroot = Path('/Users/haewonkim/.codex-fabric/worktrees/CF-42bcbc555d159729992dc3f8')\ntest_root = Path('/tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC')\nspec = importlib.util.spec_from_file_location('candidate_preflight', root / 'scripts' / 'production-preflight.py')\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nenv = module.backend_test_environment(test_root)\ncompleted = subprocess.run([sys.executable, '-m', 'pytest', '-q'], cwd=root / 'backend', env=env, capture_output=True, text=True, check=False)\n(test_root / 'candidate_backend.stdout').write_text(completed.stdout)\n(test_root / 'candidate_backend.stderr').write_text(completed.stderr)\nprint('----- candidate backend pytest stdout -----')\nprint(completed.stdout, end='' if completed.stdout.endswith('\\\\\\\\n') else '\\\\\\\\n')\nprint('----- candidate backend pytest stderr -----')\nprint(completed.stderr, end='' if completed.stderr.endswith('\\\\\\\\n') else '\\\\\\\\n')\nprint(f'candidate_backend_suite_exit={completed.returncode}')\nsys.exit(completed.returncode)\nPY\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 11,
+          "passed": 327,
+          "warnings": 5
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_monitoring_domain_contract.py::test_monitoring_create_uses_typed_request_and_rejects_raw_numeric_forms[param]",
+          "test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed",
+          "test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization",
+          "test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation",
+          "test_p07_architecture_engine.py::test_changeset_review_apply_is_atomic_and_current_stays_unchanged",
+          "test_p07_architecture_engine.py::test_stale_object_write_and_stale_change_set_apply_require_rebase",
+          "test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe",
+          "test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify",
+          "test_pv1_domain_foundation.py::test_project_membership_enforces_task_ownership_and_revocation",
+          "test_pv1_domain_foundation.py::test_metric_delivery_acceptance_and_verified_outcome_are_independent",
+          "test_pv1_domain_foundation.py::test_same_project_id_is_not_readable_from_another_tenant"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 50815,
+        "output_sha256": "9d92507ab3cde5562fa128105e28d43d87659dc4c7112a288caca88cfed30eb7",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg '\"'^(FAILED |={3,} (short test summary info|[0-9]+ failed,))'\"' /tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stdout\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy tail -15 /tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stdout && rtk proxy tail -10 /tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stderr'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy mktemp -d /tmp/sysgrid-chg56-r2-base.XXXXXX'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git worktree add --detach /tmp/sysgrid-chg56-r2-base.S30Adc/checkout 6fd8c37269ad51ab2155a8a3e5632df79b16ead3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git -C /tmp/sysgrid-chg56-r2-base.S30Adc/checkout rev-parse HEAD && rtk proxy git -C /tmp/sysgrid-chg56-r2-base.S30Adc/checkout status --short && rtk proxy git diff --quiet 6fd8c37269ad51ab2155a8a3e5632df79b16ead3 6ff0febba890567b98fad38d495a9c7e02a144cf -- backend/requirements.lock'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy env -i PATH='/tmp/sysgrid-chg56-r2-verify.BhgjuJ/backend-venv/bin:/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin' python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport re\nimport subprocess\nimport sys\nroot = Path('/Users/haewonkim/.codex-fabric/worktrees/CF-42bcbc555d159729992dc3f8')\nbase = Path('/tmp/sysgrid-chg56-r2-base.S30Adc/checkout')\ntest_root = Path('/tmp/sysgrid-chg56-r2-base.S30Adc/base-test-data')\nspec = importlib.util.spec_from_file_location('candidate_preflight', root / 'scripts' / 'production-preflight.py')\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nenv = module.backend_test_environment(test_root)\nenv['PYTHONPATH'] = str(base / 'backend')\ncompleted = subprocess.run([sys.executable, '-m', 'pytest', '-q'], cwd=base / 'backend', env=env, capture_output=True, text=True, check=False)\nPath('/tmp/sysgrid-chg56-r2-base.S30Adc/base_backend.stdout').write_text(completed.stdout)\nPath('/tmp/sysgrid-chg56-r2-base.S30Adc/base_backend.stderr').write_text(completed.stderr)\nlines = completed.stdout.splitlines()\nprint('----- base backend pytest summary and failures -----')\nfor line in lines:\n    if line.startswith('FAILED ') or re.match(r'\"'^'\"\\\\\\\\d+ (failed|passed|error)', line):\n        print(line)\nprint('----- base backend failure signatures -----')\nheaders = [i for i, line in enumerate(lines) if re.match(r'\"'^_{3,} .* _{3,}$'\"', line)]\nfor n, start in enumerate(headers):\n    end = headers[n + 1] if n + 1 < len(headers) else len(lines)\n    body = [line.strip() for line in lines[start + 1:end] if line.startswith('E ')]\n    print(f'{lines[start].strip()} :: {body[-1] if body else \\\"<no E-line>\\\"}')\nprint(f'base_backend_suite_exit={completed.returncode}')\nsys.exit(completed.returncode)\nPY\"",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_monitoring_domain_contract.py::test_monitoring_create_uses_typed_request_and_rejects_raw_numeric_forms[param]",
+          "test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed",
+          "test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization",
+          "test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation",
+          "test_p07_architecture_engine.py::test_changeset_review_apply_is_atomic_and_current_stays_unchanged",
+          "test_p07_architecture_engine.py::test_stale_object_write_and_stale_change_set_apply_require_rebase",
+          "test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe",
+          "test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify",
+          "test_pv1_domain_foundation.py::test_project_membership_enforces_task_ownership_and_revocation",
+          "test_pv1_domain_foundation.py::test_metric_delivery_acceptance_and_verified_outcome_are_independent",
+          "test_pv1_domain_foundation.py::test_same_project_id_is_not_readable_from_another_tenant"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 2519,
+        "output_sha256": "36524e058a5b4a817d6aacdc3910012f0d9d67aa7d63ddd01370b94b4224eae1",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n '\"'^_+.*test|''^_{3,}'\"' /tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stdout && rtk proxy tail -14 /tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stdout && rtk proxy tail -14 /tmp/sysgrid-chg56-r2-base.S30Adc/base_backend.stdout\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3.14 - <<'PY'\nfrom pathlib import Path\nimport re\ncandidate = Path('/tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stdout')\nbase = Path('/tmp/sysgrid-chg56-r2-base.S30Adc/base_backend.stdout')\n\ndef read(path):\n    lines = path.read_text().splitlines()\n    ids = [line[len('FAILED '):] for line in lines if line.startswith('FAILED ')]\n    summaries = [line for line in lines if re.match(r'\"'^'\"\\\\\\\\d+ (?:failed|passed|error)', line)]\n    headers = [i for i, line in enumerate(lines) if re.match(r'\"'^_+'\"\\\\\\\\s*test.*\\\\\\\\s+_+\"'$'\"', line)]\n    signatures = []\n    for n, start in enumerate(headers):\n        end = headers[n + 1] if n + 1 < len(headers) else len(lines)\n        block = lines[start + 1:end]\n        selected = [line.strip() for line in block if line.strip().startswith('E ')]\n        if not selected:\n            selected = [line.strip() for line in block if re.match(r'\"'^(?:ValueError|AssertionError|KeyError|TypeError|AttributeError|RuntimeError):'\"', line.strip())]\n        sig = ' | '.join(selected[-2:]) or '<no concise error line>'\n        sig = re.sub(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', '<uuid>', sig)\n        sig = re.sub(r'/private/tmp/pytest-of-[\"'^ /]+/pytest-'\"\\\\\\\\d+', '<pytest-tmp>', sig)\n        signatures.append(sig[:500])\n    return ids, summaries, signatures\nci, cs, csign = read(candidate)\nbi, bs, bsign = read(base)\nprint('candidate_summary:', cs[-1] if cs else '<missing>')\nprint('base_summary:', bs[-1] if bs else '<missing>')\nprint('candidate_failure_count:', len(ci), 'base_failure_count:', len(bi))\nprint('candidate_only_node_ids:', sorted(set(ci) - set(bi)))\nprint('base_only_node_ids:', sorted(set(bi) - set(ci)))\nprint('candidate_signature_count:', len(csign), 'base_signature_count:', len(bsign))\nfor node in sorted(set(ci) | set(bi)):\n    cidx = ci.index(node) if node in ci else None\n    bidx = bi.index(node) if node in bi else None\n    c = csign[cidx] if cidx is not None and cidx < len(csign) else '<missing>'\n    b = bsign[bidx] if bidx is not None and bidx < len(bsign) else '<missing>'\n    print(f'{node}\\\\\\\\n  candidate: {c}\\\\\\\\n  base:      {b}\\\\\\\\n  same_signature={c == b}')\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 2110,
+        "output_sha256": "350d2070225fe66d5ace56c0017943468075f9920e65d347fadd42c832d0a877",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3.14 - <<'PY'\nfrom pathlib import Path\nimport re\ncandidate = Path('/tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stdout')\nbase = Path('/tmp/sysgrid-chg56-r2-base.S30Adc/base_backend.stdout')\n\ndef read(path):\n    lines = path.read_text().splitlines()\n    ids = [line[len('FAILED '):] for line in lines if line.startswith('FAILED ')]\n    summaries = [line for line in lines if line[:1].isdigit() and (' failed,' in line or ' passed,' in line or ' error' in line)]\n    headers = [i for i, line in enumerate(lines) if line.startswith('_') and line.lstrip('_ ').startswith('test_') and line.endswith('_')]\n    signatures = []\n    for n, start in enumerate(headers):\n        end = headers[n + 1] if n + 1 < len(headers) else len(lines)\n        block = lines[start + 1:end]\n        selected = [line.strip() for line in block if line.strip().startswith('E ')]\n        if not selected:\n            selected = [line.strip() for line in block if any(line.strip().startswith(kind + ':') for kind in ('ValueError', 'AssertionError', 'KeyError', 'TypeError', 'AttributeError', 'RuntimeError'))]\n        sig = ' | '.join(selected[-2:]) or '<no concise error line>'\n        sig = re.sub('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', '<uuid>', sig)\n        sig = re.sub('/private/tmp/pytest-of-[\"'^ ]+/pytest-[0-9]+'\"', '<pytest-tmp>', sig)\n        signatures.append(sig[:500])\n    return ids, summaries, signatures\nci, cs, csign = read(candidate)\nbi, bs, bsign = read(base)\nprint('candidate_summary:', cs[-1] if cs else '<missing>')\nprint('base_summary:', bs[-1] if bs else '<missing>')\nprint('candidate_failure_count:', len(ci), 'base_failure_count:', len(bi))\nprint('candidate_only_node_ids:', sorted(set(ci) - set(bi)))\nprint('base_only_node_ids:', sorted(set(bi) - set(ci)))\nprint('candidate_signature_count:', len(csign), 'base_signature_count:', len(bsign))\nfor node in sorted(set(ci) | set(bi)):\n    cidx = ci.index(node) if node in ci else None\n    bidx = bi.index(node) if node in bi else None\n    c = csign[cidx] if cidx is not None and cidx < len(csign) else '<missing>'\n    b = bsign[bidx] if bidx is not None and bidx < len(bsign) else '<missing>'\n    print(f'{node}\\\\\\\\n  candidate: {c}\\\\\\\\n  base:      {b}\\\\\\\\n  same_signature={c == b}')\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "failed": 11,
+          "passed": 321,
+          "warnings": 5
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 3970,
+        "output_sha256": "90473b1f1751558f41e935a36e7c51f2ac221c32a65688cf78990d5c38d125c5",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n '\"'^def build_job_summary|''^def publish_audit_evidence|''^def evidence_ref_for|class .*audit'\"' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py && rtk proxy sed -n '2740,2970p' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '3410,3505p' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py && rtk proxy sed -n '2952,3035p' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n 'decisive_commands|commands.append|test_result|parse_codex|test command' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py | rtk proxy head -60\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '1800,1930p' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy jq '{job_id,status,error_code,git,evidence_publication}' /Users/haewonkim/.codex-fabric/results/CF-cfa961d3affd6ceb79ad0f4f/result.json && rtk proxy jq '{job_id,status,checks: .codex.decisive_commands}' /Users/haewonkim/.codex-fabric/results/CF-cfa961d3affd6ceb79ad0f4f/job-summary.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3.14 - <<'PY'\nimport subprocess\n\ndef git(*args):\n    return subprocess.check_output(['git', *args], text=True).strip()\nbranch = git('branch', '--show-current')\nhead = git('rev-parse', 'HEAD')\nbase = '6fd8c37269ad51ab2155a8a3e5632df79b16ead3'\ncandidate = '6ff0febba890567b98fad38d495a9c7e02a144cf'\nmerge_base = git('merge-base', head, base)\nahead = git('rev-list', '--count', f'{base}..{head}')\nstatus = git('status', '--porcelain=v1')\nremote_lines = git('ls-remote', 'origin', 'refs/heads/main', 'refs/heads/codex/sysgrid-smv1-deployment-recovery-v1').splitlines()\nremote = {line.split()[1]: line.split()[0] for line in remote_lines if line.split()}\nmain = remote.get('refs/heads/main')\nr1 = remote.get('refs/heads/codex/sysgrid-smv1-deployment-recovery-v1')\nassert branch == 'codex/sysgrid-smv1-deployment-recovery-verify-v2', branch\nassert head == candidate, head\nassert merge_base == base and ahead == '1', (merge_base, ahead)\nassert not status, status\nassert main == base, main\nassert r1 == candidate, r1\nprint(f'branch={branch}')\nprint(f'candidate_sha={head}')\nprint(f'candidate_descends_from_base={merge_base == base and ahead == \\\"1\\\"}')\nprint(f'worktree_clean={not status}')\nprint(f'remote_main={main}')\nprint(f'remote_main_unchanged={main == base}')\nprint(f'r1_remote_exact_head={r1 == candidate}')\nprint('r2_remote_publication=deferred_to_fabric_postprocessing')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3.14 - <<'PY'\nfrom pathlib import Path\nimport re\ncandidate = Path('/tmp/sysgrid-chg56-r2-candidate-backend.kwG8iC/candidate_backend.stdout')\nbase = Path('/tmp/sysgrid-chg56-r2-base.S30Adc/base_backend.stdout')\n\ndef read(path):\n    lines = path.read_text().splitlines()\n    ids = [line[len('FAILED '):] for line in lines if line.startswith('FAILED ')]\n    summaries = [line for line in lines if line[:1].isdigit() and (' failed,' in line or ' passed,' in line or ' error' in line)]\n    headers = [i for i, line in enumerate(lines) if line.startswith('_') and line.lstrip('_ ').startswith('test_') and line.endswith('_')]\n    signatures = {}\n    for n, start in enumerate(headers):\n        end = headers[n + 1] if n + 1 < len(headers) else len(lines)\n        block = lines[start + 1:end]\n        selected = [line.strip() for line in block if line.strip().startswith('E ')]\n        if not selected:\n            selected = [line.strip() for line in block if any(line.strip().startswith(kind + ':') for kind in ('ValueError', 'AssertionError', 'KeyError', 'TypeError', 'AttributeError', 'RuntimeError'))]\n        sig = ' | '.join(selected[-2:]) or '<no concise error line>'\n        sig = re.sub('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', '<uuid>', sig)\n        sig = re.sub('/private/tmp/pytest-of-[\"'^ ]+/pytest-[0-9]+'\"', '<pytest-tmp>', sig)\n        signatures[ids[n]] = sig[:300]\n    return ids, summaries[-1] if summaries else '<missing>', signatures\nci, cs, csign = read(candidate)\nbi, bs, bsign = read(base)\nprint('decision_record_source=saved stdout/stderr from the already completed full suites; no tests rerun')\nprint('candidate_backend_suite_exit=1')\nprint(f'candidate_backend_pytest_summary={cs}')\nprint('candidate_backend_failing_tests:')\nfor node in ci:\n    print('  ' + node)\nprint('base_backend_suite_exit=1')\nprint(f'base_backend_pytest_summary={bs}')\nprint('base_backend_failing_tests:')\nfor node in bi:\n    print('  ' + node)\nprint(f'candidate_only_failing_tests={sorted(set(ci) - set(bi))}')\nprint(f'base_only_failing_tests={sorted(set(bi) - set(ci))}')\nprint(f'compact_signatures_identical={ci == bi and csign == bsign} ({sum(csign.get(k) == bsign.get(k) for k in set(ci) & set(bi))}/{len(set(ci) & set(bi))})')\nprint('failure_delta_class=IDENTICAL_INHERITED_BASELINE')\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "failed": 11,
+          "passed": 321,
+          "warnings": 5
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 2823,
+        "output_sha256": "e7def5027d39412b262d815ef858e89268e52546aff8facf21d223ea3730aba9",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3.14 - <<'PY'\nimport subprocess\n\ndef git(*args):\n    return subprocess.check_output(['git', *args], text=True).strip()\nbranch = git('branch', '--show-current')\nhead = git('rev-parse', 'HEAD')\nbase = '6fd8c37269ad51ab2155a8a3e5632df79b16ead3'\ncandidate = '6ff0febba890567b98fad38d495a9c7e02a144cf'\nmerge_base = git('merge-base', head, base)\nahead = git('rev-list', '--count', f'{base}..{head}')\nstatus = git('status', '--porcelain=v1')\nremote_lines = git('ls-remote', 'origin', 'refs/heads/main', 'refs/heads/codex/sysgrid-smv1-deployment-recovery-v1').splitlines()\nremote = {line.split()[1]: line.split()[0] for line in remote_lines if line.split()}\nmain = remote.get('refs/heads/main')\nr1 = remote.get('refs/heads/codex/sysgrid-smv1-deployment-recovery-v1')\nassert branch == 'codex/sysgrid-smv1-deployment-recovery-verify-v2', branch\nassert head == candidate, head\nassert merge_base == base and ahead == '1', (merge_base, ahead)\nassert not status, status\nassert main == base, main\nassert r1 == candidate, r1\nprint(f'branch={branch}')\nprint(f'candidate_sha={head}')\nprint(f'candidate_descends_from_base={merge_base == base and ahead == \\\"1\\\"}')\nprint(f'worktree_clean={not status}')\nprint(f'remote_main={main}')\nprint(f'remote_main_unchanged={main == base}')\nprint(f'remote_exact_head={r1 == candidate}')\nprint('r2_remote_publication=deferred_to_fabric_postprocessing')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.156.1",
+    "configured_model": "gpt-6-luna",
+    "event_count": 116,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.15,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 6808832,
+      "fresh_input_tokens": 199970,
+      "input_tokens": 7008802,
+      "non_reasoning_output_tokens": 14712,
+      "output_tokens": 53897,
+      "reasoning_output_tokens": 39185,
+      "total_processed_tokens": 7062699
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+      "subject": "fabric: capture completed model changes [CF-cfa961d3affd6ceb79ad0f4f]"
+    }
+  ],
+  "diff": {
+    "additions": 2936,
+    "changed_files": 18,
+    "commit_count": 1,
+    "deletions": 384
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 3,
+    "items": [
+      {
+        "bytes": 13624,
+        "path": "DEPLOYMENT.md",
+        "sha256": "5c3b85967190936593e1f13d8d3bbca988c0e8076148bb0d3b3cd1992ee20e97"
+      },
+      {
+        "bytes": 7719,
+        "path": "README.md",
+        "sha256": "e4fd836fd5d748fdab211e5f8a425f6253e3c2a55d85f50dddb1c093c79b4d65"
+      },
+      {
+        "bytes": 15439,
+        "path": "docs/OUT-13-historical-deployment-readiness.md",
+        "sha256": "09e42d507f83a55088a76b35fdad1369e9363bd11e82944546351e21c8436598"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-25T14:42:16Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "6fd8c37269ad51ab2155a8a3e5632df79b16ead3",
+    "branch": "codex/sysgrid-smv1-deployment-recovery-verify-v2",
+    "detached_verify": false,
+    "head_sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+    "remote_exact_head": true,
+    "remote_head_sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "6fd8c37269ad51ab2155a8a3e5632df79b16ead3",
+    "work_branch": "codex/sysgrid-smv1-deployment-recovery-verify-v2",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-42bcbc555d159729992dc3f8",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-verify-v2",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-verify-v2"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-deployment-recovery-verify-v2",
+  "schema_version": 1,
+  "started_at": "2026-09-25T14:08:24Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 2032,
+    "queue_seconds": 1,
+    "total_seconds": 2033
+  },
+  "transport": {
+    "bytes": 8296,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 7956,
+    "prompt_sha256": "f74851aafa104b23c9916b80f95dc6bdc5297fab47f11c9c2e079de14be183cb",
+    "sha256": "42bcbc555d159729992dc3f8ed712976372570d547eb78de4997dc657dcddc9a"
+  }
+}
