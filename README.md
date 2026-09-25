@@ -291,7 +291,13 @@ Status output distinguishes running, stalled, failed, and successful states; rep
 
 ## 11. Production boundary
 
-`start-local.sh` is for disposable development only. Production requires explicit HTTPS CORS origins, explicit deployment hosts, trusted-proxy identity, operator-managed secrets, and the production migration/data guards documented in `DEPLOYMENT.md`.
+`start-local.sh` is for disposable development only. Production uses the
+canonical operator lifecycle in [DEPLOYMENT.md](DEPLOYMENT.md): Settings-owned
+configuration validation, committed dependency locks, isolated SQLite snapshot
+and migration rehearsal, an explicit schema-upgrade gate, and health/readiness
+checks. Corporate process supervision remains outside the repository. Synthetic
+source qualification does not establish company-domain, proxy, SSO, or browser
+field proof.
 
 ## Core engineering standards
 

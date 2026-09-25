@@ -17,6 +17,7 @@ from pathlib import Path, PurePosixPath
 import re
 import shutil
 import sqlite3
+import stat
 import subprocess
 import sys
 import tempfile
@@ -33,6 +34,8 @@ DEFAULT_BUSY_SLEEP_SECONDS = 0.25
 SQLITE_URL_PREFIXES = ("sqlite+aiosqlite:///", "sqlite:///")
 TEST_RESIDUE_APPLY_TOKEN = "DEACTIVATE-VERIFIED-TEST-RESIDUE"
 TEST_RESIDUE_MAINTENANCE_TOKEN = "APP-STOPPED"
+PRODUCTION_UPGRADE_APPLY_TOKEN = "APPLY-REHEARSED-PRODUCTION-UPGRADE"
+PRODUCTION_UPGRADE_MAINTENANCE_TOKEN = "APP-STOPPED"
 TEST_RESIDUE_TIMESTAMP_PATTERN = re.compile(
     r"^(?:blank[-_ ]slate|empty[-_ ]states|switch[-_ ]a|switch[-_ ]b)[-_ ]\d{13}[-_ ][a-z0-9]{6}$",
     re.IGNORECASE,
@@ -303,6 +306,8 @@ def _backup_one(
 def _safe_relative_path(value: str) -> PurePosixPath:
     if not isinstance(value, str) or not value.strip():
         raise DataGuardError("Manifest database path is empty.")
+    if "\\" in value:
+        raise DataGuardError("Manifest database path contains a non-portable separator.")
     relative = PurePosixPath(value)
     if relative.is_absolute() or ".." in relative.parts:
         raise DataGuardError(f"Unsafe manifest path: {value}")
@@ -314,7 +319,25 @@ def _safe_relative_path(value: str) -> PurePosixPath:
 def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    temporary.chmod(0o600)
     os.replace(temporary, path)
+
+
+def source_identity_from_environment() -> dict[str, str] | None:
+    candidate_sha = os.getenv("PV1_RELEASE_CANDIDATE_SHA", "").strip().lower()
+    release_id = os.getenv("PV1_RELEASE_ID", "").strip()
+    if candidate_sha and not re.fullmatch(r"[0-9a-f]{64}", candidate_sha):
+        raise DataGuardError("PV1_RELEASE_CANDIDATE_SHA is invalid; snapshot identity cannot be bound safely.")
+    if release_id and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", release_id):
+        raise DataGuardError("PV1_RELEASE_ID is not a safe release identifier; snapshot identity cannot be bound safely.")
+    if not candidate_sha and not release_id:
+        return None
+    identity: dict[str, str] = {}
+    if candidate_sha:
+        identity["candidate_sha256"] = candidate_sha
+    if release_id:
+        identity["release_id"] = release_id
+    return identity
 
 
 def create_snapshot(
@@ -327,8 +350,21 @@ def create_snapshot(
     backup_one: Callable[..., None] = _backup_one,
 ) -> Path:
     operation_id = operation_id or new_operation_id()
+    if (
+        not isinstance(operation_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", operation_id)
+        or operation_id in {".", ".."}
+    ):
+        raise DataGuardError("Snapshot operation id is not a safe path component.")
     output_root = output_root.expanduser().resolve()
-    output_root.mkdir(parents=True, exist_ok=True)
+    source_identity = source_identity_from_environment()
+    existed = output_root.exists()
+    output_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if os.name == "posix":
+        if not existed:
+            output_root.chmod(0o700)
+        if stat.S_IMODE(output_root.stat().st_mode) & 0o077:
+            raise DataGuardError("Backup root permissions must exclude group and other access (mode 0700).")
     snapshot_name = f"snapshot-{utc_timestamp().replace(':', '').replace('-', '')}-{operation_id}"
     final_snapshot = output_root / snapshot_name
     staging_snapshot = output_root / f".{snapshot_name}.partial"
@@ -349,10 +385,10 @@ def create_snapshot(
         raise DataGuardError("Backup root must not be a database file.")
 
     manifest_entries: list[dict[str, Any]] = []
-    staging_snapshot.mkdir(parents=True, exist_ok=False)
+    staging_snapshot.mkdir(parents=True, exist_ok=False, mode=0o700)
     try:
         database_dir = staging_snapshot / "databases"
-        database_dir.mkdir()
+        database_dir.mkdir(mode=0o700)
         for index, entry in enumerate(databases, start=1):
             source_path: Path = entry["source_path"]
             source_integrity = integrity_check(source_path, quick=True)
@@ -365,6 +401,7 @@ def create_snapshot(
             backup_one(source_path, temporary)
             backup_integrity = integrity_check(temporary, quick=False)
             os.replace(temporary, destination)
+            destination.chmod(0o600)
             manifest_entries.append({
                 "logical_roles": list(entry["roles"]),
                 "relative_path": relative_path.as_posix(),
@@ -385,6 +422,8 @@ def create_snapshot(
             "omitted_inactive_count": len(omitted_inactive),
             "omitted_inactive_databases": omitted_inactive,
         }
+        if source_identity is not None:
+            manifest["source_identity"] = source_identity
         _write_json_atomic(staging_snapshot / "manifest.json", manifest)
         os.replace(staging_snapshot, final_snapshot)
         return final_snapshot
@@ -407,6 +446,29 @@ def load_and_validate_manifest(snapshot_dir: Path) -> dict[str, Any]:
         raise DataGuardError("Unsupported snapshot manifest version.")
     if manifest.get("tool") != TOOL_NAME:
         raise DataGuardError("Snapshot was not created by the SysGrid production data guard.")
+    operation_id = manifest.get("operation_id")
+    if (
+        not isinstance(operation_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", operation_id)
+        or operation_id in {".", ".."}
+    ):
+        raise DataGuardError("Snapshot operation id is malformed.")
+    source_identity = manifest.get("source_identity")
+    if source_identity is not None:
+        if not isinstance(source_identity, dict):
+            raise DataGuardError("Snapshot source identity is malformed.")
+        candidate_sha = source_identity.get("candidate_sha256")
+        release_id = source_identity.get("release_id")
+        if candidate_sha is not None and (
+            not isinstance(candidate_sha, str) or not re.fullmatch(r"[0-9a-f]{64}", candidate_sha)
+        ):
+            raise DataGuardError("Snapshot candidate identity is malformed.")
+        if release_id is not None and (
+            not isinstance(release_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", release_id)
+        ):
+            raise DataGuardError("Snapshot release identity is malformed.")
+        if candidate_sha is None and release_id is None:
+            raise DataGuardError("Snapshot source identity contains no release identifier.")
     databases = manifest.get("databases")
     if not isinstance(databases, list) or not databases:
         raise DataGuardError("Snapshot manifest contains no databases.")
@@ -447,7 +509,7 @@ def load_and_validate_manifest(snapshot_dir: Path) -> dict[str, Any]:
         if not database_path.is_file():
             raise DataGuardError(f"Snapshot database is missing: {relative_text}")
         expected_size = entry.get("size_bytes")
-        if not isinstance(expected_size, int) or database_path.stat().st_size != expected_size:
+        if not isinstance(expected_size, int) or isinstance(expected_size, bool) or database_path.stat().st_size != expected_size:
             raise DataGuardError(f"Snapshot size check failed: {relative_text}")
         expected_hash = entry.get("sha256")
         if not isinstance(expected_hash, str) or sha256_file(database_path) != expected_hash:
@@ -472,7 +534,7 @@ def restore_snapshot(*, snapshot_dir: Path, target_root: Path) -> Path:
     if staging.exists():
         raise DataGuardError("A previous partial restore exists; remove it before retrying.")
     target_root.parent.mkdir(parents=True, exist_ok=True)
-    staging.mkdir(parents=True, exist_ok=False)
+    staging.mkdir(parents=True, exist_ok=False, mode=0o700)
     try:
         for entry in manifest["databases"]:
             relative = _safe_relative_path(entry["relative_path"])
@@ -480,6 +542,7 @@ def restore_snapshot(*, snapshot_dir: Path, target_root: Path) -> Path:
             destination = staging.joinpath(*relative.parts)
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, destination)
+            destination.chmod(0o600)
             if destination.stat().st_size != entry["size_bytes"]:
                 raise DataGuardError(f"Restored size check failed: {relative.as_posix()}")
             if sha256_file(destination) != entry["sha256"]:
@@ -492,6 +555,8 @@ def restore_snapshot(*, snapshot_dir: Path, target_root: Path) -> Path:
             "restored_at": utc_timestamp(),
             "database_count": manifest["database_count"],
         }
+        if manifest.get("source_identity") is not None:
+            restore_record["source_identity"] = manifest["source_identity"]
         _write_json_atomic(staging / "restore-record.json", restore_record)
         if target_root.exists():
             target_root.rmdir()
@@ -499,6 +564,112 @@ def restore_snapshot(*, snapshot_dir: Path, target_root: Path) -> Path:
         return target_root
     except Exception:
         shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+
+def prepare_recovery_root(*, snapshot_dir: Path, target_root: Path, backend_root: Path) -> dict[str, Any]:
+    """Restore and rebind a complete isolated runtime data root without touching live files."""
+    snapshot_dir = snapshot_dir.expanduser().resolve()
+    target_root = target_root.expanduser().resolve()
+    backend_root = backend_root.expanduser().resolve()
+    manifest = load_and_validate_manifest(snapshot_dir)
+    if target_root == snapshot_dir or snapshot_dir in target_root.parents:
+        raise DataGuardError("Recovery target must be isolated from the snapshot directory.")
+    if target_root.exists() and any(target_root.iterdir()):
+        raise DataGuardError("Recovery target must not contain existing files.")
+
+    staging = target_root.with_name(target_root.name + ".recovery.partial")
+    if staging.exists():
+        raise DataGuardError("A previous partial recovery preparation exists; remove it before retrying.")
+    target_root.parent.mkdir(parents=True, exist_ok=True)
+    created_target = False
+    try:
+        restored_root = restore_snapshot(snapshot_dir=snapshot_dir, target_root=staging)
+        config_entry = None
+        default_entry = None
+        tenant_paths: dict[int, Path] = {}
+        omitted_tenant_ids: set[int] = set()
+        for entry in manifest["databases"]:
+            relative = _safe_relative_path(entry["relative_path"])
+            roles = [str(role) for role in entry.get("logical_roles", [])]
+            future_path = target_root.joinpath(*relative.parts)
+            if "config" in roles:
+                config_entry = (entry, relative)
+            if "default" in roles:
+                default_entry = (entry, relative)
+            for role in roles:
+                match = re.match(r"^tenant-(\d+)-", role)
+                if match:
+                    tenant_id = int(match.group(1))
+                    if tenant_id in tenant_paths and tenant_paths[tenant_id] != future_path:
+                        raise DataGuardError("Recovery manifest maps one tenant to multiple database files.")
+                    tenant_paths[tenant_id] = future_path
+        for entry in manifest.get("omitted_inactive_databases", []):
+            omitted_tenant_ids.add(int(entry["tenant_id"]))
+            tenant_paths[int(entry["tenant_id"])] = target_root / "omitted-inactive" / f"tenant-{int(entry['tenant_id'])}.sqlite3"
+        if config_entry is None or default_entry is None:
+            raise DataGuardError("Snapshot lacks required config or default database roles for recovery.")
+
+        config_copy = restored_root.joinpath(*config_entry[1].parts).resolve()
+        with closing(sqlite3.connect(config_copy)) as connection:
+            table = connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='tenants'"
+            ).fetchone()
+            if not table:
+                raise DataGuardError("Restored config database does not contain the tenants registry table.")
+            existing_ids = {
+                int(row[0]) for row in connection.execute("SELECT id FROM tenants").fetchall()
+            }
+            for tenant_id, future_path in tenant_paths.items():
+                if tenant_id not in existing_ids:
+                    raise DataGuardError("Recovery manifest tenant mapping is absent from the restored registry.")
+                connection.execute(
+                    "UPDATE tenants SET db_url = ? WHERE id = ?",
+                    (sqlite_url_for_path(future_path), tenant_id),
+                )
+            connection.commit()
+        integrity_check(config_copy, quick=False)
+        recovery_record = {
+            "manifest_version": MANIFEST_VERSION,
+            "source_operation_id": manifest["operation_id"],
+            "source_identity": manifest.get("source_identity"),
+            "prepared_at": utc_timestamp(),
+            "database_count": manifest["database_count"],
+            "rebound_tenant_count": len(tenant_paths),
+            "omitted_inactive_count": len(omitted_tenant_ids),
+            "status": "isolated_recovery_root_prepared",
+        }
+        _write_json_atomic(restored_root / "recovery-record.json", recovery_record)
+        if target_root.exists():
+            target_root.rmdir()
+        os.replace(restored_root, target_root)
+        created_target = True
+
+        config_path = target_root.joinpath(*config_entry[1].parts)
+        default_path = target_root.joinpath(*default_entry[1].parts)
+        audit = audit_registry(
+            config_db_url=sqlite_url_for_path(config_path),
+            default_db_url=sqlite_url_for_path(default_path),
+            backend_root=backend_root,
+        )
+        if audit["blocker_count"]:
+            raise DataGuardError("Prepared recovery root failed the tenant registry audit.")
+        return {
+            "schema_version": 1,
+            "status": "PASS",
+            "source_operation_id": manifest["operation_id"],
+            "source_identity": manifest.get("source_identity"),
+            "database_count": manifest["database_count"],
+            "rebound_tenant_count": len(tenant_paths),
+            "omitted_inactive_count": len(omitted_tenant_ids),
+            "registry_blocker_count": audit["blocker_count"],
+            "isolated_target_prepared": True,
+            "live_overwrite_supported": False,
+        }
+    except Exception:
+        shutil.rmtree(staging, ignore_errors=True)
+        if created_target:
+            shutil.rmtree(target_root, ignore_errors=True)
         raise
 
 
@@ -520,23 +691,73 @@ def rehearse_migrations(
         work_root = Path(managed_temp.name) / "restore"
     else:
         work_root = work_root.expanduser().resolve()
+    migration_stage = work_root.with_name(work_root.name + ".partial")
 
     try:
-        restored_root = restore_snapshot(snapshot_dir=snapshot_dir, target_root=work_root)
+        if work_root.exists() and any(work_root.iterdir()):
+            raise DataGuardError("Migration rehearsal target must not contain existing files.")
+        if migration_stage.exists():
+            raise DataGuardError("A previous partial migration rehearsal exists; remove it before retrying.")
+        restored_root = restore_snapshot(snapshot_dir=snapshot_dir, target_root=migration_stage)
+        config_entry = next(
+            (entry for entry in manifest["databases"] if "config" in entry.get("logical_roles", [])),
+            None,
+        )
+        if config_entry is None:
+            raise DataGuardError("Snapshot does not contain the config database required for schema rehearsal.")
+        default_entry = next(
+            (entry for entry in manifest["databases"] if "default" in entry.get("logical_roles", [])),
+            None,
+        )
+        if default_entry is None:
+            raise DataGuardError("Snapshot does not contain the default database required for schema rehearsal.")
+        config_relative = _safe_relative_path(config_entry["relative_path"])
+        default_relative = _safe_relative_path(default_entry["relative_path"])
+        restored_config = restored_root.joinpath(*config_relative.parts).resolve()
+        restored_default = restored_root.joinpath(*default_relative.parts).resolve()
+        schema_environment = os.environ.copy()
+        schema_environment["CONFIG_DATABASE_URL"] = sqlite_url_for_path(restored_config)
+        schema_environment["DATABASE_URL"] = sqlite_url_for_path(restored_default)
+        schema_tenant_root = restored_root / "schema-rehearsal-tenants"
+        schema_tenant_root.mkdir(mode=0o700, exist_ok=True)
+        schema_environment["TENANT_STORAGE_ROOT"] = str(schema_tenant_root)
+        source_backend = backend_root
+        pythonpath = [str(source_backend)]
+        if schema_environment.get("PYTHONPATH"):
+            pythonpath.append(schema_environment["PYTHONPATH"])
+        schema_environment["PYTHONPATH"] = os.pathsep.join(pythonpath)
+        schema_command = [sys.executable, "-m", "app.schema_tools"]
+        schema_completed = runner(
+            schema_command,
+            cwd=str(source_backend),
+            env=schema_environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if schema_completed.returncode != 0:
+            raise DataGuardError(
+                "Config schema rehearsal failed: "
+                f"return code {schema_completed.returncode}"
+            )
+        integrity_check(restored_config, quick=False)
         results: list[dict[str, Any]] = []
+        results.append({
+            "logical_roles": ["config"],
+            "status": "passed",
+            "method": "SQLAlchemy create_all",
+        })
         for entry in manifest["databases"]:
             roles = [str(role) for role in entry.get("logical_roles", [])]
-            if roles and all(role == "config" for role in roles):
-                results.append({
-                    "logical_roles": roles,
-                    "status": "skipped",
-                    "reason": "Config database schema is managed by SQLAlchemy create_all, not Alembic.",
-                })
+            if not any(role != "config" for role in roles):
                 continue
             relative = _safe_relative_path(entry["relative_path"])
             restored_db = restored_root.joinpath(*relative.parts).resolve()
             environment = os.environ.copy()
             environment["SQLALCHEMY_DATABASE_URL"] = sqlite_url_for_path(restored_db)
+            environment["CONFIG_DATABASE_URL"] = sqlite_url_for_path(restored_config)
+            environment["DATABASE_URL"] = sqlite_url_for_path(restored_default)
+            environment["TENANT_STORAGE_ROOT"] = str(schema_tenant_root)
             completed = runner(
                 [sys.executable, "-m", "alembic", "upgrade", "head"],
                 cwd=str(backend_root),
@@ -552,12 +773,29 @@ def rehearse_migrations(
                 )
             integrity_check(restored_db, quick=False)
             results.append({"logical_roles": roles, "status": "passed"})
+        rehearsal_record = {
+            "manifest_version": MANIFEST_VERSION,
+            "source_operation_id": manifest["operation_id"],
+            "source_identity": manifest.get("source_identity"),
+            "completed_at": utc_timestamp(),
+            "database_count": len(manifest["databases"]),
+            "migration_count": sum(item["status"] == "passed" for item in results),
+            "status": "completed",
+        }
+        _write_json_atomic(restored_root / "migration-rehearsal-record.json", rehearsal_record)
+        if work_root.exists():
+            work_root.rmdir()
+        os.replace(restored_root, work_root)
         return {
             "operation_id": manifest["operation_id"],
-            "restored_root": str(restored_root),
+            "source_identity": manifest.get("source_identity"),
+            "restored_database_count": len(manifest["databases"]),
             "results": results,
-            "limitation": "Config database schema is validated and restored but is not Alembic-managed.",
+            "config_schema_method": "SQLAlchemy create_all on the restored config copy",
         }
+    except Exception:
+        shutil.rmtree(migration_stage, ignore_errors=True)
+        raise
     finally:
         if managed_temp is not None:
             managed_temp.cleanup()
@@ -650,6 +888,178 @@ def verify_workhorse(*, repo_root: Path, backup_root: Path, keep_drill: bool = F
         shutil.rmtree(drill_root.with_name(drill_root.name + "-migration"), ignore_errors=True)
     print("PASS: production data durability verification")
     return snapshot
+
+
+def apply_operator_upgrade(
+    *,
+    snapshot_dir: Path,
+    config_db_url: str,
+    default_db_url: str,
+    backend_root: Path,
+    maintenance_token: str,
+    upgrade_token: str,
+    runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+) -> dict[str, Any]:
+    """Apply rehearsed schema changes only after proving the snapshot still matches live data."""
+    phase = "approval"
+    mutation_started = False
+    completed_database_count = 0
+    report: dict[str, Any] = {
+        "schema_version": 1,
+        "status": "FAIL",
+        "completed_database_count": 0,
+        "live_restore_supported": False,
+    }
+    try:
+        if maintenance_token != PRODUCTION_UPGRADE_MAINTENANCE_TOKEN:
+            raise DataGuardError("The application-stopped acknowledgement is required for an operator upgrade.")
+        if upgrade_token != PRODUCTION_UPGRADE_APPLY_TOKEN:
+            raise DataGuardError("The explicit production-upgrade acknowledgement is required.")
+        policy = validate_production_migration_policy()
+        if (
+            policy != "operator_managed"
+            or _environment_flag("AUTO_MIGRATE_ON_STARTUP", default=True)
+            or _environment_flag("ALLOW_AUTO_MIGRATE_IN_PRODUCTION", default=False)
+        ):
+            raise DataGuardError("Operator upgrade requires AUTO_MIGRATE_ON_STARTUP=false and production acknowledgement=false.")
+
+        phase = "production_configuration"
+        requested_repo = backend_root.expanduser().resolve().parent
+        config_preflight = requested_repo / "scripts" / "production-preflight.py"
+        if not config_preflight.is_file():
+            config_preflight = Path(__file__).resolve().parent / "production-preflight.py"
+        config_result = subprocess.run(
+            [sys.executable, str(config_preflight), "--config-only", "--json"],
+            cwd=str(config_preflight.resolve().parents[1]),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if config_result.returncode != 0:
+            raise DataGuardError("Settings production configuration preflight failed.")
+
+        phase = "snapshot_validation"
+        snapshot_dir = snapshot_dir.expanduser().resolve()
+        manifest = load_and_validate_manifest(snapshot_dir)
+        source_identity = manifest.get("source_identity")
+        current_identity = source_identity_from_environment()
+        if not source_identity or source_identity != current_identity:
+            raise DataGuardError("Approved snapshot candidate identity does not match the current release identity.")
+        report["source_identity"] = current_identity
+
+        phase = "registry_and_snapshot_match"
+        audit = audit_registry(
+            config_db_url=config_db_url,
+            default_db_url=default_db_url,
+            backend_root=backend_root,
+        )
+        if audit["blocker_count"]:
+            raise DataGuardError("Tenant registry audit found missing required or active databases.")
+        inventory = discover_database_inventory(
+            config_db_url=config_db_url,
+            default_db_url=default_db_url,
+            backend_root=backend_root,
+        )["databases"]
+        snapshot_by_roles: dict[tuple[str, ...], dict[str, Any]] = {}
+        for entry in manifest["databases"]:
+            roles = tuple(sorted(str(role) for role in entry.get("logical_roles", [])))
+            if not roles or roles in snapshot_by_roles:
+                raise DataGuardError("Approved snapshot contains duplicate or empty database roles.")
+            snapshot_by_roles[roles] = entry
+        live_by_roles = {
+            tuple(sorted(str(role) for role in entry["roles"])): entry
+            for entry in inventory
+        }
+        if set(snapshot_by_roles) != set(live_by_roles):
+            raise DataGuardError("Approved snapshot database inventory no longer matches the live registry.")
+        fingerprints_by_roles: dict[tuple[str, ...], str] = {}
+        for roles, live_entry in live_by_roles.items():
+            snapshot_entry = snapshot_by_roles[roles]
+            relative = _safe_relative_path(snapshot_entry["relative_path"])
+            snapshot_db = snapshot_dir.joinpath(*relative.parts)
+            live_fingerprint = sqlite_logical_fingerprint(live_entry["source_path"])
+            if live_fingerprint != sqlite_logical_fingerprint(snapshot_db):
+                raise DataGuardError("Live data changed after the approved pre-upgrade snapshot.")
+            fingerprints_by_roles[roles] = live_fingerprint
+        report["database_count"] = len(inventory)
+
+        phase = "isolated_upgrade_rehearsal"
+        rehearsal = rehearse_migrations(
+            snapshot_dir=snapshot_dir,
+            backend_root=backend_root,
+            runner=runner,
+        )
+        if rehearsal.get("source_identity") != current_identity:
+            raise DataGuardError("Migration rehearsal candidate identity does not match the approved upgrade.")
+        report["rehearsed_database_count"] = rehearsal["restored_database_count"]
+
+        phase = "config_schema_upgrade"
+        backend_root = backend_root.expanduser().resolve()
+        config_path = sqlite_path_from_url(config_db_url, backend_root=backend_root)
+        default_path = sqlite_path_from_url(default_db_url, backend_root=backend_root)
+        environment = os.environ.copy()
+        environment["CONFIG_DATABASE_URL"] = sqlite_url_for_path(config_path)
+        environment["DATABASE_URL"] = sqlite_url_for_path(default_path)
+        tenant_root = _require_environment("TENANT_STORAGE_ROOT")
+        environment["TENANT_STORAGE_ROOT"] = tenant_root
+        source_backend = backend_root
+        pythonpath = [str(source_backend)]
+        if environment.get("PYTHONPATH"):
+            pythonpath.append(environment["PYTHONPATH"])
+        environment["PYTHONPATH"] = os.pathsep.join(pythonpath)
+        for roles, live_entry in live_by_roles.items():
+            if sqlite_logical_fingerprint(live_entry["source_path"]) != fingerprints_by_roles[roles]:
+                raise DataGuardError("Live data changed during the upgrade rehearsal; no schema changes were applied.")
+        mutation_started = True
+        schema_result = runner(
+            [sys.executable, "-m", "app.schema_tools"],
+            cwd=str(source_backend),
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if schema_result.returncode != 0:
+            raise DataGuardError(f"Config schema upgrade failed with return code {schema_result.returncode}.")
+        integrity_check(config_path, quick=False)
+
+        phase = "tenant_schema_upgrades"
+        migrated_count = 0
+        for entry in inventory:
+            roles = [str(role) for role in entry["roles"]]
+            if all(role == "config" for role in roles):
+                continue
+            target_environment = environment.copy()
+            target_environment["SQLALCHEMY_DATABASE_URL"] = sqlite_url_for_path(entry["source_path"])
+            migration_result = runner(
+                [sys.executable, "-m", "alembic", "upgrade", "head"],
+                cwd=str(backend_root),
+                env=target_environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if migration_result.returncode != 0:
+                raise DataGuardError(f"Database schema upgrade failed with return code {migration_result.returncode}.")
+            integrity_check(entry["source_path"], quick=False)
+            migrated_count += 1
+            completed_database_count = migrated_count
+
+        report.update({
+            "status": "PASS",
+            "config_schema_method": "SQLAlchemy create_all",
+            "migrated_database_count": migrated_count,
+            "completed_database_count": migrated_count,
+        })
+    except Exception as exc:
+        report.update({
+            "status": "FAIL",
+            "failed_phase": phase,
+            "error_type": exc.__class__.__name__,
+            "completed_database_count": completed_database_count,
+            "live_schema_may_be_partially_upgraded": mutation_started,
+        })
+    return report
 
 
 
@@ -953,6 +1363,13 @@ def build_parser() -> argparse.ArgumentParser:
     restore_parser.add_argument("--snapshot", type=Path, required=True)
     restore_parser.add_argument("--target-root", type=Path, required=True)
 
+    recover_parser = subparsers.add_parser(
+        "recover",
+        help="Prepare a rebound, integrity-checked recovery data root without overwriting live files.",
+    )
+    recover_parser.add_argument("--snapshot", type=Path, required=True)
+    recover_parser.add_argument("--target-root", type=Path, required=True)
+
     rehearse_parser = subparsers.add_parser("rehearse", help="Restore and rehearse tenant migrations in isolation.")
     rehearse_parser.add_argument("--snapshot", type=Path, required=True)
     rehearse_parser.add_argument("--work-root", type=Path)
@@ -960,6 +1377,13 @@ def build_parser() -> argparse.ArgumentParser:
     verify_parser = subparsers.add_parser("verify", help="Run preflight, snapshot, restore, and migration rehearsal.")
     verify_parser.add_argument("--backup-root", type=Path, required=True)
     verify_parser.add_argument("--keep-drill", action="store_true")
+    upgrade_parser = subparsers.add_parser(
+        "apply-upgrade",
+        help="Rehearse and apply approved config/default/tenant schema changes to the matching live data set.",
+    )
+    upgrade_parser.add_argument("--snapshot", type=Path, required=True)
+    upgrade_parser.add_argument("--maintenance-token", default="")
+    upgrade_parser.add_argument("--upgrade-token", default="")
     return parser
 
 
@@ -1012,6 +1436,14 @@ def main(argv: Iterable[str] | None = None) -> int:
         elif args.command == "restore":
             restored = restore_snapshot(snapshot_dir=args.snapshot, target_root=args.target_root)
             print(f"PASS: isolated restore completed: {restored}")
+        elif args.command == "recover":
+            result = prepare_recovery_root(
+                snapshot_dir=args.snapshot,
+                target_root=args.target_root,
+                backend_root=backend_root,
+            )
+            print(json.dumps(result, sort_keys=True, separators=(",", ":")))
+            return 0 if result["status"] == "PASS" else 3
         elif args.command == "rehearse":
             result = rehearse_migrations(
                 snapshot_dir=args.snapshot,
@@ -1026,6 +1458,17 @@ def main(argv: Iterable[str] | None = None) -> int:
                 backup_root=args.backup_root,
                 keep_drill=args.keep_drill,
             )
+        elif args.command == "apply-upgrade":
+            result = apply_operator_upgrade(
+                snapshot_dir=args.snapshot,
+                config_db_url=os.getenv("CONFIG_DATABASE_URL", ""),
+                default_db_url=os.getenv("DATABASE_URL", ""),
+                backend_root=backend_root,
+                maintenance_token=args.maintenance_token,
+                upgrade_token=args.upgrade_token,
+            )
+            print(json.dumps(result, sort_keys=True, separators=(",", ":")))
+            return 0 if result["status"] == "PASS" else 3
         else:  # pragma: no cover - argparse enforces valid commands
             parser.error(f"Unsupported command: {args.command}")
         return 0

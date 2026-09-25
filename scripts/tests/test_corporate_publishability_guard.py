@@ -22,7 +22,10 @@ class CorporatePublishabilityGuardTests(unittest.TestCase):
         root = Path(tempfile.mkdtemp())
         files = {
             "backend/requirements.txt": "fastapi\nuvicorn\n",
-            "backend/requirements.lock": "fastapi==1.0\nuvicorn==1.0\n",
+            "backend/requirements.lock": (
+                "fastapi==1.0 \\\n    --hash=sha256:aaaa\n"
+                "uvicorn==1.0 \\\n    --hash=sha256:bbbb\n"
+            ),
             "backend/app/main.py": (
                 "from fastapi import FastAPI\n"
                 "app = FastAPI()\n"
@@ -30,6 +33,8 @@ class CorporatePublishabilityGuardTests(unittest.TestCase):
                 "def health(): return {}\n"
                 "@app.get('/api/v1/readiness')\n"
                 "def readiness(): return {}\n"
+                "status_code=200 if ready else 503\n"
+                "settings.startup_schema_management_enabled\n"
             ),
             "backend/app/core/config.py": "\n".join(
                 [
@@ -42,6 +47,17 @@ class CorporatePublishabilityGuardTests(unittest.TestCase):
                     "DATABASE_URL: str = ''",
                     "CONFIG_DATABASE_URL: str = ''",
                     "TENANT_STORAGE_ROOT: str = ''",
+                    "PRODUCTION_REQUIRED_ENV = (",
+                    "'ENVIRONMENT', 'BACKEND_CORS_ORIGINS', 'ALLOWED_HOSTS', 'IDENTITY_MODE',",
+                    "'TRUSTED_PROXY_USER_HEADER', 'DATABASE_URL', 'CONFIG_DATABASE_URL',",
+                    "'TENANT_STORAGE_ROOT', 'PUBLIC_READONLY_ENABLED',",
+                    "'ALLOW_PUBLIC_READONLY_IN_PRODUCTION', 'DEFAULT_USER_ID', 'AUTO_ADMIN_USER_IDS',",
+                    "'ALLOW_AUTO_ADMIN_IN_PRODUCTION', 'CONTROL_PLANE_ADMIN_USER_IDS',",
+                    "'CONTROL_PLANE_BOOTSTRAP_ENABLED', 'CONTROL_PLANE_BOOTSTRAP_USER_ID',",
+                    "'SYSTEM_ROOT_USER_IDS', 'SCHEDULE_PREVIEW_SIGNING_KEY',",
+                    "'PV1_RELEASE_CANDIDATE_SHA', 'PV1_RELEASE_ID', 'AUTO_MIGRATE_ON_STARTUP',",
+                    "'ALLOW_AUTO_MIGRATE_IN_PRODUCTION',",
+                    ")",
                 ]
             ),
             "frontend/package.json": json.dumps(
@@ -51,33 +67,51 @@ class CorporatePublishabilityGuardTests(unittest.TestCase):
                     "engines": {"node": ">=20"},
                 }
             ),
-            "frontend/package-lock.json": json.dumps({"lockfileVersion": 3}),
+            "frontend/package-lock.json": json.dumps({
+                "lockfileVersion": 3,
+                "packages": {"": {"dependencies": {}, "devDependencies": {}}},
+            }),
             "frontend/src/api/apiClient.ts": (
                 "const a='VITE_API_BASE_URL'; const b='VITE_IDENTITY_MODE'; "
-                "const c='trusted_proxy'; fetch('/', { credentials: 'include' });"
+                "const c='trusted_proxy'; const d='shouldAttachUserIdHeader'; "
+                "fetch('/', { credentials: 'include' });"
             ),
             "frontend/src/main.tsx": (
                 "const a='VITE_API_BASE_URL'; const b='/api/v1/settings/bootstrap'; "
                 "const c='Cross-origin deployment detected';"
             ),
-            "deploy/backend.env.production.example": "\n".join(
-                [
-                    "ENVIRONMENT=production",
-                    "BACKEND_CORS_ORIGINS=https://frontend.invalid",
-                    "ALLOWED_HOSTS=backend.invalid",
-                    "IDENTITY_MODE=trusted_proxy",
-                    "TRUSTED_PROXY_USER_HEADER=X-Authenticated-User",
-                    "DATABASE_URL=sqlite+aiosqlite:////data/default.db",
-                    "CONFIG_DATABASE_URL=sqlite+aiosqlite:////data/config.db",
-                    "TENANT_STORAGE_ROOT=/data/tenants",
-                ]
-            ),
+            "deploy/backend.env.production.example": "\n".join([
+                "ENVIRONMENT=production",
+                "BACKEND_CORS_ORIGINS=https://frontend.invalid",
+                "ALLOWED_HOSTS=backend.invalid",
+                "IDENTITY_MODE=trusted_proxy",
+                "TRUSTED_PROXY_USER_HEADER=X-Authenticated-User",
+                "DATABASE_URL=sqlite+aiosqlite:////operator-supplied/default.db",
+                "CONFIG_DATABASE_URL=sqlite+aiosqlite:////operator-supplied/config.db",
+                "TENANT_STORAGE_ROOT=/operator-supplied/tenants",
+                "PUBLIC_READONLY_ENABLED=false",
+                "ALLOW_PUBLIC_READONLY_IN_PRODUCTION=false",
+                "DEFAULT_USER_ID=replace-with-service-principal",
+                "AUTO_ADMIN_USER_IDS=",
+                "ALLOW_AUTO_ADMIN_IN_PRODUCTION=false",
+                "CONTROL_PLANE_ADMIN_USER_IDS=replace-with-approved-admin",
+                "CONTROL_PLANE_BOOTSTRAP_ENABLED=false",
+                "CONTROL_PLANE_BOOTSTRAP_USER_ID=",
+                "SYSTEM_ROOT_USER_IDS=replace-with-approved-root",
+                "SCHEDULE_PREVIEW_SIGNING_KEY=inject-from-secret-manager",
+                "PV1_RELEASE_CANDIDATE_SHA=replace-with-candidate-sha",
+                "PV1_RELEASE_ID=replace-with-release-id",
+                "AUTO_MIGRATE_ON_STARTUP=false",
+                "ALLOW_AUTO_MIGRATE_IN_PRODUCTION=false",
+            ]),
             "deploy/frontend.env.production.example": (
-                "VITE_API_BASE_URL=https://backend.invalid\nVITE_IDENTITY_MODE=trusted_proxy\n"
+                "VITE_API_BASE_URL=https://replace-with-backend.invalid\nVITE_IDENTITY_MODE=trusted_proxy\n"
             ),
             "DEPLOYMENT.md": (
                 "Corporate Cloud Primary Publish Path\nFastAPI project\nNode/React project\n"
-                "Docker and Compose are optional\nVITE_API_BASE_URL\n"
+                "Docker and Compose are optional\npython -m uvicorn app.main:app\n"
+                "npm ci\nfrontend/dist/\nVITE_API_BASE_URL\n/api/v1/readiness\n"
+                "503\noperator-managed\nrollback\n"
             ),
         }
         for relative, content in files.items():
@@ -126,6 +160,47 @@ class CorporatePublishabilityGuardTests(unittest.TestCase):
         results = Guard(root).run()
         rendered = MODULE.render_text(results, root)
         self.assertNotIn(secret, rendered)
+
+    def test_missing_settings_owned_production_key_fails(self) -> None:
+        root = self.make_tree()
+        env_path = root / "deploy/backend.env.production.example"
+        env_path.write_text("\n".join(
+            line for line in env_path.read_text(encoding="utf-8").splitlines()
+            if not line.startswith("SYSTEM_ROOT_USER_IDS=")
+        ), encoding="utf-8")
+        statuses = self.statuses(root)
+        self.assertEqual(statuses["backend-env-example"], "FAIL")
+
+    def test_example_must_not_contain_usable_sensitive_values(self) -> None:
+        root = self.make_tree()
+        env_path = root / "deploy/backend.env.production.example"
+        text = env_path.read_text(encoding="utf-8").replace(
+            "SCHEDULE_PREVIEW_SIGNING_KEY=inject-from-secret-manager",
+            "SCHEDULE_PREVIEW_SIGNING_KEY=usable-but-not-real-secret-value",
+        )
+        env_path.write_text(text, encoding="utf-8")
+        statuses = self.statuses(root)
+        self.assertEqual(statuses["backend-env-example-safety"], "FAIL")
+
+    def test_browser_code_must_not_set_trusted_proxy_identity_header(self) -> None:
+        root = self.make_tree()
+        (root / "frontend/src/api/apiClient.ts").write_text(
+            "headers.set('x-authenticated-user', userId)", encoding="utf-8"
+        )
+        statuses = self.statuses(root)
+        self.assertEqual(statuses["browser-proxy-identity-boundary"], "FAIL")
+
+    def test_backend_lock_must_cover_and_hash_direct_dependencies(self) -> None:
+        root = self.make_tree()
+        (root / "backend/requirements.txt").write_text("fastapi\nuvicorn\nhttpx\n", encoding="utf-8")
+        statuses = self.statuses(root)
+        self.assertEqual(statuses["backend-lock-contract"], "FAIL")
+
+    def test_backend_lock_without_hashes_fails(self) -> None:
+        root = self.make_tree()
+        (root / "backend/requirements.lock").write_text("fastapi==1.0\nuvicorn==1.0\n", encoding="utf-8")
+        statuses = self.statuses(root)
+        self.assertEqual(statuses["backend-lock-contract"], "FAIL")
 
 
 if __name__ == "__main__":
