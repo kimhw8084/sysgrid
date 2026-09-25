@@ -1,21 +1,14 @@
-import { expect } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { clickResilientButton, resetBrowserState } from './helpers/sysgrid'
+import { clickResilientButton, getWorkspaceLogicalRowByText, resetBrowserState, selectWorkspaceLogicalRow } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
-async function selectRowsByNames(page: any, names: string[]) {
-  for (const name of names) {
-    const row = page
-      .locator('.ag-pinned-left-cols-container .ag-row, .ag-center-cols-container .ag-row')
-      .filter({ has: page.getByText(name, { exact: true }) })
-      .first()
-    await expect(row).toBeVisible({ timeout: 15_000 })
-    const selectionCell = row.getByRole('gridcell', { name: /Press Space to toggle row selection/ })
-    await expect(selectionCell).toBeVisible()
-    await selectionCell.click()
-    await expect(row).toHaveAttribute('aria-selected', 'true')
-    await expect(row).toHaveClass(/ag-row-selected/)
+async function selectRowsByNames(page: Page, workspace: 'assets' | 'vendors', names: string[]) {
+  for (const [index, name] of names.entries()) {
+    const row = await getWorkspaceLogicalRowByText(page, workspace, name)
+    await expect(await row.cell('name')).toHaveText(name)
+    await selectWorkspaceLogicalRow(row, { additive: index > 0 })
   }
 }
 
@@ -53,7 +46,7 @@ test.describe('Assets and Vendors authoritative bulk completion', () => {
     await page.goto('/asset')
     const assetSearch = page.getByPlaceholder('Scan asset matrix...')
     await assetSearch.fill(stamp)
-    await selectRowsByNames(page, assets.map((asset: any) => asset.name))
+    await selectRowsByNames(page, 'assets', assets.map((asset: any) => asset.name))
     await clickResilientButton(page, /Bulk Actions/i)
     await clickResilientButton(page, 'Set Environment')
     await clickResilientButton(page, 'Choose environment')
@@ -104,7 +97,7 @@ test.describe('Assets and Vendors authoritative bulk completion', () => {
     await page.goto('/vendors')
     const vendorSearch = page.getByPlaceholder('Search vendors...')
     await vendorSearch.fill(stamp)
-    await selectRowsByNames(page, vendors.map((vendor: any) => vendor.name))
+    await selectRowsByNames(page, 'vendors', vendors.map((vendor: any) => vendor.name))
     await clickResilientButton(page, /Bulk Actions/i)
     await clickResilientButton(page, 'Set Country')
     await clickResilientButton(page, 'Choose country')

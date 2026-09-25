@@ -963,6 +963,33 @@ export async function getWorkspaceLogicalRowByText(page: Page, workspace: Worksp
   }
 }
 
+function workspaceLogicalRowFragments(row: LogicalGridRow): Locator[] {
+  return [row.pinned, row.center].filter((fragment): fragment is Locator => fragment !== null)
+}
+
+export async function expectWorkspaceLogicalRowSelected(row: LogicalGridRow) {
+  const fragments = workspaceLogicalRowFragments(row)
+  if (fragments.length === 0) {
+    throw new Error(`Logical row ${row.rowKey} has no pinned or center fragments.`)
+  }
+
+  for (const fragment of fragments) {
+    await expect(fragment).toHaveAttribute('aria-selected', 'true')
+    await expect(fragment).toHaveClass(/ag-row-selected/)
+  }
+}
+
+export async function selectWorkspaceLogicalRow(row: LogicalGridRow, options: { additive?: boolean } = {}) {
+  const nameCell = await row.cell('name')
+  await expect(nameCell).toBeVisible()
+  if (options.additive) {
+    await nameCell.click({ modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'] })
+  } else {
+    await nameCell.click()
+  }
+  await expectWorkspaceLogicalRowSelected(row)
+}
+
 export function getWorkspaceRowByText(page: Page, workspace: WorkspaceId, text: string | RegExp): Locator {
   return getWorkspaceRoot(page, workspace)
     .locator('.ag-pinned-left-cols-container .ag-row, .ag-center-cols-container .ag-row')

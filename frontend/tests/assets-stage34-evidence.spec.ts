@@ -2,7 +2,7 @@ import { expect } from '@playwright/test'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { test } from './helpers/sysgrid-test.ts'
-import { clickResilientButton, fillGridSearch, resetBrowserState, seedOperationalScenario, waitForAppIdle } from './helpers/sysgrid.ts'
+import { clickResilientButton, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow, waitForAppIdle } from './helpers/sysgrid.ts'
 import { isExpectedTelemetryRequest } from '../src/observability/browserFailurePolicy'
 
 type RouteKey = 'asset' | 'monitoring' | 'asset-real'
@@ -540,32 +540,61 @@ const captureAssetContextMenu = async (page: any) => {
   } satisfies InteractionProof
 }
 
-const captureAssetRowClick = async (page: any) => {
+const captureAssetRowClick = async (page: any, recordText: string) => {
   const attempts: string[] = []
-  console.log(`[Interaction] Starting row click capture`)
-  const firstRow = page.locator('.ag-center-cols-container .ag-row').first()
-  const interactionCell = firstRow.locator('.ag-cell').nth(2)
-  attempts.push('click first visible asset row')
-  await interactionCell.click({ force: true })
-  
-  await page.waitForTimeout(500)
-  
-  const selectedRowCount = await page.locator('.ag-row-selected, .ag-row[aria-selected="true"]').count()
-  attempts.push(`selectedRowCount=${selectedRowCount}`)
-  
+  console.log(`[Interaction] Starting row click capture for ${recordText}`)
+  const row = await getWorkspaceLogicalRowByText(page, 'assets', recordText)
+  const nameCell = await row.cell('name')
+  const nameCellVisible = await nameCell.isVisible().catch(() => false)
+  const nameCellText = nameCellVisible ? (await nameCell.innerText()).replace(/\s+/g, ' ').trim() : null
+  const exactNameCellText = nameCellText === recordText
+  attempts.push(`resolved logical asset row rowKey=${row.rowKey}`)
+  attempts.push(`nameCellVisible=${String(nameCellVisible)}`)
+  attempts.push(`exactNameCellText=${String(exactNameCellText)}`)
+
+  let logicalRowSelected = false
+  let selectionError: string | null = null
+  if (nameCellVisible && exactNameCellText) {
+    try {
+      await selectWorkspaceLogicalRow(row)
+      logicalRowSelected = true
+    } catch (error) {
+      selectionError = String(error)
+    }
+  }
+
+  const bulkActionsButton = page.getByRole('button', { name: /Bulk Actions/i })
+  await expect(bulkActionsButton).toBeEnabled({ timeout: 3_000 }).catch(() => {})
+  const bulkActionsEnabled = await bulkActionsButton.isEnabled().catch(() => false)
+  const centerRowAriaSelected = row.center ? await row.center.getAttribute('aria-selected').catch(() => null) : null
+  const centerRowSelectedClass = row.center
+    ? await row.center.evaluate((element) => element.classList.contains('ag-row-selected')).catch(() => false)
+    : false
   const selectionBadge = page.locator('div').filter({ text: /selected/i }).first()
-  const selectionBadgeVisible = await selectionBadge.isVisible({ timeout: 2000 }).catch(() => false)
+  const selectionBadgeVisible = logicalRowSelected
+    ? await selectionBadge.isVisible({ timeout: 2_000 }).catch(() => false)
+    : false
+  attempts.push(`logicalRowSelected=${String(logicalRowSelected)}`)
+  attempts.push(`bulkActionsEnabled=${String(bulkActionsEnabled)}`)
   attempts.push(`selectionBadgeVisible=${String(selectionBadgeVisible)}`)
-  
-  console.log(`[Interaction] Row click result: selectedCount=${selectedRowCount}, badgeVisible=${selectionBadgeVisible}`)
+  console.log(`[Interaction] Row click result: logicalRowSelected=${logicalRowSelected}, bulkActionsEnabled=${bulkActionsEnabled}, badgeVisible=${selectionBadgeVisible}`)
+  const rowBounds = row.center ?? row.pinned
   return {
-    verdict: selectedRowCount > 0 ? 'pass' : 'fail',
+    verdict: nameCellVisible && exactNameCellText && logicalRowSelected && bulkActionsEnabled ? 'pass' : 'fail',
     attempts,
-    bounds: toRect(await firstRow.boundingBox()),
+    bounds: toRect(await rowBounds?.boundingBox()),
     details: {
-      selectedRowCount,
+      rowKey: row.rowKey,
+      recordText,
+      nameCellText,
+      nameCellVisible,
+      exactNameCellText,
+      logicalRowSelected,
+      selectionError,
+      centerRowAriaSelected,
+      centerRowSelectedClass,
+      bulkActionsEnabled,
       selectionBadgeVisible,
-      selectedText: await interactionCell.textContent(),
     },
   } satisfies InteractionProof
 }
@@ -975,7 +1004,7 @@ test.describe('Assets Stage 34 evidence capture', () => {
       viewport: DESKTOP_VIEWPORT,
       fullPage: false,
       interaction: async (currentPage) => ({
-        rowClickProof: await captureAssetRowClick(currentPage),
+        rowClickProof: await captureAssetRowClick(currentPage, seeded.primary.name),
       }),
     })
     

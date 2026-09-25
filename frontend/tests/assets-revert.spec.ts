@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { clickResilientButton, fillGridSearch, getWorkspaceLogicalRowByText, getWorkspaceRoot, resetBrowserState, seedOperationalScenario } from './helpers/sysgrid'
+import { clickResilientButton, expectWorkspaceLogicalRowSelected, fillGridSearch, getWorkspaceLogicalRowByText, getWorkspaceRoot, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow } from './helpers/sysgrid'
 
 test.describe('Assets Revert lifecycle', () => {
   test('reverts the immutable completed row operation after selection changes', async ({ page, sysApi: request }) => {
@@ -36,8 +36,8 @@ test.describe('Assets Revert lifecycle', () => {
     await expect(getWorkspaceRoot(page, 'assets').getByRole('treegrid')).toContainText(primary.name, { timeout: 15_000 })
 
     const primaryRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
-    await (await primaryRow.cell('name')).click()
-    await expect(primaryRow.center!).toHaveClass(/ag-row-selected/)
+    await selectWorkspaceLogicalRow(primaryRow)
+    await expectWorkspaceLogicalRowSelected(primaryRow)
 
     const revert = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
     await expect(revert).toBeVisible()
@@ -50,6 +50,7 @@ test.describe('Assets Revert lifecycle', () => {
     expect((await restoreRequest).postDataJSON()).toMatchObject({ ids: [secondary.id], action: 'restore' })
     await restoreResponse
     await expect((await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)).center!).toBeVisible()
-    await expect(primaryRow.center!).toHaveClass(/ag-row-selected/)
+    const refreshedPrimaryRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
+    await expectWorkspaceLogicalRowSelected(refreshedPrimaryRow)
   })
 })
