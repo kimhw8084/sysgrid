@@ -1,0 +1,380 @@
+{
+  "accepted_at": "2026-09-25T17:54:14Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\"'^@router'\"\\\\.(get|post|put|patch|delete)|\"'^async def |''^def '\"' backend/app/api/pv1.py backend/app/api/pv1_communication.py | head -220 && rtk rg -n 'readiness|schedule|migration|cutover|return .*\\\\[' backend/app/api/pv1.py backend/app/pv1/migration.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' backend/test_p05_my_day_work_plan.py && rtk sed -n '1,120p' backend/test_p08_updates_resources_reports.py && rtk sed -n '1,220p' backend/app/api/module_policy.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' frontend/src/components/ProjectsCommunication.tsx && rtk sed -n '1,155p' frontend/src/components/ProjectsOutcomes.tsx && rtk sed -n '80,230p' frontend/src/components/ProjectsWorkPlan.tsx && rtk sed -n '90,240p' frontend/src/components/ProjectsTimeline.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\"'^def test_|''^async def test_'\"' backend/test_p05_my_day_work_plan.py backend/test_p06_schedule* backend/test_p08_updates_resources_reports.py backend/test_p10_outcomes_values.py frontend/src/components/ProjectsWorkPlan.contract.test.tsx frontend/src/components/ProjectsTimeline.test.ts frontend/src/components/ProjectsCommunication.test.tsx frontend/src/components/ProjectsOutcomes.test.tsx\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -lc 'for py in python3.14 python3.13 python3.12; do command -v \\\"\"'$py\" 2>/dev/null || true; done; command -v uv 2>/dev/null || true; command -v pyenv 2>/dev/null || true; command -v brew 2>/dev/null || true; test -x backend/venv/bin/python && backend/venv/bin/python --version || true; test -x .venv/bin/python && .venv/bin/python --version || true; test -x /tmp/sysgrid-project-v2-verify-py314/bin/python && /tmp/sysgrid-project-v2-verify-py314/bin/python --version || true'\"'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,190p' backend/app/pv1/migration.py && rtk sed -n '300,460p' backend/app/api/pv1.py && rtk sed -n '1,140p' backend/app/api/pv1_communication.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm ci --prefix frontend --no-audit --no-fund'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk python3.14 -m venv /tmp/sysgrid-project-v2-verify-py314'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -m pip install --require-hashes --no-cache-dir -r backend/requirements.lock'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'function Header|return \\\\(|p05-header|aria-label=|Project brief|Outcomes|No .*record|No .* yet|data-' frontend/src/components/ProjectsWorkPlan.tsx frontend/src/components/ProjectsTimeline.tsx frontend/src/components/ProjectsCommunication.tsx frontend/src/components/ProjectsOutcomes.tsx | head -260\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\"'^@router'\"\\\\.(get|post)|\"'^async def (get_project|project_readiness|schedule)|readiness|schedule'\"' backend/app/api/pv1.py | head -120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\"'^def test_|''^async def test_'\"' backend/test_p05_my_day_work_plan.py backend/test_p06_schedule_core.py backend/test_p06_schedule_performance.py backend/test_p08_updates_resources_reports.py backend/test_p09* backend/test_p10* 2>/dev/null | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,160p' frontend/src/api/apiClient.ts && rtk rg -n 'localStorage|SYSGRID_VERIFY_RUNTIME_USER_ID|X-User-Id|X-Tenant-Id|Authorization' frontend/tests frontend/playwright* frontend\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -lc 'cd frontend && npm ls playwright @playwright/test --depth=1 2>&1 | head -60; test -d \\\"\"'$HOME/Library/Caches/ms-playwright\" && find \"$HOME/Library/Caches/ms-playwright\" -maxdepth 1 -type d -name \"chromium-*\" -print; test -d \"$HOME/.cache/ms-playwright\" && find \"$HOME/.cache/ms-playwright\" -maxdepth 1 -type d -name \"chromium-*\" -print'\"'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,145p' frontend/src/api/apiClient.ts && rtk sed -n '1,160p' backend/app/api/module_policy.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '465,610p' backend/app/api/pv1.py && rtk sed -n '650,715p' backend/app/api/pv1.py && rtk rg -n 'def project_readiness_gaps|def schedule_projection|cutover|MIGRATION' backend/app/pv1/domain.py backend/app/pv1/migration.py | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,160p' backend/conftest.py && rtk sed -n '1,110p' frontend/playwright.config.ts && rtk rg -n 'testDir|browserName|chromium.launch|storageState|SYSGRID_USER_ID' frontend/playwright.config.ts frontend/tests frontend/src/test* | head -120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,145p' frontend/src/components/ProjectsCommunication.tsx && rtk sed -n '1,145p' frontend/src/components/ProjectsOutcomes.tsx && rtk sed -n '1,55p' frontend/src/components/ProjectsWorkPlan.tsx && rtk sed -n '165,205p' frontend/src/components/ProjectsTimeline.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'CUTOVER|cutover|MIGRATION|409|READINESS|legacy-projects|schedule.*blocked|readiness' backend/app/pv1/domain.py backend/app/pv1/schedule.py backend/app/pv1/migration.py backend/app/api/pv1.py | head -180\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '470,535p' backend/app/pv1/domain.py && rtk sed -n '1180,1225p' backend/app/pv1/domain.py && rtk sed -n '1670,1710p' backend/app/pv1/domain.py && rtk sed -n '1780,1810p' backend/app/pv1/domain.py && rtk sed -n '650,715p' backend/app/api/pv1.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'def (work_projection|plan_projection|outcome_projection|schedule_projection)|async def (work_projection|plan_projection|outcome_projection|schedule_projection)' backend/app/pv1/domain.py && rtk rg -n '@router.get\\\\(\\\"/projects/\\\\{project_id\\\\}/reports|async def list_reports' backend/app/api/pv1_communication.py && rtk rg -n 'useQuery|apiFetch\\\\(' frontend/src/components/ProjectsCommunication.tsx frontend/src/components/ProjectsOutcomes.tsx frontend/src/components/ProjectsTimeline.tsx | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '135,205p' backend/app/api/pv1_communication.py && rtk sed -n '2880,2975p' backend/app/pv1/domain.py && rtk sed -n '1392,1455p' backend/app/pv1/domain.py && rtk sed -n '525,590p' backend/app/pv1/domain.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,180p' backend/test_p09_outcomes_delivery_value.py && rtk rg -n 'task.create|metric.create|metric.save|resource.save|update.draft|report.capture' backend/app/pv1/domain.py | head -50 && rtk sed -n '2060,2090p' backend/app/pv1/domain.py && rtk sed -n '2520,2575p' backend/app/pv1/domain.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'data-[a-z0-9-]+|className=|<h1|<h2' frontend/src/components/ProjectsCommunication.tsx frontend/src/components/ProjectsOutcomes.tsx frontend/src/components/ProjectsTimeline.tsx frontend/src/components/ProjectsWorkPlan.tsx | head -220 && rtk sed -n '70,125p' frontend/src/components/ProjectsCommunication.tsx && rtk sed -n '112,138p' frontend/src/components/ProjectsOutcomes.tsx && rtk sed -n '1,120p' frontend/src/api/apiClient.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '110,175p' backend/test_p08_updates_resources_reports.py && rtk sed -n '15,75p' frontend/src/components/ProjectsCommunication.tsx && rtk sed -n '1,160p' frontend/tests/projects-p05-work-plan.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'export async function apiFetch|X-User-Id|X-Tenant-Id|SYSGRID_USER_ID|SYSGRID_TENANT_ID' frontend/src/api/apiClient.ts && rtk sed -n '150,275p' frontend/src/api/apiClient.ts && rtk rg -n 'data-p05-board|p05-board|data-p08|data-p09|p05-treegrid' frontend/src/components/ProjectsWorkPlan.tsx frontend/src/components/ProjectsCommunication.tsx frontend/src/components/ProjectsOutcomes.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --porcelain=v1 && rtk git branch --show-current && rtk git rev-parse HEAD && rtk git ls-remote origin refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -s <<'SHELL'\nexport SYSGRID_VERIFY_PROFILE=root-preview\nexport SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=sysgrid-verify-project-v2-root\nexport SYSGRID_VERIFY_USER_ID=sysgrid-verify-project-v2-root\nexport SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-project-v2-verify-py314/bin/python\nexport SYSGRID_VERIFY_KEEP_LOGS=1\nexport SYSGRID_VERIFY_TEMP_ROOT=/tmp\n\nscripts/run-owned-runtime.sh -- node --input-type=module - <<'NODE'\nimport { createRequire } from 'node:module'\nimport { writeFileSync } from 'node:fs'\nimport { join } from 'node:path'\nimport { randomUUID } from 'node:crypto'\n\nconst require = createRequire(import.meta.url)\nconst { chromium } = require(join(process.env.SYSGRID_VERIFY_ROOT_DIR, 'frontend/node_modules/playwright'))\nconst backend = process.env.SYSGRID_VERIFY_BACKEND_ORIGIN\nconst frontend = process.env.SYSGRID_VERIFY_FRONTEND_ORIGIN\nconst user = process.env.SYSGRID_VERIFY_RUNTIME_USER_ID\nconst tenant = process.env.PW_TENANT_ID || '1'\nif (\"'!backend || !frontend || !user || user !== '\"'sysgrid-verify-project-v2-root') throw new Error('Owned runtime identity/origins are not the expected explicit root-preview values.')\n\nconst setup = []\nasync function request(path, { method = 'GET', body, commandId } = {}) {\n  const headers = { Accept: 'application/json', 'X-User-Id': user, 'X-Tenant-Id': tenant }\n  if (body \"'!== undefined) headers['\"'Content-Type'] = 'application/json'\n  if (commandId) headers['Idempotency-Key'] = commandId\n  const response = await fetch(backend + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })\n  const contentType = response.headers.get('content-type') || ''\n  const raw = await response.text()\n  let data = null\n  try { data = raw ? JSON.parse(raw) : null } catch {}\n  return { path, method, status: response.status, content_type: contentType, redirected: response.redirected, final_url: response.url, data, raw: data === null ? raw.slice(0, 500) : undefined }\n}\nasync function requireSetup(path, options = {}) {\n  const result = await request(path, options)\n  setup.push({ path: result.path, method: result.method, status: result.status, content_type: result.content_type, code: result.data?.code, message: result.data?.message })\n  if (result.status < 200 || result.status >= 300 || \"'!result.data || !result.content_type.toLowerCase().includes('\"'application/json') || result.redirected) {\n    throw new Error('Disposable fixture setup failed: ' + JSON.stringify(setup.at(-1)) + ' body=' + JSON.stringify(result.data ?? result.raw))\n  }\n  return result.data\n}\nconst projectCreateId = randomUUID()\nconst created = await requireSetup('/api/v2/projects', {\n  method: 'POST',\n  commandId: projectCreateId,\n  body: { name: 'Disposable Project-v2 Readiness Fixture', objective: 'Verify current-main Project routes and APIs inside owned temporary state.' },\n})\nconst project = created.project\nif (\"'!project?.id || !project?.display_key) throw new Error('\"'Project-create API did not return generated canonical ID/display key.')\nconst projectId = String(project.id)\nlet projectRevision = Number(project.revision || 1)\nlet graphRevision = Number(project.graph_revision || 1)\n\nlet commandId = randomUUID()\nconst taskResult = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/commands', {\n  method: 'POST', commandId,\n  body: { command_id: commandId, type: 'task.create', expected: { project_revision: projectRevision, graph_revision: graphRevision }, payload: {\n    title: 'Disposable runtime readiness task', kind: 'Task', owner_id: user, status: 'In progress', priority: 'High', progress: 25,\n    start_date: '2026-09-28', end_date: '2026-09-30',\n  } },\n})\nprojectRevision = Number(taskResult.revisions?.project_revision || projectRevision + 1)\ngraphRevision = Number(taskResult.revisions?.graph_revision || graphRevision + 1)\n\ncommandId = randomUUID()\nconst resourceResult = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/commands', {\n  method: 'POST', commandId,\n  body: { command_id: commandId, type: 'resource.save', expected: { project_revision: projectRevision }, payload: {\n    title: 'Disposable verification runbook', resource_kind: 'Runbook', content: 'Synthetic-only local verification setup; no company or production data.', pinned: false,\n  } },\n})\nprojectRevision = Number(resourceResult.revisions?.project_revision || projectRevision + 1)\n\ncommandId = randomUUID()\nconst metricResult = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/commands', {\n  method: 'POST', commandId,\n  body: { command_id: commandId, type: 'metric.define', expected: { project_revision: projectRevision }, payload: {\n    name: 'Synthetic verification completion', kind: 'Adoption', unit: '%', direction: 'Increase', steward_id: user,\n    measurement_method: 'Synthetic disposable verification fixture', population_definition: 'One synthetic fixture project',\n    population_version: 'local-runtime-v1', target_spec: { type: 'number', operator: '>=', value: '100' }, required_for_success: true,\n  } },\n})\nprojectRevision = Number(metricResult.revisions?.project_revision || projectRevision + 1)\n\nawait requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/updates/draft', {\n  method: 'POST', commandId: randomUUID(), body: { period_start: '2026-01-01', period_end: '2026-12-31' },\n})\nawait requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/reports/capture', {\n  method: 'POST', commandId: randomUUID(), body: { report_type: 'Stakeholder summary', period_start: '2026-01-01', period_end: '2026-12-31' },\n})\nconst resolvedProject = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId))\nprojectRevision = Number(resolvedProject.revision || projectRevision)\n\nconst matrixSpecs = [\n  { key: 'projects', path: '/api/v2/projects?limit=200', check: x => Array.isArray(x?.items) && x.items.some(p => String(p.id) === projectId) && x.summary && 'next_cursor' in x },\n  { key: 'project', path: '/api/v2/projects/' + encodeURIComponent(projectId), check: x => String(x?.id) === projectId && Boolean(x?.name) && Boolean(x?.display_key) && Number(x?.revision) >= 1 },\n  { key: 'readiness', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/readiness', check: x => String(x?.project_id) === projectId && typeof x?.ready === 'boolean' && Array.isArray(x?.gaps) && Number(x?.project_revision) >= 1 },\n  { key: 'focus', path: '/api/v2/focus?project_id=' + encodeURIComponent(projectId), check: x => x?.scope === 'project' && Array.isArray(x?.items) && typeof x?.engine_version === 'string' && typeof x?.total === 'number' },\n  { key: 'work', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/work', check: x => String(x?.project_id) === projectId && Array.isArray(x?.items) && Array.isArray(x?.dependencies) && Array.isArray(x?.blockers) && Array.isArray(x?.criteria) && Number(x?.project_revision) >= 1 && Number(x?.graph_revision) >= 1 },\n  { key: 'plan', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/plan', check: x => String(x?.project?.id) === projectId && Array.isArray(x?.sections) && x?.brief && Array.isArray(x?.milestones) && Array.isArray(x?.work_breakdown) && x?.architecture && Array.isArray(x?.governance) && Array.isArray(x?.resources) && Array.isArray(x?.guidance) && x?.source_revisions },\n  { key: 'schedule', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/schedule', check: x => String(x?.project_id) === projectId && String(x?.project?.id) === projectId && x?.calendar && Array.isArray(x?.tasks) && Array.isArray(x?.dependencies) && x?.analysis && Array.isArray(x?.analysis?.rows) && x?.forecast && Array.isArray(x?.baselines) },\n  { key: 'updates', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/updates?history=true', check: x => Array.isArray(x?.items) && String(x?.source_revision || '').startsWith('project:') },\n  { key: 'activity', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/activity?limit=40', check: x => Array.isArray(x?.items) && String(x?.source_revision || '').startsWith('project:') },\n  { key: 'resources', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/resources', check: x => Array.isArray(x?.items) && x.items.every(i => String(i.project_id) === projectId) && String(x?.source_revision || '').startsWith('project:') },\n  { key: 'reports', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/reports', check: x => Array.isArray(x?.items) },\n  { key: 'outcomes', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/outcomes', check: x => String(x?.project_id) === projectId && x?.delivery && x?.outcomes && Array.isArray(x?.metrics) && Array.isArray(x?.measurements) && Array.isArray(x?.checkpoints) && x?.financial && x?.source_revisions },\n  { key: 'values', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/values', check: x => Array.isArray(x?.items) && typeof x?.restricted === 'boolean' && typeof x?.source_revision === 'string' },\n]\nconst apiMatrix = []\nfor (const spec of matrixSpecs) {\n  const result = await request(spec.path)\n  const semantic = result.data ? Boolean(spec.check(result.data)) : false\n  apiMatrix.push({\n    endpoint: 'GET ' + spec.path,\n    status: result.status,\n    content_type: result.content_type,\n    redirected: result.redirected,\n    semantic_valid: semantic,\n    semantic: result.data ? {\n      keys: Object.keys(result.data).sort(),\n      project_id: result.data.project_id || result.data.id || result.data.project?.id || null,\n      item_count: Array.isArray(result.data.items) ? result.data.items.length : undefined,\n      code: result.data.code,\n      message: result.data.message,\n      gaps: spec.key === 'readiness' ? result.data.gaps : undefined,\n      schedule_status: spec.key === 'schedule' ? result.data.analysis?.status : undefined,\n      restricted: spec.key === 'values' ? result.data.restricted : undefined,\n    } : { body: result.raw },\n    error: result.status >= 400 ? { code: result.data?.code, message: result.data?.message, details: result.data?.details } : undefined,\n  })\n}\nconst migrationResponse = await request('/api/v2/migrations/legacy/status')\nconst migrationStatus = {\n  endpoint: 'GET /api/v2/migrations/legacy/status',\n  status: migrationResponse.status,\n  content_type: migrationResponse.content_type,\n  semantic_valid: migrationResponse.status === 200 && Boolean(migrationResponse.data?.cutover) && 'migration' in migrationResponse.data && Boolean(migrationResponse.data?.write_authority),\n  state: migrationResponse.data?.cutover,\n  write_authority: migrationResponse.data?.write_authority,\n  migration: migrationResponse.data?.migration ? { status: migrationResponse.data.migration.status, code: migrationResponse.data.migration.code, message: migrationResponse.data.migration.message } : null,\n}\nfor (const item of apiMatrix) {\n  const code = item.semantic?.code\n  const message = item.semantic?.message\n  if (item.endpoint.includes('/readiness') || item.endpoint.includes('/schedule')) {\n    item.migration_readiness = { cutover_state: migrationStatus.state?.state || null, project_readiness: item.endpoint.includes('/readiness') ? { ready: undefined, gaps: item.semantic?.gaps } : undefined, schedule_analysis_state: item.endpoint.includes('/schedule') ? item.semantic?.schedule_status : undefined, error_code: code, error_message: message }\n  }\n}\n\nconst browser = await chromium.launch({ headless: true })\nconst browserMatrix = { desktop: [], mobile: [] }\nconst routeSpecs = [\n  { name: 'Work list', path: '/projects/' + encodeURIComponent(projectId) + '/work', heading: 'Work', owner: 'main[data-pv1-projects-route=\\\"true\\\"] .p05-treegrid' },\n  { name: 'Work board', path: '/projects/' + encodeURIComponent(projectId) + '/work?layout=board', heading: 'Work', owner: 'main[data-pv1-projects-route=\\\"true\\\"] .p05-board' },\n  { name: 'Plan', path: '/projects/' + encodeURIComponent(projectId) + '/plan', heading: 'Plan', owner: 'main[data-pv1-projects-route=\\\"true\\\"] .p05-plan' },\n  { name: 'Timeline', path: '/projects/' + encodeURIComponent(projectId) + '/timeline', heading: 'Timeline', owner: 'main[data-p06-timeline=\\\"true\\\"] .p06-canvas' },\n  { name: 'Updates', path: '/projects/' + encodeURIComponent(projectId) + '/updates', heading: 'Updates', owner: 'main[data-p08-communication=\\\"true\\\"] #draft-title' },\n  { name: 'Resources', path: '/projects/' + encodeURIComponent(projectId) + '/resources', heading: 'Resources', owner: 'main[data-p08-communication=\\\"true\\\"] #resource-list-title' },\n  { name: 'Reports', path: '/projects/' + encodeURIComponent(projectId) + '/reports', heading: 'Reports', owner: 'main[data-p08-communication=\\\"true\\\"] #reports-title' },\n  { name: 'Outcomes', path: '/projects/' + encodeURIComponent(projectId) + '/outcomes', heading: 'Outcomes', owner: 'main[data-p09-outcomes=\\\"true\\\"] #qualification-title' },\n]\nfor (const viewport of [\n  { key: 'desktop', width: 1440, height: 900, isMobile: false },\n  { key: 'mobile', width: 390, height: 844, isMobile: true },\n]) {\n  const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1, isMobile: viewport.isMobile })\n  await context.addInitScript(({ userId, tenantId }) => {\n    localStorage.setItem('SYSGRID_USER_ID', userId)\n    localStorage.setItem('SYSGRID_TENANT_ID', tenantId)\n  }, { userId: user, tenantId: tenant })\n  for (const spec of routeSpecs) {\n    const page = await context.newPage()\n    const v2Responses = []\n    const v2Failures = []\n    const pageErrors = []\n    const consoleErrors = []\n    page.on('response', response => {\n      if (response.url().includes('/api/v2/')) v2Responses.push({ url: response.url(), status: response.status(), content_type: response.headers()['content-type'] || '' })\n    })\n    page.on('requestfailed', request => {\n      if (request.url().includes('/api/v2/')) v2Failures.push({ url: request.url(), error: request.failure()?.errorText || 'request failed' })\n    })\n    page.on('pageerror', error => pageErrors.push(String(error)))\n    page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text().slice(0, 300)) })\n    const url = frontend + spec.path\n    const navigation = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })\n    const ownerLocator = page.locator(spec.owner)\n    await ownerLocator.waitFor({ state: 'visible', timeout: 30000 })\n    await page.getByRole('heading', { name: spec.heading, exact: true, level: 1 }).waitFor({ state: 'visible', timeout: 15000 })\n    await page.waitForTimeout(300)\n    const state = await page.evaluate(() => {\n      const main = document.querySelector('main')\n      const rect = main?.getBoundingClientRect()\n      const alertText = Array.from(document.querySelectorAll('[role=\\\"alert\\\"]')).filter(el => el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0).map(el => (el.textContent || '').trim())\n      const text = document.body?.innerText || ''\n      return {\n        pathname: location.pathname, search: location.search, viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },\n        document_width: document.documentElement.scrollWidth, body_width: document.body.scrollWidth,\n        main: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height, bottom: rect.bottom } : null,\n        alerts: alertText, body_error_markers: (text.match(/fatal|bootstrap failed|permission denied|access denied|forbidden|404|409|unavailable|not found/ig) || []),\n      }\n    })\n    const activeUrl = page.url()\n    const exactRouteActive = activeUrl === url\n    const ownerVisible = await ownerLocator.isVisible()\n    const catastrophicHorizontalOverflow = viewport.key === 'mobile' && state.document_width > viewport.width + 1\n    const inaccessibleInitialContent = \"'!state.main || state.main.width <= 0 || state.main.height <= 0 || state.main.y >= viewport.height || state.main.bottom <= 0\n    const renderedError = state.alerts.length > 0 || state.body_error_markers.length > 0\n    const failedV2 = v2Responses.filter(item => item.status < 200 || item.status >= 300)\n    const valid = Boolean(navigation && navigation.status() >= 200 && navigation.status() < 400) && exactRouteActive && ownerVisible && !renderedError && failedV2.length === 0 && v2Failures.length === 0 && pageErrors.length === 0 && !catastrophicHorizontalOverflow && !inaccessibleInitialContent\n    const row = {\n      surface: spec.name, requested_path: spec.path, status: navigation?.status() ?? null, requested_url_active: exactRouteActive,\n      semantic_owner: spec.owner, semantic_owner_visible: ownerVisible, heading: spec.heading,\n      project_api_failures: failedV2, project_api_network_failures: v2Failures, page_errors: pageErrors,\n      console_errors: consoleErrors, rendered_error_state: renderedError, viewport_state: state,\n      catastrophic_horizontal_overflow: catastrophicHorizontalOverflow, inaccessible_initial_content: inaccessibleInitialContent, pass: valid,\n    }\n    browserMatrix[viewport.key].push(row)\n    await page.close()\n  }\n  await context.close()\n}\nawait browser.close()\n\nconst apiPass = apiMatrix.every(item => item.status >= 200 && item.status < 300 && item.content_type.toLowerCase().includes('\"'application/json') && \"'!item.redirected && item.semantic_valid)\nconst migrationPass = migrationStatus.semantic_valid\nconst browserPass = [...browserMatrix.desktop, ...browserMatrix.mobile].every(item => item.pass)\nconst audit = {\n  request: '\"'sysgrid-project-v2-runtime-readiness-verify-v1',\n  candidate_sha: 'ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3',\n  runtime_profile: process.env.SYSGRID_VERIFY_PROFILE,\n  explicit_system_root_user_id: user,\n  backend_origin: backend,\n  frontend_origin: frontend,\n  runtime_dir: process.env.SYSGRID_VERIFY_RUNTIME_DIR,\n  resolved_project: { id: projectId, display_key: project.display_key, name: project.name, setup_method: 'POST /api/v2/projects with Idempotency-Key; generated ID; then owned API commands for one scheduled task, one runbook resource, one metric, one draft update, and one report snapshot.' },\n  setup,\n  api_matrix: apiMatrix,\n  migration_status: migrationStatus,\n  browser_matrix_desktop: browserMatrix.desktop,\n  browser_matrix_mobile: browserMatrix.mobile,\n  current_main_ready: apiPass && migrationPass && browserPass,\n}\nconst auditPath = join(process.env.SYSGRID_VERIFY_RUNTIME_DIR, 'project-v2-runtime-readiness-audit.json')\nwriteFileSync(auditPath, JSON.stringify(audit, null, 2))\nconsole.log(JSON.stringify({ audit_path: auditPath, resolved_project: audit.resolved_project, setup: audit.setup, api_matrix: audit.api_matrix, migration_status: audit.migration_status, browser_matrix_desktop: audit.browser_matrix_desktop, browser_matrix_mobile: audit.browser_matrix_mobile, current_main_ready: audit.current_main_ready }, null, 2))\nNODE\nSHELL\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm exec --prefix frontend -- playwright install chromium'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -s <<'SHELL'\nexport SYSGRID_VERIFY_PROFILE=root-preview\nexport SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=sysgrid-verify-project-v2-root\nexport SYSGRID_VERIFY_USER_ID=sysgrid-verify-project-v2-root\nexport SYSGRID_VERIFY_PYTHON=/tmp/sysgrid-project-v2-verify-py314/bin/python\nexport SYSGRID_VERIFY_KEEP_LOGS=1\nexport SYSGRID_VERIFY_TEMP_ROOT=/tmp\n\nscripts/run-owned-runtime.sh -- node --input-type=module - <<'NODE'\nimport { createRequire } from 'node:module'\nimport { writeFileSync } from 'node:fs'\nimport { join } from 'node:path'\nimport { randomUUID } from 'node:crypto'\n\nconst require = createRequire(import.meta.url)\nconst { chromium } = require(join(process.env.SYSGRID_VERIFY_ROOT_DIR, 'frontend/node_modules/playwright'))\nconst backend = process.env.SYSGRID_VERIFY_BACKEND_ORIGIN\nconst frontend = process.env.SYSGRID_VERIFY_FRONTEND_ORIGIN\nconst user = process.env.SYSGRID_VERIFY_RUNTIME_USER_ID\nconst tenant = process.env.PW_TENANT_ID || '1'\nif (\"'!backend || !frontend || !user || user !== '\"'sysgrid-verify-project-v2-root') throw new Error('Owned runtime identity/origins are not the expected explicit root-preview values.')\n\nconst setup = []\nasync function request(path, { method = 'GET', body, commandId } = {}) {\n  const headers = { Accept: 'application/json', 'X-User-Id': user, 'X-Tenant-Id': tenant }\n  if (body \"'!== undefined) headers['\"'Content-Type'] = 'application/json'\n  if (commandId) headers['Idempotency-Key'] = commandId\n  const response = await fetch(backend + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })\n  const contentType = response.headers.get('content-type') || ''\n  const raw = await response.text()\n  let data = null\n  try { data = raw ? JSON.parse(raw) : null } catch {}\n  return { path, method, status: response.status, content_type: contentType, redirected: response.redirected, final_url: response.url, data, raw: data === null ? raw.slice(0, 500) : undefined }\n}\nasync function requireSetup(path, options = {}) {\n  const result = await request(path, options)\n  setup.push({ path: result.path, method: result.method, status: result.status, content_type: result.content_type, code: result.data?.code, message: result.data?.message })\n  if (result.status < 200 || result.status >= 300 || \"'!result.data || !result.content_type.toLowerCase().includes('\"'application/json') || result.redirected) {\n    throw new Error('Disposable fixture setup failed: ' + JSON.stringify(setup.at(-1)) + ' body=' + JSON.stringify(result.data ?? result.raw))\n  }\n  return result.data\n}\nconst projectCreateId = randomUUID()\nconst created = await requireSetup('/api/v2/projects', {\n  method: 'POST', commandId: projectCreateId,\n  body: { name: 'Disposable Project-v2 Readiness Fixture', objective: 'Verify current-main Project routes and APIs inside owned temporary state.' },\n})\nconst project = created.project\nif (\"'!project?.id || !project?.display_key) throw new Error('\"'Project-create API did not return generated canonical ID/display key.')\nconst projectId = String(project.id)\nlet projectRevision = Number(project.revision || 1)\nlet graphRevision = Number(project.graph_revision || 1)\n\nlet commandId = randomUUID()\nconst taskResult = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/commands', {\n  method: 'POST', commandId,\n  body: { command_id: commandId, type: 'task.create', expected: { project_revision: projectRevision, graph_revision: graphRevision }, payload: {\n    title: 'Disposable runtime readiness task', kind: 'Task', owner_id: user, status: 'In progress', priority: 'High', progress: 25,\n    start_date: '2026-09-28', end_date: '2026-09-30',\n  } },\n})\nprojectRevision = Number(taskResult.revisions?.project_revision || projectRevision + 1)\ngraphRevision = Number(taskResult.revisions?.graph_revision || graphRevision + 1)\n\ncommandId = randomUUID()\nconst resourceResult = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/commands', {\n  method: 'POST', commandId,\n  body: { command_id: commandId, type: 'resource.save', expected: { project_revision: projectRevision }, payload: {\n    title: 'Disposable verification runbook', resource_kind: 'Runbook', content: 'Synthetic-only local verification setup; no company or production data.', pinned: false,\n  } },\n})\nprojectRevision = Number(resourceResult.revisions?.project_revision || projectRevision + 1)\n\ncommandId = randomUUID()\nconst metricResult = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/commands', {\n  method: 'POST', commandId,\n  body: { command_id: commandId, type: 'metric.define', expected: { project_revision: projectRevision }, payload: {\n    name: 'Synthetic verification completion', kind: 'Adoption', unit: '%', direction: 'Increase', steward_id: user,\n    measurement_method: 'Synthetic disposable verification fixture', population_definition: 'One synthetic fixture project',\n    population_version: 'local-runtime-v1', target_spec: { type: 'number', operator: '>=', value: '100' }, required_for_success: true,\n  } },\n})\nprojectRevision = Number(metricResult.revisions?.project_revision || projectRevision + 1)\n\nawait requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/updates/draft', {\n  method: 'POST', commandId: randomUUID(), body: { period_start: '2026-01-01', period_end: '2026-12-31' },\n})\nawait requireSetup('/api/v2/projects/' + encodeURIComponent(projectId) + '/reports/capture', {\n  method: 'POST', commandId: randomUUID(), body: { report_type: 'Stakeholder summary', period_start: '2026-01-01', period_end: '2026-12-31' },\n})\nconst resolvedProject = await requireSetup('/api/v2/projects/' + encodeURIComponent(projectId))\nprojectRevision = Number(resolvedProject.revision || projectRevision)\n\nconst matrixSpecs = [\n  { key: 'projects', path: '/api/v2/projects?limit=200', check: x => Array.isArray(x?.items) && x.items.some(p => String(p.id) === projectId) && x.summary && 'next_cursor' in x },\n  { key: 'project', path: '/api/v2/projects/' + encodeURIComponent(projectId), check: x => String(x?.id) === projectId && Boolean(x?.name) && Boolean(x?.display_key) && Number(x?.revision) >= 1 },\n  { key: 'readiness', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/readiness', check: x => String(x?.project_id) === projectId && typeof x?.ready === 'boolean' && Array.isArray(x?.gaps) && Number(x?.project_revision) >= 1 },\n  { key: 'focus', path: '/api/v2/focus?project_id=' + encodeURIComponent(projectId), check: x => x?.scope === 'project' && Array.isArray(x?.items) && typeof x?.engine_version === 'string' && typeof x?.total === 'number' },\n  { key: 'work', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/work', check: x => String(x?.project_id) === projectId && Array.isArray(x?.items) && Array.isArray(x?.dependencies) && Array.isArray(x?.blockers) && Array.isArray(x?.criteria) && Number(x?.project_revision) >= 1 && Number(x?.graph_revision) >= 1 },\n  { key: 'plan', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/plan', check: x => String(x?.project?.id) === projectId && Array.isArray(x?.sections) && x?.brief && Array.isArray(x?.milestones) && Array.isArray(x?.work_breakdown) && x?.architecture && Array.isArray(x?.governance) && Array.isArray(x?.resources) && Array.isArray(x?.guidance) && x?.source_revisions },\n  { key: 'schedule', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/schedule', check: x => String(x?.project_id) === projectId && String(x?.project?.id) === projectId && x?.calendar && Array.isArray(x?.tasks) && Array.isArray(x?.dependencies) && x?.analysis && Array.isArray(x?.analysis?.rows) && x?.forecast && Array.isArray(x?.baselines) },\n  { key: 'updates', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/updates?history=true', check: x => Array.isArray(x?.items) && String(x?.source_revision || '').startsWith('project:') },\n  { key: 'activity', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/activity?limit=40', check: x => Array.isArray(x?.items) && String(x?.source_revision || '').startsWith('project:') },\n  { key: 'resources', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/resources', check: x => Array.isArray(x?.items) && x.items.every(i => String(i.project_id) === projectId) && String(x?.source_revision || '').startsWith('project:') },\n  { key: 'reports', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/reports', check: x => Array.isArray(x?.items) },\n  { key: 'outcomes', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/outcomes', check: x => String(x?.project_id) === projectId && x?.delivery && x?.outcomes && Array.isArray(x?.metrics) && Array.isArray(x?.measurements) && Array.isArray(x?.checkpoints) && x?.financial && x?.source_revisions },\n  { key: 'values', path: '/api/v2/projects/' + encodeURIComponent(projectId) + '/values', check: x => Array.isArray(x?.items) && typeof x?.source_revision === 'string' },\n]\nconst apiMatrix = []\nfor (const spec of matrixSpecs) {\n  const result = await request(spec.path)\n  const semantic = result.data ? Boolean(spec.check(result.data)) : false\n  apiMatrix.push({\n    endpoint: 'GET ' + spec.path,\n    status: result.status, content_type: result.content_type, redirected: result.redirected, semantic_valid: semantic,\n    semantic: result.data ? {\n      keys: Object.keys(result.data).sort(), project_id: result.data.project_id || result.data.id || result.data.project?.id || null,\n      item_count: Array.isArray(result.data.items) ? result.data.items.length : undefined,\n      code: result.data.code, message: result.data.message,\n      gaps: spec.key === 'readiness' ? result.data.gaps : undefined,\n      schedule_status: spec.key === 'schedule' ? result.data.analysis?.status : undefined,\n      restricted: spec.key === 'values' ? result.data.restricted : undefined,\n    } : { body: result.raw },\n    error: result.status >= 400 ? { code: result.data?.code, message: result.data?.message, details: result.data?.details } : undefined,\n  })\n}\nconst migrationResponse = await request('/api/v2/migrations/legacy/status')\nconst migrationStatus = {\n  endpoint: 'GET /api/v2/migrations/legacy/status',\n  status: migrationResponse.status, content_type: migrationResponse.content_type,\n  semantic_valid: migrationResponse.status === 200 && Boolean(migrationResponse.data?.cutover) && 'migration' in migrationResponse.data && Boolean(migrationResponse.data?.write_authority),\n  state: migrationResponse.data?.cutover, write_authority: migrationResponse.data?.write_authority,\n  migration: migrationResponse.data?.migration ? { status: migrationResponse.data.migration.status, code: migrationResponse.data.migration.code, message: migrationResponse.data.migration.message } : null,\n}\nfor (const item of apiMatrix) {\n  if (item.endpoint.includes('/readiness') || item.endpoint.includes('/schedule')) {\n    item.migration_readiness = {\n      cutover_state: migrationStatus.state?.state || null,\n      readiness_gaps: item.endpoint.includes('/readiness') ? item.semantic?.gaps : undefined,\n      schedule_analysis_state: item.endpoint.includes('/schedule') ? item.semantic?.schedule_status : undefined,\n      error_code: item.error?.code, error_message: item.error?.message,\n    }\n  }\n}\n\nconst browser = await chromium.launch({ headless: true })\nconst browserMatrix = { desktop: [], mobile: [] }\nconst routeSpecs = [\n  { name: 'Work list', path: '/projects/' + encodeURIComponent(projectId) + '/work', heading: 'Work', owner: 'main[data-pv1-projects-route=\\\"true\\\"] .p05-treegrid' },\n  { name: 'Work board', path: '/projects/' + encodeURIComponent(projectId) + '/work?layout=board', heading: 'Work', owner: 'main[data-pv1-projects-route=\\\"true\\\"] .p05-board' },\n  { name: 'Plan', path: '/projects/' + encodeURIComponent(projectId) + '/plan', heading: 'Plan', owner: 'main[data-pv1-projects-route=\\\"true\\\"] .p05-plan' },\n  { name: 'Timeline', path: '/projects/' + encodeURIComponent(projectId) + '/timeline', heading: 'Timeline', owner: 'main[data-p06-timeline=\\\"true\\\"] .p06-canvas' },\n  { name: 'Updates', path: '/projects/' + encodeURIComponent(projectId) + '/updates', heading: 'Updates', owner: 'main[data-p08-communication=\\\"true\\\"] #draft-title' },\n  { name: 'Resources', path: '/projects/' + encodeURIComponent(projectId) + '/resources', heading: 'Resources', owner: 'main[data-p08-communication=\\\"true\\\"] #resource-list-title' },\n  { name: 'Reports', path: '/projects/' + encodeURIComponent(projectId) + '/reports', heading: 'Reports', owner: 'main[data-p08-communication=\\\"true\\\"] #reports-title' },\n  { name: 'Outcomes', path: '/projects/' + encodeURIComponent(projectId) + '/outcomes', heading: 'Outcomes', owner: 'main[data-p09-outcomes=\\\"true\\\"] #qualification-title' },\n]\nfor (const viewport of [\n  { key: 'desktop', width: 1440, height: 900, isMobile: false },\n  { key: 'mobile', width: 390, height: 844, isMobile: true },\n]) {\n  const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1, isMobile: viewport.isMobile })\n  await context.addInitScript(({ userId, tenantId }) => {\n    localStorage.setItem('SYSGRID_USER_ID', userId)\n    localStorage.setItem('SYSGRID_TENANT_ID', tenantId)\n  }, { userId: user, tenantId: tenant })\n  for (const spec of routeSpecs) {\n    const page = await context.newPage()\n    const v2Responses = []\n    const v2Failures = []\n    const pageErrors = []\n    const consoleErrors = []\n    page.on('response', response => {\n      if (response.url().includes('/api/v2/')) v2Responses.push({ url: response.url(), status: response.status(), content_type: response.headers()['content-type'] || '' })\n    })\n    page.on('requestfailed', req => {\n      if (req.url().includes('/api/v2/')) v2Failures.push({ url: req.url(), error: req.failure()?.errorText || 'request failed' })\n    })\n    page.on('pageerror', error => pageErrors.push(String(error)))\n    page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text().slice(0, 300)) })\n    const url = frontend + spec.path\n    const navigation = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })\n    const ownerLocator = page.locator(spec.owner)\n    await ownerLocator.waitFor({ state: 'visible', timeout: 30000 })\n    await page.getByRole('heading', { name: spec.heading, exact: true, level: 1 }).waitFor({ state: 'visible', timeout: 15000 })\n    await page.waitForTimeout(300)\n    const state = await page.evaluate(() => {\n      const main = document.querySelector('main')\n      const rect = main?.getBoundingClientRect()\n      const alertText = Array.from(document.querySelectorAll('[role=\\\"alert\\\"]')).filter(el => el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0).map(el => (el.textContent || '').trim())\n      const text = document.body?.innerText || ''\n      return {\n        pathname: location.pathname, search: location.search, viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },\n        document_width: document.documentElement.scrollWidth, body_width: document.body.scrollWidth,\n        main: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height, bottom: rect.bottom } : null,\n        alerts: alertText, body_error_markers: (text.match(/fatal|bootstrap failed|permission denied|access denied|forbidden|404|409|unavailable|not found/ig) || []),\n      }\n    })\n    const exactRouteActive = page.url() === url\n    const ownerVisible = await ownerLocator.isVisible()\n    const catastrophicHorizontalOverflow = viewport.key === 'mobile' && state.document_width > viewport.width + 1\n    const inaccessibleInitialContent = \"'!state.main || state.main.width <= 0 || state.main.height <= 0 || state.main.y >= viewport.height || state.main.bottom <= 0\n    const renderedError = state.alerts.length > 0 || state.body_error_markers.length > 0\n    const failedV2 = v2Responses.filter(item => item.status < 200 || item.status >= 300 || !item.content_type.toLowerCase().includes('\"'application/json'))\n    const valid = Boolean(navigation && navigation.status() >= 200 && navigation.status() < 400) && exactRouteActive && ownerVisible && \"'!renderedError && failedV2.length === 0 && v2Failures.length === 0 && pageErrors.length === 0 && !catastrophicHorizontalOverflow && !inaccessibleInitialContent\n    browserMatrix[viewport.key].push({\n      surface: spec.name, requested_path: spec.path, status: navigation?.status() ?? null, requested_url_active: exactRouteActive,\n      semantic_owner: spec.owner, semantic_owner_visible: ownerVisible, heading: spec.heading,\n      project_api_failures: failedV2, project_api_network_failures: v2Failures, page_errors: pageErrors,\n      console_errors: consoleErrors, rendered_error_state: renderedError, viewport_state: state,\n      catastrophic_horizontal_overflow: catastrophicHorizontalOverflow, inaccessible_initial_content: inaccessibleInitialContent, pass: valid,\n    })\n    await page.close()\n  }\n  await context.close()\n}\nawait browser.close()\n\nconst apiPass = apiMatrix.every(item => item.status >= 200 && item.status < 300 && item.content_type.toLowerCase().includes('\"'application/json') && \"'!item.redirected && item.semantic_valid)\nconst migrationPass = migrationStatus.semantic_valid\nconst browserPass = [...browserMatrix.desktop, ...browserMatrix.mobile].every(item => item.pass)\nconst audit = {\n  request: '\"'sysgrid-project-v2-runtime-readiness-verify-v1',\n  candidate_sha: 'ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3',\n  runtime_profile: process.env.SYSGRID_VERIFY_PROFILE, explicit_system_root_user_id: user,\n  backend_origin: backend, frontend_origin: frontend, runtime_dir: process.env.SYSGRID_VERIFY_RUNTIME_DIR,\n  resolved_project: { id: projectId, display_key: project.display_key, name: project.name, setup_method: 'POST /api/v2/projects with Idempotency-Key and generated ID; owned v2 API commands created one scheduled task, one runbook resource, one metric, a draft update, and a report snapshot.' },\n  setup, api_matrix: apiMatrix, migration_status: migrationStatus,\n  browser_matrix_desktop: browserMatrix.desktop, browser_matrix_mobile: browserMatrix.mobile,\n  current_main_ready: apiPass && migrationPass && browserPass,\n}\nconst auditPath = join(process.env.SYSGRID_VERIFY_RUNTIME_DIR, 'project-v2-runtime-readiness-audit.json')\nwriteFileSync(auditPath, JSON.stringify(audit, null, 2))\nconsole.log(JSON.stringify({\n  audit_path: auditPath, resolved_project: audit.resolved_project, setup: audit.setup,\n  api_matrix: audit.api_matrix, migration_status: audit.migration_status,\n  browser_matrix_desktop: audit.browser_matrix_desktop, browser_matrix_mobile: audit.browser_matrix_mobile,\n  current_main_ready: audit.current_main_ready,\n}, null, 2))\nNODE\nSHELL\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -c \\\"import json; p='/tmp/sysgrid-verify.aAWdnS/project-v2-runtime-readiness-audit.json'; d=json.load(open(p)); print('api'); [print(x['endpoint'],x['status'],x['semantic_valid'],x.get('error')) for x in d['api_matrix']]; print('migration',d['migration_status']); print('desktop'); [print(x['surface'],x['pass'],x['viewport_state']['body_error_markers'],len(x['project_api_failures']),x['console_errors']) for x in d['browser_matrix_desktop']]; print('mobile'); [print(x['surface'],x['pass'],x['viewport_state']['body_error_markers'],len(x['project_api_failures']),x['console_errors']) for x in d['browser_matrix_mobile']]; print('project',d['resolved_project'])\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '/schedule|/readiness|/outcomes|/values|/updates|/resources|/reports|/activity' backend/test_p0*.py | head -220\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e \\\"const p=require('./frontend/package.json'); console.log(JSON.stringify(p.scripts,null,2))\\\" && rtk git status --porcelain=v1 && rtk git diff --stat\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '\"'^async def test_|''^def test_'\"' backend/test_p06_timeline_scheduling.py backend/test_p04_creation_portfolio_home.py backend/test_p05_my_day_work_plan.py backend/test_p08_updates_resources_reports.py backend/test_p09_outcomes_delivery_value.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm --prefix frontend run test:unit -- src/components/ProjectsWorkPlan.contract.test.tsx src/components/ProjectsTimeline.test.ts src/components/ProjectsCommunication.test.tsx src/components/ProjectsOutcomes.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -m pytest -q test_p04_creation_portfolio_home.py::test_readiness_returns_structured_gaps_without_inventing_project_facts test_p05_my_day_work_plan.py::test_focus_preferences_and_same_engine_project_scope test_p05_my_day_work_plan.py::test_import_preview_and_plan_have_one_graph_and_typed_records test_p06_timeline_scheduling.py::test_journey_3_preview_is_zero_write_apply_is_atomic_idempotent_and_undoable test_p08_updates_resources_reports.py::test_ai_disabled_update_is_deterministic_and_published_snapshot_is_immutable test_p08_updates_resources_reports.py::test_resource_safety_versions_pin_limit_and_exports test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe test_p09_outcomes_delivery_value.py::test_journey_7_exact_decimal_roi_capacity_separation_and_finance_restriction test_p09_outcomes_delivery_value.py::test_outcome_revisions_zero_denominator_correction_and_atomic_attribution'",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "passed": 8,
+          "warnings": 1
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 6546,
+        "output_sha256": "92f3eb3aeb7181ae6520f8f299114dc9afeb0db2b128283fca017f0b2449bb5c",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -A8 'class PV1Update|class PV1ActivityProjection|class PV1Event' backend/app/pv1/models.py && rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -c \\\"import sqlite3; p='/tmp/sysgrid-verify.aAWdnS/tenant.db'; c=sqlite3.connect('file:'+p+'?mode=ro',uri=True); print([r[0] for r in c.execute(\\\\\\\"select name from sqlite_master where type='table' and lower(name) like '%update%'\\\\\\\")]); print([r[0] for r in c.execute(\\\\\\\"select name from sqlite_master where type='table' and lower(name) like '%event%'\\\\\\\")])\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -c \\\"import sqlite3; p='/tmp/sysgrid-verify.aAWdnS/tenant.db'; c=sqlite3.connect('file:'+p+'?mode=ro',uri=True); print(c.execute('pragma table_info(pv1_updates)').fetchall()); rows=c.execute('select id,state,content_json,source_revisions from pv1_updates').fetchall(); print(rows)\\\"\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -c \\\"import sqlite3,re; p='/tmp/sysgrid-verify.aAWdnS/tenant.db'; c=sqlite3.connect('file:'+p+'?mode=ro',uri=True); rows=c.execute('select id,state,content,source_revisions from pv1_updates').fetchall(); print(rows); print('event_with_409',[(r[0],r[1]) for r in c.execute('select event_id,event_type from pv1_events') if re.search('409',str(r))])\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -c \\\"import sqlite3,re; p='/tmp/sysgrid-verify.aAWdnS/tenant.db'; c=sqlite3.connect('file:'+p+'?mode=ro',uri=True); print('updates'); [print(col,repr(val),re.findall('.{0,25}409.{0,25}',str(val))) for row in c.execute('select id,state,content,source_revisions from pv1_updates') for col,val in zip(('id','state','content','source_revisions'),row) if '409' in str(val)]; print('event hits'); [print(repr(row),[m.group() for m in re.finditer('.{0,25}409.{0,25}',str(row))]) for row in c.execute('select event_id,event_type,delta from pv1_events') if '409' in str(row)]\\\"\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'async def require_module_access|root.preview|MODULE_' backend/app/api/module_policy.py && rtk sed -n '300,410p' backend/app/api/module_policy.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '240,282p' backend/app/api/module_policy.py && rtk sed -n '220,300p' backend/app/api/module_policy.py && rtk rg -n 'Projects.*default_stage|\\\"id\\\": \\\"projects\\\"|root_preview_allowed' contracts/system_management_v1.json | head -45\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '130,215p' backend/app/api/module_policy.py && rtk sed -n '18,40p' contracts/system_management_v1.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /tmp/sysgrid-project-v2-verify-py314/bin/python -c \\\"import json,re,sqlite3; from pathlib import Path; root=Path('/tmp/sysgrid-verify.aAWdnS'); a=json.loads((root/'project-v2-runtime-readiness-audit.json').read_text()); c=sqlite3.connect('file:/tmp/sysgrid-verify.aAWdnS/tenant.db?mode=ro',uri=True); rows=c.execute('select content from pv1_updates').fetchall(); ids=[]; [ids.extend(re.findall(r'\\\\\\\\\\\"([0-9a-f-]{36})\\\\\\\\\\\"', raw)) for (raw,) in rows]; hits=sorted({v for v in ids if '409' in v}); source=Path('frontend/src/components/ProjectsCommunication.tsx').read_text(); assert a['candidate_sha']=='ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3'; assert len(a['api_matrix'])==13 and all(x['status']==200 and x['semantic_valid'] and not x['redirected'] and 'application/json' in x['content_type'] for x in a['api_matrix']); assert len(a['browser_matrix_desktop'])==8 and len(a['browser_matrix_mobile'])==8; assert 'item.source_ids' in source and hits; rows=[]; false_positive=[];\\\\nfor_view=[]\\\"\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -s <<'SHELL'\n/tmp/sysgrid-project-v2-verify-py314/bin/python - <<'PY'\nimport json\nimport sqlite3\nfrom pathlib import Path\n\nruntime = Path('/tmp/sysgrid-verify.aAWdnS')\naudit = json.loads((runtime / 'project-v2-runtime-readiness-audit.json').read_text())\nconnection = sqlite3.connect(f'file:{runtime / \\\"tenant.db\\\"}?mode=ro', uri=True)\nids = []\nfor (raw,) in connection.execute('select content from pv1_updates'):\n    content = json.loads(raw)\n    for section in (content.get('sections') or {}).values():\n        for item in section:\n            ids.extend(str(value) for value in item.get('source_ids', []))\nsource_id_hits = sorted(value for value in set(ids) if '409' in value)\ncommunication_source = Path('frontend/src/components/ProjectsCommunication.tsx').read_text()\nassert audit['candidate_sha'] == 'ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3'\nassert len(audit['api_matrix']) == 13\nassert all(item['status'] == 200 and item['semantic_valid'] and not item['redirected'] and 'application/json' in item['content_type'].lower() for item in audit['api_matrix'])\nassert len(audit['browser_matrix_desktop']) == 8 and len(audit['browser_matrix_mobile']) == 8\nassert source_id_hits and 'item.source_ids' in communication_source and \\\".join(', ')\\\" in communication_source\n\nnormalized = {}\nfor viewport in ('desktop', 'mobile'):\n    normalized[viewport] = []\n    for item in audit[f'browser_matrix_{viewport}']:\n        markers = item['viewport_state']['body_error_markers']\n        false_positive = item['surface'] == 'Updates' and markers == ['409'] and bool(source_id_hits)\n        actual_markers = [] if false_positive else markers\n        passed = (\n            item['status'] == 200\n            and item['requested_url_active']\n            and item['semantic_owner_visible']\n            and not item['project_api_failures']\n            and not item['project_api_network_failures']\n            and not item['page_errors']\n            and not item['console_errors']\n            and not item['viewport_state']['alerts']\n            and not actual_markers\n            and not item['catastrophic_horizontal_overflow']\n            and not item['inaccessible_initial_content']\n        )\n        normalized[viewport].append({\n            'surface': item['surface'],\n            'pass': passed,\n            'status': item['status'],\n            'requested_url_active': item['requested_url_active'],\n            'semantic_owner_visible': item['semantic_owner_visible'],\n            'project_api_failures': len(item['project_api_failures']),\n            'page_errors': len(item['page_errors']),\n            'console_errors': len(item['console_errors']),\n            'rendered_alerts': len(item['viewport_state']['alerts']),\n            'raw_error_text_tokens': markers,\n            'explained_false_positive': false_positive,\n            'document_width': item['viewport_state']['document_width'],\n            'viewport_width': item['viewport_state']['viewport']['width'],\n            'dpr': item['viewport_state']['viewport']['dpr'],\n        })\nbrowser_pass = all(item['pass'] for view in normalized.values() for item in view)\napi_pass = all(item['status'] == 200 and item['semantic_valid'] for item in audit['api_matrix'])\ntimeline = {\n    'cutover_state': audit['migration_status']['state']['state'],\n    'migration_run': audit['migration_status']['migration'],\n    'write_authority': audit['migration_status']['write_authority'],\n    'readiness_ready': next(item['semantic'].get('ready') for item in audit['api_matrix'] if '/readiness' in item['endpoint']),\n    'readiness_gap_codes': [gap['code'] for gap in next(item['semantic']['gaps'] for item in audit['api_matrix'] if '/readiness' in item['endpoint'])],\n    'schedule_status': next(item['semantic']['schedule_status'] for item in audit['api_matrix'] if '/schedule' in item['endpoint']),\n    'schedule_status_code': next(item['status'] for item in audit['api_matrix'] if '/schedule' in item['endpoint']),\n}\nclassification = {\n    'candidate_sha': audit['candidate_sha'],\n    'runtime_dir': str(runtime),\n    'raw_audit': str(runtime / 'project-v2-runtime-readiness-audit.json'),\n    'api_matrix_pass': api_pass,\n    'browser_matrix_desktop': normalized['desktop'],\n    'browser_matrix_mobile': normalized['mobile'],\n    'browser_matrix_pass': browser_pass,\n    'updates_false_positive': {\n        'raw_match': '409',\n        'source_ids_containing_token': source_id_hits,\n        'source': 'ProjectsCommunication renders item.source_ids in each persisted fact section; the matched token is inside a synthetic event UUID, not an HTTP status or error state.',\n        'failed_api_responses': 0,\n        'rendered_alerts': 0,\n        'page_errors': 0,\n        'console_errors': 0,\n    },\n    'timeline_readiness': timeline,\n    'current_main_ready': api_pass and browser_pass and audit['migration_status']['semantic_valid'],\n}\npath = runtime / 'project-v2-runtime-readiness-classification.json'\npath.write_text(json.dumps(classification, indent=2))\nprint(json.dumps({\n    'classification_path': str(path),\n    'api_matrix_pass': api_pass,\n    'browser_matrix_pass': browser_pass,\n    'updates_false_positive': classification['updates_false_positive'],\n    'timeline_readiness': timeline,\n    'current_main_ready': classification['current_main_ready'],\n}, indent=2))\nPY\nSHELL\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'ProjectsSchedulingCompletion|include_router\\\\(pv1|/projects/\\\\{project_id\\\\}/(work|plan|schedule|outcomes|values|resources|updates|activity|reports)|shouldUseProjectsWorkPlan|shouldUseProjectsTimeline|shouldUseProjectsCommunication|shouldUseProjectsOutcomes|apiFetch\\\\(\"'`/api/v2'\"' frontend/src/App.tsx backend/app/main.py backend/app/api/pv1.py backend/app/api/pv1_communication.py frontend/src/components/ProjectsWorkPlan.tsx frontend/src/components/ProjectsTimeline.route.ts frontend/src/components/ProjectsCommunication.tsx frontend/src/components/ProjectsOutcomes.tsx | head -160\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -s <<'SHELL'\n/tmp/sysgrid-project-v2-verify-py314/bin/python - <<'PY'\nimport json, sqlite3\nfrom pathlib import Path\nruntime=Path('/tmp/sysgrid-verify.aAWdnS')\na=json.loads((runtime/'project-v2-runtime-readiness-audit.json').read_text())\nd=json.loads((runtime/'project-v2-runtime-readiness-classification.json').read_text())\nc=sqlite3.connect(f'file:{runtime / \\\"tenant.db\\\"}?mode=ro', uri=True)\nproject=c.execute('select id,tenant_id,display_key,name,revision,graph_revision from pv1_projects').fetchall()\nprint('project_db_identity=',project)\nprint('api_matrix=')\nfor item in a['api_matrix']:\n    sem=item['semantic']\n    print(item['endpoint'], 'status='+str(item['status']), 'semantic='+str(item['semantic_valid']), 'items='+str(item.get('semantic',{}).get('item_count')), 'schedule='+str(item.get('semantic',{}).get('schedule_status')), 'ready='+str((not sem.get('gaps')) if '/readiness' in item['endpoint'] else '-'))\nprint('desktop=',[(x['surface'],x['pass']) for x in d['browser_matrix_desktop']])\nprint('mobile=',[(x['surface'],x['pass']) for x in d['browser_matrix_mobile']])\nprint('timeline=',d['timeline_readiness'])\nprint('runtime=',a['runtime_dir'],a['runtime_profile'],a['explicit_system_root_user_id'])\nprint('classification_current_main_ready=',d['current_main_ready'])\nPY\nSHELL\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --porcelain=v1 && rtk git branch --show-current && rtk git rev-parse HEAD && rtk git ls-remote origin refs/heads/main && rtk git diff --name-only && rtk git diff --cached --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy zsh -s <<'SHELL'\n/tmp/sysgrid-project-v2-verify-py314/bin/python - <<'PY'\nimport json, sqlite3\nfrom pathlib import Path\nruntime = Path('/tmp/sysgrid-verify.aAWdnS')\npath = runtime / 'project-v2-runtime-readiness-classification.json'\nclassification = json.loads(path.read_text())\nconnection = sqlite3.connect(f'file:{runtime / \\\"tenant.db\\\"}?mode=ro', uri=True)\nrow = connection.execute('select id, tenant_id, display_key from pv1_projects').fetchone()\nassert row and row[1] == 1 and row[0] == 'c27f87b0-d74a-4bee-ba16-c58abbb64b05'\nclassification['project_tenant_identity'] = {'project_id': row[0], 'tenant_id': row[1], 'display_key': row[2], 'verified_against': 'read-only SELECT from owned disposable tenant.db'}\nclassification['timeline_readiness']['readiness_ready'] = False\nclassification['timeline_readiness']['readiness_ready_derivation'] = 'GET /readiness returned the ready key plus five blocking gaps; current source returns ready = not gaps.'\npath.write_text(json.dumps(classification, indent=2))\nprint(json.dumps({'project_tenant_identity': classification['project_tenant_identity'], 'timeline_readiness': classification['timeline_readiness'], 'current_main_ready': classification['current_main_ready']}, indent=2))\nPY\nSHELL\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --porcelain=v1 && rtk git branch --show-current && rtk git rev-parse HEAD && rtk git ls-remote origin refs/heads/main && rtk git diff --name-only && rtk git diff --cached --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.156.1",
+    "configured_model": "gpt-6-luna",
+    "event_count": 135,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 96.75,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 6694656,
+      "fresh_input_tokens": 224734,
+      "input_tokens": 6919390,
+      "non_reasoning_output_tokens": 23310,
+      "output_tokens": 60646,
+      "reasoning_output_tokens": 37336,
+      "total_processed_tokens": 6980036
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-25T18:14:31Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "branch": "codex/sysgrid-project-v2-runtime-readiness-verify-v1",
+    "detached_verify": false,
+    "head_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "remote_exact_head": true,
+    "remote_head_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "work_branch": "codex/sysgrid-project-v2-runtime-readiness-verify-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-e7620000945bd29d62d9c417",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-project-v2-runtime-readiness-verify-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-project-v2-runtime-readiness-verify-v1"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-project-v2-runtime-readiness-verify-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-25T17:54:14Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 1217,
+    "queue_seconds": 0,
+    "total_seconds": 1217
+  },
+  "transport": {
+    "bytes": 10987,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 10638,
+    "prompt_sha256": "4529d888b75f07737206f2b7370af51492393d7a31c74bde5e0fafe76a0bc4d2",
+    "sha256": "e7620000945bd29d62d9c4176f202ec9f458a391f508c72472df80cc94f10a82"
+  }
+}
