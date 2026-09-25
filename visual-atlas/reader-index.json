@@ -1,893 +1,1093 @@
 {
-  "project_os_visual_atlas": 2,
   "project": "sysgrid",
-  "request": "sysgrid-visual-atlas-capture-v4",
+  "change": "CHG-71",
+  "request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+  "operation": "VERIFY",
   "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
   "tree_sha": "376906e0c9079f2281732fbbc31eec0d754ec30e",
-  "pdf_pages": {
-    "review-desktop.pdf": [
-      {
-        "page_number": 1,
-        "surface_key": "home",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
+  "generated_at_utc": "2026-09-25T22:23:01.541Z",
+  "surface_count": 32,
+  "screenshot_count": 64,
+  "surfaces": [
+    {
+      "surface_key": "home",
+      "canonical_route": "/",
+      "canonical_route_template": "/",
+      "navigation_intent": "Operations > Home",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "canonical-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/home--desktop-1440x900.png",
+          "sha256": "a10fc1c52fa9aa720fff33c1484d09d3a5672e879123fd3570422b1c673827cb",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "home",
+            "path": "visual-atlas/screenshots/home--desktop-1440x900.png",
+            "sha256": "a10fc1c52fa9aa720fff33c1484d09d3a5672e879123fd3570422b1c673827cb",
+            "route": null,
+            "capture_manifest_route": "/"
+          }
         },
-        "png_sha256": "a10fc1c52fa9aa720fff33c1484d09d3a5672e879123fd3570422b1c673827cb"
-      },
-      {
-        "page_number": 2,
-        "surface_key": "monitoring",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "fea4df4c794dbe75e53aec155b026e20877dd01df396548675cd1b645c7049f7"
-      },
-      {
-        "page_number": 3,
-        "surface_key": "assets",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "72d89fb5a3bafdd8877f4365f6d9acc1c4e5f7cd1504376721de12ea86dcc631"
-      },
-      {
-        "page_number": 4,
-        "surface_key": "racks",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "a8ccd984abac2cf467cbc1ed6e7c0625e8a8787360d80c1eebccf046526b3ed5"
-      },
-      {
-        "page_number": 5,
-        "surface_key": "services",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "1df7f34ec0dbde694afb5c6eaf0b77f461eb380f44115b19519c5757a75a7325"
-      },
-      {
-        "page_number": 6,
-        "surface_key": "network",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "cdc6e6b43c880678be9eed419f14b0bca05170b8dcb64b8a84db8425b80fe12f"
-      },
-      {
-        "page_number": 7,
-        "surface_key": "logs",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "70853e6ffe40e2c0693823181bd03c6bd259fdf0cdb9d2f5dc3800f6d9be63b5"
-      },
-      {
-        "page_number": 8,
-        "surface_key": "settings-parameters",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "8136ea23429da68562ec8a5398017b14d85084d78434de92da3821f91cf317fa"
-      },
-      {
-        "page_number": 9,
-        "surface_key": "settings-permissions",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "2426bc3fc29899f0e882c11f4737e77363df1deefdd432f7452ea6d1a602178a"
-      },
-      {
-        "page_number": 10,
-        "surface_key": "settings-groups",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "9a95ec566a57716ced4ef91676a27ed5f05fc34d6a44dd77a5eee4343e7729d7"
-      },
-      {
-        "page_number": 11,
-        "surface_key": "settings-system",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "e85bd5fb7d53c1ce28dad8714fe5ce5f2b117eb35ce311653ea38c4ef82f3203"
-      },
-      {
-        "page_number": 12,
-        "surface_key": "settings-standards",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "b9770312809cde6faae170170370da6b3e96cca209bb71308be3a25c1a12410c"
-      },
-      {
-        "page_number": 13,
-        "surface_key": "settings-metadata",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "8a4bcb70a1ed0e9a52e8c1e65968859e5e8d932114c06cb39d832370f906b5c1"
-      },
-      {
-        "page_number": 14,
-        "surface_key": "projects-portfolio",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "a8208391b891fba387eb91dc2f3eec28055ba45c53ab799b630252f2137a6713"
-      },
-      {
-        "page_number": 15,
-        "surface_key": "projects-my-day",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "c8da0f5684064dda42ef0a189934c6c3a7cfc54a15e4136fe360ed915408fa05"
-      },
-      {
-        "page_number": 16,
-        "surface_key": "projects-new",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "3b60e12c5afa3820b7bd847fa71566f0c8b9bd78aa886ffef6127147897f6378"
-      },
-      {
-        "page_number": 17,
-        "surface_key": "project-home",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "be0dbc32b98b59beed7a1f7e31947627c972d3c3c35a9527483c9fbcbaaa0d6e"
-      },
-      {
-        "page_number": 18,
-        "surface_key": "projects-work-list",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "225f6bab220ca17f7371a37a368d07ecad270bb9390f43bbab4e2dbc69c140f2"
-      },
-      {
-        "page_number": 19,
-        "surface_key": "projects-work-board",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "f2851259417a9be09ec7e0b9ad97f7a5a73490d5199f93e033574ab6a41755d6"
-      },
-      {
-        "page_number": 20,
-        "surface_key": "projects-plan-brief",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-      },
-      {
-        "page_number": 21,
-        "surface_key": "projects-plan-milestones",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-      },
-      {
-        "page_number": 22,
-        "surface_key": "projects-plan-architecture-current",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-      },
-      {
-        "page_number": 23,
-        "surface_key": "projects-plan-architecture-impact",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-      },
-      {
-        "page_number": 24,
-        "surface_key": "projects-plan-architecture-proposed",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-      },
-      {
-        "page_number": 25,
-        "surface_key": "projects-plan-risks",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-      },
-      {
-        "page_number": 26,
-        "surface_key": "projects-plan-resources",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-      },
-      {
-        "page_number": 27,
-        "surface_key": "projects-timeline",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "b995ad182cdca6472ab8b3325f310b4742cbdcfa34ae94b7feeced63c368bd04"
-      },
-      {
-        "page_number": 28,
-        "surface_key": "projects-updates-updates",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "eb34ec69f2bba41d65f0a62fef3adda5ab784ef1a42a0aa27bc07121cb0a3f32"
-      },
-      {
-        "page_number": 29,
-        "surface_key": "projects-updates-activity",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "eb34ec69f2bba41d65f0a62fef3adda5ab784ef1a42a0aa27bc07121cb0a3f32"
-      },
-      {
-        "page_number": 30,
-        "surface_key": "projects-updates-reports",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "eb34ec69f2bba41d65f0a62fef3adda5ab784ef1a42a0aa27bc07121cb0a3f32"
-      },
-      {
-        "page_number": 31,
-        "surface_key": "projects-outcomes-summary",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "232632914b87b84927c516a893aab2e509df8426509e1cde66f27a35e56d3c53"
-      },
-      {
-        "page_number": 32,
-        "surface_key": "projects-outcomes-measurements",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "232632914b87b84927c516a893aab2e509df8426509e1cde66f27a35e56d3c53"
-      },
-      {
-        "page_number": 33,
-        "surface_key": "projects-outcomes-value",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "232632914b87b84927c516a893aab2e509df8426509e1cde66f27a35e56d3c53"
-      },
-      {
-        "page_number": 34,
-        "surface_key": "external",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "45bc9ade17b3d543e17bccafe7300d1b88a6c10bdbad49cd05873e621e1ba9ad"
-      },
-      {
-        "page_number": 35,
-        "surface_key": "architecture",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "6e1616709e165fb7164f8d5f7fdb390412bc1d93b08350fb20f60f45acc6ae7a"
-      },
-      {
-        "page_number": 36,
-        "surface_key": "architecture-legacy-designer",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "badbe884cef3e107a22daa00797558d19a314a882e204d45233ccce9b6243dcf"
-      },
-      {
-        "page_number": 37,
-        "surface_key": "research",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "81b6fbc836ae80a2446d5f2aaf1c71bd8ac76c5fb64437e5e487437234e685df"
-      },
-      {
-        "page_number": 38,
-        "surface_key": "far",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "7cbc4ec964f466c4a0f2ccd1dada5aa6700ace11bc78d323e99135935e40b810"
-      },
-      {
-        "page_number": 39,
-        "surface_key": "vendors",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "a012391790f215ce6ad01f6b0568cbaaa8b7c395feb0b8b7002a0c67ce3c911d"
-      },
-      {
-        "page_number": 40,
-        "surface_key": "knowledge",
-        "viewport": {
-          "label": "desktop-1440x900",
-          "width": 1440,
-          "height": 900,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "eb30b64cf2d9b8826d2d32cc7e159ea12e0a26a89c223738ec455fed6a5ecf8c"
+        "mobile": {
+          "path": "visual-atlas/screenshots/home--mobile-390x844.png",
+          "sha256": "a4fb31f3822f80a87145eeaaa3583e88520a076e1b24492fd4709a4c76926b2f",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "home",
+            "path": "visual-atlas/screenshots/home--mobile-390x844.png",
+            "sha256": "a4fb31f3822f80a87145eeaaa3583e88520a076e1b24492fd4709a4c76926b2f",
+            "route": null,
+            "capture_manifest_route": "/"
+          }
+        }
       }
-    ],
-    "review-mobile.pdf": [
-      {
-        "page_number": 1,
-        "surface_key": "home",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
+    },
+    {
+      "surface_key": "monitoring",
+      "canonical_route": "/monitoring",
+      "canonical_route_template": "/monitoring",
+      "navigation_intent": "Operations > Monitoring",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "canonical-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/monitoring--desktop-1440x900.png",
+          "sha256": "fea4df4c794dbe75e53aec155b026e20877dd01df396548675cd1b645c7049f7",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "monitoring",
+            "path": "visual-atlas/screenshots/monitoring--desktop-1440x900.png",
+            "sha256": "fea4df4c794dbe75e53aec155b026e20877dd01df396548675cd1b645c7049f7",
+            "route": null,
+            "capture_manifest_route": "/monitoring"
+          }
         },
-        "png_sha256": "a4fb31f3822f80a87145eeaaa3583e88520a076e1b24492fd4709a4c76926b2f"
-      },
-      {
-        "page_number": 2,
-        "surface_key": "monitoring",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "4904ce0ada3288bfcc83192e7e87159c3df35a58731877a5a9ec6b43da2b837b"
-      },
-      {
-        "page_number": 3,
-        "surface_key": "assets",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "d6f604232c6d512487c47e1bdd7af8bea0f7cda85478bddfe3e23ada98cca713"
-      },
-      {
-        "page_number": 4,
-        "surface_key": "racks",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "d5fd2087306dd0f696f41c59159bcdeab3fd3a792a5da5e8f1c114399784b715"
-      },
-      {
-        "page_number": 5,
-        "surface_key": "services",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "6c873c5d587370ecb1e24fb7d368e681f8070c72569c40122ff54afaf835400f"
-      },
-      {
-        "page_number": 6,
-        "surface_key": "network",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "276c5e9706beef8374737acbf7cde738893bb9129f11907e32a25d7b78535a61"
-      },
-      {
-        "page_number": 7,
-        "surface_key": "logs",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "648fe0cfef1b214eb71249d0598b17046c5360e5bb3b1f3b172c5e601d883971"
-      },
-      {
-        "page_number": 8,
-        "surface_key": "settings-parameters",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "64fc9c6207fd24e9818c8a1ad27b2372e6001cfb2de3798d132a6580cc393f29"
-      },
-      {
-        "page_number": 9,
-        "surface_key": "settings-permissions",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "80cb831c0c0f1cd033843c45e24c88b4a88febee1fc54e79597a95c913ba3548"
-      },
-      {
-        "page_number": 10,
-        "surface_key": "settings-groups",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "06302f6d3864bc117e9706220a1c7bb09cf923469d84f4abe426b3a9df8c6e37"
-      },
-      {
-        "page_number": 11,
-        "surface_key": "settings-system",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "ef19249a618e75dfabbc992ad5db24991a1a4e50eb8ec8102e2adc2b479c760c"
-      },
-      {
-        "page_number": 12,
-        "surface_key": "settings-standards",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "21f5bb5d26ded160d41606163484b1681e9a579327e0fec90bd01a6d597742f1"
-      },
-      {
-        "page_number": 13,
-        "surface_key": "settings-metadata",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "4f85c1ec262110c5756f9d6a4731e93113db9e1b74ffbaa7c91651aca5a7f093"
-      },
-      {
-        "page_number": 14,
-        "surface_key": "projects-portfolio",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "569139047a3b76f96bfeb153c651f71031c77dba80a3ee4ba0e4aeb2a83e6d2c"
-      },
-      {
-        "page_number": 15,
-        "surface_key": "projects-my-day",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "3249c1c8fe38b67d64a41324d319ded5555faeb3eb2b31f6c195ed5880ba67de"
-      },
-      {
-        "page_number": 16,
-        "surface_key": "projects-new",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "4d1d7095c67b3193cf6502e54de920d8ea4e253568257cd9b8021233842ce3dd"
-      },
-      {
-        "page_number": 17,
-        "surface_key": "project-home",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "dd9b68f76c9b4f120d8dc349230ad83b39a10ec95c1957d914347c71120f1f50"
-      },
-      {
-        "page_number": 18,
-        "surface_key": "projects-work-list",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "2abc2b7eb847f44f3226424f942b5c1691e1b8fc9f084438ed42b32435338210"
-      },
-      {
-        "page_number": 19,
-        "surface_key": "projects-work-board",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "2abc2b7eb847f44f3226424f942b5c1691e1b8fc9f084438ed42b32435338210"
-      },
-      {
-        "page_number": 20,
-        "surface_key": "projects-plan-brief",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-      },
-      {
-        "page_number": 21,
-        "surface_key": "projects-plan-milestones",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-      },
-      {
-        "page_number": 22,
-        "surface_key": "projects-plan-architecture-current",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-      },
-      {
-        "page_number": 23,
-        "surface_key": "projects-plan-architecture-impact",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-      },
-      {
-        "page_number": 24,
-        "surface_key": "projects-plan-architecture-proposed",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-      },
-      {
-        "page_number": 25,
-        "surface_key": "projects-plan-risks",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-      },
-      {
-        "page_number": 26,
-        "surface_key": "projects-plan-resources",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-      },
-      {
-        "page_number": 27,
-        "surface_key": "projects-timeline",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "cb01167c49465ca5384de21a7d6bd0da9e17bb2c3a1b6626295fd8980aac3f3f"
-      },
-      {
-        "page_number": 28,
-        "surface_key": "projects-updates-updates",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "5b9445dc29053ee4892b05b863b276c33ac714430505c03a75cbd90650db3e42"
-      },
-      {
-        "page_number": 29,
-        "surface_key": "projects-updates-activity",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "5b9445dc29053ee4892b05b863b276c33ac714430505c03a75cbd90650db3e42"
-      },
-      {
-        "page_number": 30,
-        "surface_key": "projects-updates-reports",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "5b9445dc29053ee4892b05b863b276c33ac714430505c03a75cbd90650db3e42"
-      },
-      {
-        "page_number": 31,
-        "surface_key": "projects-outcomes-summary",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "8ae038e0e8d8ebfac7e23ae19df6b16b8810fe3c45ef682a5c5f307670de7f30"
-      },
-      {
-        "page_number": 32,
-        "surface_key": "projects-outcomes-measurements",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "8ae038e0e8d8ebfac7e23ae19df6b16b8810fe3c45ef682a5c5f307670de7f30"
-      },
-      {
-        "page_number": 33,
-        "surface_key": "projects-outcomes-value",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "8ae038e0e8d8ebfac7e23ae19df6b16b8810fe3c45ef682a5c5f307670de7f30"
-      },
-      {
-        "page_number": 34,
-        "surface_key": "external",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "a94a6449af4da1f043210d6ce4b9eca057942d19b98f1ed7833470f14fd9314a"
-      },
-      {
-        "page_number": 35,
-        "surface_key": "architecture",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "b5ccb9d6e5d9ff674aa68289a921e6035082b51908f32a6c3e4e2453bc38eeb3"
-      },
-      {
-        "page_number": 36,
-        "surface_key": "architecture-legacy-designer",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "203706bfca8b4de43ada9ca29030a6cb4f29939e572594328df13e5f8d0f4ae4"
-      },
-      {
-        "page_number": 37,
-        "surface_key": "research",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "9c1f558c02d6dbf9a56264c32606d03cd980ee42690915a03e906654c247c769"
-      },
-      {
-        "page_number": 38,
-        "surface_key": "far",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "b8b7dfca9dce53c52cd642683d3e1265b60fbc800d00690a1caab1e6184b150c"
-      },
-      {
-        "page_number": 39,
-        "surface_key": "vendors",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "9606db58bb40de7b69731d80dc61d7ec8ab89cdca151ccce68280112e882a4a8"
-      },
-      {
-        "page_number": 40,
-        "surface_key": "knowledge",
-        "viewport": {
-          "label": "mobile-390x844",
-          "width": 390,
-          "height": 844,
-          "device_scale_factor": 1
-        },
-        "png_sha256": "97509007fdea079b922c6844b35272459a869e22fa8eecbdc60a62659204b981"
+        "mobile": {
+          "path": "visual-atlas/screenshots/monitoring--mobile-390x844.png",
+          "sha256": "4904ce0ada3288bfcc83192e7e87159c3df35a58731877a5a9ec6b43da2b837b",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "monitoring",
+            "path": "visual-atlas/screenshots/monitoring--mobile-390x844.png",
+            "sha256": "4904ce0ada3288bfcc83192e7e87159c3df35a58731877a5a9ec6b43da2b837b",
+            "route": null,
+            "capture_manifest_route": "/monitoring"
+          }
+        }
       }
-    ]
-  }
+    },
+    {
+      "surface_key": "assets",
+      "canonical_route": "/asset",
+      "canonical_route_template": "/asset",
+      "navigation_intent": "Infrastructure > Assets",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "canonical-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/assets--desktop-1440x900.png",
+          "sha256": "72d89fb5a3bafdd8877f4365f6d9acc1c4e5f7cd1504376721de12ea86dcc631",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "assets",
+            "path": "visual-atlas/screenshots/assets--desktop-1440x900.png",
+            "sha256": "72d89fb5a3bafdd8877f4365f6d9acc1c4e5f7cd1504376721de12ea86dcc631",
+            "route": null,
+            "capture_manifest_route": "/asset"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/assets--mobile-390x844.png",
+          "sha256": "d6f604232c6d512487c47e1bdd7af8bea0f7cda85478bddfe3e23ada98cca713",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "assets",
+            "path": "visual-atlas/screenshots/assets--mobile-390x844.png",
+            "sha256": "d6f604232c6d512487c47e1bdd7af8bea0f7cda85478bddfe3e23ada98cca713",
+            "route": null,
+            "capture_manifest_route": "/asset"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "racks",
+      "canonical_route": "/racks",
+      "canonical_route_template": "/racks",
+      "navigation_intent": "Infrastructure > Racks",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "canonical-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/racks--desktop-1440x900.png",
+          "sha256": "a8ccd984abac2cf467cbc1ed6e7c0625e8a8787360d80c1eebccf046526b3ed5",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "racks",
+            "path": "visual-atlas/screenshots/racks--desktop-1440x900.png",
+            "sha256": "a8ccd984abac2cf467cbc1ed6e7c0625e8a8787360d80c1eebccf046526b3ed5",
+            "route": null,
+            "capture_manifest_route": "/racks"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/racks--mobile-390x844.png",
+          "sha256": "d5fd2087306dd0f696f41c59159bcdeab3fd3a792a5da5e8f1c114399784b715",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "racks",
+            "path": "visual-atlas/screenshots/racks--mobile-390x844.png",
+            "sha256": "d5fd2087306dd0f696f41c59159bcdeab3fd3a792a5da5e8f1c114399784b715",
+            "route": null,
+            "capture_manifest_route": "/racks"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "services",
+      "canonical_route": "/services",
+      "canonical_route_template": "/services",
+      "navigation_intent": "Infrastructure > Services",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "canonical-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/services--desktop-1440x900.png",
+          "sha256": "1df7f34ec0dbde694afb5c6eaf0b77f461eb380f44115b19519c5757a75a7325",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "services",
+            "path": "visual-atlas/screenshots/services--desktop-1440x900.png",
+            "sha256": "1df7f34ec0dbde694afb5c6eaf0b77f461eb380f44115b19519c5757a75a7325",
+            "route": null,
+            "capture_manifest_route": "/services"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/services--mobile-390x844.png",
+          "sha256": "6c873c5d587370ecb1e24fb7d368e681f8070c72569c40122ff54afaf835400f",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "services",
+            "path": "visual-atlas/screenshots/services--mobile-390x844.png",
+            "sha256": "6c873c5d587370ecb1e24fb7d368e681f8070c72569c40122ff54afaf835400f",
+            "route": null,
+            "capture_manifest_route": "/services"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "network",
+      "canonical_route": "/network",
+      "canonical_route_template": "/network",
+      "navigation_intent": "Connectivity > Network",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "canonical-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/network--desktop-1440x900.png",
+          "sha256": "cdc6e6b43c880678be9eed419f14b0bca05170b8dcb64b8a84db8425b80fe12f",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "network",
+            "path": "visual-atlas/screenshots/network--desktop-1440x900.png",
+            "sha256": "cdc6e6b43c880678be9eed419f14b0bca05170b8dcb64b8a84db8425b80fe12f",
+            "route": null,
+            "capture_manifest_route": "/network"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/network--mobile-390x844.png",
+          "sha256": "276c5e9706beef8374737acbf7cde738893bb9129f11907e32a25d7b78535a61",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "network",
+            "path": "visual-atlas/screenshots/network--mobile-390x844.png",
+            "sha256": "276c5e9706beef8374737acbf7cde738893bb9129f11907e32a25d7b78535a61",
+            "route": null,
+            "capture_manifest_route": "/network"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "logs",
+      "canonical_route": "/logs",
+      "canonical_route_template": "/logs",
+      "navigation_intent": "Resources > Audit logs",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "canonical-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/logs--desktop-1440x900.png",
+          "sha256": "70853e6ffe40e2c0693823181bd03c6bd259fdf0cdb9d2f5dc3800f6d9be63b5",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "logs",
+            "path": "visual-atlas/screenshots/logs--desktop-1440x900.png",
+            "sha256": "70853e6ffe40e2c0693823181bd03c6bd259fdf0cdb9d2f5dc3800f6d9be63b5",
+            "route": null,
+            "capture_manifest_route": "/logs"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/logs--mobile-390x844.png",
+          "sha256": "648fe0cfef1b214eb71249d0598b17046c5360e5bb3b1f3b172c5e601d883971",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "logs",
+            "path": "visual-atlas/screenshots/logs--mobile-390x844.png",
+            "sha256": "648fe0cfef1b214eb71249d0598b17046c5360e5bb3b1f3b172c5e601d883971",
+            "route": null,
+            "capture_manifest_route": "/logs"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "settings-parameters",
+      "canonical_route": "/settings",
+      "canonical_route_template": "/settings",
+      "navigation_intent": "Resources > Settings / Parameters",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "parameters",
+      "subview": "environments",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/settings-parameters--desktop-1440x900.png",
+          "sha256": "8136ea23429da68562ec8a5398017b14d85084d78434de92da3821f91cf317fa",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-parameters",
+            "path": "visual-atlas/screenshots/settings-parameters--desktop-1440x900.png",
+            "sha256": "8136ea23429da68562ec8a5398017b14d85084d78434de92da3821f91cf317fa",
+            "route": null,
+            "capture_manifest_route": "/settings"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/settings-parameters--mobile-390x844.png",
+          "sha256": "64fc9c6207fd24e9818c8a1ad27b2372e6001cfb2de3798d132a6580cc393f29",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-parameters",
+            "path": "visual-atlas/screenshots/settings-parameters--mobile-390x844.png",
+            "sha256": "64fc9c6207fd24e9818c8a1ad27b2372e6001cfb2de3798d132a6580cc393f29",
+            "route": null,
+            "capture_manifest_route": "/settings"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "settings-permissions",
+      "canonical_route": "/settings?tab=permissions",
+      "canonical_route_template": "/settings?tab=permissions",
+      "navigation_intent": "Resources > Settings / Permissions",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "settings-tab",
+      "subview": "permissions",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/settings-permissions--desktop-1440x900.png",
+          "sha256": "2426bc3fc29899f0e882c11f4737e77363df1deefdd432f7452ea6d1a602178a",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-permissions",
+            "path": "visual-atlas/screenshots/settings-permissions--desktop-1440x900.png",
+            "sha256": "2426bc3fc29899f0e882c11f4737e77363df1deefdd432f7452ea6d1a602178a",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=permissions"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/settings-permissions--mobile-390x844.png",
+          "sha256": "80cb831c0c0f1cd033843c45e24c88b4a88febee1fc54e79597a95c913ba3548",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-permissions",
+            "path": "visual-atlas/screenshots/settings-permissions--mobile-390x844.png",
+            "sha256": "80cb831c0c0f1cd033843c45e24c88b4a88febee1fc54e79597a95c913ba3548",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=permissions"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "settings-groups",
+      "canonical_route": "/settings?tab=groups",
+      "canonical_route_template": "/settings?tab=groups",
+      "navigation_intent": "Resources > Settings / Groups",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "settings-tab",
+      "subview": "groups",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/settings-groups--desktop-1440x900.png",
+          "sha256": "9a95ec566a57716ced4ef91676a27ed5f05fc34d6a44dd77a5eee4343e7729d7",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-groups",
+            "path": "visual-atlas/screenshots/settings-groups--desktop-1440x900.png",
+            "sha256": "9a95ec566a57716ced4ef91676a27ed5f05fc34d6a44dd77a5eee4343e7729d7",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=groups"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/settings-groups--mobile-390x844.png",
+          "sha256": "06302f6d3864bc117e9706220a1c7bb09cf923469d84f4abe426b3a9df8c6e37",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-groups",
+            "path": "visual-atlas/screenshots/settings-groups--mobile-390x844.png",
+            "sha256": "06302f6d3864bc117e9706220a1c7bb09cf923469d84f4abe426b3a9df8c6e37",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=groups"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "settings-system",
+      "canonical_route": "/settings?tab=system",
+      "canonical_route_template": "/settings?tab=system",
+      "navigation_intent": "Resources > Settings / Analysis",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "settings-tab",
+      "subview": "system",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/settings-system--desktop-1440x900.png",
+          "sha256": "e85bd5fb7d53c1ce28dad8714fe5ce5f2b117eb35ce311653ea38c4ef82f3203",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-system",
+            "path": "visual-atlas/screenshots/settings-system--desktop-1440x900.png",
+            "sha256": "e85bd5fb7d53c1ce28dad8714fe5ce5f2b117eb35ce311653ea38c4ef82f3203",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=system"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/settings-system--mobile-390x844.png",
+          "sha256": "ef19249a618e75dfabbc992ad5db24991a1a4e50eb8ec8102e2adc2b479c760c",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-system",
+            "path": "visual-atlas/screenshots/settings-system--mobile-390x844.png",
+            "sha256": "ef19249a618e75dfabbc992ad5db24991a1a4e50eb8ec8102e2adc2b479c760c",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=system"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "settings-standards",
+      "canonical_route": "/settings?tab=standards",
+      "canonical_route_template": "/settings?tab=standards",
+      "navigation_intent": "Resources > Settings / Standards",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "settings-tab",
+      "subview": "standards",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/settings-standards--desktop-1440x900.png",
+          "sha256": "b9770312809cde6faae170170370da6b3e96cca209bb71308be3a25c1a12410c",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-standards",
+            "path": "visual-atlas/screenshots/settings-standards--desktop-1440x900.png",
+            "sha256": "b9770312809cde6faae170170370da6b3e96cca209bb71308be3a25c1a12410c",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=standards"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/settings-standards--mobile-390x844.png",
+          "sha256": "21f5bb5d26ded160d41606163484b1681e9a579327e0fec90bd01a6d597742f1",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-standards",
+            "path": "visual-atlas/screenshots/settings-standards--mobile-390x844.png",
+            "sha256": "21f5bb5d26ded160d41606163484b1681e9a579327e0fec90bd01a6d597742f1",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=standards"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "settings-metadata",
+      "canonical_route": "/settings?tab=metadata",
+      "canonical_route_template": "/settings?tab=metadata",
+      "navigation_intent": "Resources > Settings / Metadata",
+      "module_stage": "production",
+      "role_profile": "normal-v1",
+      "state": "settings-tab",
+      "subview": "metadata",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/settings-metadata--desktop-1440x900.png",
+          "sha256": "8a4bcb70a1ed0e9a52e8c1e65968859e5e8d932114c06cb39d832370f906b5c1",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-metadata",
+            "path": "visual-atlas/screenshots/settings-metadata--desktop-1440x900.png",
+            "sha256": "8a4bcb70a1ed0e9a52e8c1e65968859e5e8d932114c06cb39d832370f906b5c1",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=metadata"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/settings-metadata--mobile-390x844.png",
+          "sha256": "4f85c1ec262110c5756f9d6a4731e93113db9e1b74ffbaa7c91651aca5a7f093",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "settings-metadata",
+            "path": "visual-atlas/screenshots/settings-metadata--mobile-390x844.png",
+            "sha256": "4f85c1ec262110c5756f9d6a4731e93113db9e1b74ffbaa7c91651aca5a7f093",
+            "route": null,
+            "capture_manifest_route": "/settings?tab=metadata"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "projects-portfolio",
+      "canonical_route": "/projects",
+      "canonical_route_template": "/projects",
+      "navigation_intent": "Operations > Projects / Portfolio",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "portfolio",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-portfolio--desktop-1440x900.png",
+          "sha256": "a8208391b891fba387eb91dc2f3eec28055ba45c53ab799b630252f2137a6713",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-portfolio",
+            "path": "visual-atlas/screenshots/projects-portfolio--desktop-1440x900.png",
+            "sha256": "a8208391b891fba387eb91dc2f3eec28055ba45c53ab799b630252f2137a6713",
+            "route": null,
+            "capture_manifest_route": "/projects"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-portfolio--mobile-390x844.png",
+          "sha256": "569139047a3b76f96bfeb153c651f71031c77dba80a3ee4ba0e4aeb2a83e6d2c",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-portfolio",
+            "path": "visual-atlas/screenshots/projects-portfolio--mobile-390x844.png",
+            "sha256": "569139047a3b76f96bfeb153c651f71031c77dba80a3ee4ba0e4aeb2a83e6d2c",
+            "route": null,
+            "capture_manifest_route": "/projects"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "projects-my-day",
+      "canonical_route": "/projects/my-day",
+      "canonical_route_template": "/projects/my-day",
+      "navigation_intent": "Operations > Projects / My Day",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "my-day",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-my-day--desktop-1440x900.png",
+          "sha256": "c8da0f5684064dda42ef0a189934c6c3a7cfc54a15e4136fe360ed915408fa05",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-my-day",
+            "path": "visual-atlas/screenshots/projects-my-day--desktop-1440x900.png",
+            "sha256": "c8da0f5684064dda42ef0a189934c6c3a7cfc54a15e4136fe360ed915408fa05",
+            "route": null,
+            "capture_manifest_route": "/projects/my-day"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-my-day--mobile-390x844.png",
+          "sha256": "3249c1c8fe38b67d64a41324d319ded5555faeb3eb2b31f6c195ed5880ba67de",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-my-day",
+            "path": "visual-atlas/screenshots/projects-my-day--mobile-390x844.png",
+            "sha256": "3249c1c8fe38b67d64a41324d319ded5555faeb3eb2b31f6c195ed5880ba67de",
+            "route": null,
+            "capture_manifest_route": "/projects/my-day"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "projects-new",
+      "canonical_route": "/projects/new",
+      "canonical_route_template": "/projects/new",
+      "navigation_intent": "Operations > Projects / New Project",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "new-project",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-new--desktop-1440x900.png",
+          "sha256": "3b60e12c5afa3820b7bd847fa71566f0c8b9bd78aa886ffef6127147897f6378",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-new",
+            "path": "visual-atlas/screenshots/projects-new--desktop-1440x900.png",
+            "sha256": "3b60e12c5afa3820b7bd847fa71566f0c8b9bd78aa886ffef6127147897f6378",
+            "route": null,
+            "capture_manifest_route": "/projects/new"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-new--mobile-390x844.png",
+          "sha256": "4d1d7095c67b3193cf6502e54de920d8ea4e253568257cd9b8021233842ce3dd",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-new",
+            "path": "visual-atlas/screenshots/projects-new--mobile-390x844.png",
+            "sha256": "4d1d7095c67b3193cf6502e54de920d8ea4e253568257cd9b8021233842ce3dd",
+            "route": null,
+            "capture_manifest_route": "/projects/new"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "project-home",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/home",
+      "canonical_route_template": "/projects/{project_id}/home",
+      "navigation_intent": "Operations > Projects / Project Home",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "project-home",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/project-home--desktop-1440x900.png",
+          "sha256": "be0dbc32b98b59beed7a1f7e31947627c972d3c3c35a9527483c9fbcbaaa0d6e",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "project-home",
+            "path": "visual-atlas/screenshots/project-home--desktop-1440x900.png",
+            "sha256": "be0dbc32b98b59beed7a1f7e31947627c972d3c3c35a9527483c9fbcbaaa0d6e",
+            "route": null,
+            "capture_manifest_route": "/projects/fd738ad9-31c2-4922-9785-f8a270f329e8/home"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/project-home--mobile-390x844.png",
+          "sha256": "dd9b68f76c9b4f120d8dc349230ad83b39a10ec95c1957d914347c71120f1f50",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "project-home",
+            "path": "visual-atlas/screenshots/project-home--mobile-390x844.png",
+            "sha256": "dd9b68f76c9b4f120d8dc349230ad83b39a10ec95c1957d914347c71120f1f50",
+            "route": null,
+            "capture_manifest_route": "/projects/fd738ad9-31c2-4922-9785-f8a270f329e8/home"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "projects-work-list",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/work?layout=list",
+      "canonical_route_template": "/projects/{project_id}/work?layout=list",
+      "navigation_intent": "Operations > Projects / Work List",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "work",
+      "subview": "list",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-work-list--desktop-1440x900.png",
+          "sha256": "225f6bab220ca17f7371a37a368d07ecad270bb9390f43bbab4e2dbc69c140f2",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-work-list",
+            "path": "visual-atlas/screenshots/projects-work-list--desktop-1440x900.png",
+            "sha256": "225f6bab220ca17f7371a37a368d07ecad270bb9390f43bbab4e2dbc69c140f2",
+            "route": null,
+            "capture_manifest_route": "/projects/fd738ad9-31c2-4922-9785-f8a270f329e8/work?layout=list"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-work-list--mobile-390x844.png",
+          "sha256": "8b41921fb4ee5ac4f36cd33ca4ff1abefad4ab2eeaed32f81d79b236951e9d87",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        }
+      }
+    },
+    {
+      "surface_key": "projects-work-board",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/work?layout=board",
+      "canonical_route_template": "/projects/{project_id}/work?layout=board",
+      "navigation_intent": "Operations > Projects / Work Board",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "work",
+      "subview": "board",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-work-board--desktop-1440x900.png",
+          "sha256": "f2851259417a9be09ec7e0b9ad97f7a5a73490d5199f93e033574ab6a41755d6",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-work-board",
+            "path": "visual-atlas/screenshots/projects-work-board--desktop-1440x900.png",
+            "sha256": "f2851259417a9be09ec7e0b9ad97f7a5a73490d5199f93e033574ab6a41755d6",
+            "route": null,
+            "capture_manifest_route": "/projects/fd738ad9-31c2-4922-9785-f8a270f329e8/work?layout=board"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-work-board--mobile-390x844.png",
+          "sha256": "665e451f11ca1dc624d371b50c59b7eae0093eb8cd5bc7c02c2455e6a5ab1692",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        }
+      }
+    },
+    {
+      "surface_key": "projects-plan",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/plan",
+      "canonical_route_template": "/projects/{project_id}/plan",
+      "navigation_intent": "Projects > Plan",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "plan-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-plan--desktop-1440x900.png",
+          "sha256": "1541c56d45368d018dc24b545e745e7b62476e33171aed35f06effcd4ffb0e06",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-plan--mobile-390x844.png",
+          "sha256": "21da685b35e70571f6c8e1a5566ad646f5ba6d2a3acea712ca1bffd814cc7a30",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        }
+      }
+    },
+    {
+      "surface_key": "projects-timeline",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/timeline",
+      "canonical_route_template": "/projects/{project_id}/timeline",
+      "navigation_intent": "Operations > Projects / Timeline",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "timeline",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-timeline--desktop-1440x900.png",
+          "sha256": "b995ad182cdca6472ab8b3325f310b4742cbdcfa34ae94b7feeced63c368bd04",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-timeline",
+            "path": "visual-atlas/screenshots/projects-timeline--desktop-1440x900.png",
+            "sha256": "b995ad182cdca6472ab8b3325f310b4742cbdcfa34ae94b7feeced63c368bd04",
+            "route": null,
+            "capture_manifest_route": "/projects/fd738ad9-31c2-4922-9785-f8a270f329e8/timeline"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-timeline--mobile-390x844.png",
+          "sha256": "cb01167c49465ca5384de21a7d6bd0da9e17bb2c3a1b6626295fd8980aac3f3f",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "projects-timeline",
+            "path": "visual-atlas/screenshots/projects-timeline--mobile-390x844.png",
+            "sha256": "cb01167c49465ca5384de21a7d6bd0da9e17bb2c3a1b6626295fd8980aac3f3f",
+            "route": null,
+            "capture_manifest_route": "/projects/fd738ad9-31c2-4922-9785-f8a270f329e8/timeline"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "projects-updates",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/updates",
+      "canonical_route_template": "/projects/{project_id}/updates",
+      "navigation_intent": "Projects > Updates and Activity",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "updates-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-updates--desktop-1440x900.png",
+          "sha256": "9982d79a3ea05739b1b2605f1f4d2fd0809331ae4867b8698f38f0d6e83d6a98",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-updates--mobile-390x844.png",
+          "sha256": "043af4bc579575cfdbebbb102005335655283b8d4e3a6d95b23f302b671cc802",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        }
+      }
+    },
+    {
+      "surface_key": "projects-resources",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/resources",
+      "canonical_route_template": "/projects/{project_id}/resources",
+      "navigation_intent": "Projects > Project Resources",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "resources-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-resources--desktop-1440x900.png",
+          "sha256": "8439e564e9d952ddc9704f31e0ffc36de76b2ed6ac6897618806bad5a3998efe",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-resources--mobile-390x844.png",
+          "sha256": "f6f36ae31ffee6f8be075e9caddec8b9dc1eca564165b2e18175836b497c91ae",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        }
+      }
+    },
+    {
+      "surface_key": "projects-reports",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/reports",
+      "canonical_route_template": "/projects/{project_id}/reports",
+      "navigation_intent": "Projects > Project Reports",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "reports-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-reports--desktop-1440x900.png",
+          "sha256": "ea8e292bf0723fe0e3a095a81b667a91bba4a7461d0a38e5054e37d0cb935956",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-reports--mobile-390x844.png",
+          "sha256": "7080e5f774b3c7f71c7165741d376c2dfa944a92518d2ecda087751ff781e5ad",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        }
+      }
+    },
+    {
+      "surface_key": "projects-outcomes",
+      "canonical_route": "/projects/67b025d0-51cb-45b8-b5b3-e4df124e8c27/outcomes",
+      "canonical_route_template": "/projects/{project_id}/outcomes",
+      "navigation_intent": "Projects > Outcomes",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "outcomes-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/projects-outcomes--desktop-1440x900.png",
+          "sha256": "232632914b87b84927c516a893aab2e509df8426509e1cde66f27a35e56d3c53",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/projects-outcomes--mobile-390x844.png",
+          "sha256": "8ae038e0e8d8ebfac7e23ae19df6b16b8810fe3c45ef682a5c5f307670de7f30",
+          "capture_origin": "R5_TARGETED_CAPTURE",
+          "predecessor": null
+        }
+      }
+    },
+    {
+      "surface_key": "external",
+      "canonical_route": "/external",
+      "canonical_route_template": "/external",
+      "navigation_intent": "Infrastructure > External",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "root-preview-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/external--desktop-1440x900.png",
+          "sha256": "45bc9ade17b3d543e17bccafe7300d1b88a6c10bdbad49cd05873e621e1ba9ad",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "external",
+            "path": "visual-atlas/screenshots/external--desktop-1440x900.png",
+            "sha256": "45bc9ade17b3d543e17bccafe7300d1b88a6c10bdbad49cd05873e621e1ba9ad",
+            "route": null,
+            "capture_manifest_route": "/external"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/external--mobile-390x844.png",
+          "sha256": "a94a6449af4da1f043210d6ce4b9eca057942d19b98f1ed7833470f14fd9314a",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "external",
+            "path": "visual-atlas/screenshots/external--mobile-390x844.png",
+            "sha256": "a94a6449af4da1f043210d6ce4b9eca057942d19b98f1ed7833470f14fd9314a",
+            "route": null,
+            "capture_manifest_route": "/external"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "architecture",
+      "canonical_route": "/architecture",
+      "canonical_route_template": "/architecture",
+      "navigation_intent": "Connectivity > Architecture",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "root-preview-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/architecture--desktop-1440x900.png",
+          "sha256": "6e1616709e165fb7164f8d5f7fdb390412bc1d93b08350fb20f60f45acc6ae7a",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "architecture",
+            "path": "visual-atlas/screenshots/architecture--desktop-1440x900.png",
+            "sha256": "6e1616709e165fb7164f8d5f7fdb390412bc1d93b08350fb20f60f45acc6ae7a",
+            "route": null,
+            "capture_manifest_route": "/architecture"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/architecture--mobile-390x844.png",
+          "sha256": "b5ccb9d6e5d9ff674aa68289a921e6035082b51908f32a6c3e4e2453bc38eeb3",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "architecture",
+            "path": "visual-atlas/screenshots/architecture--mobile-390x844.png",
+            "sha256": "b5ccb9d6e5d9ff674aa68289a921e6035082b51908f32a6c3e4e2453bc38eeb3",
+            "route": null,
+            "capture_manifest_route": "/architecture"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "architecture-legacy-designer",
+      "canonical_route": "/architecture?legacy=true",
+      "canonical_route_template": "/architecture?legacy=true",
+      "navigation_intent": "Connectivity > Architecture / Legacy Data Flow Designer",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "legacy-query-mode",
+      "subview": "data-flow-designer",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/architecture-legacy-designer--desktop-1440x900.png",
+          "sha256": "badbe884cef3e107a22daa00797558d19a314a882e204d45233ccce9b6243dcf",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "architecture-legacy-designer",
+            "path": "visual-atlas/screenshots/architecture-legacy-designer--desktop-1440x900.png",
+            "sha256": "badbe884cef3e107a22daa00797558d19a314a882e204d45233ccce9b6243dcf",
+            "route": null,
+            "capture_manifest_route": "/architecture?legacy=true"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/architecture-legacy-designer--mobile-390x844.png",
+          "sha256": "203706bfca8b4de43ada9ca29030a6cb4f29939e572594328df13e5f8d0f4ae4",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "architecture-legacy-designer",
+            "path": "visual-atlas/screenshots/architecture-legacy-designer--mobile-390x844.png",
+            "sha256": "203706bfca8b4de43ada9ca29030a6cb4f29939e572594328df13e5f8d0f4ae4",
+            "route": null,
+            "capture_manifest_route": "/architecture?legacy=true"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "research",
+      "canonical_route": "/research",
+      "canonical_route_template": "/research",
+      "navigation_intent": "Analysis > Research",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "root-preview-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/research--desktop-1440x900.png",
+          "sha256": "81b6fbc836ae80a2446d5f2aaf1c71bd8ac76c5fb64437e5e487437234e685df",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "research",
+            "path": "visual-atlas/screenshots/research--desktop-1440x900.png",
+            "sha256": "81b6fbc836ae80a2446d5f2aaf1c71bd8ac76c5fb64437e5e487437234e685df",
+            "route": null,
+            "capture_manifest_route": "/research"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/research--mobile-390x844.png",
+          "sha256": "9c1f558c02d6dbf9a56264c32606d03cd980ee42690915a03e906654c247c769",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "research",
+            "path": "visual-atlas/screenshots/research--mobile-390x844.png",
+            "sha256": "9c1f558c02d6dbf9a56264c32606d03cd980ee42690915a03e906654c247c769",
+            "route": null,
+            "capture_manifest_route": "/research"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "far",
+      "canonical_route": "/far",
+      "canonical_route_template": "/far",
+      "navigation_intent": "Analysis > FAR",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "root-preview-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/far--desktop-1440x900.png",
+          "sha256": "7cbc4ec964f466c4a0f2ccd1dada5aa6700ace11bc78d323e99135935e40b810",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "far",
+            "path": "visual-atlas/screenshots/far--desktop-1440x900.png",
+            "sha256": "7cbc4ec964f466c4a0f2ccd1dada5aa6700ace11bc78d323e99135935e40b810",
+            "route": null,
+            "capture_manifest_route": "/far"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/far--mobile-390x844.png",
+          "sha256": "b8b7dfca9dce53c52cd642683d3e1265b60fbc800d00690a1caab1e6184b150c",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "far",
+            "path": "visual-atlas/screenshots/far--mobile-390x844.png",
+            "sha256": "b8b7dfca9dce53c52cd642683d3e1265b60fbc800d00690a1caab1e6184b150c",
+            "route": null,
+            "capture_manifest_route": "/far"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "vendors",
+      "canonical_route": "/vendors",
+      "canonical_route_template": "/vendors",
+      "navigation_intent": "Resources > Vendors",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "root-preview-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/vendors--desktop-1440x900.png",
+          "sha256": "a012391790f215ce6ad01f6b0568cbaaa8b7c395feb0b8b7002a0c67ce3c911d",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "vendors",
+            "path": "visual-atlas/screenshots/vendors--desktop-1440x900.png",
+            "sha256": "a012391790f215ce6ad01f6b0568cbaaa8b7c395feb0b8b7002a0c67ce3c911d",
+            "route": null,
+            "capture_manifest_route": "/vendors"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/vendors--mobile-390x844.png",
+          "sha256": "9606db58bb40de7b69731d80dc61d7ec8ab89cdca151ccce68280112e882a4a8",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "vendors",
+            "path": "visual-atlas/screenshots/vendors--mobile-390x844.png",
+            "sha256": "9606db58bb40de7b69731d80dc61d7ec8ab89cdca151ccce68280112e882a4a8",
+            "route": null,
+            "capture_manifest_route": "/vendors"
+          }
+        }
+      }
+    },
+    {
+      "surface_key": "knowledge",
+      "canonical_route": "/knowledge",
+      "canonical_route_template": "/knowledge",
+      "navigation_intent": "Resources > Knowledge",
+      "module_stage": "preview",
+      "role_profile": "root-preview",
+      "state": "root-preview-workspace",
+      "subview": "default",
+      "screenshots": {
+        "desktop": {
+          "path": "visual-atlas/screenshots/knowledge--desktop-1440x900.png",
+          "sha256": "eb30b64cf2d9b8826d2d32cc7e159ea12e0a26a89c223738ec455fed6a5ecf8c",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "knowledge",
+            "path": "visual-atlas/screenshots/knowledge--desktop-1440x900.png",
+            "sha256": "eb30b64cf2d9b8826d2d32cc7e159ea12e0a26a89c223738ec455fed6a5ecf8c",
+            "route": null,
+            "capture_manifest_route": "/knowledge"
+          }
+        },
+        "mobile": {
+          "path": "visual-atlas/screenshots/knowledge--mobile-390x844.png",
+          "sha256": "97509007fdea079b922c6844b35272459a869e22fa8eecbdc60a62659204b981",
+          "capture_origin": "R4_EXACT_BYTE_REUSE",
+          "predecessor": {
+            "surface_key": "knowledge",
+            "path": "visual-atlas/screenshots/knowledge--mobile-390x844.png",
+            "sha256": "97509007fdea079b922c6844b35272459a869e22fa8eecbdc60a62659204b981",
+            "route": null,
+            "capture_manifest_route": "/knowledge"
+          }
+        }
+      }
+    }
+  ]
 }

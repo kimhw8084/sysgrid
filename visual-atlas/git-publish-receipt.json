@@ -1,39 +1,49 @@
 {
-  "project_os_visual_atlas": 2,
+  "project_os_visual_atlas_reconcile": 1,
   "project": "sysgrid",
-  "request": "sysgrid-visual-atlas-capture-v4",
+  "request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
   "operation": "VERIFY",
-  "publication_status": "PUBLISH_INTENT",
+  "publication_status": "READY_TO_PUBLISH",
   "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
   "tree_sha": "376906e0c9079f2281732fbbc31eec0d754ec30e",
   "source_changed": false,
-  "artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v4",
+  "artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+  "artifact_commit": null,
   "package_root": "visual-atlas/",
-  "manifest_sha256": "709ac261898794639ad7092a91131f2bdd896c3a050499456b89d24e9ea0619f",
-  "bundle_sha256": "44da667f7e90197e0e779dce10b064016d245a8b64b16e659267d6f00672fa31",
-  "review_desktop_sha256": "38a506638ddc8052469bed1f92923bcf03b46f00172bec69ff2fe4794d68933f",
-  "review_mobile_sha256": "2ceea0a557c10c2df6eaa67b7d18e6f3bafa9e415b6e8dd35f633b8ac216d524",
-  "package_file_count": 86,
-  "package_files": {
+  "surface_count": 32,
+  "screenshot_count": 64,
+  "manifest_sha256": "d700ed354225a70ba3d36102aeaf7f2fde0fe3dd17f07f6cc0d92e0e96eeedb0",
+  "bundle_sha256": "6eab168a0cc29840fb1a79f114f9408a8d21e0a6b2f0653e390de73386d1c609",
+  "review_desktop_sha256": "83bd7b02f79cfa30368f955c3e88d90112bf63dff17d9be64bfbc3831700f2a5",
+  "review_mobile_sha256": "ed816b09da02c7b81ccd0a5621acc98687f1a62c4f6aeacfb7da807589239e46",
+  "bundle_member_count": 70,
+  "carrier_tree_file_count_excluding_git_publish_receipt": 71,
+  "carrier_tree_policy": "Only visual-atlas/; the carrier-specific receipt is inside visual-atlas/ and excluded from artifact-bundle.zip to avoid a self-referential bundle binding.",
+  "self_reference_note": "The immutable containing Git commit is resolved from artifact_ref after push and is printed in the final carrier readback receipt; embedding it in this tree would be self-referential.",
+  "files": {
     "visual-atlas/artifact-bundle.zip": {
-      "bytes": 13816713,
-      "sha256": "44da667f7e90197e0e779dce10b064016d245a8b64b16e659267d6f00672fa31"
+      "bytes": 12400197,
+      "sha256": "6eab168a0cc29840fb1a79f114f9408a8d21e0a6b2f0653e390de73386d1c609"
     },
     "visual-atlas/capture-report.json": {
-      "bytes": 253514,
-      "sha256": "42bb9a6ffc0d67ae52ef75bc617f17b4fef3fec65a58b1f1dc46830d71203809"
+      "bytes": 330499,
+      "sha256": "a31f0128969616f035a4f1e0bd1e3a9509e0be5ebe80665fdeeffcb0010a1a72"
     },
     "visual-atlas/reader-index.json": {
-      "bytes": 26879,
-      "sha256": "c366ac338f224856baba1d08fe1c3032d445444b53ef17db19bd3dd52a9ee9c5"
+      "bytes": 46723,
+      "sha256": "5917af645e5e90ea26d65f2be072f5d8e34c74d0a7bd4ffab481e915e5642156"
+    },
+    "visual-atlas/recovery-reconcile.json": {
+      "bytes": 41803,
+      "sha256": "cb52fe3f052f18ba21e769976212607520b61b60df4b166443cfbaa74a430771"
     },
     "visual-atlas/review-desktop.pdf": {
-      "bytes": 5064720,
-      "sha256": "38a506638ddc8052469bed1f92923bcf03b46f00172bec69ff2fe4794d68933f"
+      "bytes": 5280062,
+      "sha256": "83bd7b02f79cfa30368f955c3e88d90112bf63dff17d9be64bfbc3831700f2a5"
     },
     "visual-atlas/review-mobile.pdf": {
-      "bytes": 1714137,
-      "sha256": "2ceea0a557c10c2df6eaa67b7d18e6f3bafa9e415b6e8dd35f633b8ac216d524"
+      "bytes": 1828472,
+      "sha256": "ed816b09da02c7b81ccd0a5621acc98687f1a62c4f6aeacfb7da807589239e46"
     },
     "visual-atlas/screenshots/architecture--desktop-1440x900.png": {
       "bytes": 82943,
@@ -139,85 +149,21 @@
       "bytes": 60795,
       "sha256": "4d1d7095c67b3193cf6502e54de920d8ea4e253568257cd9b8021233842ce3dd"
     },
-    "visual-atlas/screenshots/projects-outcomes-measurements--desktop-1440x900.png": {
+    "visual-atlas/screenshots/projects-outcomes--desktop-1440x900.png": {
       "bytes": 176248,
       "sha256": "232632914b87b84927c516a893aab2e509df8426509e1cde66f27a35e56d3c53"
     },
-    "visual-atlas/screenshots/projects-outcomes-measurements--mobile-390x844.png": {
+    "visual-atlas/screenshots/projects-outcomes--mobile-390x844.png": {
       "bytes": 70536,
       "sha256": "8ae038e0e8d8ebfac7e23ae19df6b16b8810fe3c45ef682a5c5f307670de7f30"
     },
-    "visual-atlas/screenshots/projects-outcomes-summary--desktop-1440x900.png": {
-      "bytes": 176248,
-      "sha256": "232632914b87b84927c516a893aab2e509df8426509e1cde66f27a35e56d3c53"
+    "visual-atlas/screenshots/projects-plan--desktop-1440x900.png": {
+      "bytes": 137070,
+      "sha256": "1541c56d45368d018dc24b545e745e7b62476e33171aed35f06effcd4ffb0e06"
     },
-    "visual-atlas/screenshots/projects-outcomes-summary--mobile-390x844.png": {
-      "bytes": 70536,
-      "sha256": "8ae038e0e8d8ebfac7e23ae19df6b16b8810fe3c45ef682a5c5f307670de7f30"
-    },
-    "visual-atlas/screenshots/projects-outcomes-value--desktop-1440x900.png": {
-      "bytes": 176248,
-      "sha256": "232632914b87b84927c516a893aab2e509df8426509e1cde66f27a35e56d3c53"
-    },
-    "visual-atlas/screenshots/projects-outcomes-value--mobile-390x844.png": {
-      "bytes": 70536,
-      "sha256": "8ae038e0e8d8ebfac7e23ae19df6b16b8810fe3c45ef682a5c5f307670de7f30"
-    },
-    "visual-atlas/screenshots/projects-plan-architecture-current--desktop-1440x900.png": {
-      "bytes": 137135,
-      "sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-    },
-    "visual-atlas/screenshots/projects-plan-architecture-current--mobile-390x844.png": {
-      "bytes": 60199,
-      "sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-    },
-    "visual-atlas/screenshots/projects-plan-architecture-impact--desktop-1440x900.png": {
-      "bytes": 137135,
-      "sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-    },
-    "visual-atlas/screenshots/projects-plan-architecture-impact--mobile-390x844.png": {
-      "bytes": 60199,
-      "sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-    },
-    "visual-atlas/screenshots/projects-plan-architecture-proposed--desktop-1440x900.png": {
-      "bytes": 137135,
-      "sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-    },
-    "visual-atlas/screenshots/projects-plan-architecture-proposed--mobile-390x844.png": {
-      "bytes": 60199,
-      "sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-    },
-    "visual-atlas/screenshots/projects-plan-brief--desktop-1440x900.png": {
-      "bytes": 137135,
-      "sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-    },
-    "visual-atlas/screenshots/projects-plan-brief--mobile-390x844.png": {
-      "bytes": 60199,
-      "sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-    },
-    "visual-atlas/screenshots/projects-plan-milestones--desktop-1440x900.png": {
-      "bytes": 137135,
-      "sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-    },
-    "visual-atlas/screenshots/projects-plan-milestones--mobile-390x844.png": {
-      "bytes": 60199,
-      "sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-    },
-    "visual-atlas/screenshots/projects-plan-resources--desktop-1440x900.png": {
-      "bytes": 137135,
-      "sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-    },
-    "visual-atlas/screenshots/projects-plan-resources--mobile-390x844.png": {
-      "bytes": 60199,
-      "sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
-    },
-    "visual-atlas/screenshots/projects-plan-risks--desktop-1440x900.png": {
-      "bytes": 137135,
-      "sha256": "209301a7209316702771fad9e7467a2beaa8a46e126c876bfab3903a07df0b90"
-    },
-    "visual-atlas/screenshots/projects-plan-risks--mobile-390x844.png": {
-      "bytes": 60199,
-      "sha256": "0409427d7b2ff872bd4fde495e5cc0e31927f6396c3b0fc6a0f0731c1a8f4312"
+    "visual-atlas/screenshots/projects-plan--mobile-390x844.png": {
+      "bytes": 44979,
+      "sha256": "21da685b35e70571f6c8e1a5566ad646f5ba6d2a3acea712ca1bffd814cc7a30"
     },
     "visual-atlas/screenshots/projects-portfolio--desktop-1440x900.png": {
       "bytes": 226694,
@@ -227,6 +173,22 @@
       "bytes": 50640,
       "sha256": "569139047a3b76f96bfeb153c651f71031c77dba80a3ee4ba0e4aeb2a83e6d2c"
     },
+    "visual-atlas/screenshots/projects-reports--desktop-1440x900.png": {
+      "bytes": 97859,
+      "sha256": "ea8e292bf0723fe0e3a095a81b667a91bba4a7461d0a38e5054e37d0cb935956"
+    },
+    "visual-atlas/screenshots/projects-reports--mobile-390x844.png": {
+      "bytes": 49811,
+      "sha256": "7080e5f774b3c7f71c7165741d376c2dfa944a92518d2ecda087751ff781e5ad"
+    },
+    "visual-atlas/screenshots/projects-resources--desktop-1440x900.png": {
+      "bytes": 113795,
+      "sha256": "8439e564e9d952ddc9704f31e0ffc36de76b2ed6ac6897618806bad5a3998efe"
+    },
+    "visual-atlas/screenshots/projects-resources--mobile-390x844.png": {
+      "bytes": 49359,
+      "sha256": "f6f36ae31ffee6f8be075e9caddec8b9dc1eca564165b2e18175836b497c91ae"
+    },
     "visual-atlas/screenshots/projects-timeline--desktop-1440x900.png": {
       "bytes": 117827,
       "sha256": "b995ad182cdca6472ab8b3325f310b4742cbdcfa34ae94b7feeced63c368bd04"
@@ -235,45 +197,29 @@
       "bytes": 50691,
       "sha256": "cb01167c49465ca5384de21a7d6bd0da9e17bb2c3a1b6626295fd8980aac3f3f"
     },
-    "visual-atlas/screenshots/projects-updates-activity--desktop-1440x900.png": {
-      "bytes": 126201,
-      "sha256": "eb34ec69f2bba41d65f0a62fef3adda5ab784ef1a42a0aa27bc07121cb0a3f32"
+    "visual-atlas/screenshots/projects-updates--desktop-1440x900.png": {
+      "bytes": 125707,
+      "sha256": "9982d79a3ea05739b1b2605f1f4d2fd0809331ae4867b8698f38f0d6e83d6a98"
     },
-    "visual-atlas/screenshots/projects-updates-activity--mobile-390x844.png": {
-      "bytes": 56146,
-      "sha256": "5b9445dc29053ee4892b05b863b276c33ac714430505c03a75cbd90650db3e42"
-    },
-    "visual-atlas/screenshots/projects-updates-reports--desktop-1440x900.png": {
-      "bytes": 126201,
-      "sha256": "eb34ec69f2bba41d65f0a62fef3adda5ab784ef1a42a0aa27bc07121cb0a3f32"
-    },
-    "visual-atlas/screenshots/projects-updates-reports--mobile-390x844.png": {
-      "bytes": 56146,
-      "sha256": "5b9445dc29053ee4892b05b863b276c33ac714430505c03a75cbd90650db3e42"
-    },
-    "visual-atlas/screenshots/projects-updates-updates--desktop-1440x900.png": {
-      "bytes": 126201,
-      "sha256": "eb34ec69f2bba41d65f0a62fef3adda5ab784ef1a42a0aa27bc07121cb0a3f32"
-    },
-    "visual-atlas/screenshots/projects-updates-updates--mobile-390x844.png": {
-      "bytes": 56146,
-      "sha256": "5b9445dc29053ee4892b05b863b276c33ac714430505c03a75cbd90650db3e42"
+    "visual-atlas/screenshots/projects-updates--mobile-390x844.png": {
+      "bytes": 56519,
+      "sha256": "043af4bc579575cfdbebbb102005335655283b8d4e3a6d95b23f302b671cc802"
     },
     "visual-atlas/screenshots/projects-work-board--desktop-1440x900.png": {
       "bytes": 134334,
       "sha256": "f2851259417a9be09ec7e0b9ad97f7a5a73490d5199f93e033574ab6a41755d6"
     },
     "visual-atlas/screenshots/projects-work-board--mobile-390x844.png": {
-      "bytes": 60346,
-      "sha256": "2abc2b7eb847f44f3226424f942b5c1691e1b8fc9f084438ed42b32435338210"
+      "bytes": 42325,
+      "sha256": "665e451f11ca1dc624d371b50c59b7eae0093eb8cd5bc7c02c2455e6a5ab1692"
     },
     "visual-atlas/screenshots/projects-work-list--desktop-1440x900.png": {
       "bytes": 152870,
       "sha256": "225f6bab220ca17f7371a37a368d07ecad270bb9390f43bbab4e2dbc69c140f2"
     },
     "visual-atlas/screenshots/projects-work-list--mobile-390x844.png": {
-      "bytes": 60346,
-      "sha256": "2abc2b7eb847f44f3226424f942b5c1691e1b8fc9f084438ed42b32435338210"
+      "bytes": 52364,
+      "sha256": "8b41921fb4ee5ac4f36cd33ca4ff1abefad4ab2eeaed32f81d79b236951e9d87"
     },
     "visual-atlas/screenshots/racks--desktop-1440x900.png": {
       "bytes": 204318,
@@ -356,12 +302,9 @@
       "sha256": "9606db58bb40de7b69731d80dc61d7ec8ab89cdca151ccce68280112e882a4a8"
     },
     "visual-atlas/surface-manifest.json": {
-      "bytes": 132504,
-      "sha256": "709ac261898794639ad7092a91131f2bdd896c3a050499456b89d24e9ea0619f"
+      "bytes": 206397,
+      "sha256": "d700ed354225a70ba3d36102aeaf7f2fde0fe3dd17f07f6cc0d92e0e96eeedb0"
     }
   },
-  "carrier_tree_policy": "Only visual-atlas/ plus this git-publish-receipt.json",
-  "commit_identity_note": "The containing Git commit SHA is resolved from artifact_ref after push and is recorded in the separately published readback receipt and final machine receipt; embedding a commit SHA in its own tree would be self-referential.",
-  "remote_readback_required": true,
-  "created_at_utc": "2026-09-25T19:59:47.968Z"
+  "created_at_utc": "2026-09-25T22:23:04.485Z"
 }
