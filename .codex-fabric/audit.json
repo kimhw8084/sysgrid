@@ -1,0 +1,718 @@
+{
+  "accepted_at": "2026-09-25T10:45:52Z",
+  "changed_files": [
+    {
+      "additions": 247,
+      "deletions": 273,
+      "path": "DEPLOYMENT.md",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 1,
+      "path": "README.md",
+      "status": "M"
+    },
+    {
+      "additions": 114,
+      "deletions": 6,
+      "path": "backend/app/core/config.py",
+      "status": "M"
+    },
+    {
+      "additions": 9,
+      "deletions": 3,
+      "path": "backend/app/database.py",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 0,
+      "path": "backend/app/schema_tools.py",
+      "status": "A"
+    },
+    {
+      "additions": 92,
+      "deletions": 1,
+      "path": "backend/test_production_startup_policy.py",
+      "status": "M"
+    },
+    {
+      "additions": 16,
+      "deletions": 6,
+      "path": "deploy/backend.env.production.example",
+      "status": "M"
+    },
+    {
+      "additions": 3,
+      "deletions": 1,
+      "path": "deploy/frontend.env.production.example",
+      "status": "M"
+    },
+    {
+      "additions": 333,
+      "deletions": 0,
+      "path": "docs/OUT-13-historical-deployment-readiness.md",
+      "status": "A"
+    },
+    {
+      "additions": 163,
+      "deletions": 12,
+      "path": "scripts/corporate_publishability_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 448,
+      "deletions": 0,
+      "path": "scripts/production-lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 176,
+      "deletions": 45,
+      "path": "scripts/production-preflight.py",
+      "status": "M"
+    },
+    {
+      "additions": 457,
+      "deletions": 14,
+      "path": "scripts/production_data_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 205,
+      "deletions": 0,
+      "path": "scripts/rehearse-production-lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 92,
+      "deletions": 17,
+      "path": "scripts/tests/test_corporate_publishability_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 319,
+      "deletions": 5,
+      "path": "scripts/tests/test_production_data_guard.py",
+      "status": "M"
+    },
+    {
+      "additions": 108,
+      "deletions": 0,
+      "path": "scripts/tests/test_production_lifecycle.py",
+      "status": "A"
+    },
+    {
+      "additions": 126,
+      "deletions": 0,
+      "path": "scripts/tests/test_production_preflight.py",
+      "status": "A"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n 'publish-evidence|def .*publish.*evidence|publish_pending_evidence' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '2952,3095p' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py && rtk proxy sed -n '4830,4865p' /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy pgrep -f 'python scripts/production-preflight.py --json'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy rg -n 'def create_snapshot|def load_and_validate_manifest|def restore_snapshot|def _write_json_atomic|def _safe_relative_path|def sqlite_logical_fingerprint|def audit_registry' scripts/production_data_guard.py && rtk proxy sed -n '260,570p' scripts/production_data_guard.py && rtk proxy sed -n '1040,1150p' scripts/production_data_guard.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '1,140p' scripts/production_data_guard.py && rtk proxy rg -n 'operation_id|path.traversal|unsafe.*path|relative_path' scripts/tests/test_production_data_guard.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '215,270p' scripts/tests/test_production_data_guard.py && rtk proxy sed -n '40,90p' scripts/tests/test_production_data_guard.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy pgrep -f 'python scripts/production-preflight.py --json'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env ENVIRONMENT=production BACKEND_CORS_ORIGINS=https://frontend.invalid ALLOWED_HOSTS=backend.invalid IDENTITY_MODE=trusted_proxy TRUSTED_PROXY_USER_HEADER=X-Authenticated-User DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-preflight/default.db CONFIG_DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-preflight/config.db TENANT_STORAGE_ROOT=/tmp/sysgrid-chg56-preflight/tenants PUBLIC_READONLY_ENABLED=false ALLOW_PUBLIC_READONLY_IN_PRODUCTION=false DEFAULT_USER_ID=svc-sysgrid AUTO_ADMIN_USER_IDS= ALLOW_AUTO_ADMIN_IN_PRODUCTION=false CONTROL_PLANE_ADMIN_USER_IDS=ops-admin CONTROL_PLANE_BOOTSTRAP_ENABLED=false CONTROL_PLANE_BOOTSTRAP_USER_ID= SYSTEM_ROOT_USER_IDS=system-root SCHEDULE_PREVIEW_SIGNING_KEY=synthetic-deployment-key-0123456789abcdef PV1_RELEASE_CANDIDATE_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa PV1_RELEASE_ID=synthetic-release-1 AUTO_MIGRATE_ON_STARTUP=false ALLOW_AUTO_MIGRATE_IN_PRODUCTION=false python scripts/production-preflight.py --json'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat backend/.pytest_cache/v/cache/lastfailed'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1116,
+        "output_sha256": "95a4c450959f94c445a3be5015c815333b84ce5b81496872c3ae7cecee9394e4",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport subprocess, sys, tempfile\nscript = Path('scripts/production-preflight.py').resolve()\nspec = importlib.util.spec_from_file_location('preflight_debug_one', script)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nwith tempfile.TemporaryDirectory(prefix='sysgrid-debug-tests-') as root:\n    result = subprocess.run([sys.executable, '-m', 'pytest', '-q', '-x', 'test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed'], cwd='backend', env=module.backend_test_environment(Path(root)), text=True, capture_output=True, check=False)\n    output = (result.stdout + '\\\\n' + result.stderr).replace(root, '<isolated-test-root>')\n    print(output[-5000:])\n    raise SystemExit(result.returncode)\nPY\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "warnings": 1
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 3796,
+        "output_sha256": "798c2b81adc6b58521521bf441dce422c930c758650f0c2bc743a068baf3e69a",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport subprocess, sys, tempfile\nscript = Path('scripts/production-preflight.py').resolve()\nspec = importlib.util.spec_from_file_location('preflight_debug_one', script)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nwith tempfile.TemporaryDirectory(prefix='sysgrid-debug-tests-') as root:\n    result = subprocess.run([sys.executable, '-m', 'pytest', '-q', '-x', 'test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed'], cwd='backend', env=module.backend_test_environment(Path(root)), text=True, capture_output=True, check=False)\n    output = (result.stdout + '\\\\n' + result.stderr).replace(root, '<isolated-test-root>')\n    print(output[-3500:])\n    raise SystemExit(result.returncode)\nPY\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "warnings": 1
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 3501,
+        "output_sha256": "45392646211fc3971b85eebb2eb406bf992ed8ec6eb81402e94ef5b60ae672fb",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport os, subprocess, sys, tempfile\nscript = Path('scripts/production-preflight.py').resolve()\nspec = importlib.util.spec_from_file_location('preflight_matrix', script)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nnode = 'test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed'\nfor label in ('full', 'minimal'):\n    with tempfile.TemporaryDirectory(prefix='sysgrid-env-matrix-') as root:\n        env = module.backend_test_environment(Path(root))\n        if label == 'minimal':\n            env = {k: v for k, v in env.items() if k in {'PATH', 'SYSTEMROOT', 'PYTHONPATH', 'ENVIRONMENT', 'TESTING', 'DATABASE_URL', 'CONFIG_DATABASE_URL', 'TENANT_STORAGE_ROOT'}}\n        result = subprocess.run([sys.executable, '-m', 'pytest', '-q', node], cwd='backend', env=env, text=True, capture_output=True, check=False)\n        lines = (result.stdout + '\\\\n' + result.stderr).splitlines()\n        summary = next((line.strip() for line in reversed(lines) if 'passed' in line or 'failed' in line), 'no_summary')\n        print(f'{label}: exit={result.returncode}; {summary}')\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 89,
+        "output_sha256": "be22f2bd358682923f2bbbd29245b9fcfc6d282a81e3c47167be5a4fa9032b1a",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff -- backend/app/database.py backend/app/schema_tools.py && rtk proxy git diff -- backend/app/core/config.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nfrom pathlib import Path\nimport os, subprocess, sys, tarfile, tempfile, io\nwith tempfile.TemporaryDirectory(prefix='sysgrid-base-checkout-') as root:\n    archive = subprocess.check_output(['git', 'archive', '--format=tar', 'HEAD'])\n    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:') as bundle:\n        bundle.extractall(root, filter='data')\n    base = Path(root)\n    db_root = base / 'synthetic-test-data'\n    env = {\n        'PATH': os.environ.get('PATH', os.defpath),\n        'PYTHONPATH': str(base / 'backend'),\n        'ENVIRONMENT': 'test',\n        'TESTING': '1',\n        'DATABASE_URL': f\\\"sqlite+aiosqlite:///{db_root / 'default.db'}\\\",\n        'CONFIG_DATABASE_URL': f\\\"sqlite+aiosqlite:///{db_root / 'config.db'}\\\",\n        'TENANT_STORAGE_ROOT': str(db_root / 'tenants'),\n    }\n    command = [sys.executable, '-m', 'pytest', '-q', 'test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed']\n    result = subprocess.run(command, cwd=base / 'backend', env=env, text=True, capture_output=True, check=False)\n    summary = next((line.strip() for line in reversed((result.stdout + '\\\\n' + result.stderr).splitlines()) if 'passed' in line or 'failed' in line), 'no_summary')\n    print(f'base_checkout_result=exit_{result.returncode}; {summary}')\n    raise SystemExit(result.returncode)\nPY\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "warnings": 1
+        },
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 58,
+        "output_sha256": "09cd4a89b9c93a61a40932df757a1f26e5d4402ac658f12b85897e40671ac95b",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat backend/.pytest_cache/v/cache/lastfailed'",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1116,
+        "output_sha256": "95a4c450959f94c445a3be5015c815333b84ce5b81496872c3ae7cecee9394e4",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nfrom pathlib import Path\nimport os, subprocess, sys, tarfile, tempfile, io\nnodes = [\n    'test_operational_actions.py::test_missing_cross_tenant_and_unsupported_requests_fail_closed',\n    'test_p05_my_day_work_plan.py::test_two_users_get_owner_scoped_writes_and_named_decision_authorization',\n    'test_p06_timeline_scheduling.py::test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation',\n    'test_p07_architecture_engine.py::test_changeset_review_apply_is_atomic_and_current_stays_unchanged',\n    'test_p07_architecture_engine.py::test_stale_object_write_and_stale_change_set_apply_require_rebase',\n    'test_p08_updates_resources_reports.py::test_reports_activity_and_notification_retry_are_snapshot_safe',\n    'test_p09_outcomes_delivery_value.py::test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify',\n    'test_pv1_domain_foundation.py::test_project_membership_enforces_task_ownership_and_revocation',\n    'test_pv1_domain_foundation.py::test_metric_delivery_acceptance_and_verified_outcome_are_independent',\n    'test_pv1_domain_foundation.py::test_same_project_id_is_not_readable_from_another_tenant',\n]\nwith tempfile.TemporaryDirectory(prefix='sysgrid-base-checkout-') as root:\n    archive = subprocess.check_output(['git', 'archive', '--format=tar', 'HEAD'])\n    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:') as bundle:\n        bundle.extractall(root, filter='data')\n    base = Path(root)\n    data = base / 'synthetic-test-data'\n    env = {'PATH': os.environ.get('PATH', os.defpath), 'PYTHONPATH': str(base / 'backend'), 'ENVIRONMENT': 'test', 'TESTING': '1', 'DATABASE_URL': f\\\"sqlite+aiosqlite:///{data / 'default.db'}\\\", 'CONFIG_DATABASE_URL': f\\\"sqlite+aiosqlite:///{data / 'config.db'}\\\", 'TENANT_STORAGE_ROOT': str(data / 'tenants')}\n    result = subprocess.run([sys.executable, '-m', 'pytest', '-q', *nodes], cwd=base / 'backend', env=env, text=True, capture_output=True, check=False)\n    lines = (result.stdout + '\\\\n' + result.stderr).splitlines()\n    summary = next((line.strip() for line in reversed(lines) if 'passed' in line or 'failed' in line), 'no_summary')\n    print(f'base_checkout_failing_nodes=10; exit={result.returncode}; {summary}')\n    raise SystemExit(0)\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "failed": 10,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 71,
+        "output_sha256": "da8bd4acac21ab2b7a39fcfdac57896de0944e7d880d6ebda807787e9d418623",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env ENVIRONMENT=production BACKEND_CORS_ORIGINS=https://frontend.invalid ALLOWED_HOSTS=backend.invalid IDENTITY_MODE=trusted_proxy TRUSTED_PROXY_USER_HEADER=X-Authenticated-User DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-preflight/default.db CONFIG_DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-preflight/config.db TENANT_STORAGE_ROOT=/tmp/sysgrid-chg56-preflight/tenants PUBLIC_READONLY_ENABLED=false ALLOW_PUBLIC_READONLY_IN_PRODUCTION=false DEFAULT_USER_ID=svc-sysgrid AUTO_ADMIN_USER_IDS= ALLOW_AUTO_ADMIN_IN_PRODUCTION=false CONTROL_PLANE_ADMIN_USER_IDS=ops-admin CONTROL_PLANE_BOOTSTRAP_ENABLED=false CONTROL_PLANE_BOOTSTRAP_USER_ID= SYSTEM_ROOT_USER_IDS=system-root SCHEDULE_PREVIEW_SIGNING_KEY=synthetic-deployment-key-0123456789abcdef PV1_RELEASE_CANDIDATE_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa PV1_RELEASE_ID=synthetic-release-1 AUTO_MIGRATE_ON_STARTUP=false ALLOW_AUTO_MIGRATE_IN_PRODUCTION=false python scripts/production-preflight.py --config-only --json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_corporate_publishability_guard.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 10
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 99,
+        "output_sha256": "a837324a2f5c0d804ee26513e45c3e17425242b25aba8e53fe57a7379e8a79a5",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_production_preflight.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 6
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 98,
+        "output_sha256": "7548474fb14d06939e7c5c04118884c7575e481e66341dcb60a44054161cc931",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_production_data_guard.py'",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "passed": 28
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "scripts/tests/test_production_data_guard.py::ProductionDataGuardTests::test_manifest_path_traversal_is_rejected"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 2869,
+        "output_sha256": "c9b476574564bd98de36699ee5425783b7051e2b74cad585378c0d1f29811211",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_production_lifecycle.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 5
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 98,
+        "output_sha256": "e679025b3f3052da2f2d9b9bf80b31049e204748c3d12c80f8457bca206c0c67",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport subprocess, sys, tempfile\nscript = Path('scripts/production-preflight.py').resolve()\nspec = importlib.util.spec_from_file_location('preflight_focused', script)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nwith tempfile.TemporaryDirectory(prefix='sysgrid-focused-tests-') as root:\n    raise SystemExit(subprocess.run([sys.executable, '-m', 'pytest', '-q', 'test_production_startup_policy.py', 'test_startup_migrations.py', 'test_migration_graph.py', 'test_p11_legacy_migration.py'], cwd='backend', env=module.backend_test_environment(Path(root)), check=False).returncode)\nPY\"",
+      "exit_code": 1,
+      "test_result": {
+        "counts": {
+          "failed": 1,
+          "passed": 21,
+          "warnings": 1
+        },
+        "exit_code": 1,
+        "failing_test_ids": [
+          "test_production_startup_policy.py::test_production_contract_rejects_relative_or_non_sqlite_persistent_paths"
+        ],
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "output_bytes": 1848,
+        "output_sha256": "4e7c15f543b136c1a7c9e24ea94300b46c54a5ec8cecae555329d9987765aee7",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_production_data_guard.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 29
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 99,
+        "output_sha256": "92f52bc91c2beeef7952c8d482a89535dfee721099d05707c075f000c6fac924",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\nimport subprocess, sys, tempfile\nscript = Path('scripts/production-preflight.py').resolve()\nspec = importlib.util.spec_from_file_location('preflight_focused', script)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nwith tempfile.TemporaryDirectory(prefix='sysgrid-focused-tests-') as root:\n    raise SystemExit(subprocess.run([sys.executable, '-m', 'pytest', '-q', 'test_production_startup_policy.py', 'test_startup_migrations.py', 'test_migration_graph.py', 'test_p11_legacy_migration.py'], cwd='backend', env=module.backend_test_environment(Path(root)), check=False).returncode)\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 22,
+          "warnings": 1
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 591,
+        "output_sha256": "654ad6e7a14b9654cc95d24bccb6131f6f0a68e4bd258cb78380d3b7adaa69cd",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python scripts/corporate_publishability_guard.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_corporate_publishability_guard.py scripts/tests/test_production_preflight.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 16
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 99,
+        "output_sha256": "fd4b93811bf776e6eb026321c2ed111649d14492302f5cf92999156928e0b4ca",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python scripts/rehearse-production-lifecycle.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=synthetic-system-root bash scripts/verify-app.sh'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport json\nfrom pathlib import Path\npath = Path('frontend/llm-report.json')\nif not path.exists():\n    print('report_missing')\nelse:\n    data = json.loads(path.read_text(encoding='utf-8'))\n    print('root_type=' + type(data).__name__)\n    if isinstance(data, dict):\n        print('root_keys=' + ','.join(sorted(data.keys())))\n        for key, value in data.items():\n            if isinstance(value, list):\n                print(f'{key}_count={len(value)}')\n            elif isinstance(value, (str, int, float, bool)) or value is None:\n                print(f'{key}_type={type(value).__name__}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport json\nfrom pathlib import Path\nrows = json.loads(Path('frontend/llm-report.json').read_text(encoding='utf-8')).get('failures', [])\nfor index, row in enumerate(rows[:3]):\n    print(f'failure_{index}_keys=' + ','.join(sorted(row.keys())))\n    print('test=' + str(row.get('test', ''))[:160])\n    error = str(row.get('error', row.get('message', '')))\n    print('error_class_prefix=' + error.split(':', 1)[0][:80])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport json, re\nfrom pathlib import Path\nrows = json.loads(Path('frontend/llm-report.json').read_text(encoding='utf-8')).get('failures', [])\nseen = set()\nfor row in rows:\n    error = str(row.get('error', ''))\n    error = re.sub(r'/Users/[\"'^/'\"\\\\s]+', '[LOCAL_PATH]', error)\n    error = re.sub(r'/private/[\"'^'\"\\\\s]+|/var/folders/[\"'^'\"\\\\s]+|/tmp/[\"'^'\"\\\\s]+', '[TEMP_PATH]', error)\n    error = re.sub(r'https?://[\"'^'\"\\\\s\\\\]\\\"\\\\']+', '[URL]', error)\n    error = re.sub(r'(?i)(bearer\\\\s+)[A-Za-z0-9._-]+', r'\\\\1[REDACTED]', error)\n    error = error.replace('haewon.kim', '[LOCAL_USER]')\n    short = error[:480].replace('\\\\n', ' | ')\n    if short and short not in seen:\n        seen.add(short)\n        print(f'count={sum(1 for other in rows if str(other.get(\\\"error\\\", \\\"\\\"))[:480].replace(\\\"\\\\\\\\n\\\", \\\" | \\\") == str(row.get(\\\"error\\\", \\\"\\\"))[:480].replace(\\\"\\\\\\\\n\\\", \\\" | \\\"))}; {short}')\n        if len(seen) >= 3:\n            break\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nimport json, re\nfrom pathlib import Path\nrows = json.loads(Path('frontend/llm-report.json').read_text(encoding='utf-8')).get('failures', [])\nseen = set()\nfor row in rows:\n    error = str(row.get('error', ''))\n    error = re.sub(r'/Users/[\"'^/'\"\\\\s]+', '[LOCAL_PATH]', error)\n    error = re.sub(r'/private/[\"'^'\"\\\\s]+|/var/folders/[\"'^'\"\\\\s]+|/tmp/[\"'^'\"\\\\s]+', '[TEMP_PATH]', error)\n    error = re.sub(r'https?://[\"'^'\"\\\\s\\\\]\\\"\\\\']+', '[URL]', error)\n    error = re.sub(r'(?i)(bearer\\\\s+)[A-Za-z0-9._-]+', r'\\\\1[REDACTED]', error)\n    error = error.replace('haewon.kim', '[LOCAL_USER]')\n    short = error[:480].replace('\\\\n', ' | ')\n    if short and short not in seen:\n        seen.add(short)\n        print(short)\n        if len(seen) >= 3:\n            break\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy ./node_modules/.bin/playwright install chromium'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID=synthetic-system-root bash scripts/verify-app.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git status --short && rtk proxy git diff --stat && rtk proxy git diff --check && rtk proxy git rev-parse HEAD && rtk proxy git rev-parse main && rtk proxy git ls-remote origin refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py status CF-cfa961d3affd6ceb79ad0f4f'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nfrom pathlib import Path\nimport hashlib, os, subprocess, tarfile, tempfile, io, re\nrepo = Path.cwd()\nexpected_head = '6fd8c37269ad51ab2155a8a3e5632df79b16ead3'\nhead = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip()\nif head \"'!= expected_head:\n    raise SystemExit('\"'candidate_base_mismatch')\nwith tempfile.TemporaryDirectory(prefix='sysgrid-chg56-index-') as temp:\n    temp_path = Path(temp)\n    env = os.environ.copy()\n    env['GIT_INDEX_FILE'] = str(temp_path / 'candidate.index')\n    subprocess.run(['git', 'read-tree', 'HEAD'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    subprocess.run(['git', 'add', '-A'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    tree = subprocess.check_output(['git', 'write-tree'], cwd=repo, env=env, text=True).strip()\n    patch = subprocess.check_output(['git', 'diff', '--cached', '--binary', 'HEAD'], cwd=repo, env=env)\n    patch_path = Path('/tmp/sysgrid-chg56-review.patch')\n    patch_path.write_bytes(patch)\n    patch_hash = hashlib.sha256(patch).hexdigest()\n    base_root = temp_path / 'base-checkout'\n    base_root.mkdir()\n    archive = subprocess.check_output(['git', 'archive', '--format=tar', 'HEAD'], cwd=repo)\n    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:') as bundle:\n        bundle.extractall(base_root, filter='data')\n    apply_check = subprocess.run(['git', 'apply', '--check', str(patch_path)], cwd=base_root, text=True, capture_output=True, check=False)\n    if apply_check.returncode:\n        raise SystemExit('fresh_base_apply_check_failed')\n    diff_added = subprocess.check_output(['git', 'diff', '--unified=0', 'HEAD'], cwd=repo, text=True)\n    staged_added = [line[1:] for line in diff_added.splitlines() if line.startswith('+') and not line.startswith('+++')]\n    untracked = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=repo, text=True).splitlines()\n    added_text = '\\\\n'.join(staged_added + [Path(name).read_text(encoding='utf-8', errors='replace') for name in untracked])\n    path_hits = re.findall(r'/(?:Users/[\"'^'\"\\\\s]+|home/[\"'^'\"\\\\s]+|private/var/[\"'^'\"\\\\s]+|var/folders/[\"'^'\"\\\\s]+|tmp/[\"'^'\"\\\\s]+)', added_text)\n    secret_patterns = [r'-----BEGIN [A-Z ]*PRIVATE KEY-----', r'\\\\bAKIA[0-9A-Z]{16}\\\\b', r'\\\\bgh[pousr]_[A-Za-z0-9]{20,}\\\\b', r'://[\"'^/'\"\\\\s:@]+:[\"'^/@'\"\\\\s]+@']\n    secret_hits = sum(len(re.findall(pattern, added_text, flags=re.IGNORECASE)) for pattern in secret_patterns)\n    print(f'candidate_parent={head}')\n    print(f'candidate_tree={tree}')\n    print(f'patch_sha256={patch_hash}')\n    print(f'fresh_base_apply_check={\\\"PASS\\\" if apply_check.returncode == 0 else \\\"FAIL\\\"}')\n    print(f'added_local_absolute_paths={len(path_hits)}')\n    print(f'secret_pattern_hits={secret_hits}')\n    print(f'untracked_source_count={len(untracked)}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nfrom pathlib import Path\nimport subprocess, re\nrepo = Path.cwd()\ntracked = subprocess.check_output(['git', 'diff', '--name-only', 'HEAD'], cwd=repo, text=True).splitlines()\nuntracked = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=repo, text=True).splitlines()\npattern = re.compile(r'://[\"'^/'\"\\\\s:@]+:[\"'^/@'\"\\\\s]+@', re.IGNORECASE)\nfor name in sorted(set(tracked + untracked)):\n    path = repo / name\n    text = subprocess.check_output(['git', 'show', f'HEAD:{name}'], cwd=repo, text=True, errors='replace') if name in tracked and subprocess.run(['git', 'cat-file', '-e', f'HEAD:{name}'], cwd=repo, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0 else ''\n    current = path.read_text(encoding='utf-8', errors='replace')\n    old = set(text.splitlines())\n    for number, line in enumerate(current.splitlines(), 1):\n        if pattern.search(line) and (name in untracked or line not in old):\n            print(f'{name}:{number}: <redacted credential-bearing URL pattern>')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy sed -n '84,100p' scripts/tests/test_production_lifecycle.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_corporate_publishability_guard.py scripts/tests/test_production_preflight.py scripts/tests/test_production_data_guard.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 45
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 99,
+        "output_sha256": "8a21c81dbe43ac7bcd0159a8337c1624a73e4114369c4cbda2f923c9e476b7ee",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python -m pytest -q scripts/tests/test_production_lifecycle.py'",
+      "exit_code": 0,
+      "test_result": {
+        "counts": {
+          "passed": 5
+        },
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 98,
+        "output_sha256": "9085929040baa82f8514fe7302348cc91e51aa6960fc513eab4738ec06edfa4f",
+        "summary_detected": true
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nfrom pathlib import Path\nimport hashlib, os, re, subprocess, tarfile, tempfile, io\nrepo = Path.cwd()\nexpected = '6fd8c37269ad51ab2155a8a3e5632df79b16ead3'\nhead = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip()\nbranch = subprocess.check_output(['git', 'branch', '--show-current'], cwd=repo, text=True).strip()\nremote = subprocess.check_output(['git', 'ls-remote', 'origin', 'refs/heads/main'], cwd=repo, text=True).split()[0]\nif head \"'!= expected or remote != expected:\n    raise SystemExit('\"'exact_base_or_remote_head_mismatch')\nwith tempfile.TemporaryDirectory(prefix='sysgrid-chg56-index-') as temp:\n    temp_path = Path(temp)\n    env = os.environ.copy()\n    env['GIT_INDEX_FILE'] = str(temp_path / 'candidate.index')\n    subprocess.run(['git', 'read-tree', 'HEAD'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    subprocess.run(['git', 'add', '-A'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    tree = subprocess.check_output(['git', 'write-tree'], cwd=repo, env=env, text=True).strip()\n    patch = subprocess.check_output(['git', 'diff', '--cached', '--binary', 'HEAD'], cwd=repo, env=env)\n    patch_path = Path('/tmp/sysgrid-chg56-review.patch')\n    patch_path.write_bytes(patch)\n    patch_sha = hashlib.sha256(patch).hexdigest()\n    base_root = temp_path / 'base-checkout'\n    base_root.mkdir()\n    archive = subprocess.check_output(['git', 'archive', '--format=tar', 'HEAD'], cwd=repo)\n    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:') as bundle:\n        bundle.extractall(base_root, filter='data')\n    check = subprocess.run(['git', 'apply', '--check', str(patch_path)], cwd=base_root, text=True, capture_output=True, check=False)\n    if check.returncode:\n        raise SystemExit('fresh_base_apply_check_failed')\ntracked = subprocess.check_output(['git', 'diff', '--name-only', 'HEAD'], cwd=repo, text=True).splitlines()\nuntracked = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=repo, text=True).splitlines()\nadded = subprocess.check_output(['git', 'diff', '--unified=0', 'HEAD'], cwd=repo, text=True)\nadded_lines = [line[1:] for line in added.splitlines() if line.startswith('+') and not line.startswith('+++')]\nall_added = '\\\\n'.join(added_lines + [Path(name).read_text(encoding='utf-8', errors='replace') for name in untracked])\nlocal_path_hits = len(re.findall(r'/(?:Users/[\"'^'\"\\\\s]+|home/[\"'^'\"\\\\s]+|private/var/[\"'^'\"\\\\s]+|var/folders/[\"'^'\"\\\\s]+|tmp/[\"'^'\"\\\\s]+)', all_added))\nsecret_patterns = [r'-----BEGIN [A-Z ]*PRIVATE KEY-----', r'\\\\bAKIA[0-9A-Z]{16}\\\\b', r'\\\\bgh[pousr]_[A-Za-z0-9]{20,}\\\\b', r'://[\"'^/'\"\\\\s:@]+:[\"'^/@'\"\\\\s]+@']\nsecret_hits = sum(len(re.findall(pattern, all_added, flags=re.IGNORECASE)) for pattern in secret_patterns)\npaths = sorted(set(tracked + untracked))\nprint(f'branch={branch}')\nprint(f'candidate_parent={head}')\nprint(f'candidate_tree={tree}')\nprint(f'candidate_sha=NOT_CREATED')\nprint(f'patch_sha256={patch_sha}')\nprint(f'changed_file_count={len(paths)}')\nprint(f'changed_files={\\\",\\\".join(paths)}')\nprint('remote_main_unchanged=PASS' if remote == expected else 'remote_main_unchanged=FAIL')\nprint('fresh_base_apply_check=PASS')\nprint(f'generated_or_non_source_untracked_count={sum(not (name.endswith(('.py', '.md', '.example'))) for name in untracked)}')\nprint(f'added_local_absolute_paths={local_path_hits}')\nprint(f'secret_pattern_hits={secret_hits}')\nprint(f'worktree_clean={\\\"true\\\" if not paths else \\\"false_expected_source_patch\\\"}')\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nfrom pathlib import Path\nimport hashlib, os, re, subprocess, tarfile, tempfile, io\nrepo = Path.cwd()\nexpected = '6fd8c37269ad51ab2155a8a3e5632df79b16ead3'\nhead = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip()\nbranch = subprocess.check_output(['git', 'branch', '--show-current'], cwd=repo, text=True).strip()\nremote = subprocess.check_output(['git', 'ls-remote', 'origin', 'refs/heads/main'], cwd=repo, text=True).split()[0]\nif head \"'!= expected or remote != expected:\n    raise SystemExit('\"'exact_base_or_remote_head_mismatch')\nwith tempfile.TemporaryDirectory(prefix='sysgrid-chg56-index-') as temp:\n    temp_path = Path(temp)\n    env = os.environ.copy()\n    env['GIT_INDEX_FILE'] = str(temp_path / 'candidate.index')\n    subprocess.run(['git', 'read-tree', 'HEAD'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    subprocess.run(['git', 'add', '-A'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    tree = subprocess.check_output(['git', 'write-tree'], cwd=repo, env=env, text=True).strip()\n    patch = subprocess.check_output(['git', 'diff', '--cached', '--binary', 'HEAD'], cwd=repo, env=env)\n    patch_path = Path('/tmp/sysgrid-chg56-review.patch')\n    patch_path.write_bytes(patch)\n    patch_sha = hashlib.sha256(patch).hexdigest()\n    base_root = temp_path / 'base-checkout'\n    base_root.mkdir()\n    archive = subprocess.check_output(['git', 'archive', '--format=tar', 'HEAD'], cwd=repo)\n    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:') as bundle:\n        bundle.extractall(base_root, filter='data')\n    check = subprocess.run(['git', 'apply', '--check', str(patch_path)], cwd=base_root, text=True, capture_output=True, check=False)\n    if check.returncode:\n        raise SystemExit('fresh_base_apply_check_failed')\ntracked = subprocess.check_output(['git', 'diff', '--name-only', 'HEAD'], cwd=repo, text=True).splitlines()\nuntracked = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=repo, text=True).splitlines()\nadded = subprocess.check_output(['git', 'diff', '--unified=0', 'HEAD'], cwd=repo, text=True)\nadded_lines = [line[1:] for line in added.splitlines() if line.startswith('+') and not line.startswith('+++')]\nall_added = '\\\\n'.join(added_lines + [Path(name).read_text(encoding='utf-8', errors='replace') for name in untracked])\nlocal_path_hits = len(re.findall(r'/(?:Users/[\"'^'\"\\\\s]+|home/[\"'^'\"\\\\s]+|private/var/[\"'^'\"\\\\s]+|var/folders/[\"'^'\"\\\\s]+|tmp/[\"'^'\"\\\\s]+)', all_added))\nsecret_patterns = [r'-----BEGIN [A-Z ]*PRIVATE KEY-----', r'\\\\bAKIA[0-9A-Z]{16}\\\\b', r'\\\\bgh[pousr]_[A-Za-z0-9]{20,}\\\\b', r'://[\"'^/'\"\\\\s:@]+:[\"'^/@'\"\\\\s]+@']\nsecret_hits = sum(len(re.findall(pattern, all_added, flags=re.IGNORECASE)) for pattern in secret_patterns)\npaths = sorted(set(tracked + untracked))\nnon_source_untracked = [name for name in untracked if not name.endswith(('.py', '.md', '.example'))]\nprint(f'branch={branch}')\nprint(f'candidate_parent={head}')\nprint(f'candidate_tree={tree}')\nprint('candidate_sha=NOT_CREATED')\nprint(f'patch_sha256={patch_sha}')\nprint(f'changed_file_count={len(paths)}')\nprint(f'changed_files={\\\",\\\".join(paths)}')\nprint('remote_main_unchanged=PASS' if remote == expected else 'remote_main_unchanged=FAIL')\nprint('fresh_base_apply_check=PASS')\nprint(f'generated_or_non_source_untracked_count={len(non_source_untracked)}')\nprint(f'added_local_absolute_paths={local_path_hits}')\nprint(f'secret_pattern_hits={secret_hits}')\nprint(f'worktree_clean={\\\"true\\\" if not paths else \\\"false_expected_source_patch\\\"}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git ls-remote origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-v1 && rtk proxy python /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py status CF-cfa961d3affd6ceb79ad0f4f'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env ENVIRONMENT=production BACKEND_CORS_ORIGINS=https://frontend.invalid ALLOWED_HOSTS=backend.invalid IDENTITY_MODE=trusted_proxy TRUSTED_PROXY_USER_HEADER=X-Authenticated-User DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-preflight/default.db CONFIG_DATABASE_URL=sqlite+aiosqlite:////tmp/sysgrid-chg56-preflight/config.db TENANT_STORAGE_ROOT=/tmp/sysgrid-chg56-preflight/tenants PUBLIC_READONLY_ENABLED=false ALLOW_PUBLIC_READONLY_IN_PRODUCTION=false DEFAULT_USER_ID=svc-sysgrid AUTO_ADMIN_USER_IDS= ALLOW_AUTO_ADMIN_IN_PRODUCTION=false CONTROL_PLANE_ADMIN_USER_IDS=ops-admin CONTROL_PLANE_BOOTSTRAP_ENABLED=false CONTROL_PLANE_BOOTSTRAP_USER_ID= SYSTEM_ROOT_USER_IDS=system-root SCHEDULE_PREVIEW_SIGNING_KEY=synthetic-deployment-key-0123456789abcdef PV1_RELEASE_CANDIDATE_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa PV1_RELEASE_ID=synthetic-release-1 AUTO_MIGRATE_ON_STARTUP=false ALLOW_AUTO_MIGRATE_IN_PRODUCTION=false python scripts/production-preflight.py --json'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python - <<'PY'\nfrom pathlib import Path\nimport hashlib, os, re, subprocess, tarfile, tempfile, io, json\nrepo = Path.cwd()\nexpected = '6fd8c37269ad51ab2155a8a3e5632df79b16ead3'\nhead = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip()\nbranch = subprocess.check_output(['git', 'branch', '--show-current'], cwd=repo, text=True).strip()\nremote_line = subprocess.check_output(['git', 'ls-remote', 'origin', 'refs/heads/main'], cwd=repo, text=True).strip()\nremote = remote_line.split()[0]\nif head \"'!= expected or remote != expected:\n    raise SystemExit('\"'exact_base_or_remote_head_mismatch')\nwith tempfile.TemporaryDirectory(prefix='sysgrid-chg56-index-') as temp:\n    tmp = Path(temp)\n    env = os.environ.copy()\n    env['GIT_INDEX_FILE'] = str(tmp / 'candidate.index')\n    subprocess.run(['git', 'read-tree', 'HEAD'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    subprocess.run(['git', 'add', '-A'], cwd=repo, env=env, check=True, stdout=subprocess.DEVNULL)\n    tree = subprocess.check_output(['git', 'write-tree'], cwd=repo, env=env, text=True).strip()\n    patch = subprocess.check_output(['git', 'diff', '--cached', '--binary', 'HEAD'], cwd=repo, env=env)\n    patch_path = Path('/tmp/sysgrid-chg56-review.patch')\n    patch_path.write_bytes(patch)\n    patch_sha = hashlib.sha256(patch).hexdigest()\n    base = tmp / 'base'\n    base.mkdir()\n    archive = subprocess.check_output(['git', 'archive', '--format=tar', 'HEAD'], cwd=repo)\n    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:') as tar:\n        tar.extractall(base, filter='data')\n    check = subprocess.run(['git', 'apply', '--check', str(patch_path)], cwd=base, text=True, capture_output=True, check=False)\n    if check.returncode:\n        raise SystemExit('fresh_base_apply_check_failed')\ntracked = subprocess.check_output(['git', 'diff', '--name-only', 'HEAD'], cwd=repo, text=True).splitlines()\nuntracked = subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], cwd=repo, text=True).splitlines()\nadded = subprocess.check_output(['git', 'diff', '--unified=0', 'HEAD'], cwd=repo, text=True)\nadded_lines = [line[1:] for line in added.splitlines() if line.startswith('+') and not line.startswith('+++')]\nadded_text = '\\\\n'.join(added_lines + [Path(name).read_text(encoding='utf-8', errors='replace') for name in untracked])\nlocal_path_hits = len(re.findall(r'/(?:Users/[\"'^'\"\\\\s]+|home/[\"'^'\"\\\\s]+|private/var/[\"'^'\"\\\\s]+|var/folders/[\"'^'\"\\\\s]+|tmp/[\"'^'\"\\\\s]+)', added_text))\nsecret_patterns = [r'-----BEGIN [A-Z ]*PRIVATE KEY-----', r'\\\\bAKIA[0-9A-Z]{16}\\\\b', r'\\\\bgh[pousr]_[A-Za-z0-9]{20,}\\\\b', r'://[\"'^/'\"\\\\s:@]+:[\"'^/@'\"\\\\s]+@']\nsecret_hits = sum(len(re.findall(p, added_text, flags=re.IGNORECASE)) for p in secret_patterns)\npaths = sorted(set(tracked + untracked))\nstatus = subprocess.check_output(['git', 'status', '--porcelain=v1'], cwd=repo, text=True).splitlines()\nignored_tests = subprocess.run(['git', 'status', '--short', '--ignored', 'frontend'], cwd=repo, text=True, capture_output=True, check=False).stdout.splitlines()\nprint(f'branch={branch}')\nprint(f'candidate_parent={head}')\nprint(f'candidate_tree={tree}')\nprint(f'candidate_sha=NOT_CREATED')\nprint(f'patch_sha256={patch_sha}')\nprint(f'changed_file_count={len(paths)}')\nprint(f'changed_files={\\\",\\\".join(paths)}')\nprint(f'remote_main={remote}')\nprint(f'fresh_base_apply_check={\\\"PASS\\\" if check.returncode == 0 else \\\"FAIL\\\"}')\nprint(f'secret_pattern_hits={secret_hits}')\nprint(f'added_local_absolute_path_hits={local_path_hits}')\nprint(f'worktree_status_entries={len(status)}')\nprint(f'generated_ignored_frontend_entries={sum(any(marker in item for marker in (\\\"stage31\\\", \\\"stage33\\\", \\\"stage34\\\", \\\"stage35\\\", \\\"stage36\\\", \\\"llm-report\\\", \\\"test-results\\\", \\\"playwright-report\\\")) for item in ignored_tests)}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy python /Users/haewonkim/.codex-fabric/releases/1.2.5-dashboard-controls-candidate/fabric.py status CF-cfa961d3affd6ceb79ad0f4f && rtk proxy git ls-remote origin refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.156.1",
+    "configured_model": "gpt-6-luna",
+    "event_count": 535,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.2,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 36860416,
+      "fresh_input_tokens": 676554,
+      "input_tokens": 37536970,
+      "non_reasoning_output_tokens": 82712,
+      "output_tokens": 232376,
+      "reasoning_output_tokens": 149664,
+      "total_processed_tokens": 37769346
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+      "subject": "fabric: capture completed model changes [CF-cfa961d3affd6ceb79ad0f4f]"
+    }
+  ],
+  "diff": {
+    "additions": 2936,
+    "changed_files": 18,
+    "commit_count": 1,
+    "deletions": 384
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 3,
+    "items": [
+      {
+        "bytes": 13624,
+        "path": "DEPLOYMENT.md",
+        "sha256": "5c3b85967190936593e1f13d8d3bbca988c0e8076148bb0d3b3cd1992ee20e97"
+      },
+      {
+        "bytes": 7719,
+        "path": "README.md",
+        "sha256": "e4fd836fd5d748fdab211e5f8a425f6253e3c2a55d85f50dddb1c093c79b4d65"
+      },
+      {
+        "bytes": 15439,
+        "path": "docs/OUT-13-historical-deployment-readiness.md",
+        "sha256": "09e42d507f83a55088a76b35fdad1369e9363bd11e82944546351e21c8436598"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": true,
+    "commit_message": "fabric: capture completed model changes [CF-cfa961d3affd6ceb79ad0f4f]",
+    "commit_sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+    "paths_before": 18,
+    "status_before": [
+      " M DEPLOYMENT.md",
+      " M README.md",
+      " M backend/app/core/config.py",
+      " M backend/app/database.py",
+      " M backend/test_production_startup_policy.py",
+      " M deploy/backend.env.production.example",
+      " M deploy/frontend.env.production.example",
+      " M scripts/corporate_publishability_guard.py",
+      " M scripts/production-preflight.py",
+      " M scripts/production_data_guard.py",
+      " M scripts/tests/test_corporate_publishability_guard.py",
+      " M scripts/tests/test_production_data_guard.py",
+      "?? backend/app/schema_tools.py",
+      "?? docs/OUT-13-historical-deployment-readiness.md",
+      "?? scripts/production-lifecycle.py",
+      "?? scripts/rehearse-production-lifecycle.py",
+      "?? scripts/tests/test_production_lifecycle.py",
+      "?? scripts/tests/test_production_preflight.py"
+    ],
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-25T14:02:14Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "6fd8c37269ad51ab2155a8a3e5632df79b16ead3",
+    "branch": "codex/sysgrid-smv1-deployment-recovery-v1",
+    "detached_verify": false,
+    "head_sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+    "remote_exact_head": true,
+    "remote_head_sha": "6ff0febba890567b98fad38d495a9c7e02a144cf",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "6fd8c37269ad51ab2155a8a3e5632df79b16ead3",
+    "work_branch": "codex/sysgrid-smv1-deployment-recovery-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-cfa961d3affd6ceb79ad0f4f",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-smv1-deployment-recovery-v1"
+  },
+  "operation": "BUILD",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-smv1-deployment-recovery-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-25T11:52:32Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 7782,
+    "queue_seconds": 4000,
+    "total_seconds": 11782
+  },
+  "transport": {
+    "bytes": 13518,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 13192,
+    "prompt_sha256": "2898bcc869d1568e92cbd4e9de02f0dceadfffa4984399dc278e7c26ca0cad2a",
+    "sha256": "cfa961d3affd6ceb79ad0f4f737fd51583a8a987611f933dfa27aa35ad76076a"
+  }
+}
