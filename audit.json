@@ -1,0 +1,43 @@
+{
+  "project_os_visual_atlas": 2,
+  "project": "sysgrid",
+  "change": "CHG-71",
+  "request": "sysgrid-visual-atlas-capture-v4",
+  "operation": "VERIFY",
+  "status": "GIT_PUBLISHED_AWAITING_AUDIT",
+  "visual_acceptance": "PENDING_CHATGPT_PIXEL_AUDIT_AFTER_USER_DONE",
+  "source": {
+    "repository": "kimhw8084/sysgrid",
+    "branch": "main",
+    "sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "tree_sha": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+    "changed": false
+  },
+  "discovery": {
+    "authority": "exact integrated source plus fresh runtime",
+    "surface_count": 40,
+    "ambiguities": []
+  },
+  "capture": {
+    "canonical_screenshot_count": 80,
+    "capture_status_counts": {
+      "CURRENT_CAPTURED": 80,
+      "BLOCKED_PRODUCT_RUNTIME": 0
+    },
+    "responsive_holdouts": 4,
+    "theme": "nordic-frost-v1",
+    "production_role": "synthetic tenant-admin; system_root=false",
+    "preview_role": "explicit synthetic System Root; preview-only"
+  },
+  "artifact": {
+    "ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-visual-atlas-capture-v4",
+    "commit": "e398030a5febf5f869c3abca23c1b1f32ec94000",
+    "package_verified": true,
+    "manifest_sha256": "709ac261898794639ad7092a91131f2bdd896c3a050499456b89d24e9ea0619f",
+    "bundle_sha256": "44da667f7e90197e0e779dce10b064016d245a8b64b16e659267d6f00672fa31",
+    "review_desktop_sha256": "38a506638ddc8052469bed1f92923bcf03b46f00172bec69ff2fe4794d68933f",
+    "review_mobile_sha256": "2ceea0a557c10c2df6eaa67b7d18e6f3bafa9e415b6e8dd35f633b8ac216d524"
+  },
+  "evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-visual-atlas-capture-v4",
+  "notion_accessed": false
+}
