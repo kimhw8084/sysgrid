@@ -1,0 +1,146 @@
+{
+  "semanticOwner": "golden-segmented-scroll",
+  "viewport": {
+    "width": 390,
+    "height": 600,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 600
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 113,
+      "y": 374,
+      "width": 159.21875,
+      "height": 46,
+      "left": 113,
+      "right": 272.21875,
+      "top": 374,
+      "bottom": 420
+    },
+    "text": "ActivePurged"
+  },
+  "actions": [
+    {
+      "name": "Active",
+      "rect": {
+        "x": 118,
+        "y": 379,
+        "width": 70.28125,
+        "height": 36,
+        "left": 118,
+        "right": 188.28125,
+        "top": 379,
+        "bottom": 415
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 113,
+        "y": 374,
+        "width": 159.21875,
+        "height": 46,
+        "left": 113,
+        "right": 272.21875,
+        "top": 374,
+        "bottom": 420
+      },
+      "scrollWidth": 159,
+      "clientWidth": 159,
+      "scrollLeft": 0,
+      "activeLabel": "Active",
+      "activeRect": {
+        "x": 118,
+        "y": 379,
+        "width": 70.28125,
+        "height": 36,
+        "left": 118,
+        "right": 188.28125,
+        "top": 379,
+        "bottom": 415
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      }
+    },
+    {
+      "rect": {
+        "x": 284.21875,
+        "y": 374,
+        "width": 176.921875,
+        "height": 46,
+        "left": 284.21875,
+        "right": 461.140625,
+        "top": 374,
+        "bottom": 420
+      },
+      "scrollWidth": 177,
+      "clientWidth": 177,
+      "scrollLeft": 0,
+      "activeLabel": "Elevation",
+      "activeRect": {
+        "x": 289.21875,
+        "y": 379,
+        "width": 88.125,
+        "height": 36,
+        "left": 289.21875,
+        "right": 377.34375,
+        "top": 379,
+        "bottom": 415
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      }
+    },
+    {
+      "rect": {
+        "x": 1014.140625,
+        "y": 374,
+        "width": 147.9375,
+        "height": 46,
+        "left": 1014.140625,
+        "right": 1162.078125,
+        "top": 374,
+        "bottom": 420
+      },
+      "scrollWidth": 148,
+      "clientWidth": 148,
+      "scrollLeft": 0,
+      "activeLabel": "All",
+      "activeRect": {
+        "x": 1019.140625,
+        "y": 379,
+        "width": 48.578125,
+        "height": 36,
+        "left": 1019.140625,
+        "right": 1067.71875,
+        "top": 379,
+        "bottom": 415
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

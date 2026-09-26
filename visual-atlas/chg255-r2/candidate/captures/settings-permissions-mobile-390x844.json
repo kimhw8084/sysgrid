@@ -1,0 +1,84 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 423,
+      "width": 249,
+      "height": 488.5,
+      "left": 96,
+      "right": 345,
+      "top": 423,
+      "bottom": 911.5
+    },
+    "text": "Identity Sync PipelinePYTHON-DRIVENAutomated synchronization of operators, departments, and teams from LDAP/AD providersSortIdentityPrimary TeamAdmin FirstRevision HistoryBulk ActionsSelectIdentityDepartmentTeamGroup(s)Admin Statusprojectsracksassetsservicesexternalnetworkarchitectureresearchfarmonitoringvendorsknowled"
+  },
+  "actions": [
+    {
+      "name": "Permissions",
+      "rect": {
+        "x": 206.09375,
+        "y": 366,
+        "width": 105.734375,
+        "height": 36,
+        "left": 206.09375,
+        "right": 311.828125,
+        "top": 366,
+        "bottom": 402
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 96,
+        "y": 361,
+        "width": 263,
+        "height": 46,
+        "left": 96,
+        "right": 359,
+        "top": 361,
+        "bottom": 407
+      },
+      "scrollWidth": 578,
+      "clientWidth": 263,
+      "scrollLeft": 0,
+      "activeLabel": "Permissions",
+      "activeRect": {
+        "x": 206.09375,
+        "y": 366,
+        "width": 105.734375,
+        "height": 36,
+        "left": 206.09375,
+        "right": 311.828125,
+        "top": 366,
+        "bottom": 402
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

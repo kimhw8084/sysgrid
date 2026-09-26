@@ -1,0 +1,84 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 390,
+    "height": 600,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 600
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 423,
+      "width": 249,
+      "height": 3047.5,
+      "left": 96,
+      "right": 345,
+      "top": 423,
+      "bottom": 3470.5
+    },
+    "text": "Metadata RegistryForensic Lineage & Global ParametersMonitoring PlatformsDrives platform selectors and validation in Monitoring.Monitoring3EntriesMonitoring CategoriesFeeds monitor category selectors, imports, and grid metadata.Monitoring5EntriesMonitoring OwnershipDefines monitoring ownership groups exposed in Monitor"
+  },
+  "actions": [
+    {
+      "name": "Metadata",
+      "rect": {
+        "x": 270.96875,
+        "y": 366,
+        "width": 88.484375,
+        "height": 36,
+        "left": 270.96875,
+        "right": 359.453125,
+        "top": 366,
+        "bottom": 402
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 96,
+        "y": 361,
+        "width": 263,
+        "height": 46,
+        "left": 96,
+        "right": 359,
+        "top": 361,
+        "bottom": 407
+      },
+      "scrollWidth": 578,
+      "clientWidth": 263,
+      "scrollLeft": 124,
+      "activeLabel": "Metadata",
+      "activeRect": {
+        "x": 270.96875,
+        "y": 366,
+        "width": 88.484375,
+        "height": 36,
+        "left": 270.96875,
+        "right": 359.453125,
+        "top": 366,
+        "bottom": 402
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

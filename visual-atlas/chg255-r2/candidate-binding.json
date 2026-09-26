@@ -1,0 +1,18 @@
+{
+  "project": "sysgrid",
+  "change": "CHG-255",
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-fix-v2",
+  "operation": "FIX",
+  "repository": "kimhw8084/sysgrid",
+  "work_branch": "codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v2",
+  "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+  "candidate_tree": "dfa8c00c9b9a39a34160fa265bf3daa4072954bf",
+  "candidate_parent": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+  "required_base_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+  "required_base_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+  "lineage_verified": true,
+  "artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v2",
+  "native_evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v2",
+  "evidence_binding": "All candidate captures and Product file hashes in this package refer to candidate_sha above.",
+  "generated_evidence_outside_product_tree": true
+}

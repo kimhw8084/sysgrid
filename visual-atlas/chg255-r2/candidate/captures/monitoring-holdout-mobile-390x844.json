@@ -1,0 +1,84 @@
+{
+  "semanticOwner": "monitoring-workspace",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 240,
+      "width": 263,
+      "height": 507,
+      "left": 96,
+      "right": 359,
+      "top": 240,
+      "bottom": 747
+    },
+    "text": "ObservabilityMonitoringCentralized monitoring configuration and operational statusRegistry Scope2 existing · 0 archivedExistingArchivedViewsDisplayImportFilters ActivityCompareBulk Actions+ Add MonitoringStatus FilterAll statusesSeverity FilterAll severitiesPlatform FilterAll platformsOwner FilterAll owners\n           "
+  },
+  "actions": [
+    {
+      "name": "Existing",
+      "rect": {
+        "x": 219.84375,
+        "y": 357,
+        "width": 81.203125,
+        "height": 36,
+        "left": 219.84375,
+        "right": 301.046875,
+        "top": 357,
+        "bottom": 393
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 214.84375,
+        "y": 352,
+        "width": 137.15625,
+        "height": 46,
+        "left": 214.84375,
+        "right": 352,
+        "top": 352,
+        "bottom": 398
+      },
+      "scrollWidth": 181,
+      "clientWidth": 137,
+      "scrollLeft": 0,
+      "activeLabel": "Existing",
+      "activeRect": {
+        "x": 219.84375,
+        "y": 357,
+        "width": 81.203125,
+        "height": 36,
+        "left": 219.84375,
+        "right": 301.046875,
+        "top": 357,
+        "bottom": 393
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

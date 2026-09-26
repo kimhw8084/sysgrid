@@ -1,0 +1,151 @@
+{
+  "shared_primitive": "ToolbarSegmented / PageToolbar",
+  "non_settings_consumer": "Racks (/racks): active segmented view remains visible and reachable at mobile, short-height, text-pressure and desktop viewports.",
+  "monitoring_golden_backbone": "/monitoring canonical mobile and desktop holdout captures retain semantic owner, selected scope, no body overflow and no fatal state.",
+  "holdouts": [
+    {
+      "route": "/racks",
+      "profile": "normal-v1",
+      "semantic_owner": "golden-segmented-scroll",
+      "capture": "candidate/captures/toolbar-segmented-racks-mobile-390x844.json",
+      "pixels": "candidate/captures/toolbar-segmented-racks-mobile-390x844.png",
+      "before_reference": {
+        "path": "before/holdout-racks-shared-toolbar-mobile/racks--mobile-390x844.png",
+        "sha256": "d5fd2087306dd0f696f41c59159bcdeab3fd3a792a5da5e8f1c114399784b715",
+        "bytes": 58761,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "racks",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/racks--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "active_label": "Active",
+      "no_uncontrolled_body_overflow": true,
+      "no_fatal_state": true,
+      "result": "PASS"
+    },
+    {
+      "route": "/racks",
+      "profile": "normal-v1",
+      "semantic_owner": "golden-segmented-scroll",
+      "capture": "candidate/captures/toolbar-segmented-racks-desktop-1440x900.json",
+      "pixels": "candidate/captures/toolbar-segmented-racks-desktop-1440x900.png",
+      "before_reference": {
+        "path": "before/holdout-racks-shared-toolbar-desktop/racks--desktop-1440x900.png",
+        "sha256": "a8ccd984abac2cf467cbc1ed6e7c0625e8a8787360d80c1eebccf046526b3ed5",
+        "bytes": 204318,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "racks",
+        "capture_mode": "desktop",
+        "source_path": "visual-atlas/screenshots/racks--desktop-1440x900.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "active_label": "Active",
+      "no_uncontrolled_body_overflow": true,
+      "no_fatal_state": true,
+      "result": "PASS"
+    },
+    {
+      "route": "/racks",
+      "profile": "normal-v1",
+      "semantic_owner": "golden-segmented-scroll",
+      "capture": "candidate/captures/toolbar-segmented-racks-mobile-short-390x600.json",
+      "pixels": "candidate/captures/toolbar-segmented-racks-mobile-short-390x600.png",
+      "before_reference": {
+        "path": "before/holdout-racks-shared-toolbar-mobile/racks--mobile-390x844.png",
+        "sha256": "d5fd2087306dd0f696f41c59159bcdeab3fd3a792a5da5e8f1c114399784b715",
+        "bytes": 58761,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "racks",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/racks--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "active_label": "Active",
+      "no_uncontrolled_body_overflow": true,
+      "no_fatal_state": true,
+      "result": "PASS"
+    },
+    {
+      "route": "/racks",
+      "profile": "normal-v1",
+      "semantic_owner": "golden-segmented-scroll",
+      "capture": "candidate/captures/toolbar-segmented-racks-mobile-text-200.json",
+      "pixels": "candidate/captures/toolbar-segmented-racks-mobile-text-200.png",
+      "before_reference": {
+        "path": "before/holdout-racks-shared-toolbar-mobile/racks--mobile-390x844.png",
+        "sha256": "d5fd2087306dd0f696f41c59159bcdeab3fd3a792a5da5e8f1c114399784b715",
+        "bytes": 58761,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "racks",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/racks--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "active_label": "Active",
+      "no_uncontrolled_body_overflow": true,
+      "no_fatal_state": true,
+      "result": "PASS"
+    },
+    {
+      "route": "/monitoring",
+      "profile": "normal-v1",
+      "semantic_owner": "monitoring-workspace",
+      "capture": "candidate/captures/monitoring-holdout-mobile-390x844.json",
+      "pixels": "candidate/captures/monitoring-holdout-mobile-390x844.png",
+      "before_reference": {
+        "path": "before/holdout-monitoring-mobile/monitoring--mobile-390x844.png",
+        "sha256": "4904ce0ada3288bfcc83192e7e87159c3df35a58731877a5a9ec6b43da2b837b",
+        "bytes": 56208,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "monitoring",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/monitoring--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "active_label": "Existing",
+      "no_uncontrolled_body_overflow": true,
+      "no_fatal_state": true,
+      "result": "PASS"
+    },
+    {
+      "route": "/monitoring",
+      "profile": "normal-v1",
+      "semantic_owner": "monitoring-workspace",
+      "capture": "candidate/captures/monitoring-holdout-desktop-1440x900.json",
+      "pixels": "candidate/captures/monitoring-holdout-desktop-1440x900.png",
+      "before_reference": {
+        "path": "before/holdout-monitoring-desktop/monitoring--desktop-1440x900.png",
+        "sha256": "fea4df4c794dbe75e53aec155b026e20877dd01df396548675cd1b645c7049f7",
+        "bytes": 248445,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "monitoring",
+        "capture_mode": "desktop",
+        "source_path": "visual-atlas/screenshots/monitoring--desktop-1440x900.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "active_label": "Existing",
+      "no_uncontrolled_body_overflow": true,
+      "no_fatal_state": true,
+      "result": "PASS"
+    }
+  ]
+}

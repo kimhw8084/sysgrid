@@ -1,0 +1,52 @@
+{
+  "semanticOwner": "architecture-create-model",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 129,
+      "y": 511.5,
+      "width": 197,
+      "height": 170,
+      "left": 129,
+      "right": 326,
+      "top": 511.5,
+      "bottom": 681.5
+    },
+    "text": "Create model"
+  },
+  "actions": [
+    {
+      "name": "Create model",
+      "rect": {
+        "x": 129,
+        "y": 601.5,
+        "width": 197,
+        "height": 80,
+        "left": 129,
+        "right": 326,
+        "top": 601.5,
+        "bottom": 681.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(26, 27, 38)",
+        "ratio": 8.1
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false
+}

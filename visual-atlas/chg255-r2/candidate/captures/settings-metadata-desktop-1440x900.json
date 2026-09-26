@@ -1,0 +1,84 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 1425,
+    "documentScrollWidth": 1425,
+    "viewportWidth": 1440,
+    "bodyScrollHeight": 900
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 288,
+      "y": 233,
+      "width": 1075,
+      "height": 1596,
+      "left": 288,
+      "right": 1363,
+      "top": 233,
+      "bottom": 1829
+    },
+    "text": "Metadata RegistryForensic Lineage & Global ParametersMonitoring PlatformsDrives platform selectors and validation in Monitoring.Monitoring3EntriesMonitoring CategoriesFeeds monitor category selectors, imports, and grid metadata.Monitoring5EntriesMonitoring OwnershipDefines monitoring ownership groups exposed in Monitor"
+  },
+  "actions": [
+    {
+      "name": "Metadata",
+      "rect": {
+        "x": 586.96875,
+        "y": 176,
+        "width": 88.484375,
+        "height": 36,
+        "left": 586.96875,
+        "right": 675.453125,
+        "top": 176,
+        "bottom": 212
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 288,
+        "y": 171,
+        "width": 1089,
+        "height": 46,
+        "left": 288,
+        "right": 1377,
+        "top": 171,
+        "bottom": 217
+      },
+      "scrollWidth": 1089,
+      "clientWidth": 1089,
+      "scrollLeft": 0,
+      "activeLabel": "Metadata",
+      "activeRect": {
+        "x": 586.96875,
+        "y": 176,
+        "width": 88.484375,
+        "height": 36,
+        "left": 586.96875,
+        "right": 675.453125,
+        "top": 176,
+        "bottom": 212
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

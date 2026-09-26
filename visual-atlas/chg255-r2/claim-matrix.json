@@ -1,0 +1,1493 @@
+{
+  "project": "sysgrid",
+  "change": "CHG-255",
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-fix-v2",
+  "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+  "before_authority": {
+    "change": "CHG-71 R5",
+    "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+    "artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943"
+  },
+  "blocker_count": 11,
+  "claims": [
+    {
+      "blocker": "1",
+      "family": "Audit Logs",
+      "established_before_defect": "390x844 mobile ledger data, pagination, and row actions were cramped or clipped; task composition was not convincingly usable.",
+      "before_reference": {
+        "path": "before/blocker-01-audit-logs-mobile/logs--mobile-390x844.png",
+        "sha256": "648fe0cfef1b214eb71249d0598b17046c5360e5bb3b1f3b172c5e601d883971",
+        "bytes": 54497,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "logs",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/logs--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/logs?target_table=logical_services&target_id=<seeded logical service id>",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "audit-ledger",
+        "required_task_or_actions": [
+          "Export loaded CSV",
+          "Open target record",
+          "View change payload",
+          "pagination"
+        ],
+        "assertion": "Data row present; export/download, target navigation, payload modal, and pagination are visible/enabled/reachable; pager is inside audit owner bounds; body has no horizontal overflow.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/audit-mobile-390x844.json",
+          "candidate/captures/audit-mobile-pagination-390x844.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/audit-mobile-390x844.png",
+          "candidate/captures/audit-mobile-pagination-390x844.png"
+        ],
+        "geometry": {
+          "semantic_owner": "audit-ledger",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 80,
+              "y": 224,
+              "width": 295,
+              "height": 539,
+              "left": 80,
+              "right": 375,
+              "top": 224,
+              "bottom": 763
+            },
+            "text": "Registry Audit LedgerImmutable record of system state changes and operator actionsScoped: logical_services // 1Complete matching scopeAnalyticsStartEnd Export loaded CSVPress SPACE to deselect this row.\n                \n                \n                    \n                \n            \n            \n            \n      "
+          },
+          "actions": [
+            {
+              "name": "Export loaded CSV",
+              "rect": {
+                "x": 109,
+                "y": 541.5,
+                "width": 192.875,
+                "height": 36,
+                "left": 109,
+                "right": 301.875,
+                "top": 541.5,
+                "bottom": 577.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(2, 5, 18)",
+                "ratio": 20.35
+              }
+            },
+            {
+              "name": "View change payload",
+              "rect": {
+                "x": 337,
+                "y": 648.5,
+                "width": 26,
+                "height": 26,
+                "left": 337,
+                "right": 363,
+                "top": 648.5,
+                "bottom": 674.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(100, 116, 139)",
+                "background": "rgb(10, 24, 55)",
+                "ratio": 3.68
+              }
+            }
+          ],
+          "segmented": [],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {
+            "pagination": {
+              "left": 80,
+              "right": 375,
+              "top": 776.5,
+              "bottom": 827.5,
+              "width": 390
+            },
+            "dataRowCount": 1,
+            "targetActionVisible": true,
+            "payloadActionVisible": true
+          }
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/audit-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/audit-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "2",
+      "family": "Settings Parameters",
+      "established_before_defect": "390x844 Parameters route had the shared wayfinding/content-width failure.",
+      "before_reference": {
+        "path": "before/blocker-02-settings-parameters-mobile/settings-parameters--mobile-390x844.png",
+        "sha256": "64fc9c6207fd24e9818c8a1ad27b2372e6001cfb2de3798d132a6580cc393f29",
+        "bytes": 57690,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "settings-parameters",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/settings-parameters--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/settings?tab=environments",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "settings-tab-content",
+        "required_task_or_actions": [
+          "Parameters"
+        ],
+        "assertion": "Deep-linked authorized tab is visible, active, and its content owner renders.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/settings-parameters-mobile-390x844.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/settings-parameters-mobile-390x844.png"
+        ],
+        "geometry": {
+          "semantic_owner": "settings-tab-content",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 96,
+              "y": 423,
+              "width": 249,
+              "height": 8306.5,
+              "left": 96,
+              "right": 345,
+              "top": 423,
+              "bottom": 8729.5
+            },
+            "text": "Personal PreferencesChoose the visual mode for your operator session.LightDarkAll ImpactCritical OnlyHigh ImpactMedium ImpactLow ImpactGlobal HistoryForce Hot ReloadInfrastructure Domain2 parametersapp nameLoadedSystem level variable PARAM: app_name FILE: DatabaseLOW Impactorg nameLoadedSystem level variable PARAM: org"
+          },
+          "actions": [
+            {
+              "name": "Parameters",
+              "rect": {
+                "x": 101,
+                "y": 366,
+                "width": 101.09375,
+                "height": 36,
+                "left": 101,
+                "right": 202.09375,
+                "top": 366,
+                "bottom": 402
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "segmented": [
+            {
+              "rect": {
+                "x": 96,
+                "y": 361,
+                "width": 263,
+                "height": 46,
+                "left": 96,
+                "right": 359,
+                "top": 361,
+                "bottom": 407
+              },
+              "scrollWidth": 578,
+              "clientWidth": 263,
+              "scrollLeft": 0,
+              "activeLabel": "Parameters",
+              "activeRect": {
+                "x": 101,
+                "y": 366,
+                "width": 101.09375,
+                "height": 36,
+                "left": 101,
+                "right": 202.09375,
+                "top": 366,
+                "bottom": 402
+              },
+              "activeContrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/settings-metadata-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/settings-metadata-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "3",
+      "family": "Settings Permissions",
+      "established_before_defect": "390x844 Permissions route had the shared wayfinding/content-width failure.",
+      "before_reference": {
+        "path": "before/blocker-03-settings-permissions-mobile/settings-permissions--mobile-390x844.png",
+        "sha256": "80cb831c0c0f1cd033843c45e24c88b4a88febee1fc54e79597a95c913ba3548",
+        "bytes": 55578,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "settings-permissions",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/settings-permissions--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/settings?tab=permissions",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "settings-tab-content",
+        "required_task_or_actions": [
+          "Permissions"
+        ],
+        "assertion": "Deep-linked authorized tab is visible, active, and its content owner renders.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/settings-permissions-mobile-390x844.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/settings-permissions-mobile-390x844.png"
+        ],
+        "geometry": {
+          "semantic_owner": "settings-tab-content",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 96,
+              "y": 423,
+              "width": 249,
+              "height": 488.5,
+              "left": 96,
+              "right": 345,
+              "top": 423,
+              "bottom": 911.5
+            },
+            "text": "Identity Sync PipelinePYTHON-DRIVENAutomated synchronization of operators, departments, and teams from LDAP/AD providersSortIdentityPrimary TeamAdmin FirstRevision HistoryBulk ActionsSelectIdentityDepartmentTeamGroup(s)Admin Statusprojectsracksassetsservicesexternalnetworkarchitectureresearchfarmonitoringvendorsknowled"
+          },
+          "actions": [
+            {
+              "name": "Permissions",
+              "rect": {
+                "x": 206.09375,
+                "y": 366,
+                "width": 105.734375,
+                "height": 36,
+                "left": 206.09375,
+                "right": 311.828125,
+                "top": 366,
+                "bottom": 402
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "segmented": [
+            {
+              "rect": {
+                "x": 96,
+                "y": 361,
+                "width": 263,
+                "height": 46,
+                "left": 96,
+                "right": 359,
+                "top": 361,
+                "bottom": 407
+              },
+              "scrollWidth": 578,
+              "clientWidth": 263,
+              "scrollLeft": 0,
+              "activeLabel": "Permissions",
+              "activeRect": {
+                "x": 206.09375,
+                "y": 366,
+                "width": 105.734375,
+                "height": 36,
+                "left": 206.09375,
+                "right": 311.828125,
+                "top": 366,
+                "bottom": 402
+              },
+              "activeContrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/settings-metadata-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/settings-metadata-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "4",
+      "family": "Settings Groups",
+      "established_before_defect": "390x844 Groups route had the shared wayfinding/content-width failure.",
+      "before_reference": {
+        "path": "before/blocker-04-settings-groups-mobile/settings-groups--mobile-390x844.png",
+        "sha256": "06302f6d3864bc117e9706220a1c7bb09cf923469d84f4abe426b3a9df8c6e37",
+        "bytes": 55353,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "settings-groups",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/settings-groups--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/settings?tab=groups",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "settings-tab-content",
+        "required_task_or_actions": [
+          "Groups",
+          "New group name"
+        ],
+        "assertion": "Deep-linked authorized tab and group input remain visible and active; unsaved input text survives responsive change.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/settings-groups-mobile-390x844.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/settings-groups-mobile-390x844.png"
+        ],
+        "geometry": {
+          "semantic_owner": "settings-tab-content",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 96,
+              "y": 423,
+              "width": 249,
+              "height": 684.5,
+              "left": 96,
+              "right": 345,
+              "top": 423,
+              "bottom": 1107.5
+            },
+            "text": "InitializeGroups0 visibleNo groups match the current searchSelect a group to manage"
+          },
+          "actions": [
+            {
+              "name": "Groups",
+              "rect": {
+                "x": 283.828125,
+                "y": 366,
+                "width": 75.140625,
+                "height": 36,
+                "left": 283.828125,
+                "right": 358.96875,
+                "top": 366,
+                "bottom": 402
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "segmented": [
+            {
+              "rect": {
+                "x": 96,
+                "y": 361,
+                "width": 263,
+                "height": 46,
+                "left": 96,
+                "right": 359,
+                "top": 361,
+                "bottom": 407
+              },
+              "scrollWidth": 578,
+              "clientWidth": 263,
+              "scrollLeft": 32,
+              "activeLabel": "Groups",
+              "activeRect": {
+                "x": 283.828125,
+                "y": 366,
+                "width": 75.140625,
+                "height": 36,
+                "left": 283.828125,
+                "right": 358.96875,
+                "top": 366,
+                "bottom": 402
+              },
+              "activeContrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/settings-metadata-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/settings-metadata-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "5",
+      "family": "Settings Analysis",
+      "established_before_defect": "390x844 Analysis route had the shared wayfinding/content-width failure.",
+      "before_reference": {
+        "path": "before/blocker-05-settings-analysis-mobile/settings-system--mobile-390x844.png",
+        "sha256": "ef19249a618e75dfabbc992ad5db24991a1a4e50eb8ec8102e2adc2b479c760c",
+        "bytes": 53020,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "settings-system",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/settings-system--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/settings?tab=system",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "settings-tab-content",
+        "required_task_or_actions": [
+          "Analysis"
+        ],
+        "assertion": "Deep-linked authorized tab is visible, active, and its content owner renders.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/settings-analysis-mobile-390x844.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/settings-analysis-mobile-390x844.png"
+        ],
+        "geometry": {
+          "semantic_owner": "settings-tab-content",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 96,
+              "y": 423,
+              "width": 249,
+              "height": 3342.5,
+              "left": 96,
+              "right": 345,
+              "top": 423,
+              "bottom": 3765.5
+            },
+            "text": "Runtime AnalysisDeployment RuntimeResolved backend paths, defaults, and admin bootstrap policy.database url configuredtrueconfig database url configuredtruetenant storage root[redacted]backend env file configuredtruefrontend env file configuredtruedefault tenant namePlaywright Gatedefault user idhaewon.kimauto admin us"
+          },
+          "actions": [
+            {
+              "name": "Analysis",
+              "rect": {
+                "x": 275.453125,
+                "y": 366,
+                "width": 83.421875,
+                "height": 36,
+                "left": 275.453125,
+                "right": 358.875,
+                "top": 366,
+                "bottom": 402
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "segmented": [
+            {
+              "rect": {
+                "x": 96,
+                "y": 361,
+                "width": 263,
+                "height": 46,
+                "left": 96,
+                "right": 359,
+                "top": 361,
+                "bottom": 407
+              },
+              "scrollWidth": 578,
+              "clientWidth": 263,
+              "scrollLeft": 212,
+              "activeLabel": "Analysis",
+              "activeRect": {
+                "x": 275.453125,
+                "y": 366,
+                "width": 83.421875,
+                "height": 36,
+                "left": 275.453125,
+                "right": 358.875,
+                "top": 366,
+                "bottom": 402
+              },
+              "activeContrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/settings-metadata-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/settings-metadata-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "6",
+      "family": "Settings Standards",
+      "established_before_defect": "390x844 Standards route had the shared wayfinding/content-width failure.",
+      "before_reference": {
+        "path": "before/blocker-06-settings-standards-mobile/settings-standards--mobile-390x844.png",
+        "sha256": "21f5bb5d26ded160d41606163484b1681e9a579327e0fec90bd01a6d597742f1",
+        "bytes": 63353,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "settings-standards",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/settings-standards--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/settings?tab=standards",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "settings-tab-content",
+        "required_task_or_actions": [
+          "Standards"
+        ],
+        "assertion": "Deep-linked authorized tab is visible, active, and its content owner renders.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/settings-standards-mobile-390x844.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/settings-standards-mobile-390x844.png"
+        ],
+        "geometry": {
+          "semantic_owner": "settings-tab-content",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 96,
+              "y": 363,
+              "width": 249,
+              "height": 3145.125,
+              "left": 96,
+              "right": 345,
+              "top": 363,
+              "bottom": 3508.125
+            },
+            "text": "Operational Standards ReferenceShowcase / specification surface embedded in Settings. Runtime shared contracts and accepted production workspaces remain authoritative when this reference becomes stale.Embedded examplePage header grammarUse the shared primitive for title, subtitle, metadata, and header actions. This exa"
+          },
+          "actions": [
+            {
+              "name": "Standards",
+              "rect": {
+                "x": 264.875,
+                "y": 306,
+                "width": 93.9375,
+                "height": 36,
+                "left": 264.875,
+                "right": 358.8125,
+                "top": 306,
+                "bottom": 342
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "segmented": [
+            {
+              "rect": {
+                "x": 96,
+                "y": 301,
+                "width": 263,
+                "height": 46,
+                "left": 96,
+                "right": 359,
+                "top": 301,
+                "bottom": 347
+              },
+              "scrollWidth": 578,
+              "clientWidth": 263,
+              "scrollLeft": 310,
+              "activeLabel": "Standards",
+              "activeRect": {
+                "x": 264.875,
+                "y": 306,
+                "width": 93.9375,
+                "height": 36,
+                "left": 264.875,
+                "right": 358.8125,
+                "top": 306,
+                "bottom": 342
+              },
+              "activeContrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/settings-metadata-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/settings-metadata-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "7",
+      "family": "Settings Metadata mobile",
+      "established_before_defect": "390x844 Metadata route had the shared wayfinding/content-width failure.",
+      "before_reference": {
+        "path": "before/blocker-07-settings-metadata-mobile/settings-metadata--mobile-390x844.png",
+        "sha256": "4f85c1ec262110c5756f9d6a4731e93113db9e1b74ffbaa7c91651aca5a7f093",
+        "bytes": 53446,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "settings-metadata",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/settings-metadata--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/settings?tab=metadata",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "settings-tab-content",
+        "required_task_or_actions": [
+          "Metadata"
+        ],
+        "assertion": "Deep-linked authorized tab is visible, active, and metadata content renders.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/settings-metadata-mobile-390x844.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/settings-metadata-mobile-390x844.png"
+        ],
+        "geometry": {
+          "semantic_owner": "settings-tab-content",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 96,
+              "y": 423,
+              "width": 249,
+              "height": 3047.5,
+              "left": 96,
+              "right": 345,
+              "top": 423,
+              "bottom": 3470.5
+            },
+            "text": "Metadata RegistryForensic Lineage & Global ParametersMonitoring PlatformsDrives platform selectors and validation in Monitoring.Monitoring3EntriesMonitoring CategoriesFeeds monitor category selectors, imports, and grid metadata.Monitoring5EntriesMonitoring OwnershipDefines monitoring ownership groups exposed in Monitor"
+          },
+          "actions": [
+            {
+              "name": "Metadata",
+              "rect": {
+                "x": 270.96875,
+                "y": 366,
+                "width": 88.484375,
+                "height": 36,
+                "left": 270.96875,
+                "right": 359.453125,
+                "top": 366,
+                "bottom": 402
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "segmented": [
+            {
+              "rect": {
+                "x": 96,
+                "y": 361,
+                "width": 263,
+                "height": 46,
+                "left": 96,
+                "right": 359,
+                "top": 361,
+                "bottom": 407
+              },
+              "scrollWidth": 578,
+              "clientWidth": 263,
+              "scrollLeft": 124,
+              "activeLabel": "Metadata",
+              "activeRect": {
+                "x": 270.96875,
+                "y": 366,
+                "width": 88.484375,
+                "height": 36,
+                "left": 270.96875,
+                "right": 359.453125,
+                "top": 366,
+                "bottom": 402
+              },
+              "activeContrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/settings-metadata-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/settings-metadata-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "8",
+      "family": "Settings Metadata desktop",
+      "established_before_defect": "1440x900 authorized Metadata route could settle to an effectively blank body.",
+      "before_reference": {
+        "path": "before/blocker-08-settings-metadata-desktop/settings-metadata--desktop-1440x900.png",
+        "sha256": "8a4bcb70a1ed0e9a52e8c1e65968859e5e8d932114c06cb39d832370f906b5c1",
+        "bytes": 76468,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "settings-metadata",
+        "capture_mode": "desktop",
+        "source_path": "visual-atlas/screenshots/settings-metadata--desktop-1440x900.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/settings?tab=metadata",
+        "runtime_profile": "normal-v1",
+        "semantic_owner": "settings-tab-content",
+        "required_task_or_actions": [
+          "Metadata",
+          "Monitoring Platforms content"
+        ],
+        "assertion": "Metadata Registry and Monitoring Platforms render in the authorized content owner; blank body is not accepted.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/settings-metadata-desktop-1440x900.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/settings-metadata-desktop-1440x900.png"
+        ],
+        "geometry": {
+          "semantic_owner": "settings-tab-content",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 1425,
+            "documentScrollWidth": 1425,
+            "viewportWidth": 1440,
+            "bodyScrollHeight": 900
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 288,
+              "y": 233,
+              "width": 1075,
+              "height": 1596,
+              "left": 288,
+              "right": 1363,
+              "top": 233,
+              "bottom": 1829
+            },
+            "text": "Metadata RegistryForensic Lineage & Global ParametersMonitoring PlatformsDrives platform selectors and validation in Monitoring.Monitoring3EntriesMonitoring CategoriesFeeds monitor category selectors, imports, and grid metadata.Monitoring5EntriesMonitoring OwnershipDefines monitoring ownership groups exposed in Monitor"
+          },
+          "actions": [
+            {
+              "name": "Metadata",
+              "rect": {
+                "x": 586.96875,
+                "y": 176,
+                "width": 88.484375,
+                "height": 36,
+                "left": 586.96875,
+                "right": 675.453125,
+                "top": 176,
+                "bottom": 212
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "segmented": [
+            {
+              "rect": {
+                "x": 288,
+                "y": 171,
+                "width": 1089,
+                "height": 46,
+                "left": 288,
+                "right": 1377,
+                "top": 171,
+                "bottom": 217
+              },
+              "scrollWidth": 1089,
+              "clientWidth": 1089,
+              "scrollLeft": 0,
+              "activeLabel": "Metadata",
+              "activeRect": {
+                "x": 586.96875,
+                "y": 176,
+                "width": 88.484375,
+                "height": 36,
+                "left": 586.96875,
+                "right": 675.453125,
+                "top": 176,
+                "bottom": 212
+              },
+              "activeContrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(33, 36, 53)",
+                "ratio": 15.34
+              }
+            }
+          ],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/settings-metadata-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/settings-metadata-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "9",
+      "family": "Architecture v2",
+      "established_before_defect": "390x844 create-model label/input/action clipped; primary action had to remain reachable under text pressure.",
+      "before_reference": {
+        "path": "before/blocker-09-architecture-v2-mobile/architecture--mobile-390x844.png",
+        "sha256": "b5ccb9d6e5d9ff674aa68289a921e6035082b51908f32a6c3e4e2453bc38eeb3",
+        "bytes": 51316,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "architecture",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/architecture--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/architecture",
+        "runtime_profile": "root-preview (System Root verified by policy endpoint)",
+        "semantic_owner": "architecture-create-model",
+        "required_task_or_actions": [
+          "New Architecture model name",
+          "Create model"
+        ],
+        "assertion": "Long model name remains in input across resize; create action visible/enabled and successfully creates the model; desktop Architecture host task remains reachable.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/architecture-v2-mobile-390x844.json",
+          "candidate/captures/architecture-v2-mobile-short-390x600.json",
+          "candidate/captures/architecture-v2-mobile-text-200.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/architecture-v2-mobile-390x844.png",
+          "candidate/captures/architecture-v2-mobile-short-390x600.png",
+          "candidate/captures/architecture-v2-mobile-text-200.png"
+        ],
+        "geometry": {
+          "semantic_owner": "architecture-create-model",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 105,
+              "y": 421.5,
+              "width": 245,
+              "height": 88,
+              "left": 105,
+              "right": 350,
+              "top": 421.5,
+              "bottom": 509.5
+            },
+            "text": "Create model"
+          },
+          "actions": [
+            {
+              "name": "New Architecture model name",
+              "rect": {
+                "x": 105,
+                "y": 421.5,
+                "width": 245,
+                "height": 40,
+                "left": 105,
+                "right": 350,
+                "top": 421.5,
+                "bottom": 461.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(15, 23, 42)",
+                "ratio": 17.85
+              }
+            },
+            {
+              "name": "Create model",
+              "rect": {
+                "x": 105,
+                "y": 469.5,
+                "width": 121.265625,
+                "height": 40,
+                "left": 105,
+                "right": 226.265625,
+                "top": 469.5,
+                "bottom": 509.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(169, 177, 214)",
+                "background": "rgb(26, 27, 38)",
+                "ratio": 8.1
+              }
+            }
+          ],
+          "segmented": [],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/architecture-v2-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/architecture-v2-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "10",
+      "family": "Legacy Architecture",
+      "established_before_defect": "390x844 heading/New Architecture action and dense matrix geometry clipped instead of recomposing under explicit scroll ownership.",
+      "before_reference": {
+        "path": "before/blocker-10-architecture-legacy-mobile/architecture-legacy-designer--mobile-390x844.png",
+        "sha256": "203706bfca8b4de43ada9ca29030a6cb4f29939e572594328df13e5f8d0f4ae4",
+        "bytes": 80386,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "architecture-legacy-designer",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/architecture-legacy-designer--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/architecture?legacy=true",
+        "runtime_profile": "root-preview (System Root verified by policy endpoint)",
+        "semantic_owner": "architecture-legacy",
+        "required_task_or_actions": [
+          "New Architecture",
+          "matrix scroll owner"
+        ],
+        "assertion": "High-level create action and modal submit stay reachable; matrix retains local grid scrolling; no body overflow.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/architecture-legacy-mobile-390x844.json",
+          "candidate/captures/architecture-legacy-mobile-matrix-390x844.json",
+          "candidate/captures/architecture-legacy-mobile-short-390x600.json",
+          "candidate/captures/architecture-legacy-mobile-text-200.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/architecture-legacy-mobile-390x844.png",
+          "candidate/captures/architecture-legacy-mobile-matrix-390x844.png",
+          "candidate/captures/architecture-legacy-mobile-short-390x600.png",
+          "candidate/captures/architecture-legacy-mobile-text-200.png"
+        ],
+        "geometry": {
+          "semantic_owner": "architecture-legacy",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 80,
+              "y": 224,
+              "width": 295,
+              "height": 539,
+              "left": 80,
+              "right": 375,
+              "top": 224,
+              "bottom": 763
+            },
+            "text": "Architecture MatrixCore Registry & GovernanceNew ArchitectureRegistry Entries0Tier 1 / Critical0Review Overdue0Needs Attention0AllUp to dateDeprecatedPlannedIn Review\n                \n                \n                    \n                \n            \n            \n            \n            \n                ID\n          "
+          },
+          "actions": [
+            {
+              "name": "New Architecture",
+              "rect": {
+                "x": 92,
+                "y": 385,
+                "width": 265,
+                "height": 44,
+                "left": 92,
+                "right": 357,
+                "top": 385,
+                "bottom": 429
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(2, 6, 23)",
+                "background": "rgb(56, 189, 248)",
+                "ratio": 9.42
+              }
+            }
+          ],
+          "segmented": [],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {}
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/architecture-legacy-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/architecture-legacy-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    },
+    {
+      "blocker": "11",
+      "family": "Knowledge",
+      "established_before_defect": "390x844 title/context, search, and primary actions clipped or overlapped with lost hierarchy.",
+      "before_reference": {
+        "path": "before/blocker-11-knowledge-mobile/knowledge--mobile-390x844.png",
+        "sha256": "97509007fdea079b922c6844b35272459a869e22fa8eecbdc60a62659204b981",
+        "bytes": 58802,
+        "source_artifact_commit": "7c5871b1ffce9ecfed10469a4a3030546658a943",
+        "source_request": "sysgrid-visual-atlas-r4-evidence-reconcile-v1",
+        "source_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+        "source_tree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+        "surface_key": "knowledge",
+        "capture_mode": "mobile",
+        "source_path": "visual-atlas/screenshots/knowledge--mobile-390x844.png",
+        "capture_origin": "R4_EXACT_BYTE_REUSE"
+      },
+      "candidate_result": {
+        "route": "/knowledge",
+        "runtime_profile": "root-preview (System Root profile)",
+        "semantic_owner": "knowledge-workspace",
+        "required_task_or_actions": [
+          "Search Knowledge",
+          "+ System Manual",
+          "+ New BKM",
+          "+ Ask Question"
+        ],
+        "assertion": "Long seeded title is searchable; search and all three primary actions remain reachable; action text stays within button; create modal opens and dismisses.",
+        "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+        "structured_capture_paths": [
+          "candidate/captures/knowledge-mobile-390x844.json",
+          "candidate/captures/knowledge-mobile-short-390x600.json",
+          "candidate/captures/knowledge-mobile-text-200.json"
+        ],
+        "candidate_pixel_paths": [
+          "candidate/captures/knowledge-mobile-390x844.png",
+          "candidate/captures/knowledge-mobile-short-390x600.png",
+          "candidate/captures/knowledge-mobile-text-200.png"
+        ],
+        "geometry": {
+          "semantic_owner": "knowledge-workspace",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "document": {
+            "bodyScrollWidth": 375,
+            "documentScrollWidth": 375,
+            "viewportWidth": 390,
+            "bodyScrollHeight": 844
+          },
+          "no_uncontrolled_body_overflow": true,
+          "owner": {
+            "exists": true,
+            "rect": {
+              "x": 96,
+              "y": 240,
+              "width": 263,
+              "height": 507,
+              "left": 96,
+              "right": 359,
+              "top": 240,
+              "bottom": 747
+            },
+            "text": "Collective Intelligence Unified Knowledge Matrix // Zero-Loss Information Handoff + System Manual + New BKM + Ask QuestionAll 1Q&A 0BKM 1Manual 0AllSuggestedCriticalNeeds ReviewStaleUnownedIncident Ready Grid TimelineKnowledge Coverage10 critical nodesIncident Ready00 linked to architectureReview Queue10 missing ownerA"
+          },
+          "actions": [
+            {
+              "name": "Search Knowledge",
+              "rect": {
+                "x": 113,
+                "y": 462,
+                "width": 223,
+                "height": 42.5,
+                "left": 113,
+                "right": 336,
+                "top": 462,
+                "bottom": 504.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(169, 177, 214)",
+                "background": "rgb(12, 15, 24)",
+                "ratio": 9.06
+              }
+            },
+            {
+              "name": "+ System Manual",
+              "rect": {
+                "x": 113,
+                "y": 516.5,
+                "width": 223,
+                "height": 40,
+                "left": 113,
+                "right": 336,
+                "top": 516.5,
+                "bottom": 556.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(4, 120, 87)",
+                "ratio": 5.48
+              }
+            },
+            {
+              "name": "+ New BKM",
+              "rect": {
+                "x": 113,
+                "y": 564.5,
+                "width": 223,
+                "height": 40,
+                "left": 113,
+                "right": 336,
+                "top": 564.5,
+                "bottom": 604.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(225, 29, 72)",
+                "ratio": 4.7
+              }
+            },
+            {
+              "name": "+ Ask Question",
+              "rect": {
+                "x": 113,
+                "y": 612.5,
+                "width": 223,
+                "height": 40,
+                "left": 113,
+                "right": 336,
+                "top": 612.5,
+                "bottom": 652.5
+              },
+              "visible": true,
+              "contrast": {
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(37, 99, 235)",
+                "ratio": 5.17
+              }
+            }
+          ],
+          "segmented": [],
+          "visible_alerts": [],
+          "fatal_state": false,
+          "task_geometry": {
+            "primaryActionGeometry": [
+              {
+                "label": "+ System Manual",
+                "width": 223,
+                "parentWidth": 223,
+                "scrollWidth": 223,
+                "clientWidth": 223,
+                "textRects": [
+                  {
+                    "left": 158.90625,
+                    "right": 174.90625
+                  },
+                  {
+                    "left": 182.90625,
+                    "right": 290.09375
+                  }
+                ],
+                "textWithinButton": true
+              },
+              {
+                "label": "+ New BKM",
+                "width": 223,
+                "parentWidth": 223,
+                "scrollWidth": 223,
+                "clientWidth": 223,
+                "textRects": [
+                  {
+                    "left": 180.546875,
+                    "right": 196.546875
+                  },
+                  {
+                    "left": 204.546875,
+                    "right": 268.453125
+                  }
+                ],
+                "textWithinButton": true
+              },
+              {
+                "label": "+ Ask Question",
+                "width": 223,
+                "parentWidth": 223,
+                "scrollWidth": 223,
+                "clientWidth": 223,
+                "textRects": [
+                  {
+                    "left": 164.875,
+                    "right": 180.875
+                  },
+                  {
+                    "left": 188.875,
+                    "right": 284.109375
+                  }
+                ],
+                "textWithinButton": true
+              }
+            ],
+            "hoverActionContrast": [
+              {
+                "name": "+ System Manual",
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(4, 120, 87)",
+                "ratio": 5.48
+              },
+              {
+                "name": "+ New BKM",
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(225, 29, 72)",
+                "ratio": 4.7
+              },
+              {
+                "name": "+ Ask Question",
+                "color": "rgb(255, 255, 255)",
+                "background": "rgb(37, 99, 235)",
+                "ratio": 5.17
+              }
+            ]
+          }
+        },
+        "no_fatal_state": true,
+        "no_visible_error_alert": true,
+        "no_uncontrolled_body_overflow": true,
+        "desktop_counterpart_or_holdout": "candidate/captures/knowledge-desktop-1440x900.json",
+        "desktop_pixels": "candidate/captures/knowledge-desktop-1440x900.png",
+        "desktop_no_overflow_no_fatal": true,
+        "result": "PASS"
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 363,
+      "width": 249,
+      "height": 3145.125,
+      "left": 96,
+      "right": 345,
+      "top": 363,
+      "bottom": 3508.125
+    },
+    "text": "Operational Standards ReferenceShowcase / specification surface embedded in Settings. Runtime shared contracts and accepted production workspaces remain authoritative when this reference becomes stale.Embedded examplePage header grammarUse the shared primitive for title, subtitle, metadata, and header actions. This exa"
+  },
+  "actions": [
+    {
+      "name": "Standards",
+      "rect": {
+        "x": 264.875,
+        "y": 306,
+        "width": 93.9375,
+        "height": 36,
+        "left": 264.875,
+        "right": 358.8125,
+        "top": 306,
+        "bottom": 342
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 96,
+        "y": 301,
+        "width": 263,
+        "height": 46,
+        "left": 96,
+        "right": 359,
+        "top": 301,
+        "bottom": 347
+      },
+      "scrollWidth": 578,
+      "clientWidth": 263,
+      "scrollLeft": 310,
+      "activeLabel": "Standards",
+      "activeRect": {
+        "x": 264.875,
+        "y": 306,
+        "width": 93.9375,
+        "height": 36,
+        "left": 264.875,
+        "right": 358.8125,
+        "top": 306,
+        "bottom": 342
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

@@ -1,0 +1,71 @@
+{
+  "semanticOwner": "knowledge-workspace",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 1425,
+    "documentScrollWidth": 1425,
+    "viewportWidth": 1440,
+    "bodyScrollHeight": 900
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 272,
+      "y": 110,
+      "width": 1121,
+      "height": 726,
+      "left": 272,
+      "right": 1393,
+      "top": 110,
+      "bottom": 836
+    },
+    "text": "Collective Intelligence Unified Knowledge Matrix // Zero-Loss Information Handoff + System Manual + New BKM + Ask QuestionAll 1Q&A 0BKM 1Manual 0AllSuggestedCriticalNeeds ReviewStaleUnownedIncident Ready Grid TimelineKnowledge Coverage10 critical nodesIncident Ready00 linked to architectureReview Queue10 missing ownerA"
+  },
+  "actions": [
+    {
+      "name": "Search Knowledge",
+      "rect": {
+        "x": 837.5,
+        "y": 137.75,
+        "width": 524.5,
+        "height": 42.5,
+        "left": 837.5,
+        "right": 1362,
+        "top": 137.75,
+        "bottom": 180.25
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(12, 15, 24)",
+        "ratio": 9.06
+      }
+    },
+    {
+      "name": "+ New BKM",
+      "rect": {
+        "x": 1015,
+        "y": 192.25,
+        "width": 169.5,
+        "height": 54,
+        "left": 1015,
+        "right": 1184.5,
+        "top": 192.25,
+        "bottom": 246.25
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(225, 29, 72)",
+        "ratio": 4.7
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false
+}

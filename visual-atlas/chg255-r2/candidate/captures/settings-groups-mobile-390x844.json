@@ -1,0 +1,84 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 423,
+      "width": 249,
+      "height": 684.5,
+      "left": 96,
+      "right": 345,
+      "top": 423,
+      "bottom": 1107.5
+    },
+    "text": "InitializeGroups0 visibleNo groups match the current searchSelect a group to manage"
+  },
+  "actions": [
+    {
+      "name": "Groups",
+      "rect": {
+        "x": 283.828125,
+        "y": 366,
+        "width": 75.140625,
+        "height": 36,
+        "left": 283.828125,
+        "right": 358.96875,
+        "top": 366,
+        "bottom": 402
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 96,
+        "y": 361,
+        "width": 263,
+        "height": 46,
+        "left": 96,
+        "right": 359,
+        "top": 361,
+        "bottom": 407
+      },
+      "scrollWidth": 578,
+      "clientWidth": 263,
+      "scrollLeft": 32,
+      "activeLabel": "Groups",
+      "activeRect": {
+        "x": 283.828125,
+        "y": 366,
+        "width": 75.140625,
+        "height": 36,
+        "left": 283.828125,
+        "right": 358.96875,
+        "top": 366,
+        "bottom": 402
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

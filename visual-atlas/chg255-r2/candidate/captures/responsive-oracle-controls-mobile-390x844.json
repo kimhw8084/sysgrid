@@ -1,0 +1,28 @@
+{
+  "legitimateControl": {
+    "route": "/settings?tab=metadata",
+    "geometry": {
+      "viewport": 390,
+      "body": 375,
+      "document": 375
+    },
+    "pressedCount": 1,
+    "accepted": true
+  },
+  "negativeControls": [
+    {
+      "kind": "horizontal-overflow",
+      "geometry": {
+        "viewport": 390,
+        "body": 422,
+        "document": 422
+      },
+      "rejected": true
+    },
+    {
+      "kind": "two-active-segment-options",
+      "pressedCount": 2,
+      "rejected": true
+    }
+  ]
+}

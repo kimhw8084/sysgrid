@@ -1,0 +1,692 @@
+{
+  "method": "Candidate-rendered computed foreground plus composited ancestor backgrounds; WCAG relative-luminance contrast ratio. Ratios are measured from DOM, not inferred from token names.",
+  "changed_visual_state_sample_count": 58,
+  "changed_state_target": "Knowledge primary actions default/hover, Settings/Racks/Monitoring selected states, Architecture v2 and legacy task actions.",
+  "knowledge_primary_actions_default_and_hover_meet_4_5": true,
+  "measured_states": [
+    {
+      "capture": "architecture-legacy-desktop-1440x900.json",
+      "element": "New Architecture",
+      "measurement": {
+        "color": "rgb(2, 6, 23)",
+        "background": "rgb(56, 189, 248)",
+        "ratio": 9.42
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-legacy-mobile-390x844.json",
+      "element": "New Architecture",
+      "measurement": {
+        "color": "rgb(2, 6, 23)",
+        "background": "rgb(56, 189, 248)",
+        "ratio": 9.42
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-legacy-mobile-short-390x600.json",
+      "element": "New Architecture",
+      "measurement": {
+        "color": "rgb(2, 6, 23)",
+        "background": "rgb(56, 189, 248)",
+        "ratio": 9.42
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-legacy-mobile-text-200.json",
+      "element": "New Architecture",
+      "measurement": {
+        "color": "rgb(2, 6, 23)",
+        "background": "rgb(56, 189, 248)",
+        "ratio": 9.42
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-v2-desktop-1440x900.json",
+      "element": "Proposed object name",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(255, 255, 255)",
+        "ratio": 2.11
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-v2-desktop-1440x900.json",
+      "element": "Create Draft proposal",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(26, 27, 38)",
+        "ratio": 8.1
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-v2-mobile-390x844.json",
+      "element": "New Architecture model name",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(15, 23, 42)",
+        "ratio": 17.85
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-v2-mobile-390x844.json",
+      "element": "Create model",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(26, 27, 38)",
+        "ratio": 8.1
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-v2-mobile-short-390x600.json",
+      "element": "Create model",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(26, 27, 38)",
+        "ratio": 8.1
+      },
+      "visible": true
+    },
+    {
+      "capture": "architecture-v2-mobile-text-200.json",
+      "element": "Create model",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(26, 27, 38)",
+        "ratio": 8.1
+      },
+      "visible": true
+    },
+    {
+      "capture": "audit-desktop-1440x900.json",
+      "element": "Export loaded CSV",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(2, 5, 18)",
+        "ratio": 20.35
+      },
+      "visible": true
+    },
+    {
+      "capture": "audit-mobile-390x844.json",
+      "element": "Export loaded CSV",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(2, 5, 18)",
+        "ratio": 20.35
+      },
+      "visible": true
+    },
+    {
+      "capture": "audit-mobile-390x844.json",
+      "element": "View change payload",
+      "measurement": {
+        "color": "rgb(100, 116, 139)",
+        "background": "rgb(10, 24, 55)",
+        "ratio": 3.68
+      },
+      "visible": true
+    },
+    {
+      "capture": "audit-mobile-pagination-390x844.json",
+      "element": "View change payload",
+      "measurement": {
+        "color": "rgb(100, 116, 139)",
+        "background": "rgb(10, 24, 55)",
+        "ratio": 3.68
+      },
+      "visible": true
+    },
+    {
+      "capture": "audit-mobile-short-390x600.json",
+      "element": "Export loaded CSV",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(2, 5, 18)",
+        "ratio": 20.35
+      },
+      "visible": true
+    },
+    {
+      "capture": "audit-mobile-text-200.json",
+      "element": "Export loaded CSV",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(2, 5, 18)",
+        "ratio": 20.35
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-desktop-1440x900.json",
+      "element": "Search Knowledge",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(12, 15, 24)",
+        "ratio": 9.06
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-desktop-1440x900.json",
+      "element": "+ New BKM",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(225, 29, 72)",
+        "ratio": 4.7
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-390x844.json",
+      "element": "Search Knowledge",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(12, 15, 24)",
+        "ratio": 9.06
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-390x844.json",
+      "element": "+ System Manual",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(4, 120, 87)",
+        "ratio": 5.48
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-390x844.json",
+      "element": "+ New BKM",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(225, 29, 72)",
+        "ratio": 4.7
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-390x844.json",
+      "element": "+ Ask Question",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(37, 99, 235)",
+        "ratio": 5.17
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-390x844.json",
+      "element": "hover: + System Manual",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(4, 120, 87)",
+        "ratio": 5.48
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-390x844.json",
+      "element": "hover: + New BKM",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(225, 29, 72)",
+        "ratio": 4.7
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-390x844.json",
+      "element": "hover: + Ask Question",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(37, 99, 235)",
+        "ratio": 5.17
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-short-390x600.json",
+      "element": "Search Knowledge",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(12, 15, 24)",
+        "ratio": 9.06
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-short-390x600.json",
+      "element": "+ New BKM",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(225, 29, 72)",
+        "ratio": 4.7
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-text-200.json",
+      "element": "Search Knowledge",
+      "measurement": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(12, 15, 24)",
+        "ratio": 9.06
+      },
+      "visible": true
+    },
+    {
+      "capture": "knowledge-mobile-text-200.json",
+      "element": "+ New BKM",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(225, 29, 72)",
+        "ratio": 4.7
+      },
+      "visible": true
+    },
+    {
+      "capture": "monitoring-holdout-desktop-1440x900.json",
+      "element": "Existing",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      },
+      "visible": true
+    },
+    {
+      "capture": "monitoring-holdout-desktop-1440x900.json",
+      "element": "active segmented state: Existing",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      },
+      "visible": true
+    },
+    {
+      "capture": "monitoring-holdout-mobile-390x844.json",
+      "element": "Existing",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      },
+      "visible": true
+    },
+    {
+      "capture": "monitoring-holdout-mobile-390x844.json",
+      "element": "active segmented state: Existing",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-analysis-mobile-390x844.json",
+      "element": "Analysis",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-analysis-mobile-390x844.json",
+      "element": "active segmented state: Analysis",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-groups-mobile-390x844.json",
+      "element": "Groups",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-groups-mobile-390x844.json",
+      "element": "active segmented state: Groups",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-desktop-1440x900.json",
+      "element": "Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-desktop-1440x900.json",
+      "element": "active segmented state: Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-mobile-390x844.json",
+      "element": "Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-mobile-390x844.json",
+      "element": "active segmented state: Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-mobile-short-390x600.json",
+      "element": "Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-mobile-short-390x600.json",
+      "element": "active segmented state: Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-mobile-text-200.json",
+      "element": "Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-metadata-mobile-text-200.json",
+      "element": "active segmented state: Metadata",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-parameters-mobile-390x844.json",
+      "element": "Parameters",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-parameters-mobile-390x844.json",
+      "element": "active segmented state: Parameters",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-permissions-mobile-390x844.json",
+      "element": "Permissions",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-permissions-mobile-390x844.json",
+      "element": "active segmented state: Permissions",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-standards-mobile-390x844.json",
+      "element": "Standards",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "settings-standards-mobile-390x844.json",
+      "element": "active segmented state: Standards",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-desktop-1440x900.json",
+      "element": "Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-desktop-1440x900.json",
+      "element": "active segmented state: Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-desktop-1440x900.json",
+      "element": "active segmented state: Elevation",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-desktop-1440x900.json",
+      "element": "active segmented state: All",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-390x844.json",
+      "element": "Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-390x844.json",
+      "element": "active segmented state: Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-390x844.json",
+      "element": "active segmented state: Elevation",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-390x844.json",
+      "element": "active segmented state: All",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-short-390x600.json",
+      "element": "Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-short-390x600.json",
+      "element": "active segmented state: Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-short-390x600.json",
+      "element": "active segmented state: Elevation",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-short-390x600.json",
+      "element": "active segmented state: All",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-text-200.json",
+      "element": "Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-text-200.json",
+      "element": "active segmented state: Active",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-text-200.json",
+      "element": "active segmented state: Elevation",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    },
+    {
+      "capture": "toolbar-segmented-racks-mobile-text-200.json",
+      "element": "active segmented state: All",
+      "measurement": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(31, 34, 50)",
+        "ratio": 15.66
+      },
+      "visible": true
+    }
+  ],
+  "observed_below_4_5_in_unmodified_style_states": [
+    {
+      "capture": "audit-mobile-390x844.json",
+      "element": "View change payload",
+      "ratio": 3.68,
+      "classification": "Existing row-action foreground/background style was not changed by this patch; included transparently in rendered measurements."
+    },
+    {
+      "capture": "architecture-v2-desktop-1440x900.json",
+      "element": "Proposed object name",
+      "ratio": 2.11,
+      "classification": "Existing canonical proposal field style outside the changed empty-state model creation control; included transparently in rendered measurements."
+    }
+  ]
+}

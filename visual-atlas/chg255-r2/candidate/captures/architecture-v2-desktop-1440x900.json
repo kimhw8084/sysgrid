@@ -1,0 +1,71 @@
+{
+  "semanticOwner": "pv1-architecture-host",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 1425,
+    "documentScrollWidth": 1425,
+    "viewportWidth": 1440,
+    "bodyScrollHeight": 900
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 285.625,
+      "y": 166.5,
+      "width": 1115.375,
+      "height": 955.46875,
+      "left": 285.625,
+      "right": 1401,
+      "top": 166.5,
+      "bottom": 1121.96875
+    },
+    "text": "Create Draft proposalText alternative: Responsive Architecture Model Long text pressure Long text pressure Long text pressure Long text pressure Long text pressure in current mode contains 0 authorized objects and 0 authorized relations at model revision 1. The canvas realizes 0 objects and 0 relations for rendering; t"
+  },
+  "actions": [
+    {
+      "name": "Proposed object name",
+      "rect": {
+        "x": 309.625,
+        "y": 202.5,
+        "width": 475.75,
+        "height": 40,
+        "left": 309.625,
+        "right": 785.375,
+        "top": 202.5,
+        "bottom": 242.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(255, 255, 255)",
+        "ratio": 2.11
+      }
+    },
+    {
+      "name": "Create Draft proposal",
+      "rect": {
+        "x": 793.375,
+        "y": 202.5,
+        "width": 156.25,
+        "height": 40,
+        "left": 793.375,
+        "right": 949.625,
+        "top": 202.5,
+        "bottom": 242.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(26, 27, 38)",
+        "ratio": 8.1
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false
+}

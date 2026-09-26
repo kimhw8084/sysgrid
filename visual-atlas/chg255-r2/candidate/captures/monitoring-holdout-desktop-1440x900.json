@@ -1,0 +1,84 @@
+{
+  "semanticOwner": "monitoring-workspace",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 1425,
+    "documentScrollWidth": 1425,
+    "viewportWidth": 1440,
+    "bodyScrollHeight": 900
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 112,
+      "y": 110,
+      "width": 1281,
+      "height": 726,
+      "left": 112,
+      "right": 1393,
+      "top": 110,
+      "bottom": 836
+    },
+    "text": "ObservabilityMonitoringCentralized monitoring configuration and operational statusRegistry Scope2 existing · 0 archivedExistingArchivedViewsDisplayImportFilters ActivityCompareBulk Actions+ Add MonitoringStatus FilterAll statusesSeverity FilterAll severitiesPlatform FilterAll platformsOwner FilterAll owners\n           "
+  },
+  "actions": [
+    {
+      "name": "Existing",
+      "rect": {
+        "x": 1210.09375,
+        "y": 122,
+        "width": 81.203125,
+        "height": 36,
+        "left": 1210.09375,
+        "right": 1291.296875,
+        "top": 122,
+        "bottom": 158
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      }
+    }
+  ],
+  "segmented": [
+    {
+      "rect": {
+        "x": 1205.09375,
+        "y": 117,
+        "width": 180.90625,
+        "height": 46,
+        "left": 1205.09375,
+        "right": 1386,
+        "top": 117,
+        "bottom": 163
+      },
+      "scrollWidth": 181,
+      "clientWidth": 181,
+      "scrollLeft": 0,
+      "activeLabel": "Existing",
+      "activeRect": {
+        "x": 1210.09375,
+        "y": 122,
+        "width": 81.203125,
+        "height": 36,
+        "left": 1210.09375,
+        "right": 1291.296875,
+        "top": 122,
+        "bottom": 158
+      },
+      "activeContrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(35, 39, 57)",
+        "ratio": 14.8
+      }
+    }
+  ],
+  "visibleAlerts": [],
+  "fatalState": false
+}

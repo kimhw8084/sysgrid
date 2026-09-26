@@ -1,0 +1,79 @@
+{
+  "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+  "focused_unit": {
+    "command": "npm run test:unit -- --reporter=verbose src/components/shared/LayoutPrimitives.test.tsx src/components/ProjectsVisualShowcase.test.tsx src/components/settings/settingsPrivilegePolicy.test.ts",
+    "files_passed": 3,
+    "tests_passed": 8,
+    "status": "PASS",
+    "coverage": [
+      "ToolbarSegmented keyboard tab focus and Enter selection with aria-pressed current state",
+      "Project Visual Showcase consumer pointer selection and current state",
+      "Settings privilege policy fail-closed, independent capabilities, and Parameters/Standards availability"
+    ]
+  },
+  "settings_privilege_browser": {
+    "command": "bash ../scripts/run-e2e.sh --config=playwright.config.ts tests/settings-privilege.spec.ts --reporter=line",
+    "profile": "normal-v1",
+    "passed": 3,
+    "failed": 0,
+    "status": "PASS",
+    "coverage": [
+      "unauthorized Diagnostics deep link falls back to Parameters with no privileged requests",
+      "tenant Settings manager cannot operate diagnostics or tenant administration",
+      "explicit diagnostics/control-plane policy independently reveals protected views"
+    ]
+  },
+  "responsive_browser_matrix": {
+    "candidate_test": "frontend/tests/golden-ui-v3-responsive.spec.ts",
+    "normal_v1": {
+      "profile": "normal-v1",
+      "passed": 4,
+      "skipped_by_profile_gate": 2,
+      "failed": 0,
+      "status": "PASS",
+      "covered": [
+        "six Settings query routes",
+        "Metadata desktop content",
+        "positive and intentional negative geometry/state controls",
+        "Audit Logs data/export/target/payload/pagination mobile plus desktop",
+        "Racks ToolbarSegmented consumer plus Monitoring mobile/desktop holdout"
+      ]
+    },
+    "root_preview": {
+      "profile": "root-preview",
+      "passed": 2,
+      "skipped_by_profile_gate": 4,
+      "failed": 0,
+      "status": "PASS",
+      "identity_gate": "Architecture test verifies /api/v2/policy/module-availability identity.system_root === true",
+      "covered": [
+        "Architecture v2 create-model action mobile, short, 200% and desktop holdout",
+        "Legacy Architecture create action and matrix scroll owner mobile/short/200% and desktop holdout",
+        "Knowledge search/actions mobile/short/200% and desktop holdout"
+      ]
+    },
+    "assertions": [
+      "pageerror count is zero",
+      "fatal error surface absent",
+      "visible required actions enabled and in viewport / outside clipping owners",
+      "document/body width bounded by viewport",
+      "positive and negative controls exercise intended oracle failures"
+    ]
+  },
+  "full_app_verifier": {
+    "command": "./scripts/verify-app.sh",
+    "status": "PASS",
+    "backend": "205 passed",
+    "operational_contracts": "PASS",
+    "typecheck": "PASS",
+    "frontend_unit_coverage": "141 files / 721 passed",
+    "production_build": "PASS",
+    "normal_profile_e2e": "75 passed / 2 profile-gated skipped",
+    "root_preview_release_policy": "1 passed",
+    "notes": [
+      "Three pre-existing Starlette deprecation warnings.",
+      "Existing build chunk-size and stale caniuse data warnings.",
+      "Verifier recovered from transient Address-in-use between profile runs and exited 0."
+    ]
+  }
+}

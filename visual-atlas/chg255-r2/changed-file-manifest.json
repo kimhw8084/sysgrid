@@ -1,0 +1,78 @@
+{
+  "candidate_sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+  "files": [
+    {
+      "status": "M",
+      "path": "frontend/src/architecture/ArchitectureHost.tsx",
+      "bytes": 12267,
+      "sha256": "607b8de6c3a13b3ba59350396d5ede950d1c1abc6aad9b6528a3814e16225794"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/ArchitectureWorkspace.tsx",
+      "bytes": 1169,
+      "sha256": "8daa9ef14e521133f2bc9209bdb46aa327d6558b4479c6e8cf1594a8463855d2"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/AuditLogs.tsx",
+      "bytes": 25313,
+      "sha256": "1ffa81906432d82102bb0797bf15af63cc435a5b8d0810f195bcb36192028e67"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/DataFlowDesigner.tsx",
+      "bytes": 130000,
+      "sha256": "772ac34b88f7c695cc61f35b56ca80da3a3c59c72fa3e9d227d1c9883ee39d4b"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/Knowledge.tsx",
+      "bytes": 172859,
+      "sha256": "0d49bb0d49b485a1cff974630c4a2330cb43b59f08deeb200406770ca67f1932"
+    },
+    {
+      "status": "A",
+      "path": "frontend/src/components/ProjectsVisualShowcase.test.tsx",
+      "bytes": 1962,
+      "sha256": "3a3d8deda6074a56afb5a3474476e86023d1b5c44542c830ca231c089327a885"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/Racks.tsx",
+      "bytes": 224393,
+      "sha256": "9ffb7f2deffc853fa23f4642f1387ed99dd7a3e0de06e2b09036beafe4fd146f"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/Settings.tsx",
+      "bytes": 188194,
+      "sha256": "8f84d0d335abe98338ce7b431436277eedecf8e970e5225931664f0f1ecf5d7c"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/SettingsStandards.tsx",
+      "bytes": 21557,
+      "sha256": "87148e2f055336d75bfc0ef136aa68326795f6cfb0c95005acd8fb9bbcbde29c"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/shared/LayoutPrimitives.test.tsx",
+      "bytes": 2020,
+      "sha256": "c602a465bf66daabc0c79dcda0259f26d541384c8d8485c127245af82868feeb"
+    },
+    {
+      "status": "M",
+      "path": "frontend/src/components/shared/LayoutPrimitives.tsx",
+      "bytes": 11025,
+      "sha256": "4bc20a51cfb0dddf9409483260142ac32418cda697c8f5b2725af7937e4c6422"
+    },
+    {
+      "status": "A",
+      "path": "frontend/tests/golden-ui-v3-responsive.spec.ts",
+      "bytes": 37646,
+      "sha256": "8fee8ff4eb1e7d5a913a83d4f06940a935c3ca398ad5df459b6b5fe17bfe94be"
+    }
+  ],
+  "changed_file_count": 12
+}

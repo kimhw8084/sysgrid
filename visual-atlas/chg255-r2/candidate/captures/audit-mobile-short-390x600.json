@@ -1,0 +1,52 @@
+{
+  "semanticOwner": "audit-ledger",
+  "viewport": {
+    "width": 390,
+    "height": 600,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 600
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 80,
+      "y": 224,
+      "width": 295,
+      "height": 295,
+      "left": 80,
+      "right": 375,
+      "top": 224,
+      "bottom": 519
+    },
+    "text": "Registry Audit LedgerImmutable record of system state changes and operator actionsScoped: logical_services // 1Complete matching scopeAnalyticsStartEnd Export loaded CSVPress SPACE to deselect this row.\n                \n                \n                    \n                \n            \n            \n            \n      "
+  },
+  "actions": [
+    {
+      "name": "Export loaded CSV",
+      "rect": {
+        "x": 109,
+        "y": 476.5,
+        "width": 192.875,
+        "height": 36,
+        "left": 109,
+        "right": 301.875,
+        "top": 476.5,
+        "bottom": 512.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(2, 5, 18)",
+        "ratio": 20.35
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false
+}

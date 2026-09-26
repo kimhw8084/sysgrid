@@ -1,0 +1,38 @@
+{
+  "semanticOwner": "architecture-legacy",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 80,
+      "y": 224,
+      "width": 295,
+      "height": 539,
+      "left": 80,
+      "right": 375,
+      "top": 224,
+      "bottom": 763
+    },
+    "text": "Architecture MatrixCore Registry & GovernanceNew ArchitectureRegistry Entries0Tier 1 / Critical0Review Overdue0Needs Attention0AllUp to dateDeprecatedPlannedIn Review\n                \n                \n                    \n                \n            \n            \n            \n            \n                ID\n          "
+  },
+  "actions": [],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false,
+  "gridScrollOwner": {
+    "clientWidth": 261,
+    "scrollWidth": 261,
+    "clientHeight": 391,
+    "scrollHeight": 391
+  }
+}

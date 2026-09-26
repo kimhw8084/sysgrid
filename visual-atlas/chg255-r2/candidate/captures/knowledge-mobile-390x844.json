@@ -1,0 +1,185 @@
+{
+  "semanticOwner": "knowledge-workspace",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 240,
+      "width": 263,
+      "height": 507,
+      "left": 96,
+      "right": 359,
+      "top": 240,
+      "bottom": 747
+    },
+    "text": "Collective Intelligence Unified Knowledge Matrix // Zero-Loss Information Handoff + System Manual + New BKM + Ask QuestionAll 1Q&A 0BKM 1Manual 0AllSuggestedCriticalNeeds ReviewStaleUnownedIncident Ready Grid TimelineKnowledge Coverage10 critical nodesIncident Ready00 linked to architectureReview Queue10 missing ownerA"
+  },
+  "actions": [
+    {
+      "name": "Search Knowledge",
+      "rect": {
+        "x": 113,
+        "y": 462,
+        "width": 223,
+        "height": 42.5,
+        "left": 113,
+        "right": 336,
+        "top": 462,
+        "bottom": 504.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(169, 177, 214)",
+        "background": "rgb(12, 15, 24)",
+        "ratio": 9.06
+      }
+    },
+    {
+      "name": "+ System Manual",
+      "rect": {
+        "x": 113,
+        "y": 516.5,
+        "width": 223,
+        "height": 40,
+        "left": 113,
+        "right": 336,
+        "top": 516.5,
+        "bottom": 556.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(4, 120, 87)",
+        "ratio": 5.48
+      }
+    },
+    {
+      "name": "+ New BKM",
+      "rect": {
+        "x": 113,
+        "y": 564.5,
+        "width": 223,
+        "height": 40,
+        "left": 113,
+        "right": 336,
+        "top": 564.5,
+        "bottom": 604.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(225, 29, 72)",
+        "ratio": 4.7
+      }
+    },
+    {
+      "name": "+ Ask Question",
+      "rect": {
+        "x": 113,
+        "y": 612.5,
+        "width": 223,
+        "height": 40,
+        "left": 113,
+        "right": 336,
+        "top": 612.5,
+        "bottom": 652.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(37, 99, 235)",
+        "ratio": 5.17
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false,
+  "primaryActionGeometry": [
+    {
+      "label": "+ System Manual",
+      "width": 223,
+      "parentWidth": 223,
+      "scrollWidth": 223,
+      "clientWidth": 223,
+      "textRects": [
+        {
+          "left": 158.90625,
+          "right": 174.90625
+        },
+        {
+          "left": 182.90625,
+          "right": 290.09375
+        }
+      ],
+      "textWithinButton": true
+    },
+    {
+      "label": "+ New BKM",
+      "width": 223,
+      "parentWidth": 223,
+      "scrollWidth": 223,
+      "clientWidth": 223,
+      "textRects": [
+        {
+          "left": 180.546875,
+          "right": 196.546875
+        },
+        {
+          "left": 204.546875,
+          "right": 268.453125
+        }
+      ],
+      "textWithinButton": true
+    },
+    {
+      "label": "+ Ask Question",
+      "width": 223,
+      "parentWidth": 223,
+      "scrollWidth": 223,
+      "clientWidth": 223,
+      "textRects": [
+        {
+          "left": 164.875,
+          "right": 180.875
+        },
+        {
+          "left": 188.875,
+          "right": 284.109375
+        }
+      ],
+      "textWithinButton": true
+    }
+  ],
+  "hoverActionContrast": [
+    {
+      "name": "+ System Manual",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(4, 120, 87)",
+      "ratio": 5.48
+    },
+    {
+      "name": "+ New BKM",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(225, 29, 72)",
+      "ratio": 4.7
+    },
+    {
+      "name": "+ Ask Question",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(37, 99, 235)",
+      "ratio": 5.17
+    }
+  ]
+}

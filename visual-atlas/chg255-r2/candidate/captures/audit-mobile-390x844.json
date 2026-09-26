@@ -1,0 +1,81 @@
+{
+  "semanticOwner": "audit-ledger",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 80,
+      "y": 224,
+      "width": 295,
+      "height": 539,
+      "left": 80,
+      "right": 375,
+      "top": 224,
+      "bottom": 763
+    },
+    "text": "Registry Audit LedgerImmutable record of system state changes and operator actionsScoped: logical_services // 1Complete matching scopeAnalyticsStartEnd Export loaded CSVPress SPACE to deselect this row.\n                \n                \n                    \n                \n            \n            \n            \n      "
+  },
+  "actions": [
+    {
+      "name": "Export loaded CSV",
+      "rect": {
+        "x": 109,
+        "y": 541.5,
+        "width": 192.875,
+        "height": 36,
+        "left": 109,
+        "right": 301.875,
+        "top": 541.5,
+        "bottom": 577.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(2, 5, 18)",
+        "ratio": 20.35
+      }
+    },
+    {
+      "name": "View change payload",
+      "rect": {
+        "x": 337,
+        "y": 648.5,
+        "width": 26,
+        "height": 26,
+        "left": 337,
+        "right": 363,
+        "top": 648.5,
+        "bottom": 674.5
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(100, 116, 139)",
+        "background": "rgb(10, 24, 55)",
+        "ratio": 3.68
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false,
+  "pagination": {
+    "left": 80,
+    "right": 375,
+    "top": 776.5,
+    "bottom": 827.5,
+    "width": 390
+  },
+  "dataRowCount": 1,
+  "targetActionVisible": true,
+  "payloadActionVisible": true
+}
