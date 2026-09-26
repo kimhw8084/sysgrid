@@ -1,0 +1,84 @@
+{
+  "schema": "chg255-r4-monitoring-classification-v1",
+  "candidate": {
+    "commit": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "tree": "15332211fe6c39f5f3926ebc970a3c0ece362d83"
+  },
+  "r3Observed": {
+    "suite": "normal-v1",
+    "result": {
+      "passed": 74,
+      "skipped": 2,
+      "failed": 1
+    },
+    "failure": "frontend/tests/monitoring-workflows.spec.ts:169 — edits an existing monitor without save errors and persists the updated fields",
+    "observation": "After filling Monitoring search after edit, previous title appeared; isolated rerun passed."
+  },
+  "r4Diagnostics": {
+    "isolated": {
+      "profile": "normal-v1",
+      "runtime": "fresh isolated ports and empty seeded tenant",
+      "result": "PASS",
+      "tests": "1 passed",
+      "fixture": {
+        "id": 1,
+        "originalTitle": "PW-MON-1790448574647-cfz3a0",
+        "updatedTitle": "PW-MON-1790448574647-cfz3a0-EDITED",
+        "updatedPurpose": "Edited through Playwright regression coverage"
+      },
+      "serverFinalAndColdUi": {
+        "title": "PW-MON-1790448574647-cfz3a0-EDITED",
+        "purpose": "Edited through Playwright regression coverage",
+        "titleVisible": true,
+        "purposeVisible": true
+      },
+      "uiScreenshot": "monitoring/isolated-final-ui.png",
+      "uiScreenshotSha256": "038bbf3ef1c8ed5b88ff73523ba8b36e81e08be40a951bea803bf92c2779057c"
+    },
+    "settingsImmediatelyBeforeMonitoring": {
+      "profile": "normal-v1",
+      "runtime": "fresh isolated ports and empty seeded tenant",
+      "workerCount": 1,
+      "order": [
+        "Settings action closure test",
+        "Monitoring edit test"
+      ],
+      "result": "PASS",
+      "tests": "2 passed",
+      "fixture": {
+        "id": 1,
+        "originalTitle": "PW-MON-1790448703880-85lyr9",
+        "updatedTitle": "PW-MON-1790448703880-85lyr9-EDITED",
+        "updatedPurpose": "Edited through Playwright regression coverage"
+      },
+      "serverFinalAndColdUi": {
+        "title": "PW-MON-1790448703880-85lyr9-EDITED",
+        "purpose": "Edited through Playwright regression coverage",
+        "titleVisible": true,
+        "purposeVisible": true
+      },
+      "uiScreenshot": "monitoring/adjacent-final-ui.png",
+      "uiScreenshotSha256": "6d28c23f0af4f73b57dccfb685c9f20ed72c0c424ff2ea64720de548c3decb88"
+    },
+    "singleCleanNormalV1Suite": {
+      "profile": "normal-v1",
+      "runtime": "fresh isolated ports and empty seeded tenant",
+      "workerCount": 1,
+      "collected": 77,
+      "passed": 75,
+      "skipped": 2,
+      "failed": 0,
+      "duration": "16.9m",
+      "targetTest": "frontend/tests/monitoring-workflows.spec.ts:169",
+      "targetResult": "PASS (test 26 of 77)",
+      "log": "monitoring/monitoring-normal-v1-full-suite.log"
+    }
+  },
+  "predecessorComparison": {
+    "run": false,
+    "reason": "The exact failure did not reproduce in any bounded R4 candidate diagnostic; predecessor comparison was not triggered."
+  },
+  "classification": "NON_PRODUCT_TRANSIENT_HARNESS_BEHAVIOR",
+  "classificationRationale": "The single R3 ordered-suite assertion did not reproduce in a fresh isolated R4 run, with the Settings closure test immediately before Monitoring in one worker, or in the one clean normal-v1 browser suite at the original Monitoring test position. The runtime owner is unchanged by R3; ConfigSection's added prop defaults false and Monitoring does not pass it. No candidate-specific regression is established. The original cause is not identified.",
+  "candidateSpecificDefectEstablished": false
+}

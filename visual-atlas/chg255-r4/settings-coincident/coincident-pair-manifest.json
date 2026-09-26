@@ -1,0 +1,502 @@
+{
+  "schema": "sysgrid-settings-coincident-proof-manifest-v1",
+  "candidate": {
+    "commit": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "tree": "15332211fe6c39f5f3926ebc970a3c0ece362d83"
+  },
+  "pairCount": 4,
+  "pairs": [
+    {
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-HEADER-390X844-DEFAULT-CONTROL-3c0d4289-5005-4e28-9a15-153c84bfbe09",
+      "scope": "header",
+      "activeTab": "environments",
+      "files": {
+        "json": "settings-parameters-header-390x844-default-control.json",
+        "png": "settings-parameters-header-390x844-default-control.png"
+      },
+      "sha256": {
+        "json": "7ecac46e6879a6f54d00893e2f66a27da2c12706263794fc9d71ec2cfbc6262e",
+        "png": "47e3ea35a2d2ac787f45a56f8456cab9e4da3c4d49086d22daa05fd09da7813f"
+      },
+      "stateMetadataSha256": "cdfa537f9e201166816a66191c3361dae0b91cae79144ef5b47006f1a63ca048",
+      "pngEmbeddedMetadataExactMatch": true,
+      "pngPixelDataSha256BeforeAndAfterMetadata": "f6c91662ae9602fa4866d10e5a3ba8f17bdeb8a6f1f6ae30b2e888cb9be5a99c",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "accepted": true,
+      "controls": [
+        {
+          "name": "Golden Template",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        },
+        {
+          "name": "Force Hot Reload",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        }
+      ],
+      "bodyScrollWidth": 375,
+      "documentScrollWidth": 375,
+      "stateMetadata": {
+        "route": "/settings?tab=environments",
+        "activeTab": "environments",
+        "activeTabLabel": "Parameters",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "textPressure": {
+          "method": "default browser root text size; no override",
+          "inlineRootFontSize": null,
+          "computedRootFontSize": "16px"
+        },
+        "scrollOffsets": {
+          "settingsWorkspace": {
+            "scrollTop": 0,
+            "scrollLeft": 0,
+            "scrollHeight": 8506,
+            "clientHeight": 507
+          },
+          "settingsContent": {
+            "scrollTop": 0,
+            "scrollLeft": 0,
+            "scrollHeight": 8297,
+            "clientHeight": 8297
+          },
+          "relevantNestedScrollables": []
+        },
+        "target": {
+          "scope": "header",
+          "bounds": {
+            "x": 96,
+            "y": 301,
+            "width": 263,
+            "height": 36,
+            "left": 96,
+            "right": 359,
+            "top": 301,
+            "bottom": 337
+          },
+          "text": "Golden TemplateForce Hot Reload"
+        },
+        "focusedElement": {
+          "tag": "div",
+          "id": "sg-main-content",
+          "name": null,
+          "role": null,
+          "ariaLabel": null,
+          "text": "SettingsSystem Configuration & Golden TemplateGolden TemplateForce Hot ReloadParametersPermissionsGroupsMetadataAnalysisStandardsPersonal PreferencesChoose the "
+        },
+        "selectedIdentity": {
+          "userId": "haewon.kim",
+          "tenantId": "1",
+          "selectedTenant": [
+            {
+              "id": 1,
+              "name": "Playwright Gate",
+              "role": "ADMIN",
+              "is_selected": true,
+              "is_online": true
+            }
+          ]
+        },
+        "pendingLoading": {
+          "readyState": "complete",
+          "visibleIndicators": [],
+          "runningAnimations": [],
+          "fatal": false
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "viewportWidth": 390
+        }
+      }
+    },
+    {
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-HEADER-390X844-TEXT-200-3da245f1-4457-4e7a-b8d0-af20e61f9d32",
+      "scope": "header",
+      "activeTab": "environments",
+      "files": {
+        "json": "settings-parameters-header-390x844-text-200.json",
+        "png": "settings-parameters-header-390x844-text-200.png"
+      },
+      "sha256": {
+        "json": "a330a6c3fc30c4cb37f1eefc6a1fa5c13e5e73d2c9159bc1b5a106a9a0647ece",
+        "png": "cde9a78da970aa4c54f5dc43879573fbd849376ee38dc5ed5cb36ed01872f575"
+      },
+      "stateMetadataSha256": "b2eb33b739985cfa7809246ed3482d4bab16c2d0eb495743de22a70d18883617",
+      "pngEmbeddedMetadataExactMatch": true,
+      "pngPixelDataSha256BeforeAndAfterMetadata": "5e63fc34fcaad4fbcb445cd81510cd6b036e8f92e86b8c8f58209896b9b037e3",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "accepted": true,
+      "controls": [
+        {
+          "name": "Golden Template",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        },
+        {
+          "name": "Force Hot Reload",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        }
+      ],
+      "bodyScrollWidth": 375,
+      "documentScrollWidth": 375,
+      "stateMetadata": {
+        "route": "/settings?tab=environments",
+        "activeTab": "environments",
+        "activeTabLabel": "Parameters",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "textPressure": {
+          "method": "document.documentElement.style.setProperty(\"font-size\", \"200%\", \"important\")",
+          "inlineRootFontSize": "200%",
+          "computedRootFontSize": "32px"
+        },
+        "scrollOffsets": {
+          "settingsWorkspace": {
+            "scrollTop": 83,
+            "scrollLeft": 0,
+            "scrollHeight": 13564,
+            "clientHeight": 108
+          },
+          "settingsContent": {
+            "scrollTop": 0,
+            "scrollLeft": 0,
+            "scrollHeight": 13235,
+            "clientHeight": 13235
+          },
+          "relevantNestedScrollables": []
+        },
+        "target": {
+          "scope": "header",
+          "bounds": {
+            "x": 112,
+            "y": 612,
+            "width": 231,
+            "height": 72,
+            "left": 112,
+            "right": 343,
+            "top": 612,
+            "bottom": 684
+          },
+          "text": "Golden TemplateForce Hot Reload"
+        },
+        "focusedElement": {
+          "tag": "div",
+          "id": "sg-main-content",
+          "name": null,
+          "role": null,
+          "ariaLabel": null,
+          "text": "SettingsSystem Configuration & Golden TemplateGolden TemplateForce Hot ReloadParametersPermissionsGroupsMetadataAnalysisStandardsPersonal PreferencesChoose the "
+        },
+        "selectedIdentity": {
+          "userId": "haewon.kim",
+          "tenantId": "1",
+          "selectedTenant": [
+            {
+              "id": 1,
+              "name": "Playwright Gate",
+              "role": "ADMIN",
+              "is_selected": true,
+              "is_online": true
+            }
+          ]
+        },
+        "pendingLoading": {
+          "readyState": "complete",
+          "visibleIndicators": [],
+          "runningAnimations": [],
+          "fatal": false
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "viewportWidth": 390
+        }
+      }
+    },
+    {
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-WAYFINDING-390X844-TEXT-200-3e616cf0-918e-4492-aee5-580e31e4dcd4",
+      "scope": "wayfinding",
+      "activeTab": "environments",
+      "files": {
+        "json": "settings-parameters-wayfinding-390x844-text-200.json",
+        "png": "settings-parameters-wayfinding-390x844-text-200.png"
+      },
+      "sha256": {
+        "json": "93325a72ba12d487846b7b537f00520892f6cb896d6c39e0158c298e9d057a4a",
+        "png": "20b14d9c80a632e5ba9bd273ff4fe05c659896372ea25ac1c35337ffc397c54d"
+      },
+      "stateMetadataSha256": "e4010c443e0c3a06690fe709c6a72238f64d321c2be4a192fa32af037384e844",
+      "pngEmbeddedMetadataExactMatch": true,
+      "pngPixelDataSha256BeforeAndAfterMetadata": "0f321cff2ed4c9f8908a380ad829c87cedc60179f960df426051c0becbac8378",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "accepted": true,
+      "controls": [
+        {
+          "name": "Parameters",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        },
+        {
+          "name": "Permissions",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        },
+        {
+          "name": "Groups",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        },
+        {
+          "name": "Metadata",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        },
+        {
+          "name": "Analysis",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        },
+        {
+          "name": "Standards",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        }
+      ],
+      "bodyScrollWidth": 375,
+      "documentScrollWidth": 375,
+      "stateMetadata": {
+        "route": "/settings?tab=environments",
+        "activeTab": "environments",
+        "activeTabLabel": "Parameters",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "textPressure": {
+          "method": "document.documentElement.style.setProperty(\"font-size\", \"200%\", \"important\")",
+          "inlineRootFontSize": "200%",
+          "computedRootFontSize": "32px"
+        },
+        "scrollOffsets": {
+          "settingsWorkspace": {
+            "scrollTop": 214,
+            "scrollLeft": 0,
+            "scrollHeight": 13564,
+            "clientHeight": 108
+          },
+          "settingsContent": {
+            "scrollTop": 0,
+            "scrollLeft": 0,
+            "scrollHeight": 13235,
+            "clientHeight": 13235
+          },
+          "relevantNestedScrollables": []
+        },
+        "target": {
+          "scope": "wayfinding",
+          "bounds": {
+            "x": 112,
+            "y": 585,
+            "width": 231,
+            "height": 86,
+            "left": 112,
+            "right": 343,
+            "top": 585,
+            "bottom": 671
+          },
+          "text": "ParametersPermissionsGroupsMetadataAnalysisStandards"
+        },
+        "focusedElement": {
+          "tag": "div",
+          "id": "sg-main-content",
+          "name": null,
+          "role": null,
+          "ariaLabel": null,
+          "text": "SettingsSystem Configuration & Golden TemplateGolden TemplateForce Hot ReloadParametersPermissionsGroupsMetadataAnalysisStandardsPersonal PreferencesChoose the "
+        },
+        "selectedIdentity": {
+          "userId": "haewon.kim",
+          "tenantId": "1",
+          "selectedTenant": [
+            {
+              "id": 1,
+              "name": "Playwright Gate",
+              "role": "ADMIN",
+              "is_selected": true,
+              "is_online": true
+            }
+          ]
+        },
+        "pendingLoading": {
+          "readyState": "complete",
+          "visibleIndicators": [],
+          "runningAnimations": [],
+          "fatal": false
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "viewportWidth": 390
+        }
+      }
+    },
+    {
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-TASK-390X844-TEXT-200-f1ae06d1-2a86-462b-8417-6c14300284e0",
+      "scope": "task",
+      "activeTab": "environments",
+      "files": {
+        "json": "settings-parameters-task-390x844-text-200.json",
+        "png": "settings-parameters-task-390x844-text-200.png"
+      },
+      "sha256": {
+        "json": "fdebd1c62f6aa0f934580cd474e7b35acd8341aa20e9ffef3a679e25d76c88ef",
+        "png": "00ab4c6742810fe81048feeffaafcc9b7d14ebdc3909bc2b9e8f85051daa529e"
+      },
+      "stateMetadataSha256": "4f46d2c246528e0795d91180824b67ca2ba99273cd26bda7325cb8a1abd745b3",
+      "pngEmbeddedMetadataExactMatch": true,
+      "pngPixelDataSha256BeforeAndAfterMetadata": "33c7b374de065f57261f50c24e1dfa069cd02321aeaa4d581e32a386eae5194d",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "accepted": true,
+      "controls": [
+        {
+          "name": "Light",
+          "fullyInsideVisibleBounds": true,
+          "readableNameContained": true,
+          "pointerReachable": true,
+          "keyboardReachable": true,
+          "touchReachable": true
+        }
+      ],
+      "bodyScrollWidth": 375,
+      "documentScrollWidth": 375,
+      "stateMetadata": {
+        "route": "/settings?tab=environments",
+        "activeTab": "environments",
+        "activeTabLabel": "Parameters",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "textPressure": {
+          "method": "document.documentElement.style.setProperty(\"font-size\", \"200%\", \"important\")",
+          "inlineRootFontSize": "200%",
+          "computedRootFontSize": "32px"
+        },
+        "scrollOffsets": {
+          "settingsWorkspace": {
+            "scrollTop": 429,
+            "scrollLeft": 0,
+            "scrollHeight": 13564,
+            "clientHeight": 108
+          },
+          "settingsContent": {
+            "scrollTop": 0,
+            "scrollLeft": 0,
+            "scrollHeight": 13235,
+            "clientHeight": 13235
+          },
+          "relevantNestedScrollables": []
+        },
+        "target": {
+          "scope": "task",
+          "bounds": {
+            "x": 145,
+            "y": 626,
+            "width": 84.34375,
+            "height": 47.5,
+            "left": 145,
+            "right": 229.34375,
+            "top": 626,
+            "bottom": 673.5
+          },
+          "text": "Light"
+        },
+        "focusedElement": {
+          "tag": "div",
+          "id": "sg-main-content",
+          "name": null,
+          "role": null,
+          "ariaLabel": null,
+          "text": "SettingsSystem Configuration & Golden TemplateGolden TemplateForce Hot ReloadParametersPermissionsGroupsMetadataAnalysisStandardsPersonal PreferencesChoose the "
+        },
+        "selectedIdentity": {
+          "userId": "haewon.kim",
+          "tenantId": "1",
+          "selectedTenant": [
+            {
+              "id": 1,
+              "name": "Playwright Gate",
+              "role": "ADMIN",
+              "is_selected": true,
+              "is_online": true
+            }
+          ]
+        },
+        "pendingLoading": {
+          "readyState": "complete",
+          "visibleIndicators": [],
+          "runningAnimations": [],
+          "fatal": false
+        },
+        "document": {
+          "bodyScrollWidth": 375,
+          "documentScrollWidth": 375,
+          "viewportWidth": 390
+        }
+      }
+    }
+  ]
+}

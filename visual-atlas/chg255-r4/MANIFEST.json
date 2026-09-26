@@ -1,0 +1,164 @@
+{
+  "artifactParent": "72712e2bded0f49f2040715786e2f3133b622eb8",
+  "candidate": {
+    "commit": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "tree": "15332211fe6c39f5f3926ebc970a3c0ece362d83"
+  },
+  "conclusion": "GO_READY_EVIDENCE",
+  "fileCountExcludingManifest": 24,
+  "files": [
+    {
+      "path": "candidate-binding.json",
+      "sha256": "05b5df5f9ad34139b98c5c9d056a49dd7585139d7cc7386a8ccd916f85e82ad6",
+      "sizeBytes": 2812
+    },
+    {
+      "path": "compact-verification-report.md",
+      "sha256": "d308acd894c147392d4ba716d161c651b741d6a38b8bf736a281def2e54f330e",
+      "sizeBytes": 5177
+    },
+    {
+      "path": "impact-and-root-preview-reuse.md",
+      "sha256": "3117d857e7cf965e109bc5c6d2ce014adea21cb0183b0e070e2f0f5865427491",
+      "sizeBytes": 2221
+    },
+    {
+      "path": "monitoring/adjacent-diagnostic.json",
+      "sha256": "7e5adc1ed2c3126884b0b0e2f19c4365077711e3eefcae254b860fa0ea333709",
+      "sizeBytes": 1363
+    },
+    {
+      "path": "monitoring/adjacent-final-ui.png",
+      "sha256": "6d28c23f0af4f73b57dccfb685c9f20ed72c0c424ff2ea64720de548c3decb88",
+      "sizeBytes": 104626
+    },
+    {
+      "path": "monitoring/adjacent-playwright.log",
+      "sha256": "cda094a07a8bc86c6853b1691b4d6b4831144c1780fb8198d6d47717c580deb2",
+      "sizeBytes": 650
+    },
+    {
+      "path": "monitoring/adjacent-server-after.json",
+      "sha256": "ca590acb3457111779b6905207bf8c10c4e9d7bf2ebe0f470ec0a5ac8aa4fba7",
+      "sizeBytes": 950
+    },
+    {
+      "path": "monitoring/adjacent-server-before.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sizeBytes": 2
+    },
+    {
+      "path": "monitoring/isolated-diagnostic.json",
+      "sha256": "8998a3b9d667df1962bbff3ae0da4916a47eb83070835330ccad4101a4f4d4f5",
+      "sizeBytes": 1363
+    },
+    {
+      "path": "monitoring/isolated-final-ui.png",
+      "sha256": "038bbf3ef1c8ed5b88ff73523ba8b36e81e08be40a951bea803bf92c2779057c",
+      "sizeBytes": 104016
+    },
+    {
+      "path": "monitoring/isolated-playwright.log",
+      "sha256": "7f38b8df019e928795eeecea07861dc9126ca06575a26dbacff154d388700f5f",
+      "sizeBytes": 449
+    },
+    {
+      "path": "monitoring/isolated-server-after.json",
+      "sha256": "86edfd02d4d8d73873a177a9dc904467d3030f8cbd068d756b155c3e35608956",
+      "sizeBytes": 950
+    },
+    {
+      "path": "monitoring/isolated-server-before.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sizeBytes": 2
+    },
+    {
+      "path": "monitoring/normal-v1-full-suite.log",
+      "sha256": "e3afaf0294d255cc64c25053e34ce960083a9921f4fe2166b081d6f5c504485e",
+      "sizeBytes": 54759
+    },
+    {
+      "path": "monitoring-classification.json",
+      "sha256": "577bcfded4652114239b3008af9d1e7fd99a70e86233cd2e1abc50417e87b1bb",
+      "sizeBytes": 3549
+    },
+    {
+      "path": "settings-coincident/coincident-pair-manifest.json",
+      "sha256": "dc68511a47afb9633ddd5b498d261756f317d327d8b57fc29ef9ea096c32f313",
+      "sizeBytes": 15839
+    },
+    {
+      "path": "settings-coincident/settings-parameters-header-390x844-default-control.json",
+      "sha256": "7ecac46e6879a6f54d00893e2f66a27da2c12706263794fc9d71ec2cfbc6262e",
+      "sizeBytes": 10831
+    },
+    {
+      "path": "settings-coincident/settings-parameters-header-390x844-default-control.png",
+      "sha256": "47e3ea35a2d2ac787f45a56f8456cab9e4da3c4d49086d22daa05fd09da7813f",
+      "sizeBytes": 61679
+    },
+    {
+      "path": "settings-coincident/settings-parameters-header-390x844-text-200.json",
+      "sha256": "a330a6c3fc30c4cb37f1eefc6a1fa5c13e5e73d2c9159bc1b5a106a9a0647ece",
+      "sizeBytes": 11787
+    },
+    {
+      "path": "settings-coincident/settings-parameters-header-390x844-text-200.png",
+      "sha256": "cde9a78da970aa4c54f5dc43879573fbd849376ee38dc5ed5cb36ed01872f575",
+      "sizeBytes": 35055
+    },
+    {
+      "path": "settings-coincident/settings-parameters-task-390x844-text-200.json",
+      "sha256": "fdebd1c62f6aa0f934580cd474e7b35acd8341aa20e9ffef3a679e25d76c88ef",
+      "sizeBytes": 10963
+    },
+    {
+      "path": "settings-coincident/settings-parameters-task-390x844-text-200.png",
+      "sha256": "00ab4c6742810fe81048feeffaafcc9b7d14ebdc3909bc2b9e8f85051daa529e",
+      "sizeBytes": 33794
+    },
+    {
+      "path": "settings-coincident/settings-parameters-wayfinding-390x844-text-200.json",
+      "sha256": "93325a72ba12d487846b7b537f00520892f6cb896d6c39e0158c298e9d057a4a",
+      "sizeBytes": 14169
+    },
+    {
+      "path": "settings-coincident/settings-parameters-wayfinding-390x844-text-200.png",
+      "sha256": "20b14d9c80a632e5ba9bd273ff4fe05c659896372ea25ac1c35337ffc397c54d",
+      "sizeBytes": 37874
+    }
+  ],
+  "repository": "kimhw8084/sysgrid",
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+  "schema": "sysgrid-chg255-r4-verification-artifact-manifest-v1",
+  "settingsPairsReadbackVerified": [
+    {
+      "jsonSha256": "7ecac46e6879a6f54d00893e2f66a27da2c12706263794fc9d71ec2cfbc6262e",
+      "pngSha256": "47e3ea35a2d2ac787f45a56f8456cab9e4da3c4d49086d22daa05fd09da7813f",
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-HEADER-390X844-DEFAULT-CONTROL-3c0d4289-5005-4e28-9a15-153c84bfbe09",
+      "scope": "header",
+      "stateMetadataSha256": "cdfa537f9e201166816a66191c3361dae0b91cae79144ef5b47006f1a63ca048"
+    },
+    {
+      "jsonSha256": "a330a6c3fc30c4cb37f1eefc6a1fa5c13e5e73d2c9159bc1b5a106a9a0647ece",
+      "pngSha256": "cde9a78da970aa4c54f5dc43879573fbd849376ee38dc5ed5cb36ed01872f575",
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-HEADER-390X844-TEXT-200-3da245f1-4457-4e7a-b8d0-af20e61f9d32",
+      "scope": "header",
+      "stateMetadataSha256": "b2eb33b739985cfa7809246ed3482d4bab16c2d0eb495743de22a70d18883617"
+    },
+    {
+      "jsonSha256": "93325a72ba12d487846b7b537f00520892f6cb896d6c39e0158c298e9d057a4a",
+      "pngSha256": "20b14d9c80a632e5ba9bd273ff4fe05c659896372ea25ac1c35337ffc397c54d",
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-WAYFINDING-390X844-TEXT-200-3e616cf0-918e-4492-aee5-580e31e4dcd4",
+      "scope": "wayfinding",
+      "stateMetadataSha256": "e4010c443e0c3a06690fe709c6a72238f64d321c2be4a192fa32af037384e844"
+    },
+    {
+      "jsonSha256": "fdebd1c62f6aa0f934580cd474e7b35acd8341aa20e9ffef3a679e25d76c88ef",
+      "pngSha256": "00ab4c6742810fe81048feeffaafcc9b7d14ebdc3909bc2b9e8f85051daa529e",
+      "proofId": "CHG255-R4-SETTINGS-PARAMETERS-TASK-390X844-TEXT-200-f1ae06d1-2a86-462b-8417-6c14300284e0",
+      "scope": "task",
+      "stateMetadataSha256": "4f46d2c246528e0795d91180824b67ca2ba99273cd26bda7325cb8a1abd745b3"
+    }
+  ]
+}

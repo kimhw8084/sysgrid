@@ -1,0 +1,10 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 tests/golden-ui-v3-responsive.spec.ts:616:3 › Settings action closure and wrapped wayfinding › closes every authorized action at mobile, short, text-pressure, and desktop profiles (45.5s)
+SEED: Created monitoring item "PW-MON-1790448703880-85lyr9" (ID: 1)
+(node:80417) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 tests/monitoring-workflows.spec.ts:169:3 › Monitoring workflows › edits an existing monitor without save errors and persists the updated fields (28.2s)
+
+  2 passed (1.3m)

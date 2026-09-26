@@ -1,0 +1,68 @@
+{
+  "schema": "sysgrid-chg255-r4-candidate-binding-v1",
+  "repository": "kimhw8084/sysgrid",
+  "project": "sysgrid",
+  "change": "CHG-255 — Golden UI v3 — remediate current SysGrid atlas blockers",
+  "operation": "VERIFY",
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+  "base": {
+    "ref": "refs/heads/main",
+    "commit": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "tree": "376906e0c9079f2281732fbbc31eec0d754ec30e"
+  },
+  "candidate": {
+    "commit": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "tree": "15332211fe6c39f5f3926ebc970a3c0ece362d83",
+    "parent": "31ee72386876b2ef877a72236c44d7e1895c2ed2"
+  },
+  "predecessor": {
+    "commit": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+    "tree": "dfa8c00c9b9a39a34160fa265bf3daa4072954bf",
+    "parent": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3"
+  },
+  "refs": {
+    "work": "refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+    "nativeEvidence": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+    "verificationArtifact": "refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4"
+  },
+  "r3": {
+    "fabricJob": "CF-34ae23bd1b4bab0fd4e4765c",
+    "artifactCarrier": {
+      "ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+      "commit": "72712e2bded0f49f2040715786e2f3133b622eb8"
+    },
+    "artifactRun": "AR-84",
+    "artifactRunDisposition": "Rejected as decisive acceptance evidence, not as proof of a Product defect"
+  },
+  "r2RootPreviewEvidence": {
+    "carrierCommit": "70101ea3bfa81d73f4285629ed418a80f9c7dc76",
+    "path": "visual-atlas/chg255-r2/task-and-test-results.json",
+    "blob": "77492bdd1a7e633d89995a0453aeb7fc9b78cc98",
+    "candidate": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+    "status": "PASS",
+    "passed": 2,
+    "failed": 0
+  },
+  "mainObservedBeforeExecution": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+  "sourceIntegrity": {
+    "workHead": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "workTree": "15332211fe6c39f5f3926ebc970a3c0ece362d83",
+    "worktreeCleanTrackedAndUntracked": true,
+    "newProductOrTestCommit": false
+  },
+  "conclusion": "GO_READY_EVIDENCE",
+  "mainObservedAfterDiagnostics": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+  "r4RefsPreflight": {
+    "work": "unclaimed remotely before publishing",
+    "nativeEvidence": "unclaimed remotely before publishing",
+    "verificationArtifact": "unclaimed remotely before publishing"
+  },
+  "monitoringClassification": "NON_PRODUCT_TRANSIENT_HARNESS_BEHAVIOR",
+  "monitoringResult": {
+    "isolated": "PASS",
+    "settingsAdjacent": "PASS",
+    "normalV1Suite": "75 passed / 2 skipped / 0 failed",
+    "predecessorCompared": false,
+    "candidateSpecificDefectEstablished": false
+  }
+}

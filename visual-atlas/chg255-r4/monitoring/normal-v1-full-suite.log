@@ -1,0 +1,676 @@
+Verification Python: /opt/anaconda3/bin/python3 (Python 3.11.7)
+Verification Node: /opt/homebrew/bin/node (v26.0.0)
+Running the repository migration entry path against a fresh tenant database...
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 8596642f109d, Initial schema
+INFO  [alembic.runtime.migration] Running upgrade 8596642f109d -> 5383bf931a78, add_ip_to_connections
+INFO  [alembic.runtime.migration] Running upgrade 5383bf931a78 -> 370e69388728, add_risk_to_firewall
+INFO  [alembic.runtime.migration] Running upgrade 370e69388728 -> b474b807d83a, add_mac_vlan_to_connections
+INFO  [alembic.runtime.migration] Running upgrade b474b807d83a -> cd1dc3f9356b, add_service_fields
+INFO  [alembic.runtime.migration] Running upgrade cd1dc3f9356b -> e30fab364540, add role to device
+INFO  [alembic.runtime.migration] Running upgrade e30fab364540 -> 77eb5cdb6c8a, add monitored services to monitoring item
+INFO  [alembic.runtime.migration] Running upgrade 77eb5cdb6c8a -> 256902a5e7d9, add external intelligence tables
+INFO  [alembic.runtime.migration] Running upgrade 256902a5e7d9 -> c4ebee015e2d, add_vendor_knowledge_investigation_tables
+INFO  [alembic.runtime.migration] Running upgrade c4ebee015e2d -> 09b3ab8d3866, add_troubleshooting_fields_to_investigation
+INFO  [alembic.runtime.migration] Running upgrade 09b3ab8d3866 -> 066668880dda, add_far_and_bkm_modules
+INFO  [alembic.runtime.migration] Running upgrade 066668880dda -> 988d728e925c, sync_missing_columns
+INFO  [alembic.runtime.migration] Running upgrade 988d728e925c -> b50f3c68f0a2, revamp_vendors
+INFO  [alembic.runtime.migration] Running upgrade b50f3c68f0a2 -> 3860f2d3a61b, add projects table
+INFO  [alembic.runtime.migration] Running upgrade 3860f2d3a61b -> 8b355eb20621, add_rca_module
+INFO  [alembic.runtime.migration] Running upgrade 8b355eb20621 -> 5855d04ab558, revamp_monitoring_fields
+INFO  [alembic.runtime.migration] Running upgrade 5855d04ab558 -> 26f7a74f2a4d, add_monitoring_reliability_fields
+INFO  [alembic.runtime.migration] Running upgrade 26f7a74f2a4d -> dc85bd757294, add_impact_to_monitoring_items
+INFO  [alembic.runtime.migration] Running upgrade dc85bd757294 -> e72b9b8626d3, add_is_deleted_and_owner_id_to_monitoring
+INFO  [alembic.runtime.migration] Running upgrade e72b9b8626d3 -> 45d2a3a171dc, add monitoring owners table
+INFO  [alembic.runtime.migration] Running upgrade 45d2a3a171dc -> d16649b5c596, add_monitoring_versioning
+INFO  [alembic.runtime.migration] Running upgrade d16649b5c596 -> 5ff12d0da4c3, add_metadata_json_to_external_entities
+INFO  [alembic.runtime.migration] Running upgrade 5ff12d0da4c3 -> 8089cfa51347, revamp_external_entities_for_metadata_and_poc
+INFO  [alembic.runtime.migration] Running upgrade 8089cfa51347 -> 057a20e6c065, add_owner_team_status_env_to_external_entities
+INFO  [alembic.runtime.migration] Running upgrade 057a20e6c065 -> f7a7a7f2a4d0, add_external_entity_secrets
+INFO  [alembic.runtime.migration] Running upgrade f7a7a7f2a4d0 -> 17a97a934a75, sync_rca_and_investigation_v3
+INFO  [alembic.runtime.migration] Running upgrade 17a97a934a75 -> 354ac7f55257, add initiation_at to investigations and target_systems to rca
+INFO  [alembic.runtime.migration] Running upgrade 354ac7f55257 -> f25553f893a1, add_forensic_classification_columns
+INFO  [alembic.runtime.migration] Running upgrade f25553f893a1 -> 0d7c82f2d2a9, sync rca and investigation schema v4
+INFO  [alembic.runtime.migration] Running upgrade 0d7c82f2d2a9 -> 63ee971aa974, add_images_to_rca_timeline
+INFO  [alembic.runtime.migration] Running upgrade 63ee971aa974 -> 1050956bd84e, add failure_type to far
+INFO  [alembic.runtime.migration] Running upgrade 1050956bd84e -> 4fb7471f58a3, sync far mitigation and prevention columns
+INFO  [alembic.runtime.migration] Running upgrade 4fb7471f58a3 -> b258baee2a92, add_user_pool_versioning
+INFO  [alembic.runtime.migration] Running upgrade b258baee2a92 -> 640471344358, add roles and operators for granular permissions
+INFO  [alembic.runtime.migration] Running upgrade 640471344358 -> d1e55c4db1ab, add status to port_connections
+INFO  [alembic.runtime.migration] Running upgrade d1e55c4db1ab -> 0acb3f5dc538, add_global_settings_and_user_preferences
+INFO  [alembic.runtime.migration] Running upgrade 0acb3f5dc538 -> 020a1b0da120, sync_projects_schema_v2
+INFO  [alembic.runtime.migration] Running upgrade 020a1b0da120 -> 485b2b4beada, add dependencies to project tasks v2
+INFO  [alembic.runtime.migration] Running upgrade 485b2b4beada -> fd2f8a526cfe, sync_vendor_contracts_schema
+INFO  [alembic.runtime.migration] Running upgrade fd2f8a526cfe -> b29df7d2ec3c, add_primary_personnel_id_to_vendors
+INFO  [alembic.runtime.migration] Running upgrade b29df7d2ec3c -> e8a537d7e66c, add_knowledge_qa_and_update_entries
+INFO  [alembic.runtime.migration] Running upgrade e8a537d7e66c -> 8f60472be553, add logic_json and traces_json columns
+INFO  [alembic.runtime.migration] Running upgrade 8f60472be553 -> 8dbb85b0243e, remove redundant vendor contact fields
+INFO  [alembic.runtime.migration] Running upgrade fd2f8a526cfe -> 6483543c6234, add is_admin to operators
+INFO  [alembic.runtime.migration] Running upgrade 6483543c6234, 8dbb85b0243e -> 8847b4d2f9b7, merge heads
+INFO  [alembic.runtime.migration] Running upgrade 8847b4d2f9b7 -> 1234567890ab, add site color and rack pdu fields
+INFO  [alembic.runtime.migration] Running upgrade 8847b4d2f9b7 -> 1038b4c0ad51, add aisle and row to racks
+INFO  [alembic.runtime.migration] Running upgrade 1038b4c0ad51, 1234567890ab -> 8320f53ea417, merge rack and site heads
+INFO  [alembic.runtime.migration] Running upgrade 8320f53ea417 -> ead971574174, add completed_at to projects
+INFO  [alembic.runtime.migration] Running upgrade ead971574174 -> 71b0cc9b1997, add_metadata_json_to_project_tasks
+INFO  [alembic.runtime.migration] Running upgrade 71b0cc9b1997 -> 60cee6033e86, add order_index to projects
+INFO  [alembic.runtime.migration] Running upgrade 60cee6033e86 -> 1f9dc5823025, sync_projects_roi_and_owners
+INFO  [alembic.runtime.migration] Running upgrade 1f9dc5823025 -> 99c650300ac3, add_roi_types_to_projects
+INFO  [alembic.runtime.migration] Running upgrade 99c650300ac3 -> 3e604a042903, add_actual_dates_to_project_tasks
+INFO  [alembic.runtime.migration] Running upgrade 3e604a042903 -> bc27645123c4, add farm and request link to port connections
+INFO  [alembic.runtime.migration] Running upgrade bc27645123c4 -> f3b4e2f663c9, add_infrastructure_plans
+INFO  [alembic.runtime.migration] Running upgrade f3b4e2f663c9 -> aa3d4e5f6a7b, add_license_key_to_logical_services
+INFO  [alembic.runtime.migration] Running upgrade aa3d4e5f6a7b -> 9f2d4d0aa321, add_metadata_json_to_data_flows
+INFO  [alembic.runtime.migration] Running upgrade 9f2d4d0aa321 -> c31c0f6f5d10, add data flow history
+INFO  [alembic.runtime.migration] Running upgrade c31c0f6f5d10 -> 4a9d7a1a2b3c, monitoring ownership and team controls
+INFO  [alembic.runtime.migration] Running upgrade 4a9d7a1a2b3c -> 5b8f2a4c9d10, add team management to settings
+INFO  [alembic.runtime.migration] Running upgrade 5b8f2a4c9d10 -> 9c4d6e7f8a10, perfect external entity schema
+INFO  [alembic.runtime.migration] Running upgrade 9c4d6e7f8a10 -> 4bf78a8a9f23, add_teams_to_operators
+INFO  [alembic.runtime.migration] Running upgrade 4bf78a8a9f23 -> 6c1d2e3f4a5b, harden settings options and tenant access
+INFO  [alembic.runtime.migration] Running upgrade 6c1d2e3f4a5b -> a7c9e1b4d2f6, harden user preferences storage
+INFO  [alembic.runtime.migration] Running upgrade a7c9e1b4d2f6 -> f2b7c1d9e4a8, harden monitoring integrity
+INFO  [alembic.runtime.migration] Running upgrade f2b7c1d9e4a8 -> c3d4e5f6a7b8, harden external integrity
+INFO  [alembic.runtime.migration] Running upgrade c3d4e5f6a7b8 -> a9d4c7b2e1f0, sync FAR and RCA runtime schema
+INFO  [alembic.runtime.migration] Running upgrade a9d4c7b2e1f0 -> b33081b478f8, add tenant_id to devices
+INFO  [alembic.runtime.migration] Running upgrade b33081b478f8 -> c1d2e3f4a5b6, add workspace saved views
+INFO  [alembic.runtime.migration] Running upgrade c1d2e3f4a5b6 -> d2e3f4a5b6c7, harden workspace saved views
+INFO  [alembic.runtime.migration] Running upgrade d2e3f4a5b6c7 -> e3f4a5b6c7d8, add FAR mitigation provenance
+INFO  [alembic.runtime.migration] Running upgrade e3f4a5b6c7d8 -> f4a5b6c7d8e9, add workspace saved view favorite/default metadata
+INFO  [alembic.runtime.migration] Running upgrade f4a5b6c7d8e9 -> f5a6b7c8d9e0, Enable team-scoped workspace saved views.
+INFO  [alembic.runtime.migration] Running upgrade f5a6b7c8d9e0 -> a1b2c3d4e5f6, Add the additive PV1 domain foundation.
+INFO  [alembic.runtime.migration] Running upgrade a1b2c3d4e5f6 -> b2c3d4e5f6a7, Add durable Focus, task history, and Plan resource records.
+INFO  [alembic.runtime.migration] Running upgrade b2c3d4e5f6a7 -> c5d6e7f8a9b0, Add the PV1 durable schedule authority.
+INFO  [alembic.runtime.migration] Running upgrade c5d6e7f8a9b0 -> c6d7e8f9a0b1, Add the canonical tenant-scoped PV1 Architecture engine.
+INFO  [alembic.runtime.migration] Running upgrade c6d7e8f9a0b1 -> d7e8f9a0b1c2, Add durable PV1 resources, communication, activity and report records.
+INFO  [alembic.runtime.migration] Running upgrade d7e8f9a0b1c2 -> e8f9a0b1c2d3, Add durable PV1 outcome definition, checkpoint and valuation fields.
+INFO  [alembic.runtime.migration] Running upgrade e8f9a0b1c2d3 -> f1a2b3c4d5e6, Add the additive PV1 legacy migration ledger and cutover boundary.
+INFO  [alembic.runtime.migration] Running upgrade f1a2b3c4d5e6 -> c17a9e5b2f01, Add the tenant-scoped operational action orchestration foundation.
+INFO  [alembic.runtime.migration] Running upgrade c17a9e5b2f01 -> d28f17a4c9e1, Add durable operational action attempt ownership and reconciliation.
+INFO  [alembic.runtime.migration] Running upgrade f1a2b3c4d5e6 -> 9a7b6c5d4e3f, Add normalized Device, Architecture v2, and PV1 traceability.
+INFO  [alembic.runtime.migration] Running upgrade 9a7b6c5d4e3f, d28f17a4c9e1 -> c9f2a1e8d7b6, Merge the two legitimate qualification heads without changing schema state.
+Seeding isolated Playwright tenant...
+--- Bootstrapping Playwright Gate ---
+Running migrations for sqlite+aiosqlite:////Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/sysgrid-verify.b2hFW0/tenant.db...
+
+SUCCESS: Environment Ready.
+Tenant: Playwright Gate
+DB Path: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/sysgrid-verify.b2hFW0/tenant.db
+Admin: haewon.kim
+Seeded Domain Data: no
+Validation Summary:
+{'foundation': {'counts': {'teams': 0, 'sites': 0, 'racks': 0, 'devices': 0, 'device_locations': 0, 'logical_services': 0, 'monitoring_items': 0, 'external_entities': 0, 'vendors': 0, 'knowledge_entries': 0, 'far_failure_modes': 0, 'rca_records': 0, 'projects': 0}, 'rack_fill_sample': {}}, 'api_contracts': {'skipped': True, 'reason': 'domain data seeding disabled'}}
+Bootstrap Report:
+{'tenant_name': 'Playwright Gate', 'tenant_db_url': 'sqlite+aiosqlite:////Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/sysgrid-verify.b2hFW0/tenant.db', 'user_access': [{'user_id': 'haewon.kim', 'role': 'ADMIN', 'is_selected': True}], 'operators': [{'username': 'haewon.kim', 'is_admin': True, 'role_id': 1, 'registration_status': 'Verified'}], 'counts': {'teams': 0, 'sites': 0, 'racks': 0, 'devices': 0, 'logical_services': 0, 'network_interfaces': 0, 'port_connections': 0, 'firewall_rules': 0, 'monitoring_items': 0, 'external_entities': 0, 'external_links': 0, 'vendors': 0, 'vendor_contracts': 0, 'knowledge_entries': 0, 'far_failure_modes': 0, 'rca_records': 0, 'investigations': 0, 'projects': 0, 'tasks': 0, 'data_flows': 0}}
+Provisioning code-managed reference data...
+{"created": 17, "total": 17, "updated": 0}
+Disposable Playwright fixture contract passed: one tenant, code-managed reference data, zero domain rows.
+Owned verification runtime ready: profile=normal-v1 backend=http://127.0.0.1:49665 frontend=http://127.0.0.1:49666 logs=/Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/sysgrid-verify.b2hFW0/logs
+(node:89209) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 77 tests using 1 worker
+
+(node:89246) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:89246) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:89246) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+SEED: Created monitoring item "PW-MON-1790449190569-w8w5fl" (ID: 1)
+  ✓   1 tests/assets-golden-evidence.spec.ts:701:3 › Assets golden evidence capture › captures stage31 workspace evidence (37.8s)
+SEED: Created monitoring item "PW-MON-1790449224751-euiraj" (ID: 2)
+  ✓   2 tests/assets-revert.spec.ts:6:3 › Assets Revert lifecycle › reverts the immutable completed row operation after selection changes (18.0s)
+SEED: Created monitoring item "PW-MON-1790449242809-z2r1rm" (ID: 3)
+  ✓   3 tests/assets-stage33-evidence.spec.ts:725:3 › Assets Stage 33 evidence capture › captures stage33 lock-proof evidence (51.2s)
+[Harness] Cleaning existing and initializing stage34-evidence directory
+[Harness] Seeding operational scenario...
+SEED: Created monitoring item "PW-MON-1790449294496-a2egg1" (ID: 4)
+[Harness] Seed complete. Primary asset: PW-ASSET-A-1790449294496-a2egg1, System: PW-SYS-1790449294496-a2egg1
+
+[Harness] Starting neutral route captures
+
+=== Capture [asset-desktop-fullpage] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-desktop-fullpage.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-desktop-fullpage] Done (Verdict: PASS) ===
+
+=== Capture [asset-desktop-viewport] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-desktop-viewport] Done (Verdict: PASS) ===
+
+=== Capture [asset-960x720] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Adjusting grid container height for viewport height <= 720
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-960x720.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-960x720] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-desktop-fullpage] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-MON-1790449294496-a2egg1"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/monitoring-desktop-fullpage.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-desktop-fullpage] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-desktop-viewport] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-MON-1790449294496-a2egg1"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/monitoring-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-desktop-viewport] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-960x720] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-MON-1790449294496-a2egg1"
+[Harness] Adjusting grid container height for viewport height <= 720
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/monitoring-960x720.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-960x720] Done (Verdict: PASS) ===
+
+=== Capture [asset-real-desktop-viewport] Start ===
+[Harness] Navigating to: /asset-real
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Verifying redirect to /asset
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-real-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-real-desktop-viewport] Done (Verdict: PASS) ===
+
+[Harness] Starting interactive/dirty-state route captures
+
+=== Capture [asset-context-menu] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting context menu capture
+[Interaction] Context menu result: pass
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-context-menu.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-context-menu] Done (Verdict: PASS) ===
+
+=== Capture [asset-row-click] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting row click capture for PW-ASSET-A-1790449294496-a2egg1
+[Interaction] Row click result: logicalRowSelected=true, bulkActionsEnabled=true, badgeVisible=true
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-row-click.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-row-click] Done (Verdict: PASS) ===
+
+=== Capture [asset-quick-look] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting quick-look panel capture
+[Interaction] Quick look result: pass
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-quick-look.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-quick-look] Done (Verdict: PASS) ===
+
+=== Capture [asset-details-modal] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting details modal capture
+[Interaction] Details dialog result: pass
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-details-modal.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-details-modal] Done (Verdict: PASS) ===
+
+=== Capture [asset-dirty-state] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449294496-a2egg1
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449294496-a2egg1"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting dirty state behavior capture
+[Interaction] Dirty state guard result: guardPresented=true, modalStillOpen=true
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/asset-dirty-state.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-dirty-state] Done (Verdict: PASS) ===
+
+[Harness] Collating summary outputs
+[Harness] Writing structured evidence JSON: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage34-evidence/stage34-evidence.json
+[Harness] Writing reviewable HTML evidence: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/OUT-26_ITERATION_36_STAGE34_EVIDENCE.html
+[Harness] Running safety assertions...
+
+[Harness] All checks successfully validated and saved. Result: PASS
+  ✓   4 tests/assets-stage34-evidence.spec.ts:744:3 › Assets Stage 34 evidence capture › captures stage34 lock-proof evidence (42.1s)
+[Harness] Cleaning existing and initializing stage35-evidence directory
+[Harness] Seeding operational scenario...
+SEED: Created monitoring item "PW-MON-1790449335733-3zxefc" (ID: 5)
+[Harness] Seed complete. Primary asset: PW-ASSET-A-1790449335733-3zxefc, System: PW-SYS-1790449335733-3zxefc
+
+[Harness] Starting neutral route captures
+
+=== Capture [asset-desktop-fullpage] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-desktop-fullpage.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-desktop-fullpage] Done (Verdict: PASS) ===
+
+=== Capture [asset-desktop-viewport] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-desktop-viewport] Done (Verdict: PASS) ===
+
+=== Capture [asset-960x720] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Adjusting grid container height for viewport height <= 720
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-960x720.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-960x720] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-desktop-fullpage] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-MON-1790449335733-3zxefc"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/monitoring-desktop-fullpage.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-desktop-fullpage] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-desktop-viewport] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-MON-1790449335733-3zxefc"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/monitoring-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-desktop-viewport] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-960x720] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-MON-1790449335733-3zxefc"
+[Harness] Adjusting grid container height for viewport height <= 720
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/monitoring-960x720.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-960x720] Done (Verdict: PASS) ===
+
+=== Capture [asset-real-desktop-viewport] Start ===
+[Harness] Navigating to: /asset-real
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Verifying redirect to /asset
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-real-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-real-desktop-viewport] Done (Verdict: PASS) ===
+
+[Harness] Starting interactive/dirty-state route captures
+
+=== Capture [asset-context-menu] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting context menu capture
+[Interaction] Context menu result: pass
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-context-menu.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-context-menu] Done (Verdict: PASS) ===
+
+=== Capture [asset-row-click] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting row click capture
+[Interaction] Row click result: selectedCount=3, isQuickLookVisible=false
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-row-click.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-row-click] Done (Verdict: PASS) ===
+
+=== Capture [asset-quick-look] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting quick-look panel capture
+[Interaction] Quick look result: pass
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-quick-look.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-quick-look] Done (Verdict: PASS) ===
+
+=== Capture [asset-details-modal] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting details modal capture
+[Interaction] Details dialog result: pass
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-details-modal.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-details-modal] Done (Verdict: PASS) ===
+
+=== Capture [asset-dirty-state] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449335733-3zxefc
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449335733-3zxefc"
+[Harness] Executing custom interaction handler...
+[Interaction] Starting dirty state behavior capture
+[Interaction] Dirty state guard result: guardPresented=true, modalStillOpen=true
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/asset-dirty-state.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-dirty-state] Done (Verdict: PASS) ===
+
+[Harness] Collating summary outputs
+[Harness] Writing structured evidence JSON: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage35-evidence/stage35-evidence.json
+[Harness] Writing reviewable HTML evidence: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/OUT-26_ITERATION_37_STAGE35_EVIDENCE.html
+[Harness] Running safety assertions...
+
+[Harness] All checks successfully validated and saved. Result: PASS
+  ✓   5 tests/assets-stage35-evidence.spec.ts:714:3 › Assets Stage 35 evidence capture › captures stage35 lock-proof evidence (42.6s)
+[Harness] Cleaning existing and initializing stage36-evidence directory
+[Harness] Seeding operational scenario...
+SEED: Created monitoring item "PW-MON-1790449379104-stjvd7" (ID: 6)
+[Harness] Seed complete. Primary asset: PW-ASSET-A-1790449379104-stjvd7, System: PW-SYS-1790449379104-stjvd7
+
+[Harness] Starting neutral route captures (Captures 1-7)
+
+=== Capture [asset-desktop-fullpage] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-desktop-fullpage.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-desktop-fullpage] Done (Verdict: PASS) ===
+
+=== Capture [asset-desktop-viewport] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-desktop-viewport] Done (Verdict: PASS) ===
+
+=== Capture [asset-960x720] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Adjusting grid container height for viewport height <= 720
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-960x720.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-960x720] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-desktop-fullpage] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-MON-1790449379104-stjvd7"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/monitoring-desktop-fullpage.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-desktop-fullpage] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-desktop-viewport] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-MON-1790449379104-stjvd7"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/monitoring-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-desktop-viewport] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-960x720] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-MON-1790449379104-stjvd7"
+[Harness] Adjusting grid container height for viewport height <= 720
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/monitoring-960x720.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-960x720] Done (Verdict: PASS) ===
+
+=== Capture [asset-real-desktop-viewport] Start ===
+[Harness] Navigating to: /asset-real
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Verifying redirect to /asset
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-real-desktop-viewport.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-real-desktop-viewport] Done (Verdict: PASS) ===
+
+[Harness] Starting inventory and filters open captures (Captures 8-11)
+
+=== Capture [asset-toolbar-actions] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-toolbar-actions.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-toolbar-actions] Done (Verdict: PASS) ===
+
+=== Capture [asset-filter-open] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Executing custom interaction handler...
+[Harness] Asset filters open state: toggle=true, visible=true
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-filter-open.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-filter-open] Done (Verdict: PASS) ===
+
+=== Capture [monitoring-filter-open] Start ===
+[Harness] Navigating to: /monitoring
+[Harness] Waiting for workspace title "Monitoring" to be visible
+[Harness] Filling search box with value: PW-MON-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-MON-1790449379104-stjvd7"
+[Harness] Executing custom interaction handler...
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/monitoring-filter-open.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [monitoring-filter-open] Done (Verdict: PASS) ===
+
+=== Capture [asset-surface-control] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-surface-control.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-surface-control] Done (Verdict: PASS) ===
+
+[Harness] Starting interactive captures (Captures 12-16)
+
+=== Capture [asset-row-click] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Executing custom interaction handler...
+[Interaction] Row click selectCount=3, quickLookVisible=false
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-row-click.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-row-click] Done (Verdict: PASS) ===
+
+=== Capture [asset-double-click] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Executing custom interaction handler...
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-double-click.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-double-click] Done (Verdict: PASS) ===
+
+=== Capture [asset-context-menu] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Executing custom interaction handler...
+[Interaction] Attempting pure row right-click...
+[Interaction] Right-click result: visible=true, count=1, eventSeen=true, defaultPrevented=false
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-context-menu.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-context-menu] Done (Verdict: PASS) ===
+
+=== Capture [asset-details-modal] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Executing custom interaction handler...
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-details-modal.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-details-modal] Done (Verdict: PASS) ===
+
+=== Capture [asset-dirty-state] Start ===
+[Harness] Navigating to: /asset
+[Harness] Waiting for workspace title "Assets" to be visible
+[Harness] Filling search box with value: PW-SYS-1790449379104-stjvd7
+[Harness] Waiting for table to contain: "PW-ASSET-A-1790449379104-stjvd7"
+[Harness] Executing custom interaction handler...
+[Harness] Taking screenshot: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/asset-dirty-state.png
+[Harness] Gathering DOM bounds and state...
+=== Capture [asset-dirty-state] Done (Verdict: PASS) ===
+
+[Harness] Collating summary outputs
+[Harness] Writing structured evidence JSON: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/stage36-evidence/stage36-evidence.json
+[Harness] Writing reviewable HTML evidence: /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/runtime/candidate-full-suite/frontend/OUT-26_ITERATION_38_STAGE36_EVIDENCE.html
+[Harness] Running final safety assertions...
+
+[Harness] All checks successfully validated and saved. Result: PASS
+  ✓   6 tests/assets-stage36-evidence.spec.ts:624:3 › Assets Stage 36 targeted acceptance cleanup › captures stage36 lock-proof evidence (1.6m)
+  ✓   7 tests/assets-vendors-bulk-preview.spec.ts:25:3 › Assets and Vendors authoritative bulk completion › previews, confirms, receipts, and undoes exact shared changes (7.7s)
+SEED: Created monitoring item "PW-MON-1790449484306-grfc1n" (ID: 7)
+  ✓   8 tests/assets-workflows.spec.ts:11:3 › Assets workflows › simulates the changed Assets workflows end-to-end (1.1m)
+  ✓   9 tests/audit-logs-workflows.spec.ts:13:3 › Audit Logs Workflows › AuditLogs view loads and is compliant (1.9s)
+  ✓  10 tests/audit-logs-workflows.spec.ts:22:3 › Audit Logs Workflows › target scope changes refetch the new target and export names loaded-page semantics (4.5s)
+SEED: Created monitoring item "PW-MON-1790449559550-xig4vc" (ID: 8)
+  ✓  11 tests/audit-logs-workflows.spec.ts:43:3 › Audit Logs Workflows › opens exact device and port connection targets while leaving unsupported targets disabled (23.4s)
+  ✓  12 tests/audit-logs-workflows.spec.ts:89:3 › Audit Logs Workflows › round-trips a Rack summary through scoped Audit Logs (7.8s)
+[Blank-Slate] Discovered 7 views to audit.
+  ✓  13 tests/blank-slate-audit.spec.ts:6:5 › Blank Slate Crash Audit › Navigates all views in a pristine, unseeded tenant to guarantee zero fatal React crashes (9.3s)
+SEED: Created monitoring item "PW-CRUD-MON-1790449596699-vcs2oj" (ID: 9)
+  ✓  14 tests/crud-api-contracts.spec.ts:18:3 › CRUD API contracts › keeps assets, services, and monitoring CRUD free of write-time ORM errors (893ms)
+  -  15 tests/crud-api-contracts.spec.ts:89:3 › CRUD API contracts › keeps knowledge, research, and projects CRUD durable through read-update-delete cycles
+  -  16 tests/crud-api-contracts.spec.ts:162:3 › CRUD API contracts › keeps network, external, and FAR CRUD flows stable with realistic payloads
+  ✓  17 tests/dashboard-workflows.spec.ts:10:3 › Dashboard Workflows › navigates to tabs and syncs URL parameter (6.3s)
+  ✓  18 tests/eight-route-smoke.spec.ts:7:3 › CHG-120 normal-v1 eight-route smoke › settles every production V1 route without a shell or connection failure (21.7s)
+  ✓  19 tests/home-truth.spec.ts:33:3 › CHG-49 Home truth projection › normal-v1 empty inventory keeps observations unavailable (6.1s)
+SEED: Created monitoring item "HOME-TRUTH-MONITOR-1790449631947" (ID: 10)
+  ✓  20 tests/home-truth.spec.ts:54:3 › CHG-49 Home truth projection › normal-v1 populated inventory remains useful without becoming health evidence (3.2s)
+  ✓  21 tests/monitoring-comprehensive.spec.ts:32:3 › Monitoring Comprehensive Functional Coverage › Add Monitor: Validate field sanitization and success (7.4s)
+SEED: Created monitoring item "Coverage-Test-Edit-1790449647446" (ID: 12)
+  ✓  22 tests/monitoring-comprehensive.spec.ts:44:3 › Monitoring Comprehensive Functional Coverage › Edit Monitor: Validate state propagation and save (12.8s)
+  ✓  23 tests/monitoring-comprehensive.spec.ts:72:3 › Monitoring Comprehensive Functional Coverage › Validation: Triggers error on empty title (4.7s)
+SEED: Created monitoring item "PW-MON-1790449661311-gkn65l" (ID: 13)
+  ✓  24 tests/monitoring-workflows.spec.ts:59:3 › Monitoring workflows › preserves lifecycle status, recovery linking, and knowledge jump paths (6.6s)
+SEED: Created monitoring item "PW-MON-1790449667853-tqa40s" (ID: 14)
+SEED: Created monitoring item "PW-MON-OPS-1790449667853-tqa40s-A" (ID: 15)
+SEED: Created monitoring item "PW-MON-OPS-1790449667853-tqa40s-B" (ID: 16)
+  ✓  25 tests/monitoring-workflows.spec.ts:102:3 › Monitoring workflows › supports bulk undo, compare, and persisted display state (11.3s)
+SEED: Created monitoring item "PW-MON-1790449680029-lj4z4a" (ID: 17)
+  ✓  26 tests/monitoring-workflows.spec.ts:169:3 › Monitoring workflows › edits an existing monitor without save errors and persists the updated fields (22.4s)
+SEED: Created monitoring item "PW-MON-1790449701437-ydrmey" (ID: 18)
+  ✓  27 tests/monitoring-workflows.spec.ts:215:3 › Monitoring workflows › keeps the golden asset selector searchable and system-filterable in add/edit form (6.9s)
+SEED: Created monitoring item "PW-MON-1790449708741-filjzw" (ID: 19)
+SEED: Created monitoring item "PW-MON-CREATED-LONG-1790449713670-THIS TITLE SHOULD FORCE A MUCH WIDER DEFAULT COLUMN AFTER CREATE WITH ADDITIONAL LONG SUFFIX SEGMENTS AAA BBB CCC DDD EEE FFF GGG HHH III JJJ" (ID: 20)
+  ✓  28 tests/monitoring-workflows.spec.ts:255:3 › Monitoring workflows › keeps default title sizing dynamic and preserves human resized widths only in saved views (20.0s)
+SEED: Created monitoring item "PW-MON-1790449730406-ocku3u" (ID: 21)
+  ✓  29 tests/monitoring-workflows.spec.ts:412:3 › Monitoring workflows › imports monitoring rows through the shared operational import modal (13.1s)
+  ✓  30 tests/network-workflows.spec.ts:35:3 › Network workflows › opens exact source and peer assets from a connection and preserves network history (5.2s)
+  ✓  31 tests/network-workflows.spec.ts:89:3 › Network workflows › uses the shared searchable system-filter selector for both network endpoints (8.5s)
+  ✓  32 tests/network-workflows.spec.ts:149:3 › Network workflows › supports deep-linked forensics, unit edits, and bulk sever from the grid (23.1s)
+  ✓  33 tests/network-workflows.spec.ts:259:3 › Network workflows › supports manual selection, modifiers, menu overlays, display configurations, and grouped grid parity (11.4s)
+  ✓  34 tests/network-workflows.spec.ts:571:3 › Network workflows › verifies golden column labels, domain order, pinning, resizability, bulk-edit dirty-close safety, context menu structure, and irreversible purge confirmation (16.5s)
+  ✓  35 tests/pre-test-check.spec.ts:3:1 › verify backend and frontend are up (32ms)
+  ✓  36 tests/racks-workflows.spec.ts:7:3 › Racks workflows › opens authoritative rack deep links and keeps query/history state coherent (7.8s)
+  ✓  37 tests/racks-workflows.spec.ts:31:3 › Racks workflows › opens a contained asset through the typed relationship and returns to Rack context (5.1s)
+  ✓  38 tests/racks-workflows.spec.ts:50:3 › Racks workflows › handles spatial navigation, site decommission fallback, and sandbox collision safety (6.8s)
+  ✓  39 tests/release-policy-normal.spec.ts:10:3 › CHG-120 normal-v1 release policy › exposes production modules and fails closed for preview modules (4.8s)
+  ✓  40 tests/sentinel_comprehensive.spec.ts:34:5 › System Sentinel (Zero-Tolerance Coverage - Comprehensive) › Comprehensive Check: Dashboard loads and template is compliant (2.5s)
+  ✓  41 tests/sentinel_comprehensive.spec.ts:34:5 › System Sentinel (Zero-Tolerance Coverage - Comprehensive) › Comprehensive Check: Monitoring loads and template is compliant (2.9s)
+  ✓  42 tests/sentinel_comprehensive.spec.ts:34:5 › System Sentinel (Zero-Tolerance Coverage - Comprehensive) › Comprehensive Check: Assets loads and template is compliant (4.6s)
+  ✓  43 tests/sentinel_comprehensive.spec.ts:34:5 › System Sentinel (Zero-Tolerance Coverage - Comprehensive) › Comprehensive Check: Projects loads and template is compliant (10.2s)
+  ✓  44 tests/sentinel_comprehensive.spec.ts:34:5 › System Sentinel (Zero-Tolerance Coverage - Comprehensive) › Comprehensive Check: Settings loads and template is compliant (2.7s)
+  ✓  45 tests/sentinel_smoke.spec.ts:33:5 › System Sentinel (Zero-Tolerance Coverage) › Integrity Check: Dashboard loads and template is compliant (1.4s)
+  ✓  46 tests/sentinel_smoke.spec.ts:33:5 › System Sentinel (Zero-Tolerance Coverage) › Integrity Check: Monitoring loads and template is compliant (1.4s)
+  ✓  47 tests/sentinel_smoke.spec.ts:33:5 › System Sentinel (Zero-Tolerance Coverage) › Integrity Check: Assets loads and template is compliant (1.7s)
+  ✓  48 tests/sentinel_smoke.spec.ts:33:5 › System Sentinel (Zero-Tolerance Coverage) › Integrity Check: Projects loads and template is compliant (4.5s)
+  ✓  49 tests/sentinel_smoke.spec.ts:33:5 › System Sentinel (Zero-Tolerance Coverage) › Integrity Check: Settings loads and template is compliant (9.2s)
+SEED: Created monitoring item "PW-MON-1790449872727-sjpp61" (ID: 23)
+  ✓  50 tests/sentinel_smoke.spec.ts:44:3 › System Sentinel (Zero-Tolerance Coverage) › Monitoring View: Golden Template Deep Link & Share Integrity (16.4s)
+  ✓  51 tests/service-workflows.spec.ts:9:3 › Service workflows › adopts searchable Host selection and saves the selected numeric device id (3.7s)
+  ✓  52 tests/service-workflows.spec.ts:61:3 › Service workflows › tolerates malformed metadata and clears deep-link state on close (5.4s)
+  ✓  53 tests/settings-and-audit.spec.ts:15:3 › Settings and audit workflows › persists theme and loads major settings sections (4.7s)
+  ✓  54 tests/settings-and-audit.spec.ts:42:3 › Settings and audit workflows › filters operators and keeps tenant input after a failed create attempt (3.8s)
+  ✓  55 tests/settings-and-audit.spec.ts:76:3 › Settings and audit workflows › stores and exposes user-pool synchronization history (3.7s)
+SEED: Created monitoring item "PW-MON-1790449913069-tjsrfb" (ID: 24)
+  ✓  56 tests/settings-and-audit.spec.ts:112:3 › Settings and audit workflows › renders scoped audit logs for seeded service activity (14.7s)
+  ✓  57 tests/settings-standards.spec.ts:6:3 › Settings Standards reference › renders the synchronized reference and exercises shared primitives (3.6s)
+  ✓  58 tests/shell-and-search.spec.ts:8:3 › App shell and global search › loads the dashboard and feature audit HUD (4.0s)
+SEED: Created monitoring item "PW-MON-1790449933707-la9ssm" (ID: 25)
+  ✓  59 tests/shell-and-search.spec.ts:19:3 › App shell and global search › navigates to seeded records through global search (31.8s)
+  ✓  60 tests/shell-and-search.spec.ts:159:3 › Golden Eight rendered geometry › records authoritative API response shapes for comprehensive Golden Eight seed fixtures (12.6s)
+  ✓  61 tests/shell-and-search.spec.ts:218:3 › Golden Eight rendered geometry › keeps desktop shell, command bar, and grid alignment invariant on every golden route (33.9s)
+  ✓  62 tests/shell-and-search.spec.ts:267:3 › Golden Eight rendered geometry › keeps narrow-screen stacking and overflow containment invariant on every golden route (21.2s)
+  ✓  63 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: monitoring (/monitoring) (3.3s)
+  ✓  64 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: external (/external) (2.1s)
+  ✓  65 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: services (/services) (1.7s)
+  ✓  66 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: network (/network) (3.1s)
+  ✓  67 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: far (/far) (2.8s)
+  ✓  68 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: research (/research) (1.8s)
+  ✓  69 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: assets (/asset) (2.9s)
+  ✓  70 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: vendors (/vendors) (1.9s)
+  ✓  71 tests/smoke.spec.ts:12:5 › Smoke Tests › Canonical Page Load: settings-standards (/settings?tab=standards) (2.2s)
+  ✓  72 tests/smoke.spec.ts:38:5 › Smoke Tests › Page Load: / (4.9s)
+  ✓  73 tests/smoke.spec.ts:38:5 › Smoke Tests › Page Load: /projects (9.4s)
+  ✓  74 tests/smoke.spec.ts:38:5 › Smoke Tests › Page Load: /racks (7.2s)
+SEED: Created monitoring item "PW-MON-1790450076928-w4m910" (ID: 26)
+  ✓  75 tests/view-deeplink-matrix.spec.ts:13:3 › View deep-link matrix › opens critical deep links without crashing and resolves the targeted record (58.6s)
+  ✓  76 tests/view-empty-states.spec.ts:7:3 › View empty states › renders explicit empty-state guidance for deterministic no-result filters (13.7s)
+  ✓  77 tests/workspace-collaborative-views.spec.ts:14:3 › Collaborative workspace views › persists personal views through the backend and restores stable view links (46.4s)
+
+  2 skipped
+  75 passed (16.9m)

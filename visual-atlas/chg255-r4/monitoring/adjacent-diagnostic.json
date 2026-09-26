@@ -1,0 +1,43 @@
+{
+  "schema": "chg255-r4-monitoring-diagnostic-v1",
+  "candidate": {
+    "commit": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "tree": "15332211fe6c39f5f3926ebc970a3c0ece362d83"
+  },
+  "mode": "adjacent",
+  "profile": "normal-v1",
+  "identity": {
+    "userId": "haewon.kim",
+    "tenantId": "1"
+  },
+  "browserCommandExit": 0,
+  "baseline": {
+    "monitoringCount": 0
+  },
+  "fixtureMatchCount": 1,
+  "serverFinal": [
+    {
+      "id": 1,
+      "originalTitle": "PW-MON-1790448703880-85lyr9",
+      "title": "PW-MON-1790448703880-85lyr9-EDITED",
+      "purpose": "Edited through Playwright regression coverage",
+      "status": "Existing",
+      "deviceId": 1,
+      "updatedAt": "2026-09-26T18:52:03"
+    }
+  ],
+  "uiFinal": {
+    "route": "/monitoring?id=1",
+    "title": "PW-MON-1790448703880-85lyr9-EDITED",
+    "titleVisible": true,
+    "purpose": "Edited through Playwright regression coverage",
+    "purposeVisible": true,
+    "screenshot": "/Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/monitoring/adjacent-final-ui.png",
+    "screenshotSha256": "6d28c23f0af4f73b57dccfb685c9f20ed72c0c424ff2ea64720de548c3decb88"
+  },
+  "classificationEvidence": {
+    "serverValuesMatchUpdatedTitleAndPurpose": true,
+    "finalUiShowsUpdatedTitleAndPurpose": true,
+    "candidateHead": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0"
+  }
+}
