@@ -1,0 +1,364 @@
+{
+  "accepted_at": "2026-09-26T02:05:34Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk proxy sha256sum /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch && rtk proxy wc -l -c /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply --stat /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy mkdir -p /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git archive HEAD | rtk proxy tar -x -C /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply --check /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env GIT_INDEX_FILE=/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.index git read-tree HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env GIT_INDEX_FILE=/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.index git apply --cached /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env GIT_INDEX_FILE=/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.index git write-tree'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3 -c \\\"import hashlib,json,pathlib,subprocess\\\\nbase=\\\\\\\"ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3\\\\\\\"\\\\ntree=\\\\\\\"e1a09e710f71b252841c9e571c7427febf2502ad\\\\\\\"\\\\ntemp=pathlib.Path(\\\\\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base\\\\\\\")\\\\nraw=subprocess.check_output([\\\\\\\"git\\\\\\\",\\\\\\\"diff-tree\\\\\\\",\\\\\\\"--no-commit-id\\\\\\\",\\\\\\\"--name-only\\\\\\\",\\\\\\\"-r\\\\\\\",base,tree],text=True)\\\\nfiles=raw.splitlines()\\\\nrecords=[]\\\\nfor p in files:\\\\n    try: before=subprocess.check_output([\\\\\\\"git\\\\\\\",\\\\\\\"show\\\\\\\",base+\\\\\\\":\\\\\\\"+p])\\\\n    except subprocess.CalledProcessError: before=None\\\\n    after=(temp/p).read_bytes()\\\\n    records.append({\\\\\\\"path\\\\\\\":p,\\\\\\\"pre_sha256\\\\\\\":hashlib.sha256(before).hexdigest() if before is not None else None,\\\\\\\"post_sha256\\\\\\\":hashlib.sha256(after).hexdigest(),\\\\\\\"new_file\\\\\\\":before is None})\\\\nmanifest={\\\\\\\"schema\\\\\\\":\\\\\\\"sysgrid.golden-ui-v3.patch-manifest.v1\\\\\\\",\\\\\\\"repository\\\\\\\":\\\\\\\"kimhw8084/sysgrid\\\\\\\",\\\\\\\"operation\\\\\\\":\\\\\\\"FIX\\\\\\\",\\\\\\\"request\\\\\\\":\\\\\\\"sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\\\\\",\\\\\\\"work_branch\\\\\\\":\\\\\\\"codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\\\\\",\\\\\\\"candidate_parent\\\\\\\":base,\\\\\\\"candidate_tree\\\\\\\":tree,\\\\\\\"candidate_commit\\\\\\\":None,\\\\\\\"patch_file\\\\\\\":\\\\\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch\\\\\\\",\\\\\\\"patch_sha256\\\\\\\":\\\\\\\"dd94aac853b31c6c4a5af19ddb44779e45f857038bfa3cdec10eac7ece4079dd\\\\\\\",\\\\\\\"changed_files\\\\\\\":records,\\\\\\\"mechanical\\\\\\\":{\\\\\\\"git_diff_check\\\\\\\":True,\\\\\\\"git_apply_check_against_base_archive\\\\\\\":True,\\\\\\\"patch_applied_to_disposable_base_archive\\\\\\\":True,\\\\\\\"scope_verified_against_candidate_tree\\\\\\\":True}}\\\\npathlib.Path(\\\\\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json\\\\\\\").write_text(json.dumps(manifest,indent=2)+\\\\\\\"\\\\\\\\n\\\\\\\")\\\\nprint(json.dumps(manifest,indent=2))\\\" > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.out\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3 - <<'PY'\nimport hashlib\nimport json\nimport pathlib\nimport subprocess\n\nbase = \\\"ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3\\\"\ntree = \\\"e1a09e710f71b252841c9e571c7427febf2502ad\\\"\ntemp = pathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base\\\")\nraw = subprocess.check_output([\\\"git\\\", \\\"diff-tree\\\", \\\"--no-commit-id\\\", \\\"--name-only\\\", \\\"-r\\\", base, tree], text=True)\nrecords = []\nfor path in raw.splitlines():\n    try:\n        before = subprocess.check_output([\\\"git\\\", \\\"show\\\", base + \\\":\\\" + path])\n    except subprocess.CalledProcessError:\n        before = None\n    after = (temp / path).read_bytes()\n    records.append({\n        \\\"path\\\": path,\n        \\\"pre_sha256\\\": hashlib.sha256(before).hexdigest() if before is not None else None,\n        \\\"post_sha256\\\": hashlib.sha256(after).hexdigest(),\n        \\\"new_file\\\": before is None,\n    })\nmanifest = {\n    \\\"schema\\\": \\\"sysgrid.golden-ui-v3.patch-manifest.v1\\\",\n    \\\"repository\\\": \\\"kimhw8084/sysgrid\\\",\n    \\\"operation\\\": \\\"FIX\\\",\n    \\\"request\\\": \\\"sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\",\n    \\\"work_branch\\\": \\\"codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\",\n    \\\"candidate_parent\\\": base,\n    \\\"candidate_tree\\\": tree,\n    \\\"candidate_commit\\\": None,\n    \\\"patch_file\\\": \\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch\\\",\n    \\\"patch_sha256\\\": \\\"dd94aac853b31c6c4a5af19ddb44779e45f857038bfa3cdec10eac7ece4079dd\\\",\n    \\\"changed_files\\\": records,\n    \\\"mechanical\\\": {\n        \\\"git_diff_check\\\": True,\n        \\\"git_apply_check_against_base_archive\\\": True,\n        \\\"patch_applied_to_disposable_base_archive\\\": True,\n        \\\"scope_verified_against_candidate_tree\\\": True,\n    },\n}\npathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json\\\").write_text(json.dumps(manifest, indent=2) + \\\"\\\\n\\\")\nprint(json.dumps(manifest, indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3 - <<'PY'\nimport hashlib\nimport json\nimport pathlib\nimport subprocess\n\nbase = \\\"ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3\\\"\ntree = \\\"e1a09e710f71b252841c9e571c7427febf2502ad\\\"\ntemp = pathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base\\\")\npaths = subprocess.check_output(\n    [\\\"git\\\", \\\"diff-tree\\\", \\\"--no-commit-id\\\", \\\"--name-only\\\", \\\"-r\\\", base, tree],\n    text=True,\n).splitlines()\nrecords = []\nfor path in paths:\n    blob = subprocess.run(\n        [\\\"git\\\", \\\"show\\\", base + \\\":\\\" + path],\n        stdout=subprocess.PIPE,\n        stderr=subprocess.DEVNULL,\n    )\n    before = blob.stdout if blob.returncode == 0 else None\n    after = (temp / path).read_bytes()\n    records.append({\n        \\\"path\\\": path,\n        \\\"pre_sha256\\\": hashlib.sha256(before).hexdigest() if before is not None else None,\n        \\\"post_sha256\\\": hashlib.sha256(after).hexdigest(),\n        \\\"new_file\\\": before is None,\n    })\nmanifest = {\n    \\\"schema\\\": \\\"sysgrid.golden-ui-v3.patch-manifest.v1\\\",\n    \\\"repository\\\": \\\"kimhw8084/sysgrid\\\",\n    \\\"operation\\\": \\\"FIX\\\",\n    \\\"request\\\": \\\"sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\",\n    \\\"work_branch\\\": \\\"codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\",\n    \\\"candidate_parent\\\": base,\n    \\\"candidate_tree\\\": tree,\n    \\\"candidate_commit\\\": None,\n    \\\"patch_file\\\": \\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch\\\",\n    \\\"patch_sha256\\\": \\\"dd94aac853b31c6c4a5af19ddb44779e45f857038bfa3cdec10eac7ece4079dd\\\",\n    \\\"changed_files\\\": records,\n    \\\"mechanical\\\": {\n        \\\"git_diff_check\\\": True,\n        \\\"git_apply_check_against_base_archive\\\": True,\n        \\\"patch_applied_to_disposable_base_archive\\\": True,\n        \\\"scope_verified_against_candidate_tree\\\": True,\n    },\n}\npathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json\\\").write_text(\n    json.dumps(manifest, indent=2) + \\\"\\\\n\\\"\n)\nprint(\\\"changed_file_count=\\\" + str(len(records)))\nprint(\\\"candidate_tree=\\\" + tree)\nprint(\\\"manifest_sha256=\\\" + hashlib.sha256(\n    pathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json\\\").read_bytes()\n).hexdigest())\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply --reverse /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git rev-parse HEAD && rtk proxy git rev-parse HEAD''^{tree} && rtk proxy git rev-parse refs/remotes/origin/main && rtk proxy git rev-parse refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy sha256sum /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'ExecutionHub|PortfolioHub|InsightsHub|My Work|Project Board|Portfolio|Project intelligence|Roadmap|Needs Update' frontend/src/components/ProjectsGolden*.test.tsx frontend/src/components/ProjectsGolden*.test.ts\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'Portfolio|Project intelligence|My Work|Project Board|Daily execution|Governance' frontend/tests --glob '*.spec.ts'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,235p' frontend/tests/projects-navigation.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'ExecutionHub|PortfolioHub|InsightsHub|My Work|Project Board|Project intelligence|Roadmap|Needs Update' frontend/src/components --glob 'ProjectsGolden*.test.*'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files frontend/src | rtk rg 'ProjectsGolden.*test'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'project-execution-hub|data-project-portfolio-hub|data-project-insights-hub|ProjectVisualShowcase' frontend/src frontend/tests --glob '*test*' --glob '*.spec.ts'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'ProjectsGolden|ProjectVisualShowcase|ToolbarSegmented' frontend/src --glob '*.tsx'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,110p' frontend/src/components/ProjectsGolden.navigation.contract.test.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --binary --full-index HEAD > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.tracked.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --no-index --binary --full-index -- /dev/null frontend/src/architecture/ArchitectureHost.responsive.test.tsx > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-0.patch'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --no-index --binary --full-index -- /dev/null frontend/src/components/AuditLogs.responsive.test.tsx > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-1.patch'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --no-index --binary --full-index -- /dev/null frontend/src/components/ConfigRegistry.responsive.test.tsx > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-2.patch'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --no-index --binary --full-index -- /dev/null frontend/src/components/Knowledge.responsive.test.tsx > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-3.patch'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --no-index --binary --full-index -- /dev/null frontend/src/components/responsiveGoldenGeometry.contract.test.ts > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-4.patch'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy cat /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.tracked.patch /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-0.patch /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-1.patch /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-2.patch /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-3.patch /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.new-4.patch > /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy sha256sum /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch && rtk proxy wc -l -c /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy mkdir -p /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git archive HEAD | rtk proxy tar -x -C /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply --check /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env GIT_INDEX_FILE=/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.index git read-tree HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env GIT_INDEX_FILE=/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.index git apply --cached /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env GIT_INDEX_FILE=/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.index git write-tree'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy python3 - <<'PY'\nimport hashlib\nimport json\nimport pathlib\nimport subprocess\n\nbase = \\\"ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3\\\"\ntree = \\\"db1caf44acedd267e7511c51b53529267703a945\\\"\ntemp = pathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1-base-v2\\\")\npaths = subprocess.check_output(\n    [\\\"git\\\", \\\"diff-tree\\\", \\\"--no-commit-id\\\", \\\"--name-only\\\", \\\"-r\\\", base, tree],\n    text=True,\n).splitlines()\nrecords = []\nfor path in paths:\n    blob = subprocess.run(\n        [\\\"git\\\", \\\"show\\\", base + \\\":\\\" + path],\n        stdout=subprocess.PIPE,\n        stderr=subprocess.DEVNULL,\n    )\n    before = blob.stdout if blob.returncode == 0 else None\n    after = (temp / path).read_bytes()\n    records.append({\n        \\\"path\\\": path,\n        \\\"pre_sha256\\\": hashlib.sha256(before).hexdigest() if before is not None else None,\n        \\\"post_sha256\\\": hashlib.sha256(after).hexdigest(),\n        \\\"new_file\\\": before is None,\n    })\nmanifest = {\n    \\\"schema\\\": \\\"sysgrid.golden-ui-v3.patch-manifest.v1\\\",\n    \\\"repository\\\": \\\"kimhw8084/sysgrid\\\",\n    \\\"operation\\\": \\\"FIX\\\",\n    \\\"request\\\": \\\"sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\",\n    \\\"work_branch\\\": \\\"codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v1\\\",\n    \\\"candidate_parent\\\": base,\n    \\\"candidate_tree\\\": tree,\n    \\\"candidate_commit\\\": None,\n    \\\"patch_file\\\": \\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch\\\",\n    \\\"patch_sha256\\\": \\\"e5329d15e708d6c2cd2420742160e958c931fafecd5fdc269db17c8b3ab0d9c0\\\",\n    \\\"changed_files\\\": records,\n    \\\"mechanical\\\": {\n        \\\"git_diff_check\\\": True,\n        \\\"git_apply_check_against_base_archive\\\": True,\n        \\\"patch_applied_to_disposable_base_archive\\\": True,\n        \\\"scope_verified_against_candidate_tree\\\": True,\n    },\n}\npathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json\\\").write_text(\n    json.dumps(manifest, indent=2) + \\\"\\\\n\\\"\n)\nprint(\\\"changed_file_count=\\\" + str(len(records)))\nprint(\\\"candidate_tree=\\\" + tree)\nprint(\\\"manifest_sha256=\\\" + hashlib.sha256(\n    pathlib.Path(\\\"/tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json\\\").read_bytes()\n).hexdigest())\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply --reverse /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git rev-parse HEAD && rtk proxy git rev-parse HEAD''^{tree} && rtk proxy git rev-parse refs/remotes/origin/main && rtk proxy git rev-parse refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy sha256sum /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.patch /tmp/sysgrid-golden-ui-v3-atlas-blockers-fix-v1.manifest.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.157.0",
+    "configured_model": "gpt-6-luna",
+    "event_count": 545,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.27,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 22126336,
+      "fresh_input_tokens": 620641,
+      "input_tokens": 22746977,
+      "non_reasoning_output_tokens": 60050,
+      "output_tokens": 169057,
+      "reasoning_output_tokens": 109007,
+      "total_processed_tokens": 22916034
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-26T03:16:38Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "branch": "codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v1",
+    "detached_verify": false,
+    "head_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "remote_exact_head": true,
+    "remote_head_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "work_branch": "codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-9a64ddbd8a31cfa1dfd5654e",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v1"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-fix-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-26T02:05:35Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 4263,
+    "queue_seconds": 1,
+    "total_seconds": 4264
+  },
+  "transport": {
+    "bytes": 16097,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 15759,
+    "prompt_sha256": "3932c331907a2e54897dda888304c8aa5c984e3b22b6ea8370c0f8b804776874",
+    "sha256": "9a64ddbd8a31cfa1dfd5654e4cffff759e12d3ca37a8ea40bdb16f826f46e3bb"
+  }
+}
