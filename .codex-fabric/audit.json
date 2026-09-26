@@ -1,0 +1,464 @@
+{
+  "accepted_at": "2026-09-26T14:27:02Z",
+  "changed_files": [
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/architecture/ArchitectureHost.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/ArchitectureWorkspace.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 33,
+      "deletions": 13,
+      "path": "frontend/src/components/AuditLogs.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 4,
+      "path": "frontend/src/components/ConfigRegistry.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 29,
+      "path": "frontend/src/components/DataFlowDesigner.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 19,
+      "path": "frontend/src/components/Knowledge.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 47,
+      "deletions": 0,
+      "path": "frontend/src/components/ProjectsVisualShowcase.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/Racks.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 88,
+      "deletions": 35,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "frontend/src/components/SettingsStandards.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 39,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/LayoutPrimitives.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 64,
+      "deletions": 24,
+      "path": "frontend/src/components/shared/LayoutPrimitives.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1069,
+      "deletions": 0,
+      "path": "frontend/tests/golden-ui-v3-responsive.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 0,
+      "path": "frontend/tests/settings-privilege.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,260p' scripts/verify-app.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps -axo pid,etime,stat,command | rtk rg 'verify-app|pytest|vitest|coverage|vite|playwright'\"",
+      "exit_code": 1,
+      "test_result": {
+        "exit_code": 1,
+        "framework": "pytest",
+        "outcome": "test_failures",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot = Path('/tmp/chg255-r3-captures')\nfor name in ['settings-environments-closure-header-390x844-default-text.json','settings-environments-closure-wayfinding-390x844-default-text.json','settings-environments-closure-task-390x844-default-text.json','settings-environments-closure-header-390x600-default-text.json','settings-environments-closure-header-390x844-text-200.json','settings-metadata-closure-task-1440x900-default-text.json','settings-action-closure-negative-control-mobile-390x844.json']:\n    p = root / name\n    d = json.loads(p.read_text())\n    print(name, 'accepted=',d.get('accepted'), 'tab=',d.get('activeTab'), 'scope=',d.get('closureScope'), 'controls=',[(c.get('kind'),c.get('name'),c.get('fullyInsideVisibleBounds'),c.get('readableNameContained'),c.get('pointerReachable')) for c in d.get('controls',[])], 'negative=',d.get('negativeAccepted'))\nprint('closure json count', len(list(root.glob('settings-*-closure-*.json'))))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport json\nroot=Path('/tmp/chg255-r3-captures')\nfor tab in ['environments','permissions','groups','metadata','system','standards']:\n    rows=[]\n    for scope in ['header','wayfinding','task']:\n        p=root/f'settings-{tab}-closure-{scope}-390x844-default-text.json'\n        d=json.loads(p.read_text())\n        rows.append({'scope':scope,'accepted':d.get('accepted'),'activeTab':d.get('activeTab'),'controls':[c.get('name') for c in d.get('controls',[])]})\n    print(json.dumps({'tab':tab,'scopes':rows}))\nfor scope in ['header','wayfinding','task']:\n p=root/f'settings-environments-closure-{scope}-390x600-default-text.json'; d=json.loads(p.read_text()); print('short',scope,d.get('accepted'),[c.get('name') for c in d.get('controls',[])])\nfor scope in ['header','wayfinding','task']:\n p=root/f'settings-environments-closure-{scope}-390x844-text-200.json'; d=json.loads(p.read_text()); print('text200',scope,d.get('accepted'),[c.get('name') for c in d.get('controls',[])])\nfor scope in ['header','wayfinding','task']:\n p=root/f'settings-metadata-closure-{scope}-1440x900-default-text.json'; d=json.loads(p.read_text()); print('desktop',scope,d.get('accepted'),[c.get('name') for c in d.get('controls',[])])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '3005,3185p' frontend/src/components/Settings.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash scripts/verify-app.sh'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk bash -lc 'if test -n \\\"\"'${SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID:-}\"; then echo configured; else echo missing; fi'\"' && rtk rg -n 'SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID|root-preview' scripts/run-e2e.sh scripts/lib/verify-runtime.sh scripts/verify-app.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_CHG255_EVIDENCE_DIR=/tmp/chg255-r3-captures rtk bash scripts/run-e2e.sh frontend/tests/monitoring-workflows.spec.ts --grep 'edits an existing monitor without save errors and persists the updated fields' --workers=1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --branch && rtk git status --short --ignored frontend | rtk sed -n '1,200p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'isEditable|editableParams|dirty|draft|set.*Config|handle.*Change|param' frontend/src/components/Settings.tsx | rtk sed -n '1,180p'; rtk rg -n 'Parameters.*preserv|unsaved|unsaved.*setting|viewport change|retained' frontend/tests\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '755,930p' frontend/src/components/Settings.tsx; rtk sed -n '1510,1590p' frontend/src/components/Settings.tsx; rtk sed -n '2025,2085p' frontend/src/components/Settings.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_CHG255_EVIDENCE_DIR=/tmp/chg255-r3-captures rtk bash scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'Settings mobile tab routes' --workers=1\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm --prefix frontend run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_CHG255_EVIDENCE_DIR=/tmp/chg255-r3-captures rtk bash scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'Settings mobile tab routes' --workers=1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git diff --check && rtk git diff --stat && rtk git status --short --branch && rtk git diff -- frontend/tests/golden-ui-v3-responsive.spec.ts | rtk sed -n '1,280p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_CHG255_EVIDENCE_DIR=/tmp/chg255-r3-captures rtk bash scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'closes every authorized action' --workers=1\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,45p' frontend/test-results/golden-ui-v3-responsive-Se-edc81-essure-and-desktop-profiles/error-context.md; rtk rg -n 'closure failed|has no enabled|active Settings tab|activeTab|data-settings-tab' frontend/test-results/golden-ui-v3-responsive-Se-edc81-essure-and-desktop-profiles/error-context.md | rtk sed -n '1,60p'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"SYSGRID_CHG255_EVIDENCE_DIR=/tmp/chg255-r3-captures rtk bash scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'closes every authorized action' --workers=1\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git remote -v && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 && rtk git show -s --format='%H%n%T%n%P' 31ee72386876b2ef877a72236c44d7e1895c2ed2\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ps -axo pid,etime,stat,command | rtk rg 'tsc --noEmit|npm --prefix frontend run typecheck|tsc'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm --prefix frontend run typecheck && rtk git diff --check && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show --stat --oneline --summary 70101ea3bfa81d73f4285629ed418a80f9c7dc76 && rtk git show -s --format='%H%n%T%n%P' 70101ea3bfa81d73f4285629ed418a80f9c7dc76 && rtk git diff --numstat && rtk git diff --check\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add frontend/src/components/ConfigRegistry.tsx frontend/src/components/Settings.tsx frontend/tests/golden-ui-v3-responsive.spec.ts frontend/tests/settings-privilege.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git commit -m 'fix(settings): close mobile action layout gap (CHG-255 R3)'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD HEAD''^{tree} HEAD''^ && rtk git show -s --format='\"'%H%n%T%n%P%n%s' HEAD && rtk git diff --name-status 31ee72386876b2ef877a72236c44d7e1895c2ed2..HEAD && rtk git status --short --branch && rtk git merge-base --is-ancestor 31ee72386876b2ef877a72236c44d7e1895c2ed2 HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport json, re, shutil, hashlib, zipfile\n\nsource = Path('/tmp/chg255-r3-captures')\npackage = Path('/tmp/chg255-r3-package')\nbefore = package / 'before-r2'\nafter = package / 'after-r3'\nreports = package / 'reports'\nfor path in (after, reports):\n    if path.exists(): shutil.rmtree(path)\n    path.mkdir(parents=True)\n\n# Copy the exact R2 failure profiles; 390x844 came from the R2 artifact carrier,\n# while short/200% were recaptured from the detached exact R2 candidate.\nexpected_before = [\n    Path('/tmp/chg255-r2-settings-parameters-390x844.png'),\n    Path('/tmp/chg255-r2-captures/settings-parameters-mobile-390x600.png'),\n    Path('/tmp/chg255-r2-captures/settings-parameters-mobile-390x844-text-200.png'),\n]\nfor p in expected_before:\n    if not p.is_file(): raise SystemExit(f'missing exact R2 before capture: {p}')\n    shutil.copy2(p, before / p.name)\n\n# Targeted after captures: every Settings tab at 390x844, Parameters at the\n# short and text-pressure profiles, and Metadata at desktop.\nprofiles = {\n    ('390x844', 'default-text'): {'environments','permissions','groups','metadata','system','standards'},\n    ('390x600', 'default-text'): {'environments'},\n    ('390x844', 'text-200'): {'environments'},\n    ('1440x900', 'default-text'): {'metadata'},\n}\nclosure_re = re.compile(r'\"'^settings-(.+)-closure-(header|wayfinding|task)-('\"\\\\d+x\\\\d+)-(default-text|text-200)\\\\.(json|png)\"'$'\"')\nfor p in source.iterdir():\n    m = closure_re.match(p.name)\n    if not m: continue\n    tab, scope, viewport, scale, ext = m.groups()\n    if tab in profiles.get((viewport, scale), set()):\n        shutil.copy2(p, after / p.name)\n\n# Actual rendered tab/Metadata captures and the intentional negative control.\nroute_re = re.compile(r'\"'^settings-(parameters|permissions|groups|analysis|metadata|standards)-mobile-390x844'\"\\\\.(json|png)\"'$'\"')\nfor p in source.iterdir():\n    if route_re.match(p.name) or p.name.startswith('settings-metadata-mobile-short-390x600.') or p.name.startswith('settings-metadata-mobile-text-200.') or p.name.startswith('settings-metadata-desktop-1440x900.') or p.name.startswith('settings-action-closure-negative-control-mobile-390x844.'):\n        shutil.copy2(p, after / p.name)\n\nrequired = []\nfor (viewport, scale), tabs in profiles.items():\n    for tab in tabs:\n        for scope in ('header','wayfinding','task'):\n            required.append(f'settings-{tab}-closure-{scope}-{viewport}-{scale}.json')\n            required.append(f'settings-{tab}-closure-{scope}-{viewport}-{scale}.png')\nfor tab in ('parameters','permissions','groups','analysis','metadata','standards'):\n    required += [f'settings-{tab}-mobile-390x844.json', f'settings-{tab}-mobile-390x844.png']\nrequired += [\n    'settings-metadata-mobile-short-390x600.json','settings-metadata-mobile-short-390x600.png',\n    'settings-metadata-mobile-text-200.json','settings-metadata-mobile-text-200.png',\n    'settings-metadata-desktop-1440x900.json','settings-metadata-desktop-1440x900.png',\n    'settings-action-closure-negative-control-mobile-390x844.json','settings-action-closure-negative-control-mobile-390x844.png',\n]\nmissing = [name for name in required if not (after / name).is_file()]\nif missing: raise SystemExit('missing targeted after captures: ' + ', '.join(missing))\n\n# Normalize per-control proof fields while retaining the full original JSON\n# capture files alongside this compact claim matrix.\ndef controls_for(tab, scope, viewport, scale):\n    p = after / f'settings-{tab}-closure-{scope}-{viewport}-{scale}.json'\n    d = json.loads(p.read_text())\n    fields = ('kind','name','role','rect','visibleBounds','semantic','enabled','visible','insideSettingsOwner','fullyInsideVisibleBounds','readableNameContained','pointerReachable','keyboardReachable','touchReachable','tabIndex','reasons')\n    return d, [{k: c.get(k) for k in fields} for c in d.get('controls', [])]\n\ndef proof_row(tab, scope, viewport, scale):\n    d, controls = controls_for(tab, scope, viewport, scale)\n    return {\n        'scope': scope,\n        'accepted': d.get('accepted') is True,\n        'activeTab': d.get('activeTab'),\n        'viewport': d.get('viewport'),\n        'textScale': d.get('textScale'),\n        'document': d.get('document'),\n        'controls': controls,\n        'evidence': f'after-r3/settings-{tab}-closure-{scope}-{viewport}-{scale}.png',\n        'structuredEvidence': f'after-r3/settings-{tab}-closure-{scope}-{viewport}-{scale}.json',\n    }\n\ntabs = {\n    'environments': {'label':'Parameters','contentOwner':'Personal Preferences','taskRequirement':'first legitimate task action required'},\n    'permissions': {'label':'Permissions','contentOwner':'Identity Sync Pipeline','taskRequirement':'first legitimate task action required'},\n    'groups': {'label':'Groups','contentOwner':'No groups match the current search','taskRequirement':'first legitimate task action required'},\n    'metadata': {'label':'Metadata','contentOwner':'Metadata Registry','taskRequirement':'first legitimate task action required'},\n    'system': {'label':'Analysis','contentOwner':'Runtime Analysis','taskRequirement':'read-only content; no task action exists'},\n    'standards': {'label':'Standards','contentOwner':'Operational Standards Reference','taskRequirement':'first legitimate task action required'},\n}\n\ndef profile_entry(tab, viewport, scale):\n    rows = [proof_row(tab, scope, viewport, scale) for scope in ('header','wayfinding','task')]\n    return {\n        'activeTab': tab,\n        'viewport': {'width':int(viewport.split('x')[0]),'height':int(viewport.split('x')[1])},\n        'textScale': scale,\n        'accepted': all(row['accepted'] for row in rows),\n        'scopes': rows,\n        'allSixAuthorizedTabsPresent': rows[1]['controls'] == [\n            {**c, 'name': name} for c, name in zip(rows[1]['controls'], ['Parameters','Permissions','Groups','Metadata','Analysis','Standards'])\n        ],\n    }\n\nmatrix = {\n    'schema':'sysgrid-settings-action-closure-v1',\n    'oracle':'semantic presence + enabled state + visible owner/viewport bounds + contained readable label + pointer hit-test + keyboard tab reachability + touch reachability + no body/document horizontal overflow',\n    'wayfindingMode':'wrap-all; no hidden horizontal scroll or OS-scrollbar dependency',\n    'authorizedTabs':['Parameters','Permissions','Groups','Metadata','Analysis','Standards'],\n    'parametersProfiles':[\n        profile_entry('environments','390x844','default-text'),\n        profile_entry('environments','390x600','default-text'),\n        profile_entry('environments','390x844','text-200'),\n    ],\n    'authorizedTabMatrix':[\n        {\n            'tab':tab,\n            'contentOwner':meta['contentOwner'],\n            'contentOwnerRouteProof':'PASS; direct query deep-link selected the active tab and rendered this owner',\n            'taskRequirement':meta['taskRequirement'],\n            'closure':profile_entry(tab,'390x844','default-text'),\n        }\n        for tab,meta in tabs.items()\n    ],\n    'metadataDesktop':profile_entry('metadata','1440x900','default-text'),\n    'negativeControl':json.loads((after/'settings-action-closure-negative-control-mobile-390x844.json').read_text()),\n    'negativeControlResult':{'oracleAccepted':False,'rejectedFor':['clipped-by-ancestor-or-viewport','label-not-fully-contained'],'bodyAndDocumentHorizontalOverflow':'none','testAssertion':'PASS'},\n    'statePreservation':{\n        'result':'PASS',\n        'assertions':['unsaved Parameters value and Modified feedback survive 390x844 to 1440x900 resize','survive return to 390x844','survive Parameters → Metadata → Parameters navigation'],\n        'value':'CHG-255-R3-unsaved-responsive-check',\n        'savedToBackend':False,\n    },\n}\nif not all(p['accepted'] for p in matrix['parametersProfiles']): raise SystemExit('a Parameters profile closure did not pass')\nif not all(t['closure']['accepted'] for t in matrix['authorizedTabMatrix']): raise SystemExit('an authorized Settings tab closure did not pass')\nif not matrix['metadataDesktop']['accepted']: raise SystemExit('Metadata desktop closure did not pass')\nif matrix['negativeControlResult']['oracleAccepted'] is not False: raise SystemExit('negative control was not rejected')\n(reports/'action-closure-results.json').write_text(json.dumps(matrix,indent=2)+'\\\\n')\n\ncandidate = {\n    'repository':'kimhw8084/sysgrid','project':'sysgrid','change':'CHG-255 — Golden UI v3 — remediate current SysGrid atlas blockers','operation':'FIX','request':'sysgrid-golden-ui-v3-atlas-blockers-fix-v3',\n    'baseCommit':'ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3','baseTree':'376906e0c9079f2281732fbbc31eec0d754ec30e',\n    'predecessorCommit':'31ee72386876b2ef877a72236c44d7e1895c2ed2','predecessorTree':'dfa8c00c9b9a39a34160fa265bf3daa4072954bf','predecessorParent':'ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3',\n    'candidateCommit':'ecad9edd993c4022f4716e1e4099bc2dad29c4a0','candidateTree':'15332211fe6c39f5f3926ebc970a3c0ece362d83','candidateParents':['31ee72386876b2ef877a72236c44d7e1895c2ed2'],\n    'workRef':'refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3','artifactRef':'refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3','nativeEvidenceRef':'refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3',\n    'r2ArtifactCarrierCommit':'70101ea3bfa81d73f4285629ed418a80f9c7dc76',\n    'predecessorPreservationProof':{'candidateParentExactlyPredecessor':True,'predecessorParentExactlyBase':True,'predecessorTreeMatchesBinding':True,'candidateDescendsThroughExactPredecessor':True},\n    'changedFiles':['frontend/src/components/ConfigRegistry.tsx','frontend/src/components/Settings.tsx','frontend/tests/golden-ui-v3-responsive.spec.ts','frontend/tests/settings-privilege.spec.ts'],\n}\n(reports/'candidate-binding.json').write_text(json.dumps(candidate,indent=2)+'\\\\n')\n\nchanged = {\n    'candidate':'ecad9edd993c4022f4716e1e4099bc2dad29c4a0',\n    'files':[\n      {'path':'frontend/src/components/Settings.tsx','kind':'product','reason':'Settings-local wrapped header actions, wrapped all-tab wayfinding, and mobile vertical scroll ownership; Settings metadata opts in to wrapping ConfigSection headers.'},\n      {'path':'frontend/src/components/ConfigRegistry.tsx','kind':'product/shared-component-opt-in','reason':'Add default-off, mobile-only ConfigSection header wrapping; existing modal consumers retain the default layout.'},\n      {'path':'frontend/tests/golden-ui-v3-responsive.spec.ts','kind':'regression/evidence','reason':'Add the complete Settings action-closure oracle, negative clipped action, per-tab/profile proofs, and Parameters unsaved-state preservation proof.'},\n      {'path':'frontend/tests/settings-privilege.spec.ts','kind':'regression','reason':'Assert Force Hot Reload follows the existing Settings privilege visibility policy.'},\n    ],\n    'scope':'Only the four files above; no backend, policy authority, shared PageHeader or ToolbarSegmented changes.'\n}\n(reports/'changed-file-manifest.json').write_text(json.dumps(changed,indent=2)+'\\\\n')\n\nsource_impact = '''# R3 source impact analysis\\\\n\\\\n- The Settings top header is recomposed locally. \"'`shared/LayoutPrimitives.tsx` and the shared `PageHeader` implementation were not edited. Settings subview headers still use the existing PageHeader. Audit Logs and Racks therefore retain the unchanged shared header behavior.'\"\\\\n- Settings no longer uses \"'`ToolbarSegmented` for section navigation; `ToolbarSegmented` itself was not edited. Racks and Projects consumers retain the existing primitive. The full app normal browser gate passed its Racks workflows and narrow-screen Golden Eight geometry checks.'\"\\\\n- \"'`ConfigSection` gained the optional `wrapHeaderOnMobile` prop, defaulting to `false`. The 14 direct Settings Metadata sections opt in. `ConfigRegistryModal` consumers (including Monitoring) do not pass this prop, so their previous header classes and behavior remain the default. The targeted Settings/Monitoring shared-consumer holdout passed.'\"\\\\n- Audit Logs, Architecture v2, legacy Architecture, and Knowledge Product source files are untouched. Audit Logs only consumes the unchanged PageHeader; Architecture and Knowledge do not consume the changed ConfigSection path. The R2 evidence remains applicable to those owners.\\\\n- Monitoring is the only materially relevant consumer family using ConfigRegistryModal in the targeted source scan; the opt-in is absent there and its holdout passed. The broader full-app Monitoring edit test failed once in the ordered suite, then passed when run by itself; its interaction is the Monitoring scan search input after an edit, not the registry modal or Settings header.\\\\n- No production changes were made to authorization policy, deep-link resolution, Force Hot Reload handler, dirty/pending state logic, or backend/domain code.\\\\n'''\n(reports/'source-impact-analysis.md').write_text(source_impact)\n\nresults = {\n 'focusedSettingsActionClosure':{'command':\\\"scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'closes every authorized action' --workers=1\\\",'result':'PASS','tests':'1 passed','duration':'30.4s'},\n 'settingsRoutesStatePrivilegeAndMonitoring':[\n  {'command':\\\"scripts/run-e2e.sh frontend/tests/settings-privilege.spec.ts frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'Settings mobile tab routes|Settings authoritative privilege matrix|ToolbarSegmented non-Settings consumer and Monitoring holdout' --workers=1\\\",'result':'PASS','tests':'5 passed'},\n  {'command':\\\"scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'Settings mobile tab routes' --workers=1\\\",'result':'PASS','tests':'1 passed','coverage':'deep links/content, Metadata desktop/mobile, unsaved Parameters value across resize and tab navigation'},\n  {'command':\\\"scripts/run-e2e.sh frontend/tests/monitoring-workflows.spec.ts --grep 'edits an existing monitor without save errors and persists the updated fields' --workers=1\\\",'result':'PASS','tests':'1 passed','note':'single isolated diagnostic after one order-dependent failure in the full suite'},\n ],\n 'fullAppVerifier':{\n  'command':'scripts/verify-app.sh',\n  'backend':'PASS — 205 passed (463.30s)',\n  'operationalContracts':'PASS — registry drift, form, row-action, and shell contracts',\n  'typecheck':'PASS',\n  'frontendUnitCoverage':'PASS — 721 tests across 141 files',\n  'productionBuild':'PASS — 4,357 modules transformed; build completed in 16.81s; existing large-chunk warning',\n  'normalBrowserSuite':'VERIFY_REQUIRED — 74 passed, 2 skipped, 1 failed of 77',\n  'failure':{'test':'frontend/tests/monitoring-workflows.spec.ts:169 — edits an existing monitor without save errors and persists the updated fields','observed':'After filling the Monitoring scan search following the edit, expected the edited title but observed the previous title. The single isolated run passed.'},\n  'rootPreview':'NOT RUN — verify-app stopped on the normal browser suite failure. SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID is unset in this environment, so a separate root-preview run cannot infer an identity.',\n },\n 'review':'R3 Settings/action closure tests pass. The full app gate remains VERIFY_REQUIRED because of the ordered Monitoring test failure and unavailable root-preview identity.'\n}\n(reports/'test-results.json').write_text(json.dumps(results,indent=2)+'\\\\n')\n\nreadme = '''# CHG-255 R3 targeted Settings responsive package\\\\n\\\\nThis package is bound to candidate \"'`ecad9edd993c4022f4716e1e4099bc2dad29c4a0`, whose direct parent is the exact R2 candidate `31ee72386876b2ef877a72236c44d7e1895c2ed2`. It contains only the R2-before Settings profiles and the R3 Settings/Metadata responsive captures and proof reports.'\"\\\\n\\\\n\"'`before-r2/` contains the exact R2 390×844 failure image from carrier commit `70101ea3bfa81d73f4285629ed418a80f9c7dc76` and 390×600/200% captures made from the detached exact R2 candidate. `after-r3/` contains action-closure profile captures, each authorized tab, Metadata desktop, and the intentional negative clipped-action fixture.'\"\\\\n\\\\nThe action-closure JSON records geometry, full label containment, semantic/enabled status, pointer hit-testing, keyboard/touch reachability, and body/document horizontal overflow. The negative control is rejected specifically for clipping and incomplete label containment. \"'`reports/test-results.json` records the qualification result, including the full-suite Monitoring failure and isolated pass.'\"\\\\n'''\n(reports/'README.md').write_text(readme)\n\n# Create and verify an internal manifest, then exactly one upload ZIP.\nmanifest = []\nfor p in sorted([*before.rglob('*'), *after.rglob('*'), *reports.rglob('*')]):\n    if not p.is_file(): continue\n    rel = p.relative_to(package).as_posix()\n    blob = p.read_bytes()\n    manifest.append({'path':rel,'sizeBytes':len(blob),'sha256':hashlib.sha256(blob).hexdigest()})\n(reports/'MANIFEST.json').write_text(json.dumps({'schema':'sha256-manifest-v1','files':manifest},indent=2)+'\\\\n')\nzip_path = package/'UPLOAD_THIS_TO_CHATGPT.zip'\nwith zipfile.ZipFile(zip_path,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:\n    for p in sorted([*before.rglob('*'), *after.rglob('*'), *reports.rglob('*')]):\n        if p.is_file(): z.write(p,Path('chg255-r3')/p.relative_to(package))\n# Verify every archived payload against the manifest.\nwith zipfile.ZipFile(zip_path) as z:\n    for row in manifest:\n        archive_name = str(Path('chg255-r3')/row['path'])\n        blob = z.read(archive_name)\n        if len(blob) \"'!= row['\"'sizeBytes'] or hashlib.sha256(blob).hexdigest() \"'!= row['\"'sha256']:\n            raise SystemExit('archive verification failed: '+archive_name)\narchive_hash = hashlib.sha256(zip_path.read_bytes()).hexdigest()\nouter = {'schema':'sha256-artifact-v1','artifact':'UPLOAD_THIS_TO_CHATGPT.zip','sizeBytes':zip_path.stat().st_size,'sha256':archive_hash,'contentsManifest':'reports/MANIFEST.json','verifiedEntries':len(manifest)}\n(package/'SHA256SUMS.json').write_text(json.dumps(outer,indent=2)+'\\\\n')\nprint(json.dumps({'zip':str(zip_path),'sha256':archive_hash,'sizeBytes':zip_path.stat().st_size,'manifestEntries':len(manifest),'afterCaptureFiles':len(list(after.iterdir())),'beforeCaptures':len(list(before.iterdir()))},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport json, hashlib, zipfile\nroot=Path('/tmp/chg255-r3-package')\nm=json.loads((root/'reports/action-closure-results.json').read_text())\nprint('parameters:', [(p['viewport'],p['textScale'],p['accepted']) for p in m['parametersProfiles']])\nprint('tabs:', [(x['tab'],x['closure']['accepted'],[c['name'] for c in x['closure']['scopes'][2]['controls']]) for x in m['authorizedTabMatrix']])\nprint('desktop:', m['metadataDesktop']['accepted'], 'negative:',m['negativeControlResult'])\nmanifest=json.loads((root/'reports/MANIFEST.json').read_text())\nwith zipfile.ZipFile(root/'UPLOAD_THIS_TO_CHATGPT.zip') as z:\n    assert len(manifest['files']) == 83\n    for item in manifest['files']:\n        data=z.read('chg255-r3/'+item['path'])\n        assert len(data)==item['sizeBytes'] and hashlib.sha256(data).hexdigest()==item['sha256']\nprint('archive payload hash verification: PASS; entries:',len(manifest['files']))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree add --detach /tmp/chg255-r3-artifact 70101ea3bfa81d73f4285629ed418a80f9c7dc76'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /tmp/chg255-r3-artifact status --short --branch && rtk git -C /tmp/chg255-r3-artifact show -s --format='%H%n%T%n%P' HEAD && rtk git -C /tmp/chg255-r3-artifact ls-tree --name-only HEAD visual-atlas/chg255-r2\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, shutil\nsrc=Path('/tmp/chg255-r3-package')\ndest=Path('/tmp/chg255-r3-artifact/visual-atlas/chg255-r3')\nif dest.exists(): shutil.rmtree(dest)\ndest.mkdir(parents=True)\nshutil.copy2(src/'UPLOAD_THIS_TO_CHATGPT.zip',dest/'UPLOAD_THIS_TO_CHATGPT.zip')\nshutil.copy2(src/'reports/README.md',dest/'README.md')\nfor name in ('candidate-binding.json','action-closure-results.json','changed-file-manifest.json','test-results.json','source-impact-analysis.md'):\n    shutil.copy2(src/'reports'/name,dest/name)\nshutil.copytree(src/'before-r2',dest/'before-r2')\nshutil.copytree(src/'after-r3',dest/'after-r3')\nshutil.copytree(src/'reports',dest/'reports')\nfiles=[]\nfor p in sorted(dest.rglob('*')):\n    if not p.is_file() or p.name=='SHA256SUMS.json': continue\n    data=p.read_bytes()\n    files.append({'path':p.relative_to(dest).as_posix(),'sizeBytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})\nmanifest={'schema':'sha256-artifact-tree-v1','candidate':'ecad9edd993c4022f4716e1e4099bc2dad29c4a0','files':files}\n(dest/'SHA256SUMS.json').write_text(json.dumps(manifest,indent=2)+'\\\\n')\n# Verify the external artifact-tree manifest after writing.\nloaded=json.loads((dest/'SHA256SUMS.json').read_text())\nfor row in loaded['files']:\n    p=dest/row['path']; data=p.read_bytes()\n    assert len(data)==row['sizeBytes'] and hashlib.sha256(data).hexdigest()==row['sha256'], row['path']\nzip_hash=hashlib.sha256((dest/'UPLOAD_THIS_TO_CHATGPT.zip').read_bytes()).hexdigest()\nassert zip_hash=='e76ef0576413dfa44505889c95aef03e04698b4ccd21c5e06387350e9f5994dd'\nprint(json.dumps({'artifactPath':str(dest),'treeManifestEntries':len(files),'zipSha256':zip_hash,'filesOnDisk':len([p for p in dest.rglob('*') if p.is_file()])},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/chg255-r3-artifact add visual-atlas/chg255-r3 && rtk git -C /tmp/chg255-r3-artifact diff --cached --check && rtk git -C /tmp/chg255-r3-artifact diff --cached --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /tmp/chg255-r3-artifact commit -m 'artifacts: add targeted CHG-255 R3 Settings closure package'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /tmp/chg255-r3-artifact show -s --format='%H%n%T%n%P%n%s' HEAD && rtk git -C /tmp/chg255-r3-artifact status --short --branch && rtk git -C /tmp/chg255-r3-artifact diff --name-status 70101ea3bfa81d73f4285629ed418a80f9c7dc76..HEAD | rtk sed -n '1,30p' && rtk git -C /tmp/chg255-r3-artifact diff --check 70101ea3bfa81d73f4285629ed418a80f9c7dc76..HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/chg255-r3-artifact push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 && rtk git fetch origin refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3:refs/remotes/origin/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3:refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git archive --format=tar refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 visual-atlas/chg255-r3 > /tmp/chg255-r3-remote-artifact.tar && rtk mkdir -p /tmp/chg255-r3-remote-artifact && rtk proxy tar -xf /tmp/chg255-r3-remote-artifact.tar -C /tmp/chg255-r3-remote-artifact'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib,json,zipfile\nroot=Path('/tmp/chg255-r3-remote-artifact/visual-atlas/chg255-r3')\nmanifest=json.loads((root/'SHA256SUMS.json').read_text())\nfor row in manifest['files']:\n    data=(root/row['path']).read_bytes()\n    assert len(data)==row['sizeBytes'] and hashlib.sha256(data).hexdigest()==row['sha256'], row['path']\nzip_path=root/'UPLOAD_THIS_TO_CHATGPT.zip'\nzip_hash=hashlib.sha256(zip_path.read_bytes()).hexdigest()\nassert zip_hash=='e76ef0576413dfa44505889c95aef03e04698b4ccd21c5e06387350e9f5994dd'\nwith zipfile.ZipFile(zip_path) as z:\n    internal=json.loads(z.read('chg255-r3/reports/MANIFEST.json'))\n    for row in internal['files']:\n        data=z.read('chg255-r3/'+row['path'])\n        assert len(data)==row['sizeBytes'] and hashlib.sha256(data).hexdigest()==row['sha256'], row['path']\nprint(json.dumps({'remoteTreeManifestEntriesVerified':len(manifest['files']),'zipSha256':zip_hash,'internalZipEntriesVerified':len(internal['files']),'result':'PASS'},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git show -s --format='%H%n%T%n%P' refs/remotes/origin/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 && rtk git show -s --format='%H%n%T%n%P' refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 && rtk git show -s --format='%H%n%T%n%P' refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3\"'^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --ignored frontend && rtk find frontend -maxdepth 2 \\\\( -name 'stage*-evidence' -o -name 'OUT-*EVIDENCE.html' -o -name 'test-results*' -o -name 'playwright-report' -o -name 'blob-report' -o -name 'llm-report.json' -o -name 'coverage' \\\\) -print\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rm -rf frontend/coverage frontend/dist frontend/playwright-report frontend/blob-report frontend/test-results frontend/test-results-v1 frontend/test-results-root-preview frontend/stage31-evidence frontend/stage33-evidence frontend/stage34-evidence frontend/stage35-evidence frontend/stage36-evidence && rtk rm -f frontend/OUT-26_ITERATION_33_STAGE31_EVIDENCE.html frontend/OUT-26_ITERATION_35_STAGE33_EVIDENCE.html frontend/OUT-26_ITERATION_36_STAGE34_EVIDENCE.html frontend/OUT-26_ITERATION_37_STAGE35_EVIDENCE.html frontend/OUT-26_ITERATION_38_STAGE36_EVIDENCE.html'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /tmp/chg255-r3-artifact status --short --branch && rtk git -C /tmp/chg255-r3-artifact show -s --format='%H%n%T%n%P' HEAD && rtk git -C /tmp/chg255-r3-artifact merge-base --is-ancestor 70101ea3bfa81d73f4285629ed418a80f9c7dc76 HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git status --short --branch && rtk git status --short --ignored frontend && rtk proxy find frontend -maxdepth 2 \\\\( -name 'stage*-evidence' -o -name 'OUT-*EVIDENCE.html' -o -name 'test-results*' -o -name 'playwright-report' -o -name 'coverage' -o -name 'dist' \\\\) -print\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 && rtk git show -s --format='%H%n%T%n%P' HEAD && rtk git merge-base --is-ancestor 31ee72386876b2ef877a72236c44d7e1895c2ed2 HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rm -f /tmp/chg255-r2-before/frontend/tests/tmp-settings-before.spec.ts && rtk unlink /tmp/chg255-r2-before/frontend/node_modules && rtk git worktree remove /tmp/chg255-r2-before && rtk git worktree remove /tmp/chg255-r3-artifact'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'SettingsWayfinding|data-settings-workspace|wrapHeaderOnMobile|closes every authorized action|Settings mobile tab routes|Settings authoritative privilege matrix' frontend/src/components/Settings.tsx frontend/src/components/ConfigRegistry.tsx frontend/tests/golden-ui-v3-responsive.spec.ts frontend/tests/settings-privilege.spec.ts && rtk git status --short --branch && rtk git rev-parse HEAD HEAD\"'^{tree} HEAD''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm --prefix frontend run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.157.0",
+    "configured_model": "gpt-6-luna",
+    "event_count": 608,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.53,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 64654592,
+      "fresh_input_tokens": 966492,
+      "input_tokens": 65621084,
+      "non_reasoning_output_tokens": 87958,
+      "output_tokens": 297837,
+      "reasoning_output_tokens": 209879,
+      "total_processed_tokens": 65918921
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+      "subject": "fix(settings): close mobile action layout gap (CHG-255 R3)"
+    },
+    {
+      "sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+      "subject": "fix(sysgrid): repair golden ui v3 atlas blockers"
+    }
+  ],
+  "diff": {
+    "additions": 1407,
+    "changed_files": 14,
+    "commit_count": 2,
+    "deletions": 128
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-26T16:58:45Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "branch": "codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+    "detached_verify": false,
+    "head_sha": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "remote_exact_head": true,
+    "remote_head_sha": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "work_branch": "codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-34ae23bd1b4bab0fd4e4765c",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-26T14:27:03Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 9102,
+    "queue_seconds": 1,
+    "total_seconds": 9103
+  },
+  "transport": {
+    "bytes": 11738,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 11400,
+    "prompt_sha256": "766807021a63b9292da9ecdec57ad100895fc46d6ce7c649fcced04639cf4229",
+    "sha256": "34ae23bd1b4bab0fd4e4765c70489580c2a90cac84691cdabd597f09bffd94a8"
+  }
+}
