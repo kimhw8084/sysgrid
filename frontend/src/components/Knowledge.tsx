@@ -513,35 +513,37 @@ export default function Knowledge() {
   }
 
   return (
-    <div className="h-full flex flex-col space-y-6">
+    <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 overflow-y-auto custom-scrollbar sm:space-y-6" data-knowledge-workspace="true">
       {/* Header Section */}
-      <div className="flex items-center justify-between bg-slate-900/50 p-6 rounded-lg border border-white/5 shadow-2xl backdrop-blur-xl">
-        <div>
-          <h1 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 text-white">
-            <div className="p-3 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20">
-              <BookOpen size={32} className="text-white" />
+      <div className="flex min-w-0 shrink-0 flex-col gap-4 rounded-lg border border-white/5 bg-slate-900/50 p-4 shadow-2xl backdrop-blur-xl sm:p-6 lg:flex-row lg:items-center lg:justify-between" data-knowledge-primary-tools="true">
+        <div className="min-w-0 flex-1">
+          <h1 className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-black uppercase tracking-tighter text-white sm:text-4xl sm:gap-4">
+            <div className="shrink-0 rounded-lg bg-blue-600 p-2 shadow-lg shadow-blue-500/20 sm:p-3">
+              <BookOpen size={24} className="text-white sm:h-8 sm:w-8" />
             </div>
-            Collective Intelligence
+            <span className="min-w-0 break-words">Collective Intelligence</span>
           </h1>
-          <p className="text-[10px] text-slate-500 uppercase tracking-[0.4em] font-bold mt-2 ml-1 flex items-center gap-2">
+          <p className="mt-2 ml-1 flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 sm:tracking-[0.4em]">
             <Globe size={12} className="text-blue-500/50" /> Unified Knowledge Matrix // Zero-Loss Information Handoff
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="relative group">
+        <div className="flex min-w-0 flex-col gap-3 lg:max-w-[760px] lg:flex-1">
+          <div className="group relative w-full min-w-0">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
             <input 
               value={searchTerm} 
               onChange={e => setSearchTerm(e.target.value)} 
               placeholder="Query Matrix..." 
-              className="bg-black/40 border border-white/10 rounded-lg pl-12 pr-6 py-3 text-[11px] font-black uppercase outline-none focus:border-blue-500/50 w-80 transition-all focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-700" 
+              aria-label="Search Knowledge"
+              data-knowledge-search="true"
+              className="w-full min-w-0 rounded-lg border border-white/10 bg-black/40 py-3 pl-12 pr-4 text-[11px] font-black uppercase outline-none transition-all placeholder:text-slate-700 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 sm:pr-6"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap" data-knowledge-primary-actions="true">
             {(researchParam || monitoringParam) && (
               <button
                 onClick={() => setActiveModal(buildConversionDraft())}
-                className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-2"
+                className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-amber-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-800 active:scale-95 sm:w-auto sm:flex-1 sm:px-5 sm:text-[10px]"
               >
                 <FileText size={16} /> Convert Incident
               </button>
@@ -557,19 +559,19 @@ export default function Knowledge() {
                   operation: { owner_team: '', owner_individual: '', raci: [], cpm_workflow: '', far_ids: [], dr_strategy: { rto: '', rpo: '', plan: '' }, operational_logs: [] }
                 } 
               })} 
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
+              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-emerald-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-800 active:scale-95 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
             >
               <Workflow size={16} /> + System Manual
             </button>
             <button 
               onClick={() => setActiveModal(buildBkmTemplate())} 
-              className="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2"
+              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-rose-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-rose-500/20 transition-all hover:bg-rose-700 active:scale-95 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
             >
               <ShieldCheck size={16} /> + New BKM
             </button>
             <button 
               onClick={() => setActiveModal({ category: 'Q&A', title: '', question_context: '', content: '', tags: [], linked_device_ids: [], impacted_systems: [], status: 'Draft', metadata_json: mergeDeep(emptyKnowledgeMetadata(), { entry_type: 'FAQ' }), qa_threads: [] })} 
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2"
+              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-blue-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
             >
               <HelpCircle size={16} /> + Ask Question
             </button>
@@ -578,8 +580,8 @@ export default function Knowledge() {
       </div>
 
       {/* Navigation & Filters */}
-      <div className="flex items-center justify-between border-b border-white/5 pb-4 px-2">
-         <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex min-w-0 shrink-0 flex-col items-stretch gap-3 border-b border-white/5 px-2 pb-4">
+         <div className="flex min-w-0 flex-wrap items-center gap-2">
             {CATEGORIES.map(c => (
               <CategoryPill 
                 key={c} 
@@ -602,7 +604,7 @@ export default function Knowledge() {
               </button>
             ))}
          </div>
-         <div className="flex bg-black/40 p-1 rounded-lg border border-white/5">
+         <div className="flex w-fit max-w-full bg-black/40 p-1 rounded-lg border border-white/5">
             {(['Grid', 'Timeline'] as const).map(mode => (
               <button
                 key={mode}

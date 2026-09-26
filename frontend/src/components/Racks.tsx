@@ -3090,7 +3090,7 @@ export default function Racks() {
 
       {/* ── Page Toolbar ── */}
       <PageToolbar 
-        className={isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}
+        className={`shrink-0 ${isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}`}
         left={
           <>
             <ToolbarSegmented 

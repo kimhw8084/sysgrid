@@ -1649,7 +1649,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="h-full flex flex-col space-y-4 w-full mx-auto px-4 overflow-hidden relative">
+    <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto px-0 sm:px-4 overflow-hidden relative" data-settings-workspace="true">
       <AnimatePresence>
         {isDisconnected && (
           <motion.div 
@@ -1755,11 +1755,11 @@ export default function SettingsPage() {
         }}
       />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
         <AnimatePresence mode="wait">
           {topTab === 'metadata' && settingsManage && (
-             <motion.div key="metadata" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
-                <PageToolbar
+             <motion.div key="metadata" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="min-w-0 space-y-4 pt-2" data-settings-tab-content="metadata">
+                <PageToolbar wrapOnMobile
                   left={
                     <ToolbarGroup>
                       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Metadata Registry</span>
@@ -1893,7 +1893,7 @@ export default function SettingsPage() {
              </motion.div>
           )}
           {topTab === 'environments' && (
-            <motion.div key="environments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
+            <motion.div key="environments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2" data-settings-tab-content="environments">
                <div className="rounded-lg border border-white/5 bg-black/20 p-4" data-settings-personal-preferences="true">
                  <div className="flex flex-wrap items-center justify-between gap-3">
                    <div>
@@ -1918,7 +1918,7 @@ export default function SettingsPage() {
 
                {globalConfigManage ? (<>
                {/* Unified Parameter Toolbar */}
-               <PageToolbar
+               <PageToolbar wrapOnMobile
                   left={
                    <>
                      <ToolbarSearch
@@ -2039,7 +2039,7 @@ export default function SettingsPage() {
           )}
 
           {topTab === 'permissions' && settingsManage && (
-            <motion.div key="permissions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
+            <motion.div key="permissions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2" data-settings-tab-content="permissions">
                {/* Identity Sync Pipeline - Collapsed by default */}
                <div className="rounded-lg border border-white/5 bg-black/20 overflow-hidden">
                   <button 
@@ -2151,7 +2151,7 @@ export default function SettingsPage() {
                </div>
 
                {/* Registry Toolbar */}
-               <PageToolbar
+               <PageToolbar wrapOnMobile
                  left={
                    <>
                      <ToolbarSearch
@@ -2532,8 +2532,8 @@ export default function SettingsPage() {
           )}
 
           {topTab === 'tenants' && controlPlaneAdmin && (
-            <motion.div key="tenants" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
-               <PageToolbar
+             <motion.div key="tenants" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
+               <PageToolbar wrapOnMobile
                   left={
                     <ToolbarGroup>
                       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Tenant Registry</span>
@@ -2802,8 +2802,8 @@ export default function SettingsPage() {
           )}
 
           {topTab === 'groups' && settingsManage && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-2">
-              <PageToolbar
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 pt-2" data-settings-tab-content="groups">
+              <PageToolbar wrapOnMobile
                 left={
                   <ToolbarSearch
                     value={teamSearch}
@@ -3002,8 +3002,8 @@ export default function SettingsPage() {
           )}
 
           {topTab === 'system' && globalConfigManage && (
-             <motion.div key="system" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
-                <PageToolbar
+             <motion.div key="system" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2" data-settings-tab-content="system">
+                <PageToolbar wrapOnMobile
                   left={
                     <ToolbarGroup>
                       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Runtime Analysis</span>

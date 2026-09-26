@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useLayoutEffect, useRef } from 'react'
 import { Maximize2, Minimize2, Search } from 'lucide-react'
 import { isGoldenActivityColumnsTitle } from './OperationalGoldenToolbarContract'
 
@@ -60,21 +60,24 @@ export const PageHeader = ({
 export const PageToolbar = ({
   left,
   right,
-  className = ''
+  className = '',
+  wrapOnMobile = false
 }: {
   left?: ReactNode
   right?: ReactNode
   className?: string
+  wrapOnMobile?: boolean
 }) => (
   <section
     className={join(
       GOLDEN_PAGE_TOOLBAR_CLASS,
+      wrapOnMobile && 'flex-wrap !overflow-visible',
       className
     )}
     data-golden-page-toolbar="true"
   >
-    {left ? <div className={GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
-    {right && <div className={GOLDEN_TOOLBAR_RIGHT_CLASS} data-golden-toolbar-right="true">{right}</div>}
+    {left ? <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center gap-3 lg:w-auto lg:min-w-0 lg:flex-1' : GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
+    {right && <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center justify-start gap-3 lg:w-auto lg:justify-end' : GOLDEN_TOOLBAR_RIGHT_CLASS} data-golden-toolbar-right="true">{right}</div>}
   </section>
 )
 
@@ -220,26 +223,63 @@ export const ToolbarSegmented = ({
   options: Array<{ label: ReactNode; value: string }>
   value: string
   onChange: (value: string) => void
-}) => (
-  <div className="flex items-center gap-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1" role="group">
-    {options.map((option) => (
-      <button
-        key={option.value}
-        type="button"
-        onClick={() => onChange(option.value)}
-        className={join(
-          `${TOOLBAR_CONTROL_HEIGHT} rounded-lg px-4 py-0 text-[10px] font-bold tracking-widest transition-all`,
-          value === option.value
-            ? 'bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20'
-            : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
-        )}
-        aria-pressed={value === option.value}
-      >
-        {option.label}
-      </button>
-    ))}
-  </div>
-)
+}) => {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const activeRef = useRef<HTMLButtonElement>(null)
+
+  useLayoutEffect(() => {
+    const viewport = scrollRef.current
+    const active = activeRef.current
+    if (!viewport || !active) return
+
+    const revealActive = () => {
+      const viewportRect = viewport.getBoundingClientRect()
+      const activeRect = active.getBoundingClientRect()
+      if (activeRect.left < viewportRect.left) {
+        viewport.scrollLeft -= viewportRect.left - activeRect.left
+      } else if (activeRect.right > viewportRect.right) {
+        viewport.scrollLeft += activeRect.right - viewportRect.right
+      }
+    }
+    revealActive()
+    window.addEventListener('resize', revealActive)
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(revealActive)
+    observer?.observe(viewport)
+    observer?.observe(active)
+    return () => {
+      window.removeEventListener('resize', revealActive)
+      observer?.disconnect()
+    }
+  }, [value, options.length])
+
+  return (
+    <div
+      ref={scrollRef}
+      className="min-w-0 max-w-full overflow-x-auto overscroll-x-contain touch-pan-x"
+      data-golden-segmented-scroll="true"
+    >
+      <div className="relative flex w-max min-w-max items-center gap-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1" role="group" aria-label="View selection">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            ref={value === option.value ? activeRef : undefined}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={join(
+              `${TOOLBAR_CONTROL_HEIGHT} shrink-0 whitespace-nowrap rounded-lg px-4 py-0 text-[10px] font-bold tracking-widest transition-all`,
+              value === option.value
+                ? 'bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+            )}
+            aria-pressed={value === option.value}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export const HeaderScopeSwitch = ({
   label,
