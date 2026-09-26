@@ -1,0 +1,458 @@
+{
+  "accepted_at": "2026-09-26T18:31:12Z",
+  "changed_files": [
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/architecture/ArchitectureHost.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/ArchitectureWorkspace.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 33,
+      "deletions": 13,
+      "path": "frontend/src/components/AuditLogs.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 7,
+      "deletions": 4,
+      "path": "frontend/src/components/ConfigRegistry.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 29,
+      "deletions": 29,
+      "path": "frontend/src/components/DataFlowDesigner.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 21,
+      "deletions": 19,
+      "path": "frontend/src/components/Knowledge.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 47,
+      "deletions": 0,
+      "path": "frontend/src/components/ProjectsVisualShowcase.test.tsx",
+      "status": "A"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/Racks.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 88,
+      "deletions": 35,
+      "path": "frontend/src/components/Settings.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "path": "frontend/src/components/SettingsStandards.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 39,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/LayoutPrimitives.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 64,
+      "deletions": 24,
+      "path": "frontend/src/components/shared/LayoutPrimitives.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1069,
+      "deletions": 0,
+      "path": "frontend/tests/golden-ui-v3-responsive.spec.ts",
+      "status": "A"
+    },
+    {
+      "additions": 6,
+      "deletions": 0,
+      "path": "frontend/tests/settings-privilege.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la isolated-test-results'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la full-suite-results-final'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la adjacent-test-results'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat coincident-pair-manifest.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la visual-atlas'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{commit} && rtk git rev-parse HEAD''^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat artifact/impact-and-root-preview-reuse.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 45 monitoring/monitoring-normal-v1-full-suite-final.log'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat monitoring/isolated-diagnostic.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat monitoring/adjacent-diagnostic.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat artifact/compact-verification-report.md'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\n\nroot = Path('/Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4')\npayload = root / 'artifact' / 'worktree' / 'visual-atlas' / 'chg255-r4'\nproofs = payload / 'settings-coincident'\nmonitoring = payload / 'monitoring'\nproofs.mkdir(parents=True, exist_ok=True)\nmonitoring.mkdir(parents=True, exist_ok=True)\n\nfor name in [\n    'coincident-pair-manifest.json',\n    'settings-parameters-header-390x844-default-control.json',\n    'settings-parameters-header-390x844-default-control.png',\n    'settings-parameters-header-390x844-text-200.json',\n    'settings-parameters-header-390x844-text-200.png',\n    'settings-parameters-wayfinding-390x844-text-200.json',\n    'settings-parameters-wayfinding-390x844-text-200.png',\n    'settings-parameters-task-390x844-text-200.json',\n    'settings-parameters-task-390x844-text-200.png',\n]:\n    shutil.copy2(root / 'captures' / name, proofs / name)\n\nmonitor_items = {\n    'isolated-diagnostic.json': 'isolated-diagnostic.json',\n    'isolated-server-before.json': 'isolated-server-before.json',\n    'isolated-server-after.json': 'isolated-server-after.json',\n    'isolated-final-ui.png': 'isolated-final-ui.png',\n    'isolated-playwright.log': 'monitoring-isolated-candidate.log',\n    'adjacent-diagnostic.json': 'adjacent-diagnostic.json',\n    'adjacent-server-before.json': 'adjacent-server-before.json',\n    'adjacent-server-after.json': 'adjacent-server-after.json',\n    'adjacent-final-ui.png': 'adjacent-final-ui.png',\n    'adjacent-playwright.log': 'monitoring-adjacent-candidate.log',\n    'normal-v1-full-suite.log': 'monitoring-normal-v1-full-suite-final.log',\n}\nfor dest, src in monitor_items.items():\n    shutil.copy2(root / 'monitoring' / src, monitoring / dest)\n\nfor name in [\n    'candidate-binding.json',\n    'compact-verification-report.md',\n    'impact-and-root-preview-reuse.md',\n    'monitoring-classification.json',\n]:\n    shutil.copy2(root / 'artifact' / name, payload / name)\nprint(payload)\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport shutil\n\nroot = Path('/Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4')\npayload = root / 'artifact' / 'worktree' / 'visual-atlas' / 'chg255-r4'\nproofs = payload / 'settings-coincident'\nmonitoring = payload / 'monitoring'\nproofs.mkdir(parents=True, exist_ok=True)\nmonitoring.mkdir(parents=True, exist_ok=True)\n\nfor name in [\n    'coincident-pair-manifest.json',\n    'settings-parameters-header-390x844-default-control.json',\n    'settings-parameters-header-390x844-default-control.png',\n    'settings-parameters-header-390x844-text-200.json',\n    'settings-parameters-header-390x844-text-200.png',\n    'settings-parameters-wayfinding-390x844-text-200.json',\n    'settings-parameters-wayfinding-390x844-text-200.png',\n    'settings-parameters-task-390x844-text-200.json',\n    'settings-parameters-task-390x844-text-200.png',\n]:\n    shutil.copy2(root / 'captures' / name, proofs / name)\n\nmonitor_items = {\n    'isolated-diagnostic.json': ('monitoring', 'isolated-diagnostic.json'),\n    'isolated-server-before.json': ('monitoring', 'isolated-server-before.json'),\n    'isolated-server-after.json': ('monitoring', 'isolated-server-after.json'),\n    'isolated-final-ui.png': ('monitoring', 'isolated-final-ui.png'),\n    'isolated-playwright.log': ('logs', 'monitoring-isolated-candidate.log'),\n    'adjacent-diagnostic.json': ('monitoring', 'adjacent-diagnostic.json'),\n    'adjacent-server-before.json': ('monitoring', 'adjacent-server-before.json'),\n    'adjacent-server-after.json': ('monitoring', 'adjacent-server-after.json'),\n    'adjacent-final-ui.png': ('monitoring', 'adjacent-final-ui.png'),\n    'adjacent-playwright.log': ('logs', 'monitoring-adjacent-candidate.log'),\n    'normal-v1-full-suite.log': ('logs', 'monitoring-normal-v1-full-suite-final.log'),\n}\nfor dest, (folder, src) in monitor_items.items():\n    shutil.copy2(root / folder / src, monitoring / dest)\n\nfor name in [\n    'candidate-binding.json',\n    'compact-verification-report.md',\n    'impact-and-root-preview-reuse.md',\n    'monitoring-classification.json',\n]:\n    shutil.copy2(root / 'artifact' / name, payload / name)\nprint(payload)\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk tail -n 55 logs/monitoring-normal-v1-full-suite-final.log'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"iTXt|proofId|stateMetadata\" scripts/bind_and_verify_proofs.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, struct\n\npayload = Path('/Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/artifact/worktree/visual-atlas/chg255-r4')\nproof_dir = payload / 'settings-coincident'\npair_manifest = json.loads((proof_dir / 'coincident-pair-manifest.json').read_text())\nassert pair_manifest['pairCount'] == 4\nverified_pairs = []\n\ndef sha(path):\n    return hashlib.sha256(path.read_bytes()).hexdigest()\n\ndef png_chunks(data):\n    assert data[:8] == b'\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n'\n    pos = 8\n    while pos < len(data):\n        n = struct.unpack('>I', data[pos:pos+4])[0]\n        kind = data[pos+4:pos+8]\n        payload = data[pos+8:pos+8+n]\n        yield kind, payload\n        pos += 12+n\n        if kind == b'IEND':\n            break\n\nfor entry in pair_manifest['pairs']:\n    jpath = proof_dir / entry['files']['json']\n    ppath = proof_dir / entry['files']['png']\n    record = json.loads(jpath.read_text())\n    assert sha(jpath) == entry['sha256']['json']\n    assert sha(ppath) == entry['sha256']['png']\n    assert record['proofId'] == entry['proofId']\n    assert record['accepted'] is True\n    actual_envelope = []\n    for kind, chunk_data in png_chunks(ppath.read_bytes()):\n        if kind == b'iTXt' and chunk_data.startswith(b'sysgrid-proof\\\\x00'):\n            keyword, rest = chunk_data.split(b'\\\\x00', 1)\n            compression_flag, compression_method = rest[0], rest[1]\n            assert compression_flag == 0 and compression_method == 0\n            language, rest = rest[2:].split(b'\\\\x00', 1)\n            translated, text = rest.split(b'\\\\x00', 1)\n            assert language == b'' and translated == b''\n            actual_envelope.append(json.loads(text.decode('utf-8')))\n    expected_envelope = {'proofId': record['proofId'], 'stateMetadata': record['stateMetadata']}\n    assert actual_envelope == [expected_envelope]\n    assert entry['pngEmbeddedMetadataExactMatch'] is True\n    verified_pairs.append({'proofId': entry['proofId'], 'scope': entry['scope'], 'jsonSha256': sha(jpath), 'pngSha256': sha(ppath), 'stateMetadataSha256': entry['stateMetadataSha256']})\n\nfiles = []\nfor path in sorted(p for p in payload.rglob('*') if p.is_file() and p.name \"'!= '\"'MANIFEST.json'):\n    data = path.read_bytes()\n    files.append({'path': path.relative_to(payload).as_posix(), 'sizeBytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})\nmanifest = {\n    'schema': 'sysgrid-chg255-r4-verification-artifact-manifest-v1',\n    'repository': 'kimhw8084/sysgrid',\n    'request': 'sysgrid-golden-ui-v3-atlas-blockers-verify-v4',\n    'candidate': {'commit': 'ecad9edd993c4022f4716e1e4099bc2dad29c4a0', 'tree': '15332211fe6c39f5f3926ebc970a3c0ece362d83'},\n    'artifactParent': '72712e2bded0f49f2040715786e2f3133b622eb8',\n    'fileCountExcludingManifest': len(files),\n    'files': files,\n    'settingsPairsReadbackVerified': verified_pairs,\n    'conclusion': 'GO_READY_EVIDENCE'\n}\n(payload / 'MANIFEST.json').write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\\\\n')\nprint(json.dumps({'fileCountExcludingManifest': len(files), 'settingsPairsReadbackVerified': verified_pairs, 'manifestSha256': sha(payload / 'MANIFEST.json')}, indent=2))\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat settings-parameters-header-390x844-text-200.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, struct\n\npayload = Path('/Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/artifact/worktree/visual-atlas/chg255-r4')\nproof_dir = payload / 'settings-coincident'\npair_manifest = json.loads((proof_dir / 'coincident-pair-manifest.json').read_text())\nassert pair_manifest['pairCount'] == 4\nverified_pairs = []\n\ndef sha(path):\n    return hashlib.sha256(path.read_bytes()).hexdigest()\n\ndef png_chunks(data):\n    assert data[:8] == b'\\\\x89PNG\\\\r\\\\n\\\\x1a\\\\n'\n    pos = 8\n    while pos < len(data):\n        n = struct.unpack('>I', data[pos:pos+4])[0]\n        kind = data[pos+4:pos+8]\n        chunk_data = data[pos+8:pos+8+n]\n        yield kind, chunk_data\n        pos += 12+n\n        if kind == b'IEND':\n            break\n\nfor entry in pair_manifest['pairs']:\n    jpath = proof_dir / entry['files']['json']\n    ppath = proof_dir / entry['files']['png']\n    record = json.loads(jpath.read_text())\n    assert sha(jpath) == entry['sha256']['json']\n    assert sha(ppath) == entry['sha256']['png']\n    assert record['proofId'] == entry['proofId']\n    assert record['closure']['accepted'] is True and entry['accepted'] is True\n    actual_envelope = []\n    for kind, chunk_data in png_chunks(ppath.read_bytes()):\n        if kind == b'iTXt' and chunk_data.startswith(b'sysgrid-proof\\\\x00'):\n            keyword, rest = chunk_data.split(b'\\\\x00', 1)\n            compression_flag, compression_method = rest[0], rest[1]\n            assert compression_flag == 0 and compression_method == 0\n            language, rest = rest[2:].split(b'\\\\x00', 1)\n            translated, text = rest.split(b'\\\\x00', 1)\n            assert language == b'' and translated == b''\n            actual_envelope.append(json.loads(text.decode('utf-8')))\n    expected_envelope = {'proofId': record['proofId'], 'stateMetadata': record['stateMetadata']}\n    assert actual_envelope == [expected_envelope]\n    assert entry['pngEmbeddedMetadataExactMatch'] is True\n    verified_pairs.append({'proofId': entry['proofId'], 'scope': entry['scope'], 'jsonSha256': sha(jpath), 'pngSha256': sha(ppath), 'stateMetadataSha256': entry['stateMetadataSha256']})\n\nfiles = []\nfor path in sorted(p for p in payload.rglob('*') if p.is_file() and p.name \"'!= '\"'MANIFEST.json'):\n    data = path.read_bytes()\n    files.append({'path': path.relative_to(payload).as_posix(), 'sizeBytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})\nmanifest = {\n    'schema': 'sysgrid-chg255-r4-verification-artifact-manifest-v1',\n    'repository': 'kimhw8084/sysgrid',\n    'request': 'sysgrid-golden-ui-v3-atlas-blockers-verify-v4',\n    'candidate': {'commit': 'ecad9edd993c4022f4716e1e4099bc2dad29c4a0', 'tree': '15332211fe6c39f5f3926ebc970a3c0ece362d83'},\n    'artifactParent': '72712e2bded0f49f2040715786e2f3133b622eb8',\n    'fileCountExcludingManifest': len(files),\n    'files': files,\n    'settingsPairsReadbackVerified': verified_pairs,\n    'conclusion': 'GO_READY_EVIDENCE'\n}\n(payload / 'MANIFEST.json').write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\\\\n')\nprint(json.dumps({'fileCountExcludingManifest': len(files), 'settingsPairsReadbackVerified': verified_pairs, 'manifestSha256': sha(payload / 'MANIFEST.json')}, indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{commit} && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add visual-atlas/chg255-r4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --cached --check'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --cached --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat visual-atlas/chg255-r4/monitoring-classification.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --cached --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git commit -m 'artifacts: add CHG-255 R4 targeted verification evidence'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git show --stat --oneline --summary HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{commit} && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4:refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree add --detach /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/remote-readback refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{commit} && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib, json\nroot = Path('/Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/remote-readback/visual-atlas/chg255-r4')\nmanifest_path = root / 'MANIFEST.json'\nmanifest = json.loads(manifest_path.read_text())\nassert manifest['candidate'] == {'commit':'ecad9edd993c4022f4716e1e4099bc2dad29c4a0','tree':'15332211fe6c39f5f3926ebc970a3c0ece362d83'}\nassert manifest['artifactParent'] == '72712e2bded0f49f2040715786e2f3133b622eb8'\nassert len(manifest['files']) == manifest['fileCountExcludingManifest'] == 24\nverified = []\nfor item in manifest['files']:\n    path = root / item['path']\n    data = path.read_bytes()\n    digest = hashlib.sha256(data).hexdigest()\n    assert len(data) == item['sizeBytes'], item['path']\n    assert digest == item['sha256'], item['path']\n    verified.append(item['path'])\nproof_manifest = json.loads((root/'settings-coincident/coincident-pair-manifest.json').read_text())\nassert proof_manifest['candidate']['commit'] == manifest['candidate']['commit']\nassert proof_manifest['pairCount'] == 4\nfor pair in proof_manifest['pairs']:\n    for key in ('json','png'):\n        path = root/'settings-coincident'/pair['files'][key]\n        assert hashlib.sha256(path.read_bytes()).hexdigest() == pair['sha256'][key]\nbinding = json.loads((root/'candidate-binding.json').read_text())\nassert binding['candidate']['commit'] == manifest['candidate']['commit']\nassert binding['candidate']['tree'] == manifest['candidate']['tree']\nprint(json.dumps({'remoteFileCountVerified':len(verified),'settingsPairs':4,'manifestSha256':hashlib.sha256(manifest_path.read_bytes()).hexdigest(),'candidateBinding':'exact','allManifestHashesMatch':True},indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git worktree remove /Users/haewonkim/.codex-fabric/evidence/CF-6770ec9eab360cb26b321688/chg255-r4/remote-readback'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-status 31ee72386876b2ef877a72236c44d7e1895c2ed2 ecad9edd993c4022f4716e1e4099bc2dad29c4a0'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{commit} && rtk git rev-parse HEAD''^{tree} && rtk git status --short --branch --untracked-files=all'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD''^{commit} && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse HEAD''^1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.157.0",
+    "configured_model": "gpt-6-luna",
+    "event_count": 448,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.47,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 22603264,
+      "fresh_input_tokens": 351473,
+      "input_tokens": 22954737,
+      "non_reasoning_output_tokens": 39807,
+      "output_tokens": 122655,
+      "reasoning_output_tokens": 82848,
+      "total_processed_tokens": 23077392
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+      "subject": "fix(settings): close mobile action layout gap (CHG-255 R3)"
+    },
+    {
+      "sha": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+      "subject": "fix(sysgrid): repair golden ui v3 atlas blockers"
+    }
+  ],
+  "diff": {
+    "additions": 1407,
+    "changed_files": 14,
+    "commit_count": 2,
+    "deletions": 128
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-26T19:25:56Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "branch": "codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+    "detached_verify": false,
+    "head_sha": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "remote_exact_head": true,
+    "remote_head_sha": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+    "work_branch": "codex/sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-6770ec9eab360cb26b321688",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-verify-v4"
+  },
+  "operation": "VERIFY",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-verify-v4",
+  "schema_version": 1,
+  "started_at": "2026-09-26T18:31:12Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 3284,
+    "queue_seconds": 0,
+    "total_seconds": 3284
+  },
+  "transport": {
+    "bytes": 9927,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 9581,
+    "prompt_sha256": "842bdec7533ea4f4bcfea84609146fea751defdf6f05814d681a33fc11fb979d",
+    "sha256": "6770ec9eab360cb26b321688a026d51e4e4dcdc2670892215005eb9538c53db1"
+  }
+}
