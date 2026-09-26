@@ -16,9 +16,10 @@ type RegistrySectionProps = {
   icon: any
   usageTargets?: ReadonlyArray<{ label: string; path: string }>
   description?: string
+  wrapHeaderOnMobile?: boolean
 }
 
-export const ConfigSection = ({ title, category, options, icon: Icon, usageTargets = [], description, onDirtyChange }: RegistrySectionProps & { onDirtyChange?: (dirty: boolean) => void }) => {
+export const ConfigSection = ({ title, category, options, icon: Icon, usageTargets = [], description, wrapHeaderOnMobile = false, onDirtyChange }: RegistrySectionProps & { onDirtyChange?: (dirty: boolean) => void }) => {
   const queryClient = useQueryClient()
   const isTeamCategory = category === "MonitoringTeam"
   const records = Array.isArray(options) ? options : []
@@ -138,8 +139,8 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
 
   return (
     <div className="overflow-hidden rounded-lg border border-white/5 bg-white/5 transition-all">
-      <div className="group flex cursor-pointer items-center justify-between px-6 py-4 transition-all hover:bg-white/5" onClick={() => setIsExpanded(!isExpanded)}>
-        <div className="flex items-center space-x-4">
+      <div className={`group flex cursor-pointer items-center justify-between py-4 transition-all hover:bg-white/5 ${wrapHeaderOnMobile ? 'flex-wrap gap-3 px-4 sm:flex-nowrap sm:px-6' : 'px-6'}`} onClick={() => setIsExpanded(!isExpanded)}>
+        <div className={wrapHeaderOnMobile ? 'flex min-w-0 flex-1 items-center space-x-4' : 'flex items-center space-x-4'}>
           <div className={`rounded-lg bg-white/5 p-2 ${isExpanded ? "text-blue-400" : "text-slate-500"}`}>
             {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           </div>
@@ -170,7 +171,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
             )}
           </div>
         </div>
-        <div className="flex items-center space-x-6">
+        <div className={wrapHeaderOnMobile ? 'flex shrink-0 items-center gap-3 sm:gap-6' : 'flex items-center space-x-6'}>
           <div className="flex items-center space-x-2 rounded-lg border border-white/10 bg-black/40 px-3 py-1">
             <span className="text-[10px] font-bold text-blue-400">{records.length}</span>
             <span className="text-[8px] font-bold uppercase tracking-widest text-slate-500">Entries</span>
@@ -180,6 +181,8 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
               event.stopPropagation()
               setIsExpanded(true)
             }}
+            aria-label={wrapHeaderOnMobile ? `Add ${isTeamCategory ? 'team' : 'option'} to ${title}` : undefined}
+            title={wrapHeaderOnMobile ? `Add ${isTeamCategory ? 'team' : 'option'} to ${title}` : undefined}
             className="rounded-lg p-2 text-blue-400 transition-all hover:bg-blue-600 hover:text-white active:scale-90"
           >
             <PlusCircle size={20} />

@@ -12,7 +12,28 @@ type Proof = {
   semanticOwner?: string
   owner?: { exists: boolean; rect: Record<string, number> | null; text: string }
   actions?: Array<{ name: string; rect: Record<string, number> | null; visible: boolean; contrast: { color: string; background: string | null; ratio: number | null } | null }>
+  actionClosure?: unknown
   [key: string]: unknown
+}
+
+type SettingsSurfaceClosure = {
+  accepted: boolean
+  activeTab: string | null
+  viewport: { width: number; height: number }
+  settingsOwner: Record<string, number> | null
+  activeOwnerLayout: { rect: Record<string, number> | null; transform: string | null; opacity: string | null; scrollTop: number | null; scrollHeight: number | null; clientHeight: number | null }
+  document: { bodyScrollWidth: number; documentScrollWidth: number; viewportWidth: number }
+  wayfinding: { mode: 'wrap-all'; rect: Record<string, number> | null; tabs: Array<Record<string, unknown>>; exactlyOneActive: boolean }
+  controls: Array<Record<string, unknown>>
+  closureByScope?: Record<string, unknown>
+  negativeControl: {
+    kind: string
+    name: string
+    fullyInsideVisibleBounds: boolean
+    readableNameContained: boolean
+    reasons: string[]
+    [key: string]: unknown
+  } | null
 }
 
 async function renderedPageProof(page: import('@playwright/test').Page, semanticOwner: string, requiredActions: string[] = []): Promise<Proof> {
@@ -151,6 +172,327 @@ async function assertNoFatal(page: import('@playwright/test').Page, errors: stri
   expect(errors, `browser runtime errors: ${errors.join('\n')}`).toEqual([])
 }
 
+async function inspectSettingsSurfaceClosure(page: import('@playwright/test').Page, scope: 'all' | 'header' | 'wayfinding' | 'task' = 'all'): Promise<SettingsSurfaceClosure> {
+  return page.evaluate((scope) => {
+    type Bounds = { left: number; right: number; top: number; bottom: number; width: number; height: number }
+    const toBounds = (element: Element | null): Bounds | null => {
+      if (!element) return null
+      const value = element.getBoundingClientRect()
+      return { left: value.left, right: value.right, top: value.top, bottom: value.bottom, width: value.width, height: value.height }
+    }
+    const within = (inner: Bounds, outer: Bounds) =>
+      inner.left >= outer.left - 1 && inner.right <= outer.right + 1 && inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1
+    const workspace = document.querySelector('[data-settings-workspace="true"]')
+    const workspaceBounds = toBounds(workspace)
+    const settingsPanel = document.querySelector('[data-sg-content-panel="true"]')
+    const settingsPanelBounds = toBounds(settingsPanel)
+    const contentScroll = document.querySelector<HTMLElement>('[data-settings-content-scroll="true"]')
+    const viewportBounds: Bounds = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight }
+    const activeTab = document.querySelector('[data-settings-wayfinding] [data-settings-tab][aria-pressed="true"]')?.getAttribute('data-settings-tab') || null
+    const activeOwner = activeTab ? document.querySelector(`[data-settings-tab-content="${activeTab}"]`) : null
+    const visible = (element: Element) => {
+      const style = getComputedStyle(element)
+      const bounds = toBounds(element)
+      return Boolean(bounds && bounds.width > 0 && bounds.height > 0 && element.getClientRects().length && style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0)
+    }
+    const enabled = (element: Element) => {
+      const control = element as HTMLButtonElement | HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      return !('disabled' in control && control.disabled) && element.getAttribute('aria-disabled') !== 'true'
+    }
+    const accessibleName = (element: Element) => {
+      const control = element as HTMLInputElement
+      return (element.getAttribute('aria-label') || element.getAttribute('title') || control.placeholder || element.textContent || '').trim().replace(/\s+/g, ' ')
+    }
+    const textBounds = (element: Element): Bounds[] => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+      const results: Bounds[] = []
+      let node: Node | null
+      while ((node = walker.nextNode())) {
+        if (!node.textContent?.trim()) continue
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        for (const rect of [...range.getClientRects()]) {
+          if (rect.width > 0 && rect.height > 0) results.push({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height })
+        }
+      }
+      return results
+    }
+    const inspect = (element: Element, kind: string) => {
+      const bounds = toBounds(element)
+      const intendedOwner = kind === 'page-header-action'
+        ? document.querySelector('[data-settings-header="true"]')
+        : kind === 'wayfinding-tab'
+          ? document.querySelector('[data-settings-wayfinding="true"]')
+          : kind === 'active-tab-task-action'
+            ? contentScroll
+            : workspace
+      const intendedOwnerBounds = toBounds(intendedOwner)
+      const clip: Bounds = { ...viewportBounds }
+      let clippedByAncestor = false
+      for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor)
+        const ancestorBounds = toBounds(ancestor)
+        if (!ancestorBounds) continue
+        if (['hidden', 'clip', 'auto', 'scroll'].includes(style.overflowX)) {
+          clip.left = Math.max(clip.left, ancestorBounds.left)
+          clip.right = Math.min(clip.right, ancestorBounds.right)
+        }
+        if (['hidden', 'clip', 'auto', 'scroll'].includes(style.overflowY)) {
+          clip.top = Math.max(clip.top, ancestorBounds.top)
+          clip.bottom = Math.min(clip.bottom, ancestorBounds.bottom)
+        }
+      }
+      clip.width = Math.max(0, clip.right - clip.left)
+      clip.height = Math.max(0, clip.bottom - clip.top)
+      const button = element as HTMLButtonElement
+      const tag = element.tagName.toLowerCase()
+      const semantic = ['button', 'input', 'select', 'textarea'].includes(tag) || (tag === 'a' && element.hasAttribute('href')) || Boolean(element.getAttribute('role'))
+      const name = accessibleName(element)
+      const textRects = textBounds(element)
+      let readableNameContained = Boolean(bounds && textRects.length && textRects.every((rect) => within(rect, bounds) && within(rect, clip)))
+      if (!textRects.length && element.getAttribute('aria-label')) {
+        readableNameContained = Boolean(bounds && name && within(bounds, clip))
+      }
+      if (!textRects.length && name && 'placeholder' in element) {
+        const input = element as HTMLInputElement
+        const style = getComputedStyle(input)
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+        if (context) {
+          context.font = style.font
+          const textWidth = context.measureText(input.placeholder).width
+          readableNameContained = Boolean(bounds && textWidth <= input.clientWidth - Number.parseFloat(style.paddingLeft) - Number.parseFloat(style.paddingRight) + 1 && within(bounds, clip))
+        }
+      }
+      const controlInOwner = Boolean(bounds && intendedOwnerBounds && within(bounds, intendedOwnerBounds))
+      const controlInClip = Boolean(bounds && within(bounds, clip))
+      const visibleNow = visible(element)
+      const enabledNow = enabled(element)
+      const tabIndex = (element as HTMLElement).tabIndex
+      const keyboardReachable = semantic && enabledNow && tabIndex >= 0
+      const style = getComputedStyle(element)
+      const touchReachable = semantic && enabledNow && style.pointerEvents !== 'none' && style.touchAction !== 'none'
+      const samples = bounds ? [
+        [bounds.left + bounds.width / 2, bounds.top + bounds.height / 2],
+        [bounds.left + bounds.width * 0.25, bounds.top + bounds.height / 2],
+        [bounds.left + bounds.width * 0.75, bounds.top + bounds.height / 2],
+      ] : []
+      const hitTargets = samples.map(([x, y]) => document.elementFromPoint(x, y))
+      const pointerReachable = Boolean(bounds && hitTargets.length && hitTargets.every((target) => target === element || Boolean(target && element.contains(target))))
+      const reasons = [
+        ...(!semantic ? ['missing-semantic-control'] : []),
+        ...(!enabledNow ? ['disabled'] : []),
+        ...(!visibleNow ? ['not-visible'] : []),
+        ...(!controlInOwner ? ['outside-settings-owner'] : []),
+        ...(!controlInClip ? ['clipped-by-ancestor-or-viewport'] : []),
+        ...(!readableNameContained ? ['label-not-fully-contained'] : []),
+        ...(!pointerReachable ? ['pointer-intercepted-or-unreachable'] : []),
+        ...(!keyboardReachable ? ['not-keyboard-reachable'] : []),
+        ...(!touchReachable ? ['not-touch-reachable'] : []),
+      ]
+      return {
+        kind,
+        name,
+        role: element.getAttribute('role') || tag,
+        rect: bounds,
+        visibleBounds: clip,
+        semantic,
+        enabled: enabledNow,
+        visible: visibleNow,
+        insideSettingsOwner: controlInOwner,
+        fullyInsideVisibleBounds: controlInClip,
+        readableNameContained,
+        pointerReachable,
+        keyboardReachable,
+        touchReachable,
+        tabIndex,
+        reasons,
+      }
+    }
+
+    const wayfinding = document.querySelector('[data-settings-wayfinding="true"]')
+    const wayfindingBounds = toBounds(wayfinding)
+    const tabElements = wayfinding ? [...wayfinding.querySelectorAll<HTMLButtonElement>('button[data-settings-tab]')] : []
+    const tabs = tabElements.map((tab) => {
+      const result = inspect(tab, 'wayfinding-tab')
+      return { ...result, value: tab.dataset.settingsTab, active: tab.getAttribute('aria-pressed') === 'true', insideWayfinding: Boolean(result.rect && wayfindingBounds && within(result.rect as Bounds, wayfindingBounds)) }
+    })
+    const activeContentControls = activeOwner
+      ? [...activeOwner.querySelectorAll('button, input, select, textarea, a[href], [role="button"]')].filter((element) => visible(element) && enabled(element))
+      : []
+    const taskControl = activeContentControls.find((element) => (element.tagName === 'BUTTON' || element.getAttribute('role') === 'button') && accessibleName(element)) || activeContentControls.find((element) => accessibleName(element)) || activeContentControls[0] || null
+    const includeHeader = scope === 'all' || scope === 'header'
+    const includeWayfinding = scope === 'all' || scope === 'wayfinding'
+    const includeTask = scope === 'all' || scope === 'task'
+    const controls = [
+      ...(includeHeader ? [...(document.querySelector('[data-settings-header-actions="true"]')?.querySelectorAll('button') || [])].map((element) => inspect(element, 'page-header-action')) : []),
+      ...(includeWayfinding ? tabElements.map((element) => inspect(element, 'wayfinding-tab')) : []),
+      ...(includeTask && taskControl ? [inspect(taskControl, 'active-tab-task-action')] : []),
+    ]
+    const negativeElement = document.querySelector('[data-settings-oracle-negative-control="true"]')
+    const negativeControl = negativeElement ? inspect(negativeElement, 'intentional-clipped-negative-control') : null
+    const activeCount = tabs.filter((tab) => tab.active).length
+    const activeOwnerStyle = activeOwner ? getComputedStyle(activeOwner) : null
+    const documentGeometry = { bodyScrollWidth: document.body.scrollWidth, documentScrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth }
+    const accepted = Boolean(
+      workspaceBounds &&
+      wayfindingBounds &&
+      (!includeWayfinding || (tabs.length > 0 && activeCount === 1 && tabs.every((tab) => tab.visible && tab.enabled && tab.semantic && tab.insideSettingsOwner && tab.fullyInsideVisibleBounds && tab.readableNameContained && tab.pointerReachable && tab.keyboardReachable && tab.touchReachable && tab.insideWayfinding))) &&
+      controls.length === (includeWayfinding ? tabElements.length : 0) + (includeHeader ? (document.querySelector('[data-settings-header-actions="true"]')?.querySelectorAll('button').length || 0) : 0) + (includeTask && taskControl ? 1 : 0) &&
+      controls.every((control) => control.visible && control.enabled && control.semantic && control.insideSettingsOwner && control.fullyInsideVisibleBounds && control.readableNameContained && control.pointerReachable && control.keyboardReachable && control.touchReachable) &&
+      (!negativeControl || (negativeControl.fullyInsideVisibleBounds && negativeControl.readableNameContained && !negativeControl.reasons.includes('pointer-intercepted-or-unreachable'))) &&
+      documentGeometry.bodyScrollWidth <= window.innerWidth + 1 &&
+      documentGeometry.documentScrollWidth <= window.innerWidth + 1
+    )
+    return {
+      accepted,
+      activeTab,
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      settingsOwner: settingsPanelBounds,
+      activeOwnerLayout: {
+        rect: toBounds(activeOwner),
+        transform: activeOwnerStyle?.transform || null,
+        opacity: activeOwnerStyle?.opacity || null,
+        scrollTop: contentScroll?.scrollTop ?? null,
+        scrollHeight: contentScroll?.scrollHeight ?? null,
+        clientHeight: contentScroll?.clientHeight ?? null,
+      },
+      document: documentGeometry,
+      wayfinding: { mode: 'wrap-all' as const, rect: wayfindingBounds, tabs, exactlyOneActive: activeCount === 1 },
+      controls,
+      negativeControl,
+    }
+  }, scope)
+}
+
+async function exposeFirstSettingsTaskAction(page: import('@playwright/test').Page) {
+  const activeTab = page.locator('[data-settings-wayfinding] [data-settings-tab][aria-pressed="true"]')
+  const value = await activeTab.getAttribute('data-settings-tab')
+  expect(value).toBeTruthy()
+  const owner = page.locator(`[data-settings-tab-content="${value}"]`)
+  await expect(owner).toBeVisible()
+  const buttons = owner.locator('button:visible:not(:disabled), [role="button"]:visible:not([aria-disabled="true"])')
+  const candidates = await buttons.count() > 0
+    ? buttons
+    : owner.locator('input:visible:not(:disabled), select:visible:not(:disabled), textarea:visible:not(:disabled), a[href]:visible')
+  if (await candidates.count() === 0) return null
+  await expect(candidates.first()).toBeVisible()
+  return candidates.first()
+}
+
+async function scrollSettingsContentByTouch(page: import('@playwright/test').Page, bounds: { x: number; y: number; width: number; height: number }, direction: number) {
+  const session = await page.context().newCDPSession(page)
+  const distance = Math.min(Math.max(Math.abs(direction), 20), Math.max(0, bounds.height - 8), 60)
+  if (distance < 1) {
+    await session.detach()
+    return
+  }
+  const centerX = bounds.x + bounds.width / 2
+  const centerY = bounds.y + bounds.height / 2
+  const fromY = centerY + (direction > 0 ? distance / 2 : -distance / 2)
+  const toY = centerY - (direction > 0 ? distance / 2 : -distance / 2)
+  try {
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ id: 1, x: centerX, y: fromY }] })
+    const steps = 8
+    for (let step = 1; step <= steps; step += 1) {
+      await page.waitForTimeout(20)
+      const y = fromY + ((toY - fromY) * step) / steps
+      await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ id: 1, x: centerX, y }] })
+    }
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  } finally {
+    await session.detach()
+  }
+}
+
+async function scrollSettingsTargetIntoView(page: import('@playwright/test').Page, target: import('@playwright/test').Locator, ownerSelector: string) {
+  const scrollOwner = page.locator(ownerSelector)
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const ownerBounds = await scrollOwner.boundingBox()
+    const targetBounds = await target.boundingBox()
+    if (!ownerBounds || !targetBounds || ownerBounds.height <= 8) break
+    const targetBottom = targetBounds.y + targetBounds.height
+    const direction = targetBounds.y < ownerBounds.y
+      ? -Math.ceil(ownerBounds.y - targetBounds.y + 12)
+      : targetBottom > ownerBounds.y + ownerBounds.height
+        ? Math.ceil(targetBottom - (ownerBounds.y + ownerBounds.height) + 12)
+        : 0
+    if (direction === 0) return
+    const scrollTopBefore = await scrollOwner.evaluate((element) => (element as HTMLElement).scrollTop)
+    await scrollSettingsContentByTouch(page, ownerBounds, direction)
+    await page.waitForTimeout(80)
+    const scrollTopAfter = await scrollOwner.evaluate((element) => (element as HTMLElement).scrollTop)
+    const moved = direction < 0 ? scrollTopAfter < scrollTopBefore : scrollTopAfter > scrollTopBefore
+    if (!moved) break
+  }
+  const ownerBounds = await scrollOwner.boundingBox()
+  const targetBounds = await target.boundingBox()
+  expect(ownerBounds && targetBounds && targetBounds.y >= ownerBounds.y - 1 && targetBounds.y + targetBounds.height <= ownerBounds.y + ownerBounds.height + 1,
+    'Settings control did not reach its visible scroll owner: ' + JSON.stringify({
+      ownerSelector,
+      ownerBounds,
+      targetBounds,
+      scrollTop: await scrollOwner.evaluate((element) => (element as HTMLElement).scrollTop),
+      scrollHeight: await scrollOwner.evaluate((element) => (element as HTMLElement).scrollHeight),
+      clientHeight: await scrollOwner.evaluate((element) => (element as HTMLElement).clientHeight),
+    })).toBe(true)
+}
+
+async function assertSettingsSurfaceClosure(page: import('@playwright/test').Page, options: { requireTaskAction?: boolean } = {}) {
+  const task = await exposeFirstSettingsTaskAction(page)
+  if (options.requireTaskAction) expect(task, `active Settings tab ${await page.locator('[data-settings-wayfinding] [aria-pressed="true"]').getAttribute('data-settings-tab')} has no enabled task action`).toBeTruthy()
+  const header = page.locator('[data-settings-header-actions="true"]')
+  const wayfinding = page.locator('[data-settings-wayfinding="true"]')
+  const proofs: Record<string, SettingsSurfaceClosure> = {}
+  if (await header.getByRole('button').count() > 0) {
+    await scrollSettingsTargetIntoView(page, header, '[data-settings-workspace="true"]')
+  }
+  proofs.header = await inspectSettingsSurfaceClosure(page, 'header')
+  expect(proofs.header.accepted, 'Settings header action closure failed: ' + JSON.stringify(proofs.header, null, 2)).toBe(true)
+  await scrollSettingsTargetIntoView(page, wayfinding, '[data-settings-workspace="true"]')
+  proofs.wayfinding = await inspectSettingsSurfaceClosure(page, 'wayfinding')
+  expect(proofs.wayfinding.accepted, 'Settings wayfinding closure failed: ' + JSON.stringify(proofs.wayfinding, null, 2)).toBe(true)
+  if (task) {
+    const isMobile = await page.evaluate(() => window.innerWidth < 640)
+    const taskOwner = isMobile ? '[data-settings-workspace="true"]' : '[data-settings-content-scroll="true"]'
+    await scrollSettingsTargetIntoView(page, task, taskOwner)
+  }
+  proofs.task = await inspectSettingsSurfaceClosure(page, 'task')
+  expect(proofs.task.accepted, 'Settings task action closure failed: ' + JSON.stringify(proofs.task, null, 2)).toBe(true)
+  const profile = await page.evaluate(() => ({
+    tab: document.querySelector('[data-settings-wayfinding] [aria-pressed="true"]')?.getAttribute('data-settings-tab') || 'unknown',
+    width: window.innerWidth,
+    height: window.innerHeight,
+    textScale: document.documentElement.style.fontSize === '200%' ? 'text-200' : 'default-text',
+  }))
+  for (const scope of ['header', 'wayfinding', 'task'] as const) {
+    await captureProof(page, `settings-${profile.tab}-closure-${scope}-${profile.width}x${profile.height}-${profile.textScale}`, {
+      ...proofs[scope],
+      closureScope: scope,
+      textScale: profile.textScale,
+      reachableBy: scope === 'wayfinding' ? ['touch', 'pointer', 'keyboard'] : ['touch-scroll', 'pointer-hit-test', 'keyboard-focus'],
+    })
+  }
+  const proof: SettingsSurfaceClosure = {
+    ...proofs.task,
+    accepted: proofs.header.accepted && proofs.wayfinding.accepted && proofs.task.accepted,
+    controls: [...proofs.header.controls, ...proofs.wayfinding.controls, ...proofs.task.controls],
+    closureByScope: proofs,
+    wayfinding: proofs.wayfinding.wayfinding,
+  }
+  const activeTab = proof.activeTab
+  const expectedHeaderActions = activeTab === 'standards'
+    ? []
+    : activeTab === 'environments'
+      ? ['Golden Template', 'Force Hot Reload']
+      : ['Golden Template']
+  await expect(header.getByRole('button')).toHaveCount(expectedHeaderActions.length)
+  for (const name of expectedHeaderActions) {
+    await expect(header.getByRole('button', { name, exact: true })).toBeEnabled()
+  }
+  return proof
+}
+
 const settingsCases = [
   { tab: 'environments', label: 'Parameters', content: 'Personal Preferences', proof: 'settings-parameters' },
   { tab: 'permissions', label: 'Permissions', content: 'Identity Sync Pipeline', proof: 'settings-permissions' },
@@ -169,7 +511,7 @@ test('Settings mobile tab routes stay discoverable, operable, and content-bearin
 
   for (const item of settingsCases) {
     await page.goto(`/settings?tab=${item.tab}`)
-    const nav = page.locator('[data-golden-segmented-scroll]')
+    const nav = page.locator('[data-settings-wayfinding="true"]')
     await expect(nav).toBeVisible()
     const tab = page.getByRole('button', { name: item.label, exact: true })
     await expect(tab).toHaveAttribute('aria-pressed', 'true')
@@ -184,7 +526,7 @@ test('Settings mobile tab routes stay discoverable, operable, and content-bearin
     }
     const tabGeometry = await tab.evaluate((element) => {
       const rect = element.getBoundingClientRect()
-      const parent = element.closest('[data-golden-segmented-scroll]')!.getBoundingClientRect()
+      const parent = element.closest('[data-settings-wayfinding]')!.getBoundingClientRect()
       return { left: rect.left, right: rect.right, parentLeft: parent.left, parentRight: parent.right, width: window.innerWidth }
     })
     expect(tabGeometry.left).toBeGreaterThanOrEqual(tabGeometry.parentLeft - 1)
@@ -201,6 +543,42 @@ test('Settings mobile tab routes stay discoverable, operable, and content-bearin
   await expect(page.getByRole('button', { name: 'Groups', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(newGroup).toHaveValue('Text retained across viewport change')
   await assertNoBodyOverflow(page)
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/settings?tab=environments')
+  const parameters = page.locator('[data-settings-tab-content="environments"]')
+  await expect(page.locator('[data-settings-tab="metadata"]')).toBeVisible({ timeout: 15000 })
+  await expect(parameters.getByText('Personal Preferences', { exact: true })).toBeVisible()
+  const editButtons = parameters.locator('button[title="Edit Field"]')
+  let parameterEditIndex = -1
+  for (let index = 0; index < await editButtons.count(); index += 1) {
+    const card = editButtons.nth(index).locator('xpath=../../..')
+    if (await card.locator('input:not([type="checkbox"])').count() > 0) {
+      parameterEditIndex = index
+      break
+    }
+  }
+  expect(parameterEditIndex).toBeGreaterThanOrEqual(0)
+  const parameterEditControl = () => parameters.locator('button[title="Edit Field"], button[title="Lock & Discard Changes"]').nth(parameterEditIndex)
+  const parameterInput = () => parameterEditControl().locator('xpath=../../..').locator('input:not([type="checkbox"])').first()
+  await parameterInput().scrollIntoViewIfNeeded()
+  await parameterEditControl().click()
+  await parameterInput().fill('CHG-255-R3-unsaved-responsive-check')
+  await expect(parameterInput()).toHaveValue('CHG-255-R3-unsaved-responsive-check')
+  await expect(parameterEditControl().locator('xpath=../../..').getByText('Modified', { exact: true })).toBeVisible()
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await expect(page.locator('[data-settings-tab="environments"]')).toHaveAttribute('aria-pressed', 'true')
+  await expect(parameterInput()).toHaveValue('CHG-255-R3-unsaved-responsive-check')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.locator('[data-settings-tab="environments"]')).toHaveAttribute('aria-pressed', 'true')
+  await expect(parameterInput()).toHaveValue('CHG-255-R3-unsaved-responsive-check')
+  const parametersNav = page.locator('[data-settings-wayfinding="true"]')
+  await parametersNav.getByRole('button', { name: 'Metadata', exact: true }).click()
+  await expect(page.locator('[data-settings-tab="metadata"]')).toHaveAttribute('aria-pressed', 'true')
+  await parametersNav.getByRole('button', { name: 'Parameters', exact: true }).click()
+  await expect(page.locator('[data-settings-tab="environments"]')).toHaveAttribute('aria-pressed', 'true')
+  await expect(parameterInput()).toHaveValue('CHG-255-R3-unsaved-responsive-check')
+  await expect(parameterEditControl().locator('xpath=../../..').getByText('Modified', { exact: true })).toBeVisible()
 
   await page.setViewportSize({ width: 390, height: 600 })
   await page.goto('/settings?tab=metadata')
@@ -232,6 +610,130 @@ test('Settings mobile tab routes stay discoverable, operable, and content-bearin
   await assertNoFatal(page, errors)
 })
 
+test.describe('Settings action closure and wrapped wayfinding', () => {
+  test.use({ hasTouch: true })
+
+  test('closes every authorized action at mobile, short, text-pressure, and desktop profiles', async ({ page }) => {
+    test.skip(isRootPreview, 'normal-v1 Settings action-closure proof')
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    await resetBrowserState(page)
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/settings?tab=environments')
+    const nav = page.locator('[data-settings-wayfinding="true"]')
+    await expect(nav).toBeVisible()
+    const initial = await assertSettingsSurfaceClosure(page, { requireTaskAction: true })
+    expect(initial.accepted, `390x844 initial Settings closure failed: ${JSON.stringify(initial, null, 2)}`).toBe(true)
+    expect(initial.activeTab).toBe('environments')
+    const firstTab = nav.locator('button[data-settings-tab]').first()
+    await scrollSettingsTargetIntoView(page, firstTab, '[data-settings-workspace="true"]')
+    await firstTab.tap()
+    await expect(firstTab).toHaveAttribute('aria-pressed', 'true')
+
+    const availableTabs = await nav.locator('button[data-settings-tab]').evaluateAll((buttons) => buttons.map((button) => ({
+      value: (button as HTMLButtonElement).dataset.settingsTab || '',
+      label: (button as HTMLButtonElement).innerText.trim().replace(/\s+/g, ' '),
+    })))
+    expect(availableTabs.length).toBeGreaterThan(0)
+    const contentNames: Record<string, string> = {
+      environments: 'Personal Preferences',
+      permissions: 'Identity Sync Pipeline',
+      groups: 'No groups match the current search',
+      metadata: 'Metadata Registry',
+      system: 'Runtime Analysis',
+      diagnostics: 'Browser-runtime deployment diagnostics',
+      tenants: 'Tenant Registry',
+      standards: 'Operational Standards Reference',
+    }
+
+    for (const item of availableTabs) {
+      const tab = nav.locator(`button[data-settings-tab="${item.value}"]`)
+      await scrollSettingsTargetIntoView(page, nav, '[data-settings-workspace="true"]')
+      const beforeActivation = await inspectSettingsSurfaceClosure(page, 'wayfinding')
+      expect(beforeActivation.accepted, `Settings wayfinding not discoverable before ${item.value}: ${JSON.stringify(beforeActivation, null, 2)}`).toBe(true)
+      await tab.tap()
+      await tab.press('Enter')
+      await expect(tab).toHaveAttribute('aria-pressed', 'true')
+      const owner = page.locator(`[data-settings-tab-content="${item.value}"]`)
+      await expect(owner).toBeVisible({ timeout: 15000 })
+      await expect(owner).toHaveCSS('opacity', '1')
+      if (item.value === 'groups') {
+        await expect(page.getByPlaceholder('New group name...')).toBeVisible({ timeout: 15000 })
+      }
+      await expect(owner.getByText(contentNames[item.value], { exact: false }).first()).toBeVisible({ timeout: 15000 })
+      const closure = await assertSettingsSurfaceClosure(page, { requireTaskAction: item.value !== 'system' })
+      await assertNoBodyOverflow(page)
+      const baseProof = await renderedPageProof(page, 'settings-tab-content', [item.label])
+      await captureProof(page, `settings-${item.value}-mobile-390x844`, { ...baseProof, actionClosure: closure })
+    }
+
+    await page.setViewportSize({ width: 390, height: 600 })
+    await page.goto('/settings?tab=environments')
+    await expect(page.locator('[data-settings-tab="environments"]')).toHaveAttribute('aria-pressed', 'true')
+    const shortClosure = await assertSettingsSurfaceClosure(page)
+    await assertNoBodyOverflow(page)
+    const shortProof = await renderedPageProof(page, 'settings-tab-content', ['Parameters', 'Golden Template', 'Force Hot Reload'])
+    await captureProof(page, 'settings-parameters-mobile-short-390x600', { ...shortProof, actionClosure: shortClosure })
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/settings?tab=environments')
+    await expect(page.locator('[data-settings-tab="environments"]')).toHaveAttribute('aria-pressed', 'true')
+    await page.evaluate(() => { document.documentElement.style.setProperty('font-size', '200%', 'important') })
+    const pressureClosure = await assertSettingsSurfaceClosure(page)
+    await assertNoBodyOverflow(page)
+    const pressureProof = await renderedPageProof(page, 'settings-tab-content', ['Parameters', 'Golden Template', 'Force Hot Reload'])
+    await captureProof(page, 'settings-parameters-mobile-text-200', { ...pressureProof, actionClosure: pressureClosure })
+
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/settings?tab=metadata')
+    await expect(page.locator('[data-settings-tab="metadata"]')).toHaveAttribute('aria-pressed', 'true')
+    const desktopOwner = page.locator('[data-settings-tab-content="metadata"]')
+    await expect(desktopOwner).toBeVisible({ timeout: 15000 })
+    await expect(desktopOwner.getByText('Monitoring Platforms', { exact: true })).toBeVisible()
+    const desktopClosure = await assertSettingsSurfaceClosure(page)
+    await assertNoBodyOverflow(page)
+    const desktopProof = await renderedPageProof(page, 'settings-tab-content', ['Metadata', 'Golden Template'])
+    await captureProof(page, 'settings-metadata-desktop-1440x900', { ...desktopProof, actionClosure: desktopClosure })
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.evaluate(() => { document.documentElement.style.removeProperty('font-size') })
+    await page.goto('/settings?tab=environments')
+    const validClosure = await assertSettingsSurfaceClosure(page)
+    await page.evaluate(() => {
+      const workspace = document.querySelector<HTMLElement>('[data-settings-workspace="true"]')!
+      const clippedOwner = document.createElement('div')
+      clippedOwner.style.cssText = 'position:absolute;left:12px;top:12px;width:48px;height:38px;overflow:hidden;z-index:99'
+      const clippedAction = document.createElement('button')
+      clippedAction.dataset.settingsOracleNegativeControl = 'true'
+      clippedAction.type = 'button'
+      clippedAction.style.cssText = 'display:block;width:140px!important;min-width:140px!important;max-width:none!important;height:36px;white-space:nowrap;flex:none'
+      clippedAction.textContent = 'Force Hot Reload'
+      clippedOwner.append(clippedAction)
+      workspace.append(clippedOwner)
+    })
+    const withNegative = await inspectSettingsSurfaceClosure(page)
+    const negative = withNegative.negativeControl
+    expect(validClosure.accepted).toBe(true)
+    expect(withNegative.accepted, `the isolated clipped fixture must fail the full Settings closure: ${JSON.stringify(withNegative, null, 2)}`).toBe(false)
+    expect(negative?.name).toBe('Force Hot Reload')
+    expect(negative?.fullyInsideVisibleBounds, JSON.stringify(negative, null, 2)).toBe(false)
+    expect(negative?.readableNameContained, JSON.stringify(negative, null, 2)).toBe(false)
+    expect(negative?.reasons).toContain('clipped-by-ancestor-or-viewport')
+    expect(withNegative.document.bodyScrollWidth).toBeLessThanOrEqual(withNegative.document.viewportWidth + 1)
+    expect(withNegative.document.documentScrollWidth).toBeLessThanOrEqual(withNegative.document.viewportWidth + 1)
+    await page.locator('[data-settings-oracle-negative-control="true"]').evaluate((element) => element.parentElement?.remove())
+    await captureProof(page, 'settings-action-closure-negative-control-mobile-390x844', {
+      validAccepted: validClosure.accepted,
+      negativeAccepted: withNegative.accepted,
+      negativeControl: negative,
+      negativeRejectedFor: 'clipped-by-ancestor-or-viewport and label-not-fully-contained',
+      bodyOverflow: withNegative.document,
+    })
+    await assertNoFatal(page, errors)
+  })
+})
+
 test('responsive geometry and current-state oracles accept controls and reject deliberate negative controls', async ({ page }) => {
   test.skip(isRootPreview, 'normal-v1 oracle control proof')
   await resetBrowserState(page)
@@ -239,7 +741,7 @@ test('responsive geometry and current-state oracles accept controls and reject d
   await page.goto('/settings?tab=metadata')
   await expect(page.getByRole('button', { name: 'Metadata', exact: true })).toHaveAttribute('aria-pressed', 'true')
   const geometry = await assertNoBodyOverflow(page)
-  const pressedCount = await page.locator('[data-golden-segmented-scroll] [aria-pressed="true"]').count()
+  const pressedCount = await page.locator('[data-settings-wayfinding] [aria-pressed="true"]').count()
   expect(hasExactlyOneCurrentOption(pressedCount)).toBe(true)
 
   const geometryNegativeControl = { viewport: 390, body: 422, document: 422 }

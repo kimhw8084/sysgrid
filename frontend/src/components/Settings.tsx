@@ -17,7 +17,6 @@ import {
   PageToolbar, 
   ToolbarGroup, 
   ToolbarSearch,
-  ToolbarSegmented,
   ToolbarButton,
   ToolbarIconButton
 } from "./shared/LayoutPrimitives"
@@ -209,6 +208,41 @@ const SettingsSubviewHeader = ({
     meta={meta}
     actions={actions}
   />
+)
+
+const SettingsWayfinding = ({
+  options,
+  value,
+  onChange,
+}: {
+  options: Array<{ label: string; value: SettingsTab }>
+  value: SettingsTab
+  onChange: (value: SettingsTab) => void
+}) => (
+  <div className="w-full min-w-0 shrink-0" data-settings-wayfinding="true">
+    <div
+      className="flex w-full min-w-0 flex-wrap items-center gap-0.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-0.5"
+      role="group"
+      aria-label="Settings sections"
+    >
+      {options.map((option) => (
+        <button
+          key={option.value}
+          data-settings-tab={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={`min-h-[36px] shrink-0 rounded-lg px-0.5 py-0 text-[10px] font-bold tracking-widest transition-all ${
+            value === option.value
+              ? 'bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20'
+              : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+          }`}
+          aria-pressed={value === option.value}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
 )
 
 const SettingsMetaBadge = ({
@@ -1649,7 +1683,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto px-0 sm:px-4 overflow-hidden relative" data-settings-workspace="true">
+    <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto px-0 sm:px-4 overflow-x-hidden overflow-y-auto relative sm:overflow-hidden" data-settings-workspace="true">
       <AnimatePresence>
         {isDisconnected && (
           <motion.div 
@@ -1701,21 +1735,27 @@ export default function SettingsPage() {
         )}
       </AnimatePresence>
 
-      <PageHeader 
-        title={
-          <div className="flex items-center gap-3">
-            <SettingsIcon className="text-blue-500" size={18} />
-            <span>Settings</span>
+      <section className="flex w-full min-w-0 shrink-0 flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-6" data-golden-page-header="true" data-settings-header="true">
+        <div className="w-full min-w-0 flex-1 space-y-1 sm:w-auto sm:min-w-[200px]">
+          <div className="space-y-0.5">
+            <h1 className="text-xl font-black tracking-tighter text-[var(--text-primary)]">
+              <span className="flex items-center gap-3">
+                <SettingsIcon className="text-blue-500" size={18} />
+                <span>Settings</span>
+              </span>
+            </h1>
+            <p className="max-w-3xl text-[10px] font-bold tracking-[0.04em] text-[var(--text-secondary)]">
+              System Configuration & Golden Template
+            </p>
           </div>
-        } 
-        subtitle="System Configuration & Golden Template"
-        actions={
-          <div className="flex items-center gap-2 pr-2">
+        </div>
+        <div className="flex w-full min-w-0 items-start sm:w-auto sm:shrink-0 sm:gap-3" data-settings-header-actions="true">
+          <div className="flex w-full min-w-0 flex-nowrap items-center gap-1 sm:w-auto sm:gap-2 sm:pr-2">
             {topTab !== 'standards' && (
               <ToolbarButton
                   onClick={() => setTopTab('standards')}
                   variant="secondary"
-                  className="bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20"
+                  className="!flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20"
               >
                   <Layout size={14} className="mr-2 inline-block" />
                   <span>Golden Template</span>
@@ -1725,17 +1765,17 @@ export default function SettingsPage() {
               <ToolbarButton
                   onClick={() => envMutation.mutate(getPersistableEnvSettings())}
                   variant="secondary"
-                  className={isDirty() ? 'bg-amber-600/10 border-amber-500/30 text-amber-500 animate-pulse' : 'bg-emerald-600/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-600/20'}
+                  className={`!flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 ${isDirty() ? 'bg-amber-600/10 border-amber-500/30 text-amber-500 animate-pulse' : 'bg-emerald-600/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-600/20'}`}
               >
                   <Zap size={14} className={`mr-2 inline-block ${envMutation.isPending ? 'animate-pulse' : ''}`} />
                   <span>Force Hot Reload</span>
               </ToolbarButton>
             )}
           </div>
-        }
-      />
+        </div>
+      </section>
 
-      <ToolbarSegmented 
+      <SettingsWayfinding
         options={[
           { label: 'Parameters', value: 'environments' },
           ...(settingsManage ? [
@@ -1749,13 +1789,12 @@ export default function SettingsPage() {
           { label: 'Standards', value: 'standards' }
         ]}
         value={topTab}
-        onChange={(val: any) => {
-          const nextTab = val as SettingsTab
+        onChange={(nextTab) => {
           setTopTab(canViewSettingsTab(nextTab, settingsPrivileges) ? nextTab : 'environments')
         }}
       />
 
-      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
+      <div className="min-w-0 flex-none overflow-visible pr-2 pb-4 sm:min-h-0 sm:flex-1 sm:overflow-y-auto sm:custom-scrollbar sm:pb-20" data-settings-content-scroll="true">
         <AnimatePresence mode="wait">
           {topTab === 'metadata' && settingsManage && (
              <motion.div key="metadata" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="min-w-0 space-y-4 pt-2" data-settings-tab-content="metadata">
@@ -1775,6 +1814,7 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 gap-4">
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Monitoring Platforms" 
                       category="MonitoringPlatform" 
                       icon={Globe} 
@@ -1783,6 +1823,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "MonitoringPlatform")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Monitoring Categories" 
                       category="MonitoringCategory" 
                       icon={Tag} 
@@ -1791,6 +1832,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "MonitoringCategory")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Monitoring Ownership" 
                       category="MonitoringTeam" 
                       icon={Users} 
@@ -1800,6 +1842,7 @@ export default function SettingsPage() {
                    />
                    <div className="h-px bg-white/5 my-4" />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Asset Statuses" 
                       category="Status" 
                       icon={Activity} 
@@ -1808,6 +1851,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "Status")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Deployment Environments" 
                       category="Environment" 
                       icon={Box} 
@@ -1816,6 +1860,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "Environment")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Device Roles" 
                       category="DeviceType" 
                       icon={Cpu} 
@@ -1825,6 +1870,7 @@ export default function SettingsPage() {
                    />
                    <div className="h-px bg-white/5 my-4" />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Logical Systems" 
                       category="LogicalSystem" 
                       icon={Database} 
@@ -1833,6 +1879,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "LogicalSystem")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Service Templates" 
                       category="ServiceType" 
                       icon={Layout} 
@@ -1841,6 +1888,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "ServiceType")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="External Link Types" 
                       category="ExternalType" 
                       icon={Link} 
@@ -1849,6 +1897,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "ExternalType")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Network Link Purposes" 
                       category="LinkPurpose" 
                       icon={Network}
@@ -1857,6 +1906,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "LinkPurpose")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Network Farms" 
                       category="NetworkFarm" 
                       icon={Globe}
@@ -1865,6 +1915,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "NetworkFarm")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Network Cable Types" 
                       category="NetworkCableType" 
                       icon={Network}
@@ -1874,6 +1925,7 @@ export default function SettingsPage() {
                    />
                    <div className="h-px bg-white/5 my-4" />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Vendor Regions" 
                       category="VendorCountry" 
                       icon={Globe} 
@@ -1882,6 +1934,7 @@ export default function SettingsPage() {
                       options={(options || []).filter((o:any) => o.category === "VendorCountry")} 
                    />
                    <ConfigSection 
+                      wrapHeaderOnMobile
                       title="Inventory Classes" 
                       category="VendorDeviceType" 
                       icon={Package} 
@@ -2532,7 +2585,7 @@ export default function SettingsPage() {
           )}
 
           {topTab === 'tenants' && controlPlaneAdmin && (
-             <motion.div key="tenants" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2">
+             <motion.div key="tenants" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2" data-settings-tab-content="tenants">
                <PageToolbar wrapOnMobile
                   left={
                     <ToolbarGroup>
@@ -2813,17 +2866,17 @@ export default function SettingsPage() {
                   />
                 }
                 right={
-                  <div className="flex h-9 items-center overflow-hidden rounded-lg border border-white/10 bg-black/20">
+                  <div className="flex h-9 w-full min-w-0 max-w-full items-center overflow-hidden rounded-lg border border-white/10 bg-black/20 sm:w-auto sm:max-w-none">
                     <input
                       value={newTeamName}
                       onChange={e => setNewTeamName(e.target.value)}
                       placeholder="New group name..."
-                      className="h-full w-56 bg-transparent px-4 text-[11px] font-bold text-white outline-none placeholder:text-slate-600"
+                      className="h-full w-0 min-w-0 flex-1 bg-transparent px-4 text-[11px] font-bold text-white outline-none placeholder:text-slate-600 sm:w-56 sm:flex-initial"
                       onKeyDown={e => e.key === 'Enter' && teamMutation.mutate({ name: newTeamName, source: 'manual' })}
                     />
                     <button
                       onClick={() => teamMutation.mutate({ name: newTeamName, source: 'manual' })}
-                      className="h-full border-l border-white/10 px-5 text-[10px] font-black uppercase tracking-widest text-blue-400 transition-all hover:bg-blue-600/20"
+                      className="h-full shrink-0 border-l border-white/10 px-3 text-[10px] font-black uppercase tracking-widest text-blue-400 transition-all hover:bg-blue-600/20 sm:px-5"
                     >
                       Initialize
                     </button>
@@ -3121,7 +3174,7 @@ export default function SettingsPage() {
           )}
 
           {topTab === 'diagnostics' && diagnosticsRead && (
-            <motion.div key="diagnostics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <motion.div key="diagnostics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} data-settings-tab-content="diagnostics">
               <SystemDiagnosticsPanel />
             </motion.div>
           )}
