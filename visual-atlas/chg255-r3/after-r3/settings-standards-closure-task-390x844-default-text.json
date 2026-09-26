@@ -1,0 +1,302 @@
+{
+  "accepted": true,
+  "activeTab": "standards",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "settingsOwner": {
+    "left": 80,
+    "right": 375,
+    "top": 224,
+    "bottom": 763,
+    "width": 295,
+    "height": 539
+  },
+  "activeOwnerLayout": {
+    "rect": {
+      "left": 96,
+      "right": 351,
+      "top": 344,
+      "bottom": 3383.75,
+      "width": 255,
+      "height": 3039.75
+    },
+    "transform": "none",
+    "opacity": "1",
+    "scrollTop": 0,
+    "scrollHeight": 3056,
+    "clientHeight": 3056
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390
+  },
+  "wayfinding": {
+    "mode": "wrap-all",
+    "rect": {
+      "left": 96,
+      "right": 359,
+      "top": 248,
+      "bottom": 328,
+      "width": 263,
+      "height": 80
+    },
+    "tabs": [
+      {
+        "kind": "wayfinding-tab",
+        "name": "Parameters",
+        "role": "button",
+        "rect": {
+          "left": 99,
+          "right": 172.09375,
+          "top": 251,
+          "bottom": 287,
+          "width": 73.09375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "environments",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Permissions",
+        "role": "button",
+        "rect": {
+          "left": 174.09375,
+          "right": 251.828125,
+          "top": 251,
+          "bottom": 287,
+          "width": 77.734375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "permissions",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Groups",
+        "role": "button",
+        "rect": {
+          "left": 253.828125,
+          "right": 300.96875,
+          "top": 251,
+          "bottom": 287,
+          "width": 47.140625,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "groups",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Metadata",
+        "role": "button",
+        "rect": {
+          "left": 99,
+          "right": 159.484375,
+          "top": 289,
+          "bottom": 325,
+          "width": 60.484375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "metadata",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Analysis",
+        "role": "button",
+        "rect": {
+          "left": 161.484375,
+          "right": 216.90625,
+          "top": 289,
+          "bottom": 325,
+          "width": 55.421875,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "system",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Standards",
+        "role": "button",
+        "rect": {
+          "left": 218.90625,
+          "right": 284.84375,
+          "top": 289,
+          "bottom": 325,
+          "width": 65.9375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "standards",
+        "active": true,
+        "insideWayfinding": true
+      }
+    ],
+    "exactlyOneActive": true
+  },
+  "controls": [
+    {
+      "kind": "active-tab-task-action",
+      "name": "Header action",
+      "role": "button",
+      "rect": {
+        "left": 96,
+        "right": 242.734375,
+        "top": 708.75,
+        "bottom": 744.75,
+        "width": 146.734375,
+        "height": 36
+      },
+      "visibleBounds": {
+        "left": 96,
+        "top": 240,
+        "right": 359,
+        "bottom": 747,
+        "width": 263,
+        "height": 507
+      },
+      "semantic": true,
+      "enabled": true,
+      "visible": true,
+      "insideSettingsOwner": true,
+      "fullyInsideVisibleBounds": true,
+      "readableNameContained": true,
+      "pointerReachable": true,
+      "keyboardReachable": true,
+      "touchReachable": true,
+      "tabIndex": 0,
+      "reasons": []
+    }
+  ],
+  "negativeControl": null,
+  "closureScope": "task",
+  "textScale": "default-text",
+  "reachableBy": [
+    "touch-scroll",
+    "pointer-hit-test",
+    "keyboard-focus"
+  ]
+}

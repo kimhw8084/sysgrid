@@ -1,0 +1,52 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 390,
+    "height": 600,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 600
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 449,
+      "width": 255,
+      "height": 5228.5,
+      "left": 96,
+      "right": 351,
+      "top": 449,
+      "bottom": 5677.5
+    },
+    "text": "Metadata RegistryForensic Lineage & Global ParametersMonitoring PlatformsDrives platform selectors and validation in Monitoring.Monitoring3EntriesMonitoring CategoriesFeeds monitor category selectors, imports, and grid metadata.Monitoring5EntriesMonitoring OwnershipDefines monitoring ownership groups exposed in Monitor"
+  },
+  "actions": [
+    {
+      "name": "Metadata",
+      "rect": {
+        "x": 99,
+        "y": 394,
+        "width": 60.484375,
+        "height": 36,
+        "left": 99,
+        "right": 159.484375,
+        "top": 394,
+        "bottom": 430
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false
+}

@@ -1,0 +1,33 @@
+{
+  "repository": "kimhw8084/sysgrid",
+  "project": "sysgrid",
+  "change": "CHG-255 \u2014 Golden UI v3 \u2014 remediate current SysGrid atlas blockers",
+  "operation": "FIX",
+  "request": "sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+  "baseCommit": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+  "baseTree": "376906e0c9079f2281732fbbc31eec0d754ec30e",
+  "predecessorCommit": "31ee72386876b2ef877a72236c44d7e1895c2ed2",
+  "predecessorTree": "dfa8c00c9b9a39a34160fa265bf3daa4072954bf",
+  "predecessorParent": "ae5aa4c2bbd7226b6a08e2b3b4464a7fe0da18e3",
+  "candidateCommit": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+  "candidateTree": "15332211fe6c39f5f3926ebc970a3c0ece362d83",
+  "candidateParents": [
+    "31ee72386876b2ef877a72236c44d7e1895c2ed2"
+  ],
+  "workRef": "refs/heads/codex/sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+  "artifactRef": "refs/heads/project-os-artifacts/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+  "nativeEvidenceRef": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-golden-ui-v3-atlas-blockers-fix-v3",
+  "r2ArtifactCarrierCommit": "70101ea3bfa81d73f4285629ed418a80f9c7dc76",
+  "predecessorPreservationProof": {
+    "candidateParentExactlyPredecessor": true,
+    "predecessorParentExactlyBase": true,
+    "predecessorTreeMatchesBinding": true,
+    "candidateDescendsThroughExactPredecessor": true
+  },
+  "changedFiles": [
+    "frontend/src/components/ConfigRegistry.tsx",
+    "frontend/src/components/Settings.tsx",
+    "frontend/tests/golden-ui-v3-responsive.spec.ts",
+    "frontend/tests/settings-privilege.spec.ts"
+  ]
+}

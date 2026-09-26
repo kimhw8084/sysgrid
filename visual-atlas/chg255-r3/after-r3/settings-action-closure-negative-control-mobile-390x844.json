@@ -1,0 +1,46 @@
+{
+  "validAccepted": true,
+  "negativeAccepted": false,
+  "negativeControl": {
+    "kind": "intentional-clipped-negative-control",
+    "name": "Force Hot Reload",
+    "role": "button",
+    "rect": {
+      "left": 108,
+      "right": 248,
+      "top": 268,
+      "bottom": 304,
+      "width": 140,
+      "height": 36
+    },
+    "visibleBounds": {
+      "left": 108,
+      "top": 268,
+      "right": 156,
+      "bottom": 306,
+      "width": 48,
+      "height": 38
+    },
+    "semantic": true,
+    "enabled": true,
+    "visible": true,
+    "insideSettingsOwner": true,
+    "fullyInsideVisibleBounds": false,
+    "readableNameContained": false,
+    "pointerReachable": false,
+    "keyboardReachable": true,
+    "touchReachable": true,
+    "tabIndex": 0,
+    "reasons": [
+      "clipped-by-ancestor-or-viewport",
+      "label-not-fully-contained",
+      "pointer-intercepted-or-unreachable"
+    ]
+  },
+  "negativeRejectedFor": "clipped-by-ancestor-or-viewport and label-not-fully-contained",
+  "bodyOverflow": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390
+  }
+}

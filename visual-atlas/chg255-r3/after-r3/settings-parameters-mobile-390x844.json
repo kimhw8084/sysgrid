@@ -1,0 +1,52 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 449,
+      "width": 255,
+      "height": 8280.5,
+      "left": 96,
+      "right": 351,
+      "top": 449,
+      "bottom": 8729.5
+    },
+    "text": "Personal PreferencesChoose the visual mode for your operator session.LightDarkAll ImpactCritical OnlyHigh ImpactMedium ImpactLow ImpactGlobal HistoryForce Hot ReloadInfrastructure Domain2 parametersapp nameLoadedSystem level variable PARAM: app_name FILE: DatabaseLOW Impactorg nameLoadedSystem level variable PARAM: org"
+  },
+  "actions": [
+    {
+      "name": "Parameters",
+      "rect": {
+        "x": 99,
+        "y": 356,
+        "width": 73.09375,
+        "height": 36,
+        "left": 99,
+        "right": 172.09375,
+        "top": 356,
+        "bottom": 392
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false
+}

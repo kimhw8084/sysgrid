@@ -1,0 +1,42 @@
+{
+  "focusedSettingsActionClosure": {
+    "command": "scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'closes every authorized action' --workers=1",
+    "result": "PASS",
+    "tests": "1 passed",
+    "duration": "30.4s"
+  },
+  "settingsRoutesStatePrivilegeAndMonitoring": [
+    {
+      "command": "scripts/run-e2e.sh frontend/tests/settings-privilege.spec.ts frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'Settings mobile tab routes|Settings authoritative privilege matrix|ToolbarSegmented non-Settings consumer and Monitoring holdout' --workers=1",
+      "result": "PASS",
+      "tests": "5 passed"
+    },
+    {
+      "command": "scripts/run-e2e.sh frontend/tests/golden-ui-v3-responsive.spec.ts --grep 'Settings mobile tab routes' --workers=1",
+      "result": "PASS",
+      "tests": "1 passed",
+      "coverage": "deep links/content, Metadata desktop/mobile, unsaved Parameters value across resize and tab navigation"
+    },
+    {
+      "command": "scripts/run-e2e.sh frontend/tests/monitoring-workflows.spec.ts --grep 'edits an existing monitor without save errors and persists the updated fields' --workers=1",
+      "result": "PASS",
+      "tests": "1 passed",
+      "note": "single isolated diagnostic after one order-dependent failure in the full suite"
+    }
+  ],
+  "fullAppVerifier": {
+    "command": "scripts/verify-app.sh",
+    "backend": "PASS \u2014 205 passed (463.30s)",
+    "operationalContracts": "PASS \u2014 registry drift, form, row-action, and shell contracts",
+    "typecheck": "PASS",
+    "frontendUnitCoverage": "PASS \u2014 721 tests across 141 files",
+    "productionBuild": "PASS \u2014 4,357 modules transformed; build completed in 16.81s; existing large-chunk warning",
+    "normalBrowserSuite": "VERIFY_REQUIRED \u2014 74 passed, 2 skipped, 1 failed of 77",
+    "failure": {
+      "test": "frontend/tests/monitoring-workflows.spec.ts:169 \u2014 edits an existing monitor without save errors and persists the updated fields",
+      "observed": "After filling the Monitoring scan search following the edit, expected the edited title but observed the previous title. The single isolated run passed."
+    },
+    "rootPreview": "NOT RUN \u2014 verify-app stopped on the normal browser suite failure. SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID is unset in this environment, so a separate root-preview run cannot infer an identity."
+  },
+  "review": "R3 Settings/action closure tests pass. The full app gate remains VERIFY_REQUIRED because of the ordered Monitoring test failure and unavailable root-preview identity."
+}

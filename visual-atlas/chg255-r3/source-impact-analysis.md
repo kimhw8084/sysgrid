@@ -1,0 +1,8 @@
+# R3 source impact analysis
+
+- The Settings top header is recomposed locally. `shared/LayoutPrimitives.tsx` and the shared `PageHeader` implementation were not edited. Settings subview headers still use the existing PageHeader. Audit Logs and Racks therefore retain the unchanged shared header behavior.
+- Settings no longer uses `ToolbarSegmented` for section navigation; `ToolbarSegmented` itself was not edited. Racks and Projects consumers retain the existing primitive. The full app normal browser gate passed its Racks workflows and narrow-screen Golden Eight geometry checks.
+- `ConfigSection` gained the optional `wrapHeaderOnMobile` prop, defaulting to `false`. The 14 direct Settings Metadata sections opt in. `ConfigRegistryModal` consumers (including Monitoring) do not pass this prop, so their previous header classes and behavior remain the default. The targeted Settings/Monitoring shared-consumer holdout passed.
+- Audit Logs, Architecture v2, legacy Architecture, and Knowledge Product source files are untouched. Audit Logs only consumes the unchanged PageHeader; Architecture and Knowledge do not consume the changed ConfigSection path. The R2 evidence remains applicable to those owners.
+- Monitoring is the only materially relevant consumer family using ConfigRegistryModal in the targeted source scan; the opt-in is absent there and its holdout passed. The broader full-app Monitoring edit test failed once in the ordered suite, then passed when run by itself; its interaction is the Monitoring scan search input after an edit, not the registry modal or Settings header.
+- No production changes were made to authorization policy, deep-link resolution, Force Hot Reload handler, dirty/pending state logic, or backend/domain code.

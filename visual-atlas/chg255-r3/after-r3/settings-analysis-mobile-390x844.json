@@ -1,0 +1,52 @@
+{
+  "semanticOwner": "settings-tab-content",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "dpr": 1
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390,
+    "bodyScrollHeight": 844
+  },
+  "owner": {
+    "exists": true,
+    "rect": {
+      "x": 96,
+      "y": 449,
+      "width": 255,
+      "height": 3311,
+      "left": 96,
+      "right": 351,
+      "top": 449,
+      "bottom": 3760
+    },
+    "text": "Runtime AnalysisDeployment RuntimeResolved backend paths, defaults, and admin bootstrap policy.database url configuredtrueconfig database url configuredtruetenant storage root[redacted]backend env file configuredtruefrontend env file configuredtruedefault tenant namePlaywright Gatedefault user idhaewon.kimauto admin us"
+  },
+  "actions": [
+    {
+      "name": "Analysis",
+      "rect": {
+        "x": 161.484375,
+        "y": 394,
+        "width": 55.421875,
+        "height": 36,
+        "left": 161.484375,
+        "right": 216.90625,
+        "top": 394,
+        "bottom": 430
+      },
+      "visible": true,
+      "contrast": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(33, 36, 53)",
+        "ratio": 15.34
+      }
+    }
+  ],
+  "segmented": [],
+  "visibleAlerts": [],
+  "fatalState": false
+}

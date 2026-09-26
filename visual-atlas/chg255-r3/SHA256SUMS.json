@@ -1,0 +1,461 @@
+{
+  "schema": "sha256-artifact-tree-v1",
+  "candidate": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+  "files": [
+    {
+      "path": "README.md",
+      "sizeBytes": 1074,
+      "sha256": "a7922a1c578579ba603d0feb73d53219948aa1a1cfb297fbfa61292e42a8666b"
+    },
+    {
+      "path": "UPLOAD_THIS_TO_CHATGPT.zip",
+      "sizeBytes": 2491388,
+      "sha256": "e76ef0576413dfa44505889c95aef03e04698b4ccd21c5e06387350e9f5994dd"
+    },
+    {
+      "path": "action-closure-results.json",
+      "sizeBytes": 110742,
+      "sha256": "cd652f28cbfa02aa6dcbed67a3297d2f89007c980fc63abf965b1bdea13de7c8"
+    },
+    {
+      "path": "after-r3/settings-action-closure-negative-control-mobile-390x844.json",
+      "sizeBytes": 1098,
+      "sha256": "56d3d9d97a1e151faf36431bd3308fa0c6a9ac49a76b9f699e05b44586b9cda3"
+    },
+    {
+      "path": "after-r3/settings-action-closure-negative-control-mobile-390x844.png",
+      "sizeBytes": 60079,
+      "sha256": "1458846809a2f54f2aaf0c0d7e064443ed265603fbc2ed903ec1b40a4c8aecc0"
+    },
+    {
+      "path": "after-r3/settings-analysis-mobile-390x844.json",
+      "sizeBytes": 1289,
+      "sha256": "7f88b81a2241248ff66b8b135983607c74acb775fc548b032ef8a037befd1dc4"
+    },
+    {
+      "path": "after-r3/settings-analysis-mobile-390x844.png",
+      "sizeBytes": 57837,
+      "sha256": "3735e615aa5961a95c40ae453489b1bcf46956ec293a4c543347053bed303e7c"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-header-390x600-default-text.json",
+      "sizeBytes": 7950,
+      "sha256": "81427b6a568ad2639d93176d42bf6bedf3ca38d1b1a5fafbce7aa8743dd9e1a8"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-header-390x600-default-text.png",
+      "sizeBytes": 44194,
+      "sha256": "3b20fbd1c5066c0665d230166c33d0cc079df931b3695e18394aae3ead16d7dd"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-header-390x844-default-text.json",
+      "sizeBytes": 7950,
+      "sha256": "32e92a57e6e84ebad20992c16502ad022712dea33ba43c0461f39b1c6f8f6264"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-header-390x844-default-text.png",
+      "sizeBytes": 60024,
+      "sha256": "0390308fb5a502231c494c46c5c4f657184b9b0b54c852037ed77ee6f076eceb"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-header-390x844-text-200.json",
+      "sizeBytes": 8821,
+      "sha256": "e8d04bfc37fbf2a0a66135efd8f9614702ea5db37d1bba8e32ce1e1fdd79a172"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-header-390x844-text-200.png",
+      "sizeBytes": 33416,
+      "sha256": "53db3e43c3faff750953d2f2191fa9705a3247f7e1919043b5b7aa3d64ac5848"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-task-390x600-default-text.json",
+      "sizeBytes": 7208,
+      "sha256": "e496aebd4275d117a7e85da84b731eb79d497f576a8fff902c3494f21e869861"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-task-390x600-default-text.png",
+      "sizeBytes": 44222,
+      "sha256": "31009f25d9dcee790c0fd71d1a2b1ae4a460a819ccbbbb300bada9b5e507d4dc"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-task-390x844-default-text.json",
+      "sizeBytes": 7208,
+      "sha256": "ad1c200b87e720a79350cbf9ea77c5ef45801ec98b3e121b49f679dfac63acad"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-task-390x844-default-text.png",
+      "sizeBytes": 60079,
+      "sha256": "1458846809a2f54f2aaf0c0d7e064443ed265603fbc2ed903ec1b40a4c8aecc0"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-task-390x844-text-200.json",
+      "sizeBytes": 8077,
+      "sha256": "34ca7d71ab895596b066eecfd375b2c17d00d4c5ec35aac3375ceebe6453913c"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-task-390x844-text-200.png",
+      "sizeBytes": 33416,
+      "sha256": "53db3e43c3faff750953d2f2191fa9705a3247f7e1919043b5b7aa3d64ac5848"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-wayfinding-390x600-default-text.json",
+      "sizeBytes": 10921,
+      "sha256": "eb765a2fba1f94059b9e8ebc56452817e7297fbead0bfc37a28ed8c8f8e16ca2"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-wayfinding-390x600-default-text.png",
+      "sizeBytes": 44222,
+      "sha256": "31009f25d9dcee790c0fd71d1a2b1ae4a460a819ccbbbb300bada9b5e507d4dc"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-wayfinding-390x844-default-text.json",
+      "sizeBytes": 10921,
+      "sha256": "7fcc51e118cd2b3f06562089be6722830c432b314a4cc38342d6667267abed14"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-wayfinding-390x844-default-text.png",
+      "sizeBytes": 60079,
+      "sha256": "1458846809a2f54f2aaf0c0d7e064443ed265603fbc2ed903ec1b40a4c8aecc0"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-wayfinding-390x844-text-200.json",
+      "sizeBytes": 10939,
+      "sha256": "e722b8a8459da3a6950eaf469b029e4ed199c2e682281292f4d03c930388bb96"
+    },
+    {
+      "path": "after-r3/settings-environments-closure-wayfinding-390x844-text-200.png",
+      "sizeBytes": 33416,
+      "sha256": "53db3e43c3faff750953d2f2191fa9705a3247f7e1919043b5b7aa3d64ac5848"
+    },
+    {
+      "path": "after-r3/settings-groups-closure-header-390x844-default-text.json",
+      "sizeBytes": 7191,
+      "sha256": "2e44eb93456029377889e12d539218c4d380ebd707c94301755099f234cd7dc0"
+    },
+    {
+      "path": "after-r3/settings-groups-closure-header-390x844-default-text.png",
+      "sizeBytes": 55548,
+      "sha256": "444c8848ef7106ab2af0e7b01ce763208db8e750afe9d68fcdd06c89e4a15311"
+    },
+    {
+      "path": "after-r3/settings-groups-closure-task-390x844-default-text.json",
+      "sizeBytes": 7200,
+      "sha256": "e7758d839dbeffb56343a622eb9fb2a5091033d47931b3b2abc6b8c7bfa07a47"
+    },
+    {
+      "path": "after-r3/settings-groups-closure-task-390x844-default-text.png",
+      "sizeBytes": 55548,
+      "sha256": "258c8ed5674666ec44ff6e9aa8a7533b846d737035c1b91281f65128234dd947"
+    },
+    {
+      "path": "after-r3/settings-groups-closure-wayfinding-390x844-default-text.json",
+      "sizeBytes": 10912,
+      "sha256": "4a7aa16693699ebddf4a3f7355ea21b0e1664b2933ea300112a2c8c35626c71e"
+    },
+    {
+      "path": "after-r3/settings-groups-closure-wayfinding-390x844-default-text.png",
+      "sizeBytes": 55548,
+      "sha256": "258c8ed5674666ec44ff6e9aa8a7533b846d737035c1b91281f65128234dd947"
+    },
+    {
+      "path": "after-r3/settings-groups-mobile-390x844.json",
+      "sizeBytes": 45596,
+      "sha256": "c2363aa6ecf392310f8d92a96ecfef150d4b1afcae93c85821e86110c6b4cb30"
+    },
+    {
+      "path": "after-r3/settings-groups-mobile-390x844.png",
+      "sizeBytes": 55548,
+      "sha256": "258c8ed5674666ec44ff6e9aa8a7533b846d737035c1b91281f65128234dd947"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-header-1440x900-default-text.json",
+      "sizeBytes": 7305,
+      "sha256": "00d56851c6663cad4276cea8ffa027bba832f56cbc66c1eecf5e9fdb9d6cb8c0"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-header-1440x900-default-text.png",
+      "sizeBytes": 131380,
+      "sha256": "d35dfbc04d50c77513746545e7172e10b5dbe8ab7229fa113c4e33e4c11760f1"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-header-390x844-default-text.json",
+      "sizeBytes": 7196,
+      "sha256": "2c96d3ab16d3c37a0fb99c3c5f707050bd0f51b3f463d2a8921fa289a72c020f"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-header-390x844-default-text.png",
+      "sizeBytes": 56455,
+      "sha256": "482360f1410a74cb985192a4fa00d7fa6cedc2c198123c06aae44597c451a6b9"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-task-1440x900-default-text.json",
+      "sizeBytes": 7249,
+      "sha256": "6e170e42aa2c8c794b43602637c1225ea1ea4a0f6a6ddb278476b8f513f59a29"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-task-1440x900-default-text.png",
+      "sizeBytes": 131380,
+      "sha256": "d35dfbc04d50c77513746545e7172e10b5dbe8ab7229fa113c4e33e4c11760f1"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-task-390x844-default-text.json",
+      "sizeBytes": 7223,
+      "sha256": "9bc5053fd034f208ac4ce728a0435fe850555c85642f9f552fb48c684528950d"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-task-390x844-default-text.png",
+      "sizeBytes": 56455,
+      "sha256": "482360f1410a74cb985192a4fa00d7fa6cedc2c198123c06aae44597c451a6b9"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-wayfinding-1440x900-default-text.json",
+      "sizeBytes": 10966,
+      "sha256": "79e322f35b6f634f8dd7a524cf5f79fc43271dbd4b5d5640349625cbf28fdb43"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-wayfinding-1440x900-default-text.png",
+      "sizeBytes": 131380,
+      "sha256": "d35dfbc04d50c77513746545e7172e10b5dbe8ab7229fa113c4e33e4c11760f1"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-wayfinding-390x844-default-text.json",
+      "sizeBytes": 10917,
+      "sha256": "d3e35e15a8569cea7640847e63c2985d9179d334d5525cbb31f00ac83a3cc816"
+    },
+    {
+      "path": "after-r3/settings-metadata-closure-wayfinding-390x844-default-text.png",
+      "sizeBytes": 56455,
+      "sha256": "482360f1410a74cb985192a4fa00d7fa6cedc2c198123c06aae44597c451a6b9"
+    },
+    {
+      "path": "after-r3/settings-metadata-desktop-1440x900.json",
+      "sizeBytes": 46553,
+      "sha256": "efc604e7d2955a9a9d83b321c29d9bebfa1c9defdcc1fef4db30e06a00252dba"
+    },
+    {
+      "path": "after-r3/settings-metadata-desktop-1440x900.png",
+      "sizeBytes": 131380,
+      "sha256": "d35dfbc04d50c77513746545e7172e10b5dbe8ab7229fa113c4e33e4c11760f1"
+    },
+    {
+      "path": "after-r3/settings-metadata-mobile-390x844.json",
+      "sizeBytes": 45877,
+      "sha256": "a266a6e514f09d529241e21b05487470ef6f94d7989535e8117bd5798ff9c77d"
+    },
+    {
+      "path": "after-r3/settings-metadata-mobile-390x844.png",
+      "sizeBytes": 56455,
+      "sha256": "482360f1410a74cb985192a4fa00d7fa6cedc2c198123c06aae44597c451a6b9"
+    },
+    {
+      "path": "after-r3/settings-metadata-mobile-short-390x600.json",
+      "sizeBytes": 1278,
+      "sha256": "b6d4510fcbe6bad81b187339df8458b27ad07785a2009dd4e609ad09431a4bab"
+    },
+    {
+      "path": "after-r3/settings-metadata-mobile-short-390x600.png",
+      "sizeBytes": 43473,
+      "sha256": "a306e84964656a8a8eba26e0b7f1aff75063c602a91fb0baffd5909876c4ae50"
+    },
+    {
+      "path": "after-r3/settings-metadata-mobile-text-200.json",
+      "sizeBytes": 1282,
+      "sha256": "7336fdc502c4d8317e09bf74ff5c8ada8938456d6e72161f0ce626bb2493bcdc"
+    },
+    {
+      "path": "after-r3/settings-metadata-mobile-text-200.png",
+      "sizeBytes": 35819,
+      "sha256": "b8bd5631e671181df1d7cf632debfd0326ab924ad0ed3fef76ce48c1aaa9749b"
+    },
+    {
+      "path": "after-r3/settings-parameters-mobile-390x844.json",
+      "sizeBytes": 1278,
+      "sha256": "38cbffc2ee314cd1e6877eee7c1133b39f4edf78ea9bdbd3e23575e67ff38571"
+    },
+    {
+      "path": "after-r3/settings-parameters-mobile-390x844.png",
+      "sizeBytes": 60300,
+      "sha256": "d85e5c813e61db3e83ba8855421f569c462ec1dc8ff69913f19644fac054cf15"
+    },
+    {
+      "path": "after-r3/settings-permissions-closure-header-390x844-default-text.json",
+      "sizeBytes": 7195,
+      "sha256": "f327f85f3ed933f7cd3f79741653669ac09e3fb1e43d7559adb5cbb34e7d41a0"
+    },
+    {
+      "path": "after-r3/settings-permissions-closure-header-390x844-default-text.png",
+      "sizeBytes": 60802,
+      "sha256": "3ea0650144c15490b3978cada6e3455d5f719ba831e8f77c99eafbcf925595d2"
+    },
+    {
+      "path": "after-r3/settings-permissions-closure-task-390x844-default-text.json",
+      "sizeBytes": 7311,
+      "sha256": "c304b614be9e3b81ae46884e4d23c0a3a3d3627f714ac7304e59d8d01476ad24"
+    },
+    {
+      "path": "after-r3/settings-permissions-closure-task-390x844-default-text.png",
+      "sizeBytes": 60828,
+      "sha256": "464547d938fa8080f368cd19a5de6d0e83dcc7fc8c82ced2adf548289c98f481"
+    },
+    {
+      "path": "after-r3/settings-permissions-closure-wayfinding-390x844-default-text.json",
+      "sizeBytes": 10916,
+      "sha256": "b326203de8da68e8303aa739a1cc73c7bc30721d4e900ec941f1b1e12f96cedb"
+    },
+    {
+      "path": "after-r3/settings-permissions-closure-wayfinding-390x844-default-text.png",
+      "sizeBytes": 60828,
+      "sha256": "464547d938fa8080f368cd19a5de6d0e83dcc7fc8c82ced2adf548289c98f481"
+    },
+    {
+      "path": "after-r3/settings-permissions-mobile-390x844.json",
+      "sizeBytes": 46066,
+      "sha256": "86e4082c5cd9b3ddc3d7b92f36c1e20c6edfb7a332fe34a0bf62d92b46839680"
+    },
+    {
+      "path": "after-r3/settings-permissions-mobile-390x844.png",
+      "sizeBytes": 60828,
+      "sha256": "464547d938fa8080f368cd19a5de6d0e83dcc7fc8c82ced2adf548289c98f481"
+    },
+    {
+      "path": "after-r3/settings-standards-closure-header-390x844-default-text.json",
+      "sizeBytes": 6457,
+      "sha256": "4e3201686a57fe2a688dc90fd77f0f230a47590fbb22d5bcf6c094c8d030fd21"
+    },
+    {
+      "path": "after-r3/settings-standards-closure-header-390x844-default-text.png",
+      "sizeBytes": 67032,
+      "sha256": "8116da73ffdd23261d6f72c24654ebb698b6422fbf0490a8f110719ade09cb3a"
+    },
+    {
+      "path": "after-r3/settings-standards-closure-task-390x844-default-text.json",
+      "sizeBytes": 7219,
+      "sha256": "643b85f4c33b022625aa37bc30fd5a81a6c861ac8c68993fa0e205ac0c6a42e6"
+    },
+    {
+      "path": "after-r3/settings-standards-closure-task-390x844-default-text.png",
+      "sizeBytes": 67032,
+      "sha256": "8116da73ffdd23261d6f72c24654ebb698b6422fbf0490a8f110719ade09cb3a"
+    },
+    {
+      "path": "after-r3/settings-standards-closure-wayfinding-390x844-default-text.json",
+      "sizeBytes": 10920,
+      "sha256": "97094994db8317e77a8adde8061c7f2fe6cc35a960b852fc1535b61ad395a3d8"
+    },
+    {
+      "path": "after-r3/settings-standards-closure-wayfinding-390x844-default-text.png",
+      "sizeBytes": 67032,
+      "sha256": "8116da73ffdd23261d6f72c24654ebb698b6422fbf0490a8f110719ade09cb3a"
+    },
+    {
+      "path": "after-r3/settings-standards-mobile-390x844.json",
+      "sizeBytes": 44145,
+      "sha256": "142ac2480565fdf2be189da0114ae684a793c3c9977e4635cb930c4acad3b265"
+    },
+    {
+      "path": "after-r3/settings-standards-mobile-390x844.png",
+      "sizeBytes": 67032,
+      "sha256": "8116da73ffdd23261d6f72c24654ebb698b6422fbf0490a8f110719ade09cb3a"
+    },
+    {
+      "path": "after-r3/settings-system-closure-header-390x844-default-text.json",
+      "sizeBytes": 7190,
+      "sha256": "aeb48ce4193d08af1ec97dddaec32783e423219afdd890f83b696e16eec21bce"
+    },
+    {
+      "path": "after-r3/settings-system-closure-header-390x844-default-text.png",
+      "sizeBytes": 58505,
+      "sha256": "3951a7fad5e9b336f247b355af685a059859803188aee1fca223e96937788bff"
+    },
+    {
+      "path": "after-r3/settings-system-closure-task-390x844-default-text.json",
+      "sizeBytes": 6446,
+      "sha256": "e3795a9996a7b666fa7b202dab9c9883cf4eb97aec587ed3859d68b0d8dcf739"
+    },
+    {
+      "path": "after-r3/settings-system-closure-task-390x844-default-text.png",
+      "sizeBytes": 58505,
+      "sha256": "3951a7fad5e9b336f247b355af685a059859803188aee1fca223e96937788bff"
+    },
+    {
+      "path": "after-r3/settings-system-closure-wayfinding-390x844-default-text.json",
+      "sizeBytes": 10911,
+      "sha256": "a83b1224e876ce892a7a244e907ea3c52e7cc5d044d612e6b62ab6ee6766e77d"
+    },
+    {
+      "path": "after-r3/settings-system-closure-wayfinding-390x844-default-text.png",
+      "sizeBytes": 58505,
+      "sha256": "3951a7fad5e9b336f247b355af685a059859803188aee1fca223e96937788bff"
+    },
+    {
+      "path": "before-r2/chg255-r2-settings-parameters-390x844.png",
+      "sizeBytes": 57978,
+      "sha256": "9a5611b4c62d7766c1c784d0dbbc41b50daef7d05a94d14fc7bbc9655a77ec3d"
+    },
+    {
+      "path": "before-r2/settings-parameters-mobile-390x600.png",
+      "sizeBytes": 44325,
+      "sha256": "3656d3330fa5137c6189344aed672cb29a8fc323c8ec1aab2ac2f0fd9ecf29b6"
+    },
+    {
+      "path": "before-r2/settings-parameters-mobile-390x844-text-200.png",
+      "sizeBytes": 35540,
+      "sha256": "19c88b389a10c77aef6f7c90ee780da0980641c4d38f1851b0e621e7c8ebcd6e"
+    },
+    {
+      "path": "candidate-binding.json",
+      "sizeBytes": 1566,
+      "sha256": "acfa13d12a155d830bec24a8847299e04ca6e85f3717667c0f2631d87fd6f47c"
+    },
+    {
+      "path": "changed-file-manifest.json",
+      "sizeBytes": 1205,
+      "sha256": "bf93e871e234c472e7ef183b17755046e2eb11a7b6c199ff1a22d420647b5813"
+    },
+    {
+      "path": "reports/MANIFEST.json",
+      "sizeBytes": 16644,
+      "sha256": "2d4df72b3a73d8a26b0b659ddeb1e618ec131f40059df0d8cd12e471be0e09f5"
+    },
+    {
+      "path": "reports/README.md",
+      "sizeBytes": 1074,
+      "sha256": "a7922a1c578579ba603d0feb73d53219948aa1a1cfb297fbfa61292e42a8666b"
+    },
+    {
+      "path": "reports/action-closure-results.json",
+      "sizeBytes": 110742,
+      "sha256": "cd652f28cbfa02aa6dcbed67a3297d2f89007c980fc63abf965b1bdea13de7c8"
+    },
+    {
+      "path": "reports/candidate-binding.json",
+      "sizeBytes": 1566,
+      "sha256": "acfa13d12a155d830bec24a8847299e04ca6e85f3717667c0f2631d87fd6f47c"
+    },
+    {
+      "path": "reports/changed-file-manifest.json",
+      "sizeBytes": 1205,
+      "sha256": "bf93e871e234c472e7ef183b17755046e2eb11a7b6c199ff1a22d420647b5813"
+    },
+    {
+      "path": "reports/source-impact-analysis.md",
+      "sizeBytes": 1751,
+      "sha256": "69cc18b2aa1dd24c8c01409e7c87f8fa07080b5c5c8e0af5c45f6a9a8bd8ab34"
+    },
+    {
+      "path": "reports/test-results.json",
+      "sizeBytes": 2570,
+      "sha256": "3d9c8f7a8c4f86ff9777701f7eb2dc8358772d29da9b81f3ad4245c90bed7b12"
+    },
+    {
+      "path": "source-impact-analysis.md",
+      "sizeBytes": 1751,
+      "sha256": "69cc18b2aa1dd24c8c01409e7c87f8fa07080b5c5c8e0af5c45f6a9a8bd8ab34"
+    },
+    {
+      "path": "test-results.json",
+      "sizeBytes": 2570,
+      "sha256": "3d9c8f7a8c4f86ff9777701f7eb2dc8358772d29da9b81f3ad4245c90bed7b12"
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "accepted": true,
+  "activeTab": "environments",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "settingsOwner": {
+    "left": 80,
+    "right": 375,
+    "top": 224,
+    "bottom": 763,
+    "width": 295,
+    "height": 539
+  },
+  "activeOwnerLayout": {
+    "rect": {
+      "left": 96,
+      "right": 351,
+      "top": 449,
+      "bottom": 8729.5,
+      "width": 255,
+      "height": 8280.5
+    },
+    "transform": "none",
+    "opacity": "1",
+    "scrollTop": 0,
+    "scrollHeight": 8297,
+    "clientHeight": 8297
+  },
+  "document": {
+    "bodyScrollWidth": 375,
+    "documentScrollWidth": 375,
+    "viewportWidth": 390
+  },
+  "wayfinding": {
+    "mode": "wrap-all",
+    "rect": {
+      "left": 96,
+      "right": 359,
+      "top": 353,
+      "bottom": 433,
+      "width": 263,
+      "height": 80
+    },
+    "tabs": [
+      {
+        "kind": "wayfinding-tab",
+        "name": "Parameters",
+        "role": "button",
+        "rect": {
+          "left": 99,
+          "right": 172.09375,
+          "top": 356,
+          "bottom": 392,
+          "width": 73.09375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "environments",
+        "active": true,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Permissions",
+        "role": "button",
+        "rect": {
+          "left": 174.09375,
+          "right": 251.828125,
+          "top": 356,
+          "bottom": 392,
+          "width": 77.734375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "permissions",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Groups",
+        "role": "button",
+        "rect": {
+          "left": 253.828125,
+          "right": 300.96875,
+          "top": 356,
+          "bottom": 392,
+          "width": 47.140625,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "groups",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Metadata",
+        "role": "button",
+        "rect": {
+          "left": 99,
+          "right": 159.484375,
+          "top": 394,
+          "bottom": 430,
+          "width": 60.484375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "metadata",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Analysis",
+        "role": "button",
+        "rect": {
+          "left": 161.484375,
+          "right": 216.90625,
+          "top": 394,
+          "bottom": 430,
+          "width": 55.421875,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "system",
+        "active": false,
+        "insideWayfinding": true
+      },
+      {
+        "kind": "wayfinding-tab",
+        "name": "Standards",
+        "role": "button",
+        "rect": {
+          "left": 218.90625,
+          "right": 284.84375,
+          "top": 394,
+          "bottom": 430,
+          "width": 65.9375,
+          "height": 36
+        },
+        "visibleBounds": {
+          "left": 96,
+          "top": 240,
+          "right": 359,
+          "bottom": 747,
+          "width": 263,
+          "height": 507
+        },
+        "semantic": true,
+        "enabled": true,
+        "visible": true,
+        "insideSettingsOwner": true,
+        "fullyInsideVisibleBounds": true,
+        "readableNameContained": true,
+        "pointerReachable": true,
+        "keyboardReachable": true,
+        "touchReachable": true,
+        "tabIndex": 0,
+        "reasons": [],
+        "value": "standards",
+        "active": false,
+        "insideWayfinding": true
+      }
+    ],
+    "exactlyOneActive": true
+  },
+  "controls": [
+    {
+      "kind": "page-header-action",
+      "name": "Golden Template",
+      "role": "button",
+      "rect": {
+        "left": 96,
+        "right": 225.5,
+        "top": 301,
+        "bottom": 337,
+        "width": 129.5,
+        "height": 36
+      },
+      "visibleBounds": {
+        "left": 96,
+        "top": 240,
+        "right": 359,
+        "bottom": 747,
+        "width": 263,
+        "height": 507
+      },
+      "semantic": true,
+      "enabled": true,
+      "visible": true,
+      "insideSettingsOwner": true,
+      "fullyInsideVisibleBounds": true,
+      "readableNameContained": true,
+      "pointerReachable": true,
+      "keyboardReachable": true,
+      "touchReachable": true,
+      "tabIndex": 0,
+      "reasons": []
+    },
+    {
+      "kind": "page-header-action",
+      "name": "Force Hot Reload",
+      "role": "button",
+      "rect": {
+        "left": 229.5,
+        "right": 359,
+        "top": 301,
+        "bottom": 337,
+        "width": 129.5,
+        "height": 36
+      },
+      "visibleBounds": {
+        "left": 96,
+        "top": 240,
+        "right": 359,
+        "bottom": 747,
+        "width": 263,
+        "height": 507
+      },
+      "semantic": true,
+      "enabled": true,
+      "visible": true,
+      "insideSettingsOwner": true,
+      "fullyInsideVisibleBounds": true,
+      "readableNameContained": true,
+      "pointerReachable": true,
+      "keyboardReachable": true,
+      "touchReachable": true,
+      "tabIndex": 0,
+      "reasons": []
+    }
+  ],
+  "negativeControl": null,
+  "closureScope": "header",
+  "textScale": "default-text",
+  "reachableBy": [
+    "touch-scroll",
+    "pointer-hit-test",
+    "keyboard-focus"
+  ]
+}

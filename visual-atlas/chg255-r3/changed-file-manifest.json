@@ -1,0 +1,26 @@
+{
+  "candidate": "ecad9edd993c4022f4716e1e4099bc2dad29c4a0",
+  "files": [
+    {
+      "path": "frontend/src/components/Settings.tsx",
+      "kind": "product",
+      "reason": "Settings-local wrapped header actions, wrapped all-tab wayfinding, and mobile vertical scroll ownership; Settings metadata opts in to wrapping ConfigSection headers."
+    },
+    {
+      "path": "frontend/src/components/ConfigRegistry.tsx",
+      "kind": "product/shared-component-opt-in",
+      "reason": "Add default-off, mobile-only ConfigSection header wrapping; existing modal consumers retain the default layout."
+    },
+    {
+      "path": "frontend/tests/golden-ui-v3-responsive.spec.ts",
+      "kind": "regression/evidence",
+      "reason": "Add the complete Settings action-closure oracle, negative clipped action, per-tab/profile proofs, and Parameters unsaved-state preservation proof."
+    },
+    {
+      "path": "frontend/tests/settings-privilege.spec.ts",
+      "kind": "regression",
+      "reason": "Assert Force Hot Reload follows the existing Settings privilege visibility policy."
+    }
+  ],
+  "scope": "Only the four files above; no backend, policy authority, shared PageHeader or ToolbarSegmented changes."
+}
