@@ -199,12 +199,29 @@ async function captureProof(page: Page, testInfo: TestInfo, proofId: string, pro
       pending: { commandCount: Number(owner?.dataset.p05PendingCommandCount || 0), visibleLoadingMessages: Array.from(document.querySelectorAll('.p05-state,[aria-busy="true"]')).filter(visible).length },
       readyState: document.readyState,
       requiredActionInventory: actionElements.filter(visible).map((element) => ({ name: name(element), tag: element.tagName.toLowerCase(), enabled: !(element as HTMLButtonElement).disabled && element.getAttribute('aria-disabled') !== 'true', visible: visible(element), box: box(element) })),
+      textContrast: ['.p05-task-panel h2', '.p05-task-panel p:not(.p05-eyebrow):not(.p05-muted)', '.p05-board section > h3', '.p05-card label span', '.p05-error[role="alert"]'].flatMap((selector) => {
+        const element = document.querySelector<HTMLElement>(selector)
+        if (!element || !visible(element)) return []
+        const rgb = (value: string) => value.match(/[\d.]+/g)?.slice(0, 3).map(Number) || [0, 0, 0]
+        const luminance = (value: number[]) => value.map((raw) => { const channel = raw / 255; return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4 }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0)
+        const foreground = getComputedStyle(element).color
+        let ancestor: HTMLElement | null = element
+        let background = 'rgb(255, 255, 255)'
+        while (ancestor) {
+          const candidate = getComputedStyle(ancestor).backgroundColor
+          if (candidate !== 'rgba(0, 0, 0, 0)' && !candidate.endsWith(', 0)')) { background = candidate; break }
+          ancestor = ancestor.parentElement
+        }
+        const [a, b] = [luminance(rgb(foreground)), luminance(rgb(background))].sort((left, right) => right - left)
+        return [{ selector, foreground, background, ratio: (a + 0.05) / (b + 0.05) }]
+      }),
       bodyHorizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
       pairedCapture: { stateSnapshotAndPngShareProofId: true, browserActionsBetweenSnapshotAndPng: 0 },
     }
   }, { proofId, profile })
   const candidateSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
   const record = { candidateSha, capturedAt: new Date().toISOString(), negativeControlResult: negativeControlResult || null, pageState }
+  for (const contrast of pageState.textContrast) expect(contrast.ratio, `${contrast.selector} text contrast must meet WCAG AA`).toBeGreaterThanOrEqual(4.5)
   await mkdir(dirname(paths.png), { recursive: true })
   await page.screenshot({ path: paths.png, animations: 'disabled' })
   await writeFile(paths.json, `${JSON.stringify(record, null, 2)}\n`)

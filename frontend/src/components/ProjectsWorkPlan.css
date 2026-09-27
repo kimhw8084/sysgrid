@@ -58,6 +58,9 @@
 .p05-error { color: #b91c1c; }
 .p05-success { color: #047857; }
 .p05-back { margin-top: 20px; border: 0; background: transparent; color: #2563eb; font-weight: 700; }
+:is(.p05-focus, .p05-work-area, .p05-plan, .p05-focus-list li, .p05-board section, .p05-card, .p05-task-panel) { color: #1e293b; }
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='industrial-slate'], html[data-theme='ocean-deep'], html[data-theme='cyber-emerald'], html[data-theme='dark']) [data-workspace='projects'] .p05-error { color: #fca5a5; }
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='industrial-slate'], html[data-theme='ocean-deep'], html[data-theme='cyber-emerald'], html[data-theme='dark']) [data-workspace='projects'] .p05-success { color: #6ee7b7; }
 @media (max-width: 900px) { .p05-header { align-items: flex-start; flex-direction: column; } .p05-board { grid-template-columns: repeat(5, minmax(220px, 1fr)); } .p05-plan { grid-template-columns: 1fr; } .p05-grid-row { grid-template-columns: minmax(230px, 2fr) 120px 130px 100px 120px; } }
 @media (max-width: 600px) {
   .p05-focus, .p05-work-area { padding: 14px; }
