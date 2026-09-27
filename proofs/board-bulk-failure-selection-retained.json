@@ -1,0 +1,277 @@
+{
+  "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+  "capturedAt": "2026-09-27T05:11:13.463Z",
+  "negativeControlResult": null,
+  "pageState": {
+    "proofId": "board-bulk-failure-selection-retained",
+    "route": "/projects/p1/work?layout=board",
+    "projectId": "p1",
+    "taskId": null,
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "devicePixelRatio": 1,
+      "documentWidth": 1440,
+      "documentHeight": 900
+    },
+    "selectedTaskIds": [
+      "task-2"
+    ],
+    "draftTitle": null,
+    "visibleAlert": "The task changed on the server. Refresh and try again.",
+    "scroll": {
+      "windowX": 0,
+      "windowY": 0,
+      "treegridTop": 0,
+      "boardLeft": 0,
+      "taskPanelTop": 0
+    },
+    "focusedElement": {
+      "tag": "body",
+      "role": null,
+      "name": "Skip to content SYSGRID ‹ Operations Home (Unavailable) Home is unavailable for the current account. Projects Monitoring (Unavailable) Monitoring is unavailable for the current account. Infrastructure Assets (Unavailable) Assets is unavailable for the current account. Racks (Unavailable) Racks is unavailable for the current account. Services (Unavailable) Services is unavailable for the current account. External (Unavailable) External Preview unavailable: System Root access is required. Connectivity Network (Unavailable) Network is unavailable for the current account. Architecture (Unavailable) Architecture Preview unavailable: System Root access is required. Analysis Research (Unavailable) Research Preview unavailable: System Root access is required. FAR (Unavailable) FAR Preview unavailable: System Root access is required. Resources Vendors (Unavailable) Vendors Preview unavailable: System Root access is required. Knowledge (Unavailable) Knowledge Preview unavailable: System Root access is required. Audit logs (Unavailable) Audit logs is unavailable for the current account. Settings / Access (Unavailable) Settings / Access is unavailable for the current account. DARK LIGHT Version 1.2.6 PATCH NOTES Search released and authorized records... ⌘ K App tools PROJECTS · PROJECT WORKSPACE Work Portfolio My day Home Work Board Plan PROJECT FOCUS The next useful actions Deterministic recommendations from the same task graph used by Work and Board. 1 actionable · pv-focus-1 IN PROGRESS OR REVIEW Canonical task Project A · Due in five days In progress or review: current project work Open task The task changed on the server. Refresh and try again. Bulk → In progress Cancel selected 1 selected To Do Canonical task mina · 2026-10-01 Open task Move to… To Do In progress Blocked Review Done Cancelled Second task mina · No finish Open task Move to… To Do In progress Blocked Review Done Cancelled In progress Blocked Review Done Back to Project Home YOUR TIME (America/Chicago): 00:11:13 SOUTH KOREA (KST): 14:11:13 Version 1.2.6",
+      "id": null
+    },
+    "pending": {
+      "commandCount": 0,
+      "visibleLoadingMessages": 0
+    },
+    "readyState": "complete",
+    "requiredActionInventory": [
+      {
+        "name": "Portfolio",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1041.109375,
+          "y": 108,
+          "width": 59.625,
+          "height": 20,
+          "top": 108,
+          "right": 1100.734375,
+          "bottom": 128,
+          "left": 1041.109375
+        }
+      },
+      {
+        "name": "My day",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1114.734375,
+          "y": 108,
+          "width": 49.296875,
+          "height": 20,
+          "top": 108,
+          "right": 1164.03125,
+          "bottom": 128,
+          "left": 1114.734375
+        }
+      },
+      {
+        "name": "Home",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1178.03125,
+          "y": 108,
+          "width": 40.515625,
+          "height": 20,
+          "top": 108,
+          "right": 1218.546875,
+          "bottom": 128,
+          "left": 1178.03125
+        }
+      },
+      {
+        "name": "Work",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1232.546875,
+          "y": 108,
+          "width": 35.90625,
+          "height": 20,
+          "top": 108,
+          "right": 1268.453125,
+          "bottom": 128,
+          "left": 1232.546875
+        }
+      },
+      {
+        "name": "Board",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1282.453125,
+          "y": 108,
+          "width": 40.9375,
+          "height": 20,
+          "top": 108,
+          "right": 1323.390625,
+          "bottom": 128,
+          "left": 1282.453125
+        }
+      },
+      {
+        "name": "Plan",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1337.390625,
+          "y": 108,
+          "width": 30.015625,
+          "height": 20,
+          "top": 108,
+          "right": 1367.40625,
+          "bottom": 128,
+          "left": 1337.390625
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1237.484375,
+          "y": 323.5,
+          "width": 95.921875,
+          "height": 40,
+          "top": 323.5,
+          "right": 1333.40625,
+          "bottom": 363.5,
+          "left": 1237.484375
+        }
+      },
+      {
+        "name": "Bulk → In progress",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 297.59375,
+          "y": 442,
+          "width": 154.359375,
+          "height": 40,
+          "top": 442,
+          "right": 451.953125,
+          "bottom": 482,
+          "left": 297.59375
+        }
+      },
+      {
+        "name": "Cancel selected",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 459.953125,
+          "y": 442,
+          "width": 135.984375,
+          "height": 40,
+          "top": 442,
+          "right": 595.9375,
+          "bottom": 482,
+          "left": 459.953125
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 619,
+          "width": 160.359375,
+          "height": 40,
+          "top": 619,
+          "right": 479.953125,
+          "bottom": 659,
+          "left": 319.59375
+        }
+      },
+      {
+        "name": "Move Canonical task to",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 691,
+          "width": 160.359375,
+          "height": 40,
+          "top": 691,
+          "right": 479.953125,
+          "bottom": 731,
+          "left": 319.59375
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 836,
+          "width": 160.359375,
+          "height": 40,
+          "top": 836,
+          "right": 479.953125,
+          "bottom": 876,
+          "left": 319.59375
+        }
+      },
+      {
+        "name": "Move Second task to",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 908,
+          "width": 160.359375,
+          "height": 40,
+          "top": 908,
+          "right": 479.953125,
+          "bottom": 948,
+          "left": 319.59375
+        }
+      }
+    ],
+    "textContrast": [
+      {
+        "selector": ".p05-board section > h3",
+        "foreground": "rgb(30, 41, 59)",
+        "background": "rgb(248, 250, 252)",
+        "ratio": 13.981703505432394
+      },
+      {
+        "selector": ".p05-card label span",
+        "foreground": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "ratio": 14.628718079350337
+      },
+      {
+        "selector": ".p05-error[role=\"alert\"]",
+        "foreground": "rgb(252, 165, 165)",
+        "background": "rgb(10, 12, 20)",
+        "ratio": 10.28682168276294
+      }
+    ],
+    "bodyHorizontalOverflow": false,
+    "pairedCapture": {
+      "stateSnapshotAndPngShareProofId": true,
+      "browserActionsBetweenSnapshotAndPng": 0
+    }
+  }
+}

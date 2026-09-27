@@ -1,0 +1,352 @@
+{
+  "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+  "capturedAt": "2026-09-27T05:11:15.178Z",
+  "negativeControlResult": null,
+  "pageState": {
+    "proofId": "create-acknowledgment-preserves-newer-draft",
+    "route": "/projects/p1/work",
+    "projectId": "p1",
+    "taskId": null,
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "devicePixelRatio": 1,
+      "documentWidth": 1440,
+      "documentHeight": 900
+    },
+    "selectedTaskIds": [],
+    "draftTitle": "Draft B",
+    "visibleAlert": "",
+    "scroll": {
+      "windowX": 0,
+      "windowY": 0,
+      "treegridTop": 0,
+      "boardLeft": 0,
+      "taskPanelTop": 0
+    },
+    "focusedElement": {
+      "tag": "input",
+      "role": null,
+      "name": "input",
+      "id": null
+    },
+    "pending": {
+      "commandCount": 0,
+      "visibleLoadingMessages": 0
+    },
+    "readyState": "complete",
+    "requiredActionInventory": [
+      {
+        "name": "Portfolio",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1041.109375,
+          "y": 108,
+          "width": 59.625,
+          "height": 20,
+          "top": 108,
+          "right": 1100.734375,
+          "bottom": 128,
+          "left": 1041.109375
+        }
+      },
+      {
+        "name": "My day",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1114.734375,
+          "y": 108,
+          "width": 49.296875,
+          "height": 20,
+          "top": 108,
+          "right": 1164.03125,
+          "bottom": 128,
+          "left": 1114.734375
+        }
+      },
+      {
+        "name": "Home",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1178.03125,
+          "y": 108,
+          "width": 40.515625,
+          "height": 20,
+          "top": 108,
+          "right": 1218.546875,
+          "bottom": 128,
+          "left": 1178.03125
+        }
+      },
+      {
+        "name": "Work",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1232.546875,
+          "y": 108,
+          "width": 35.90625,
+          "height": 20,
+          "top": 108,
+          "right": 1268.453125,
+          "bottom": 128,
+          "left": 1232.546875
+        }
+      },
+      {
+        "name": "Board",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1282.453125,
+          "y": 108,
+          "width": 40.9375,
+          "height": 20,
+          "top": 108,
+          "right": 1323.390625,
+          "bottom": 128,
+          "left": 1282.453125
+        }
+      },
+      {
+        "name": "Plan",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1337.390625,
+          "y": 108,
+          "width": 30.015625,
+          "height": 20,
+          "top": 108,
+          "right": 1367.40625,
+          "bottom": 128,
+          "left": 1337.390625
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1237.484375,
+          "y": 323.5,
+          "width": 95.921875,
+          "height": 40,
+          "top": 323.5,
+          "right": 1333.40625,
+          "bottom": 363.5,
+          "left": 1237.484375
+        }
+      },
+      {
+        "name": "Add task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 686.59375,
+          "y": 467,
+          "width": 86.875,
+          "height": 54,
+          "top": 467,
+          "right": 773.46875,
+          "bottom": 521,
+          "left": 686.59375
+        }
+      },
+      {
+        "name": "Bulk → Done",
+        "tag": "button",
+        "enabled": false,
+        "visible": true,
+        "box": {
+          "x": 1035.5625,
+          "y": 480,
+          "width": 112.15625,
+          "height": 40,
+          "top": 480,
+          "right": 1147.71875,
+          "bottom": 520,
+          "left": 1035.5625
+        }
+      },
+      {
+        "name": "Cancel selected",
+        "tag": "button",
+        "enabled": false,
+        "visible": true,
+        "box": {
+          "x": 1155.71875,
+          "y": 480,
+          "width": 135.984375,
+          "height": 40,
+          "top": 480,
+          "right": 1291.703125,
+          "bottom": 520,
+          "left": 1155.71875
+        }
+      },
+      {
+        "name": "Preview",
+        "tag": "button",
+        "enabled": false,
+        "visible": true,
+        "box": {
+          "x": 629.015625,
+          "y": 545,
+          "width": 80.84375,
+          "height": 40,
+          "top": 545,
+          "right": 709.859375,
+          "bottom": 585,
+          "left": 629.015625
+        }
+      },
+      {
+        "name": "Canonical task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 359.59375,
+          "y": 661,
+          "width": 101.40625,
+          "height": 20,
+          "top": 661,
+          "right": 461,
+          "bottom": 681,
+          "left": 359.59375
+        }
+      },
+      {
+        "name": "Status for Canonical task",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 941.46875,
+          "y": 654,
+          "width": 105,
+          "height": 34,
+          "top": 654,
+          "right": 1046.46875,
+          "bottom": 688,
+          "left": 941.46875
+        }
+      },
+      {
+        "name": "Second task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 359.59375,
+          "y": 709,
+          "width": 85.015625,
+          "height": 20,
+          "top": 709,
+          "right": 444.609375,
+          "bottom": 729,
+          "left": 359.59375
+        }
+      },
+      {
+        "name": "Status for Second task",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 941.46875,
+          "y": 702,
+          "width": 105,
+          "height": 34,
+          "top": 702,
+          "right": 1046.46875,
+          "bottom": 736,
+          "left": 941.46875
+        }
+      },
+      {
+        "name": "Draft survives rejection",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 359.59375,
+          "y": 757,
+          "width": 161.5,
+          "height": 20,
+          "top": 757,
+          "right": 521.09375,
+          "bottom": 777,
+          "left": 359.59375
+        }
+      },
+      {
+        "name": "Status for Draft survives rejection",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 941.46875,
+          "y": 750,
+          "width": 105,
+          "height": 34,
+          "top": 750,
+          "right": 1046.46875,
+          "bottom": 784,
+          "left": 941.46875
+        }
+      },
+      {
+        "name": "Draft A",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 359.59375,
+          "y": 805,
+          "width": 49.0625,
+          "height": 20,
+          "top": 805,
+          "right": 408.65625,
+          "bottom": 825,
+          "left": 359.59375
+        }
+      },
+      {
+        "name": "Status for Draft A",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 941.46875,
+          "y": 798,
+          "width": 105,
+          "height": 34,
+          "top": 798,
+          "right": 1046.46875,
+          "bottom": 832,
+          "left": 941.46875
+        }
+      }
+    ],
+    "textContrast": [],
+    "bodyHorizontalOverflow": false,
+    "pairedCapture": {
+      "stateSnapshotAndPngShareProofId": true,
+      "browserActionsBetweenSnapshotAndPng": 0
+    }
+  }
+}

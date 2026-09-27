@@ -1,0 +1,5188 @@
+{
+  "format": "sysgrid-targeted-evidence-v1",
+  "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+  "candidateTree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025",
+  "baseSha": "899b47f9e1569f56455a0dfd8d3ffc440f4d8613",
+  "baseTree": "15332211fe6c39f5f3926ebc970a3c0ece362d83",
+  "proofs": [
+    {
+      "proofId": "board-panel-open-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/board-panel-open-desktop.json",
+      "jsonSha256": "503b7028db0ee828c5835067dde3657805e0b49fa68ee3af423692e0d6c12521",
+      "pngPath": "proofs/board-panel-open-desktop.png",
+      "pngSha256": "86064099d30eb14676b3e70b71bf861f0f0111d3701102989d564ea2bbee2926",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": "task-1",
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": null,
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Close",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 297.59375,
+              "y": 422,
+              "width": 154.359375,
+              "height": 40,
+              "top": 422,
+              "right": 451.953125,
+              "bottom": 462,
+              "left": 297.59375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 459.953125,
+              "y": 422,
+              "width": 135.984375,
+              "height": 40,
+              "top": 422,
+              "right": 595.9375,
+              "bottom": 462,
+              "left": 459.953125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 599,
+              "width": 160.359375,
+              "height": 40,
+              "top": 599,
+              "right": 479.953125,
+              "bottom": 639,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 671,
+              "width": 160.359375,
+              "height": 40,
+              "top": 671,
+              "right": 479.953125,
+              "bottom": 711,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 816,
+              "width": 160.359375,
+              "height": 40,
+              "top": 816,
+              "right": 479.953125,
+              "bottom": 856,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 888,
+              "width": 160.359375,
+              "height": 40,
+              "top": 888,
+              "right": 479.953125,
+              "bottom": 928,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Close",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 93,
+              "width": 64.78125,
+              "height": 40,
+              "top": 93,
+              "right": 1070.78125,
+              "bottom": 133,
+              "left": 1006
+            }
+          },
+          {
+            "name": "Mark done",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 237,
+              "width": 98.71875,
+              "height": 53,
+              "top": 237,
+              "right": 1104.71875,
+              "bottom": 290,
+              "left": 1006
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-task-panel h2",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-task-panel p:not(.p05-eyebrow):not(.p05-muted)",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "board-panel-closed-focus-restored-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/board-panel-closed-focus-restored-desktop.json",
+      "jsonSha256": "d5253dcf0ff9480718d3ea4b40c51f28da0a9a1dcfb8fceb479a71cf5d3ff885",
+      "pngPath": "proofs/board-panel-closed-focus-restored-desktop.png",
+      "pngSha256": "bd107ae09926b1bf092671ac08b6672310b7aa3ed5ef8bec99fd851d817f4dea",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": null,
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Open task",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 297.59375,
+              "y": 422,
+              "width": 154.359375,
+              "height": 40,
+              "top": 422,
+              "right": 451.953125,
+              "bottom": 462,
+              "left": 297.59375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 459.953125,
+              "y": 422,
+              "width": 135.984375,
+              "height": 40,
+              "top": 422,
+              "right": 595.9375,
+              "bottom": 462,
+              "left": 459.953125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 599,
+              "width": 160.359375,
+              "height": 40,
+              "top": 599,
+              "right": 479.953125,
+              "bottom": 639,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 671,
+              "width": 160.359375,
+              "height": 40,
+              "top": 671,
+              "right": 479.953125,
+              "bottom": 711,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 816,
+              "width": 160.359375,
+              "height": 40,
+              "top": 816,
+              "right": 479.953125,
+              "bottom": 856,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 888,
+              "width": 160.359375,
+              "height": 40,
+              "top": 888,
+              "right": 479.953125,
+              "bottom": 928,
+              "left": 319.59375
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "board-panel-escape-focus-restored-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/board-panel-escape-focus-restored-desktop.json",
+      "jsonSha256": "e615dab8519a4170ddc39421b71ea62a6a9438ffc8c95bb4c2eb39a2412e440e",
+      "pngPath": "proofs/board-panel-escape-focus-restored-desktop.png",
+      "pngSha256": "8b031ecd3023c6102089d77f97eef55b4a0f2ca08479daa14a8a3fb18b26bd02",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": null,
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Open task",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 297.59375,
+              "y": 422,
+              "width": 154.359375,
+              "height": 40,
+              "top": 422,
+              "right": 451.953125,
+              "bottom": 462,
+              "left": 297.59375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 459.953125,
+              "y": 422,
+              "width": 135.984375,
+              "height": 40,
+              "top": 422,
+              "right": 595.9375,
+              "bottom": 462,
+              "left": 459.953125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 599,
+              "width": 160.359375,
+              "height": 40,
+              "top": 599,
+              "right": 479.953125,
+              "bottom": 639,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 671,
+              "width": 160.359375,
+              "height": 40,
+              "top": 671,
+              "right": 479.953125,
+              "bottom": 711,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 752.3125,
+              "y": 599,
+              "width": 160.359375,
+              "height": 40,
+              "top": 599,
+              "right": 912.671875,
+              "bottom": 639,
+              "left": 752.3125
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 752.3125,
+              "y": 671,
+              "width": 160.359375,
+              "height": 40,
+              "top": 671,
+              "right": 912.671875,
+              "bottom": 711,
+              "left": 752.3125
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "list-panel-open-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/list-panel-open-desktop.json",
+      "jsonSha256": "eca2233a27564ea8d901ab5d61310a9ca46aecd5228c051ad116c74969f03b95",
+      "pngPath": "proofs/list-panel-open-desktop.png",
+      "pngSha256": "499db85efd434024ab45439444acc352bdc6fef17be9501276e09d2670e55335",
+      "state": {
+        "route": "/projects/p1/work",
+        "projectId": "p1",
+        "taskId": "task-1",
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": "",
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Close",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 467,
+              "width": 86.875,
+              "height": 54,
+              "top": 467,
+              "right": 773.46875,
+              "bottom": 521,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1036.109375,
+              "y": 480,
+              "width": 112.15625,
+              "height": 40,
+              "top": 480,
+              "right": 1148.265625,
+              "bottom": 520,
+              "left": 1036.109375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1156.265625,
+              "y": 480,
+              "width": 135.984375,
+              "height": 40,
+              "top": 480,
+              "right": 1292.25,
+              "bottom": 520,
+              "left": 1156.265625
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 545,
+              "width": 80.84375,
+              "height": 40,
+              "top": 545,
+              "right": 709.859375,
+              "bottom": 585,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 661,
+              "width": 101.40625,
+              "height": 20,
+              "top": 661,
+              "right": 461,
+              "bottom": 681,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 654,
+              "width": 105,
+              "height": 34,
+              "top": 654,
+              "right": 1046.46875,
+              "bottom": 688,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 709,
+              "width": 85.015625,
+              "height": 20,
+              "top": 709,
+              "right": 444.609375,
+              "bottom": 729,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 702,
+              "width": 105,
+              "height": 34,
+              "top": 702,
+              "right": 1046.46875,
+              "bottom": 736,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Close",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 93,
+              "width": 64.78125,
+              "height": 40,
+              "top": 93,
+              "right": 1070.78125,
+              "bottom": 133,
+              "left": 1006
+            }
+          },
+          {
+            "name": "Mark done",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 237,
+              "width": 98.71875,
+              "height": 53,
+              "top": 237,
+              "right": 1104.71875,
+              "bottom": 290,
+              "left": 1006
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-task-panel h2",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-task-panel p:not(.p05-eyebrow):not(.p05-muted)",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "list-panel-closed-focus-restored-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/list-panel-closed-focus-restored-desktop.json",
+      "jsonSha256": "3438b168071cee3a3161f40caacad9975714a8ddb80a351b402aa0a31c117744",
+      "pngPath": "proofs/list-panel-closed-focus-restored-desktop.png",
+      "pngSha256": "64f4959d7af0c6fc3e040242e0d5ce688351686e666fc53f9b8557aaee4fc699",
+      "state": {
+        "route": "/projects/p1/work",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": "",
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Canonical task",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 467,
+              "width": 86.875,
+              "height": 54,
+              "top": 467,
+              "right": 773.46875,
+              "bottom": 521,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1036.109375,
+              "y": 480,
+              "width": 112.15625,
+              "height": 40,
+              "top": 480,
+              "right": 1148.265625,
+              "bottom": 520,
+              "left": 1036.109375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1156.265625,
+              "y": 480,
+              "width": 135.984375,
+              "height": 40,
+              "top": 480,
+              "right": 1292.25,
+              "bottom": 520,
+              "left": 1156.265625
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 545,
+              "width": 80.84375,
+              "height": 40,
+              "top": 545,
+              "right": 709.859375,
+              "bottom": 585,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 661,
+              "width": 101.40625,
+              "height": 20,
+              "top": 661,
+              "right": 461,
+              "bottom": 681,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 654,
+              "width": 105,
+              "height": 34,
+              "top": 654,
+              "right": 1046.46875,
+              "bottom": 688,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 709,
+              "width": 85.015625,
+              "height": 20,
+              "top": 709,
+              "right": 444.609375,
+              "bottom": 729,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 702,
+              "width": 105,
+              "height": 34,
+              "top": 702,
+              "right": 1046.46875,
+              "bottom": 736,
+              "left": 941.46875
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "list-double-click-escape-focus-restored-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/list-double-click-escape-focus-restored-desktop.json",
+      "jsonSha256": "43e5763fadc5522bbc3d10fb2b1f544d5831f403b823f931a8a0c0ae3b32ec0b",
+      "pngPath": "proofs/list-double-click-escape-focus-restored-desktop.png",
+      "pngSha256": "f4bbfa387f51537b63dc0ace4f8fdcfa2b8268a7eef04d95cf69e28c603e0049",
+      "state": {
+        "route": "/projects/p1/work",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": "",
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "div",
+          "role": "row",
+          "name": "Canonical task mina To Do In progress Blocked Review Done Cancelled % 2026-10-01",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 467,
+              "width": 86.875,
+              "height": 54,
+              "top": 467,
+              "right": 773.46875,
+              "bottom": 521,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1036.109375,
+              "y": 480,
+              "width": 112.15625,
+              "height": 40,
+              "top": 480,
+              "right": 1148.265625,
+              "bottom": 520,
+              "left": 1036.109375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1156.265625,
+              "y": 480,
+              "width": 135.984375,
+              "height": 40,
+              "top": 480,
+              "right": 1292.25,
+              "bottom": 520,
+              "left": 1156.265625
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 545,
+              "width": 80.84375,
+              "height": 40,
+              "top": 545,
+              "right": 709.859375,
+              "bottom": 585,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 661,
+              "width": 101.40625,
+              "height": 20,
+              "top": 661,
+              "right": 461,
+              "bottom": 681,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 654,
+              "width": 105,
+              "height": 34,
+              "top": 654,
+              "right": 1046.46875,
+              "bottom": 688,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 709,
+              "width": 85.015625,
+              "height": 20,
+              "top": 709,
+              "right": 444.609375,
+              "bottom": 729,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 702,
+              "width": 105,
+              "height": 34,
+              "top": 702,
+              "right": 1046.46875,
+              "bottom": 736,
+              "left": 941.46875
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "focus-deep-link-exact-task",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/focus-deep-link-exact-task.json",
+      "jsonSha256": "7af5ef1addc7235e108d0651f01a2af7c4615579ac7399c98b2855d0bb9d0847",
+      "pngPath": "proofs/focus-deep-link-exact-task.png",
+      "pngSha256": "a786551b8419321a413a4e6f79abd9976135363f74f095474dba965fa3058373",
+      "state": {
+        "route": "/projects/p1/work?panel=task&entity=task-1",
+        "projectId": "p1",
+        "taskId": "task-1",
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": "",
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Close",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 467,
+              "width": 86.875,
+              "height": 54,
+              "top": 467,
+              "right": 773.46875,
+              "bottom": 521,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1036.109375,
+              "y": 480,
+              "width": 112.15625,
+              "height": 40,
+              "top": 480,
+              "right": 1148.265625,
+              "bottom": 520,
+              "left": 1036.109375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1156.265625,
+              "y": 480,
+              "width": 135.984375,
+              "height": 40,
+              "top": 480,
+              "right": 1292.25,
+              "bottom": 520,
+              "left": 1156.265625
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 545,
+              "width": 80.84375,
+              "height": 40,
+              "top": 545,
+              "right": 709.859375,
+              "bottom": 585,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 661,
+              "width": 101.40625,
+              "height": 20,
+              "top": 661,
+              "right": 461,
+              "bottom": 681,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 654,
+              "width": 105,
+              "height": 34,
+              "top": 654,
+              "right": 1046.46875,
+              "bottom": 688,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 709,
+              "width": 85.015625,
+              "height": 20,
+              "top": 709,
+              "right": 444.609375,
+              "bottom": 729,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 702,
+              "width": 105,
+              "height": 34,
+              "top": 702,
+              "right": 1046.46875,
+              "bottom": 736,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Close",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 93,
+              "width": 64.78125,
+              "height": 40,
+              "top": 93,
+              "right": 1070.78125,
+              "bottom": 133,
+              "left": 1006
+            }
+          },
+          {
+            "name": "Mark done",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 237,
+              "width": 98.71875,
+              "height": 53,
+              "top": 237,
+              "right": 1104.71875,
+              "bottom": 290,
+              "left": 1006
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-task-panel h2",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-task-panel p:not(.p05-eyebrow):not(.p05-muted)",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "focus-deep-link-close-fallback-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/focus-deep-link-close-fallback-desktop.json",
+      "jsonSha256": "e41752e3f9b9a23302f84c650b8ab5f406836f7df4068a105887850f9dc2a7aa",
+      "pngPath": "proofs/focus-deep-link-close-fallback-desktop.png",
+      "pngSha256": "f93150b4e6c0a26d6c98cff096174d0470e7407582b5088188098b09e2ca6327",
+      "state": {
+        "route": "/projects/p1/work",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": "",
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "div",
+          "role": "treegrid",
+          "name": "Project work breakdown",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 467,
+              "width": 86.875,
+              "height": 54,
+              "top": 467,
+              "right": 773.46875,
+              "bottom": 521,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1036.109375,
+              "y": 480,
+              "width": 112.15625,
+              "height": 40,
+              "top": 480,
+              "right": 1148.265625,
+              "bottom": 520,
+              "left": 1036.109375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1156.265625,
+              "y": 480,
+              "width": 135.984375,
+              "height": 40,
+              "top": 480,
+              "right": 1292.25,
+              "bottom": 520,
+              "left": 1156.265625
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 545,
+              "width": 80.84375,
+              "height": 40,
+              "top": 545,
+              "right": 709.859375,
+              "bottom": 585,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 661,
+              "width": 101.40625,
+              "height": 20,
+              "top": 661,
+              "right": 461,
+              "bottom": 681,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 654,
+              "width": 105,
+              "height": 34,
+              "top": 654,
+              "right": 1046.46875,
+              "bottom": 688,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 709,
+              "width": 85.015625,
+              "height": 20,
+              "top": 709,
+              "right": 444.609375,
+              "bottom": 729,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 702,
+              "width": 105,
+              "height": 34,
+              "top": 702,
+              "right": 1046.46875,
+              "bottom": 736,
+              "left": 941.46875
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "board-transition-failure-server-truth",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/board-transition-failure-server-truth.json",
+      "jsonSha256": "2ffca3bcd75d8d12007740dcd9ad6caa767b822f34986f834475c5eb23bc90c5",
+      "pngPath": "proofs/board-transition-failure-server-truth.png",
+      "pngSha256": "f4a4bc85e0869382ab62df56edebcf5a27177d1a2941f039cb0a9bb50e06a304",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [
+          "task-2"
+        ],
+        "draftTitle": null,
+        "visibleAlert": "The task changed on the server. Refresh and try again.",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "input",
+          "role": null,
+          "name": "Select Second task",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 297.59375,
+              "y": 442,
+              "width": 154.359375,
+              "height": 40,
+              "top": 442,
+              "right": 451.953125,
+              "bottom": 482,
+              "left": 297.59375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 459.953125,
+              "y": 442,
+              "width": 135.984375,
+              "height": 40,
+              "top": 442,
+              "right": 595.9375,
+              "bottom": 482,
+              "left": 459.953125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 619,
+              "width": 160.359375,
+              "height": 40,
+              "top": 619,
+              "right": 479.953125,
+              "bottom": 659,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 691,
+              "width": 160.359375,
+              "height": 40,
+              "top": 691,
+              "right": 479.953125,
+              "bottom": 731,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 836,
+              "width": 160.359375,
+              "height": 40,
+              "top": 836,
+              "right": 479.953125,
+              "bottom": 876,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 908,
+              "width": 160.359375,
+              "height": 40,
+              "top": 908,
+              "right": 479.953125,
+              "bottom": 948,
+              "left": 319.59375
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-error[role=\"alert\"]",
+            "foreground": "rgb(252, 165, 165)",
+            "background": "rgb(10, 12, 20)",
+            "ratio": 10.28682168276294
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "board-bulk-failure-selection-retained",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/board-bulk-failure-selection-retained.json",
+      "jsonSha256": "4bad923d931ba08e845e91277b3dda63e4624ce0aac922ffd909b7711f46b7c3",
+      "pngPath": "proofs/board-bulk-failure-selection-retained.png",
+      "pngSha256": "f4a4bc85e0869382ab62df56edebcf5a27177d1a2941f039cb0a9bb50e06a304",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [
+          "task-2"
+        ],
+        "draftTitle": null,
+        "visibleAlert": "The task changed on the server. Refresh and try again.",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "body",
+          "role": null,
+          "name": "Skip to content SYSGRID \u2039 Operations Home (Unavailable) Home is unavailable for the current account. Projects Monitoring (Unavailable) Monitoring is unavailable for the current account. Infrastructure Assets (Unavailable) Assets is unavailable for the current account. Racks (Unavailable) Racks is unavailable for the current account. Services (Unavailable) Services is unavailable for the current account. External (Unavailable) External Preview unavailable: System Root access is required. Connectivity Network (Unavailable) Network is unavailable for the current account. Architecture (Unavailable) Architecture Preview unavailable: System Root access is required. Analysis Research (Unavailable) Research Preview unavailable: System Root access is required. FAR (Unavailable) FAR Preview unavailable: System Root access is required. Resources Vendors (Unavailable) Vendors Preview unavailable: System Root access is required. Knowledge (Unavailable) Knowledge Preview unavailable: System Root access is required. Audit logs (Unavailable) Audit logs is unavailable for the current account. Settings / Access (Unavailable) Settings / Access is unavailable for the current account. DARK LIGHT Version 1.2.6 PATCH NOTES Search released and authorized records... \u2318 K App tools PROJECTS \u00b7 PROJECT WORKSPACE Work Portfolio My day Home Work Board Plan PROJECT FOCUS The next useful actions Deterministic recommendations from the same task graph used by Work and Board. 1 actionable \u00b7 pv-focus-1 IN PROGRESS OR REVIEW Canonical task Project A \u00b7 Due in five days In progress or review: current project work Open task The task changed on the server. Refresh and try again. Bulk \u2192 In progress Cancel selected 1 selected To Do Canonical task mina \u00b7 2026-10-01 Open task Move to\u2026 To Do In progress Blocked Review Done Cancelled Second task mina \u00b7 No finish Open task Move to\u2026 To Do In progress Blocked Review Done Cancelled In progress Blocked Review Done Back to Project Home YOUR TIME (America/Chicago): 00:11:13 SOUTH KOREA (KST): 14:11:13 Version 1.2.6",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 297.59375,
+              "y": 442,
+              "width": 154.359375,
+              "height": 40,
+              "top": 442,
+              "right": 451.953125,
+              "bottom": 482,
+              "left": 297.59375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 459.953125,
+              "y": 442,
+              "width": 135.984375,
+              "height": 40,
+              "top": 442,
+              "right": 595.9375,
+              "bottom": 482,
+              "left": 459.953125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 619,
+              "width": 160.359375,
+              "height": 40,
+              "top": 619,
+              "right": 479.953125,
+              "bottom": 659,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 691,
+              "width": 160.359375,
+              "height": 40,
+              "top": 691,
+              "right": 479.953125,
+              "bottom": 731,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 836,
+              "width": 160.359375,
+              "height": 40,
+              "top": 836,
+              "right": 479.953125,
+              "bottom": 876,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 908,
+              "width": 160.359375,
+              "height": 40,
+              "top": 908,
+              "right": 479.953125,
+              "bottom": 948,
+              "left": 319.59375
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-error[role=\"alert\"]",
+            "foreground": "rgb(252, 165, 165)",
+            "background": "rgb(10, 12, 20)",
+            "ratio": 10.28682168276294
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "list-bulk-failure-selection-retained",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/list-bulk-failure-selection-retained.json",
+      "jsonSha256": "86615e699c5aba6fc620285ec8b5ac91fc2d3ea4a9b2a51b5fadf8dbf611a05b",
+      "pngPath": "proofs/list-bulk-failure-selection-retained.png",
+      "pngSha256": "7d3a2ac284e1c0ef4d5c7a407719c0ea2a6911ec424f669bbb7285d0b91ca5c1",
+      "state": {
+        "route": "/projects/p1/work",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [
+          "task-1"
+        ],
+        "draftTitle": "",
+        "visibleAlert": "The task changed on the server. Refresh and try again.",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "body",
+          "role": null,
+          "name": "Skip to content SYSGRID \u2039 Operations Home (Unavailable) Home is unavailable for the current account. Projects Monitoring (Unavailable) Monitoring is unavailable for the current account. Infrastructure Assets (Unavailable) Assets is unavailable for the current account. Racks (Unavailable) Racks is unavailable for the current account. Services (Unavailable) Services is unavailable for the current account. External (Unavailable) External Preview unavailable: System Root access is required. Connectivity Network (Unavailable) Network is unavailable for the current account. Architecture (Unavailable) Architecture Preview unavailable: System Root access is required. Analysis Research (Unavailable) Research Preview unavailable: System Root access is required. FAR (Unavailable) FAR Preview unavailable: System Root access is required. Resources Vendors (Unavailable) Vendors Preview unavailable: System Root access is required. Knowledge (Unavailable) Knowledge Preview unavailable: System Root access is required. Audit logs (Unavailable) Audit logs is unavailable for the current account. Settings / Access (Unavailable) Settings / Access is unavailable for the current account. DARK LIGHT Version 1.2.6 PATCH NOTES Search released and authorized records... \u2318 K App tools PROJECTS \u00b7 PROJECT WORKSPACE Work Portfolio My day Home Work Board Plan PROJECT FOCUS The next useful actions Deterministic recommendations from the same task graph used by Work and Board. 1 actionable \u00b7 pv-focus-1 IN PROGRESS OR REVIEW Canonical task Project A \u00b7 Due in five days In progress or review: current project work Open task The task changed on the server. Refresh and try again. New task title Add task Bulk \u2192 Done Cancel selected 2 tasks Paste CSV/TSV Preview Task Owner Status Progress Finish Canonical task mina To Do In progress Blocked Review Done Cancelled % 2026-10-01 Second task mina To Do In progress Blocked Review Done Cancelled % Unscheduled Back to Project Home YOUR TIME (America/Chicago): 00:11:13 SOUTH KOREA (KST): 14:11:13 Version 1.2.6",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 487,
+              "width": 86.875,
+              "height": 54,
+              "top": 487,
+              "right": 773.46875,
+              "bottom": 541,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1036.109375,
+              "y": 500,
+              "width": 112.15625,
+              "height": 40,
+              "top": 500,
+              "right": 1148.265625,
+              "bottom": 540,
+              "left": 1036.109375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1156.265625,
+              "y": 500,
+              "width": 135.984375,
+              "height": 40,
+              "top": 500,
+              "right": 1292.25,
+              "bottom": 540,
+              "left": 1156.265625
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 565,
+              "width": 80.84375,
+              "height": 40,
+              "top": 565,
+              "right": 709.859375,
+              "bottom": 605,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 681,
+              "width": 101.40625,
+              "height": 20,
+              "top": 681,
+              "right": 461,
+              "bottom": 701,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 674,
+              "width": 105,
+              "height": 34,
+              "top": 674,
+              "right": 1046.46875,
+              "bottom": 708,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 729,
+              "width": 85.015625,
+              "height": 20,
+              "top": 729,
+              "right": 444.609375,
+              "bottom": 749,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 722,
+              "width": 105,
+              "height": 34,
+              "top": 722,
+              "right": 1046.46875,
+              "bottom": 756,
+              "left": 941.46875
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-error[role=\"alert\"]",
+            "foreground": "rgb(252, 165, 165)",
+            "background": "rgb(10, 12, 20)",
+            "ratio": 10.28682168276294
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "create-failure-draft-retained",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/create-failure-draft-retained.json",
+      "jsonSha256": "9161220dc3d7c88e9e554f7e4aeff229e8c10dba549e84833e7cc2a38234fa93",
+      "pngPath": "proofs/create-failure-draft-retained.png",
+      "pngSha256": "88ed7e43a166bf813dcfd0c35fa350dddebb8886a407cb1d2295b337bf7fbd40",
+      "state": {
+        "route": "/projects/p1/work",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": "Draft survives rejection",
+        "visibleAlert": "The task changed on the server. Refresh and try again.",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "body",
+          "role": null,
+          "name": "Skip to content SYSGRID \u2039 Operations Home (Unavailable) Home is unavailable for the current account. Projects Monitoring (Unavailable) Monitoring is unavailable for the current account. Infrastructure Assets (Unavailable) Assets is unavailable for the current account. Racks (Unavailable) Racks is unavailable for the current account. Services (Unavailable) Services is unavailable for the current account. External (Unavailable) External Preview unavailable: System Root access is required. Connectivity Network (Unavailable) Network is unavailable for the current account. Architecture (Unavailable) Architecture Preview unavailable: System Root access is required. Analysis Research (Unavailable) Research Preview unavailable: System Root access is required. FAR (Unavailable) FAR Preview unavailable: System Root access is required. Resources Vendors (Unavailable) Vendors Preview unavailable: System Root access is required. Knowledge (Unavailable) Knowledge Preview unavailable: System Root access is required. Audit logs (Unavailable) Audit logs is unavailable for the current account. Settings / Access (Unavailable) Settings / Access is unavailable for the current account. DARK LIGHT Version 1.2.6 PATCH NOTES Search released and authorized records... \u2318 K App tools PROJECTS \u00b7 PROJECT WORKSPACE Work Portfolio My day Home Work Board Plan PROJECT FOCUS The next useful actions Deterministic recommendations from the same task graph used by Work and Board. 1 actionable \u00b7 pv-focus-1 IN PROGRESS OR REVIEW Canonical task Project A \u00b7 Due in five days In progress or review: current project work Open task The task changed on the server. Refresh and try again. New task title Add task Bulk \u2192 Done Cancel selected 2 tasks Paste CSV/TSV Preview Task Owner Status Progress Finish Canonical task mina To Do In progress Blocked Review Done Cancelled % 2026-10-01 Second task mina To Do In progress Blocked Review Done Cancelled % Unscheduled Back to Project Home YOUR TIME (America/Chicago): 00:11:14 SOUTH KOREA (KST): 14:11:14 Version 1.2.6",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 487,
+              "width": 86.875,
+              "height": 54,
+              "top": 487,
+              "right": 773.46875,
+              "bottom": 541,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1036.109375,
+              "y": 500,
+              "width": 112.15625,
+              "height": 40,
+              "top": 500,
+              "right": 1148.265625,
+              "bottom": 540,
+              "left": 1036.109375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1156.265625,
+              "y": 500,
+              "width": 135.984375,
+              "height": 40,
+              "top": 500,
+              "right": 1292.25,
+              "bottom": 540,
+              "left": 1156.265625
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 565,
+              "width": 80.84375,
+              "height": 40,
+              "top": 565,
+              "right": 709.859375,
+              "bottom": 605,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 681,
+              "width": 101.40625,
+              "height": 20,
+              "top": 681,
+              "right": 461,
+              "bottom": 701,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 674,
+              "width": 105,
+              "height": 34,
+              "top": 674,
+              "right": 1046.46875,
+              "bottom": 708,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 729,
+              "width": 85.015625,
+              "height": 20,
+              "top": 729,
+              "right": 444.609375,
+              "bottom": 749,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 722,
+              "width": 105,
+              "height": 34,
+              "top": 722,
+              "right": 1046.46875,
+              "bottom": 756,
+              "left": 941.46875
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-error[role=\"alert\"]",
+            "foreground": "rgb(252, 165, 165)",
+            "background": "rgb(10, 12, 20)",
+            "ratio": 10.28682168276294
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "create-acknowledgment-preserves-newer-draft",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/create-acknowledgment-preserves-newer-draft.json",
+      "jsonSha256": "50a3cc262a63a67f970fc573868d4d06ed899923a0db1ef98df7d860145a0b4b",
+      "pngPath": "proofs/create-acknowledgment-preserves-newer-draft.png",
+      "pngSha256": "df32c23bc85a2392130b865da7fca97d8d1c411d09aeb47002c72823062b36a9",
+      "state": {
+        "route": "/projects/p1/work",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": "Draft B",
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "input",
+          "role": null,
+          "name": "input",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Add task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 686.59375,
+              "y": 467,
+              "width": 86.875,
+              "height": 54,
+              "top": 467,
+              "right": 773.46875,
+              "bottom": 521,
+              "left": 686.59375
+            }
+          },
+          {
+            "name": "Bulk \u2192 Done",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1035.5625,
+              "y": 480,
+              "width": 112.15625,
+              "height": 40,
+              "top": 480,
+              "right": 1147.71875,
+              "bottom": 520,
+              "left": 1035.5625
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 1155.71875,
+              "y": 480,
+              "width": 135.984375,
+              "height": 40,
+              "top": 480,
+              "right": 1291.703125,
+              "bottom": 520,
+              "left": 1155.71875
+            }
+          },
+          {
+            "name": "Preview",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 629.015625,
+              "y": 545,
+              "width": 80.84375,
+              "height": 40,
+              "top": 545,
+              "right": 709.859375,
+              "bottom": 585,
+              "left": 629.015625
+            }
+          },
+          {
+            "name": "Canonical task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 661,
+              "width": 101.40625,
+              "height": 20,
+              "top": 661,
+              "right": 461,
+              "bottom": 681,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Canonical task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 654,
+              "width": 105,
+              "height": 34,
+              "top": 654,
+              "right": 1046.46875,
+              "bottom": 688,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Second task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 709,
+              "width": 85.015625,
+              "height": 20,
+              "top": 709,
+              "right": 444.609375,
+              "bottom": 729,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Second task",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 702,
+              "width": 105,
+              "height": 34,
+              "top": 702,
+              "right": 1046.46875,
+              "bottom": 736,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Draft survives rejection",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 757,
+              "width": 161.5,
+              "height": 20,
+              "top": 757,
+              "right": 521.09375,
+              "bottom": 777,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Draft survives rejection",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 750,
+              "width": 105,
+              "height": 34,
+              "top": 750,
+              "right": 1046.46875,
+              "bottom": 784,
+              "left": 941.46875
+            }
+          },
+          {
+            "name": "Draft A",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 359.59375,
+              "y": 805,
+              "width": 49.0625,
+              "height": 20,
+              "top": 805,
+              "right": 408.65625,
+              "bottom": 825,
+              "left": 359.59375
+            }
+          },
+          {
+            "name": "Status for Draft A",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 941.46875,
+              "y": 798,
+              "width": 105,
+              "height": 34,
+              "top": 798,
+              "right": 1046.46875,
+              "bottom": 832,
+              "left": 941.46875
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "bulk-acknowledgment-preserves-new-selection",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/bulk-acknowledgment-preserves-new-selection.json",
+      "jsonSha256": "bd2523967ccdbcf9d03b413dbfb53a7ce2dcf9fac8a78ff88b4cbd641890e414",
+      "pngPath": "proofs/bulk-acknowledgment-preserves-new-selection.png",
+      "pngSha256": "13640dcc65644a8d909e1df3ba485a294ba6cedfbeb490ca52d1b85b5e39226e",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": null,
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [
+          "task-2"
+        ],
+        "draftTitle": null,
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "input",
+          "role": null,
+          "name": "Select Second task",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 297.59375,
+              "y": 422,
+              "width": 154.359375,
+              "height": 40,
+              "top": 422,
+              "right": 451.953125,
+              "bottom": 462,
+              "left": 297.59375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 459.953125,
+              "y": 422,
+              "width": 135.984375,
+              "height": 40,
+              "top": 422,
+              "right": 595.9375,
+              "bottom": 462,
+              "left": 459.953125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 599,
+              "width": 160.359375,
+              "height": 40,
+              "top": 599,
+              "right": 479.953125,
+              "bottom": 639,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 671,
+              "width": 160.359375,
+              "height": 40,
+              "top": 671,
+              "right": 479.953125,
+              "bottom": 711,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 535.953125,
+              "y": 599,
+              "width": 160.359375,
+              "height": 40,
+              "top": 599,
+              "right": 696.3125,
+              "bottom": 639,
+              "left": 535.953125
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 535.953125,
+              "y": 671,
+              "width": 160.359375,
+              "height": 40,
+              "top": 671,
+              "right": 696.3125,
+              "bottom": 711,
+              "left": 535.953125
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": null
+      }
+    },
+    {
+      "proofId": "panel-open-desktop",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/panel-open-desktop.json",
+      "jsonSha256": "8be95771a37101321b5a12470db8413aee9e57574ea28b0a0ab2f11ddf6aa063",
+      "pngPath": "proofs/panel-open-desktop.png",
+      "pngSha256": "7a3f73d9b8af501b242e60972145d59bc379a0089a37b1f0dc520ac2bfba4ebc",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": "task-1",
+        "viewport": {
+          "name": "desktop",
+          "width": 1440,
+          "height": 900,
+          "devicePixelRatio": 1,
+          "documentWidth": 1440,
+          "documentHeight": 900
+        },
+        "selectedTaskIds": [],
+        "draftTitle": null,
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Close",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1041.109375,
+              "y": 108,
+              "width": 59.625,
+              "height": 20,
+              "top": 108,
+              "right": 1100.734375,
+              "bottom": 128,
+              "left": 1041.109375
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1114.734375,
+              "y": 108,
+              "width": 49.296875,
+              "height": 20,
+              "top": 108,
+              "right": 1164.03125,
+              "bottom": 128,
+              "left": 1114.734375
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1178.03125,
+              "y": 108,
+              "width": 40.515625,
+              "height": 20,
+              "top": 108,
+              "right": 1218.546875,
+              "bottom": 128,
+              "left": 1178.03125
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1232.546875,
+              "y": 108,
+              "width": 35.90625,
+              "height": 20,
+              "top": 108,
+              "right": 1268.453125,
+              "bottom": 128,
+              "left": 1232.546875
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1282.453125,
+              "y": 108,
+              "width": 40.9375,
+              "height": 20,
+              "top": 108,
+              "right": 1323.390625,
+              "bottom": 128,
+              "left": 1282.453125
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1337.390625,
+              "y": 108,
+              "width": 30.015625,
+              "height": 20,
+              "top": 108,
+              "right": 1367.40625,
+              "bottom": 128,
+              "left": 1337.390625
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1237.484375,
+              "y": 323.5,
+              "width": 95.921875,
+              "height": 40,
+              "top": 323.5,
+              "right": 1333.40625,
+              "bottom": 363.5,
+              "left": 1237.484375
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 297.59375,
+              "y": 422,
+              "width": 154.359375,
+              "height": 40,
+              "top": 422,
+              "right": 451.953125,
+              "bottom": 462,
+              "left": 297.59375
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 459.953125,
+              "y": 422,
+              "width": 135.984375,
+              "height": 40,
+              "top": 422,
+              "right": 595.9375,
+              "bottom": 462,
+              "left": 459.953125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 599,
+              "width": 160.359375,
+              "height": 40,
+              "top": 599,
+              "right": 479.953125,
+              "bottom": 639,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 671,
+              "width": 160.359375,
+              "height": 40,
+              "top": 671,
+              "right": 479.953125,
+              "bottom": 711,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 816,
+              "width": 160.359375,
+              "height": 40,
+              "top": 816,
+              "right": 479.953125,
+              "bottom": 856,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 319.59375,
+              "y": 888,
+              "width": 160.359375,
+              "height": 40,
+              "top": 888,
+              "right": 479.953125,
+              "bottom": 928,
+              "left": 319.59375
+            }
+          },
+          {
+            "name": "Close",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 93,
+              "width": 64.78125,
+              "height": 40,
+              "top": 93,
+              "right": 1070.78125,
+              "bottom": 133,
+              "left": 1006
+            }
+          },
+          {
+            "name": "Mark done",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 1006,
+              "y": 237,
+              "width": 98.71875,
+              "height": 53,
+              "top": 237,
+              "right": 1104.71875,
+              "bottom": 290,
+              "left": 1006
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-task-panel h2",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-task-panel p:not(.p05-eyebrow):not(.p05-muted)",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": {
+          "rejected": true,
+          "reason": "outside-viewport",
+          "box": {
+            "x": 8,
+            "y": -120,
+            "width": 220,
+            "height": 40,
+            "top": -120,
+            "right": 228,
+            "bottom": -80,
+            "left": 8
+          }
+        }
+      }
+    },
+    {
+      "proofId": "panel-open-mobile",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/panel-open-mobile.json",
+      "jsonSha256": "675260f357bc8ed1501c74305ee1ab83ca2ac5459f3aa73777421aeef54635f4",
+      "pngPath": "proofs/panel-open-mobile.png",
+      "pngSha256": "9c1efce77269d6269fbaa7d21e94baa9609b34a439531ef939264d05403d6efb",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": "task-1",
+        "viewport": {
+          "name": "mobile",
+          "width": 390,
+          "height": 844,
+          "devicePixelRatio": 1,
+          "documentWidth": 390,
+          "documentHeight": 844
+        },
+        "selectedTaskIds": [],
+        "draftTitle": null,
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Close",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": 135,
+              "width": 59.625,
+              "height": 20,
+              "top": 135,
+              "right": 69.625,
+              "bottom": 155,
+              "left": 10
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 83.625,
+              "y": 135,
+              "width": 49.296875,
+              "height": 20,
+              "top": 135,
+              "right": 132.921875,
+              "bottom": 155,
+              "left": 83.625
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 146.921875,
+              "y": 135,
+              "width": 40.515625,
+              "height": 20,
+              "top": 135,
+              "right": 187.4375,
+              "bottom": 155,
+              "left": 146.921875
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 201.4375,
+              "y": 135,
+              "width": 35.90625,
+              "height": 20,
+              "top": 135,
+              "right": 237.34375,
+              "bottom": 155,
+              "left": 201.4375
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 251.34375,
+              "y": 135,
+              "width": 40.9375,
+              "height": 20,
+              "top": 135,
+              "right": 292.28125,
+              "bottom": 155,
+              "left": 251.34375
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 306.28125,
+              "y": 135,
+              "width": 30.015625,
+              "height": 20,
+              "top": 135,
+              "right": 336.296875,
+              "bottom": 155,
+              "left": 306.28125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 138,
+              "y": 465,
+              "width": 95.921875,
+              "height": 40,
+              "top": 465,
+              "right": 233.921875,
+              "bottom": 505,
+              "left": 138
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": 533,
+              "width": 154.359375,
+              "height": 40,
+              "top": 533,
+              "right": 164.359375,
+              "bottom": 573,
+              "left": 10
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 172.359375,
+              "y": 533,
+              "width": 135.984375,
+              "height": 40,
+              "top": 533,
+              "right": 308.34375,
+              "bottom": 573,
+              "left": 172.359375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 738,
+              "width": 176,
+              "height": 40,
+              "top": 738,
+              "right": 208,
+              "bottom": 778,
+              "left": 32
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 810,
+              "width": 176,
+              "height": 40,
+              "top": 810,
+              "right": 208,
+              "bottom": 850,
+              "left": 32
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 955,
+              "width": 176,
+              "height": 40,
+              "top": 955,
+              "right": 208,
+              "bottom": 995,
+              "left": 32
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 1027,
+              "width": 176,
+              "height": 40,
+              "top": 1027,
+              "right": 208,
+              "bottom": 1067,
+              "left": 32
+            }
+          },
+          {
+            "name": "Close",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": 29,
+              "width": 64.78125,
+              "height": 40,
+              "top": 29,
+              "right": 74.78125,
+              "bottom": 69,
+              "left": 10
+            }
+          },
+          {
+            "name": "Mark done",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": 173,
+              "width": 98.71875,
+              "height": 53,
+              "top": 173,
+              "right": 108.71875,
+              "bottom": 226,
+              "left": 10
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-task-panel h2",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-task-panel p:not(.p05-eyebrow):not(.p05-muted)",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": {
+          "rejected": true,
+          "reason": "outside-viewport",
+          "box": {
+            "x": 8,
+            "y": -120,
+            "width": 220,
+            "height": 40,
+            "top": -120,
+            "right": 228,
+            "bottom": -80,
+            "left": 8
+          }
+        }
+      }
+    },
+    {
+      "proofId": "panel-open-short-height",
+      "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+      "jsonPath": "proofs/panel-open-short-height.json",
+      "jsonSha256": "c884c8539a85c24ed53a3c6f1086608e5b802333ad8c7e05ef1ae0bfeb18ec32",
+      "pngPath": "proofs/panel-open-short-height.png",
+      "pngSha256": "1f22e9547a8cfa37617dc15ce453213f3d92e2be4ae3796340a71df76b0de569",
+      "state": {
+        "route": "/projects/p1/work?layout=board",
+        "projectId": "p1",
+        "taskId": "task-1",
+        "viewport": {
+          "name": "short-height",
+          "width": 390,
+          "height": 560,
+          "devicePixelRatio": 1,
+          "documentWidth": 390,
+          "documentHeight": 560
+        },
+        "selectedTaskIds": [],
+        "draftTitle": null,
+        "visibleAlert": "",
+        "scroll": {
+          "windowX": 0,
+          "windowY": 0,
+          "treegridTop": 0,
+          "boardLeft": 0,
+          "taskPanelTop": 0
+        },
+        "focusedElement": {
+          "tag": "button",
+          "role": null,
+          "name": "Close",
+          "id": null
+        },
+        "pending": {
+          "commandCount": 0,
+          "visibleLoadingMessages": 0
+        },
+        "readyState": "complete",
+        "requiredActionInventory": [
+          {
+            "name": "Portfolio",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": -328,
+              "width": 59.625,
+              "height": 20,
+              "top": -328,
+              "right": 69.625,
+              "bottom": -308,
+              "left": 10
+            }
+          },
+          {
+            "name": "My day",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 83.625,
+              "y": -328,
+              "width": 49.296875,
+              "height": 20,
+              "top": -328,
+              "right": 132.921875,
+              "bottom": -308,
+              "left": 83.625
+            }
+          },
+          {
+            "name": "Home",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 146.921875,
+              "y": -328,
+              "width": 40.515625,
+              "height": 20,
+              "top": -328,
+              "right": 187.4375,
+              "bottom": -308,
+              "left": 146.921875
+            }
+          },
+          {
+            "name": "Work",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 201.4375,
+              "y": -328,
+              "width": 35.90625,
+              "height": 20,
+              "top": -328,
+              "right": 237.34375,
+              "bottom": -308,
+              "left": 201.4375
+            }
+          },
+          {
+            "name": "Board",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 251.34375,
+              "y": -328,
+              "width": 40.9375,
+              "height": 20,
+              "top": -328,
+              "right": 292.28125,
+              "bottom": -308,
+              "left": 251.34375
+            }
+          },
+          {
+            "name": "Plan",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 306.28125,
+              "y": -328,
+              "width": 30.015625,
+              "height": 20,
+              "top": -328,
+              "right": 336.296875,
+              "bottom": -308,
+              "left": 306.28125
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "a",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 138,
+              "y": 2,
+              "width": 95.921875,
+              "height": 40,
+              "top": 2,
+              "right": 233.921875,
+              "bottom": 42,
+              "left": 138
+            }
+          },
+          {
+            "name": "Bulk \u2192 In progress",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": 70,
+              "width": 154.359375,
+              "height": 40,
+              "top": 70,
+              "right": 164.359375,
+              "bottom": 110,
+              "left": 10
+            }
+          },
+          {
+            "name": "Cancel selected",
+            "tag": "button",
+            "enabled": false,
+            "visible": true,
+            "box": {
+              "x": 172.359375,
+              "y": 70,
+              "width": 135.984375,
+              "height": 40,
+              "top": 70,
+              "right": 308.34375,
+              "bottom": 110,
+              "left": 172.359375
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 275,
+              "width": 176,
+              "height": 40,
+              "top": 275,
+              "right": 208,
+              "bottom": 315,
+              "left": 32
+            }
+          },
+          {
+            "name": "Move Canonical task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 347,
+              "width": 176,
+              "height": 40,
+              "top": 347,
+              "right": 208,
+              "bottom": 387,
+              "left": 32
+            }
+          },
+          {
+            "name": "Open task",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 492,
+              "width": 176,
+              "height": 40,
+              "top": 492,
+              "right": 208,
+              "bottom": 532,
+              "left": 32
+            }
+          },
+          {
+            "name": "Move Second task to",
+            "tag": "select",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 32,
+              "y": 564,
+              "width": 176,
+              "height": 40,
+              "top": 564,
+              "right": 208,
+              "bottom": 604,
+              "left": 32
+            }
+          },
+          {
+            "name": "Close",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": 29,
+              "width": 64.78125,
+              "height": 40,
+              "top": 29,
+              "right": 74.78125,
+              "bottom": 69,
+              "left": 10
+            }
+          },
+          {
+            "name": "Mark done",
+            "tag": "button",
+            "enabled": true,
+            "visible": true,
+            "box": {
+              "x": 10,
+              "y": 173,
+              "width": 98.71875,
+              "height": 53,
+              "top": 173,
+              "right": 108.71875,
+              "bottom": 226,
+              "left": 10
+            }
+          }
+        ],
+        "bodyHorizontalOverflow": false,
+        "textContrast": [
+          {
+            "selector": ".p05-task-panel h2",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-task-panel p:not(.p05-eyebrow):not(.p05-muted)",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          },
+          {
+            "selector": ".p05-board section > h3",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 13.981703505432394
+          },
+          {
+            "selector": ".p05-card label span",
+            "foreground": "rgb(30, 41, 59)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 14.628718079350337
+          }
+        ],
+        "pairedCapture": {
+          "stateSnapshotAndPngShareProofId": true,
+          "browserActionsBetweenSnapshotAndPng": 0
+        },
+        "negativeControlResult": {
+          "rejected": true,
+          "reason": "outside-viewport",
+          "box": {
+            "x": 8,
+            "y": -120,
+            "width": 220,
+            "height": 40,
+            "top": -120,
+            "right": 228,
+            "bottom": -80,
+            "left": 8
+          }
+        }
+      }
+    }
+  ]
+}

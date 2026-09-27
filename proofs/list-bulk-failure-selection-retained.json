@@ -1,0 +1,297 @@
+{
+  "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+  "capturedAt": "2026-09-27T05:11:14.095Z",
+  "negativeControlResult": null,
+  "pageState": {
+    "proofId": "list-bulk-failure-selection-retained",
+    "route": "/projects/p1/work",
+    "projectId": "p1",
+    "taskId": null,
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "devicePixelRatio": 1,
+      "documentWidth": 1440,
+      "documentHeight": 900
+    },
+    "selectedTaskIds": [
+      "task-1"
+    ],
+    "draftTitle": "",
+    "visibleAlert": "The task changed on the server. Refresh and try again.",
+    "scroll": {
+      "windowX": 0,
+      "windowY": 0,
+      "treegridTop": 0,
+      "boardLeft": 0,
+      "taskPanelTop": 0
+    },
+    "focusedElement": {
+      "tag": "body",
+      "role": null,
+      "name": "Skip to content SYSGRID ‹ Operations Home (Unavailable) Home is unavailable for the current account. Projects Monitoring (Unavailable) Monitoring is unavailable for the current account. Infrastructure Assets (Unavailable) Assets is unavailable for the current account. Racks (Unavailable) Racks is unavailable for the current account. Services (Unavailable) Services is unavailable for the current account. External (Unavailable) External Preview unavailable: System Root access is required. Connectivity Network (Unavailable) Network is unavailable for the current account. Architecture (Unavailable) Architecture Preview unavailable: System Root access is required. Analysis Research (Unavailable) Research Preview unavailable: System Root access is required. FAR (Unavailable) FAR Preview unavailable: System Root access is required. Resources Vendors (Unavailable) Vendors Preview unavailable: System Root access is required. Knowledge (Unavailable) Knowledge Preview unavailable: System Root access is required. Audit logs (Unavailable) Audit logs is unavailable for the current account. Settings / Access (Unavailable) Settings / Access is unavailable for the current account. DARK LIGHT Version 1.2.6 PATCH NOTES Search released and authorized records... ⌘ K App tools PROJECTS · PROJECT WORKSPACE Work Portfolio My day Home Work Board Plan PROJECT FOCUS The next useful actions Deterministic recommendations from the same task graph used by Work and Board. 1 actionable · pv-focus-1 IN PROGRESS OR REVIEW Canonical task Project A · Due in five days In progress or review: current project work Open task The task changed on the server. Refresh and try again. New task title Add task Bulk → Done Cancel selected 2 tasks Paste CSV/TSV Preview Task Owner Status Progress Finish Canonical task mina To Do In progress Blocked Review Done Cancelled % 2026-10-01 Second task mina To Do In progress Blocked Review Done Cancelled % Unscheduled Back to Project Home YOUR TIME (America/Chicago): 00:11:13 SOUTH KOREA (KST): 14:11:13 Version 1.2.6",
+      "id": null
+    },
+    "pending": {
+      "commandCount": 0,
+      "visibleLoadingMessages": 0
+    },
+    "readyState": "complete",
+    "requiredActionInventory": [
+      {
+        "name": "Portfolio",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1041.109375,
+          "y": 108,
+          "width": 59.625,
+          "height": 20,
+          "top": 108,
+          "right": 1100.734375,
+          "bottom": 128,
+          "left": 1041.109375
+        }
+      },
+      {
+        "name": "My day",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1114.734375,
+          "y": 108,
+          "width": 49.296875,
+          "height": 20,
+          "top": 108,
+          "right": 1164.03125,
+          "bottom": 128,
+          "left": 1114.734375
+        }
+      },
+      {
+        "name": "Home",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1178.03125,
+          "y": 108,
+          "width": 40.515625,
+          "height": 20,
+          "top": 108,
+          "right": 1218.546875,
+          "bottom": 128,
+          "left": 1178.03125
+        }
+      },
+      {
+        "name": "Work",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1232.546875,
+          "y": 108,
+          "width": 35.90625,
+          "height": 20,
+          "top": 108,
+          "right": 1268.453125,
+          "bottom": 128,
+          "left": 1232.546875
+        }
+      },
+      {
+        "name": "Board",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1282.453125,
+          "y": 108,
+          "width": 40.9375,
+          "height": 20,
+          "top": 108,
+          "right": 1323.390625,
+          "bottom": 128,
+          "left": 1282.453125
+        }
+      },
+      {
+        "name": "Plan",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1337.390625,
+          "y": 108,
+          "width": 30.015625,
+          "height": 20,
+          "top": 108,
+          "right": 1367.40625,
+          "bottom": 128,
+          "left": 1337.390625
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1237.484375,
+          "y": 323.5,
+          "width": 95.921875,
+          "height": 40,
+          "top": 323.5,
+          "right": 1333.40625,
+          "bottom": 363.5,
+          "left": 1237.484375
+        }
+      },
+      {
+        "name": "Add task",
+        "tag": "button",
+        "enabled": false,
+        "visible": true,
+        "box": {
+          "x": 686.59375,
+          "y": 487,
+          "width": 86.875,
+          "height": 54,
+          "top": 487,
+          "right": 773.46875,
+          "bottom": 541,
+          "left": 686.59375
+        }
+      },
+      {
+        "name": "Bulk → Done",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1036.109375,
+          "y": 500,
+          "width": 112.15625,
+          "height": 40,
+          "top": 500,
+          "right": 1148.265625,
+          "bottom": 540,
+          "left": 1036.109375
+        }
+      },
+      {
+        "name": "Cancel selected",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1156.265625,
+          "y": 500,
+          "width": 135.984375,
+          "height": 40,
+          "top": 500,
+          "right": 1292.25,
+          "bottom": 540,
+          "left": 1156.265625
+        }
+      },
+      {
+        "name": "Preview",
+        "tag": "button",
+        "enabled": false,
+        "visible": true,
+        "box": {
+          "x": 629.015625,
+          "y": 565,
+          "width": 80.84375,
+          "height": 40,
+          "top": 565,
+          "right": 709.859375,
+          "bottom": 605,
+          "left": 629.015625
+        }
+      },
+      {
+        "name": "Canonical task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 359.59375,
+          "y": 681,
+          "width": 101.40625,
+          "height": 20,
+          "top": 681,
+          "right": 461,
+          "bottom": 701,
+          "left": 359.59375
+        }
+      },
+      {
+        "name": "Status for Canonical task",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 941.46875,
+          "y": 674,
+          "width": 105,
+          "height": 34,
+          "top": 674,
+          "right": 1046.46875,
+          "bottom": 708,
+          "left": 941.46875
+        }
+      },
+      {
+        "name": "Second task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 359.59375,
+          "y": 729,
+          "width": 85.015625,
+          "height": 20,
+          "top": 729,
+          "right": 444.609375,
+          "bottom": 749,
+          "left": 359.59375
+        }
+      },
+      {
+        "name": "Status for Second task",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 941.46875,
+          "y": 722,
+          "width": 105,
+          "height": 34,
+          "top": 722,
+          "right": 1046.46875,
+          "bottom": 756,
+          "left": 941.46875
+        }
+      }
+    ],
+    "textContrast": [
+      {
+        "selector": ".p05-error[role=\"alert\"]",
+        "foreground": "rgb(252, 165, 165)",
+        "background": "rgb(10, 12, 20)",
+        "ratio": 10.28682168276294
+      }
+    ],
+    "bodyHorizontalOverflow": false,
+    "pairedCapture": {
+      "stateSnapshotAndPngShareProofId": true,
+      "browserActionsBetweenSnapshotAndPng": 0
+    }
+  }
+}

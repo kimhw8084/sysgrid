@@ -1,0 +1,23 @@
+{
+  "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+  "candidateTree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025",
+  "candidateParent": "876f84cf33abd441fca34195f4fdbcb8dec5e281",
+  "baseSha": "899b47f9e1569f56455a0dfd8d3ffc440f4d8613",
+  "baseTree": "15332211fe6c39f5f3926ebc970a3c0ece362d83",
+  "workBranch": "codex/sysgrid-project-v2-work-task-integrity-fix-v3",
+  "change": "CHG-50 R2 \u2014 Project Work task-integrity fix",
+  "focusedTaskIntegrity": "8 passed on the final candidate SHA",
+  "affectedConsumers": "25 passed, 1 skipped, 5 unrelated legacy Projects readability failures",
+  "typecheck": "passed",
+  "operationalContracts": "passed",
+  "fullAppVerifier": {
+    "backend": "205 passed",
+    "frontendVitest": "141 files / 721 tests passed",
+    "productionBuild": "passed",
+    "normalV1Browser": "75 passed / 2 skipped",
+    "explicitRootPreviewBrowser": "1 passed",
+    "note": "The verifier emitted an address-in-use diagnostic on port 8000 during the normal-to-root-preview transition; it then provisioned the synthetic root-preview tenant and the explicit root-preview browser gate passed."
+  },
+  "unrelatedFailureClassification": "The five projects-readability.spec.ts failures target legacy query-driven Overview/modal selectors that are absent on the integrated canonical /projects/... routes. Representative legacy failures were reproduced on base 899b47f9; no legacy Projects or P08 product changes were made in CHG-50.",
+  "proofPairs": 17
+}

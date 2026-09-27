@@ -1,0 +1,269 @@
+{
+  "candidateSha": "5f29e9a7de97c6bb242666d50fdbc4c1b3ab40cb",
+  "capturedAt": "2026-09-27T05:11:09.810Z",
+  "negativeControlResult": null,
+  "pageState": {
+    "proofId": "board-panel-closed-focus-restored-desktop",
+    "route": "/projects/p1/work?layout=board",
+    "projectId": "p1",
+    "taskId": null,
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "devicePixelRatio": 1,
+      "documentWidth": 1440,
+      "documentHeight": 900
+    },
+    "selectedTaskIds": [],
+    "draftTitle": null,
+    "visibleAlert": "",
+    "scroll": {
+      "windowX": 0,
+      "windowY": 0,
+      "treegridTop": 0,
+      "boardLeft": 0,
+      "taskPanelTop": 0
+    },
+    "focusedElement": {
+      "tag": "button",
+      "role": null,
+      "name": "Open task",
+      "id": null
+    },
+    "pending": {
+      "commandCount": 0,
+      "visibleLoadingMessages": 0
+    },
+    "readyState": "complete",
+    "requiredActionInventory": [
+      {
+        "name": "Portfolio",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1041.109375,
+          "y": 108,
+          "width": 59.625,
+          "height": 20,
+          "top": 108,
+          "right": 1100.734375,
+          "bottom": 128,
+          "left": 1041.109375
+        }
+      },
+      {
+        "name": "My day",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1114.734375,
+          "y": 108,
+          "width": 49.296875,
+          "height": 20,
+          "top": 108,
+          "right": 1164.03125,
+          "bottom": 128,
+          "left": 1114.734375
+        }
+      },
+      {
+        "name": "Home",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1178.03125,
+          "y": 108,
+          "width": 40.515625,
+          "height": 20,
+          "top": 108,
+          "right": 1218.546875,
+          "bottom": 128,
+          "left": 1178.03125
+        }
+      },
+      {
+        "name": "Work",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1232.546875,
+          "y": 108,
+          "width": 35.90625,
+          "height": 20,
+          "top": 108,
+          "right": 1268.453125,
+          "bottom": 128,
+          "left": 1232.546875
+        }
+      },
+      {
+        "name": "Board",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1282.453125,
+          "y": 108,
+          "width": 40.9375,
+          "height": 20,
+          "top": 108,
+          "right": 1323.390625,
+          "bottom": 128,
+          "left": 1282.453125
+        }
+      },
+      {
+        "name": "Plan",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1337.390625,
+          "y": 108,
+          "width": 30.015625,
+          "height": 20,
+          "top": 108,
+          "right": 1367.40625,
+          "bottom": 128,
+          "left": 1337.390625
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "a",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 1237.484375,
+          "y": 323.5,
+          "width": 95.921875,
+          "height": 40,
+          "top": 323.5,
+          "right": 1333.40625,
+          "bottom": 363.5,
+          "left": 1237.484375
+        }
+      },
+      {
+        "name": "Bulk → In progress",
+        "tag": "button",
+        "enabled": false,
+        "visible": true,
+        "box": {
+          "x": 297.59375,
+          "y": 422,
+          "width": 154.359375,
+          "height": 40,
+          "top": 422,
+          "right": 451.953125,
+          "bottom": 462,
+          "left": 297.59375
+        }
+      },
+      {
+        "name": "Cancel selected",
+        "tag": "button",
+        "enabled": false,
+        "visible": true,
+        "box": {
+          "x": 459.953125,
+          "y": 422,
+          "width": 135.984375,
+          "height": 40,
+          "top": 422,
+          "right": 595.9375,
+          "bottom": 462,
+          "left": 459.953125
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 599,
+          "width": 160.359375,
+          "height": 40,
+          "top": 599,
+          "right": 479.953125,
+          "bottom": 639,
+          "left": 319.59375
+        }
+      },
+      {
+        "name": "Move Canonical task to",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 671,
+          "width": 160.359375,
+          "height": 40,
+          "top": 671,
+          "right": 479.953125,
+          "bottom": 711,
+          "left": 319.59375
+        }
+      },
+      {
+        "name": "Open task",
+        "tag": "button",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 816,
+          "width": 160.359375,
+          "height": 40,
+          "top": 816,
+          "right": 479.953125,
+          "bottom": 856,
+          "left": 319.59375
+        }
+      },
+      {
+        "name": "Move Second task to",
+        "tag": "select",
+        "enabled": true,
+        "visible": true,
+        "box": {
+          "x": 319.59375,
+          "y": 888,
+          "width": 160.359375,
+          "height": 40,
+          "top": 888,
+          "right": 479.953125,
+          "bottom": 928,
+          "left": 319.59375
+        }
+      }
+    ],
+    "textContrast": [
+      {
+        "selector": ".p05-board section > h3",
+        "foreground": "rgb(30, 41, 59)",
+        "background": "rgb(248, 250, 252)",
+        "ratio": 13.981703505432394
+      },
+      {
+        "selector": ".p05-card label span",
+        "foreground": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "ratio": 14.628718079350337
+      }
+    ],
+    "bodyHorizontalOverflow": false,
+    "pairedCapture": {
+      "stateSnapshotAndPngShareProofId": true,
+      "browserActionsBetweenSnapshotAndPng": 0
+    }
+  }
+}
