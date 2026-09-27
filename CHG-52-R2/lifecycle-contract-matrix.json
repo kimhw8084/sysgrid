@@ -1,0 +1,253 @@
+{
+  "results": [
+    {
+      "action": "delete",
+      "audit_rows_after_preview": 0,
+      "blocked_count": 0,
+      "blockers": [],
+      "can_execute": true,
+      "case": "archive-preview",
+      "changed_count": 1,
+      "changed_ids": [
+        1
+      ],
+      "device_archived_after_preview": false,
+      "execution_outcome": "preview",
+      "http_status": 200,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": true,
+      "selected_count": 1,
+      "status": "preview",
+      "unchanged_count": 0,
+      "unchanged_ids": []
+    },
+    {
+      "action": "delete",
+      "audit_actions_after": [
+        "ARCHIVE"
+      ],
+      "blocked_count": 0,
+      "blockers": [],
+      "can_execute": true,
+      "case": "archive-execution",
+      "changed_count": 1,
+      "changed_ids": [
+        1
+      ],
+      "device_archived_after": true,
+      "execution_outcome": "success",
+      "http_status": 200,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": "omitted",
+      "selected_count": 1,
+      "status": "success",
+      "unchanged_count": 0,
+      "unchanged_ids": []
+    },
+    {
+      "action": "delete",
+      "audit_actions_after": [
+        "ARCHIVE"
+      ],
+      "blocked_count": 0,
+      "blockers": [],
+      "can_execute": false,
+      "case": "archive-retry",
+      "changed_count": 0,
+      "changed_ids": [],
+      "device_archived_after": true,
+      "execution_outcome": "no_op",
+      "http_status": 200,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": false,
+      "selected_count": 1,
+      "status": "no_op",
+      "unchanged_count": 1,
+      "unchanged_ids": [
+        1
+      ]
+    },
+    {
+      "action": "restore",
+      "audit_actions_after_preview": [
+        "ARCHIVE"
+      ],
+      "blocked_count": 0,
+      "blockers": [],
+      "can_execute": true,
+      "case": "restore-preview",
+      "changed_count": 1,
+      "changed_ids": [
+        1
+      ],
+      "device_archived_after_preview": true,
+      "execution_outcome": "preview",
+      "http_status": 200,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": true,
+      "selected_count": 1,
+      "status": "preview",
+      "unchanged_count": 0,
+      "unchanged_ids": []
+    },
+    {
+      "action": "restore",
+      "audit_actions_after": [
+        "ARCHIVE",
+        "RESTORE"
+      ],
+      "blocked_count": 0,
+      "blockers": [],
+      "can_execute": true,
+      "case": "restore-execution",
+      "changed_count": 1,
+      "changed_ids": [
+        1
+      ],
+      "device_archived_after": false,
+      "execution_outcome": "success",
+      "http_status": 200,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": "omitted",
+      "selected_count": 1,
+      "status": "success",
+      "unchanged_count": 0,
+      "unchanged_ids": []
+    },
+    {
+      "action": "restore",
+      "audit_actions_after": [
+        "ARCHIVE",
+        "RESTORE"
+      ],
+      "blocked_count": 0,
+      "blockers": [],
+      "can_execute": false,
+      "case": "restore-retry",
+      "changed_count": 0,
+      "changed_ids": [],
+      "device_archived_after": false,
+      "execution_outcome": "no_op",
+      "http_status": 200,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": "omitted",
+      "selected_count": 1,
+      "status": "no_op",
+      "unchanged_count": 1,
+      "unchanged_ids": [
+        1
+      ]
+    },
+    {
+      "action": "restore",
+      "blocked_count": 1,
+      "blockers": [
+        {
+          "id": 1,
+          "name": "BULK-HOST",
+          "reason": "An active asset already uses this hostname"
+        }
+      ],
+      "can_execute": false,
+      "case": "restore-duplicate-hostname-preview",
+      "changed_count": 0,
+      "changed_ids": [],
+      "execution_outcome": "preview",
+      "http_status": 200,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": true,
+      "selected_count": 1,
+      "status": "preview",
+      "unchanged_count": 0,
+      "unchanged_ids": []
+    },
+    {
+      "action": "restore",
+      "audit_actions_after": [
+        "ARCHIVE"
+      ],
+      "blocked_count": 1,
+      "blockers": [
+        {
+          "id": 1,
+          "name": "BULK-HOST",
+          "reason": "An active asset already uses this hostname"
+        }
+      ],
+      "can_execute": false,
+      "case": "restore-duplicate-hostname-execution",
+      "changed_count": 0,
+      "changed_ids": [],
+      "device_archived_after_failure": true,
+      "execution_outcome": "blocked",
+      "http_status": 409,
+      "matched_count": 1,
+      "missing_count": 0,
+      "missing_ids": [],
+      "request_dry_run": "omitted",
+      "selected_count": 1,
+      "status": null,
+      "unchanged_count": 0,
+      "unchanged_ids": []
+    },
+    {
+      "action": "delete",
+      "audit_actions_after": [
+        "ARCHIVE",
+        "RESTORE"
+      ],
+      "blocked_count": 0,
+      "blockers": [],
+      "can_execute": false,
+      "case": "missing-selection-execution",
+      "changed_count": 1,
+      "changed_ids": [
+        1
+      ],
+      "device_archived_after_failure": false,
+      "execution_outcome": "blocked",
+      "http_status": 409,
+      "matched_count": 1,
+      "missing_count": 1,
+      "missing_ids": [
+        9223372036854775807
+      ],
+      "request_dry_run": "omitted",
+      "selected_count": 2,
+      "status": null,
+      "unchanged_count": 0,
+      "unchanged_ids": []
+    },
+    {
+      "audit_actions_after": [
+        "ARCHIVE"
+      ],
+      "case": "single-delete-first-archive",
+      "http_status": 200,
+      "status": "success"
+    },
+    {
+      "audit_actions_after": [
+        "ARCHIVE"
+      ],
+      "case": "single-delete-retry",
+      "http_status": 200,
+      "status": "no_op"
+    }
+  ],
+  "schema_version": 1
+}

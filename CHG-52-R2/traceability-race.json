@@ -1,0 +1,98 @@
+{
+  "after_blocked_execution": {
+    "architecture_traceability_links": 0,
+    "audit_actions": [
+      "ARCHIVE"
+    ],
+    "audit_rows": [
+      {
+        "action": "ARCHIVE",
+        "changes": {
+          "changed_ids": [
+            1
+          ],
+          "lifecycle_action": "archive",
+          "target": {
+            "id": 1,
+            "name": "TRACE-RACE-HOST"
+          }
+        },
+        "description": "Archived Device TRACE-RACE-HOST (id 1).",
+        "target_id": "1"
+      }
+    ],
+    "device_archived": true,
+    "device_exists": true,
+    "device_locations": 0,
+    "device_relationships": 0,
+    "device_rows": 1,
+    "device_software": 1,
+    "external_links": 0,
+    "far_mode_asset_links": 0,
+    "firewall_device_links": 0,
+    "hardware_components": 0,
+    "logical_services_attached": 0,
+    "maintenance_windows": 0,
+    "monitoring_history": 0,
+    "monitoring_item_ids": [],
+    "monitoring_items": 0,
+    "monitoring_owners": 0,
+    "network_interfaces": 0,
+    "port_connections": 0,
+    "pv1_traceability_links": 1,
+    "secret_vault_rows": 0
+  },
+  "execution": {
+    "action": "purge",
+    "blocked_count": 1,
+    "blockers": [
+      {
+        "id": 1,
+        "name": "TRACE-RACE-HOST",
+        "protected_link_count": 1,
+        "protected_links": [
+          {
+            "id": "retired-race-fe238c0b-ed21-4dc9-a786-ddc588db8bcf",
+            "type": "PV1 traceability"
+          }
+        ],
+        "reason": "Hard purge would destroy normalized Architecture/PV1 traceability history"
+      }
+    ],
+    "can_execute": false,
+    "changed_count": 0,
+    "changed_ids": [],
+    "execution_outcome": "blocked",
+    "http_status": 409,
+    "matched_count": 1,
+    "missing_count": 0,
+    "missing_ids": [],
+    "selected_count": 1,
+    "status": "blocked",
+    "unchanged_count": 0,
+    "unchanged_ids": []
+  },
+  "intervening_change": "A retired PV1 normalized traceability link was committed after preview.",
+  "mutation_applied": false,
+  "preview": {
+    "action": "purge",
+    "blocked_count": 0,
+    "blockers": [],
+    "can_execute": true,
+    "changed_count": 1,
+    "changed_ids": [
+      1
+    ],
+    "execution_outcome": "preview",
+    "http_status": 200,
+    "matched_count": 1,
+    "missing_count": 0,
+    "missing_ids": [],
+    "selected_count": 1,
+    "status": "preview",
+    "unchanged_count": 0,
+    "unchanged_ids": []
+  },
+  "schema_version": 1,
+  "test": "test_device_purge_rechecks_retired_traceability_added_after_preview"
+}

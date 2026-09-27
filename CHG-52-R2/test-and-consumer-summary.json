@@ -1,0 +1,80 @@
+{
+  "backend_capture_cases": {
+    "failed": 0,
+    "note": "Selected backend lifecycle capture tests exercised asyncio/trio and the normalized traceability flow.",
+    "passed": 10
+  },
+  "backend_focused": {
+    "command": "pytest test_devices_api_edges.py test_asset_architecture_traceability.py test_audit_integrity.py",
+    "failed": 0,
+    "passed": 22
+  },
+  "backend_full_suite": {
+    "command": "scripts/verify-app.sh backend",
+    "failed": 0,
+    "passed": 205
+  },
+  "frontend": {
+    "contract_checks": "passed",
+    "coverage": {
+      "files_passed": 141,
+      "tests_passed": 722
+    },
+    "production_build": "passed",
+    "typecheck": "passed"
+  },
+  "playwright": {
+    "normal_v1": {
+      "failed": 0,
+      "passed": 75,
+      "skipped": 2
+    },
+    "targeted_repeat": {
+      "consumers": [
+        "Assets",
+        "Vendors"
+      ],
+      "failed": 0,
+      "passed": 2
+    }
+  },
+  "schema_version": 1,
+  "shared_modal_consumer_probes": {
+    "assets_vendors_targeted": {
+      "failed": 0,
+      "passed": 2
+    },
+    "attempted": [
+      "Assets",
+      "External",
+      "Vendors",
+      "FAR",
+      "Services",
+      "Network"
+    ],
+    "normal_v1_full_suite": {
+      "covers": [
+        "Assets",
+        "Services",
+        "Network"
+      ],
+      "failed": 0,
+      "passed": 75,
+      "skipped": 2
+    },
+    "out_of_profile": {
+      "external_services_bulk_preview": "failed before opening the existing Services preview; the same missing Bulk Actions control reproduced on exact base under the same Node 20.19.4 runtime",
+      "far_workflows": "4 failed with HTTP 403 SYSTEM_ROOT_REQUIRED because normal-v1 explicitly excludes FAR/Research; no privileged identity was introduced"
+    }
+  },
+  "verify_app": {
+    "classification": "root-preview identity gate required by verify-app.sh; unrelated to normal-v1 Assets production profile",
+    "normal_v1_gates": "passed",
+    "process_exit": 1,
+    "root_preview": "not run; SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID is unset and was not inferred"
+  },
+  "warnings": [
+    "Existing Starlette HTTP_422_UNPROCESSABLE_ENTITY deprecation.",
+    "Existing frontend esbuild/oxc and stale browserslist data warnings."
+  ]
+}

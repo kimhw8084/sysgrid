@@ -1,0 +1,953 @@
+{
+  "after_execution": {
+    "architecture_traceability_links": 0,
+    "audit_actions": [
+      "ARCHIVE",
+      "PURGE"
+    ],
+    "audit_rows": [
+      {
+        "action": "ARCHIVE",
+        "changes": {
+          "changed_ids": [
+            1
+          ],
+          "lifecycle_action": "archive",
+          "target": {
+            "id": 1,
+            "name": "FAR-PURGE-ASSET-01"
+          }
+        },
+        "description": "Archived Device FAR-PURGE-ASSET-01 (id 1).",
+        "target_id": "1"
+      },
+      {
+        "action": "PURGE",
+        "changes": {
+          "changed_ids": [
+            1
+          ],
+          "lifecycle_action": "purge",
+          "purge_impact": {
+            "deletes": [
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "device_relationships"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "device_software"
+              },
+              {
+                "count": 1,
+                "disposition": "explicit_delete",
+                "table": "devices"
+              },
+              {
+                "count": 1,
+                "disposition": "explicit_delete",
+                "table": "external_links"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "far_mode_assets"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "hardware_components"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "maintenance_windows"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "monitoring_history"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "monitoring_items"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "monitoring_owners"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "network_interfaces"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "port_connections"
+              },
+              {
+                "count": 1,
+                "disposition": "database_cascade",
+                "table": "secret_vault"
+              }
+            ],
+            "detaches": [
+              {
+                "count": 1,
+                "fields": [
+                  "dest_device_id",
+                  "source_device_id"
+                ],
+                "table": "firewall_rules"
+              },
+              {
+                "count": 1,
+                "fields": [
+                  "device_id"
+                ],
+                "table": "logical_services"
+              }
+            ],
+            "permanent": true,
+            "recovery_supported": false
+          },
+          "target": {
+            "id": 1,
+            "name": "FAR-PURGE-ASSET-01"
+          }
+        },
+        "description": "Permanently purged Device FAR-PURGE-ASSET-01 (id 1); recovery is unsupported.",
+        "target_id": "1"
+      }
+    ],
+    "device_archived": null,
+    "device_exists": false,
+    "device_locations": 0,
+    "device_relationships": 0,
+    "device_rows": 0,
+    "device_software": 0,
+    "external_links": 0,
+    "far_mode_asset_links": 0,
+    "firewall_device_links": 0,
+    "hardware_components": 0,
+    "logical_services_attached": 0,
+    "maintenance_windows": 0,
+    "monitoring_history": 0,
+    "monitoring_item_ids": [],
+    "monitoring_items": 0,
+    "monitoring_owners": 0,
+    "network_interfaces": 0,
+    "port_connections": 0,
+    "pv1_traceability_links": 0,
+    "secret_vault_rows": 0
+  },
+  "before_preview": {
+    "architecture_traceability_links": 0,
+    "audit_actions": [
+      "ARCHIVE"
+    ],
+    "audit_rows": [
+      {
+        "action": "ARCHIVE",
+        "changes": {
+          "changed_ids": [
+            1
+          ],
+          "lifecycle_action": "archive",
+          "target": {
+            "id": 1,
+            "name": "FAR-PURGE-ASSET-01"
+          }
+        },
+        "description": "Archived Device FAR-PURGE-ASSET-01 (id 1).",
+        "target_id": "1"
+      }
+    ],
+    "device_archived": true,
+    "device_exists": true,
+    "device_locations": 0,
+    "device_relationships": 1,
+    "device_rows": 1,
+    "device_software": 1,
+    "external_links": 1,
+    "far_mode_asset_links": 1,
+    "firewall_device_links": 1,
+    "hardware_components": 1,
+    "logical_services_attached": 1,
+    "maintenance_windows": 1,
+    "monitoring_history": 1,
+    "monitoring_item_ids": [
+      1
+    ],
+    "monitoring_items": 1,
+    "monitoring_owners": 1,
+    "network_interfaces": 1,
+    "port_connections": 1,
+    "pv1_traceability_links": 0,
+    "secret_vault_rows": 1
+  },
+  "execution": {
+    "action": "purge",
+    "blocked_count": 0,
+    "blockers": [],
+    "can_execute": true,
+    "changed_count": 1,
+    "changed_ids": [
+      1
+    ],
+    "execution_outcome": "success",
+    "http_status": 200,
+    "matched_count": 1,
+    "missing_count": 0,
+    "missing_ids": [],
+    "purge_impact_applied": {
+      "aggregate": {
+        "delete_count": 13,
+        "deletes": [
+          {
+            "count": 1,
+            "disposition": "explicit_delete",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "devices",
+            "type": "Device record"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "device_relationships",
+            "type": "Device relationships"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "device_software",
+            "type": "Device software"
+          },
+          {
+            "count": 1,
+            "disposition": "explicit_delete",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "external_links",
+            "type": "External links"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              {
+                "device_id": 1,
+                "mode_id": 1
+              }
+            ],
+            "ids_truncated": false,
+            "table": "far_mode_assets",
+            "type": "Far mode assets"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "hardware_components",
+            "type": "Hardware components"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "maintenance_windows",
+            "type": "Maintenance windows"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "monitoring_items",
+            "type": "Monitoring items"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "network_interfaces",
+            "type": "Network interfaces"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "port_connections",
+            "type": "Port connections"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "secret_vault",
+            "type": "Secret vault"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "monitoring_history",
+            "type": "Monitoring history"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "monitoring_owners",
+            "type": "Monitoring owners"
+          }
+        ],
+        "detach_count": 2,
+        "detaches": [
+          {
+            "count": 1,
+            "disposition": "nullified",
+            "fields": [
+              "dest_device_id",
+              "source_device_id"
+            ],
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "firewall_rules",
+            "type": "Firewall rules"
+          },
+          {
+            "count": 1,
+            "disposition": "nullified",
+            "fields": [
+              "device_id"
+            ],
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "logical_services",
+            "type": "Logical services"
+          }
+        ],
+        "device_count": 1
+      },
+      "blocked_devices": [],
+      "devices": [
+        {
+          "blockers": [],
+          "deletes": [
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "device_relationships",
+              "type": "Device relationships"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "device_software",
+              "type": "Device software"
+            },
+            {
+              "count": 1,
+              "disposition": "explicit_delete",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "devices",
+              "type": "Device record"
+            },
+            {
+              "count": 1,
+              "disposition": "explicit_delete",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "external_links",
+              "type": "External links"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                {
+                  "device_id": 1,
+                  "mode_id": 1
+                }
+              ],
+              "ids_truncated": false,
+              "table": "far_mode_assets",
+              "type": "Far mode assets"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "hardware_components",
+              "type": "Hardware components"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "maintenance_windows",
+              "type": "Maintenance windows"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "monitoring_history",
+              "type": "Monitoring history"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "monitoring_items",
+              "type": "Monitoring items"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "monitoring_owners",
+              "type": "Monitoring owners"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "network_interfaces",
+              "type": "Network interfaces"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "port_connections",
+              "type": "Port connections"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "secret_vault",
+              "type": "Secret vault"
+            }
+          ],
+          "detaches": [
+            {
+              "count": 1,
+              "disposition": "nullified",
+              "fields": [
+                "dest_device_id",
+                "source_device_id"
+              ],
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "firewall_rules",
+              "type": "Firewall rules"
+            },
+            {
+              "count": 1,
+              "disposition": "nullified",
+              "fields": [
+                "device_id"
+              ],
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "logical_services",
+              "type": "Logical services"
+            }
+          ],
+          "id": 1,
+          "name": "FAR-PURGE-ASSET-01",
+          "permanent": true,
+          "purgeable": true,
+          "recovery_supported": false
+        }
+      ],
+      "permanent": true,
+      "recovery_supported": false
+    },
+    "selected_count": 1,
+    "status": "success",
+    "unchanged_count": 0,
+    "unchanged_ids": []
+  },
+  "preview": {
+    "action": "purge",
+    "blocked_count": 0,
+    "blockers": [],
+    "can_execute": true,
+    "changed_count": 1,
+    "changed_ids": [
+      1
+    ],
+    "execution_outcome": "preview",
+    "http_status": 200,
+    "matched_count": 1,
+    "missing_count": 0,
+    "missing_ids": [],
+    "purge_impact": {
+      "aggregate": {
+        "delete_count": 13,
+        "deletes": [
+          {
+            "count": 1,
+            "disposition": "explicit_delete",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "devices",
+            "type": "Device record"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "device_relationships",
+            "type": "Device relationships"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "device_software",
+            "type": "Device software"
+          },
+          {
+            "count": 1,
+            "disposition": "explicit_delete",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "external_links",
+            "type": "External links"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              {
+                "device_id": 1,
+                "mode_id": 1
+              }
+            ],
+            "ids_truncated": false,
+            "table": "far_mode_assets",
+            "type": "Far mode assets"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "hardware_components",
+            "type": "Hardware components"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "maintenance_windows",
+            "type": "Maintenance windows"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "monitoring_items",
+            "type": "Monitoring items"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "network_interfaces",
+            "type": "Network interfaces"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "port_connections",
+            "type": "Port connections"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "secret_vault",
+            "type": "Secret vault"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "monitoring_history",
+            "type": "Monitoring history"
+          },
+          {
+            "count": 1,
+            "disposition": "database_cascade",
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "monitoring_owners",
+            "type": "Monitoring owners"
+          }
+        ],
+        "detach_count": 2,
+        "detaches": [
+          {
+            "count": 1,
+            "disposition": "nullified",
+            "fields": [
+              "dest_device_id",
+              "source_device_id"
+            ],
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "firewall_rules",
+            "type": "Firewall rules"
+          },
+          {
+            "count": 1,
+            "disposition": "nullified",
+            "fields": [
+              "device_id"
+            ],
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "table": "logical_services",
+            "type": "Logical services"
+          }
+        ],
+        "device_count": 1
+      },
+      "blocked_devices": [],
+      "devices": [
+        {
+          "blockers": [],
+          "deletes": [
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "device_relationships",
+              "type": "Device relationships"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "device_software",
+              "type": "Device software"
+            },
+            {
+              "count": 1,
+              "disposition": "explicit_delete",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "devices",
+              "type": "Device record"
+            },
+            {
+              "count": 1,
+              "disposition": "explicit_delete",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "external_links",
+              "type": "External links"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                {
+                  "device_id": 1,
+                  "mode_id": 1
+                }
+              ],
+              "ids_truncated": false,
+              "table": "far_mode_assets",
+              "type": "Far mode assets"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "hardware_components",
+              "type": "Hardware components"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "maintenance_windows",
+              "type": "Maintenance windows"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "monitoring_history",
+              "type": "Monitoring history"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "monitoring_items",
+              "type": "Monitoring items"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "monitoring_owners",
+              "type": "Monitoring owners"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "network_interfaces",
+              "type": "Network interfaces"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "port_connections",
+              "type": "Port connections"
+            },
+            {
+              "count": 1,
+              "disposition": "database_cascade",
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "secret_vault",
+              "type": "Secret vault"
+            }
+          ],
+          "detaches": [
+            {
+              "count": 1,
+              "disposition": "nullified",
+              "fields": [
+                "dest_device_id",
+                "source_device_id"
+              ],
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "firewall_rules",
+              "type": "Firewall rules"
+            },
+            {
+              "count": 1,
+              "disposition": "nullified",
+              "fields": [
+                "device_id"
+              ],
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "table": "logical_services",
+              "type": "Logical services"
+            }
+          ],
+          "id": 1,
+          "name": "FAR-PURGE-ASSET-01",
+          "permanent": true,
+          "purgeable": true,
+          "recovery_supported": false
+        }
+      ],
+      "permanent": true,
+      "recovery_supported": false
+    },
+    "selected_count": 1,
+    "status": "preview",
+    "unchanged_count": 0,
+    "unchanged_ids": []
+  },
+  "retry": {
+    "action": "purge",
+    "blocked_count": 0,
+    "blockers": [],
+    "can_execute": false,
+    "changed_count": 0,
+    "changed_ids": [],
+    "execution_outcome": "blocked",
+    "http_status": 409,
+    "matched_count": 0,
+    "missing_count": 1,
+    "missing_ids": [
+      1
+    ],
+    "selected_count": 1,
+    "status": "blocked",
+    "unchanged_count": 0,
+    "unchanged_ids": []
+  },
+  "retry_audit_actions": [
+    "ARCHIVE",
+    "PURGE"
+  ],
+  "schema_version": 1,
+  "test": "test_devices_api_edges.py::test_devices_bulk_purge_with_far_mode_assets[asyncio]"
+}

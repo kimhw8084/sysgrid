@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "detail": "dry_run must be a boolean",
+      "http_status": 400,
+      "value": "true"
+    },
+    {
+      "detail": "dry_run must be a boolean",
+      "http_status": 400,
+      "value": "false"
+    },
+    {
+      "detail": "dry_run must be a boolean",
+      "http_status": 400,
+      "value": 0
+    },
+    {
+      "detail": "dry_run must be a boolean",
+      "http_status": 400,
+      "value": 1
+    },
+    {
+      "detail": "dry_run must be a boolean",
+      "http_status": 400,
+      "value": null
+    },
+    {
+      "detail": "dry_run must be a boolean",
+      "http_status": 400,
+      "value": []
+    },
+    {
+      "detail": "dry_run must be a boolean",
+      "http_status": 400,
+      "value": {}
+    }
+  ],
+  "mutation": "none; the test verifies the selected Device remains active and has no lifecycle audit",
+  "schema_version": 1
+}

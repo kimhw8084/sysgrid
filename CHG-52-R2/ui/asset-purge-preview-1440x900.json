@@ -1,0 +1,77 @@
+{
+  "route": "/asset",
+  "profile": "normal-v1",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "scrollY": 0,
+  "archivedScopeLabel": "Archived (2)",
+  "readiness": "Assets purge preview settled; backend response and rendered dependency impact agree.",
+  "purgeImpact": {
+    "permanent": true,
+    "recovery_supported": false,
+    "devices": [
+      {
+        "id": 4,
+        "name": "PW-ASSET-B-1790542187098-j10j6g",
+        "purgeable": true,
+        "permanent": true,
+        "recovery_supported": false,
+        "blockers": [],
+        "deletes": [
+          {
+            "table": "devices",
+            "type": "Device record",
+            "count": 1,
+            "ids": [
+              4
+            ],
+            "ids_truncated": false,
+            "disposition": "explicit_delete"
+          },
+          {
+            "table": "hardware_components",
+            "type": "Hardware components",
+            "count": 1,
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "disposition": "database_cascade"
+          }
+        ],
+        "detaches": []
+      }
+    ],
+    "blocked_devices": [],
+    "aggregate": {
+      "device_count": 1,
+      "delete_count": 2,
+      "detach_count": 0,
+      "deletes": [
+        {
+          "table": "devices",
+          "type": "Device record",
+          "count": 1,
+          "ids": [
+            4
+          ],
+          "ids_truncated": false,
+          "disposition": "explicit_delete"
+        },
+        {
+          "table": "hardware_components",
+          "type": "Hardware components",
+          "count": 1,
+          "ids": [
+            1
+          ],
+          "ids_truncated": false,
+          "disposition": "database_cascade"
+        }
+      ],
+      "detaches": []
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "route": "/asset",
+  "profile": "normal-v1",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "scrollY": 0,
+  "readiness": "Permanent purge receipt settled; execution impact is shown and generic undo is absent.",
+  "receipt": {
+    "action": "purge",
+    "selected_count": 1,
+    "matched_count": 1,
+    "changed_count": 1,
+    "unchanged_count": 0,
+    "blocked_count": 0,
+    "missing_count": 0,
+    "changed_ids": [
+      4
+    ],
+    "unchanged_ids": [],
+    "missing_ids": [],
+    "blockers": [],
+    "can_execute": true,
+    "status": "success",
+    "count": 1,
+    "changed": 1,
+    "purge_impact": {
+      "permanent": true,
+      "recovery_supported": false,
+      "devices": [
+        {
+          "id": 4,
+          "name": "PW-ASSET-B-1790542187098-j10j6g",
+          "purgeable": true,
+          "permanent": true,
+          "recovery_supported": false,
+          "blockers": [],
+          "deletes": [
+            {
+              "table": "devices",
+              "type": "Device record",
+              "count": 1,
+              "ids": [
+                4
+              ],
+              "ids_truncated": false,
+              "disposition": "explicit_delete"
+            },
+            {
+              "table": "hardware_components",
+              "type": "Hardware components",
+              "count": 1,
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "disposition": "database_cascade"
+            }
+          ],
+          "detaches": []
+        }
+      ],
+      "blocked_devices": [],
+      "aggregate": {
+        "device_count": 1,
+        "delete_count": 2,
+        "detach_count": 0,
+        "deletes": [
+          {
+            "table": "devices",
+            "type": "Device record",
+            "count": 1,
+            "ids": [
+              4
+            ],
+            "ids_truncated": false,
+            "disposition": "explicit_delete"
+          },
+          {
+            "table": "hardware_components",
+            "type": "Hardware components",
+            "count": 1,
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "disposition": "database_cascade"
+          }
+        ],
+        "detaches": []
+      }
+    },
+    "purge_impact_applied": {
+      "permanent": true,
+      "recovery_supported": false,
+      "devices": [
+        {
+          "id": 4,
+          "name": "PW-ASSET-B-1790542187098-j10j6g",
+          "purgeable": true,
+          "permanent": true,
+          "recovery_supported": false,
+          "blockers": [],
+          "deletes": [
+            {
+              "table": "devices",
+              "type": "Device record",
+              "count": 1,
+              "ids": [
+                4
+              ],
+              "ids_truncated": false,
+              "disposition": "explicit_delete"
+            },
+            {
+              "table": "hardware_components",
+              "type": "Hardware components",
+              "count": 1,
+              "ids": [
+                1
+              ],
+              "ids_truncated": false,
+              "disposition": "database_cascade"
+            }
+          ],
+          "detaches": []
+        }
+      ],
+      "blocked_devices": [],
+      "aggregate": {
+        "device_count": 1,
+        "delete_count": 2,
+        "detach_count": 0,
+        "deletes": [
+          {
+            "table": "devices",
+            "type": "Device record",
+            "count": 1,
+            "ids": [
+              4
+            ],
+            "ids_truncated": false,
+            "disposition": "explicit_delete"
+          },
+          {
+            "table": "hardware_components",
+            "type": "Hardware components",
+            "count": 1,
+            "ids": [
+              1
+            ],
+            "ids_truncated": false,
+            "disposition": "database_cascade"
+          }
+        ],
+        "detaches": []
+      }
+    }
+  }
+}

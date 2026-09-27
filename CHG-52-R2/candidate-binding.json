@@ -1,0 +1,74 @@
+{
+  "base_sha": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+  "base_tree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025",
+  "branch": "codex/sysgrid-lifecycle-device-authority-fix-v2",
+  "candidate_sha": "c3beb230dce1f1f16cafb1e4eade5c3daa6124ea",
+  "candidate_tree": "db8e2cfb02fdaeb21882cd5195a041262e806259",
+  "change": "CHG-52",
+  "changed_file_count": 13,
+  "changed_files": [
+    {
+      "path": "backend/app/api/devices.py",
+      "sha256": "e8a47be9a7d775762f61bcd10d19346b1e3a8f5302d6102a090fdf14b14cfd55"
+    },
+    {
+      "path": "backend/test_asset_architecture_traceability.py",
+      "sha256": "9c68953276bd6a8ab553f484462d68fe6b36d08f61602a877db075bc4fa3fc9d"
+    },
+    {
+      "path": "backend/test_devices_api_edges.py",
+      "sha256": "051bb15054f2a7d2b0d7e4ff3ac7e1f1e88da1cadf0163ff8c36792ac6d48e84"
+    },
+    {
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.test.tsx",
+      "sha256": "345d0e85df59f7e180b648f5b63e78499e332807c99af0d7ece9388439878bdd"
+    },
+    {
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.tsx",
+      "sha256": "8d31be496e9ffaa01885f7ebec1ecce4985479f7ab6f385ab5cef6d3f3ae6c9e"
+    },
+    {
+      "path": "frontend/src/components/assets/AssetGoldenShellScaffold.tsx",
+      "sha256": "7881076b5db5fbd869b9f35081258ac3af23bfa649445498847dc3d3fffb9a5a"
+    },
+    {
+      "path": "frontend/src/components/assets/assetGoldenColumns.tsx",
+      "sha256": "9f7705a2f7c7049b6c1271f258d0a47fc2aaaf60095b1668fcc5d8ec5e0541c6"
+    },
+    {
+      "path": "frontend/src/components/assets/assetGoldenData.ts",
+      "sha256": "67ef5fdf7504951db5a568c1cca05e933ce4c9624f15754d6d7eedfd574729cd"
+    },
+    {
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.test.tsx",
+      "sha256": "5da89c70d4985d691a3b2cba9eadd9d67900ad70a9f82727431ef3478070dee3"
+    },
+    {
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.tsx",
+      "sha256": "b3ab71dc7d0a4492a96eea3bdec0e5c236ed321bd3cc372002ed971d96fb1e98"
+    },
+    {
+      "path": "frontend/src/components/shared/WorkspaceToast.tsx",
+      "sha256": "e89a88bfdee98fa6ded5ee519a390542986fedc2fc963acc810ef28c45d51703"
+    },
+    {
+      "path": "frontend/src/components/shared/useOperationalBulkWorkflow.ts",
+      "sha256": "e36de8b6815f1de122048aa02548dc121ed0ef96dcbc77937df3b2eeea4e9281"
+    },
+    {
+      "path": "frontend/tests/assets-workflows.spec.ts",
+      "sha256": "6ad776f50c75d40c3090f9e67f8f372c66aee4c0f37d3defa68172ced91b4555"
+    }
+  ],
+  "native_evidence_ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-authority-fix-v2",
+  "operation": "FIX",
+  "parents": [
+    "f31fd16711f0234aa058be854c2639afd2f02c4d"
+  ],
+  "project": "sysgrid",
+  "remote_main_sha": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+  "repository": "kimhw8084/sysgrid",
+  "request": "sysgrid-lifecycle-device-authority-fix-v2",
+  "schema_version": 1,
+  "targeted_artifact_ref": "refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2"
+}

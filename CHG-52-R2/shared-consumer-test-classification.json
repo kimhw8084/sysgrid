@@ -1,0 +1,52 @@
+{
+  "candidate_vs_base": {
+    "base": "the same assertion failed before preview under the same runtime",
+    "base_sha": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "candidate": "failed before opening the existing Services preview because the test could not find the Bulk Actions control",
+    "candidate_sha": "c3beb230dce1f1f16cafb1e4eade5c3daa6124ea",
+    "runtime": "Node 20.19.4",
+    "same_preexisting_failure": true,
+    "test": "frontend/tests/external-services-bulk-preview.spec.ts"
+  },
+  "changed_shared_surface": "OperationalBulkPreviewModal accepts an optional purge_impact; consumers without that prop retain prior rendering.",
+  "direct_consumers": [
+    "Assets",
+    "External",
+    "Vendors",
+    "FAR",
+    "Services",
+    "Network"
+  ],
+  "in_profile_evidence": {
+    "asset_purge_targeted": {
+      "failed": 0,
+      "passed": 2,
+      "viewports": [
+        "1440x900",
+        "390x844"
+      ]
+    },
+    "frontend_unit": {
+      "failed": 0,
+      "passed": 722,
+      "shared_modal_tests": 5
+    },
+    "normal_v1_full": {
+      "failed": 0,
+      "material_consumers": [
+        "Assets",
+        "Services",
+        "Network"
+      ],
+      "passed": 75,
+      "skipped": 2
+    }
+  },
+  "normal_v1_policy_block": {
+    "identity_inferred_or_supplied": false,
+    "policy_control": "frontend/tests/release-policy-normal.spec.ts passed and asserts FAR/Research are unavailable under normal-v1",
+    "result": "4 tests returned HTTP 403 SYSTEM_ROOT_REQUIRED for FAR/Research access under normal-v1",
+    "test": "frontend/tests/far-workflows.spec.ts"
+  },
+  "schema_version": 1
+}
