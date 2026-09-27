@@ -36,12 +36,14 @@
 .p05-grid-row select, .p05-grid-row input { max-width: 100%; min-height: 36px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; padding: 5px; }
 .p05-task-panel { position: fixed; top: 72px; right: 20px; width: min(420px, calc(100vw - 40px)); max-height: calc(100vh - 100px); overflow: auto; z-index: 5; border: 1px solid #cbd5e1; border-radius: 12px; background: white; padding: 20px; box-shadow: 0 18px 50px rgb(15 23 42 / 20%); }
 .p05-board { display: grid; grid-template-columns: repeat(5, minmax(180px, 1fr)); gap: 12px; overflow-x: auto; }
+.p05-work-owner, .p05-work-area, .p05-board-wrap { min-width: 0; }
+.p05-board { max-width: 100%; }
 .p05-board section { min-height: 230px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; padding: 10px; }
 .p05-card { display: grid; gap: 8px; margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; padding: 10px; }
-.p05-card small { color: #64748b; }
-.p05-card button { border: 0; background: transparent; color: #2563eb; text-align: left; font-weight: 700; }
+.p05-card small { color: #64748b; overflow-wrap: anywhere; }
+.p05-card button { min-height: 40px; border: 0; border-radius: 5px; background: transparent; color: #2563eb; text-align: left; font-weight: 700; }
 .p05-move { display: grid; gap: 4px; font-size: 12px; font-weight: 700; }
-.p05-move select { min-height: 36px; }
+.p05-move select { box-sizing: border-box; min-height: 40px; height: 40px; }
 .p05-plan { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .p05-plan > section, .p05-guidance { border: 1px solid #e2e8f0; border-radius: 10px; background: white; padding: 16px; }
 .p05-brief { display: grid; gap: 10px; }
@@ -56,4 +58,13 @@
 .p05-error { color: #b91c1c; }
 .p05-success { color: #047857; }
 .p05-back { margin-top: 20px; border: 0; background: transparent; color: #2563eb; font-weight: 700; }
+:is(.p05-focus, .p05-work-area, .p05-plan, .p05-focus-list li, .p05-board section, .p05-card, .p05-task-panel) { color: #1e293b; }
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='industrial-slate'], html[data-theme='ocean-deep'], html[data-theme='cyber-emerald'], html[data-theme='dark']) [data-workspace='projects'] .p05-error { color: #fca5a5; }
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='industrial-slate'], html[data-theme='ocean-deep'], html[data-theme='cyber-emerald'], html[data-theme='dark']) [data-workspace='projects'] .p05-success { color: #6ee7b7; }
 @media (max-width: 900px) { .p05-header { align-items: flex-start; flex-direction: column; } .p05-board { grid-template-columns: repeat(5, minmax(220px, 1fr)); } .p05-plan { grid-template-columns: 1fr; } .p05-grid-row { grid-template-columns: minmax(230px, 2fr) 120px 130px 100px 120px; } }
+@media (max-width: 600px) {
+  .p05-focus, .p05-work-area { padding: 14px; }
+  .p05-task-panel { top: 12px; right: 8px; width: calc(100vw - 16px); max-height: calc(100dvh - 24px); padding: 16px; }
+  .p05-focus-list li { align-items: flex-start; flex-direction: column; }
+  .p05-focus-actions { flex-wrap: wrap; }
+}

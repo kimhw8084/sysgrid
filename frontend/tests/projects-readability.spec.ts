@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test'
+import { PROJECTS_ROOT_PREVIEW_USER, projectsRootPreviewPolicy } from './helpers/projects-root-preview'
 
 type Project = Record<string, any>
 
@@ -75,18 +76,19 @@ const installRoutes = async (page: Page) => {
     const url = new URL(request.url())
     const path = url.pathname
     if (request.method() === 'GET' && path.endsWith('/settings/bootstrap')) {
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ VITE_API_BASE_URL: url.origin, DEFAULT_USER_ID: 'proof_operator' }) })
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ VITE_API_BASE_URL: url.origin, DEFAULT_USER_ID: PROJECTS_ROOT_PREVIEW_USER }) })
     }
+    if (request.method() === 'GET' && path === '/api/v1/policy/module-availability') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(projectsRootPreviewPolicy) })
     if (request.method() === 'GET' && path === '/api/v1/settings/user/profile') {
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          id: 'proof_operator',
-          username: 'proof_operator',
-          full_name: 'Proof Operator',
-          is_admin: true,
-          permissions: { all: 3, projects: 3 },
+          id: PROJECTS_ROOT_PREVIEW_USER,
+          username: PROJECTS_ROOT_PREVIEW_USER,
+          full_name: 'Synthetic Root Preview Proof',
+          is_admin: false,
+          permissions: {},
         }),
       })
     }
@@ -220,10 +222,10 @@ const focusProof = async (page: Page) => {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((userId) => {
     localStorage.setItem('sysgrid-theme', 'nordic-frost-v1')
-    localStorage.setItem('SYSGRID_USER_ID', 'proof_operator')
-  })
+    localStorage.setItem('SYSGRID_USER_ID', userId)
+  }, PROJECTS_ROOT_PREVIEW_USER)
   await installRoutes(page)
 })
 
