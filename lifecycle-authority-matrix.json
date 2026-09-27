@@ -1,0 +1,1296 @@
+{
+  "acceptance_authority": {
+    "confidence": "high",
+    "evidence": [
+      "Notion:3dcc564c-8d04-81ca-b812-c4585901d134",
+      "Notion:3dfc564c-8d04-8177-8b22-d9352ef7a3bd"
+    ],
+    "value": "Current SysGrid Production Contract and Golden Production Architecture: reversible archive by default where supported; restore where promised; purge impact/recovery known; backend owner owns auth, preconditions, transaction, audit and exact result."
+  },
+  "base": {
+    "branch": "main",
+    "commit": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "tree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025"
+  },
+  "cell_schema": "Each field is a claim with evidence source IDs and confidence; unknown is explicit.",
+  "entity_classes": [
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S04",
+            "S28"
+          ],
+          "value": "Disposable archive/restore/purge yielded 0 AuditLog rows; child DELETE also has no audit. Blocked-attempt audit not required absent policy."
+        },
+        "automated_tests": {
+          "confidence": "high; disposable tests establish gaps",
+          "evidence": [
+            "S33",
+            "S34"
+          ],
+          "value": [
+            "test_devices_api_edges focused lifecycle/subresource tests",
+            "test_asset_architecture_traceability normalized blocker"
+          ]
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S03",
+            "S04"
+          ],
+          "value": "backend/app/api/devices.py; shared operational_bulk.py."
+        },
+        "dependencies_blockers": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S04",
+            "S07",
+            "S22"
+          ],
+          "value": "Purge blocks normalized Architecture/PV1 links (including retired); deletes locations/hardware/secrets/maintenance/monitoring+history+owners/relationships/ports/FAR links, detaches services/firewall links. Preview does not enumerate this blast radius. Unlinked hardware probe was removed."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S04"
+          ],
+          "value": [
+            "DELETE /api/v1/devices/{id}",
+            "POST /api/v1/devices/bulk-action",
+            "DELETE /api/v1/devices/{resource}/{id}"
+          ]
+        },
+        "frontend_consumers": {
+          "confidence": "high",
+          "evidence": [
+            "S02",
+            "S05",
+            "S06"
+          ],
+          "value": [
+            "AssetGoldenOperationalWorkspace.tsx",
+            "assetGoldenData.ts",
+            "OperationalLifecycleContract.ts"
+          ]
+        },
+        "generic_undo_revert": {
+          "confidence": "high",
+          "evidence": [
+            "S05",
+            "S06"
+          ],
+          "value": "Archive/restore Revert calls backend inverse IDs; no purge Revert. No revision guard."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high",
+          "evidence": [
+            "S04",
+            "S07"
+          ],
+          "value": {
+            "archive": "bulk delete and single DELETE set is_deleted",
+            "purge": "bulk only; no single purge",
+            "restore": "bulk restore"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "high",
+          "evidence": [
+            "S04",
+            "S07",
+            "S22"
+          ],
+          "value": "Archive retains row/links. Purge blocks Architecture/PV1 normalized links; other named dependents are deleted/detached. No Device history table found."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S03",
+            "S04"
+          ],
+          "value": "IDs normalized. Mixed changed+blocked/missing selection fails closed; blocker-only early return is HTTP 200/status=success with can_execute=false. Other selected changes commit together."
+        },
+        "preview_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S03",
+            "S04"
+          ],
+          "value": "dry_run summary does not mutate; execute re-queries current state, no bound preview token. Nonempty string dry_run is truthy."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S29"
+          ],
+          "value": "V1 production assets, normal-v1; owner=devices."
+        },
+        "recovery_authority": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S04"
+          ],
+          "value": "Restore reactivates retained row and blocks duplicate active hostname; no post-purge restore."
+        },
+        "retry_idempotency": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S04"
+          ],
+          "value": "Bulk archive retry changed=0/unchanged=1; no Device AuditLog. Purge has no recovery."
+        },
+        "revision_lock": {
+          "confidence": "high",
+          "evidence": [
+            "S04",
+            "S07"
+          ],
+          "value": "No Device revision or lifecycle row lock."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S48"
+          ],
+          "value": "is_deleted and old migration exist; no revision/history. Existing AuditLog usable; transaction locks avoid schema."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S04",
+            "S29",
+            "S49"
+          ],
+          "value": "assets module gate; Device bulk/single filters request tenant. Child delete filters child id only; tenant DB session is selected per request."
+        },
+        "ui_capability_wording": {
+          "confidence": "high",
+          "evidence": [
+            "S02",
+            "S05",
+            "S06"
+          ],
+          "value": "is_deleted rows shown as Purged though backend delete is soft archive; generic lifecycle labels are shared."
+        }
+      },
+      "entity_class": "Asset / Device"
+    },
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S08",
+            "S28"
+          ],
+          "value": "Single DELETE writes DELETE every call; bulk actual changes write BULK_DELETE/BULK_RESTORE. No service history table."
+        },
+        "automated_tests": {
+          "confidence": "high",
+          "evidence": [
+            "S35"
+          ],
+          "value": "test_service_workflows covers preview/no mutation, OS projection and unsupported purge; retry audit count comes from probe."
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S08",
+            "S49"
+          ],
+          "value": "backend/app/api/logical_services.py; tenant-routed DB; no tenant_id on model."
+        },
+        "dependencies_blockers": {
+          "confidence": "high",
+          "evidence": [
+            "S04",
+            "S07",
+            "S08"
+          ],
+          "value": "device_id nullable; Device purge detaches it. Service purge unsupported."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S08"
+          ],
+          "value": [
+            "DELETE /api/v1/logical-services/{id}",
+            "POST /api/v1/logical-services/bulk-action: delete/restore/update"
+          ]
+        },
+        "frontend_consumers": {
+          "confidence": "high",
+          "evidence": [
+            "S09"
+          ],
+          "value": "ServicesReal.tsx"
+        },
+        "generic_undo_revert": {
+          "confidence": "high",
+          "evidence": [
+            "S02",
+            "S09"
+          ],
+          "value": "No purge undo; archive/restore available."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high",
+          "evidence": [
+            "S08"
+          ],
+          "value": {
+            "archive": "single DELETE and bulk delete set is_deleted",
+            "purge": "backend unsupported",
+            "restore": "bulk restore"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S08"
+          ],
+          "value": "Archive retains row by is_deleted; no independent history."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high",
+          "evidence": [
+            "S03",
+            "S07",
+            "S08"
+          ],
+          "value": "Normalized IDs; bulk missing/blocker fails closed and successful batch is one transaction. Restore has no uniqueness check; service name nonunique. Single missing ID returns 404."
+        },
+        "preview_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S03",
+            "S08",
+            "S35"
+          ],
+          "value": "Boolean dry_run previews current state without commit; execution re-queries; no revision-bound preview token."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S29"
+          ],
+          "value": "V1 production services, normal-v1."
+        },
+        "recovery_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S08"
+          ],
+          "value": "Restore uses retained row; purge unsupported."
+        },
+        "retry_idempotency": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S08"
+          ],
+          "value": "Bulk retry is no-op; two identical single DELETE calls appended two audit rows."
+        },
+        "revision_lock": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S08"
+          ],
+          "value": "No service version/revision or lifecycle row lock."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S48"
+          ],
+          "value": "Existing is_deleted; no migration for retry guard."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S08",
+            "S29",
+            "S49"
+          ],
+          "value": "services module gate; ID selected within tenant-routed DB."
+        },
+        "ui_capability_wording": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S08",
+            "S09"
+          ],
+          "value": "Disabled UI says purge unavailable because backend cannot support truthful purge/revert; backend returns 400 unsupported."
+        }
+      },
+      "entity_class": "Logical Service"
+    },
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S07",
+            "S10",
+            "S28"
+          ],
+          "value": "Archive/restore history exists but bulk actor was null; no AuditLog. Purge deletes history via cascade and leaves no durable audit."
+        },
+        "automated_tests": {
+          "confidence": "high",
+          "evidence": [
+            "S36",
+            "S37",
+            "S38"
+          ],
+          "value": "Monitoring workflow test accepts caller-posted snapshot but not its provenance; restore-edge and partial-purge tests also run."
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S10"
+          ],
+          "value": "backend/app/api/monitoring.py and MonitoringHistory/Owner models."
+        },
+        "dependencies_blockers": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S07",
+            "S10",
+            "S47"
+          ],
+          "value": "FK cascade deletes MonitoringHistory and MonitoringOwner with item; disposable purge removed both."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S10"
+          ],
+          "value": [
+            "DELETE /api/v1/monitoring/{id}",
+            "POST /api/v1/monitoring/{id}/restore/{history_id}",
+            "POST /api/v1/monitoring/bulk-action"
+          ]
+        },
+        "frontend_consumers": {
+          "confidence": "high",
+          "evidence": [
+            "S11",
+            "S12"
+          ],
+          "value": [
+            "MonitoringGrid.tsx",
+            "monitoringPurgeRevertCapability.ts"
+          ]
+        },
+        "generic_undo_revert": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S10",
+            "S11",
+            "S12"
+          ],
+          "value": "Purge Revert uses caller snapshots, not validated backend-owned compensation."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high",
+          "evidence": [
+            "S10"
+          ],
+          "value": {
+            "archive": "single DELETE/bulk delete flags row",
+            "purge": "bulk hard delete",
+            "restore": "bulk and historical restore",
+            "restore_purged": "accepts supplied snapshots"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S07",
+            "S10",
+            "S47"
+          ],
+          "value": "History survives archive/restore, not purge; post-purge history count=0."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high",
+          "evidence": [
+            "S10",
+            "S38"
+          ],
+          "value": "IDs bypass common normalizer; purge is partial for missing IDs and test expects that. No server preview."
+        },
+        "preview_authority": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S10",
+            "S11"
+          ],
+          "value": "No dry_run branch; dry_run=true purge deleted item. UI captures client snapshots, no server preview."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S29"
+          ],
+          "value": "V1 production monitoring, normal-v1."
+        },
+        "recovery_authority": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S10"
+          ],
+          "value": "restore_purged trusts caller payload without server-authenticated receipt/signature/version; edited title accepted. Existing mismatch 409."
+        },
+        "retry_idempotency": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S10",
+            "S38"
+          ],
+          "value": "Archive/restore repeat no-op; missing purge IDs skipped. Caller snapshot accepted if item absent; conflicting existing row 409."
+        },
+        "revision_lock": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S10"
+          ],
+          "value": "Version/history increments but no expected version or row lock for lifecycle; purge has no precondition."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S46",
+            "S47"
+          ],
+          "value": "is_deleted/version/history/owners exist. Irreversible audited purge needs no recovery table."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S10",
+            "S29",
+            "S49"
+          ],
+          "value": "monitoring module gate; tenant-selected DB but no explicit item tenant filter."
+        },
+        "ui_capability_wording": {
+          "confidence": "high",
+          "evidence": [
+            "S02",
+            "S10",
+            "S11",
+            "S12"
+          ],
+          "value": "Capability probe treats any error except exact Unsupported bulk action as supported; backend missing snapshots 400 passes. UI Revert posts pre-purge client rows, contradicting shared contract purge unsupported."
+        }
+      },
+      "entity_class": "Monitoring Item"
+    },
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S13",
+            "S28"
+          ],
+          "value": "Create commits row then audit separately. DELETE writes audit despite no removal; runtime action list CREATE,DELETE."
+        },
+        "automated_tests": {
+          "confidence": "high",
+          "evidence": [
+            "S13",
+            "S32"
+          ],
+          "value": "No focused Maintenance lifecycle test found; disposable root-context probe establishes retained row and audit."
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S07",
+            "S13",
+            "S29"
+          ],
+          "value": "maintenance.py and MaintenanceWindow model; route uses assets policy."
+        },
+        "dependencies_blockers": {
+          "confidence": "high",
+          "evidence": [
+            "S04",
+            "S07"
+          ],
+          "value": "Device FK cascade and manual Device purge delete; no preview/blocker."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S13"
+          ],
+          "value": [
+            "GET /api/v1/maintenance",
+            "POST /api/v1/maintenance",
+            "DELETE /api/v1/maintenance/{id}",
+            "no bulk"
+          ]
+        },
+        "frontend_consumers": {
+          "confidence": "high",
+          "evidence": [
+            "S04",
+            "S14"
+          ],
+          "value": [
+            "Maintenance.tsx read-only",
+            "Device purge deletes MaintenanceWindow"
+          ]
+        },
+        "generic_undo_revert": {
+          "confidence": "high",
+          "evidence": [
+            "S13",
+            "S14"
+          ],
+          "value": "None."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S07",
+            "S13"
+          ],
+          "value": {
+            "archive": "none",
+            "delete": "intended hard delete; coroutine unawaited so row remains",
+            "restore": "none"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S13"
+          ],
+          "value": "No archive/history; current row persistence is defect."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S13"
+          ],
+          "value": "Missing id returns success; existing id logs DELETE and commits but remains."
+        },
+        "preview_authority": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S13"
+          ],
+          "value": "None. DELETE returns success while row persists."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S13",
+            "S29"
+          ],
+          "value": "R1 classifies unreleased/root-preview; catalog has no Maintenance module, route checks assets production."
+        },
+        "recovery_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S13"
+          ],
+          "value": "No restore/recovery source found."
+        },
+        "retry_idempotency": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S13"
+          ],
+          "value": "Accidental delete no-op can still append DELETE audit on repeat; no supported lifecycle semantics."
+        },
+        "revision_lock": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S13"
+          ],
+          "value": "No marker, version, precondition or row lock."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S13"
+          ],
+          "value": "Required archived_at nullable (legacy rows active); add revision/backfill if optimistic preconditions chosen."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S13",
+            "S29",
+            "S49"
+          ],
+          "value": "assets module gate; tenant-routed DB; row lookup by id; no separate root-preview boundary."
+        },
+        "ui_capability_wording": {
+          "confidence": "high",
+          "evidence": [
+            "S14"
+          ],
+          "value": "Read-only grid, no lifecycle/capability discovery."
+        }
+      },
+      "entity_class": "Maintenance Window"
+    },
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high",
+          "evidence": [
+            "S15"
+          ],
+          "value": "Append-only project event stores actor/command/revision/delta, not AuditLog."
+        },
+        "automated_tests": {
+          "confidence": "high",
+          "evidence": [
+            "S40",
+            "S15"
+          ],
+          "value": "PV1 foundation tests cover stale/idempotent commands; lifecycle probe confirmed archive/restore."
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S15",
+            "S16"
+          ],
+          "value": "backend/app/pv1/domain.py and PV1 models."
+        },
+        "dependencies_blockers": {
+          "confidence": "high",
+          "evidence": [
+            "S15",
+            "S17"
+          ],
+          "value": "Only Cancelled or fully closed can archive; history remains readable."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S15"
+          ],
+          "value": "POST /api/v2/projects/{id}/commands archive/restore; no bulk lifecycle."
+        },
+        "frontend_consumers": {
+          "confidence": "high",
+          "evidence": [
+            "S17"
+          ],
+          "value": "ProjectsStory.tsx"
+        },
+        "generic_undo_revert": {
+          "confidence": "high",
+          "evidence": [
+            "S15",
+            "S17"
+          ],
+          "value": "No snapshot Undo; validated restore command."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high",
+          "evidence": [
+            "S15",
+            "S16"
+          ],
+          "value": {
+            "archive": "project.archive only Cancelled/fully closed",
+            "purge": "none",
+            "restore": "project.restore"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "high",
+          "evidence": [
+            "S15",
+            "S16"
+          ],
+          "value": "Row/events retained; active list filters archived."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high",
+          "evidence": [
+            "S15"
+          ],
+          "value": "Single command, state-gated and revision-conflicted; no bulk behavior."
+        },
+        "preview_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S15"
+          ],
+          "value": "No dry-run; domain state checks and required project_revision."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S29"
+          ],
+          "value": "projects module root-preview; explicit root and capability."
+        },
+        "recovery_authority": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S15"
+          ],
+          "value": "Explicit project.restore against retained row/current revision and owner capability."
+        },
+        "retry_idempotency": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S15"
+          ],
+          "value": "Idempotency-Key/command_id replay returned identical archive response."
+        },
+        "revision_lock": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S15"
+          ],
+          "value": "project_revision required; stale restore 409; compare/update and event in transaction."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S16",
+            "S45"
+          ],
+          "value": "archived_at and tenant archive index already exist."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S15",
+            "S29"
+          ],
+          "value": "tenant_id + project Owner/Tenant administrator; module root-preview and explicit projects capability."
+        },
+        "ui_capability_wording": {
+          "confidence": "high",
+          "evidence": [
+            "S15",
+            "S17"
+          ],
+          "value": "Server capabilities drive can.archive/can.restore; UI says remains recoverable and offers Restore."
+        }
+      },
+      "entity_class": "PV1 Project"
+    },
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S20"
+          ],
+          "value": "ArchitectureEvent/outbox append actor/command/revision/delta."
+        },
+        "automated_tests": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S41"
+          ],
+          "value": "Architecture tests prove replay/stale supplied revisions, not omission/retirement links; disposable root probes cover retire."
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S19",
+            "S20"
+          ],
+          "value": "architecture/domain.py, API and models."
+        },
+        "dependencies_blockers": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S18",
+            "S21"
+          ],
+          "value": "Relations require active endpoints at create. Retiring endpoint leaves active relation in projection; relation separately retires."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S19"
+          ],
+          "value": "POST /api/v2/architecture/models/{model_id}/commands object.retire/relation.retire; no dedicated lifecycle bulk."
+        },
+        "frontend_consumers": {
+          "confidence": "high",
+          "evidence": [
+            "S21"
+          ],
+          "value": "ArchitectureCanvas.tsx"
+        },
+        "generic_undo_revert": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S21"
+          ],
+          "value": "None observed."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S18",
+            "S20"
+          ],
+          "value": {
+            "object": "object.retire sets retired_at/Retired",
+            "purge": "none",
+            "relation": "relation.retire",
+            "restore": "no accepted or advertised command"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S18",
+            "S20"
+          ],
+          "value": "Retired row/events retained, default projection filters retired row but leaves active relation."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S19"
+          ],
+          "value": "Supplied stale revision conflicts; single command or change set, no bulk missing semantics."
+        },
+        "preview_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S18"
+          ],
+          "value": "No lifecycle dry-run; change sets exist; expected revisions checked only when supplied."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S19",
+            "S29"
+          ],
+          "value": "Architecture root-preview; explicit System Root+architecture capability."
+        },
+        "recovery_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S20",
+            "S21"
+          ],
+          "value": "None; retained lineage is not restore. No restore command."
+        },
+        "retry_idempotency": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S20"
+          ],
+          "value": "command_id replay stored; new distinct retire command after retirement is unestablished."
+        },
+        "revision_lock": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S20",
+            "S41"
+          ],
+          "value": "Model/object/relation revisions exist, but omitted expected values accepted; no row lock."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S20",
+            "S44"
+          ],
+          "value": "retired_at/revisions/events already exist; required request preconditions need no migration."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S18",
+            "S19",
+            "S29"
+          ],
+          "value": "tenant_id/model_id plus model access; explicit module root-preview."
+        },
+        "ui_capability_wording": {
+          "confidence": "high",
+          "evidence": [
+            "S19",
+            "S21",
+            "S29"
+          ],
+          "value": "Canvas says Retire selected; no Restore; module availability server-side."
+        }
+      },
+      "entity_class": "Architecture v2 Object and Relation"
+    },
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S24"
+          ],
+          "value": "Versioned FarHistory; no lifecycle AuditLog established. Blocked audit not inferred."
+        },
+        "automated_tests": {
+          "confidence": "high",
+          "evidence": [
+            "S24",
+            "S42",
+            "S43"
+          ],
+          "value": "5 FAR lifecycle integrity tests and UI/contract tests; route probe passed."
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S07"
+          ],
+          "value": "backend/app/api/far.py and FarHistory."
+        },
+        "dependencies_blockers": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S24"
+          ],
+          "value": "History retained; no purge endpoint."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S26",
+            "S27"
+          ],
+          "value": [
+            "POST /api/v1/far/modes/{id}/archive",
+            "POST /api/v1/far/modes/{id}/restore",
+            "bulk-archive/bulk-restore",
+            "restore/{version}"
+          ]
+        },
+        "frontend_consumers": {
+          "confidence": "high",
+          "evidence": [
+            "S25",
+            "S26",
+            "S27"
+          ],
+          "value": [
+            "FAR.tsx",
+            "FAR.lifecycleVocabulary.ts",
+            "FARVersionHistory.tsx"
+          ]
+        },
+        "generic_undo_revert": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S27"
+          ],
+          "value": "No generic purge undo; domain commands."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S26"
+          ],
+          "value": {
+            "archive": "single/bulk",
+            "purge": "none",
+            "restore": "single/bulk/history restore"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S23",
+            "S24"
+          ],
+          "value": "Versions [3,2,1] survived archive/restore probe."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S24"
+          ],
+          "value": "Bulk locks deterministically and fails closed before commit."
+        },
+        "preview_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S24"
+          ],
+          "value": "No dry-run; version check under row locks."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S23",
+            "S29"
+          ],
+          "value": "FAR root-preview with explicit far capability."
+        },
+        "recovery_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S27"
+          ],
+          "value": "Retained row restored at expected version; history restore is backend endpoint."
+        },
+        "retry_idempotency": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S23",
+            "S24"
+          ],
+          "value": "Current-state retry unchanged; stale restore 409; archive v2 restore v3 probe."
+        },
+        "revision_lock": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S24"
+          ],
+          "value": "expected_version(s), SELECT FOR UPDATE; stale/missing fail closed."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S23"
+          ],
+          "value": "Existing archive/version/history schema."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S23",
+            "S29",
+            "S49"
+          ],
+          "value": "far module and object owner policy in tenant DB; probe used explicit root."
+        },
+        "ui_capability_wording": {
+          "confidence": "high",
+          "evidence": [
+            "S25",
+            "S26",
+            "S27",
+            "S42"
+          ],
+          "value": "Active/archived scope with Archive/Restore/History; no purge."
+        }
+      },
+      "entity_class": "FAR Failure Mode"
+    },
+    {
+      "claims": {
+        "audit_history": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S28",
+            "S39"
+          ],
+          "value": "No arbitrary lifecycle delete route found. ORM has no DB immutable guard, so only API-surface append-only established; blocked preview need not audit under R1."
+        },
+        "automated_tests": {
+          "confidence": "high",
+          "evidence": [
+            "S28",
+            "S39"
+          ],
+          "value": "Audit test covers calendar/target filters; route is GET-only."
+        },
+        "canonical_owner": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S28",
+            "S31"
+          ],
+          "value": "audit.py read route; AuditLog model/build_audit_log writer."
+        },
+        "dependencies_blockers": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S10",
+            "S28"
+          ],
+          "value": "No target FK cascade found; Monitoring currently has no audit row to survive purge."
+        },
+        "endpoints_commands": {
+          "confidence": "high",
+          "evidence": [
+            "S28",
+            "S31"
+          ],
+          "value": "GET /api/v1/audit; internal writer helper."
+        },
+        "frontend_consumers": {
+          "confidence": "moderate",
+          "evidence": [
+            "S01",
+            "S28"
+          ],
+          "value": "System Management Audit Logs viewer; exact component not material."
+        },
+        "generic_undo_revert": {
+          "confidence": "high",
+          "evidence": [
+            "S28"
+          ],
+          "value": "None."
+        },
+        "lifecycle_vocabulary": {
+          "confidence": "high",
+          "evidence": [
+            "S28",
+            "S31"
+          ],
+          "value": {
+            "append": "domain writers",
+            "read": "GET target/date filters",
+            "update/delete": "no HTTP endpoint"
+          }
+        },
+        "lineage_survival": {
+          "confidence": "moderate",
+          "evidence": [
+            "S07",
+            "S28"
+          ],
+          "value": "Independent rows absent privileged DB changes; database privilege boundary not verified."
+        },
+        "missing_stale_atomicity": {
+          "confidence": "high",
+          "evidence": [
+            "S13",
+            "S28"
+          ],
+          "value": "Bounded GET pagination; mutation should join domain tx. Maintenance create currently split commits."
+        },
+        "preview_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S28"
+          ],
+          "value": "Read-only bounded query."
+        },
+        "production_profile": {
+          "confidence": "high",
+          "evidence": [
+            "S01",
+            "S29"
+          ],
+          "value": "V1 production logs module."
+        },
+        "recovery_authority": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S28"
+          ],
+          "value": "Evidence only, not recovery."
+        },
+        "retry_idempotency": {
+          "confidence": "high-runtime",
+          "evidence": [
+            "S08",
+            "S28"
+          ],
+          "value": "Append writer is not itself idempotent; owner dedupe required; Services probe duplicates."
+        },
+        "revision_lock": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S28"
+          ],
+          "value": "ID/timestamp sequence; no update/delete contract."
+        },
+        "schema_migration": {
+          "confidence": "high",
+          "evidence": [
+            "S07",
+            "S28"
+          ],
+          "value": "Actor/action/target/changes/description exist; no DB immutable guard found."
+        },
+        "scope_authorization": {
+          "confidence": "high",
+          "evidence": [
+            "S28",
+            "S29",
+            "S49"
+          ],
+          "value": "logs policy and tenant DB; target_table/target_id filters."
+        },
+        "ui_capability_wording": {
+          "confidence": "high",
+          "evidence": [
+            "S28",
+            "S29"
+          ],
+          "value": "Server policy controls logs read; viewer uses target/date scope."
+        }
+      },
+      "entity_class": "Audit Log append-only control"
+    }
+  ],
+  "repository": "kimhw8084/sysgrid",
+  "request_id": "sysgrid-lifecycle-consistency-audit-verify-v1"
+}

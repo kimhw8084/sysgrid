@@ -1,0 +1,144 @@
+{
+  "base": {
+    "commit": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "tree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025"
+  },
+  "disposable_probes": [
+    {
+      "id": "CHG52_DEVICE_PROBE",
+      "profile": "normal-v1 tenant; synthetic root only for trace-link setup",
+      "result": "passed",
+      "structured_result": {
+        "archive_dry_run_mutated": false,
+        "blocked_purge_status": "success",
+        "bulk_archive_retry": {
+          "first_changed": 1,
+          "retry_changed": 0,
+          "retry_unchanged": 1
+        },
+        "device_lifecycle_audit_rows": 0,
+        "include_deleted": {
+          "active_hidden": true,
+          "archived_visible": true
+        },
+        "normalized_architecture_link_blocks_purge": "Hard purge would destroy normalized traceability history",
+        "restore_duplicate_hostname_blocked": "An active asset already uses this hostname",
+        "unlinked_hardware_purge": {
+          "after_purge": 0,
+          "before": 1,
+          "dry_run_after": 1
+        }
+      }
+    },
+    {
+      "id": "CHG52_SERVICE_MONITORING_PROBE",
+      "profile": "normal-v1 disposable tenant",
+      "result": "passed",
+      "structured_result": {
+        "monitoring": {
+          "archive_history_count": 2,
+          "audit_rows_before_and_after_purge_restore": [
+            0,
+            0
+          ],
+          "caller_changed_snapshot_accepted": true,
+          "dry_run_purge_deleted_item": true,
+          "history_rows_after_hard_purge": 0,
+          "latest_bulk_archive_actor": null,
+          "owner_rows_after_hard_purge": 0,
+          "stale_different_snapshot_http_status": 409
+        },
+        "services": {
+          "bulk_lifecycle_actions": [
+            "BULK_DELETE",
+            "BULK_RESTORE"
+          ],
+          "delete_audit_rows_after_two_single_retries": 2,
+          "dry_run_status": "preview",
+          "purge_http_status": 400,
+          "restore_changed": 1
+        }
+      }
+    },
+    {
+      "id": "CHG52_ROOT_PREVIEW_PROBE",
+      "profile": "explicit synthetic root/capabilities, disposable tenant",
+      "result": "passed",
+      "structured_result": {
+        "architecture_v2": {
+          "active_projection_hides_retired_object": true,
+          "event_count": 3,
+          "restore_command_http_status": 422,
+          "retire_http_status": 200,
+          "row_retained_with_retired_at": true
+        },
+        "authorization": {
+          "explicit_module_capabilities": [
+            "assets",
+            "projects",
+            "architecture",
+            "far"
+          ],
+          "ordinary_admin_id_used_for_preview": false,
+          "synthetic_system_root_id_explicitly_bound_by_test_environment": "chg52-r1-probe-sysroot"
+        },
+        "far": {
+          "archive_version": 2,
+          "history_versions": [
+            3,
+            2,
+            1
+          ],
+          "restored_version": 3,
+          "stale_restore_http_status": 409
+        },
+        "maintenance": {
+          "delete_http_status": 200,
+          "durable_audit_actions": [
+            "CREATE",
+            "DELETE"
+          ],
+          "rows_after_delete": 1
+        },
+        "pv1_project": {
+          "archive_retry_same_response": true,
+          "archive_revision": 3,
+          "restore_http_status": 200,
+          "stale_restore_http_status": 409
+        }
+      }
+    },
+    {
+      "id": "CHG52_ARCHITECTURE_RELATION_PROBE",
+      "profile": "explicit synthetic root plus architecture capability, disposable tenant",
+      "result": "passed",
+      "structured_result": {
+        "active_relation_still_in_projection_after_endpoint_object_retire": true,
+        "model_revision_after_object_retire": 5,
+        "model_revision_after_relation_retire": 6,
+        "object_retired_at_set": true,
+        "relation_retired_at_set": true,
+        "relation_visible_after_relation_retire": false
+      }
+    }
+  ],
+  "environment": {
+    "data": "Temporary pytest tenant/config DBs only.",
+    "dependencies": "External disposable venv from backend/requirements.lock installed with --require-hashes.",
+    "maintenance": "Synthetic Root identity used, but its current route source only gates assets.",
+    "product_mutation": "None.",
+    "profiles": "Normal-v1 Device/Services/Monitoring/Audit. Preview probes used synthetic chg52-r1-probe-sysroot plus explicit module capabilities; no admin_root identity inference.",
+    "python": "3.14.5"
+  },
+  "existing_test_run": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 SYSTEM_ROOT_USER_IDS=chg52-r1-probe-sysroot PYTHONPATH=. pytest -q -p no:cacheprovider --tb=short test_devices_api_edges.py::test_devices_enrichment_summary_and_interfaces test_devices_api_edges.py::test_devices_create_update_and_bulk_actions test_devices_api_edges.py::test_device_subresources_and_resource_routes test_service_workflows.py test_monitoring_restore_edges.py test_monitoring_query_and_bulk_edges.py test_monitoring_workflows.py test_audit_integrity.py tests/test_far_lifecycle_integrity.py",
+    "result": "20 passed, 1 warning in 30.87s",
+    "scope": "Focused V1 tests and FAR pure lifecycle tests; no full suite."
+  },
+  "request_id": "sysgrid-lifecycle-consistency-audit-verify-v1",
+  "warnings": [
+    "Maintenance emitted coroutine AsyncSession.delete was never awaited.",
+    "Fixture falsely binds admin_root as System Root; no fixture edits. Custom preview probes used distinct ID.",
+    "No screenshots/browser run needed."
+  ]
+}

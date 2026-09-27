@@ -1,0 +1,151 @@
+{
+  "base": {
+    "commit": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "tree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025"
+  },
+  "conclusion": "BUILD_REQUIRED",
+  "findings": [
+    {
+      "evidence": [
+        "S03",
+        "S04",
+        "S28",
+        "S33",
+        "S34"
+      ],
+      "finding": "Blocker-only purge returns HTTP 200/status success before fail-closed guard; no Device AuditLog; preview omits dependent purge blast radius.",
+      "id": "G-DEVICE",
+      "owner": "devices.py + operational_bulk.py",
+      "primary_class": "PRODUCT_GAP",
+      "probe": "CHG52_DEVICE_PROBE",
+      "secondary_classes": [
+        "SHARED_CONTRACT_GAP"
+      ]
+    },
+    {
+      "evidence": [
+        "S08",
+        "S28",
+        "S35"
+      ],
+      "finding": "Two identical single DELETE retries append two DELETE AuditLog rows.",
+      "id": "G-SERVICE-RETRY",
+      "owner": "logical_services.py",
+      "primary_class": "PRODUCT_GAP",
+      "probe": "CHG52_SERVICE_MONITORING_PROBE"
+    },
+    {
+      "evidence": [
+        "S02",
+        "S07",
+        "S10",
+        "S11",
+        "S12",
+        "S36",
+        "S38"
+      ],
+      "finding": "dry_run=true purges; hard purge cascades history/owners without audit; restore_purged accepts caller-edited snapshots; UI misreads validation 400 and exposes snapshot Revert contrary to shared contract.",
+      "id": "G-MONITORING",
+      "owner": "monitoring.py + MonitoringGrid + shared lifecycle contract",
+      "primary_class": "PRODUCT_GAP",
+      "probe": "CHG52_SERVICE_MONITORING_PROBE",
+      "secondary_classes": [
+        "SHARED_CONTRACT_GAP"
+      ]
+    },
+    {
+      "evidence": [
+        "S01",
+        "S07",
+        "S13",
+        "S14",
+        "S29"
+      ],
+      "finding": "DELETE does not await async delete, returns success with row retained, audits DELETE anyway. No archive/restore schema. Route uses production assets policy, not the requested root-preview boundary. Full workspace deferred.",
+      "id": "G-MAINTENANCE",
+      "owner": "maintenance.py + model + module policy",
+      "primary_class": "PRODUCT_GAP",
+      "probe": "CHG52_ROOT_PREVIEW_PROBE",
+      "secondary_classes": [
+        "MIGRATION_SCHEMA_GAP",
+        "DEFERRED_SEPARATE_OWNER"
+      ]
+    },
+    {
+      "evidence": [
+        "S18",
+        "S19",
+        "S20",
+        "S21",
+        "S41"
+      ],
+      "finding": "Retiring object leaves active connected relation in projection; omitted model/entity revisions are accepted. Restore is truthfully unsupported and is not proposed.",
+      "id": "G-ARCHITECTURE",
+      "owner": "architecture domain/API + ArchitectureCanvas",
+      "primary_class": "PRODUCT_GAP",
+      "probe": "CHG52_ARCHITECTURE_RELATION_PROBE",
+      "secondary_classes": [
+        "SHARED_CONTRACT_GAP"
+      ]
+    },
+    {
+      "evidence": [
+        "S29",
+        "S30",
+        "S32"
+      ],
+      "finding": "Fixture binds admin_root as System Root and grants broad capabilities. Not edited; disposable probes used explicit synthetic identity/capabilities.",
+      "id": "G-HARNESS",
+      "owner": "backend/conftest.py",
+      "primary_class": "HARNESS_ORACLE_GAP"
+    },
+    {
+      "evidence": [
+        "S08",
+        "S09",
+        "S18",
+        "S21",
+        "S23",
+        "S25",
+        "S26"
+      ],
+      "finding": "Services purge rejected and disabled truthfully; Architecture has Retire but no advertised/accepted restore; FAR has archive/restore/history and no purge. No BUILD solely to add these.",
+      "id": "G-UNSUPPORTED",
+      "owner": "Services purge, Architecture restore, FAR purge",
+      "primary_class": "TRUTHFUL_UNSUPPORTED"
+    },
+    {
+      "evidence": [
+        "tool inventory",
+        "remote ref preflight"
+      ],
+      "finding": "No native Fabric publisher tool was exposed; requested native ref was verified unclaimed and left untouched because Fabric owns it.",
+      "id": "G-NATIVE-REF",
+      "owner": "Native Fabric evidence publisher",
+      "primary_class": "EVIDENCE_ENVIRONMENT_GAP"
+    }
+  ],
+  "negative_findings": [
+    {
+      "classification": "CONSISTENT_SUPPORTED_AT_API_SURFACE",
+      "finding": "GET-only target/date-filtered API; no lifecycle audit delete route. No DB immutability guard, so database boundary is unknown.",
+      "owner": "Audit Log"
+    },
+    {
+      "classification": "CONSISTENT_SUPPORTED",
+      "finding": "Revision-bound owner-authorized archive/restore, idempotent events and stale conflict.",
+      "owner": "PV1 Project"
+    },
+    {
+      "classification": "CONSISTENT_SUPPORTED",
+      "finding": "Version-bound row-locked fail-closed lifecycle/history positive control.",
+      "owner": "FAR Failure Mode"
+    },
+    {
+      "classification": "TRUTHFUL_UNSUPPORTED",
+      "finding": "Backend and disabled UI agree.",
+      "owner": "Services purge"
+    }
+  ],
+  "request_id": "sysgrid-lifecycle-consistency-audit-verify-v1"
+}

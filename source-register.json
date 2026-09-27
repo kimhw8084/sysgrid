@@ -1,0 +1,319 @@
+{
+  "authority_documents": [
+    {
+      "access": "read-only",
+      "kind": "Notion",
+      "page_id": "3dcc564c-8d04-81ca-b812-c4585901d134",
+      "title": "Production cornerstone — lifecycle, audit and data-integrity consistency"
+    },
+    {
+      "access": "read-only",
+      "kind": "Notion",
+      "page_id": "3dfc564c-8d04-8177-8b22-d9352ef7a3bd",
+      "title": "SysGrid System Management V1 — Golden Production Architecture & Methodology"
+    }
+  ],
+  "base": {
+    "commit": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "tree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025"
+  },
+  "operation": "VERIFY",
+  "repository": "kimhw8084/sysgrid",
+  "request_id": "sysgrid-lifecycle-consistency-audit-verify-v1",
+  "sources": {
+    "S01": {
+      "content_sha256": "f2c03dc8335c902b7c638cd47ae41ceb3742a366ab26f53c449182bf7855a8c9",
+      "git_blob_oid": "bd836ddbe95f909fd81ce754677207e297e8a8a6",
+      "path": "contracts/system_management_v1.json",
+      "role": "V1 and root-preview module catalog"
+    },
+    "S02": {
+      "content_sha256": "256e4c3295174dd82c91ae1fcdc856bb81ac37b7c71edaf78773483e003d8297",
+      "git_blob_oid": "015abf522924ad681e8cd0a0f9398729014b412f",
+      "path": "frontend/src/components/shared/OperationalLifecycleContract.ts",
+      "role": "shared lifecycle vocabulary"
+    },
+    "S03": {
+      "content_sha256": "f38c3b03f665fe7a5bc083a3577ff420335ce11297b837413800d3f3096be4f8",
+      "git_blob_oid": "a3131d7816e04a29ccd46c0ef5ae0373bd46ad9d",
+      "path": "backend/app/api/operational_bulk.py",
+      "role": "bulk normalization and execution guard"
+    },
+    "S04": {
+      "content_sha256": "3196dc234462d6c3861d70446e58b40aa683da0280722053929de43b9d8bebf7",
+      "git_blob_oid": "74c4374610065f8621598a25840553829ed05022",
+      "path": "backend/app/api/devices.py",
+      "role": "Device lifecycle and purge dependencies"
+    },
+    "S05": {
+      "content_sha256": "4c4fe5dc1bb5cf7a2839223c71f4632ef3e8e2ba2ecb0d0b29020fe186eb47d7",
+      "git_blob_oid": "42fe09c09bb7f09c05f1cfa8c1ac825e2d277dcb",
+      "path": "frontend/src/components/assets/assetGoldenData.ts",
+      "role": "Asset preview and revert"
+    },
+    "S06": {
+      "content_sha256": "aeee625f828f0469725abf2e8d65daa93f5c1e705d5fd9d2401d715927d1baad",
+      "git_blob_oid": "7b2dc25fc51706b649ed22b22becb11f2812d813",
+      "path": "frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx",
+      "role": "Asset UI"
+    },
+    "S07": {
+      "content_sha256": "7ced5ed17be56ff44765fcfc46c2931c1cfcf54be0547c4f8d69a65ea3590441",
+      "git_blob_oid": "77994215ae03e2e6f56aa5cdbceb3caead592891",
+      "path": "backend/app/models/models.py",
+      "role": "domain models and AuditLog schema"
+    },
+    "S08": {
+      "content_sha256": "d8576caa8735dfb610273c99b42b073942e45ef0798739bcea7418de746c458b",
+      "git_blob_oid": "dd7df267f35b1fb4a032d28eec494adf52049f9d",
+      "path": "backend/app/api/logical_services.py",
+      "role": "Service lifecycle and audit"
+    },
+    "S09": {
+      "content_sha256": "c16581934462f561fa9f997cd24139e985bc4bf14cba1fb1964ac2ed8dd6fb98",
+      "git_blob_oid": "10ec02ba451a3312e56e54a8fff034691de7a916",
+      "path": "frontend/src/components/ServicesReal.tsx",
+      "role": "Services purge UI"
+    },
+    "S10": {
+      "content_sha256": "11af9cd69383cea8fa7897742dbf2637bdaa6d8a94f0367239cb318da24850c6",
+      "git_blob_oid": "05972f7cf9b6443527dfb694fb0469d3c7d4d505",
+      "path": "backend/app/api/monitoring.py",
+      "role": "Monitoring lifecycle, purge, history"
+    },
+    "S11": {
+      "content_sha256": "a881bdae28707aeca39be50299d2680ac70bcc4df8b7f5e093cd5090691072b0",
+      "git_blob_oid": "4510f1ca2378e20157c325aa50dc4a33bde108f0",
+      "path": "frontend/src/components/MonitoringGrid.tsx",
+      "role": "Monitoring undo and capability probe"
+    },
+    "S12": {
+      "content_sha256": "1aa1b75c46984e836c15999832c1c85e5115fb43968b6826a1d062c995312886",
+      "git_blob_oid": "73a488ce996b595fed33ddfc7c737e4491c8afc6",
+      "path": "frontend/src/utils/monitoringPurgeRevertCapability.ts",
+      "role": "probe interpretation"
+    },
+    "S13": {
+      "content_sha256": "3110cd5ffbb0ca02d5eebd41fa2e469159b3447124c3feec4835d09ab53b0a20",
+      "git_blob_oid": "e9d281e5aa87d2fe443197a96df4c0ab902f0988",
+      "path": "backend/app/api/maintenance.py",
+      "role": "Maintenance routes/auth"
+    },
+    "S14": {
+      "content_sha256": "e4c882282eb8154184525b4e5c83482afb96c946fcf6d60e5084bf9a21a65108",
+      "git_blob_oid": "9d2fec58775105d19daa37b015543ad7d6bbdfc5",
+      "path": "frontend/src/components/Maintenance.tsx",
+      "role": "Maintenance grid"
+    },
+    "S15": {
+      "content_sha256": "1163da39688939bcecac9f2f4939e48ee1a7820c74a2270510f3f367ad1935b1",
+      "git_blob_oid": "1673a23ab391bcc69db02afb1bbba1c673853f6e",
+      "path": "backend/app/pv1/domain.py",
+      "role": "PV1 project commands"
+    },
+    "S16": {
+      "content_sha256": "9476ddd2f8d03be7683d9bd148262d57ba2790afb392909074b4e4c7ee821441",
+      "git_blob_oid": "42ea0d56a0b14b97747e8af2941d054c56255828",
+      "path": "backend/app/pv1/models.py",
+      "role": "PV1 model"
+    },
+    "S17": {
+      "content_sha256": "56551edc3fbbcb8a301206e40d830db6b25dbef6023e59854c740a7f1b7e2330",
+      "git_blob_oid": "1cedc0b65eb7c6bf2a348ed64e9d315ae4cd9f27",
+      "path": "frontend/src/components/ProjectsStory.tsx",
+      "role": "PV1 lifecycle UI"
+    },
+    "S18": {
+      "content_sha256": "04ef7a7d0145d0bbe066a1c6250f62034f715d059bf2f7b4fc3c7cc971ed8a6a",
+      "git_blob_oid": "806aba128fdef8aefe7fdee71ad32bc29171fe9c",
+      "path": "backend/app/architecture/domain.py",
+      "role": "Architecture commands/projection"
+    },
+    "S19": {
+      "content_sha256": "1618364cb562062db0e5ff9c1a61ea1e49311521a6a3106fa17fce91de585501",
+      "git_blob_oid": "071263280e4dec55c22a1c6348920a09483b1e3a",
+      "path": "backend/app/architecture/api.py",
+      "role": "Architecture API"
+    },
+    "S20": {
+      "content_sha256": "83f909d6431b53cc2865696500645511a01dc8d0b85645bea8d2f49b8bcc27a4",
+      "git_blob_oid": "f0717cd27d3016e0b9f3acc9980d5b45ab945c8e",
+      "path": "backend/app/architecture/models.py",
+      "role": "Architecture schema"
+    },
+    "S21": {
+      "content_sha256": "45d711bc6212ebb0a9c00cdc4ac6a2d99ca4b3d6e03a8c80d2077347d3d7284b",
+      "git_blob_oid": "c38403a2d13087c475c54a9d08ed44bd171773d0",
+      "path": "frontend/src/architecture/ArchitectureCanvas.tsx",
+      "role": "Architecture Retire UI"
+    },
+    "S22": {
+      "content_sha256": "75dc999925556f5a9eaf50fc6aa2019c7f35436af0f7b463a298b9428051d76d",
+      "git_blob_oid": "ac32866874ab4d50e7b8276ec3a1a075989b414a",
+      "path": "backend/app/architecture/traceability.py",
+      "role": "traceability links"
+    },
+    "S23": {
+      "content_sha256": "df4d40a305e5a5985baf7363a25fcb8a88f17ae8582b21c695591d97fda5c1c6",
+      "git_blob_oid": "5f400e0610463f475dbba49593d52a3bf4af4f57",
+      "path": "backend/app/api/far.py",
+      "role": "FAR lifecycle owner"
+    },
+    "S24": {
+      "content_sha256": "66c4e5ef212d91099143647f37d703975479b3521ced4206cf32dd034991179f",
+      "git_blob_oid": "072f4d99b633257957798ac5c0ab7d0a57b676da",
+      "path": "backend/tests/test_far_lifecycle_integrity.py",
+      "role": "FAR integrity tests"
+    },
+    "S25": {
+      "content_sha256": "a744af0d740377cb4ce150927c6156d92667ac919090bb6ed5cf6a8e571f159c",
+      "git_blob_oid": "88fe32d3843bdebd4831a974201edcb764d86b15",
+      "path": "frontend/src/components/FAR.tsx",
+      "role": "FAR lifecycle UI"
+    },
+    "S26": {
+      "content_sha256": "6f02462505448207431e789ad5340a0cf32d10c8fcfaa8d89d607017316224fb",
+      "git_blob_oid": "b6635205833f078225d67e3b1f1d2b75b1e00a7d",
+      "path": "frontend/src/components/FAR.lifecycleVocabulary.ts",
+      "role": "FAR routes"
+    },
+    "S27": {
+      "content_sha256": "976ba640b4a1ed9bb4e966e13f344a466c8e41b9ee584ac5de99803efd4ca07a",
+      "git_blob_oid": "8730ba9ced6a47d1cad4fc6b85842160516156fc",
+      "path": "frontend/src/components/FARVersionHistory.tsx",
+      "role": "FAR history restore UI"
+    },
+    "S28": {
+      "content_sha256": "effbd72a6d8c72144b8c4a4ac7afbb43af85949303d1e6da96ca62dfd9fd20c2",
+      "git_blob_oid": "ef37208a93dc25745650f6dffce3901ed447925b",
+      "path": "backend/app/api/audit.py",
+      "role": "Audit GET route"
+    },
+    "S29": {
+      "content_sha256": "de9037f78d912fb3d4a907680c97a1a3db5b999a55adab69249acc809ba08fcc",
+      "git_blob_oid": "d0a8681fc2ffd7ce4e6a83d230438ef5f202dddb",
+      "path": "backend/app/api/module_policy.py",
+      "role": "server module/root policy"
+    },
+    "S30": {
+      "content_sha256": "e34c5a1c30f0914cf80a9bbcadaa8769656c1ab106f9166aa08ecf18ec97f373",
+      "git_blob_oid": "5b874acb4edb3388bcd958f175c17339e18fce7f",
+      "path": "backend/app/api/authorization.py",
+      "role": "capability helpers"
+    },
+    "S31": {
+      "content_sha256": "978eb4824d17b07c983a1e61dbf100c8a0af685f138a558f79120c3289d53557",
+      "git_blob_oid": "93401130883c0ddf9462364530570b6cd4093b70",
+      "path": "backend/app/api/utils.py",
+      "role": "audit writer"
+    },
+    "S32": {
+      "content_sha256": "1afdcc722e0ff4281ca13cc2c9b67f0a46dd320d07db90b1ab0fea623867bffc",
+      "git_blob_oid": "a35148bb9be3a8979295abaa085b9124d5096a07",
+      "path": "backend/conftest.py",
+      "role": "test fixture identities"
+    },
+    "S33": {
+      "content_sha256": "f5b854f4163770ef3462702f86581555d50784274a02ba7c434bbddb83ebe3b7",
+      "git_blob_oid": "0d06d4665bd77299a29a601d416dfebbdd7dfc66",
+      "path": "backend/test_devices_api_edges.py",
+      "role": "Device tests"
+    },
+    "S34": {
+      "content_sha256": "e4f0c97a072a38e23533730df4e2660e6944477ab1beee022284fd26d5b2cddd",
+      "git_blob_oid": "29420bb39b6af456fb52ff42b3c3077a970d073f",
+      "path": "backend/test_asset_architecture_traceability.py",
+      "role": "traceability tests"
+    },
+    "S35": {
+      "content_sha256": "f5780bedbe0d292461924d1b87abdd5e721ff919a0384c90b7c11ca78cc08620",
+      "git_blob_oid": "a22ccf20de97edecc1788697bebca2100110883c",
+      "path": "backend/test_service_workflows.py",
+      "role": "Service tests"
+    },
+    "S36": {
+      "content_sha256": "5170cef43ec1c1c8bc16b25f6da3418fdc4a6408f4c6255f96319caf21557503",
+      "git_blob_oid": "a5f4c7a71c65d426ae2e751899a04f9c9e6e63f9",
+      "path": "backend/test_monitoring_workflows.py",
+      "role": "Monitoring lifecycle tests"
+    },
+    "S37": {
+      "content_sha256": "8e59f65c29afd4033f8bddac2409323693bdf6d238bfebf8d2ba20a0ad1f19b8",
+      "git_blob_oid": "b3dcc6d45d36ee1530774b25e8639ebaa89b372e",
+      "path": "backend/test_monitoring_restore_edges.py",
+      "role": "Monitoring history tests"
+    },
+    "S38": {
+      "content_sha256": "2cc55b27ff090c065ab4159177d9b77b6e0384200db4054c01c2935e2240c99e",
+      "git_blob_oid": "ef9a5e700ad52abb3fffc1db87e272c167c232ed",
+      "path": "backend/test_monitoring_query_and_bulk_edges.py",
+      "role": "Monitoring purge partial test"
+    },
+    "S39": {
+      "content_sha256": "3aff41e1b30cf93786e5f3b893b8aa5eb5bbd62c697bbab7a47d267ae84330d4",
+      "git_blob_oid": "8d92206a661c2ad6b0cdddecbbb877281142b2c2",
+      "path": "backend/test_audit_integrity.py",
+      "role": "Audit tests"
+    },
+    "S40": {
+      "content_sha256": "d645123a783b9296a4b175343ff6b804fee9be614693868a277d2d40b78f69bf",
+      "git_blob_oid": "48de25ebf87b9e7936602bce7e8249fe30d2ec57",
+      "path": "backend/test_pv1_domain_foundation.py",
+      "role": "PV1 revision/idempotency tests"
+    },
+    "S41": {
+      "content_sha256": "c190806fdff8ad29c3fde898bfc83cdc56679963731f13a8e60a442fbe5b3d3a",
+      "git_blob_oid": "4af67d93c278415de7d020bfa667ae17facee09f",
+      "path": "backend/test_p07_architecture_engine.py",
+      "role": "Architecture revision tests"
+    },
+    "S42": {
+      "content_sha256": "3a623d52b4afc68ceba394586e4bbd30e2d43a5b6d0c5242362c34b8de17440d",
+      "git_blob_oid": "278d65d7ef58780c2161688b0d76cd3ba38a1bb0",
+      "path": "frontend/src/components/FAR.lifecycleHistory.test.ts",
+      "role": "FAR UI lifecycle tests"
+    },
+    "S43": {
+      "content_sha256": "37a5352eb33df8a63fcb877cb9c4b4aa797201d838065d80cdd2e263ffa7985d",
+      "git_blob_oid": "d2de1c50c2037a5529ec416a187140bd4373b696",
+      "path": "frontend/src/components/shared/FARLifecycleBackendContract.test.ts",
+      "role": "FAR contract tests"
+    },
+    "S44": {
+      "content_sha256": "0b7b1241c5721c21f3b571e602342dc161d632b22a1543ad5c054c3bab7a8348",
+      "git_blob_oid": "fe78f4d8725b049e7f8c57fdff841e33f5a9446d",
+      "path": "backend/alembic/versions/c6d7e8f9a0b1_add_pv1_architecture_engine.py",
+      "role": "Architecture lifecycle schema"
+    },
+    "S45": {
+      "content_sha256": "c432f65f9cb0f08325186fe25ea16961894d5228e36173ea4296cc351185983c",
+      "git_blob_oid": "d43433f3e67b5aad2ebf51a2b3af43e60b2d5c3b",
+      "path": "backend/alembic/versions/a1b2c3d4e5f6_add_pv1_domain_foundation.py",
+      "role": "PV1 archive schema"
+    },
+    "S46": {
+      "content_sha256": "20f497c8cbd24c5f9ecb88a92d463eb621f2280489519fc9ac163bec5f6cf53e",
+      "git_blob_oid": "94cacb631bfe1916579b303f8b33a52e89dbbc3c",
+      "path": "backend/alembic/versions/d16649b5c596_add_monitoring_versioning.py",
+      "role": "Monitoring history schema"
+    },
+    "S47": {
+      "content_sha256": "5f21c77638e6f25140da8090429413cd8fd764f9daf7bab1a685d74dac8f7cdb",
+      "git_blob_oid": "e8c60e36b06066fe51662ab8ef63754fccbd3c71",
+      "path": "backend/alembic/versions/f2b7c1d9e4a8_harden_monitoring_integrity.py",
+      "role": "Monitoring FK integrity"
+    },
+    "S48": {
+      "content_sha256": "994c2ca1a5e3a693776533bb27a36537e9dc77926608560ebf2d0d77fd0d2b3a",
+      "git_blob_oid": "c45842bf3b38eb198f7fab7e995db17edb6fd1ca",
+      "path": "backend/alembic/versions/e72b9b8626d3_add_is_deleted_and_owner_id_to_.py",
+      "role": "is_deleted migration"
+    },
+    "S49": {
+      "content_sha256": "a983702ef19cafd7da7e81ca0586884f7ece4edd5016880cacaacb263ceeab33",
+      "git_blob_oid": "fd893ef807f623b337cb7e6fd7318b806ef4b594",
+      "path": "backend/app/database.py",
+      "role": "tenant DB routing"
+    }
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "base": {
+    "commit": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "tree": "66b1e4022ed8f44c94b0daab8278fe7be49e2025"
+  },
+  "deferred_separate_owner": [
+    {
+      "classification": "DEFERRED_SEPARATE_OWNER",
+      "owner": "Full Maintenance workspace",
+      "scope": "Interactive/scheduling/atlas redesign. CHG-52 still owns backend auth and lifecycle contract."
+    }
+  ],
+  "ordering_note": "No technical dependency edges were found between owners. Order prioritizes production V1 safety before preview-only contracts; this is a review sequence, not one combined BUILD.",
+  "recommendation": "BUILD_REQUIRED",
+  "request_id": "sysgrid-lifecycle-consistency-audit-verify-v1",
+  "slices": [
+    {
+      "audit": "Append actor/action/target in state transaction.",
+      "blocks_wave_b": [
+        "CHG-44",
+        "CHG-45",
+        "CHG-46",
+        "CHG-47"
+      ],
+      "consumers": [
+        "AssetGoldenOperationalWorkspace",
+        "assetGoldenData",
+        "AssetDetailsView"
+      ],
+      "gaps": [
+        "G-DEVICE"
+      ],
+      "id": "BS-DEVICE-LIFECYCLE",
+      "invariants": [
+        "assets auth and tenant/object scope",
+        "recheck+lock targets/dependencies at execution",
+        "retry side effects once",
+        "retain Architecture/PV1 blockers"
+      ],
+      "migration": "None if row locks and existing AuditLog are used.",
+      "non_goals": [
+        "Do not invent archive for all child classes",
+        "No purge undo"
+      ],
+      "order": 1,
+      "outcome": "Consistent single/bulk archive/restore/purge results; blocker-only fails closed; authoritative dependency impact; atomic audit; child delete tenant/parent scope; label is_deleted as Archived.",
+      "owner": [
+        "backend/app/api/devices.py",
+        "backend/app/api/operational_bulk.py"
+      ],
+      "purge_impact": "Name/count direct and cascaded dependents including Monitoring and Maintenance; atomic declared unlink/delete.",
+      "reason": "Production asset foundation; exact per-issue mapping remains for Project OS.",
+      "tests": [
+        "blocker-only and mixed blocker selection",
+        "dry-run and execution race",
+        "retry audit once",
+        "purge impact/dependent cleanup",
+        "cross-tenant child denial"
+      ],
+      "ui": [
+        "Archived wording",
+        "backend blockers/results",
+        "Revert archive/restore only"
+      ]
+    },
+    {
+      "audit": "Actor/action/target for archive/restore/purge in same tx; history actor not null.",
+      "blocks_wave_b": [
+        "CHG-44",
+        "CHG-45",
+        "CHG-46",
+        "CHG-47"
+      ],
+      "consumers": [
+        "MonitoringGrid",
+        "Monitoring history view"
+      ],
+      "gaps": [
+        "G-MONITORING"
+      ],
+      "id": "BS-MONITORING-PURGE",
+      "invariants": [
+        "monitoring auth and tenant scope",
+        "recheck dependencies/version",
+        "client snapshot cannot override authority",
+        "retry cannot recreate altered row",
+        "audit survives cascade"
+      ],
+      "migration": "None for irreversible purge using existing AuditLog. If recovery promise retained, define authenticated/version-bound receipt schema first.",
+      "non_goals": [
+        "No caller snapshot recovery",
+        "No blocked-preview audit absent policy"
+      ],
+      "order": 2,
+      "outcome": "Treat purge irreversible unless Product defines server-owned recovery receipt; remove caller-snapshot restore/probe/Revert; add authoritative dry-run cascade preview and explicit selection atomicity; preserve durable audit outside cascade.",
+      "owner": [
+        "backend/app/api/monitoring.py",
+        "frontend/src/components/MonitoringGrid.tsx",
+        "frontend/src/utils/monitoringPurgeRevertCapability.ts"
+      ],
+      "purge_impact": "Show MonitoringItem, History, Owner impact and irreversibility before execution.",
+      "reason": "Production Monitoring owner; precise per-issue mapping unknown.",
+      "tests": [
+        "dry-run no mutation",
+        "preview exact cascades",
+        "audit survives purge",
+        "caller snapshot rejected/unsupported",
+        "no Revert after purge"
+      ],
+      "ui": [
+        "shared purge revertMode unsupported",
+        "remove error-string capability probe",
+        "show cascade impact"
+      ]
+    },
+    {
+      "audit": "Archive/restore AuditLog in same tx; never log false delete.",
+      "blocks_wave_b": "Overall CHG-52 gate; direct CHG-44/45/46/47 mapping unknown.",
+      "consumers": [
+        "Maintenance.tsx",
+        "Device purge impact owner"
+      ],
+      "gaps": [
+        "G-MAINTENANCE"
+      ],
+      "id": "BS-MAINTENANCE",
+      "invariants": [
+        "explicit System Root+capability; no is_admin inference",
+        "tenant/object scope",
+        "revision or row lock",
+        "idempotent retry",
+        "row+audit one tx"
+      ],
+      "migration": "Required archived_at nullable with existing rows active; revision=1 backfill if optimistic revision selected.",
+      "non_goals": [
+        "No scheduling/bulk workspace redesign",
+        "No permanent purge"
+      ],
+      "order": 3,
+      "outcome": "Add explicit root-preview module boundary and schema-backed archive/restore; fix false success; revision-safe exact result and atomic audit. Keep grid read-only; full redesign deferred.",
+      "owner": [
+        "contracts/system_management_v1.json",
+        "module_policy.py",
+        "maintenance.py",
+        "MaintenanceWindow model",
+        "new Alembic migration"
+      ],
+      "purge_impact": "Do not add Maintenance purge; Device preview declares effects.",
+      "tests": [
+        "root-preview allowed/ordinary asset denied",
+        "archive/restore state/audit",
+        "stale conflict/retry",
+        "migration preserve rows",
+        "Device preview lists windows"
+      ],
+      "ui": [
+        "keep read-only",
+        "no full workspace in CHG-52"
+      ]
+    },
+    {
+      "audit": "One per actual state transition.",
+      "blocks_wave_b": [
+        "CHG-44",
+        "CHG-45",
+        "CHG-46",
+        "CHG-47"
+      ],
+      "consumers": [
+        "ServicesReal.tsx"
+      ],
+      "gaps": [
+        "G-SERVICE-RETRY"
+      ],
+      "id": "BS-SERVICE-RETRY",
+      "invariants": [
+        "services module+tenant db",
+        "OS projection sync same tx",
+        "one audit per real transition",
+        "purge unsupported"
+      ],
+      "migration": "None.",
+      "non_goals": [
+        "No Service purge",
+        "No dynamic capability API absent need"
+      ],
+      "order": 4,
+      "outcome": "Single DELETE agrees with bulk: archived retry returns unchanged without second audit/projection side effect; actual transition appends one audit atomically.",
+      "owner": [
+        "backend/app/api/logical_services.py"
+      ],
+      "purge_impact": "No Service purge; Device purge detaches service association.",
+      "reason": "Production Services owner; exact map unknown.",
+      "tests": [
+        "two DELETEs -> one audit",
+        "bulk OS sync regression",
+        "purge stays unsupported"
+      ],
+      "ui": [
+        "retain truthful disabled purge wording"
+      ]
+    },
+    {
+      "audit": "Keep ArchitectureEvent/outbox; no duplicate AuditLog for symmetry.",
+      "blocks_wave_b": "Overall gate; direct mapping unknown.",
+      "consumers": [
+        "ArchitectureCanvas",
+        "change-set commands"
+      ],
+      "gaps": [
+        "G-ARCHITECTURE"
+      ],
+      "id": "BS-ARCHITECTURE-RETIRE",
+      "invariants": [
+        "root-preview and model roles",
+        "missing/stale revision fail closed",
+        "no active relation to retired endpoint",
+        "append-only actor/command events"
+      ],
+      "migration": "None; revision/event schema exists.",
+      "non_goals": [
+        "No restore command",
+        "No profile promotion"
+      ],
+      "order": 5,
+      "outcome": "Keep Retire/no restore promise; require model/entity revisions and block object retirement on active incident relations with IDs, unless approved atomic relation-retire policy.",
+      "owner": [
+        "backend/app/architecture/domain.py",
+        "backend/app/architecture/api.py",
+        "frontend/src/architecture/ArchitectureCanvas.tsx"
+      ],
+      "purge_impact": "No purge; preserve traceability.",
+      "tests": [
+        "retire linked node",
+        "missing/stale revision",
+        "event scope",
+        "root-preview denied absent explicit identity"
+      ],
+      "ui": [
+        "show backend relation blockers",
+        "no Restore absent promise"
+      ]
+    }
+  ]
+}
