@@ -972,22 +972,22 @@ const ConfigModal = ({ flow, isOpen, onClose, onSave, isNew }: any) => {
     });
   };
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-full max-w-xl max-h-[90vh] overflow-y-auto custom-scrollbar p-8 rounded-lg border border-white/10 bg-[#0f172a]/95">
-        <div className="flex items-center justify-between border-b border-white/5 pb-6">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/30">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6">
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel min-w-0 w-full max-w-xl max-h-[94vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar p-3 sm:p-8 rounded-lg border border-white/10 bg-[#0f172a]/95">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-4 sm:pb-6">
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+            <div className="shrink-0 rounded-lg border border-blue-500/30 bg-blue-600/20 p-2 text-blue-400 sm:p-3">
               <Settings size={22} />
             </div>
-            <div>
-              <h2 className="text-xl font-bold uppercase text-white tracking-tighter leading-none">{isNew ? 'New Architecture' : 'Manifest Settings'}</h2>
+            <div className="min-w-0">
+              <h2 className="break-words text-base font-bold uppercase leading-tight tracking-tighter text-white sm:text-xl">{isNew ? 'New Architecture' : 'Manifest Settings'}</h2>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white">
             <X size={20}/>
           </button>
         </div>
-        <div className="mt-8 space-y-6">
+        <div className="mt-4 min-w-0 space-y-4 sm:mt-8 sm:space-y-6">
           <div className="space-y-2">
             <label className="text-[9px] font-bold uppercase text-slate-500 tracking-[0.2em] ml-1">Workflow Name (Required)</label>
             <input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-5 py-3.5 text-xs font-bold text-white outline-none focus:border-blue-500/50" placeholder="e.g. Core Payment Ingress" />
@@ -996,7 +996,7 @@ const ConfigModal = ({ flow, isOpen, onClose, onSave, isNew }: any) => {
             <label className="text-[9px] font-bold uppercase text-slate-500 tracking-[0.2em] ml-1">Strategic Purpose (Required)</label>
             <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-5 py-3.5 text-xs font-bold text-slate-300 outline-none focus:border-blue-500/50 h-28 resize-none" placeholder="Describe the business and technical purpose..." />
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
             <div className="space-y-2">
               <label className="text-[9px] font-bold uppercase text-slate-500 tracking-[0.2em] ml-1">Category (Required)</label>
               <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-5 py-3.5 text-xs font-bold text-white outline-none focus:border-blue-500/50 appearance-none">
@@ -1012,7 +1012,7 @@ const ConfigModal = ({ flow, isOpen, onClose, onSave, isNew }: any) => {
           </div>
           <div className="border-t border-white/5 pt-6 space-y-4">
             <h3 className="text-[9px] font-bold uppercase text-slate-500 tracking-[0.2em] ml-1">Operational Governance</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
               {[
                 ['owner_team', 'Owner Team', 'e.g. Core Platform'],
                 ['criticality', 'Criticality', 'Critical / High / Medium / Low'],
@@ -1048,7 +1048,7 @@ const ConfigModal = ({ flow, isOpen, onClose, onSave, isNew }: any) => {
                 ['vendor_ids_text', 'Vendor IDs', getFlowLinks(flow).vendor_ids.join(', ')],
                 ['project_ids_text', 'Project IDs', getFlowLinks(flow).project_ids.join(', ')],
               ].map(([key, label, value]) => (
-                <div key={key}>
+                <div key={key} className="min-w-0">
                   <label className="text-[8px] font-bold uppercase text-slate-600 tracking-[0.2em] ml-1">{label}</label>
                   <input
                     value={(formData.metadata as any)[key] ?? value}
@@ -1060,9 +1060,9 @@ const ConfigModal = ({ flow, isOpen, onClose, onSave, isNew }: any) => {
               ))}
             </div>
           </div>
-          <div className="pt-6 border-t border-white/5 flex gap-4">
-             <button onClick={onClose} className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-slate-400 font-bold uppercase text-[11px] tracking-widest rounded-lg transition-all">Cancel</button>
-             <button onClick={handleSave} className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase text-[11px] tracking-widest rounded-lg transition-all shadow-2xl shadow-blue-500/20">{isNew ? 'Create Architecture' : 'Save Changes'}</button>
+          <div className="flex min-w-0 flex-col gap-3 border-t border-white/5 pt-4 sm:flex-row sm:gap-4 sm:pt-6">
+             <button onClick={onClose} className="min-h-11 min-w-0 w-full flex-1 whitespace-normal break-words rounded-lg bg-white/5 px-3 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-400 transition-all hover:bg-white/10 sm:py-4">Cancel</button>
+             <button onClick={handleSave} className="min-h-11 min-w-0 w-full flex-1 whitespace-normal break-words rounded-lg bg-blue-600 px-3 py-3 text-[11px] font-bold uppercase tracking-widest text-white transition-all shadow-2xl shadow-blue-500/20 hover:bg-blue-500 sm:py-4">{isNew ? 'Create Architecture' : 'Save Changes'}</button>
           </div>
         </div>
       </motion.div>
@@ -1123,21 +1123,21 @@ const ArchDashboard = ({ flows, onEdit, onAdd }: any) => {
   ], [onEdit]);
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.07),transparent_22%),linear-gradient(180deg,rgba(2,6,23,0.4),rgba(2,6,23,0.7))]">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex items-end justify-between">
+    <div className="min-h-0 min-w-0 flex-1 overflow-y-auto p-3 custom-scrollbar bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.07),transparent_22%),linear-gradient(180deg,rgba(2,6,23,0.4),rgba(2,6,23,0.7))] sm:p-8" data-architecture-legacy="true">
+      <div className="mx-auto min-w-0 max-w-7xl space-y-6 sm:space-y-8">
+        <div className="flex min-w-0 flex-wrap items-end justify-between gap-4" data-architecture-legacy-header="true">
           <div className="space-y-1">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-sky-400/15 rounded-lg shadow-xl text-sky-200 border border-sky-300/20"><Workflow size={24}/></div>
-              <h1 className="text-4xl font-black text-white uppercase tracking-[0.08em] leading-none">Architecture Matrix</h1>
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <div className="shrink-0 rounded-lg border border-sky-300/20 bg-sky-400/15 p-2 text-sky-200 shadow-xl sm:p-3"><Workflow size={24}/></div>
+              <h1 className="min-w-0 break-words text-2xl font-black uppercase leading-tight tracking-[0.08em] text-white sm:text-4xl">Architecture Matrix</h1>
             </div>
-            <p className="text-sky-200/55 text-[10px] font-bold uppercase tracking-[0.45em] pl-1 mt-3">Core Registry & Governance</p>
+            <p className="mt-3 max-w-full break-words pl-1 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-200/55 sm:tracking-[0.45em]">Core Registry &amp; Governance</p>
           </div>
-          <button onClick={onAdd} className="px-8 py-4 bg-sky-400 hover:bg-sky-300 text-slate-950 rounded-lg flex items-center space-x-3 transition-all shadow-[0_20px_50px_rgba(56,189,248,0.28)] active:scale-95">
+          <button onClick={onAdd} data-architecture-legacy-create="true" className="flex w-full max-w-full items-center justify-center gap-3 whitespace-normal rounded-lg bg-sky-400 px-4 py-3 text-slate-950 shadow-[0_20px_50px_rgba(56,189,248,0.28)] transition-all hover:bg-sky-300 active:scale-95 sm:w-auto sm:px-8 sm:py-4">
             <Plus size={20}/><span className="text-sm font-bold uppercase tracking-widest">New Architecture</span>
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {[
             ['Registry Entries', summary.total, 'text-blue-400'],
             ['Tier 1 / Critical', summary.critical, 'text-rose-400'],
@@ -1150,21 +1150,21 @@ const ArchDashboard = ({ flows, onEdit, onAdd }: any) => {
             </div>
           ))}
         </div>
-        <div className="glass-panel rounded-lg border border-white/8 overflow-hidden shadow-[0_28px_80px_rgba(2,6,23,0.4)] bg-[#0f172a]/40 backdrop-blur-3xl flex flex-col h-[600px]">
-          <div className="p-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="relative flex-1 max-w-xl">
+        <div className="glass-panel flex h-[600px] min-w-0 flex-col overflow-hidden rounded-lg border border-white/8 bg-[#0f172a]/40 shadow-[0_28px_80px_rgba(2,6,23,0.4)] backdrop-blur-3xl" data-architecture-legacy-matrix="true">
+          <div className="flex flex-col justify-between gap-4 border-b border-white/5 p-3 sm:p-6 md:flex-row md:items-center md:gap-6">
+            <div className="relative min-w-0 w-full max-w-xl flex-1">
               <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600"/>
               <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search architectures..." className="w-full bg-black/40 border border-white/10 rounded-lg pl-14 pr-6 py-3.5 text-xs font-bold text-white outline-none focus:border-blue-500/50 shadow-inner"/>
             </div>
-            <div className="flex bg-black/40 p-1 rounded-lg border border-white/5">
+            <div className="flex max-w-full flex-wrap bg-black/40 p-1 rounded-lg border border-white/5">
               {['All', ...ARCH_STATUSES].map(s => (
-                <button key={s} onClick={() => setStatusFilter(s)} className={`px-5 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${statusFilter === s ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                <button key={s} onClick={() => setStatusFilter(s)} className={`max-w-full px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all sm:px-5 ${statusFilter === s ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
                   {s}
                 </button>
               ))}
             </div>
           </div>
-          <div className="flex-1 ag-theme-alpine-dark">
+          <div className="min-h-0 min-w-0 flex-1 ag-theme-alpine-dark">
             <AgGridReact
               rowData={filtered}
               columnDefs={columnDefs}

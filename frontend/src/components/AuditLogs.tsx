@@ -29,11 +29,19 @@ export default function AuditLogs() {
   const [fontSize, setFontSize] = useState(11)
   const [rowDensity, setRowDensity] = useState(10)
   const [showStyleLab, setShowStyleLab] = useState(false)
-  const [showCharts, setShowCharts] = useState(true)
+  const [showCharts, setShowCharts] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
+  const [isMobileLayout, setIsMobileLayout] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches)
   const [quickSearch, setQuickSearch] = useState('')
   const [activeLog, setActiveLog] = useState<any>(null)
   const targetTableParam = searchParams.get('target_table') || ''
   const targetIdParam = searchParams.get('target_id') || ''
+
+  React.useEffect(() => {
+    const query = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobileLayout(query.matches)
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
 
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
   const auditQuery = useMemo(() => createAuditQueryDescriptor({
@@ -200,7 +208,7 @@ export default function AuditLogs() {
               >
                 <Search size={14} />
               </ModulePolicyButton>
-              <button onClick={() => setActiveLog(params.data)} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload">
+              <button onClick={() => setActiveLog(params.data)} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload" aria-label="View change payload">
                 <Layers size={14} />
               </button>
             </div>
@@ -210,8 +218,8 @@ export default function AuditLogs() {
   ], [navigate])
 
   return (
-    <div className="h-full flex flex-col bg-[#020617]">
-      <div className="space-y-4 border-b border-white/5 bg-slate-950/40 px-8 py-6 backdrop-blur-xl">
+    <div className="h-full min-h-0 min-w-0 flex flex-col overflow-y-auto bg-[#020617]" data-audit-ledger="true">
+      <div className="min-w-0 shrink-0 space-y-4 border-b border-white/5 bg-slate-950/40 px-3 py-4 backdrop-blur-xl sm:px-8 sm:py-6">
         <PageHeader
           eyebrow="Registry"
           title={
@@ -233,6 +241,7 @@ export default function AuditLogs() {
         />
 
         <PageToolbar
+          wrapOnMobile
           left={
             <>
               <ToolbarSearch
@@ -284,11 +293,11 @@ export default function AuditLogs() {
         {showCharts && (
           <motion.div 
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 180, opacity: 1 }}
+            animate={{ height: isMobileLayout ? 'auto' : 180, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-slate-950/60 border-b border-white/5 px-8 flex items-center gap-12"
+            className="shrink-0 overflow-hidden bg-slate-950/60 border-b border-white/5 px-3 py-3 flex flex-col items-stretch gap-3 sm:px-8 sm:py-0 sm:flex-row sm:items-center sm:gap-12"
           >
-             <div className="flex-1 h-[140px] py-4">
+             <div className="min-w-0 w-full h-[140px] py-4 sm:flex-1">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                    <Activity size={12} className="text-blue-500" /> Transaction Velocity (Loaded result/page)
                 </p>
@@ -311,7 +320,7 @@ export default function AuditLogs() {
                 </ResponsiveContainer>
              </div>
 
-             <div className="w-[300px] h-[140px] py-4">
+             <div className="min-w-0 w-full h-[140px] py-4 sm:w-[300px] sm:shrink-0">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                    <Filter size={12} className="text-indigo-500" /> Operation Distribution (Loaded result/page)
                 </p>
@@ -331,7 +340,7 @@ export default function AuditLogs() {
                 </ResponsiveContainer>
              </div>
              
-             <div className="w-[200px] h-[140px] flex flex-col justify-center border-l border-white/5 pl-12">
+             <div className="min-w-0 w-full flex flex-col justify-center border-t border-white/5 pt-3 sm:h-[140px] sm:w-[200px] sm:shrink-0 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 lg:pl-12">
                 <div className="space-y-4">
                    <div>
                       <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Loaded Logs</p>
@@ -355,14 +364,14 @@ export default function AuditLogs() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden bg-indigo-600/10 border-b border-indigo-500/20"
           >
-            <div className="px-8 py-4 flex items-center justify-between backdrop-blur-md">
-               <div className="flex items-center space-x-12">
+            <div className="px-3 py-4 flex flex-col items-start gap-3 backdrop-blur-md sm:px-8 sm:flex-row sm:items-center sm:justify-between">
+               <div className="flex w-full flex-col items-start gap-3 sm:w-auto sm:flex-row sm:items-center sm:space-x-12">
                   <div className="flex items-center space-x-3">
                      <Activity size={16} className="text-indigo-400" />
                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">View Density Laboratory</span>
                   </div>
                   
-                  <div className="flex items-center space-x-6">
+                  <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:space-x-6">
                      <div className="flex items-center space-x-4">
                         <span className="text-[9px] font-black text-slate-500 uppercase">Font Size</span>
                         <div className="flex items-center space-x-2">
@@ -394,7 +403,7 @@ export default function AuditLogs() {
         )}
       </AnimatePresence>
 
-      <div className="flex-1 overflow-hidden relative ag-theme-alpine-dark">
+      <div className="min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark">
         {isLoading && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#020617]/80 backdrop-blur-sm space-y-4">
              <RefreshCcw size={32} className="text-blue-400 animate-spin" />
@@ -508,6 +517,17 @@ export default function AuditLogs() {
             font-weight: 900 !important;
             text-transform: uppercase !important;
             height: 40px !important;
+        }
+        @media (max-width: 640px) {
+          .ag-paging-panel {
+            box-sizing: border-box;
+            height: auto !important;
+            min-height: 40px;
+            padding: 4px 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2px 4px;
+          }
         }
         .ag-icon { color: #3b82f6 !important; }
         

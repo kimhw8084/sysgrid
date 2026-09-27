@@ -117,6 +117,7 @@ export const SettingsStandards = () => {
   return (
     <div
       data-testid="settings-standards-reference"
+      data-settings-tab-content="standards"
       className="space-y-6 pb-20 pt-2"
     >
       <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-5">
