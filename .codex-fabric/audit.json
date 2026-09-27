@@ -1,0 +1,462 @@
+{
+  "accepted_at": "2026-09-27T20:03:21Z",
+  "changed_files": [
+    {
+      "additions": 500,
+      "deletions": 77,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 73,
+      "deletions": 0,
+      "path": "backend/test_asset_architecture_traceability.py",
+      "status": "M"
+    },
+    {
+      "additions": 289,
+      "deletions": 7,
+      "path": "backend/test_devices_api_edges.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/AssetGoldenShellScaffold.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/assetGoldenColumns.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 6,
+      "deletions": 5,
+      "path": "frontend/src/components/assets/assetGoldenData.ts",
+      "status": "M"
+    },
+    {
+      "additions": 66,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/WorkspaceToast.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/useOperationalBulkWorkflow.ts",
+      "status": "M"
+    },
+    {
+      "additions": 95,
+      "deletions": 14,
+      "path": "frontend/tests/assets-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk proxy /opt/anaconda3/bin/python3.11 /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -lh /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/lifecycle-contract-matrix.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy /opt/anaconda3/bin/python3.11 -c 'import json; d=json.load(open(\\\"/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/purge-impact-transition.json\\\")); print(json.dumps({\\\"preview\\\":d[\\\"preview\\\"],\\\"applied\\\":d[\\\"execution\\\"][\\\"purge_impact_applied\\\"][\\\"aggregate\\\"],\\\"before\\\":d[\\\"before_preview\\\"],\\\"after\\\":d[\\\"after_execution\\\"]},indent=2))'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3.11 SYSGRID_VERIFY_PROFILE=normal-v1 bash scripts/verify-app.sh'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package && rtk find /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package -maxdepth 2 -type f'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk /Users/haewonkim/.codex-fabric/bin/fabricctl --help'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git status --short --branch && git rev-parse HEAD && git rev-parse HEAD''^{tree} && git rev-parse HEAD''^ && git ls-remote origin refs/heads/main refs/heads/codex/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-authority-fix-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package')\nfor f in ['candidate-binding.json','test-and-consumer-summary.json','lifecycle-contract-matrix.json']:\n print('\\\\n###',f)\n d=json.loads((p/f).read_text())\n print(json.dumps(d,indent=2)[:12000])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git show --stat --oneline --summary HEAD && git status --porcelain=v2 -b'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git remote -v && git branch -vv && git config --get-regexp '\"'^branch'\"\\\\.|\"'^remote'\"\\\\.'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git push --set-upstream origin codex/sysgrid-lifecycle-device-authority-fix-v2 && git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-authority-fix-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/backend-lifecycle-events.json')\nd=json.loads(p.read_text())\nprint(type(d).__name__, list(d) if isinstance(d,dict) else len(d))\nfor k,v in (d.items() if isinstance(d,dict) else enumerate(d)):\n print('\\\\nKEY',k,'TYPE',type(v).__name__)\n if isinstance(v,dict):\n  print('keys',list(v))\n  for kk,vv in v.items():\n   if any(s in kk.lower() for s in ['audit','archive','restore','purge','preview','event']): print(kk, str(vv)[:2200])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/backend-lifecycle-events.json')\nd=json.loads(p.read_text())\nfor i,e in enumerate(d):\n if 'device_lifecycle' in e.get('test','') or 'device_bulk' in e.get('test','') or 'audit' in e.get('test','') or 'purge' in e.get('test',''):\n  print('\\\\n',i,json.dumps(e,sort_keys=True)[:4500])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nimport json\nfrom pathlib import Path\nD=json.loads(Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/backend-lifecycle-events.json').read_text())\nfor i,e in enumerate(D):\n t=e.get('test','')\n if 'test_device_bulk_dry_run_lifecycle_audit_and_missing_execution[asyncio]' in t:\n  if e.get('kind'):\n   print(i,e['kind'],e.get('action'), e.get('state',{}).get('audit_actions'), e.get('state',{}).get('device_archived'), e.get('state',{}).get('device_exists'))\n  else:\n   r=e.get('response',{})\n   print(i,'response',e.get('action'),e.get('dry_run'),e.get('status_code'),r.get('status'),r.get('changed_ids'), r.get('missing_ids'),r.get('blocked_count'),r.get('detail',{}).get('preview',{}).get('status'))\nPY\nrg -n \\\"audit_actions_after|lifecycle-contract-matrix|audit_rows_after\\\" /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nimport json\nfrom pathlib import Path\nD=json.loads(Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/backend-lifecycle-events.json').read_text())\nfor i,e in enumerate(D):\n t=e.get('test','')\n if 'test_device_bulk_dry_run_lifecycle_audit_and_missing_execution' in t:\n  if e.get('kind'):\n   print(i,e['kind'],e.get('action'), e.get('state',{}).get('audit_actions'), e.get('state',{}).get('device_archived'), e.get('state',{}).get('device_exists'),t)\n  else:\n   r=e.get('response',{})\n   det=r.get('detail',{})\n   if not isinstance(det,dict): det={}\n   p=det.get('preview',{})\n   print(i,'response',e.get('action'),e.get('dry_run'),e.get('status_code'),r.get('status'),r.get('changed_ids'),r.get('missing_ids'),r.get('blocked_count'),p.get('status'),t)\nPY\nsed -n '130,260p' /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,145p' /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py && sed -n '250,380p' /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\np='/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py'\ns=open(p).read()\nold='''def snapshot(events, test_part, kind, action=None):\n    event = find_event(events, test_part, kind=kind, action=action)\n    return event[\\\"state\\\"]\n'''\nnew='''def snapshot(events, test_part, kind, action=None):\n    matches = [\n        event for event in events\n        if test_part in (event.get(\\\"test\\\") or \\\"\\\")\n        and event.get(\\\"kind\\\") == kind\n        and (action is None or event.get(\\\"action\\\") == action)\n    ]\n    if not matches:\n        raise ValueError(f\\\"missing evidence snapshot: {test_part} {kind} {action}\\\")\n    # The selected test can capture the same checkpoint before preview, after preview,\n    # after execution and after retry. The last checkpoint proves the final transaction state.\n    return matches[-1][\\\"state\\\"]\n'''\nif old not in s: raise SystemExit('expected snapshot helper not found')\nopen(p,'w').write(s.replace(old,new))\nPY\npython /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py\npython - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package')\nfor f in ['lifecycle-contract-matrix.json','purge-impact-transition.json','traceability-race.json','malformed-dry-run.json','audit-secret-hygiene.json','test-and-consumer-summary.json']:\n d=json.loads((p/f).read_text())\n print('\\\\n'+f)\n if f=='lifecycle-contract-matrix.json':\n  for row in d['results']: print(row['case'],row.get('http_status'),row.get('status'),row.get('audit_rows_after_preview'),row.get('audit_actions_after_preview'),row.get('audit_actions_after'))\n elif f=='purge-impact-transition.json': print('preview',d['preview']['status'],d['preview']['purge_impact']['aggregate']['delete_count'],d['preview']['purge_impact']['aggregate']['detach_count'],'exec',d['execution']['status'],'actual_equals_preview',d['execution']['purge_impact_applied']==d['preview']['purge_impact'],'after exists',d['after_execution']['device_exists'],'audit',d['after_execution']['audit_actions'])\n elif f=='traceability-race.json': print('preview',d['preview']['http_status'],d['preview']['status'],'exec',d['execution']['http_status'],d['execution']['status'],'lineage',d['after_blocked_execution']['pv1_traceability_links'],'exists',d['after_blocked_execution']['device_exists'],'mutation',d['mutation_applied'])\n elif f=='malformed-dry-run.json': print([(x['value'],x['http_status']) for x in d['cases']])\n elif f=='audit-secret-hygiene.json': print(d)\n else: print(d['verify_app'],d['backend_focused'],d['frontend'],d['playwright'])\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nimport json\nfrom pathlib import Path\nP=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2')\nevents=json.loads((P/'package/backend-lifecycle-events.json').read_text())\nfor e in events:\n if 'test_device_bulk_dry_run_lifecycle_audit_and_missing_execution[asyncio]' in e.get('test','') and e.get('status_code')==409:\n  print(json.dumps(e,indent=2)[:5000])\nprint('\\\\nMATRIX rows:')\nfor x in json.loads((P/'package/lifecycle-contract-matrix.json').read_text())['results']:\n if x['case'] in ('restore-duplicate-hostname-execution','missing-selection-execution'):\n  print(json.dumps(x,indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg -n \\\"OperationalBulkPreviewModal|useOperationalBulkWorkflow\\\" frontend/src --glob '*.{ts,tsx}' && git cat-file -t 3e4a3bd199d0e33ae5fc1f405dacf41b4527051e && git show --stat --oneline --summary 3e4a3bd199d0e33ae5fc1f405dacf41b4527051e && git ls-remote origin 'refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-consistency-audit-verify-v1' 'refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-authority-fix-v2' 'refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/ui')\nfor f in sorted(p.glob('*.json')):\n d=json.loads(f.read_text())\n print(f.name, list(d)[:15])\n print(json.dumps(d,sort_keys=True)[:450])\nPY\nrg -n \\\"Purged|purged|Archived|Archived \\\\(|Purge|Archive\\\" frontend/src/components/assets/assetGoldenData.ts frontend/src/components/assets/AssetBulkActionsPanel.tsx frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx frontend/src/components/assets/assetGoldenColumns.tsx frontend/src/components/assets/AssetGoldenShellScaffold.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\np='/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py'\ns=open(p).read()\ns=s.replace('''        \\\"status\\\": body.get(\\\"status\\\"),\n        \\\"action\\\": body.get(\\\"action\\\"),''','''        \\\"status\\\": body.get(\\\"status\\\"),\n        \\\"execution_outcome\\\": \\\"blocked\\\" if event[\\\"status_code\\\"] == 409 else body.get(\\\"status\\\"),\n        \\\"action\\\": body.get(\\\"action\\\"),''')\ns=s.replace('''            {\\\"case\\\": \\\"archive-preview\\\", \\\"request_dry_run\\\": True, **status_summary(clean_archive_preview), \\\"audit_rows_after_preview\\\": len(snapshot(events, lifecycle_test, \\\"preview-state\\\", action=\\\"delete\\\")[\\\"audit_rows\\\"])},\n            {\\\"case\\\": \\\"archive-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(archive_execution), \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"archive-retry\\\", \\\"request_dry_run\\\": False, **status_summary(archive_retry), \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-preview\\\", \\\"request_dry_run\\\": True, **status_summary(restore_preview), \\\"audit_actions_after_preview\\\": snapshot(events, lifecycle_test, \\\"preview-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(restore_execution), \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-retry\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(restore_retry), \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-duplicate-hostname-preview\\\", \\\"request_dry_run\\\": True, **status_summary(hostname_preview)},\n            {\\\"case\\\": \\\"restore-duplicate-hostname-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(hostname_execution), \\\"audit_actions_after\\\": snapshot(events, hostname_test, \\\"after-blocked-execution-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"missing-selection-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(missing_execution), \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-blocked-execution-state\\\", action=\\\"delete\\\")[\\\"audit_actions\\\"]},''','''            {\\\"case\\\": \\\"archive-preview\\\", \\\"request_dry_run\\\": True, **status_summary(clean_archive_preview), \\\"device_archived_after_preview\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"device_archived\\\"], \\\"audit_rows_after_preview\\\": len(snapshot(events, lifecycle_test, \\\"preview-state\\\", action=\\\"delete\\\")[\\\"audit_rows\\\"])},\n            {\\\"case\\\": \\\"archive-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(archive_execution), \\\"device_archived_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"device_archived\\\"], \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"archive-retry\\\", \\\"request_dry_run\\\": False, **status_summary(archive_retry), \\\"device_archived_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"device_archived\\\"], \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-preview\\\", \\\"request_dry_run\\\": True, **status_summary(restore_preview), \\\"device_archived_after_preview\\\": snapshot(events, lifecycle_test, \\\"preview-state\\\", action=\\\"restore\\\")[\\\"device_archived\\\"], \\\"audit_actions_after_preview\\\": snapshot(events, lifecycle_test, \\\"preview-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(restore_execution), \\\"device_archived_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"restore\\\")[\\\"device_archived\\\"], \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-retry\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(restore_retry), \\\"device_archived_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"restore\\\")[\\\"device_archived\\\"], \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"restore-duplicate-hostname-preview\\\", \\\"request_dry_run\\\": True, **status_summary(hostname_preview)},\n            {\\\"case\\\": \\\"restore-duplicate-hostname-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(hostname_execution), \\\"device_archived_after_failure\\\": snapshot(events, hostname_test, \\\"after-blocked-execution-state\\\", action=\\\"restore\\\")[\\\"device_archived\\\"], \\\"audit_actions_after\\\": snapshot(events, hostname_test, \\\"after-blocked-execution-state\\\", action=\\\"restore\\\")[\\\"audit_actions\\\"]},\n            {\\\"case\\\": \\\"missing-selection-execution\\\", \\\"request_dry_run\\\": \\\"omitted\\\", **status_summary(missing_execution), \\\"device_archived_after_failure\\\": snapshot(events, lifecycle_test, \\\"after-blocked-execution-state\\\", action=\\\"delete\\\")[\\\"device_archived\\\"], \\\"audit_actions_after\\\": snapshot(events, lifecycle_test, \\\"after-blocked-execution-state\\\", action=\\\"delete\\\")[\\\"audit_actions\\\"]},''')\ns=s.replace('''        \\\"backend_focused\\\": {\\\"command\\\": \\\"pytest test_devices_api_edges.py test_asset_architecture_traceability.py test_audit_integrity.py\\\", \\\"passed\\\": 22, \\\"failed\\\": 0},''','''        \\\"backend_full_suite\\\": {\\\"command\\\": \\\"scripts/verify-app.sh backend\\\", \\\"passed\\\": 205, \\\"failed\\\": 0},\n        \\\"backend_focused\\\": {\\\"command\\\": \\\"pytest test_devices_api_edges.py test_asset_architecture_traceability.py test_audit_integrity.py\\\", \\\"passed\\\": 22, \\\"failed\\\": 0},''')\ns=s.replace('''    dump(\\\"test-and-consumer-summary.json\\\", test_summary)\n    (PACKAGE / \\\"backend-lifecycle-events.json\\\").write_text((ROOT / \\\"backend-lifecycle-events.json\\\").read_text())\n''','''    dump(\\\"test-and-consumer-summary.json\\\", test_summary)\n    (PACKAGE / \\\"backend-lifecycle-events.json\\\").write_text((ROOT / \\\"backend-lifecycle-events.json\\\").read_text())\n    (PACKAGE / \\\"verification-summary.md\\\").write_text(\\\"\\\"\\\"# CHG-52 R2 candidate verification\n\nCandidate \"'`c3beb230dce1f1f16cafb1e4eade5c3daa6124ea` (tree `db8e2cfb02fdaeb21882cd5195a041262e806259`) has exact parent `f31fd16711f0234aa058be854c2639afd2f02c4d`. The work branch is `codex/sysgrid-lifecycle-device-authority-fix-v2`; `main` remains at the requested base.\n\n## Backend lifecycle proof\n\n- Strict `dry_run`: omitted and boolean values follow execution/preview semantics; strings `true`/`false`, numbers `0`/`1`, null, array and object each return 400 without a lifecycle transition.\n- Archive and restore previews return 200/`preview` without mutation or added audit. Executions return 200/`success`, add one durable lifecycle audit, and retries return 200/`no_op` without a duplicate audit.\n- Single DELETE archives once and records one `ARCHIVE`; retry is `no_op` with one row retained.\n- Duplicate-hostname restore, missing-ID execution, protected-lineage purge and preview-to-execution traceability race all fail with HTTP 409. Captured database state shows no blocked mutation or new audit.\n- Purge preview and receipt report current FK-derived delete/cascade and detach counts. The synthetic impact fixture previewed 13 deletes and 2 detach groups; execution receipt equaled preview, dependents were removed/detached, and `PURGE` audit survived Device removal.\n- Secret hygiene check found no sentinel or encrypted payload in captured API, impact or audit evidence.\n\n## User-visible Assets proof\n\nThe normal-v1 Assets archive scope reads `Archived (2)`. Desktop 1440×900 and mobile 390×844 captured both the permanent purge confirmation preview and its settled execution receipt from the same viewport-specific state. Preview names irreversibility and unsupported recovery, lists impact and blockers; receipt displays execution impact with no generic Undo/Revert. The captured preview inventory includes one Device and one Hardware component delete.\n\n## Tests and affected consumers\n\n- Full verifier backend: 205 passed. Focused Device/traceability/audit tests: 22 passed. Additional lifecycle capture cases: 10 passed.\n- Frontend operational contract checks, typecheck and production build passed; full unit coverage: 141 files, 722 tests passed.\n- Targeted Assets/Vendors browser tests: 2 passed. Normal-v1 browser suite: 75 passed, 2 skipped.\n- Shared preview modal direct consumers are Assets, External, Vendors, FAR, Services and Network. Full normal-v1 browser and frontend unit suites passed; Monitoring remains intentionally outside this changed contract.\n- `scripts/verify-app.sh` completed all normal-v1 gates, then returned 1 at the separate System Root preview gate because `SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID` was unset. No identity was inferred for this Assets slice.\n- Existing warnings: Starlette 422 deprecation, esbuild/oxc notices and stale browserslist data.\n\"\"\")\n'\"''')\nopen(p,'w').write(s)\nPY\npython /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py\npython - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package')\nd=json.loads((p/'lifecycle-contract-matrix.json').read_text())\nfor r in d['results']:\n print(r['case'], 'http='+str(r.get('http_status')), 'status='+str(r.get('status')), 'outcome='+str(r.get('execution_outcome')), 'archived='+str(r.get('device_archived_after',r.get('device_archived_after_failure',r.get('device_archived_after_preview')))), 'audit='+str(r.get('audit_rows_after_preview',r.get('audit_actions_after_preview',r.get('audit_actions_after')))))\nPY\"",
+      "exit_code": 0,
+      "test_result": {
+        "exit_code": 0,
+        "framework": "pytest",
+        "outcome": "passed",
+        "output_bytes": 1968,
+        "output_sha256": "70ba071e5a39be04823dde4eaaa0b9b4e89e7780cea268f5d00023eba294ee4d",
+        "summary_detected": false
+      },
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg --files frontend/tests | rg '(external|far|network|service|vendor|assets).*(spec|test)|/(external|far|network|service|vendor|assets).*' | sort\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '1,240p' frontend/playwright.v1.config.ts && rg -n \\\"testDir|testMatch|grep|exclude|testIgnore\\\" frontend/playwright.v1.config.ts frontend/playwright.config.ts frontend/package.json scripts/verify-app.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_PROFILE=normal-v1 bash scripts/run-e2e.sh --config=playwright.config.ts --output=/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/playwright-shared-consumers frontend/tests/external-services-bulk-preview.spec.ts frontend/tests/far-workflows.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"sed -n '30,110p' frontend/tests/external-services-bulk-preview.spec.ts && sed -n '1,140p' frontend/tests/release-policy-normal.spec.ts && sed -n '1,90p' frontend/tests/far-workflows.spec.ts && git status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git diff HEAD''^ HEAD -- frontend/src/components/shared/useOperationalBulkWorkflow.ts frontend/src/components/shared/OperationalBulkPreviewModal.tsx frontend/src/components/assets/AssetBulkActionsPanel.tsx frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx frontend/src/components/ServicesReal.tsx frontend/src/components/External.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"ls -ld frontend/node_modules backend/.venv 2>/dev/null || true && git worktree list --porcelain | rg -A2 'lifecycle-device-authority|main'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git worktree add --detach /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/base-comparison f31fd16711f0234aa058be854c2639afd2f02c4d && ln -s /Users/haewonkim/.codex-fabric/worktrees/CF-4ad672c011b1fa2d5814758e/frontend/node_modules /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/base-comparison/frontend/node_modules'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3.11 SYSGRID_VERIFY_PROFILE=normal-v1 bash scripts/run-e2e.sh --config=playwright.config.ts --output=/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/playwright-base-comparison frontend/tests/external-services-bulk-preview.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env PATH=/Users/haewonkim/.nvm/versions/node/v20.19.4/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3.11 SYSGRID_VERIFY_PROFILE=normal-v1 bash scripts/run-e2e.sh --config=playwright.config.ts --output=/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/playwright-base-node20 frontend/tests/external-services-bulk-preview.spec.ts'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/base-comparison status --short --branch && git worktree list --porcelain | rg -B1 -A3 'CHG-52-R2/base-comparison' \"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git worktree remove /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/base-comparison && git worktree list --porcelain | rg 'CHG-52-R2/base-comparison' || true\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\np='/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py'\ns=open(p).read()\ns=s.replace('''\\\"device_archived_after_preview\\\": snapshot(events, lifecycle_test, \\\"after-lifecycle-action-state\\\", action=\\\"delete\\\")[\\\"device_archived\\\"]''','''\\\"device_archived_after_preview\\\": snapshot(events, lifecycle_test, \\\"preview-state\\\", action=\\\"delete\\\")[\\\"device_archived\\\"]''')\ns=s.replace('''        \\\"verify_app\\\": {\\\"normal_v1_gates\\\": \\\"passed\\\", \\\"root_preview\\\": \\\"not run; SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID is unset and was not inferred\\\", \\\"process_exit\\\": 1, \\\"classification\\\": \\\"root-preview identity gate required by verify-app.sh; unrelated to normal-v1 Assets production profile\\\"},''','''        \\\"shared_modal_consumer_probes\\\": {\\\"attempted\\\": [\\\"Assets\\\", \\\"External\\\", \\\"Vendors\\\", \\\"FAR\\\", \\\"Services\\\", \\\"Network\\\"], \\\"assets_vendors_targeted\\\": {\\\"passed\\\": 2, \\\"failed\\\": 0}, \\\"normal_v1_full_suite\\\": {\\\"passed\\\": 75, \\\"skipped\\\": 2, \\\"failed\\\": 0, \\\"covers\\\": [\\\"Assets\\\", \\\"Services\\\", \\\"Network\\\"]}, \\\"out_of_profile\\\": {\\\"external_services_bulk_preview\\\": \\\"failed before opening the existing Services preview; the same missing Bulk Actions control reproduced on exact base under the same Node 20.19.4 runtime\\\", \\\"far_workflows\\\": \\\"4 failed with HTTP 403 SYSTEM_ROOT_REQUIRED because normal-v1 explicitly excludes FAR/Research; no privileged identity was introduced\\\"}},\n        \\\"verify_app\\\": {\\\"normal_v1_gates\\\": \\\"passed\\\", \\\"root_preview\\\": \\\"not run; SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID is unset and was not inferred\\\", \\\"process_exit\\\": 1, \\\"classification\\\": \\\"root-preview identity gate required by verify-app.sh; unrelated to normal-v1 Assets production profile\\\"},''')\ns=s.replace('''- Shared preview modal direct consumers are Assets, External, Vendors, FAR, Services and Network. Full normal-v1 browser and frontend unit suites passed; Monitoring remains intentionally outside this changed contract.\n- \"'`scripts/verify-app.sh` completed all normal-v1 gates, then returned 1 at the separate System Root preview gate because `SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID` was unset. No identity was inferred for this Assets slice.'\"''','''- Shared preview modal direct consumers are Assets, External, Vendors, FAR, Services and Network. Full normal-v1 browser and frontend unit suites passed; Monitoring remains intentionally outside this changed contract.\n- Additional consumer attempt: External/Services plus FAR workflows yielded 0/5 in normal-v1. The External/Services spec failed before opening its existing Services preview because its Bulk Actions control was absent; the same assertion reproduced on exact base \"'`f31fd167` with the same Node 20.19.4 runtime. FAR/Research tests returned `SYSTEM_ROOT_REQUIRED`, which matches the normal-v1 release policy. Shared modal optional-prop unit tests and all in-profile suites passed; no privileged identity was supplied.\n- `scripts/verify-app.sh` completed all normal-v1 gates, then returned 1 at the separate System Root preview gate because `SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID` was unset. No identity was inferred for this Assets slice.'\"''')\ns=s.replace('''    dump(\\\"test-and-consumer-summary.json\\\", test_summary)\n    (PACKAGE / \\\"backend-lifecycle-events.json\\\").write_text((ROOT / \\\"backend-lifecycle-events.json\\\").read_text())\n    (PACKAGE / \\\"verification-summary.md\\\").write_text''','''    dump(\\\"test-and-consumer-summary.json\\\", test_summary)\n    dump(\\\"shared-consumer-test-classification.json\\\", {\n        \\\"schema_version\\\": 1,\n        \\\"changed_shared_surface\\\": \\\"OperationalBulkPreviewModal accepts an optional purge_impact; consumers without that prop retain prior rendering.\\\",\n        \\\"direct_consumers\\\": [\\\"Assets\\\", \\\"External\\\", \\\"Vendors\\\", \\\"FAR\\\", \\\"Services\\\", \\\"Network\\\"],\n        \\\"in_profile_evidence\\\": {\n            \\\"asset_purge_targeted\\\": {\\\"passed\\\": 2, \\\"failed\\\": 0, \\\"viewports\\\": [\\\"1440x900\\\", \\\"390x844\\\"]},\n            \\\"normal_v1_full\\\": {\\\"passed\\\": 75, \\\"skipped\\\": 2, \\\"failed\\\": 0, \\\"material_consumers\\\": [\\\"Assets\\\", \\\"Services\\\", \\\"Network\\\"]},\n            \\\"frontend_unit\\\": {\\\"passed\\\": 722, \\\"failed\\\": 0, \\\"shared_modal_tests\\\": 4},\n        },\n        \\\"candidate_vs_base\\\": {\n            \\\"test\\\": \\\"frontend/tests/external-services-bulk-preview.spec.ts\\\",\n            \\\"candidate_sha\\\": head,\n            \\\"base_sha\\\": BASE,\n            \\\"runtime\\\": \\\"Node 20.19.4\\\",\n            \\\"candidate\\\": \\\"failed before opening the existing Services preview because the test could not find the Bulk Actions control\\\",\n            \\\"base\\\": \\\"the same assertion failed before preview under the same runtime\\\",\n            \\\"same_preexisting_failure\\\": True,\n        },\n        \\\"normal_v1_policy_block\\\": {\n            \\\"test\\\": \\\"frontend/tests/far-workflows.spec.ts\\\",\n            \\\"result\\\": \\\"4 tests returned HTTP 403 SYSTEM_ROOT_REQUIRED for FAR/Research access under normal-v1\\\",\n            \\\"policy_control\\\": \\\"frontend/tests/release-policy-normal.spec.ts passed and asserts FAR/Research are unavailable under normal-v1\\\",\n            \\\"identity_inferred_or_supplied\\\": False,\n        },\n    })\n    (PACKAGE / \\\"backend-lifecycle-events.json\\\").write_text((ROOT / \\\"backend-lifecycle-events.json\\\").read_text())\n    (PACKAGE / \\\"verification-summary.md\\\").write_text''')\nopen(p,'w').write(s)\nPY\npython /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py\npython - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package')\nm=json.loads((p/'lifecycle-contract-matrix.json').read_text())\nprint('archive preview:', [x for x in m['results'] if x['case']=='archive-preview'][0])\nprint('blocked:', [(x['case'],x['execution_outcome'],x['http_status'],x.get('device_archived_after_failure')) for x in m['results'] if x['http_status']==409])\nprint('package files:', sum(1 for f in p.rglob('*') if f.is_file()))\nprint('package has baseline classification:', (p/'shared-consumer-test-classification.json').is_file())\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg -n \\\"\\\\bit\\\\(|\\\\btest\\\\(|describe\\\\(\\\" frontend/src/components/shared/OperationalBulkPreviewModal.test.tsx frontend/src/components/assets/AssetBulkActionsPanel.test.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\np='/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py'\ns=open(p).read().replace('\\\"shared_modal_tests\\\": 4','\\\"shared_modal_tests\\\": 5')\nopen(p,'w').write(s)\nPY\npython /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/build_package.py\npython - <<'PY'\nimport hashlib\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package')\nmanifest=(p/'MANIFEST.sha256').read_text().splitlines()\nchecks=[]\nfor line in manifest:\n digest,path=line.split('  ',1)\n f=p/path\n got=hashlib.sha256(f.read_bytes()).hexdigest()\n checks.append((path,digest==got))\nprint(f'manifest entries {len(checks)}, all verified={all(ok for _,ok in checks)}')\nprint('files:', ', '.join(path for path,_ in checks))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git show-ref --verify --quiet refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2; printf 'local_ref_exit=%s\\\\n' \\\"\"'$?\"; git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-consistency-audit-verify-v1 refs/heads/main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git worktree add -b project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree 3e4a3bd199d0e33ae5fc1f405dacf41b4527051e && mkdir -p /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree/CHG-52-R2 && cp -R /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/package/. /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree/CHG-52-R2/ && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree status --short --branch && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree add CHG-52-R2 && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree diff --cached --stat'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree commit -m \"CHG-52 R2 Device lifecycle candidate evidence\" && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree rev-parse HEAD && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree rev-parse HEAD''^{tree} && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree rev-parse HEAD''^ && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/main && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"git fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2:refs/verify/chg52-r2-device-evidence && python - <<'PY'\nimport hashlib,json,subprocess\nartifact='refs/verify/chg52-r2-device-evidence'\ncandidate='c3beb230dce1f1f16cafb1e4eade5c3daa6124ea'\nbase='f31fd16711f0234aa058be854c2639afd2f02c4d'\nr1='3e4a3bd199d0e33ae5fc1f405dacf41b4527051e'\ndef git(*args): return subprocess.check_output(['git',*args],text=False).decode().strip()\ncommit=git('rev-parse',artifact)\nassert git('rev-parse',f'{artifact}\"'^'\"')==r1\nbind=json.loads(subprocess.check_output(['git','show',f'{artifact}:CHG-52-R2/candidate-binding.json']))\nassert bind['candidate_sha']==candidate\nassert bind['candidate_tree']==git('rev-parse',f'{candidate}\"'^{{tree}}'\"')\nassert bind['base_sha']==base and bind['parents']==[base]\nmanifest=subprocess.check_output(['git','show',f'{artifact}:CHG-52-R2/MANIFEST.sha256'],text=True).splitlines()\nverified=[]\nfor row in manifest:\n expected,path=row.split('  ',1)\n content=subprocess.check_output(['git','show',f'{artifact}:CHG-52-R2/{path}'])\n actual=hashlib.sha256(content).hexdigest()\n assert expected==actual,(path,expected,actual)\n verified.append(path)\nfor entry in bind['changed_files']:\n content=subprocess.check_output(['git','show',f'{candidate}:{entry[\\\"path\\\"]}'])\n assert hashlib.sha256(content).hexdigest()==entry['sha256'],entry['path']\nassert git('rev-parse',f'{candidate}\"'^'\"')==base\nprint(json.dumps({'artifact_commit':commit,'artifact_tree':git('rev-parse',f'{artifact}\"'^{{tree}}'\"'),'parent':r1,'manifest_material_files':len(verified),'manifest_all_match':True,'candidate_sha':candidate,'candidate_tree_verified':bind['candidate_tree'],'candidate_changed_files':len(bind['changed_files']),'candidate_file_hashes_match':True,'base':base},indent=2))\nPY\ngit ls-remote origin refs/heads/main refs/heads/codex/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/Users/haewonkim/.codex-fabric/bin/fabricctl status CF-4ad672c011b1fa2d5814758e'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc '/Users/haewonkim/.codex-fabric/bin/fabricctl publish-evidence CF-4ad672c011b1fa2d5814758e'",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'git status --short --branch && git rev-parse HEAD && git rev-parse HEAD''^{tree} && git rev-parse HEAD''^ && git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 && git -C /Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/artifact-worktree status --short --branch && /Users/haewonkim/.codex-fabric/bin/fabricctl status CF-4ad672c011b1fa2d5814758e'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg --files --hidden --no-ignore frontend backend | rg '(\"'^|/)(stage3[0-9]-evidence|OUT-[''^/]*EVIDENCE[''^/]*'\"\\\\.html|llm-report\\\\.json|test-results[\"'^/]*|playwright-report[''^/]*)($|/)'\"' | head -120\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'for p in frontend/stage35-evidence frontend/stage36-evidence frontend/OUT-26_ITERATION_37_STAGE35_EVIDENCE.html frontend/OUT-26_ITERATION_38_STAGE36_EVIDENCE.html frontend/test-results-v1 frontend/playwright-report frontend/llm-report.json; do if [ -e \"$p\" ]; then stat -f '\"'%Sm %N' -t '%Y-%m-%d %H:%M:%S' \\\"\"'$p\"; fi; done\nfind frontend/stage35-evidence frontend/stage36-evidence -type f -maxdepth 2 -exec stat -f '\"'%Sm %N' -t '%Y-%m-%d %H:%M:%S' {} \\\\; | sort | tail -8\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nfrom pathlib import Path\nimport shutil\nrepo=Path('/Users/haewonkim/.codex-fabric/worktrees/CF-4ad672c011b1fa2d5814758e')\nout=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/verifier-generated')\nitems=[\n 'frontend/stage35-evidence',\n 'frontend/stage36-evidence',\n 'frontend/OUT-26_ITERATION_37_STAGE35_EVIDENCE.html',\n 'frontend/OUT-26_ITERATION_38_STAGE36_EVIDENCE.html',\n 'frontend/test-results-v1',\n 'frontend/playwright-report',\n 'frontend/llm-report.json',\n]\nout.mkdir(parents=True,exist_ok=True)\nfor item in items:\n src=repo/item\n if not src.exists():\n  continue\n dst=out/src.name\n if dst.exists():\n  raise SystemExit(f'refusing to overwrite external evidence: {dst}')\n shutil.move(str(src),str(dst))\n print(f'moved {src} -> {dst}')\nPY\nrg --files --hidden --no-ignore frontend | rg '(\"'^|/)(stage35-evidence|stage36-evidence|OUT-26_ITERATION_(37|38)_STAGE(35|36)_EVIDENCE'\"\\\\.html|llm-report\\\\.json|test-results-v1|playwright-report)(\"'$|/)'\"' || true\ngit status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rg --files --hidden --no-ignore frontend | rg '(\"'^|/)(stage[0-9]+-evidence|OUT-[''^/]*EVIDENCE[''^/]*'\"\\\\.html|llm-report\\\\.json|test-results[\"'^/]*|playwright-report)(/|$)'\"' | head -100\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"python - <<'PY'\nfrom pathlib import Path\nimport shutil\nrepo=Path('/Users/haewonkim/.codex-fabric/worktrees/CF-4ad672c011b1fa2d5814758e')\nout=Path('/Users/haewonkim/.codex-fabric/evidence/CHG-52-R2/relocated-prior-evidence')\nitems=[\n 'frontend/stage31-evidence',\n 'frontend/stage33-evidence',\n 'frontend/stage34-evidence',\n 'frontend/OUT-26_ITERATION_33_STAGE31_EVIDENCE.html',\n 'frontend/OUT-26_ITERATION_35_STAGE33_EVIDENCE.html',\n 'frontend/OUT-26_ITERATION_36_STAGE34_EVIDENCE.html',\n]\nout.mkdir(parents=True,exist_ok=True)\nfor item in items:\n src=repo/item\n if not src.exists():\n  continue\n dst=out/src.name\n if dst.exists():\n  raise SystemExit(f'refusing to overwrite preserved evidence: {dst}')\n shutil.move(str(src),str(dst))\n print(f'preserved {src} -> {dst}')\nPY\nrg --files --hidden --no-ignore frontend | rg '(\"'^|/)(stage[0-9]+-evidence|OUT-[''^/]*EVIDENCE[''^/]*'\"\\\\.html|llm-report\\\\.json|test-results[\"'^/]*|playwright-report)(/|$)'\"' || true\ngit status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.157.0",
+    "configured_model": "gpt-6-luna",
+    "event_count": 656,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.67,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 37900416,
+      "fresh_input_tokens": 903704,
+      "input_tokens": 38804120,
+      "non_reasoning_output_tokens": 85635,
+      "output_tokens": 229469,
+      "reasoning_output_tokens": 143834,
+      "total_processed_tokens": 39033589
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "c3beb230dce1f1f16cafb1e4eade5c3daa6124ea",
+      "subject": "Fix Device lifecycle authority semantics"
+    }
+  ],
+  "diff": {
+    "additions": 1119,
+    "changed_files": 13,
+    "commit_count": 1,
+    "deletions": 109
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 1,
+    "items": [
+      {
+        "bytes": 22173,
+        "path": "backend/test_asset_architecture_traceability.py",
+        "sha256": "9c68953276bd6a8ab553f484462d68fe6b36d08f61602a877db075bc4fa3fc9d"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-27T21:31:36Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "branch": "codex/sysgrid-lifecycle-device-authority-fix-v2",
+    "detached_verify": false,
+    "head_sha": "c3beb230dce1f1f16cafb1e4eade5c3daa6124ea",
+    "remote_exact_head": true,
+    "remote_head_sha": "c3beb230dce1f1f16cafb1e4eade5c3daa6124ea",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "work_branch": "codex/sysgrid-lifecycle-device-authority-fix-v2",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-4ad672c011b1fa2d5814758e",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-authority-fix-v2",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-authority-fix-v2"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-lifecycle-device-authority-fix-v2",
+  "schema_version": 1,
+  "started_at": "2026-09-27T20:03:22Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 5294,
+    "queue_seconds": 1,
+    "total_seconds": 5295
+  },
+  "transport": {
+    "bytes": 21338,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 21002,
+    "prompt_sha256": "d54093d1f87f2d377c685e748bf0bdcb40c34f9211805fa0d75a7bcdb7ef9c0a",
+    "sha256": "4ad672c011b1fa2d5814758e27b19a5055484c9563c54b74cd1949c42e337507"
+  }
+}
