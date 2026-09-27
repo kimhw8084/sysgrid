@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test'
+import { PROJECTS_ROOT_PREVIEW_USER, projectsRootPreviewPolicy } from './helpers/projects-root-preview'
 
 type RuntimeState = { getProject: () => any; getLastPut: () => any; getCommands: () => any[] }
 
@@ -40,8 +41,9 @@ const installRoutes = async (page: Page): Promise<RuntimeState> => {
     const url = new URL(request.url())
     const path = url.pathname
     if (request.method() === 'POST' && path === '/api/v1/observability/performance') return route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ accepted: true }) })
-    if (request.method() === 'GET' && path.endsWith('/settings/bootstrap')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ VITE_API_BASE_URL: url.origin, DEFAULT_USER_ID: 'proof_operator' }) })
-    if (request.method() === 'GET' && path === '/api/v1/settings/user/profile') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'proof_operator', username: 'proof_operator', full_name: 'Proof Operator', team: 'Operations', team_id: 1, is_admin: true, permissions: { all: 3, projects: 3 } }) })
+    if (request.method() === 'GET' && path.endsWith('/settings/bootstrap')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ VITE_API_BASE_URL: url.origin, DEFAULT_USER_ID: PROJECTS_ROOT_PREVIEW_USER }) })
+    if (request.method() === 'GET' && path === '/api/v1/policy/module-availability') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(projectsRootPreviewPolicy) })
+    if (request.method() === 'GET' && path === '/api/v1/settings/user/profile') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: PROJECTS_ROOT_PREVIEW_USER, username: PROJECTS_ROOT_PREVIEW_USER, full_name: 'Synthetic Root Preview Proof', is_admin: false, permissions: {} }) })
     if (request.method() === 'GET' && path === '/api/v1/settings/user/settings') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ theme: 'nordic-frost-v1' }) })
     if (request.method() === 'GET' && path === '/api/v1/health') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok' }) })
     if (request.method() === 'GET' && path === '/api/v1/projects') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([project]) })
@@ -57,10 +59,10 @@ const installRoutes = async (page: Page): Promise<RuntimeState> => {
 }
 
 const installIdentity = async (page: Page) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((userId) => {
     localStorage.setItem('sysgrid-theme', 'nordic-frost-v1')
-    localStorage.setItem('SYSGRID_USER_ID', 'proof_operator')
-  })
+    localStorage.setItem('SYSGRID_USER_ID', userId)
+  }, PROJECTS_ROOT_PREVIEW_USER)
 }
 
 const collectRuntimeFailures = (page: Page) => {
@@ -78,17 +80,18 @@ test('OUT-40 Slice C Board move alternatives expose exact names and minimum targ
   await page.setViewportSize({ width: 1280, height: 720 })
   await installIdentity(page)
   await installRoutes(page)
-  await page.goto('/projects?id=901&view=board')
+  await page.goto('/projects/901/work?layout=board')
 
-  const card = page.locator('[data-project-board-card="true"][data-task-id="9012"]')
+  const card = page.locator('.p05-card[data-task-id="9012"]')
   await expect(card).toBeVisible()
-  const move = card.getByRole('button', { name: 'Move Yield Guardian task B to Blocked', exact: true })
+  const move = card.getByRole('combobox', { name: 'Move Yield Guardian task B to', exact: true })
   await expect(move).toBeVisible()
+  await expect(move.locator('option', { hasText: 'Blocked' })).toHaveCount(1)
   const box = await move.boundingBox()
   expect(box).not.toBeNull()
   expect(box!.width).toBeGreaterThanOrEqual(40)
   expect(box!.height).toBeGreaterThanOrEqual(40)
-  await expect(page.locator('[data-project-board-live-status="true"]')).toHaveAttribute('aria-live', 'polite')
+  await expect(card.getByRole('button', { name: 'Open task', exact: true })).toBeVisible()
 })
 
 test('OUT-40 Slice C keyboard status move persists canonical PUT, announces success, and restores focus @out40-slice-c-acceptance', async ({ page }) => {

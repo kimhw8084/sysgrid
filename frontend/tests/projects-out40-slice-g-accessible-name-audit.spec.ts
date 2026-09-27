@@ -1,4 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test'
+import { PROJECTS_ROOT_PREVIEW_USER, projectsRootPreviewPolicy } from './helpers/projects-root-preview'
 
 type Project = Record<string, any>
 
@@ -35,10 +36,10 @@ const operators = [
 ]
 
 const installIdentity = async (page: Page) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((userId) => {
     localStorage.setItem('sysgrid-theme', 'nordic-frost-v1')
-    localStorage.setItem('SYSGRID_USER_ID', 'proof_operator')
-  })
+    localStorage.setItem('SYSGRID_USER_ID', userId)
+  }, PROJECTS_ROOT_PREVIEW_USER)
 }
 
 const installRoutes = async (page: Page) => {
@@ -71,8 +72,9 @@ const installRoutes = async (page: Page) => {
     const path = url.pathname
     const json = (value: unknown) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
     if (request.method() === 'POST' && path === '/api/v1/observability/performance') return route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ accepted: true }) })
-    if (request.method() === 'GET' && path.endsWith('/settings/bootstrap')) return json({ VITE_API_BASE_URL: url.origin, DEFAULT_USER_ID: 'proof_operator' })
-    if (request.method() === 'GET' && path === '/api/v1/settings/user/profile') return json({ id: 'proof_operator', username: 'proof_operator', full_name: 'Proof Operator', team: 'Operations', team_id: 1, is_admin: true, permissions: { all: 3, projects: 3 } })
+    if (request.method() === 'GET' && path.endsWith('/settings/bootstrap')) return json({ VITE_API_BASE_URL: url.origin, DEFAULT_USER_ID: PROJECTS_ROOT_PREVIEW_USER })
+    if (request.method() === 'GET' && path === '/api/v1/policy/module-availability') return json(projectsRootPreviewPolicy)
+    if (request.method() === 'GET' && path === '/api/v1/settings/user/profile') return json({ id: PROJECTS_ROOT_PREVIEW_USER, username: PROJECTS_ROOT_PREVIEW_USER, full_name: 'Synthetic Root Preview Proof', team: 'Operations', team_id: 1, is_admin: false, permissions: {} })
     if (request.method() === 'GET' && path === '/api/v1/settings/user/settings') return json({ theme: 'nordic-frost-v1' })
     if (request.method() === 'GET' && path === '/api/v1/settings/operators') return json(operators)
     if (request.method() === 'GET' && path === '/api/v1/health') return json({ status: 'ok' })

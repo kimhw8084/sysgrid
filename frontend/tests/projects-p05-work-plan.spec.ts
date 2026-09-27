@@ -1,4 +1,5 @@
 import { expect, request, test } from '@playwright/test'
+import { installProjectsRootPreviewApis, PROJECTS_ROOT_PREVIEW_USER } from './helpers/projects-root-preview'
 
 const work = {
   project_id: 'p1',
@@ -14,11 +15,11 @@ const work = {
 
 test('P05 Work treegrid exposes expanded row geometry and keyboard status projection', async ({ page }) => {
   const fixture = structuredClone(work)
-  await page.addInitScript(() => {
+  await page.addInitScript((userId) => {
     localStorage.setItem('SYSGRID_OVERRIDE_API_URL', 'http://127.0.0.1:8000')
-    localStorage.setItem('SYSGRID_USER_ID', 'mina')
+    localStorage.setItem('SYSGRID_USER_ID', userId)
     localStorage.setItem('SYSGRID_TENANT_ID', '1')
-  })
+  }, PROJECTS_ROOT_PREVIEW_USER)
   await page.route('**/api/v2/focus*', async (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ scope: 'project', engine_version: 'pv-focus-1', total: 1, items: [{ id: 'task:task-1', entity_kind: 'task', entity_id: 'task-1', project_id: 'p1', project_name: 'P05 fixture', title: 'Canonical task', due_context: 'No due date', bucket_label: 'In progress or review', why_here: 'In progress or review: In progress work', primary_action: 'Open task', pinned: false }], all_priorities: [] }) }))
   await page.route('**/api/v2/projects/p1/work', async (route) => {
     if (route.request().method() === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(fixture) })
@@ -30,6 +31,7 @@ test('P05 Work treegrid exposes expanded row geometry and keyboard status projec
     if (task && body.type === 'task.transition') task.status = body.payload.to_status
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'applied' }) })
   })
+  await installProjectsRootPreviewApis(page)
   await page.goto('/projects/p1/work')
   const grid = page.getByRole('treegrid', { name: 'Project work breakdown' })
   await expect(grid).toBeVisible()
@@ -48,11 +50,11 @@ test('P05 Work treegrid exposes expanded row geometry and keyboard status projec
 
 test('P05 Board keeps Move to keyboard control in the same task projection', async ({ page }) => {
   const fixture = structuredClone(work)
-  await page.addInitScript(() => {
+  await page.addInitScript((userId) => {
     localStorage.setItem('SYSGRID_OVERRIDE_API_URL', 'http://127.0.0.1:8000')
-    localStorage.setItem('SYSGRID_USER_ID', 'mina')
+    localStorage.setItem('SYSGRID_USER_ID', userId)
     localStorage.setItem('SYSGRID_TENANT_ID', '1')
-  })
+  }, PROJECTS_ROOT_PREVIEW_USER)
   await page.route('**/api/v2/focus*', async (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ scope: 'project', engine_version: 'pv-focus-1', total: 0, items: [], all_priorities: [] }) }))
   await page.route('**/api/v2/projects/p1/work', async (route) => {
     if (route.request().method() === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(fixture) })
@@ -64,6 +66,7 @@ test('P05 Board keeps Move to keyboard control in the same task projection', asy
     if (task && body.type === 'task.transition') task.status = body.payload.to_status
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'applied' }) })
   })
+  await installProjectsRootPreviewApis(page)
   await page.goto('/projects/p1/work?layout=board')
   await expect(page.getByRole('heading', { name: 'Board' })).toHaveCount(0)
   await expect(page.getByLabel('Move Canonical task to')).toBeVisible()
