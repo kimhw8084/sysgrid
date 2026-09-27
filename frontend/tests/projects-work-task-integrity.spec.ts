@@ -194,6 +194,8 @@ async function captureProof(page: Page, testInfo: TestInfo, proofId: string, pro
       taskId: panel?.dataset.taskId || null,
       viewport: { ...viewport, devicePixelRatio: window.devicePixelRatio, documentWidth: document.documentElement.clientWidth, documentHeight: document.documentElement.clientHeight },
       selectedTaskIds,
+      draftTitle: document.querySelector<HTMLInputElement>('.p05-inline-add input')?.value ?? null,
+      visibleAlert: Array.from(document.querySelectorAll<HTMLElement>('[role="alert"]')).filter(visible).map((element) => element.innerText.trim()).join(' '),
       scroll: { windowX: window.scrollX, windowY: window.scrollY, treegridTop: grid?.scrollTop || 0, boardLeft: board?.scrollLeft || 0, taskPanelTop: panel?.scrollTop || 0 },
       focusedElement: active ? { tag: active.tagName.toLowerCase(), role: active.getAttribute('role'), name: name(active), id: active.id || null } : null,
       pending: { commandCount: Number(owner?.dataset.p05PendingCommandCount || 0), visibleLoadingMessages: Array.from(document.querySelectorAll('.p05-state,[aria-busy="true"]')).filter(visible).length },
@@ -284,6 +286,7 @@ test('List, Board, and Focus resolve the same authorized task panel with determi
   await panel.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(panel).toHaveCount(0)
   await expect(open).toBeFocused()
+  await captureProof(page, testInfo, 'board-panel-closed-focus-restored-desktop', { name: 'desktop', width: 1440, height: 900 })
   const move = card.getByRole('combobox', { name: 'Move Canonical task to', exact: true })
   await expectReachable(move)
   await move.selectOption('Blocked')
@@ -298,6 +301,7 @@ test('List, Board, and Focus resolve the same authorized task panel with determi
   await expect(panel).toHaveCount(0)
   await expect(open).toBeFocused()
   await expect(card.getByRole('combobox', { name: 'Move Canonical task to', exact: true })).toBeVisible()
+  await captureProof(page, testInfo, 'board-panel-escape-focus-restored-desktop', { name: 'desktop', width: 1440, height: 900 })
 
   await page.goto('/projects/p1/work')
   const grid = page.getByRole('treegrid', { name: 'Project work breakdown' })
@@ -308,6 +312,7 @@ test('List, Board, and Focus resolve the same authorized task panel with determi
   await captureProof(page, testInfo, 'list-panel-open-desktop', { name: 'desktop', width: 1440, height: 900 })
   await panel.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(taskButton).toBeFocused()
+  await captureProof(page, testInfo, 'list-panel-closed-focus-restored-desktop', { name: 'desktop', width: 1440, height: 900 })
 
   const row = grid.getByRole('row').filter({ hasText: 'Canonical task' }).first()
   await row.dblclick({ position: { x: 500, y: 24 } })
@@ -316,6 +321,7 @@ test('List, Board, and Focus resolve the same authorized task panel with determi
   await page.keyboard.press('Escape')
   await expect(panel).toHaveCount(0)
   await expect(row).toBeFocused()
+  await captureProof(page, testInfo, 'list-double-click-escape-focus-restored-desktop', { name: 'desktop', width: 1440, height: 900 })
 })
 
 test('Focus primary action opens its exact Work task and invalid entity links normalize without disclosure', async ({ page }, testInfo) => {
@@ -333,6 +339,7 @@ test('Focus primary action opens its exact Work task and invalid entity links no
   await expect(panel).toHaveCount(0)
   await expect(page.locator('.p05-treegrid')).toBeFocused()
   await expect(page).not.toHaveURL(/panel=|entity=/)
+  await captureProof(page, testInfo, 'focus-deep-link-close-fallback-desktop', { name: 'desktop', width: 1440, height: 900 })
 
   await page.goto('/projects/p1/work?layout=board&panel=task&entity=protected-task-id')
   await expect(page.locator('[data-p05-work-owner="true"]')).toBeVisible()
@@ -355,6 +362,7 @@ test('rejected Board and List commands preserve server truth, feedback, selectio
   expect(state.commands).toHaveLength(1)
   expect(state.getWork().items.find((item) => item.id === 'task-1')?.status).toBe('To Do')
   await expect(secondSelection).toBeChecked()
+  await captureProof(page, testInfo, 'board-transition-failure-server-truth', { name: 'desktop', width: 1440, height: 900 })
 
   state.queueCommand('reject')
   await page.getByRole('button', { name: 'Bulk → In progress', exact: true }).click()
@@ -380,6 +388,7 @@ test('rejected Board and List commands preserve server truth, feedback, selectio
   expect(state.getWork().items.find((item) => item.id === 'task-1')?.status).toBe('To Do')
   await expect(firstSelection).toBeChecked()
   expect(state.commands).toHaveLength(4)
+  await captureProof(page, testInfo, 'list-bulk-failure-selection-retained', { name: 'desktop', width: 1440, height: 900 })
   await page.getByRole('button', { name: 'Bulk → Done', exact: true }).click()
   await expect.poll(() => state.commands.length).toBe(5)
   await expect.poll(() => state.getWork().items.find((item) => item.id === 'task-1')?.status).toBe('Done')
@@ -406,6 +415,7 @@ test('Create intent survives failure and delayed acknowledgment without clearing
   await expect(title).toHaveValue('Draft survives rejection')
   expect(state.getWork().items.some((item) => item.title === 'Draft survives rejection')).toBe(false)
   expect(state.commands).toHaveLength(1)
+  await captureProof(page, test.info(), 'create-failure-draft-retained', { name: 'desktop', width: 1440, height: 900 })
 
   await page.getByRole('button', { name: 'Add task', exact: true }).click()
   await expect.poll(() => state.commands.length).toBe(2)
@@ -423,6 +433,7 @@ test('Create intent survives failure and delayed acknowledgment without clearing
   await expect(title).toHaveValue('Draft B')
   expect(state.getWork().items.some((item) => item.title === 'Draft A')).toBe(true)
   expect(state.getWork().items.some((item) => item.title === 'Draft B')).toBe(false)
+  await captureProof(page, test.info(), 'create-acknowledgment-preserves-newer-draft', { name: 'desktop', width: 1440, height: 900 })
 })
 
 test('Delayed bulk success acknowledges only the submitted selection', async ({ page }) => {
@@ -441,6 +452,7 @@ test('Delayed bulk success acknowledges only the submitted selection', async ({ 
   await expect.poll(() => state.getWork().items.find((item) => item.id === 'task-1')?.status).toBe('In progress')
   await expect(page.locator('.p05-card').filter({ hasText: 'Second task' }).getByRole('checkbox', { name: 'Select Second task' })).toBeChecked()
   await expect(page.locator('.p05-card').filter({ hasText: 'Canonical task' }).getByRole('checkbox', { name: 'Select Canonical task' })).not.toBeChecked()
+  await captureProof(page, test.info(), 'bulk-acknowledgment-preserves-new-selection', { name: 'desktop', width: 1440, height: 900 })
 })
 
 test('A to B to A late mutation completion cannot alter the newer Project A generation', async ({ page }) => {
