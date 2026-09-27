@@ -1,19 +1,29 @@
 import { clickResilientButton, expectWorkspaceLogicalRowSelected, fillGridSearch, getWorkspaceLogicalRowByText, getWorkspaceRoot, openToolbarButton, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow, verifyGridRowRobust } from './helpers/sysgrid';
-import { expect } from '@playwright/test';
+import { expect, type TestInfo } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import fs from 'fs';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
+async function attachEvidence(testInfo: TestInfo, name: string, body: Buffer | string, contentType: string) {
+  const path = testInfo.outputPath(name)
+  fs.writeFileSync(path, body)
+  await testInfo.attach(name, { path, contentType })
+}
+
 test.describe('Assets workflows', () => {
   test.use({ viewport: { width: 1920, height: 1080 } })
 
-  test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }) => {
+  test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }, testInfo) => {
     test.setTimeout(120_000)
     await resetBrowserState(page)
     const { stamp, systemName, primary, secondary, tertiary, monitoring } = await seedOperationalScenario(request)
+    const purgeImpactSeed = await request.post(`${apiBase}/devices/${secondary.id}/hardware`, {
+      data: { category: 'CPU', name: `PW-PURGE-IMPACT-${stamp}`, count: 1 },
+    })
+    expect(purgeImpactSeed.ok()).toBeTruthy()
 
-    // Keep Purged populated so the target-name search exercises the filtered-empty state.
+    // Keep Archived populated so the target-name search exercises the filtered-empty state.
     const purgedScopeKeeperResponse = await request.post(`${apiBase}/devices`, {
       data: {
         name: `PW-ASSET-PURGED-SCOPE-${stamp}`,
@@ -327,12 +337,12 @@ test.describe('Assets workflows', () => {
 
     // Settle React state before tab switch
 
-    // Switch to Purged Tab and verify row is present in Deleted scope
-    await openToolbarButton(page, /Purged/)
+    // Switch to Archived Tab and verify row is present in the reversible archive scope.
+    await openToolbarButton(page, /Archived/)
     await fillGridSearch(page, 'Scan asset matrix...', secondary.name)
     await verifyGridRowRobust(page, secondary.name)
 
-    // Target B.3: Deleted/purged scope suppression proof
+    // Target B.3: Archived scope suppression proof
     const purgedRowActions = page.getByTitle('More actions').filter({ visible: true }).first()
     await purgedRowActions.click()
     // Assert active-only actions are completely suppressed/not visible in the row menu
@@ -345,7 +355,8 @@ test.describe('Assets workflows', () => {
 
     // Settle layout before action click
 
-    // Perform permanent Purge lifecycle path on the deleted row
+    // Perform permanent Purge lifecycle path on the archived row.
+    await page.setViewportSize({ width: 1440, height: 900 })
     const purgeActionBtn = page.getByTitle('More actions').filter({ visible: true })
     await purgeActionBtn.waitFor({ state: 'visible' })
     await purgeActionBtn.click()
@@ -357,18 +368,88 @@ test.describe('Assets workflows', () => {
     )
     const confirmPurgeAction = page.getByRole('button', { name: 'Confirm Purge?', exact: true })
     await confirmPurgeAction.click()
-    await purgePreviewResponsePromise
+    const purgePreviewResponse = await purgePreviewResponsePromise
     const purgePreviewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+    const purgePreviewBody = await purgePreviewResponse.json()
+    const archivedScopeLabel = await page.getByRole('button', { name: /Archived/ }).first().innerText()
+    expect(archivedScopeLabel).toMatch(/^Archived\b/)
+    expect(purgePreviewBody.purge_impact.aggregate.deletes).toContainEqual(expect.objectContaining({ table: 'hardware_components', count: 1 }))
+    await expect(purgePreviewDialog.getByText('Permanent removal', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+    await expect(purgePreviewDialog.getByText('Records deleted', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByText('Hardware components', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' })).toBeEnabled()
+    const previewMetadata = {
+      route: '/asset',
+      profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+      viewport: { width: 1440, height: 900 },
+      scrollY: await page.evaluate(() => window.scrollY),
+      archivedScopeLabel,
+      readiness: 'Assets purge preview settled; backend response and rendered dependency impact agree.',
+      purgeImpact: purgePreviewBody.purge_impact,
+    }
+    await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+    await attachEvidence(testInfo, 'asset-purge-preview-1440x900.json', JSON.stringify(previewMetadata, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-preview-1440x900.png', await page.screenshot(), 'image/png')
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(purgePreviewDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+    await expect(purgePreviewDialog.getByText('Hardware components', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByRole('button', { name: 'Cancel' })).toBeVisible()
+    const mobileConfirm = purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' })
+    await expect(mobileConfirm).toBeVisible()
+    const mobileConfirmBox = await mobileConfirm.boundingBox()
+    expect(mobileConfirmBox).not.toBeNull()
+    expect(mobileConfirmBox!.x).toBeGreaterThanOrEqual(0)
+    expect(mobileConfirmBox!.y).toBeGreaterThanOrEqual(0)
+    expect(mobileConfirmBox!.x + mobileConfirmBox!.width).toBeLessThanOrEqual(390)
+    expect(mobileConfirmBox!.y + mobileConfirmBox!.height).toBeLessThanOrEqual(844)
+    await attachEvidence(
+      testInfo,
+      'asset-purge-preview-390x844.json',
+      JSON.stringify({ ...previewMetadata, viewport: { width: 390, height: 844 }, scrollY: await page.evaluate(() => window.scrollY) }, null, 2),
+      'application/json',
+    )
+    await attachEvidence(testInfo, 'asset-purge-preview-390x844.png', await page.screenshot(), 'image/png')
+
     const purgeResponsePromise = page.waitForResponse(response =>
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
     )
-    await purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
-    await purgeResponsePromise
-    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+    await mobileConfirm.click()
+    const purgeResponse = await purgeResponsePromise
+    const purgeReceipt = await purgeResponse.json()
+    expect(purgeReceipt.purge_impact_applied).toEqual(purgeReceipt.purge_impact)
+    const purgeReceiptDialog = page.getByRole('dialog', { name: 'Assets bulk complete' })
+    await expect(purgeReceiptDialog.getByTestId('operational-purge-impact')).toBeVisible()
+    await expect(purgeReceiptDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+    await expect(purgeReceiptDialog.getByRole('button', { name: 'Undo bulk changes' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+    await attachEvidence(testInfo, 'asset-purge-receipt-390x844.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        viewport: { width: 390, height: 844 },
+        scrollY: await page.evaluate(() => window.scrollY),
+        readiness: 'Permanent purge receipt settled; actual impact came from the execution response; generic undo is absent.',
+        receipt: purgeReceipt,
+      }, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-receipt-390x844.png', await page.screenshot(), 'image/png')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await expect(purgeReceiptDialog.getByTestId('operational-purge-impact')).toBeVisible()
+    await expect(purgeReceiptDialog.getByRole('button', { name: 'Undo bulk changes' })).toHaveCount(0)
+    await attachEvidence(testInfo, 'asset-purge-receipt-1440x900.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        viewport: { width: 1440, height: 900 },
+        scrollY: await page.evaluate(() => window.scrollY),
+        readiness: 'Permanent purge receipt settled; execution impact is shown and generic undo is absent.',
+        receipt: purgeReceipt,
+      }, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-receipt-1440x900.png', await page.screenshot(), 'image/png')
+    await purgeReceiptDialog.getByRole('button', { name: 'Close bulk receipt' }).click()
 
-    // Verify row has disappeared completely from Purged scope by reloading the page
+    // Verify row has disappeared completely from Archived scope by reloading the page
     await page.goto('/asset')
-    await openToolbarButton(page, /Purged/)
+    await openToolbarButton(page, /Archived/)
     await fillGridSearch(page, 'Scan asset matrix...', secondary.name)
     await expect(page.getByText('No assets match the current working view')).toBeVisible()
     await expect(getWorkspaceRoot(page, 'assets').getByRole('treegrid').getByText(secondary.name, { exact: true })).not.toBeVisible()

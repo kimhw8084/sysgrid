@@ -49,6 +49,7 @@ export type OperationalBulkOperationState = {
     changed_count: number
     unchanged_count: number
     can_revert: boolean
+    purge_impact?: OperationalBulkPreview['purge_impact']
   }
   onRevert?: () => Promise<void>
 }
@@ -222,6 +223,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
           changed_count: changedCount,
           unchanged_count: unchangedCount,
           can_revert: Boolean(receiptRevert),
+          ...(result?.purge_impact ? { purge_impact: result.purge_impact } : {}),
         },
         onRevert: receiptRevert,
       } : null)

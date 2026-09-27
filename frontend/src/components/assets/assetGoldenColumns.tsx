@@ -286,7 +286,7 @@ export function buildAssetGoldenColumns({
     {
       kind: 'activeDot',
       field: 'is_deleted',
-      headerName: activeTab === 'deleted' ? 'Purged' : 'Live',
+      headerName: activeTab === 'deleted' ? 'Archived' : 'Live',
       hide: hiddenColumns.includes('is_deleted'),
       getIsDeleted: (params) => Boolean(params.data?.is_deleted),
     },

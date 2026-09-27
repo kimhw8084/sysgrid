@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { apiFetch } from '../../api/apiClient'
 import { downloadOperationalImportFile } from '../shared/OperationalImportExport'
 import { resolveOperationalDataState } from '../shared/OperationalDataState'
-import { showWorkspaceToast } from '../shared/WorkspaceToast'
+import { dismissWorkspaceToasts, showWorkspaceToast } from '../shared/WorkspaceToast'
 import { useOperationalBulkWorkflow } from '../shared/useOperationalBulkWorkflow'
 import { ASSET_GOLDEN_ALLOWED_COLUMN_FIELDS } from './assetGoldenColumns'
 import { usePersistentJsonState } from '../shared/OperationalWorkspaceHooks'
@@ -108,7 +108,7 @@ const DEFAULT_ASSET_VIEWS: AssetSavedView[] = [
   },
   {
     id: 'purged-registry',
-    name: 'Purged Registry',
+    name: 'Archived Assets',
     config: {
       activeTab: 'deleted',
       viewMode: 'grid',
@@ -488,16 +488,16 @@ export function useAssetGoldenWorkspace() {
     emptyLabel: 'No assets have been registered yet.',
     filteredLabel: 'No assets match the current filters.',
     tabEmptyKind: activeTab === 'deleted' ? 'deleted-empty' : 'active-empty',
-    tabEmptyLabel: activeTab === 'deleted' ? 'No purged assets are available.' : 'No active assets are available.',
+    tabEmptyLabel: activeTab === 'deleted' ? 'No archived assets are available.' : 'No active assets are available.',
     errorTitle: 'Asset registry unavailable',
     errorDescription: 'The asset inventory request failed and no usable fallback rows are available.',
     emptyTitle: 'No assets registered',
     emptyDescription: 'Import a registry snapshot or register an asset to populate the workspace.',
     filteredTitle: 'No assets match the current working view',
     filteredDescription: 'Clear filters, search terms, or apply a broader saved view to bring assets back into scope.',
-    tabEmptyTitle: activeTab === 'deleted' ? 'No purged assets in scope' : 'No active assets in scope',
+    tabEmptyTitle: activeTab === 'deleted' ? 'No archived assets in scope' : 'No active assets in scope',
     tabEmptyDescription: activeTab === 'deleted'
-      ? 'The registry is loaded, but no purged assets are currently available.'
+      ? 'The registry is loaded, but no archived assets are currently available.'
       : 'The registry is loaded, but no active assets are currently available.',
     degradedNotice: isUsingLiveFallback ? {
       tone: 'warning',
@@ -698,6 +698,7 @@ export function useAssetGoldenWorkspace() {
       showWorkspaceToast('Select at least one asset first', { type: 'error' })
       return
     }
+    if (action === 'purge') dismissWorkspaceToasts()
     requestBulkPreview({ action, ids: targetIds, payload: payload || {} })
   }, [requestBulkPreview, selectedIds])
 

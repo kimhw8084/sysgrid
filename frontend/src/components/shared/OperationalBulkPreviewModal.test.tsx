@@ -29,7 +29,7 @@ function renderBulkPreviewModal(element: ReactElement) {
     initialEntries: ['/'],
   })
 
-  render(<RouterProvider router={router} />)
+  return render(<RouterProvider router={router} />)
 }
 
 describe('OperationalBulkPreviewModal', () => {
@@ -118,5 +118,70 @@ describe('OperationalBulkPreviewModal', () => {
 
     expect(screen.getByText('Partner API')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Confirm Purge selection' })).toBeDisabled()
+  })
+
+  it('shows purge irreversibility and backend dependency impact in preview and uses the execution receipt impact on completion', () => {
+    const purgePreview = {
+      ...preview,
+      action: 'purge',
+      changed_count: 1,
+      changed_ids: [7],
+      can_execute: true,
+      purge_impact: {
+        permanent: true,
+        recovery_supported: false,
+        aggregate: {
+          device_count: 1,
+          delete_count: 3,
+          detach_count: 1,
+          deletes: [
+            { table: 'devices', type: 'Device record', count: 1, disposition: 'explicit_delete' as const },
+            { table: 'hardware_components', type: 'Hardware components', count: 2, disposition: 'database_cascade' as const },
+          ],
+          detaches: [{ table: 'logical_services', type: 'Logical services', count: 1, disposition: 'nullified' as const, fields: ['device_id'] }],
+        },
+      },
+    }
+    const { unmount } = renderBulkPreviewModal(<OperationalBulkPreviewModal
+      isOpen
+      workspaceLabel="Assets"
+      actionLabel="Purge selection"
+      preview={purgePreview}
+      onClose={() => undefined}
+      onConfirm={() => undefined}
+    />)
+
+    const previewImpact = screen.getByTestId('operational-purge-impact')
+    expect(previewImpact).toHaveTextContent('This purge cannot be restored or reverted.')
+    expect(previewImpact).toHaveTextContent('Hardware components')
+    expect(previewImpact).toHaveTextContent('Logical services (device_id)')
+    expect(screen.getByRole('button', { name: 'Confirm Purge selection' })).toBeEnabled()
+
+    unmount()
+    renderBulkPreviewModal(<OperationalBulkPreviewModal
+      isOpen
+      workspaceLabel="Assets"
+      actionLabel="Purge selection"
+      preview={purgePreview}
+      result={{
+        selected_count: 1,
+        changed_count: 1,
+        unchanged_count: 0,
+        can_revert: false,
+        purge_impact: {
+          ...purgePreview.purge_impact,
+          aggregate: {
+            ...purgePreview.purge_impact.aggregate,
+            delete_count: 2,
+            deletes: [{ table: 'devices', type: 'Device record', count: 1, disposition: 'explicit_delete' }, { table: 'hardware_components', type: 'Hardware components', count: 1, disposition: 'database_cascade' }],
+          },
+        },
+      }}
+      onClose={() => undefined}
+      onConfirm={() => undefined}
+    />)
+
+    expect(screen.getByTestId('operational-purge-impact')).toHaveTextContent(/Records deleted\s*2/)
+    expect(screen.queryByRole('button', { name: 'Undo bulk changes' })).not.toBeInTheDocument()
   })
 })

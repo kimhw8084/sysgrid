@@ -46,11 +46,11 @@ describe('AssetBulkActionsPanel', () => {
   it('clicking Archive Selection expands the preview-first action and submits preview once', () => {
     render(<AssetBulkActionsPanel {...defaultProps} />)
 
-    expect(screen.queryByText('Preview the exact impact before moving the selection to the Purged registry scope.')).not.toBeInTheDocument()
+    expect(screen.queryByText('Archive moves these assets out of the active list while keeping them available to restore.')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByText(OPERATIONAL_ACTION_LABELS.archiveSelection))
 
-    expect(screen.getByText('Preview the exact impact before moving the selection to the Purged registry scope.')).toBeInTheDocument()
+    expect(screen.getByText('Archive moves these assets out of the active list while keeping them available to restore.')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Preview Archive' }))
     expect(defaultProps.onApply).toHaveBeenCalledWith('delete')

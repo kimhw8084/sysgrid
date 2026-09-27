@@ -22,6 +22,27 @@ export type OperationalBulkPreview = {
   missing_ids: number[]
   blockers: OperationalBulkBlocker[]
   can_execute: boolean
+  purge_impact?: OperationalPurgeImpact
+}
+
+export type OperationalPurgeImpactEntry = {
+  table: string
+  type: string
+  count: number
+  disposition: 'database_cascade' | 'explicit_delete' | 'nullified' | 'mixed'
+  fields?: string[]
+}
+
+export type OperationalPurgeImpact = {
+  permanent: boolean
+  recovery_supported: boolean
+  aggregate: {
+    device_count: number
+    delete_count: number
+    detach_count: number
+    deletes: OperationalPurgeImpactEntry[]
+    detaches: OperationalPurgeImpactEntry[]
+  }
 }
 
 export type OperationalBulkResult = {
@@ -29,6 +50,7 @@ export type OperationalBulkResult = {
   changed_count: number
   unchanged_count: number
   can_revert: boolean
+  purge_impact?: OperationalPurgeImpact
 }
 
 type OperationalBulkPreviewModalProps = {
@@ -81,6 +103,7 @@ export function OperationalBulkPreviewModal({
   const isComplete = Boolean(result)
   const hasBlockingIssues = Boolean(preview && (preview.blocked_count > 0 || preview.missing_count > 0))
   const canConfirm = Boolean(preview?.can_execute) && !isExecuting && !isComplete
+  const purgeImpact = isComplete ? result?.purge_impact : preview?.purge_impact
 
   return (
     <WorkspaceModal
@@ -149,6 +172,64 @@ export function OperationalBulkPreviewModal({
             ) : null}
           </div>
         </div>
+
+        {purgeImpact ? (
+          <section
+            aria-label="Permanent purge impact"
+            data-testid="operational-purge-impact"
+            className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-500/[0.06] px-4 py-4"
+          >
+            <div className="flex items-start gap-3 text-rose-100">
+              <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold">Permanent removal</p>
+                <p className="pt-1 text-xs text-rose-100/75">
+                  {purgeImpact.permanent && !purgeImpact.recovery_supported
+                    ? 'This purge cannot be restored or reverted.'
+                    : 'Review the lifecycle recovery policy before confirming.'}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-lg border border-white/10 bg-black/15 px-3 py-2">
+                <span className="text-slate-400">Records deleted</span>
+                <strong className="float-right text-slate-100">{purgeImpact.aggregate.delete_count}</strong>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/15 px-3 py-2">
+                <span className="text-slate-400">Associations detached</span>
+                <strong className="float-right text-slate-100">{purgeImpact.aggregate.detach_count}</strong>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Deleted by dependency</p>
+                <ul className="space-y-1 text-xs text-slate-200">
+                  {purgeImpact.aggregate.deletes.map((entry) => (
+                    <li key={entry.table} className="flex items-start justify-between gap-2">
+                      <span>{entry.type}</span>
+                      <span className="shrink-0 text-slate-400">
+                        {entry.count} · {entry.disposition === 'database_cascade' ? 'cascade' : entry.disposition === 'explicit_delete' ? 'direct' : entry.disposition}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Associations detached</p>
+                {purgeImpact.aggregate.detaches.length ? (
+                  <ul className="space-y-1 text-xs text-slate-200">
+                    {purgeImpact.aggregate.detaches.map((entry) => (
+                      <li key={entry.table} className="flex items-start justify-between gap-2">
+                        <span>{entry.type}{entry.fields?.length ? ` (${entry.fields.join(', ')})` : ''}</span>
+                        <span className="shrink-0 text-slate-400">{entry.count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <p className="text-xs text-slate-400">No associations will be detached.</p>}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {isComplete ? (
           <>
