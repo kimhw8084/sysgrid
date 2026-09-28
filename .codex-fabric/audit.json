@@ -1,0 +1,474 @@
+{
+  "accepted_at": "2026-09-27T23:15:28Z",
+  "changed_files": [
+    {
+      "additions": 500,
+      "deletions": 77,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 73,
+      "deletions": 0,
+      "path": "backend/test_asset_architecture_traceability.py",
+      "status": "M"
+    },
+    {
+      "additions": 289,
+      "deletions": 7,
+      "path": "backend/test_devices_api_edges.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/AssetGoldenShellScaffold.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/assetGoldenColumns.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 41,
+      "deletions": 0,
+      "path": "frontend/src/components/assets/assetGoldenData.lifecycleRecovery.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 64,
+      "deletions": 13,
+      "path": "frontend/src/components/assets/assetGoldenData.ts",
+      "status": "M"
+    },
+    {
+      "additions": 66,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/WorkspaceToast.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 20,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/useOperationalBulkWorkflow.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 9,
+      "deletions": 5,
+      "path": "frontend/src/components/shared/useOperationalBulkWorkflow.ts",
+      "status": "M"
+    },
+    {
+      "additions": 532,
+      "deletions": 16,
+      "path": "frontend/tests/assets-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e:assets'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la .codex-fabric; rtk ls -la /Users/haewonkim/.codex-fabric'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk command -v cf; rtk command -v cfx; rtk command -v codex_fabric; rtk command -v project-os'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -la /Users/haewonkim/.codex-fabric/bin && rtk rg --files /Users/haewonkim/.codex-fabric/current | rtk rg 'fabric|evidence|artifact|audit'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk cat /Users/haewonkim/.codex-fabric/bin/fabricctl && rtk sed -n '1,200p' /Users/haewonkim/.codex-fabric/current/README.md && rtk cat /Users/haewonkim/.codex-fabric/current/execution.toml.qualified\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"ArgumentParser|add_subparsers|Project OS|artifact|evidence|audit.json|project-os\" /Users/haewonkim/.codex-fabric/current/fabric.py /Users/haewonkim/.codex-fabric/current/dashboard_controls_test.py /Users/haewonkim/.codex-fabric/current/codex_upgrade_test.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e:assets'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat frontend/test-results/assets-workflows-Assets-wo-aaba1--purge-is-rejected-with-409/asset-blocked-purge-preserved-recovery.json frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-purge-serialization-result.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat frontend/test-results/assets-workflows-Assets-wo-39f72-d-IDs-from-partial-recovery/asset-unrelated-recovery-control.json frontend/test-results/assets-workflows-Assets-wo-39f72-d-IDs-from-partial-recovery/asset-partial-recovery-result.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat frontend/test-results/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/asset-purge-closed-desktop-1440x900.json frontend/test-results/assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/asset-purge-closed-mobile-390x844.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk ls -la /Users/haewonkim/.codex-fabric/jobs && rtk rg -n 'sysgrid-lifecycle-device-recovery-revocation-fix-v3|CF-4ad672c011b1fa2d5814758e' /Users/haewonkim/.codex-fabric/jobs /Users/haewonkim/.codex-fabric/results /Users/haewonkim/.codex-fabric/evidence\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -ld /Users/haewonkim/.codex-fabric/jobs/CF-cc3e22006e729847c8fbd9fa*'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg --files /Users/haewonkim/.codex-fabric/jobs/CF-cc3e22006e729847c8fbd9fa.running && rtk cat /Users/haewonkim/.codex-fabric/jobs/CF-cc3e22006e729847c8fbd9fa.running/meta.json'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk cat /Users/haewonkim/.codex-fabric/jobs/CF-cc3e22006e729847c8fbd9fa.running/job.json /Users/haewonkim/.codex-fabric/jobs/CF-cc3e22006e729847c8fbd9fa.running/lease.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git rev-parse c3beb230dce1f1f16cafb1e4eade5c3daa6124ea''^{tree} && rtk git rev-parse c3beb230dce1f1f16cafb1e4eade5c3daa6124ea''^'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git diff --name-only'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet c3beb230dce1f1f16cafb1e4eade5c3daa6124ea -- backend/app/api/devices.py backend/test_asset_architecture_traceability.py backend/test_devices_api_edges.py && rtk git rev-parse c3beb230dce1f1f16cafb1e4eade5c3daa6124ea:backend/app/api/devices.py && rtk git rev-parse HEAD:backend/app/api/devices.py && rtk git rev-parse c3beb230dce1f1f16cafb1e4eade5c3daa6124ea:backend/test_asset_architecture_traceability.py && rtk git rev-parse HEAD:backend/test_asset_architecture_traceability.py && rtk git rev-parse c3beb230dce1f1f16cafb1e4eade5c3daa6124ea:backend/test_devices_api_edges.py && rtk git rev-parse HEAD:backend/test_devices_api_edges.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add frontend/src/components/assets/assetGoldenData.ts frontend/src/components/assets/assetGoldenData.lifecycleRecovery.test.ts frontend/src/components/shared/useOperationalBulkWorkflow.ts frontend/src/components/shared/useOperationalBulkWorkflow.test.tsx frontend/tests/assets-workflows.spec.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --cached --check && rtk git diff --cached --stat && rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git commit -m \"Revoke stale Asset recovery after purge\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git show -s --format='\"'%P' HEAD && rtk git status --short --branch && rtk git diff-tree --no-commit-id --name-only -r HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"useOperationalBulkWorkflow\\\\(\\\" frontend/src\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n \"useOperationalBulkWorkflow\" frontend/src'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rg -n -A8 -B4 \"onExecutionStart\" frontend/src/components/FAR.tsx frontend/src/components/vendors/VendorGoldenOperationalWorkspace.tsx frontend/src/components/NetworkReal.tsx frontend/src/components/assets/assetGoldenData.ts'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk env SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python npm run test:e2e:assets'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk git status --short'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git add frontend/tests/assets-workflows.spec.ts && rtk git commit -m \"Bind purge receipt evidence to Asset recovery IDs\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD && rtk git rev-parse HEAD''^{tree} && rtk git show -s --format='\"'%P' HEAD && rtk git status --short --branch && rtk git diff-tree --no-commit-id --name-only -r HEAD\"'^..HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-recovery-fix-v3 refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git fetch origin refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3:refs/remotes/origin/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 && rtk git rev-parse refs/remotes/origin/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 && rtk git rev-parse HEAD && rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit -- --run src/components/assets/assetGoldenData.lifecycleRecovery.test.ts src/components/shared/useOperationalBulkWorkflow.test.tsx'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, shutil, zipfile\n\nrepo = Path('/Users/haewonkim/.codex-fabric/worktrees/CF-cc3e22006e729847c8fbd9fa')\nrun = repo / 'frontend/test-results'\nroot = Path('/tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3')\nif root.exists():\n    shutil.rmtree(root)\npayload = root / 'payload'\npayload.mkdir(parents=True)\n\ncandidate = '33338008aea6ca0149e6cb3b37352240d95d202f'\ntree = '51f516dbab7bea49ef8489110309551127021191'\nparent = 'b6ef98811fdb9e1586e5c8674d82d9cdafc1a1b7'\npredecessor = 'c3beb230dce1f1f16cafb1e4eade5c3daa6124ea'\nbase = 'f31fd16711f0234aa058be854c2639afd2f02c4d'\n\nbinding = {\n  'repository': 'kimhw8084/sysgrid',\n  'project': 'sysgrid',\n  'change': 'CHG-52 — Production cornerstone — lifecycle, audit and data-integrity consistency',\n  'operation': 'FIX',\n  'request': 'sysgrid-lifecycle-device-recovery-revocation-fix-v3',\n  'fabric_job_id': 'CF-cc3e22006e729847c8fbd9fa',\n  'fabric_configuration': {\n    'profile': 'luna-xhigh',\n    'requested_model': 'gpt-6-luna',\n    'reasoning_effort': 'xhigh',\n    'configuration_changed': False\n  },\n  'base': {'ref': 'main', 'commit': base, 'tree': '66b1e4022ed8f44c94b0daab8278fe7be49e2025'},\n  'predecessor': {'commit': predecessor, 'tree': 'db8e2cfb02fdaeb21882cd5195a041262e806259', 'direct_parent': base},\n  'candidate': {'commit': candidate, 'tree': tree, 'parent': parent, 'prior_parent_chain_contains_exact_predecessor': True},\n  'work_branch': 'codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3',\n  'native_evidence_ref': 'refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3',\n  'targeted_artifact_ref': 'refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3',\n  'r2_predecessor_artifact': 'project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2@8d34d1aedf93b56dca3e52d58eb42eead0fd882a',\n  'r2_artifact_run': 'AR-98'\n}\n\nchanged_files = [\n  'frontend/src/components/assets/assetGoldenData.lifecycleRecovery.test.ts',\n  'frontend/src/components/assets/assetGoldenData.ts',\n  'frontend/src/components/shared/useOperationalBulkWorkflow.test.tsx',\n  'frontend/src/components/shared/useOperationalBulkWorkflow.ts',\n  'frontend/tests/assets-workflows.spec.ts'\n]\nbackend_paths = {\n  'backend/app/api/devices.py': 'a06e2032543a35943d0dd23e0dde6ddb824854d3',\n  'backend/test_asset_architecture_traceability.py': '0331ce4008754ab06ec9ae23f4ae6b3b383ef27f',\n  'backend/test_devices_api_edges.py': 'b30ebdbf42c585085a41d9a43c15d5d31f50360a'\n}\nimpact = {\n  'candidate': candidate,\n  'predecessor': predecessor,\n  'changed_files_from_predecessor': changed_files,\n  'product_source_changed': ['frontend/src/components/assets/assetGoldenData.ts', 'frontend/src/components/shared/useOperationalBulkWorkflow.ts'],\n  'tests_changed': [p for p in changed_files if p.endswith('.test.ts') or p.endswith('.test.tsx') or p.startswith('frontend/tests/')],\n  'backend_r2_lifecycle_source_and_tests_changed': False,\n  'backend_blob_proof': {\n    p: {'predecessor_blob': oid, 'candidate_blob': oid, 'equal': True}\n    for p, oid in backend_paths.items()\n  },\n  'backend_evidence_reuse': 'Reuse AR-98 backend lifecycle/audit/impact evidence; backend lifecycle source and named backend tests have identical Git blob IDs to the exact R2 predecessor, so the 205-test backend suite was not rerun.',\n  'shared_bulk_workflow_consumers': {\n    'Assets': 'Uses the additive execution-start context to bind purge completion to the Asset recovery generation.',\n    'NetworkReal': 'Existing onExecutionStart(ids) callback remains unchanged; it ignores the optional action and returns no context.',\n    'VendorGoldenOperationalWorkspace': 'Existing onExecutionStart(ids) callback remains unchanged; it ignores the optional action and returns no context.',\n    'FAR': 'Uses the additive hook type without an execution-start callback.'\n  }\n}\n\nreconciliation = {\n  'owner': 'useAssetGoldenWorkspace in frontend/src/components/assets/assetGoldenData.ts',\n  'start': 'Only purge execution captures the current Asset recovery generation through the existing useOperationalBulkWorkflow mutation lifetime.',\n  'success_gate': 'Reconcile only after successful action=purge with non-empty exact changedIds and only when the captured generation still equals the current generation.',\n  'none_overlap': 'Return the exact existing recovery object unchanged.',\n  'all_overlap': 'Clear lastLifecycleOperation.',\n  'subset_overlap': 'Filter purged IDs and target labels together using their original shared positions; preserve remaining originalAction/inverseAction semantics.',\n  'ambiguous_mapping': 'If an overlapping recovery has duplicate IDs or ID/label cardinality mismatch, clear only that ambiguous recovery.',\n  'failed_blocked_cancel_preview_noop': 'No successful changedIds reconciliation occurs; existing recovery stays valid.',\n  'obsolete_generation': 'Ignore purge completion when a newer lifecycle operation or revert has advanced the recovery generation.',\n  'purge_recovery': 'Purge does not create recovery state or generic Undo/Revert; backend missing-ID behavior remains authoritative.',\n  'labels_on_new_recovery': 'Bind labels to request IDs when the complete positional mapping is supplied; otherwise resolve snapshots by ID, then use the ID string as the safe display fallback.'\n}\n\nvalidation = {\n  'candidate': candidate,\n  'focused_overlap_and_shared_context_unit': {'command': 'npm run test:unit -- --run src/components/assets/assetGoldenData.lifecycleRecovery.test.ts src/components/shared/useOperationalBulkWorkflow.test.tsx', 'files_passed': 2, 'tests_passed': 10, 'status': 'PASS'},\n  'full_frontend_unit': {'command': 'npm run test:unit', 'files_passed': 142, 'tests_passed': 727, 'status': 'PASS'},\n  'typecheck': {'command': 'npm run typecheck', 'status': 'PASS', 'run_on_final_test_source': True},\n  'production_build': {'command': 'npm run build', 'status': 'PASS', 'modules': 4357, 'product_source_unchanged_after_build': True, 'warnings': ['stale Browserslist data', 'large chunk warning (>500 KB)']},\n  'assets_browser_final': {'command': 'npm run test:e2e:assets', 'profile': 'normal-v1', 'tests_passed': 4, 'status': 'PASS', 'run_on_final_browser_test_source': True},\n  'normal_v1_full_browser': {'command': 'npm run test:e2e', 'tests_passed': 78, 'tests_skipped': 2, 'status': 'PASS', 'scope_note': 'Same production source; final follow-up changed only Assets browser assertions/evidence metadata, then the final four-test Assets file was rerun successfully.'},\n  'diff_check': {'command': 'git diff --check', 'status': 'PASS'},\n  'backend_tests': {'status': 'NOT_RERUN', 'reason': 'Backend files are byte-identical to R2; AR-98 proof reused as requested.'}\n}\n\ncopy_map = {\n  'assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/asset-purge-closed-desktop-1440x900.json': 'recovery/same-target-desktop-1440x900.json',\n  'assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/asset-purge-closed-desktop-1440x900.png': 'recovery/same-target-desktop-1440x900.png',\n  'assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/asset-purge-closed-mobile-390x844.json': 'recovery/same-target-mobile-390x844.json',\n  'assets-workflows-Assets-wo-d2945-Assets-workflows-end-to-end/asset-purge-closed-mobile-390x844.png': 'recovery/same-target-mobile-390x844.png',\n  'assets-workflows-Assets-wo-39f72-d-IDs-from-partial-recovery/asset-unrelated-recovery-control.json': 'recovery/unrelated-recovery-preserved.json',\n  'assets-workflows-Assets-wo-39f72-d-IDs-from-partial-recovery/asset-unrelated-recovery-control.png': 'recovery/unrelated-recovery-control.png',\n  'assets-workflows-Assets-wo-39f72-d-IDs-from-partial-recovery/asset-partial-recovery-result.json': 'recovery/partial-overlap-result.json',\n  'assets-workflows-Assets-wo-aaba1--purge-is-rejected-with-409/asset-blocked-purge-preserved-recovery.json': 'recovery/missing-id-409-preserves-recovery.json',\n  'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-purge-serialization-result.json': 'recovery/pending-purge-serialization-result.json',\n  'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-purge-serialization.json': 'recovery/pending-purge-serialization.json',\n  'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-purge-serialization.png': 'recovery/pending-purge-serialization.png'\n}\nfor src_rel, dst_rel in copy_map.items():\n    src = run / src_rel\n    if not src.is_file():\n        raise FileNotFoundError(src)\n    dst = payload / dst_rel\n    dst.parent.mkdir(parents=True, exist_ok=True)\n    shutil.copy2(src, dst)\n\nfor name, obj in [\n  ('candidate-binding.json', binding),\n  ('source-impact.json', impact),\n  ('recovery/reconciliation-algorithm.json', reconciliation),\n  ('validation/test-summary.json', validation),\n]:\n    p = payload / name\n    p.parent.mkdir(parents=True, exist_ok=True)\n    p.write_text(json.dumps(obj, indent=2, sort_keys=True) + '\\\\n')\n\nmanifest_items = []\nfor p in sorted(x for x in payload.rglob('*') if x.is_file()):\n    b = p.read_bytes()\n    manifest_items.append({'path': p.relative_to(payload).as_posix(), 'size_bytes': len(b), 'sha256': hashlib.sha256(b).hexdigest()})\nmanifest = {'format': 'sysgrid-r3-evidence-manifest-v1', 'candidate': candidate, 'count': len(manifest_items), 'files': manifest_items}\n(payload / 'manifest.json').write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\\\\n')\n\narchive = root / 'UPLOAD_THIS_TO_CHATGPT.zip'\nwith zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:\n    for p in sorted(x for x in payload.rglob('*') if x.is_file()):\n        zf.write(p, p.relative_to(payload).as_posix())\nwith zipfile.ZipFile(archive, 'r') as zf:\n    bad = zf.testzip()\n    if bad:\n        raise RuntimeError(f'zip integrity failure: {bad}')\n    names = sorted(zf.namelist())\n    if names \"'!= sorted([i['\"'path'] for i in manifest_items] + ['manifest.json']):\n        raise RuntimeError('archive entries do not match verified manifest')\n    for item in manifest_items:\n        data = zf.read(item['path'])\n        if len(data) \"'!= item['\"'size_bytes'] or hashlib.sha256(data).hexdigest() \"'!= item['\"'sha256']:\n            raise RuntimeError(f'manifest mismatch: {item[\\\"path\\\"]}')\nprint(json.dumps({'archive': str(archive), 'zip_sha256': hashlib.sha256(archive.read_bytes()).hexdigest(), 'zip_size_bytes': archive.stat().st_size, 'manifest_file_count': len(manifest_items), 'integrity': 'PASS', 'manifest_sha256': hashlib.sha256((payload / 'manifest.json').read_bytes()).hexdigest()}, indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git init -q /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git && rtk cp /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git/UPLOAD_THIS_TO_CHATGPT.zip && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git add UPLOAD_THIS_TO_CHATGPT.zip && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git commit -m \"Upload CHG-52 R3 recovery evidence\"'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git remote add origin https://github.com/kimhw8084/sysgrid.git && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '4640,4745p' /Users/haewonkim/.codex-fabric/current/fabric.py && rtk sed -n '2900,3020p' /Users/haewonkim/.codex-fabric/current/fabric.py\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git rev-parse HEAD && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git show -s --format='%H%n%T%n%P' HEAD && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git ls-tree -r --name-only HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3:refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git rev-parse refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git show refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3:UPLOAD_THIS_TO_CHATGPT.zip > /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip && rtk shasum -a 256 /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git ls-tree HEAD UPLOAD_THIS_TO_CHATGPT.zip && rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git ls-tree refs/remotes/origin/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 UPLOAD_THIS_TO_CHATGPT.zip && rtk wc -c /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip && rtk file /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/artifact-git cat-file blob 3c9102b6e74fbb4e39e4d5f5af86a2ab052a6537 > /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip && rtk wc -c /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip && rtk shasum -a 256 /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk /opt/anaconda3/bin/python - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, zipfile\np = Path('/tmp/sysgrid-lifecycle-device-recovery-revocation-fix-v3/UPLOAD_THIS_TO_CHATGPT.remote-read.zip')\nwith zipfile.ZipFile(p) as zf:\n    assert zf.testzip() is None\n    names = set(zf.namelist())\n    manifests = [n for n in names if n == 'manifest.json']\n    assert len(manifests) == 1\n    manifest = json.loads(zf.read('manifest.json'))\n    assert manifest['count'] == 15\n    assert names == {item['path'] for item in manifest['files']} | {'manifest.json'}\n    for item in manifest['files']:\n        data = zf.read(item['path'])\n        assert len(data) == item['size_bytes']\n        assert hashlib.sha256(data).hexdigest() == item['sha256'], item['path']\n    print(json.dumps({'remote_zip_sha256': hashlib.sha256(p.read_bytes()).hexdigest(), 'verified_manifest_entries': manifest['count'], 'archive_integrity': 'PASS', 'all_hashes_match': True}, indent=2))\nPY\nrtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git check-ignore frontend/test-results frontend/test-results-v1 frontend/llm-report.json frontend/dist'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk rm -rf frontend/test-results frontend/test-results-v1 frontend/llm-report.json'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote origin refs/heads/main refs/heads/codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-authority-fix-v2 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3 && rtk git status --short --branch && rtk git diff --name-only c3beb230dce1f1f16cafb1e4eade5c3daa6124ea HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.157.0",
+    "configured_model": "gpt-6-luna",
+    "event_count": 301,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 98.1,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 24592000,
+      "fresh_input_tokens": 475249,
+      "input_tokens": 25067249,
+      "non_reasoning_output_tokens": 42025,
+      "output_tokens": 140309,
+      "reasoning_output_tokens": 98284,
+      "total_processed_tokens": 25207558
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "33338008aea6ca0149e6cb3b37352240d95d202f",
+      "subject": "Bind purge receipt evidence to Asset recovery IDs"
+    },
+    {
+      "sha": "b6ef98811fdb9e1586e5c8674d82d9cdafc1a1b7",
+      "subject": "Revoke stale Asset recovery after purge"
+    },
+    {
+      "sha": "c3beb230dce1f1f16cafb1e4eade5c3daa6124ea",
+      "subject": "Fix Device lifecycle authority semantics"
+    }
+  ],
+  "diff": {
+    "additions": 1682,
+    "changed_files": 15,
+    "commit_count": 3,
+    "deletions": 124
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 1,
+    "items": [
+      {
+        "bytes": 22173,
+        "path": "backend/test_asset_architecture_traceability.py",
+        "sha256": "9c68953276bd6a8ab553f484462d68fe6b36d08f61602a877db075bc4fa3fc9d"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-28T00:25:50Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "branch": "codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3",
+    "detached_verify": false,
+    "head_sha": "33338008aea6ca0149e6cb3b37352240d95d202f",
+    "remote_exact_head": true,
+    "remote_head_sha": "33338008aea6ca0149e6cb3b37352240d95d202f",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "work_branch": "codex/sysgrid-lifecycle-device-recovery-revocation-fix-v3",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-cc3e22006e729847c8fbd9fa",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-revocation-fix-v3"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-lifecycle-device-recovery-revocation-fix-v3",
+  "schema_version": 1,
+  "started_at": "2026-09-27T23:15:29Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 4221,
+    "queue_seconds": 1,
+    "total_seconds": 4222
+  },
+  "transport": {
+    "bytes": 12949,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 12593,
+    "prompt_sha256": "e81f21d9134aa15c340e5408d1d019c68f6e32d763a1e1829ee7e7e4f87eb957",
+    "sha256": "cc3e22006e729847c8fbd9fa1b52ed34ebb88d4ac0c39ee1a419524fcecc1536"
+  }
+}
