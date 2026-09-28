@@ -1,0 +1,484 @@
+{
+  "accepted_at": "2026-09-28T00:59:33Z",
+  "changed_files": [
+    {
+      "additions": 500,
+      "deletions": 77,
+      "path": "backend/app/api/devices.py",
+      "status": "M"
+    },
+    {
+      "additions": 73,
+      "deletions": 0,
+      "path": "backend/test_asset_architecture_traceability.py",
+      "status": "M"
+    },
+    {
+      "additions": 289,
+      "deletions": 7,
+      "path": "backend/test_devices_api_edges.py",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 2,
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/AssetBulkActionsPanel.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 5,
+      "deletions": 2,
+      "path": "frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/AssetGoldenShellScaffold.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 1,
+      "deletions": 1,
+      "path": "frontend/src/components/assets/assetGoldenColumns.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 174,
+      "deletions": 0,
+      "path": "frontend/src/components/assets/assetGoldenData.lifecycleRecovery.test.ts",
+      "status": "A"
+    },
+    {
+      "additions": 101,
+      "deletions": 13,
+      "path": "frontend/src/components/assets/assetGoldenData.ts",
+      "status": "M"
+    },
+    {
+      "additions": 66,
+      "deletions": 1,
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 81,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/OperationalBulkPreviewModal.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 2,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/WorkspaceToast.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 20,
+      "deletions": 0,
+      "path": "frontend/src/components/shared/useOperationalBulkWorkflow.test.tsx",
+      "status": "M"
+    },
+    {
+      "additions": 9,
+      "deletions": 5,
+      "path": "frontend/src/components/shared/useOperationalBulkWorkflow.ts",
+      "status": "M"
+    },
+    {
+      "additions": 961,
+      "deletions": 15,
+      "path": "frontend/tests/assets-workflows.spec.ts",
+      "status": "M"
+    }
+  ],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk git add frontend/tests/assets-workflows.spec.ts && rtk git commit --amend --no-edit && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git show -s --format='%T%n%P' HEAD && rtk git diff --stat 33338008aea6ca0149e6cb3b37352240d95d202f..HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3 SYSGRID_CANDIDATE_SHA=59b1bc706d83a6b3314eb44e6ef070a906c77410 npm run test:e2e:assets'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3 SYSGRID_CANDIDATE_SHA=59b1bc706d83a6b3314eb44e6ef070a906c77410 npm run test:e2e'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk cat package.json | rtk jq '.scripts' && rtk git status --short --branch && rtk rg --files test-results | rtk rg 'asset-pending-overlap-(partial|unrelated|failed|same-target)'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq -s '.' test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-1440x900.json test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-390x844.json && rtk jq '.' test-results/assets-workflows-Assets-wo-ca495-ter-the-held-purge-succeeds/asset-pending-overlap-partial.json test-results/assets-workflows-Assets-wo-ca495-ter-the-held-purge-succeeds/asset-pending-overlap-partial-result.json test-results/assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed.json test-results/assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed-result.json && rtk rg --files test-results | rtk rg 'asset-pending-overlap' \"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '730,825p' frontend/src/components/assets/assetGoldenData.ts && rtk sed -n '470,510p' frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx && rtk rg -n 'executeRevert|Revert last completed|Revert' frontend/src/components/assets frontend/tests/assets-workflows.spec.ts && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed-result.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-ca495-ter-the-held-purge-succeeds/asset-pending-overlap-partial.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-ca495-ter-the-held-purge-succeeds/asset-pending-overlap-partial-result.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg --files frontend/test-results | rtk rg '(unrelated|disjoint|same-target|partial|failed)' && rtk sed -n '40,180p' frontend/src/components/assets/assetGoldenData.ts && rtk sed -n '1,210p' frontend/src/components/assets/assetGoldenData.lifecycleRecovery.test.ts && rtk git diff --name-status 33338008aea6ca0149e6cb3b37352240d95d202f..HEAD && rtk git diff -- frontend/src/components/assets/assetGoldenData.ts frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx | rtk cat\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery-result.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-390x844.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-1440x900.json\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq '.' test-results/assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery.json && rtk jq '.' test-results/assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery-result.json && rtk jq '.' test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-390x844.json && rtk jq '.' test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-1440x900.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1270,1325p' frontend/tests/assets-workflows.spec.ts && rtk sed -n '880,1180p' frontend/tests/assets-workflows.spec.ts && rtk sed -n '120,240p' frontend/tests/assets-workflows.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'confirmState|openConfirm|Confirm Action' frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx frontend/src/components/shared frontend/src/components/assets && rtk rg -n 'Assets bulk preview|Confirm Purge selection|Preview Permanent Purge' frontend/src/components/assets\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git add frontend/tests/assets-workflows.spec.ts && rtk git commit --amend --no-edit && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git show -s --format='%T%n%P' HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' scripts/run-e2e.sh && rtk cat frontend/package.json | rtk jq -r '.scripts[\\\"test:e2e:assets\\\"]'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3 SYSGRID_CANDIDATE_SHA=55880c2306bfddeb59b67012385ead81d7dc094e npm run test:e2e:assets -- --grep 'proves a pending purge serializes later Asset lifecycle execution'\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'function ToolbarButton|const ToolbarButton|type ToolbarButton' frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx frontend/src/components/shared && rtk cat frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/error-context.md && rtk sed -n '1,100p' frontend/src/components/shared/OperationalWorkspacePrimitives.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '118,175p' frontend/src/components/shared/LayoutPrimitives.tsx && rtk sed -n '1,90p' frontend/src/components/shared/ConfirmationModal.tsx && rtk sed -n '180,210p' frontend/src/components/assets/AssetGoldenDialogs.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk git add frontend/tests/assets-workflows.spec.ts && rtk git commit --amend --no-edit && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git show -s --format='%T%n%P' HEAD\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk proxy env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3 SYSGRID_CANDIDATE_SHA=28a1c26be139db2db48ff384064f7e3c8cbb38fd npm run test:e2e:assets -- --grep 'proves a pending purge serializes later Asset lifecycle execution'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3 SYSGRID_CANDIDATE_SHA=28a1c26be139db2db48ff384064f7e3c8cbb38fd npm run test:e2e:assets'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run test:unit'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run build'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk npm run typecheck'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy env SYSGRID_VERIFY_PROFILE=normal-v1 SYSGRID_VERIFY_PYTHON=/opt/anaconda3/bin/python3 SYSGRID_CANDIDATE_SHA=28a1c26be139db2db48ff384064f7e3c8cbb38fd npm run test:e2e'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'runBulkReceiptRevert|onRevert|revert' frontend/src/hooks frontend/src/components/shared/useOperationalBulkWorkflow* frontend/src/components/assets frontend/src/components/shared/WorkspaceToast.tsx frontend/src/components/assets/AssetBulkActionsPanel.tsx | head -n 150 && rtk sed -n '640,715p' frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx && rtk rg --files frontend/test-results | rtk rg 'asset-pending-overlap-direct-guard|asset-pending-overlap-same-target-(1440x900|390x844)|asset-pending-disjoint-recovery|asset-pending-overlap-(partial|failed)'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --quiet c3beb230dce1f1f16cafb1e4eade5c3daa6124ea HEAD -- backend/app/api/devices.py backend/test_asset_architecture_traceability.py backend/test_devices_api_edges.py && rtk git rev-parse c3beb230dce1f1f16cafb1e4eade5c3daa6124ea:backend/app/api/devices.py HEAD:backend/app/api/devices.py c3beb230dce1f1f16cafb1e4eade5c3daa6124ea:backend/test_asset_architecture_traceability.py HEAD:backend/test_asset_architecture_traceability.py c3beb230dce1f1f16cafb1e4eade5c3daa6124ea:backend/test_devices_api_edges.py HEAD:backend/test_devices_api_edges.py'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote --heads origin main refs/heads/codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD HEAD''^{tree} HEAD''^ && rtk git diff --name-status 33338008aea6ca0149e6cb3b37352240d95d202f..HEAD && rtk git merge-base --is-ancestor 33338008aea6ca0149e6cb3b37352240d95d202f HEAD && rtk git merge-base --is-ancestor c3beb230dce1f1f16cafb1e4eade5c3daa6124ea HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git push origin HEAD:refs/heads/codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4 && rtk git ls-remote --heads origin refs/heads/codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4 main'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-direct-guard.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-1440x900.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-390x844.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-purge-serialization-result.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery-result.json && rtk git status --short --branch\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-purge-serialization-result.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-ca495-ter-the-held-purge-succeeds/asset-pending-overlap-partial-result.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed.json && rtk jq '.' frontend/test-results/assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed-result.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '160,280p' frontend/src/components/shared/useOperationalBulkWorkflow.ts && rtk sed -n '100,220p' frontend/src/components/assets/AssetBulkActionsPanel.tsx && rtk sed -n '80,115p' frontend/src/components/shared/OperationalBulkPreviewModal.tsx && rtk rg -n 'showWorkspaceRevertToast|onRevert:' frontend/src/components/assets/assetGoldenData.ts frontend/src/components/shared/useOperationalBulkWorkflow.ts frontend/src/components/shared/OperationalBulkPreviewModal.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, shutil, zipfile\n\nroot = Path('/Users/haewonkim/.codex-fabric/worktrees/CF-98c969530c46ad7117cbb208')\nfront = root / 'frontend/test-results'\nout = Path('/tmp/sysgrid-r4-evidence')\nif out.exists():\n    shutil.rmtree(out)\n(out / 'evidence').mkdir(parents=True)\n\ncandidate = '28a1c26be139db2db48ff384064f7e3c8cbb38fd'\npredecessor = '33338008aea6ca0149e6cb3b37352240d95d202f'\npredecessor_tree = '51f516dbab7bea49ef8489110309551127021191'\nr2 = 'c3beb230dce1f1f16cafb1e4eade5c3daa6124ea'\nbase = 'f31fd16711f0234aa058be854c2639afd2f02c4d'\ntree = '71c1f1d88f5d6906486415d65a07a038f0f264b6'\n\nbinding = {\n    'repository': 'kimhw8084/sysgrid',\n    'project': 'sysgrid',\n    'change': 'CHG-52',\n    'operation': 'FIX',\n    'request': 'sysgrid-lifecycle-device-recovery-serialization-fix-v4',\n    'branch': 'codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4',\n    'candidateSha': candidate,\n    'candidateTree': tree,\n    'candidateParents': [predecessor],\n    'exactPredecessor': {'sha': predecessor, 'tree': predecessor_tree},\n    'r2CandidateInAncestry': r2,\n    'freshBase': {'ref': 'main', 'sha': base, 'tree': '66b1e4022ed8f44c94b0daab8278fe7be49e2025'},\n    'nativeEvidenceRef': 'refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4',\n    'artifactRef': 'refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4',\n}\n(out / 'candidate-binding.json').write_text(json.dumps(binding, indent=2) + '\\\\n')\n\nsource_impact = {\n    'candidateSha': candidate,\n    'comparison': {'from': predecessor, 'to': candidate},\n    'changedFiles': [\n        'frontend/src/components/assets/AssetGoldenOperationalWorkspace.tsx',\n        'frontend/src/components/assets/assetGoldenData.lifecycleRecovery.test.ts',\n        'frontend/src/components/assets/assetGoldenData.ts',\n        'frontend/tests/assets-workflows.spec.ts',\n    ],\n    'sharedBulkWorkflowChanged': False,\n    'backendFilesChanged': [],\n    'backendIdentityComparedToR2Candidate': r2,\n    'backendBlobs': [\n        {'path': 'backend/app/api/devices.py', 'r2Blob': 'a06e2032543a35943d0dd23e0dde6ddb824854d3', 'candidateBlob': 'a06e2032543a35943d0dd23e0dde6ddb824854d3', 'identical': True},\n        {'path': 'backend/test_asset_architecture_traceability.py', 'r2Blob': '0331ce4008754ab06ec9ae23f4ae6b3b383ef27f', 'candidateBlob': '0331ce4008754ab06ec9ae23f4ae6b3b383ef27f', 'identical': True},\n        {'path': 'backend/test_devices_api_edges.py', 'r2Blob': 'b30ebdbf42c585085a41d9a43c15d5d31f50360a', 'candidateBlob': 'b30ebdbf42c585085a41d9a43c15d5d31f50360a', 'identical': True},\n    ],\n    'backendFullSuiteRerun': False,\n    'backendEvidenceReuse': 'AR-98 retained unchanged; no backend rerun because R2 source/test blobs are identical.',\n}\n(out / 'evidence/source-impact.json').write_text(json.dumps(source_impact, indent=2) + '\\\\n')\n\nhelper = {\n    'candidateSha': candidate,\n    'helper': 'isAssetLifecycleRecoveryBlocked',\n    'unitTestFile': 'frontend/src/components/assets/assetGoldenData.lifecycleRecovery.test.ts',\n    'unitSuiteResult': {'filesPassed': 142, 'testsPassed': 732},\n    'cases': [\n        {'case': 'no pending mutation', 'pending': False, 'blocked': False, 'asserted': True},\n        {'case': 'pending purge disjoint IDs', 'recoveryIds': [11, 12], 'pendingPurgeIds': [13], 'blocked': False, 'asserted': True},\n        {'case': 'pending purge full overlap', 'recoveryIds': [11, 12], 'pendingPurgeIds': [11, 12], 'blocked': True, 'asserted': True},\n        {'case': 'pending purge partial overlap', 'recoveryIds': [11, 12], 'pendingPurgeIds': [12, 13], 'blocked': True, 'asserted': True},\n        {'case': 'pending purge identity missing', 'blocked': True, 'asserted': True},\n        {'case': 'pending purge IDs empty', 'blocked': True, 'asserted': True},\n        {'case': 'pending purge IDs malformed', 'blocked': True, 'asserted': True},\n        {'case': 'pending action missing', 'blocked': True, 'asserted': True},\n    ],\n    'directGuard': {\n        'staleExecuteRevertCallbackBlocked': True,\n        'restoreRequestsIssued': 0,\n        'sameRecoveryObjectRetainedWhilePending': True,\n        'friendlyFeedback': 'Wait for the overlapping permanent purge to finish before reverting this asset operation',\n        'afterSuccessfulPurge': 'overlapping recovery cleared by unchanged R3 settlement reconciliation',\n    },\n}\n(out / 'evidence/helper-matrix.json').write_text(json.dumps(helper, indent=2) + '\\\\n')\n\ninventory = {\n    'candidateSha': candidate,\n    'route': '/asset',\n    'profile': 'normal-v1',\n    'entries': [\n        {\n            'entry': 'Persistent lifecycle toolbar Revert',\n            'path': 'AssetGoldenOperationalWorkspace toolbar button -> openConfirm -> executeRevert',\n            'pendingOverlapControl': 'Button disabled from isLastLifecycleRecoveryBlocked; executeRevert rechecks the same helper against bulkMutationRef.current before issuing Restore.',\n            'status': 'guarded and browser-tested, including direct captured-toolbar-callback invocation during a held purge.',\n        },\n        {\n            'entry': 'Transient result-toast Revert',\n            'path': 'useOperationalBulkWorkflow success toast callback',\n            'pendingOverlapControl': 'performBulkAction(purge) calls dismissWorkspaceToasts before requesting purge preview; same-target pending-state evidence reports transientToastRevertVisible=false.',\n            'status': 'not present during the pending purge interval.',\n        },\n        {\n            'entry': 'Bulk receipt Revert',\n            'path': 'OperationalBulkPreviewModal onRevert -> runBulkReceiptRevert',\n            'pendingOverlapControl': 'The shared workflow only creates receipt undo for completed actions other than purge; purge preview replaces the prior receipt before execution and has no receipt Revert.',\n            'status': 'no user-visible receipt Revert exists after purge execution starts; no shared workflow semantics changed.',\n        },\n    ],\n    'conclusion': 'The only user-visible recovery command available after the purge modal closes is the persistent toolbar, which is semantically disabled and independently guarded. The toast entry is dismissed before preview and the purge receipt has no undo entry.',\n}\n(out / 'evidence/command-entry-inventory.json').write_text(json.dumps(inventory, indent=2) + '\\\\n')\n\nvalidation = {\n    'candidateSha': candidate,\n    'profile': 'normal-v1',\n    'runs': [\n        {'command': 'npm run test:unit', 'status': 'passed', 'files': '142/142', 'tests': '732/732'},\n        {'command': 'npm run typecheck', 'status': 'passed'},\n        {'command': 'npm run build', 'status': 'passed'},\n        {'command': 'npm run test:e2e:assets', 'status': 'passed', 'tests': '7/7'},\n        {'command': 'npm run test:e2e', 'status': 'passed', 'passed': 81, 'skipped': 2, 'failed': 0, 'tests': 83},\n    ],\n    'focusedDirectCallbackBrowserTest': {'status': 'passed', 'tests': '1/1', 'includedAgainIn': 'Assets suite and full normal-v1 suite'},\n    'backend': {'status': 'AR-98 reused', 'fullSuiteRerun': False, 'reason': 'R2 backend source/test blobs identical.'},\n}\n(out / 'evidence/validation-results.json').write_text(json.dumps(validation, indent=2) + '\\\\n')\n\nmapping = {\n    'evidence/pending/same-target-desktop.json': front / 'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-1440x900.json',\n    'evidence/pending/same-target-desktop.png': front / 'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-1440x900.png',\n    'evidence/pending/same-target-mobile.json': front / 'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-390x844.json',\n    'evidence/pending/same-target-mobile.png': front / 'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-390x844.png',\n    'evidence/pending/same-target-direct-guard.json': front / 'assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-direct-guard.json',\n    'evidence/pending/partial-overlap-pending.json': front / 'assets-workflows-Assets-wo-ca495-ter-the-held-purge-succeeds/asset-pending-overlap-partial.json',\n    'evidence/pending/partial-overlap-result.json': front / 'assets-workflows-Assets-wo-ca495-ter-the-held-purge-succeeds/asset-pending-overlap-partial-result.json',\n    'evidence/pending/disjoint-recovery-pending.json': front / 'assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery.json',\n    'evidence/pending/disjoint-recovery-pending.png': front / 'assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery.png',\n    'evidence/pending/disjoint-recovery-result.json': front / 'assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery-result.json',\n    'evidence/pending/failed-purge-pending.json': front / 'assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed.json',\n    'evidence/pending/failed-purge-result.json': front / 'assets-workflows-Assets-wo-a82d3-ping-purge-settles-with-409/asset-pending-overlap-failed-result.json',\n}\nfor relative, source in mapping.items():\n    target = out / relative\n    target.parent.mkdir(parents=True, exist_ok=True)\n    shutil.copyfile(source, target)\n\nsame_desktop = json.loads((out / 'evidence/pending/same-target-desktop.json').read_text())\nsettlement = {\n    'candidateSha': candidate,\n    'route': same_desktop['route'],\n    'profile': same_desktop['profile'],\n    'pendingPurge': same_desktop['pendingPurge'],\n    'purgeSettledSuccessfully': True,\n    'purgeChangedIds': same_desktop['recovery']['ids'],\n    'persistentRecoveryRemoved': True,\n    'purgeTargetPhysicallyAbsent': True,\n    'testAssertions': 'assets-workflows.spec.ts: after releasing held purge, receipt changed_ids equals target ID, persistent Revert count is zero, backend GET returns no Device row.',\n}\n(out / 'evidence/pending/same-target-success-result.json').write_text(json.dumps(settlement, indent=2) + '\\\\n')\n\n# Verify candidate binding in every browser record before archiving.\nfor path in (out / 'evidence/pending').glob('*.json'):\n    record = json.loads(path.read_text())\n    if record.get('candidateSha') not in (None, candidate):\n        raise SystemExit(f'candidate SHA mismatch in {path}')\n    if record.get('route') is not None and record['route'] \"'!= '\"'/asset':\n        raise SystemExit(f'route mismatch in {path}')\n\nfiles = []\nfor path in sorted(p for p in out.rglob('*') if p.is_file() and p.name \"'!= '\"'manifest.json'):\n    data = path.read_bytes()\n    files.append({'path': path.relative_to(out).as_posix(), 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})\nmanifest = {\n    'schema': 'sysgrid-project-os-artifact-manifest-v1',\n    'candidateSha': candidate,\n    'hashAlgorithm': 'SHA-256',\n    'payloadFileCount': len(files),\n    'manifestExcludesSelf': True,\n    'files': files,\n}\n(out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\\\\n')\nzip_path = out.parent / 'UPLOAD_THIS_TO_CHATGPT.zip'\nif zip_path.exists():\n    zip_path.unlink()\nwith zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:\n    for path in sorted(p for p in out.rglob('*') if p.is_file()):\n        archive.write(path, path.relative_to(out).as_posix())\n\nwith zipfile.ZipFile(zip_path) as archive:\n    bad = archive.testzip()\n    if bad is not None:\n        raise SystemExit(f'zip CRC failure: {bad}')\n    names = set(archive.namelist())\n    if 'manifest.json' not in names or 'candidate-binding.json' not in names:\n        raise SystemExit('required package files missing')\n    loaded = json.loads(archive.read('manifest.json'))\n    for record in loaded['files']:\n        data = archive.read(record['path'])\n        if len(data) \"'!= record['\"'bytes'] or hashlib.sha256(data).hexdigest() \"'!= record['\"'sha256']:\n            raise SystemExit(f'manifest verification failed: {record[\\\"path\\\"]}')\n\nprint(json.dumps({\n    'zip': str(zip_path),\n    'bytes': zip_path.stat().st_size,\n    'sha256': hashlib.sha256(zip_path.read_bytes()).hexdigest(),\n    'manifestPayloadFiles': len(files),\n    'zipEntries': len(zipfile.ZipFile(zip_path).namelist()),\n    'zipIntegrity': 'passed',\n    'candidateSha': candidate,\n}, indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk sips -g pixelWidth -g pixelHeight frontend/test-results/assets-workflows-Assets-wo-aa525-asset-purge-is-held-pending/asset-pending-disjoint-recovery.png frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-1440x900.png frontend/test-results/assets-workflows-Assets-wo-c8106-r-Asset-lifecycle-execution/asset-pending-overlap-same-target-390x844.png && rtk cat .codex-fabric/audit.json'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, zipfile\n\nout = Path('/tmp/sysgrid-r4-evidence')\nzip_path = Path('/tmp/UPLOAD_THIS_TO_CHATGPT.zip')\ncandidate = '28a1c26be139db2db48ff384064f7e3c8cbb38fd'\npending = out / 'evidence/pending'\nfor path in sorted(pending.glob('*.json')):\n    record = json.loads(path.read_text())\n    if 'viewport' not in record:\n        record['viewport'] = {'width': 1920, 'height': 1080}\n        record['viewportEvidenceSource'] = 'Playwright test.use({ viewport: { width: 1920, height: 1080 }}) in assets-workflows.spec.ts; PNG verified at 1920x1080 where captured.'\n    if path.name in {\n        'same-target-desktop.json', 'same-target-mobile.json',\n        'same-target-direct-guard.json', 'partial-overlap-pending.json',\n        'disjoint-recovery-pending.json', 'failed-purge-pending.json',\n    }:\n        record['capturedWhilePendingBeforeSettlement'] = True\n    if record.get('candidateSha') not in (None, candidate):\n        raise SystemExit(f'candidate mismatch in {path}')\n    record['candidateSha'] = candidate\n    path.write_text(json.dumps(record, indent=2) + '\\\\n')\n\nmanifest_path = out / 'manifest.json'\nfiles = []\nfor path in sorted(p for p in out.rglob('*') if p.is_file() and p.name \"'!= '\"'manifest.json'):\n    data = path.read_bytes()\n    files.append({'path': path.relative_to(out).as_posix(), 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})\nmanifest = {\n    'schema': 'sysgrid-project-os-artifact-manifest-v1',\n    'candidateSha': candidate,\n    'hashAlgorithm': 'SHA-256',\n    'payloadFileCount': len(files),\n    'manifestExcludesSelf': True,\n    'files': files,\n}\nmanifest_path.write_text(json.dumps(manifest, indent=2) + '\\\\n')\nif zip_path.exists():\n    zip_path.unlink()\nwith zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:\n    for path in sorted(p for p in out.rglob('*') if p.is_file()):\n        archive.write(path, path.relative_to(out).as_posix())\nwith zipfile.ZipFile(zip_path) as archive:\n    if archive.testzip() is not None:\n        raise SystemExit('zip CRC verification failed')\n    checked = json.loads(archive.read('manifest.json'))\n    for record in checked['files']:\n        data = archive.read(record['path'])\n        if len(data) \"'!= record['\"'bytes'] or hashlib.sha256(data).hexdigest() \"'!= record['\"'sha256']:\n            raise SystemExit(f'manifest verification failed: {record[\\\"path\\\"]}')\nprint(json.dumps({\n    'zip': str(zip_path),\n    'bytes': zip_path.stat().st_size,\n    'sha256': hashlib.sha256(zip_path.read_bytes()).hexdigest(),\n    'manifestPayloadFiles': len(files),\n    'zipEntries': len(zipfile.ZipFile(zip_path).namelist()),\n    'zipIntegrity': 'passed',\n    'candidateSha': candidate,\n}, indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk mkdir -p /tmp/sysgrid-r4-artifact && rtk cp /tmp/UPLOAD_THIS_TO_CHATGPT.zip /tmp/sysgrid-r4-artifact/UPLOAD_THIS_TO_CHATGPT.zip && rtk git -C /tmp/sysgrid-r4-artifact init -b artifact && rtk git -C /tmp/sysgrid-r4-artifact config user.name 'Codex Fabric' && rtk git -C /tmp/sysgrid-r4-artifact config user.email 'codex-fabric@users.noreply.github.com' && rtk git -C /tmp/sysgrid-r4-artifact add UPLOAD_THIS_TO_CHATGPT.zip && rtk git -C /tmp/sysgrid-r4-artifact commit -m 'CHG-52 R4 serialization fix evidence' && rtk git -C /tmp/sysgrid-r4-artifact status --short --branch && rtk git -C /tmp/sysgrid-r4-artifact ls-tree --name-only HEAD && rtk git -C /tmp/sysgrid-r4-artifact rev-parse HEAD HEAD\"'^{tree}'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote --heads origin main refs/heads/codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-r4-artifact remote add origin https://github.com/kimhw8084/sysgrid.git && rtk git -C /tmp/sysgrid-r4-artifact push origin HEAD:refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4 && rtk git -C /tmp/sysgrid-r4-artifact ls-remote origin refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git -C /tmp/sysgrid-r4-artifact fetch origin refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4:refs/remotes/origin/r4-artifact && rtk git -C /tmp/sysgrid-r4-artifact rev-parse refs/remotes/origin/r4-artifact refs/remotes/origin/r4-artifact''^{tree} && rtk git -C /tmp/sysgrid-r4-artifact ls-tree --name-only refs/remotes/origin/r4-artifact && rtk git -C /tmp/sysgrid-r4-artifact show refs/remotes/origin/r4-artifact:UPLOAD_THIS_TO_CHATGPT.zip > /tmp/UPLOAD_THIS_TO_CHATGPT.readback.zip && rtk sha256sum /tmp/UPLOAD_THIS_TO_CHATGPT.readback.zip && rtk python3 - <<'\"'PY'\nfrom pathlib import Path\nimport hashlib, json, zipfile\npath = Path('/tmp/UPLOAD_THIS_TO_CHATGPT.readback.zip')\nwith zipfile.ZipFile(path) as z:\n    if z.testzip() is not None:\n        raise SystemExit('remote ZIP CRC failure')\n    manifest = json.loads(z.read('manifest.json'))\n    for record in manifest['files']:\n        data = z.read(record['path'])\n        if len(data) \"'!= record['\"'bytes'] or hashlib.sha256(data).hexdigest() \"'!= record['\"'sha256']:\n            raise SystemExit(f'remote manifest mismatch: {record[\\\"path\\\"]}')\nprint(json.dumps({'remoteZipBytes': path.stat().st_size, 'candidateSha': manifest['candidateSha'], 'manifestPayloadFiles': manifest['payloadFileCount'], 'zipEntries': len(zipfile.ZipFile(path).namelist()), 'zipIntegrity': 'passed'}, indent=2))\nPY\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk sha256sum /tmp/UPLOAD_THIS_TO_CHATGPT.zip /tmp/UPLOAD_THIS_TO_CHATGPT.readback.zip && rtk file /tmp/UPLOAD_THIS_TO_CHATGPT.readback.zip && rtk xxd -l 48 /tmp/UPLOAD_THIS_TO_CHATGPT.readback.zip && rtk proxy git -C /tmp/sysgrid-r4-artifact show refs/remotes/origin/r4-artifact:UPLOAD_THIS_TO_CHATGPT.zip > /tmp/UPLOAD_THIS_TO_CHATGPT.readback2.zip && rtk sha256sum /tmp/UPLOAD_THIS_TO_CHATGPT.readback2.zip && rtk file /tmp/UPLOAD_THIS_TO_CHATGPT.readback2.zip && rtk xxd -l 48 /tmp/UPLOAD_THIS_TO_CHATGPT.readback2.zip'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\nimport hashlib, json, zipfile\npath = Path('/tmp/UPLOAD_THIS_TO_CHATGPT.readback2.zip')\nwith zipfile.ZipFile(path) as z:\n    if z.testzip() is not None:\n        raise SystemExit('remote ZIP CRC failure')\n    manifest = json.loads(z.read('manifest.json'))\n    for record in manifest['files']:\n        data = z.read(record['path'])\n        if len(data) \"'!= record['\"'bytes'] or hashlib.sha256(data).hexdigest() \"'!= record['\"'sha256']:\n            raise SystemExit(f'remote manifest mismatch: {record[\\\"path\\\"]}')\nprint(json.dumps({'remoteZipBytes': path.stat().st_size, 'remoteZipSha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'candidateSha': manifest['candidateSha'], 'manifestPayloadFiles': manifest['payloadFileCount'], 'zipEntries': len(zipfile.ZipFile(path).namelist()), 'zipIntegrity': 'passed'}, indent=2))\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la .codex-fabric'",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk ls -la /Users/haewonkim/.codex-fabric/jobs/CF-98c969530c46ad7117cbb208.running && rtk rg --files /Users/haewonkim/.codex-fabric/jobs/CF-98c969530c46ad7117cbb208.running'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote --heads origin main refs/heads/codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq '{id, state, status, repository, branch, native_evidence_ref, configuration, updated_at, result}' /Users/haewonkim/.codex-fabric/jobs/CF-98c969530c46ad7117cbb208.running/job.json && rtk jq '.' /Users/haewonkim/.codex-fabric/jobs/CF-98c969530c46ad7117cbb208.running/lease.json && rtk rg -n 'fabricctl|audit.json|native evidence|evidence_ref|finish|complete' /Users/haewonkim/.codex/law.md /Users/haewonkim/.codex/RTK.md\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk jq 'keys' /Users/haewonkim/.codex-fabric/jobs/CF-98c969530c46ad7117cbb208.running/job.json && rtk jq '.' /Users/haewonkim/.codex-fabric/jobs/CF-98c969530c46ad7117cbb208.running/job.json\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git ls-remote --heads origin main refs/heads/codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/project-os-artifacts/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4 refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4 && rtk git -C /tmp/sysgrid-r4-artifact rev-parse refs/remotes/origin/r4-artifact refs/remotes/origin/r4-artifact''^{tree} && rtk git -C /tmp/sysgrid-r4-artifact ls-tree --name-only refs/remotes/origin/r4-artifact'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD HEAD''^{tree} HEAD''^ && rtk git diff --stat 33338008aea6ca0149e6cb3b37352240d95d202f..HEAD && rtk git diff --name-only 33338008aea6ca0149e6cb3b37352240d95d202f..HEAD && rtk git diff --quiet c3beb230dce1f1f16cafb1e4eade5c3daa6124ea HEAD -- backend/app/api/devices.py backend/test_asset_architecture_traceability.py backend/test_devices_api_edges.py && rtk git merge-base --is-ancestor 33338008aea6ca0149e6cb3b37352240d95d202f HEAD && rtk git merge-base --is-ancestor c3beb230dce1f1f16cafb1e4eade5c3daa6124ea HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.157.0",
+    "configured_model": "gpt-6-luna",
+    "event_count": 410,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.72,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 23028096,
+      "fresh_input_tokens": 537098,
+      "input_tokens": 23565194,
+      "non_reasoning_output_tokens": 46560,
+      "output_tokens": 124722,
+      "reasoning_output_tokens": 78162,
+      "total_processed_tokens": 23689916
+    },
+    "warnings": []
+  },
+  "commits": [
+    {
+      "sha": "28a1c26be139db2db48ff384064f7e3c8cbb38fd",
+      "subject": "Block Asset recovery during overlapping purge"
+    },
+    {
+      "sha": "33338008aea6ca0149e6cb3b37352240d95d202f",
+      "subject": "Bind purge receipt evidence to Asset recovery IDs"
+    },
+    {
+      "sha": "b6ef98811fdb9e1586e5c8674d82d9cdafc1a1b7",
+      "subject": "Revoke stale Asset recovery after purge"
+    },
+    {
+      "sha": "c3beb230dce1f1f16cafb1e4eade5c3daa6124ea",
+      "subject": "Fix Device lifecycle authority semantics"
+    }
+  ],
+  "diff": {
+    "additions": 2286,
+    "changed_files": 16,
+    "commit_count": 4,
+    "deletions": 125
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 1,
+    "items": [
+      {
+        "bytes": 22173,
+        "path": "backend/test_asset_architecture_traceability.py",
+        "sha256": "9c68953276bd6a8ab553f484462d68fe6b36d08f61602a877db075bc4fa3fc9d"
+      }
+    ],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-28T02:19:29Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "branch": "codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4",
+    "detached_verify": false,
+    "head_sha": "28a1c26be139db2db48ff384064f7e3c8cbb38fd",
+    "remote_exact_head": true,
+    "remote_head_sha": "28a1c26be139db2db48ff384064f7e3c8cbb38fd",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "f31fd16711f0234aa058be854c2639afd2f02c4d",
+    "work_branch": "codex/sysgrid-lifecycle-device-recovery-serialization-fix-v4",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-98c969530c46ad7117cbb208",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-lifecycle-device-recovery-serialization-fix-v4"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-lifecycle-device-recovery-serialization-fix-v4",
+  "schema_version": 1,
+  "started_at": "2026-09-28T00:59:33Z",
+  "status": "EXECUTED_CHANGE",
+  "timing": {
+    "execution_seconds": 4796,
+    "queue_seconds": 0,
+    "total_seconds": 4796
+  },
+  "transport": {
+    "bytes": 12996,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 12634,
+    "prompt_sha256": "4c1dfd1e23e380ce1fb8488fe43c4cbf3b95b04773356afe26a5befbc58c0309",
+    "sha256": "98c969530c46ad7117cbb208301089622a85b1f1551d2b3eba1ae711e65b5a61"
+  }
+}
