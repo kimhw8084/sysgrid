@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, update, or_, func
+from sqlalchemy import select, delete, update, or_, and_, func
 from datetime import datetime
 from typing import Optional
 from ..database import get_db
 from ..models import models
-from .utils import filter_valid_columns, parse_iso_date
+from ..database_base import Base
+from .utils import build_audit_log, filter_valid_columns, parse_iso_date
 from .operational_bulk import (
     build_operational_bulk_summary,
     normalize_operational_bulk_ids,
@@ -13,6 +14,359 @@ from .operational_bulk import (
     require_executable_operational_bulk,
 )
 from .module_policy import require_module_access
+
+_PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
+
+
+def _device_purge_table_label(table_name: str) -> str:
+    return table_name.replace("_", " ").capitalize()
+
+
+def _device_purge_identity_columns(table):
+    primary_key = list(table.primary_key.columns)
+    if primary_key:
+        return primary_key
+    return list(dict.fromkeys(
+        foreign_key.parent
+        for foreign_key in table.foreign_keys
+    ))
+
+
+def _device_purge_identity(values: tuple):
+    return values[0] if len(values) == 1 else values
+
+
+def _device_purge_json_identity(identity, columns):
+    values = identity if isinstance(identity, tuple) else (identity,)
+    if len(columns) == 1:
+        return values[0]
+    return {column.key: value for column, value in zip(columns, values)}
+
+
+def _device_purge_summary_rows(rows_by_device: dict[int, dict], table_name: str, columns) -> dict:
+    row_items = list(rows_by_device.items())
+    row_items.sort(key=lambda item: str(item[0]))
+    sample = [
+        _device_purge_json_identity(identity, columns)
+        for identity, _ in row_items[:_PURGE_IMPACT_ID_SAMPLE_LIMIT]
+    ]
+    modes = sorted({mode for _, mode in row_items})
+    return {
+        "table": table_name,
+        "type": _device_purge_table_label(table_name),
+        "count": len(row_items),
+        "ids": sample,
+        "ids_truncated": len(row_items) > _PURGE_IMPACT_ID_SAMPLE_LIMIT,
+        "disposition": modes[0] if len(modes) == 1 else "mixed",
+    }
+
+
+async def _collect_device_purge_impact(db: AsyncSession, devices: list[models.Device], lock_rows: bool = False) -> dict:
+    """Describe rows removed or detached by the current device FK graph."""
+    # Importing these owners ensures their current FK constraints are registered
+    # in the same metadata graph used by tenant schema creation and migrations.
+    from ..architecture import models as _architecture_models  # noqa: F401
+    from ..pv1 import models as _pv1_models  # noqa: F401
+
+    device_table = Base.metadata.tables[models.Device.__tablename__]
+    root_ids = {device.id for device in devices}
+    roots_by_reference: dict[tuple[object, object], dict[object, set[int]]] = {
+        (device_table, device_table.c.id): {device_id: {device_id} for device_id in root_ids}
+    }
+    deleted_by_table: dict[object, dict[object, dict]] = {}
+    detached_by_table: dict[object, dict[object, dict]] = {}
+    restrict_by_device: dict[int, dict[str, set[object]]] = {}
+    all_tables = [table for table in Base.metadata.tables.values() if table is not device_table]
+    delete_tables = {device_table}
+    relevant_tables = set()
+    graph_changed = True
+    while graph_changed:
+        graph_changed = False
+        for table in all_tables:
+            parent_references = [
+                foreign_key
+                for foreign_key in table.foreign_keys
+                if foreign_key.column.table in delete_tables
+            ]
+            if not parent_references:
+                continue
+            relevant_tables.add(table)
+            if any((foreign_key.ondelete or "NO ACTION").upper() in {"CASCADE", "NO ACTION"} for foreign_key in parent_references):
+                if table not in delete_tables:
+                    delete_tables.add(table)
+                    graph_changed = True
+
+    pending_tables = set(relevant_tables)
+    processed_tables = {device_table}
+    ordered_tables = []
+    while pending_tables:
+        ready_tables = sorted(
+            (
+                table for table in pending_tables
+                if all(
+                    foreign_key.column.table not in delete_tables or foreign_key.column.table in processed_tables
+                    for foreign_key in table.foreign_keys
+                )
+            ),
+            key=lambda table: table.name,
+        )
+        if not ready_tables:
+            raise RuntimeError("Device purge dependency graph contains an unresolved foreign-key cycle")
+
+        for table in ready_tables:
+            references = []
+            for foreign_key in table.foreign_keys:
+                parent_column = foreign_key.column
+                parent_roots = roots_by_reference.get((parent_column.table, parent_column))
+                if parent_roots:
+                    references.append((foreign_key, parent_column, parent_roots))
+            pending_tables.remove(table)
+            processed_tables.add(table)
+            ordered_tables.append(table)
+            if not references:
+                continue
+
+            identity_columns = _device_purge_identity_columns(table)
+            reference_columns = list(dict.fromkeys(foreign_key.parent for foreign_key, _, _ in references))
+            selected_columns = list(dict.fromkeys([*identity_columns, *reference_columns]))
+            predicates = [foreign_key.parent.in_(list(parent_roots)) for foreign_key, _, parent_roots in references]
+            dependency_query = select(*selected_columns).where(or_(*predicates))
+            if lock_rows:
+                dependency_query = dependency_query.with_for_update()
+            result = await db.execute(dependency_query)
+
+            for row in result.all():
+                values = {column: row[index] for index, column in enumerate(selected_columns)}
+                identity_values = tuple(values[column] for column in identity_columns)
+                identity = _device_purge_identity(identity_values)
+                matching = []
+                affected_devices: set[int] = set()
+                for foreign_key, parent_column, parent_roots in references:
+                    matched_roots = parent_roots.get(values[foreign_key.parent])
+                    if matched_roots:
+                        action = (foreign_key.ondelete or "NO ACTION").upper()
+                        matching.append((foreign_key.parent, action))
+                        affected_devices.update(matched_roots)
+                if not matching:
+                    continue
+
+                actions = {action for _, action in matching}
+                if "RESTRICT" in actions:
+                    for device_id in affected_devices:
+                        restrict_by_device.setdefault(device_id, {}).setdefault(table.name, set()).add(identity)
+                    continue
+
+                if actions.intersection({"CASCADE", "NO ACTION"}):
+                    disposition = "explicit_delete" if "NO ACTION" in actions else "database_cascade"
+                    table_deleted = deleted_by_table.setdefault(table, {})
+                    existing = table_deleted.get(identity)
+                    if existing:
+                        existing["devices"].update(affected_devices)
+                        if disposition == "explicit_delete":
+                            existing["disposition"] = disposition
+                    else:
+                        table_deleted[identity] = {
+                            "identity_values": identity_values,
+                            "devices": set(affected_devices),
+                            "disposition": disposition,
+                        }
+                    for index, column in enumerate(identity_columns):
+                        reference_map = roots_by_reference.setdefault((table, column), {})
+                        reference_map.setdefault(identity_values[index], set()).update(affected_devices)
+                else:
+                    null_columns = {column for column, action in matching if action == "SET NULL"}
+                    table_detached = detached_by_table.setdefault(table, {})
+                    existing = table_detached.get(identity)
+                    if existing:
+                        existing["devices"].update(affected_devices)
+                        existing["columns"].update(null_columns)
+                    else:
+                        table_detached[identity] = {
+                            "identity_values": identity_values,
+                            "devices": set(affected_devices),
+                            "columns": set(null_columns),
+                        }
+
+    blocked_ids = set(restrict_by_device)
+    purgeable_ids = root_ids - blocked_ids
+    per_device = {
+        device.id: {
+            "id": device.id,
+            "name": device.name,
+            "purgeable": True,
+            "permanent": True,
+            "recovery_supported": False,
+            "blockers": [],
+            "deletes": [{"table": "devices", "type": "Device record", "count": 1, "ids": [device.id], "ids_truncated": False, "disposition": "explicit_delete"}],
+            "detaches": [],
+        }
+        for device in devices if device.id in purgeable_ids
+    }
+    aggregate_deleted: dict[object, dict[object, str]] = {}
+    aggregate_detached: dict[object, dict[object, set[str]]] = {}
+    private_plan = {
+        "delete_operations": [],
+        "detach_operations": [],
+        "delete_order": list(reversed(ordered_tables)),
+    }
+
+    for table, rows in deleted_by_table.items():
+        per_device_rows: dict[int, dict[object, str]] = {}
+        aggregate_deleted[table] = {}
+        for identity, row in rows.items():
+            affected_purgeable = row["devices"] & purgeable_ids
+            if not affected_purgeable:
+                continue
+            aggregate_deleted[table][identity] = row["disposition"]
+            if row["disposition"] == "explicit_delete":
+                private_plan["delete_operations"].append({
+                    "table": table,
+                    "identity_columns": _device_purge_identity_columns(table),
+                    "identity_values": row["identity_values"],
+                })
+            for device_id in affected_purgeable:
+                per_device_rows.setdefault(device_id, {})[identity] = row["disposition"]
+        for device_id, device_rows in per_device_rows.items():
+            per_device[device_id]["deletes"].append(
+                _device_purge_summary_rows(device_rows, table.name, _device_purge_identity_columns(table))
+            )
+
+    for table, rows in detached_by_table.items():
+        per_device_rows: dict[int, dict[object, dict]] = {}
+        aggregate_detached[table] = {}
+        for identity, row in rows.items():
+            affected_purgeable = row["devices"] & purgeable_ids
+            if not affected_purgeable:
+                continue
+            aggregate_detached[table][identity] = {column.key for column in row["columns"]}
+            private_plan["detach_operations"].append({
+                "table": table,
+                "identity_columns": _device_purge_identity_columns(table),
+                "identity_values": row["identity_values"],
+                "columns": list(row["columns"]),
+            })
+            for device_id in affected_purgeable:
+                device_rows = per_device_rows.setdefault(device_id, {})
+                existing = device_rows.setdefault(identity, {"disposition": "nullified", "columns": set()})
+                existing["columns"].update(column.key for column in row["columns"])
+        for device_id, device_rows in per_device_rows.items():
+            summary = _device_purge_summary_rows(
+                {identity: row["disposition"] for identity, row in device_rows.items()},
+                table.name,
+                _device_purge_identity_columns(table),
+            )
+            summary["fields"] = sorted({field for row in device_rows.values() for field in row["columns"]})
+            per_device[device_id]["detaches"].append(summary)
+
+    blocked_devices = []
+    device_by_id = {device.id: device for device in devices}
+    for device_id, table_counts in restrict_by_device.items():
+        blocked_devices.append({
+            "id": device_id,
+            "name": device_by_id[device_id].name,
+            "blockers": [
+                {
+                    "table": table_name,
+                    "count": len(identities),
+                    "ids": [
+                        _device_purge_json_identity(identity, _device_purge_identity_columns(Base.metadata.tables[table_name]))
+                        for identity in list(identities)[:_PURGE_IMPACT_ID_SAMPLE_LIMIT]
+                    ],
+                }
+                for table_name, identities in table_counts.items()
+            ],
+        })
+
+    aggregate_deletes = [{"table": "devices", "type": "Device record", "count": len(purgeable_ids), "ids": sorted(purgeable_ids)[:_PURGE_IMPACT_ID_SAMPLE_LIMIT], "ids_truncated": len(purgeable_ids) > _PURGE_IMPACT_ID_SAMPLE_LIMIT, "disposition": "explicit_delete"}]
+    aggregate_deletes.extend(
+        _device_purge_summary_rows(rows, table.name, _device_purge_identity_columns(table))
+        for table, rows in aggregate_deleted.items()
+    )
+    aggregate_detaches = []
+    for table, rows in aggregate_detached.items():
+        summary = _device_purge_summary_rows(
+            {identity: "nullified" for identity in rows}, table.name, _device_purge_identity_columns(table)
+        )
+        summary["fields"] = sorted({field for fields in rows.values() for field in fields})
+        aggregate_detaches.append(summary)
+
+    for impact in per_device.values():
+        impact["deletes"].sort(key=lambda item: item["table"])
+        impact["detaches"].sort(key=lambda item: item["table"])
+
+    return {
+        "permanent": True,
+        "recovery_supported": False,
+        "devices": list(per_device.values()),
+        "blocked_devices": blocked_devices,
+        "aggregate": {
+            "device_count": len(purgeable_ids),
+            "delete_count": sum(item["count"] for item in aggregate_deletes),
+            "detach_count": sum(item["count"] for item in aggregate_detaches),
+            "deletes": aggregate_deletes,
+            "detaches": aggregate_detaches,
+        },
+    }, private_plan
+
+
+async def _apply_device_purge_impact(db: AsyncSession, impact_plan: dict) -> None:
+    """Apply no-action deletes and SET NULL updates from the fresh FK plan."""
+    async def apply_operations(operation_name: str):
+        operations = impact_plan[operation_name]
+        # NO ACTION rows must be removed before their parent rows.
+        order = {table: index for index, table in enumerate(impact_plan["delete_order"])}
+        operations.sort(key=lambda operation: order.get(operation["table"], len(order)))
+        for operation in operations:
+            table = operation["table"]
+            identity_columns = operation["identity_columns"]
+            identity_values = operation["identity_values"]
+            row_predicate = and_(*(
+                column == value for column, value in zip(identity_columns, identity_values)
+            ))
+            if operation_name == "detach_operations":
+                await db.execute(
+                    update(table).where(row_predicate).values({column.key: None for column in operation["columns"]})
+                )
+            else:
+                await db.execute(delete(table).where(row_predicate))
+
+    await apply_operations("detach_operations")
+    await apply_operations("delete_operations")
+
+
+def _device_lifecycle_audit(request: Request, action: str, device: models.Device, impact: dict | None = None):
+    changes = {
+        "lifecycle_action": action.lower(),
+        "changed_ids": [device.id],
+        "target": {"id": device.id, "name": device.name},
+    }
+    if action == "PURGE" and impact:
+        per_device = next((row for row in impact["devices"] if row["id"] == device.id), None)
+        changes["purge_impact"] = {
+            "permanent": True,
+            "recovery_supported": False,
+            "deletes": [
+                {"table": row["table"], "count": row["count"], "disposition": row["disposition"]}
+                for row in (per_device or {}).get("deletes", [])
+            ],
+            "detaches": [
+                {"table": row["table"], "count": row["count"], "fields": row.get("fields", [])}
+                for row in (per_device or {}).get("detaches", [])
+            ],
+        }
+    description = {
+        "ARCHIVE": f"Archived Device {device.name} (id {device.id}).",
+        "RESTORE": f"Restored Device {device.name} (id {device.id}).",
+        "PURGE": f"Permanently purged Device {device.name} (id {device.id}); recovery is unsupported.",
+    }[action]
+    return build_audit_log(
+        request=request,
+        action=action,
+        target_table="devices",
+        target_id=str(device.id),
+        description=description,
+        changes=changes,
+    )
 
 router = APIRouter(
     prefix="/devices",
@@ -378,10 +732,13 @@ async def update_device(request: Request, device_id: int, data: dict, db: AsyncS
 @router.post("/bulk-action")
 async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(get_db)):
     tenant_id = request.state.tenant_id
+    if "dry_run" in data and not isinstance(data["dry_run"], bool):
+        raise HTTPException(status_code=400, detail="dry_run must be a boolean")
+    dry_run = data.get("dry_run", False)
     raw_ids = data.get("ids", [])
     if raw_ids == []:
         return {
-            "status": "no_op",
+            "status": "preview" if dry_run else "no_op",
             "action": data.get("action"),
             "selected_count": 0,
             "matched_count": 0,
@@ -401,15 +758,17 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     ids = normalize_operational_bulk_ids(raw_ids)
     action = str(data.get("action") or "").strip().lower()
     payload = normalize_operational_bulk_payload(data.get("payload"))
-    dry_run = bool(data.get("dry_run"))
     if action not in {"update", "delete", "restore", "purge"}:
         raise HTTPException(status_code=400, detail="Unsupported asset bulk action")
 
-    result = await db.execute(
+    device_query = (
         select(models.Device)
         .where(models.Device.id.in_(ids))
         .filter(models.Device.tenant_id == tenant_id)
     )
+    if not dry_run and action in {"delete", "restore", "purge"}:
+        device_query = device_query.order_by(models.Device.id).with_for_update()
+    result = await db.execute(device_query)
     devices = list(result.scalars().all())
     by_id = {device.id: device for device in devices}
     matched_ids = [record_id for record_id in ids if record_id in by_id]
@@ -417,6 +776,8 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     unchanged_ids: list[int] = []
     blockers: list[dict] = []
     clean_update: dict = {}
+    purge_impact: dict | None = None
+    purge_impact_plan: dict | None = None
 
     if action == "update":
         protected_fields = {"id", "tenant_id", "created_at", "updated_at", "created_by_user_id", "is_deleted"}
@@ -448,41 +809,89 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
             if not device.is_deleted:
                 unchanged_ids.append(record_id)
                 continue
-            duplicate = await db.execute(
-                select(models.Device.id).filter(
-                    models.Device.tenant_id == tenant_id,
-                    models.Device.name == device.name,
-                    models.Device.is_deleted == False,
-                    models.Device.id != device.id,
-                )
+            duplicate_query = select(models.Device.id).filter(
+                models.Device.tenant_id == tenant_id,
+                models.Device.name == device.name,
+                models.Device.is_deleted == False,
+                models.Device.id != device.id,
             )
+            if not dry_run:
+                duplicate_query = duplicate_query.with_for_update()
+            duplicate = await db.execute(duplicate_query)
             if duplicate.scalars().first():
                 blockers.append({"id": record_id, "name": device.name, "reason": "An active asset already uses this hostname"})
             else:
                 changed_ids.append(record_id)
     else:  # purge
-        changed_ids.extend(matched_ids)
         # Normalized traceability is historical record, so a hard purge is
         # blocked even when the link itself is retired. Soft delete remains
         # the lifecycle operation for an asset with traceability history.
         from ..architecture.models import ArchitectureDeviceLink
         from ..pv1.models import PV1TraceabilityLink
-        architecture_link_ids = set((await db.execute(
-            select(ArchitectureDeviceLink.device_id).where(
+        architecture_rows = (await db.execute(
+            select(ArchitectureDeviceLink.device_id, ArchitectureDeviceLink.id).where(
                 ArchitectureDeviceLink.tenant_id == tenant_id,
                 ArchitectureDeviceLink.device_id.in_(matched_ids),
             )
-        )).scalars().all())
-        work_link_ids = set((await db.execute(
-            select(PV1TraceabilityLink.device_id).where(
+        )).all()
+        work_rows = (await db.execute(
+            select(PV1TraceabilityLink.device_id, PV1TraceabilityLink.id).where(
                 PV1TraceabilityLink.tenant_id == tenant_id,
                 PV1TraceabilityLink.device_id.in_(matched_ids),
             )
-        )).scalars().all())
-        protected_ids = architecture_link_ids | work_link_ids
-        if protected_ids:
-            blockers.extend({"id": record_id, "name": by_id[record_id].name, "reason": "Hard purge would destroy normalized traceability history"} for record_id in matched_ids if record_id in protected_ids)
-            changed_ids = [record_id for record_id in changed_ids if record_id not in protected_ids]
+        )).all()
+        protected_by_device: dict[int, list[dict]] = {}
+        for record_id, link_id in architecture_rows:
+            protected_by_device.setdefault(record_id, []).append({"type": "Architecture", "id": link_id})
+        for record_id, link_id in work_rows:
+            protected_by_device.setdefault(record_id, []).append({"type": "PV1 traceability", "id": link_id})
+        for record_id, links in protected_by_device.items():
+            blockers.append({
+                "id": record_id,
+                "name": by_id[record_id].name,
+                "reason": "Hard purge would destroy normalized Architecture/PV1 traceability history",
+                "protected_link_count": len(links),
+                "protected_links": links[:_PURGE_IMPACT_ID_SAMPLE_LIMIT],
+            })
+
+        eligible_devices = [device for device in devices if device.id not in protected_by_device]
+        purge_impact, purge_impact_plan = await _collect_device_purge_impact(
+            db,
+            eligible_devices,
+            lock_rows=not dry_run,
+        )
+        dependency_blockers = {
+            row["id"]: row
+            for row in purge_impact["blocked_devices"]
+        }
+        for record_id, blocked in dependency_blockers.items():
+            blocked_rows = blocked["blockers"]
+            blockers.append({
+                "id": record_id,
+                "name": by_id[record_id].name,
+                "reason": "Device has dependent records that restrict permanent removal",
+                "protected_link_count": sum(row["count"] for row in blocked_rows),
+                "protected_links": [
+                    {"type": row["table"], "id": value}
+                    for row in blocked_rows
+                    for value in row["ids"]
+                ][:_PURGE_IMPACT_ID_SAMPLE_LIMIT],
+            })
+        blocked_ids = set(protected_by_device) | set(dependency_blockers)
+        changed_ids.extend(record_id for record_id in matched_ids if record_id not in blocked_ids)
+        if protected_by_device:
+            for record_id, links in protected_by_device.items():
+                by_type: dict[str, list[object]] = {}
+                for link in links:
+                    by_type.setdefault(link["type"], []).append(link["id"])
+                purge_impact["blocked_devices"].append({
+                    "id": record_id,
+                    "name": by_id[record_id].name,
+                    "blockers": [
+                        {"table": kind, "count": len(link_ids), "ids": link_ids[:_PURGE_IMPACT_ID_SAMPLE_LIMIT]}
+                        for kind, link_ids in by_type.items()
+                    ],
+                })
 
     summary = build_operational_bulk_summary(
         action=action,
@@ -494,68 +903,70 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     )
     compatibility = {
         **summary,
-        "status": "success",
+        "status": "preview" if dry_run else "no_op",
         "count": summary["changed_count"],
         "changed": summary["changed_count"],
     }
+    if purge_impact is not None:
+        compatibility["purge_impact"] = purge_impact
     if action == "restore":
         compatibility["restored"] = changed_ids
         compatibility["conflicts"] = [blocker["id"] for blocker in blockers]
-    if dry_run or not changed_ids:
+    if dry_run:
         return compatibility
 
+    if action == "purge" and (summary["missing_ids"] or summary["blockers"]):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Device purge selection changed or contains protected dependencies. Review the latest preview.",
+                "preview": {**summary, "status": "blocked", "purge_impact": purge_impact},
+            },
+        )
     require_executable_operational_bulk(summary)
+    if not changed_ids:
+        return compatibility
 
-    if action == "update":
-        for record_id in changed_ids:
-            device = by_id[record_id]
-            for key, value in clean_update.items():
-                setattr(device, key, value)
-            await sync_device_to_os(device, db)
-    elif action == "delete":
-        await db.execute(
-            update(models.Device)
-            .where(models.Device.id.in_(changed_ids))
-            .values(is_deleted=True)
-        )
-    elif action == "restore":
-        await db.execute(
-            update(models.Device)
-            .where(models.Device.id.in_(changed_ids))
-            .values(is_deleted=False)
-        )
-    else:
-        tenant_device_ids = changed_ids
-        await db.execute(delete(models.ExternalLink).where(models.ExternalLink.device_id.in_(tenant_device_ids)))
-        await db.execute(delete(models.DeviceLocation).where(models.DeviceLocation.device_id.in_(tenant_device_ids)))
-        await db.execute(delete(models.HardwareComponent).where(models.HardwareComponent.device_id.in_(tenant_device_ids)))
-        await db.execute(delete(models.SecretVault).where(models.SecretVault.device_id.in_(tenant_device_ids)))
-        await db.execute(delete(models.MaintenanceWindow).where(models.MaintenanceWindow.device_id.in_(tenant_device_ids)))
-        monitoring_result = await db.execute(select(models.MonitoringItem.id).where(models.MonitoringItem.device_id.in_(tenant_device_ids)))
-        monitoring_ids = list(monitoring_result.scalars().all())
-        if monitoring_ids:
-            await db.execute(delete(models.MonitoringHistory).where(models.MonitoringHistory.monitoring_item_id.in_(monitoring_ids)))
-            await db.execute(delete(models.MonitoringOwner).where(models.MonitoringOwner.monitoring_item_id.in_(monitoring_ids)))
-            await db.execute(delete(models.MonitoringItem).where(models.MonitoringItem.id.in_(monitoring_ids)))
-        await db.execute(delete(models.DeviceRelationship).where(
-            or_(
-                models.DeviceRelationship.source_device_id.in_(tenant_device_ids),
-                models.DeviceRelationship.target_device_id.in_(tenant_device_ids),
-            )
-        ))
-        await db.execute(delete(models.PortConnection).where(
-            or_(
-                models.PortConnection.source_device_id.in_(tenant_device_ids),
-                models.PortConnection.target_device_id.in_(tenant_device_ids),
-            )
-        ))
-        await db.execute(update(models.LogicalService).where(models.LogicalService.device_id.in_(tenant_device_ids)).values(device_id=None))
-        await db.execute(update(models.FirewallRule).where(models.FirewallRule.source_device_id.in_(tenant_device_ids)).values(source_device_id=None))
-        await db.execute(update(models.FirewallRule).where(models.FirewallRule.dest_device_id.in_(tenant_device_ids)).values(dest_device_id=None))
-        await db.execute(delete(models.far_mode_assets).where(models.far_mode_assets.c.device_id.in_(tenant_device_ids)))
-        await db.execute(delete(models.Device).where(models.Device.id.in_(tenant_device_ids)))
+    audit_rows = []
+    if action in {"delete", "restore"}:
+        audit_action = "ARCHIVE" if action == "delete" else "RESTORE"
+        audit_rows = [_device_lifecycle_audit(request, audit_action, by_id[record_id]) for record_id in changed_ids]
+    elif action == "purge":
+        audit_rows = [
+            _device_lifecycle_audit(request, "PURGE", by_id[record_id], purge_impact)
+            for record_id in changed_ids
+        ]
 
-    await db.commit()
+    try:
+        if action == "update":
+            for record_id in changed_ids:
+                device = by_id[record_id]
+                for key, value in clean_update.items():
+                    setattr(device, key, value)
+                await sync_device_to_os(device, db)
+        elif action == "delete":
+            for record_id in changed_ids:
+                by_id[record_id].is_deleted = True
+        elif action == "restore":
+            for record_id in changed_ids:
+                by_id[record_id].is_deleted = False
+        else:
+            await _apply_device_purge_impact(db, purge_impact_plan)
+            await db.execute(delete(models.Device).where(
+                models.Device.id.in_(changed_ids),
+                models.Device.tenant_id == tenant_id,
+            ))
+
+        db.add_all(audit_rows)
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+
+    compatibility["status"] = "success"
+    if action == "purge":
+        compatibility["purge_impact"] = purge_impact
+        compatibility["purge_impact_applied"] = purge_impact
     return compatibility
 
 @router.get("/{device_id}/hardware")
@@ -611,12 +1022,24 @@ async def add_relationship(request: Request, device_id: int, data: dict, db: Asy
 @router.delete("/{device_id}")
 async def delete_device(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
     tenant_id = request.state.tenant_id
-    result = await db.execute(select(models.Device).filter(models.Device.id == device_id, models.Device.tenant_id == tenant_id))
+    result = await db.execute(
+        select(models.Device)
+        .filter(models.Device.id == device_id, models.Device.tenant_id == tenant_id)
+        .with_for_update()
+    )
     db_device = result.scalar_one_or_none()
     if not db_device: raise HTTPException(404)
+    if db_device.is_deleted:
+        return {"status": "no_op", "changed": False, "changed_ids": [], "unchanged_ids": [device_id]}
+
     db_device.is_deleted = True
-    await db.commit()
-    return {"status": "success"}
+    db.add(_device_lifecycle_audit(request, "ARCHIVE", db_device))
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+    return {"status": "success", "changed": True, "changed_ids": [device_id], "unchanged_ids": []}
 
 @router.delete("/{resource}/{id}")
 async def delete_resource(request: Request, resource: str, id: int, db: AsyncSession = Depends(get_db)):

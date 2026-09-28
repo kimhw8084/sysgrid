@@ -1,5 +1,5 @@
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.settings import ensure_tenant_admin_async
@@ -175,7 +175,7 @@ async def test_devices_enrichment_summary_and_interfaces(seeded_admin_tenant, se
 
 
 @pytest.mark.anyio
-async def test_devices_create_update_and_bulk_actions(seeded_admin_tenant):
+async def test_devices_create_update_and_bulk_actions(seeded_admin_tenant, setup_db):
     client = seeded_admin_tenant["client"]
     tenant_id = seeded_admin_tenant["tenant_id"]
     headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
@@ -252,9 +252,24 @@ async def test_devices_create_update_and_bulk_actions(seeded_admin_tenant):
         asset_tag="BULK-AT-3",
     )
 
+    tenant_session_factory = await _tenant_session_factory(seeded_admin_tenant, setup_db)
+    restore_preview = await client.post(
+        "/api/v1/devices/bulk-action",
+        json={"ids": [device["id"]], "action": "restore", "dry_run": True},
+        headers=headers,
+    )
+    assert restore_preview.status_code == 200
+    assert restore_preview.json()["status"] == "preview"
+    assert restore_preview.json()["can_execute"] is False
+    assert restore_preview.json()["blockers"][0]["id"] == device["id"]
+    assert "hostname" in restore_preview.json()["blockers"][0]["reason"].lower()
+
     restore_conflict = await client.post("/api/v1/devices/bulk-action", json={"ids": [device["id"]], "action": "restore"}, headers=headers)
-    assert restore_conflict.status_code == 200
-    assert restore_conflict.json()["conflicts"] == [device["id"]]
+    assert restore_conflict.status_code == 409
+    assert restore_conflict.json()["detail"]["preview"]["blockers"][0]["id"] == device["id"]
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["ARCHIVE"]
+    archived_rows = await client.get("/api/v1/devices?include_deleted=true", headers=headers)
+    assert any(row["id"] == device["id"] and row["is_deleted"] for row in archived_rows.json())
 
     purge = await client.post("/api/v1/devices/bulk-action", json={"ids": [device["id"]], "action": "purge"}, headers=headers)
     assert purge.status_code == 200
@@ -354,7 +369,7 @@ async def test_device_subresources_and_resource_routes(seeded_admin_tenant):
 
 
 @pytest.mark.anyio
-async def test_devices_bulk_purge_with_far_mode_assets(seeded_admin_tenant):
+async def test_devices_bulk_purge_with_far_mode_assets(seeded_admin_tenant, setup_db):
     client = seeded_admin_tenant["client"]
     tenant_id = seeded_admin_tenant["tenant_id"]
     headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
@@ -388,6 +403,82 @@ async def test_devices_bulk_purge_with_far_mode_assets(seeded_admin_tenant):
     mode = mode_res.json()
     assert device["id"] in [asset["id"] for asset in mode["affected_assets"]]
 
+    peer = await _create_device(
+        client,
+        headers,
+        name="FAR-PURGE-PEER-01",
+        system="FAR-PURGE-SYS",
+        serial_number="FAR-PURGE-PEER-SN",
+        asset_tag="FAR-PURGE-PEER-AT",
+    )
+    tenant_session_factory = await _tenant_session_factory(seeded_admin_tenant, setup_db)
+    async with tenant_session_factory() as tenant_db:
+        monitor = models.MonitoringItem(device_id=device["id"], title="synthetic monitor")
+        service = models.LogicalService(device_id=device["id"], name="purge detach service", service_type="Other", status="Active")
+        tenant_db.add_all([
+            models.DeviceSoftware(device_id=device["id"], name="synthetic software"),
+            models.NetworkInterface(device_id=device["id"], name="eth-purge", mac_address="AA:BB:CC:00:00:51"),
+            models.HardwareComponent(device_id=device["id"], category="CPU", name="synthetic component"),
+            models.SecretVault(device_id=device["id"], secret_type="synthetic", username="safe-user", encrypted_payload="SENSITIVE-ENCRYPTED-SENTINEL"),
+            models.MaintenanceWindow(device_id=device["id"], title="synthetic window"),
+            models.ExternalLink(device_id=device["id"], service_id=None, purpose="synthetic link"),
+            models.DeviceRelationship(source_device_id=device["id"], target_device_id=peer["id"], relationship_type="synthetic"),
+            models.PortConnection(source_device_id=device["id"], target_device_id=peer["id"], source_port="eth-purge", target_port="eth-peer"),
+            models.FirewallRule(name="synthetic firewall rule", source_device_id=device["id"], dest_device_id=device["id"]),
+            monitor,
+            service,
+        ])
+        await tenant_db.flush()
+        tenant_db.add_all([
+            models.MonitoringHistory(monitoring_item_id=monitor.id, version=1, snapshot={"title": "synthetic"}),
+            models.MonitoringOwner(monitoring_item_id=monitor.id, name="synthetic owner", role="Owner"),
+        ])
+        await tenant_db.commit()
+
+    archive = await client.post(
+        "/api/v1/devices/bulk-action",
+        json={"ids": [device["id"]], "action": "delete"},
+        headers=headers,
+    )
+    assert archive.status_code == 200, archive.text
+    assert archive.json()["status"] == "success"
+
+    tenant_audits_before = await _device_audit_rows(tenant_session_factory, device["id"])
+    assert [row.action for row in tenant_audits_before] == ["ARCHIVE"]
+
+    # Preview derives both direct dependencies and FK cascade-owned rows from the current schema.
+    purge_preview = await client.post(
+        "/api/v1/devices/bulk-action",
+        json={"ids": [device["id"]], "action": "purge", "dry_run": True},
+        headers=headers,
+    )
+    assert purge_preview.status_code == 200, purge_preview.text
+    preview_body = purge_preview.json()
+    assert preview_body["status"] == "preview"
+    impact = preview_body["purge_impact"]
+    preview_tables = {item["table"]: item for item in impact["aggregate"]["deletes"]}
+    assert preview_tables["devices"]["count"] == 1
+    assert preview_tables["external_links"]["disposition"] == "explicit_delete"
+    assert preview_tables["device_software"]["disposition"] == "database_cascade"
+    assert preview_tables["network_interfaces"]["disposition"] == "database_cascade"
+    assert preview_tables["monitoring_history"]["disposition"] == "database_cascade"
+    assert preview_tables["monitoring_owners"]["disposition"] == "database_cascade"
+    assert {item["table"] for item in impact["aggregate"]["detaches"]} == {"firewall_rules", "logical_services"}
+    assert "SENSITIVE-ENCRYPTED-SENTINEL" not in purge_preview.text
+    assert "username" not in purge_preview.text
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["ARCHIVE"]
+    async with tenant_session_factory() as tenant_db:
+        archived_device = await tenant_db.get(models.Device, device["id"])
+        retained_software = await tenant_db.scalar(
+            select(models.DeviceSoftware).where(models.DeviceSoftware.device_id == device["id"])
+        )
+        retained_secret = await tenant_db.scalar(
+            select(models.SecretVault).where(models.SecretVault.device_id == device["id"])
+        )
+        assert archived_device is not None and archived_device.is_deleted is True
+        assert retained_software is not None
+        assert retained_secret is not None and retained_secret.encrypted_payload == "SENSITIVE-ENCRYPTED-SENTINEL"
+
     # 3. Call bulk-action purge
     purge_res = await client.post(
         "/api/v1/devices/bulk-action",
@@ -395,8 +486,11 @@ async def test_devices_bulk_purge_with_far_mode_assets(seeded_admin_tenant):
         headers=headers,
     )
     assert purge_res.status_code == 200, purge_res.text
-    assert purge_res.json()["status"] == "success"
-    assert purge_res.json()["count"] == 1
+    receipt = purge_res.json()
+    assert receipt["status"] == "success"
+    assert receipt["count"] == 1
+    assert receipt["purge_impact_applied"] == impact
+    assert "can_revert" not in receipt
 
     # 4. Verify the asset is completely gone from devices
     include_deleted = await client.get("/api/v1/devices?include_deleted=true", headers=headers)
@@ -404,9 +498,197 @@ async def test_devices_bulk_purge_with_far_mode_assets(seeded_admin_tenant):
     ids = {item["id"] for item in include_deleted.json()}
     assert device["id"] not in ids
 
+    async with tenant_session_factory() as tenant_db:
+        for model in (
+            models.ExternalLink,
+            models.DeviceLocation,
+            models.HardwareComponent,
+            models.DeviceSoftware,
+            models.NetworkInterface,
+            models.SecretVault,
+            models.MaintenanceWindow,
+            models.MonitoringItem,
+        ):
+            assert not (await tenant_db.execute(select(model.id).where(model.device_id == device["id"]))).first()
+        assert not (await tenant_db.execute(select(models.MonitoringHistory.id).where(models.MonitoringHistory.monitoring_item_id == monitor.id))).first()
+        assert not (await tenant_db.execute(select(models.MonitoringOwner.id).where(models.MonitoringOwner.monitoring_item_id == monitor.id))).first()
+        assert not (await tenant_db.execute(select(models.DeviceRelationship.id).where(or_(models.DeviceRelationship.source_device_id == device["id"], models.DeviceRelationship.target_device_id == device["id"])))).first()
+        assert not (await tenant_db.execute(select(models.PortConnection.id).where(or_(models.PortConnection.source_device_id == device["id"], models.PortConnection.target_device_id == device["id"])))).first()
+        services = (await tenant_db.execute(select(models.LogicalService).where(models.LogicalService.name == "purge detach service"))).scalars().all()
+        assert len(services) == 1 and services[0].device_id is None
+        rules = (await tenant_db.execute(select(models.FirewallRule).where(models.FirewallRule.name == "synthetic firewall rule"))).scalars().all()
+        assert len(rules) == 1 and rules[0].source_device_id is None and rules[0].dest_device_id is None
+        assert not (await tenant_db.execute(select(models.far_mode_assets.c.mode_id).where(models.far_mode_assets.c.device_id == device["id"]))).first()
+    audit_rows_after = await _device_audit_rows(tenant_session_factory, device["id"])
+    assert [row.action for row in audit_rows_after] == ["PURGE", "ARCHIVE"]
+    assert audit_rows_after[0].changes["target"] == {"id": device["id"], "name": "FAR-PURGE-ASSET-01"}
+    assert "SENSITIVE-ENCRYPTED-SENTINEL" not in str(audit_rows_after[0].changes)
+    assert "SENSITIVE-ENCRYPTED-SENTINEL" not in audit_rows_after[0].description
+    purge_retry = await client.post(
+        "/api/v1/devices/bulk-action",
+        json={"ids": [device["id"]], "action": "purge"},
+        headers=headers,
+    )
+    assert purge_retry.status_code == 409
+    assert purge_retry.json()["detail"]["preview"]["missing_ids"] == [device["id"]]
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["PURGE", "ARCHIVE"]
+
     # 5. Verify the FAR failure mode still exists but no longer has the purged asset
     modes_res = await client.get("/api/v1/far/modes", headers=headers)
     assert modes_res.status_code == 200
     refreshed_mode = next(item for item in modes_res.json() if item["id"] == mode["id"])
     assert device["id"] not in [asset["id"] for asset in refreshed_mode["affected_assets"]]
 
+
+async def _device_audit_rows(tenant_session_factory, device_id: int):
+    async with tenant_session_factory() as tenant_db:
+        result = await tenant_db.execute(
+            select(models.AuditLog)
+            .where(models.AuditLog.target_table == "devices", models.AuditLog.target_id == str(device_id))
+            .order_by(models.AuditLog.id.desc())
+        )
+        return list(result.scalars().all())
+
+
+@pytest.mark.anyio
+async def test_device_bulk_dry_run_lifecycle_audit_and_missing_execution(seeded_admin_tenant, setup_db):
+    client = seeded_admin_tenant["client"]
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
+    await _ensure_admin(seeded_admin_tenant)
+    device = await _create_device(client, headers, name="LIFECYCLE-CONTRACT", serial_number="LIFECYCLE-SN", asset_tag="LIFECYCLE-AT")
+    tenant_session_factory = await _tenant_session_factory(seeded_admin_tenant, setup_db)
+
+    for malformed in ("true", "false", 0, 1, None, [], {}):
+        rejected = await client.post(
+            "/api/v1/devices/bulk-action",
+            headers=headers,
+            json={"ids": [device["id"]], "action": "delete", "dry_run": malformed},
+        )
+        assert rejected.status_code == 400, rejected.text
+        assert rejected.json()["detail"] == "dry_run must be a boolean"
+
+    after_invalid = await client.get("/api/v1/devices?include_deleted=true", headers=headers)
+    assert any(row["id"] == device["id"] and not row["is_deleted"] for row in after_invalid.json())
+    assert await _device_audit_rows(tenant_session_factory, device["id"]) == []
+
+    archive_preview = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=headers,
+        json={"ids": [device["id"]], "action": "delete", "dry_run": True},
+    )
+    assert archive_preview.status_code == 200
+    assert archive_preview.json()["status"] == "preview"
+    assert archive_preview.json()["changed_count"] == 1
+    assert archive_preview.json()["changed_ids"] == [device["id"]]
+    assert await _device_audit_rows(tenant_session_factory, device["id"]) == []
+
+    archive = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=headers,
+        json={"ids": [device["id"]], "action": "delete"},
+    )
+    assert archive.status_code == 200
+    assert archive.json()["status"] == "success"
+    assert archive.json()["changed_ids"] == [device["id"]]
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["ARCHIVE"]
+    active = await client.get("/api/v1/devices", headers=headers)
+    assert all(row["id"] != device["id"] for row in active.json())
+
+    archive_retry = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=headers,
+        json={"ids": [device["id"]], "action": "delete", "dry_run": False},
+    )
+    assert archive_retry.status_code == 200
+    assert archive_retry.json()["status"] == "no_op"
+    assert archive_retry.json()["unchanged_count"] == 1
+    assert archive_retry.json()["unchanged_ids"] == [device["id"]]
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["ARCHIVE"]
+
+    restore_preview = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=headers,
+        json={"ids": [device["id"]], "action": "restore", "dry_run": True},
+    )
+    assert restore_preview.status_code == 200
+    assert restore_preview.json()["status"] == "preview"
+    assert restore_preview.json()["changed_count"] == 1
+    restore = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=headers,
+        json={"ids": [device["id"]], "action": "restore"},
+    )
+    assert restore.status_code == 200
+    assert restore.json()["status"] == "success"
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["RESTORE", "ARCHIVE"]
+
+    restore_retry = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=headers,
+        json={"ids": [device["id"]], "action": "restore"},
+    )
+    assert restore_retry.status_code == 200
+    assert restore_retry.json()["status"] == "no_op"
+    assert restore_retry.json()["unchanged_count"] == 1
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["RESTORE", "ARCHIVE"]
+
+    missing_id = 9_223_372_036_854_775_807
+    mixed_missing = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=headers,
+        json={"ids": [device["id"], missing_id], "action": "delete"},
+    )
+    assert mixed_missing.status_code == 409
+    assert mixed_missing.json()["detail"]["preview"]["missing_ids"] == [missing_id]
+    assert mixed_missing.json()["detail"]["preview"]["changed_ids"] == [device["id"]]
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["RESTORE", "ARCHIVE"]
+    final_state = await client.get("/api/v1/devices?include_deleted=true", headers=headers)
+    assert any(row["id"] == device["id"] and not row["is_deleted"] for row in final_state.json())
+
+
+@pytest.mark.anyio
+async def test_single_device_delete_archives_once_with_lifecycle_audit(seeded_admin_tenant, setup_db):
+    client = seeded_admin_tenant["client"]
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
+    await _ensure_admin(seeded_admin_tenant)
+    device = await _create_device(client, headers, name="SINGLE-ARCHIVE", serial_number="SINGLE-ARCHIVE-SN", asset_tag="SINGLE-ARCHIVE-AT")
+    tenant_session_factory = await _tenant_session_factory(seeded_admin_tenant, setup_db)
+
+    first = await client.delete(f"/api/v1/devices/{device['id']}", headers=headers)
+    assert first.status_code == 200
+    assert first.json() == {"status": "success", "changed": True, "changed_ids": [device["id"]], "unchanged_ids": []}
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["ARCHIVE"]
+
+    retry = await client.delete(f"/api/v1/devices/{device['id']}", headers=headers)
+    assert retry.status_code == 200
+    assert retry.json()["status"] == "no_op"
+    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["ARCHIVE"]
+
+
+@pytest.mark.anyio
+async def test_lifecycle_audit_construction_failure_does_not_archive(seeded_admin_tenant, setup_db, monkeypatch):
+    from app.api import devices as device_api
+
+    client = seeded_admin_tenant["client"]
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
+    await _ensure_admin(seeded_admin_tenant)
+    device = await _create_device(client, headers, name="AUDIT-ATOMICITY", serial_number="AUDIT-ATOMICITY-SN", asset_tag="AUDIT-ATOMICITY-AT")
+    tenant_session_factory = await _tenant_session_factory(seeded_admin_tenant, setup_db)
+
+    def fail_audit(**_kwargs):
+        raise RuntimeError("synthetic audit construction failure")
+
+    monkeypatch.setattr(device_api, "build_audit_log", fail_audit)
+    with pytest.raises(RuntimeError, match="synthetic audit construction failure"):
+        await client.post(
+            "/api/v1/devices/bulk-action",
+            headers=headers,
+            json={"ids": [device["id"]], "action": "delete"},
+        )
+
+    rows = await client.get("/api/v1/devices?include_deleted=true", headers=headers)
+    assert any(row["id"] == device["id"] and not row["is_deleted"] for row in rows.json())
+    assert await _device_audit_rows(tenant_session_factory, device["id"]) == []

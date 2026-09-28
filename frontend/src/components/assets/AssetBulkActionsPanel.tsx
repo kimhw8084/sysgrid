@@ -114,7 +114,7 @@ export function AssetBulkActionsPanel({
               {expandedSection === 'delete' ? (
                 <div className="rounded-lg border border-slate-800 bg-[#0b1220] p-3 space-y-3">
                   <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Preview the exact impact before moving the selection to the Purged registry scope.
+                    Archive moves these assets out of the active list while keeping them available to restore.
                   </p>
                   <button
                     type="button"

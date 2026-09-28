@@ -128,6 +128,8 @@ export const showWorkspaceToast = (message: string, options?: WorkspaceToastOpti
   })
 }
 
+export const dismissWorkspaceToasts = () => toast.dismiss()
+
 export const showWorkspaceRevertToast = (message: string, onRevert: () => void) => (
   showWorkspaceToast(message, { onRevert, type: 'success' })
 )

@@ -1,19 +1,209 @@
-import { clickResilientButton, expectWorkspaceLogicalRowSelected, fillGridSearch, getWorkspaceLogicalRowByText, getWorkspaceRoot, openToolbarButton, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow, verifyGridRowRobust } from './helpers/sysgrid';
-import { expect } from '@playwright/test';
+import { clickResilientButton, createAsset, expectWorkspaceLogicalRowSelected, fillGridSearch, getWorkspaceLogicalRowByText, getWorkspaceRoot, openToolbarButton, resetBrowserState, seedOperationalScenario, selectWorkspaceLogicalRow, verifyGridRowRobust } from './helpers/sysgrid';
+import { expect, type Page, type TestInfo } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import fs from 'fs';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
+async function attachEvidence(testInfo: TestInfo, name: string, body: Buffer | string, contentType: string) {
+  const path = testInfo.outputPath(name)
+  fs.writeFileSync(path, body)
+  await testInfo.attach(name, { path, contentType })
+}
+
+const isBulkExecutionResponse = (response: any) => {
+  if (!response.url().includes('/api/v1/devices/bulk-action') || response.request().method() !== 'POST') return false
+  try {
+    return (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run !== true
+  } catch {
+    return false
+  }
+}
+
+async function runAssetRowLifecycleAction(page: Page, action: 'delete' | 'purge', assetName: string) {
+  if (action === 'purge') await openToolbarButton(page, /^Archived/)
+  else await openToolbarButton(page, /^Existing/)
+  await fillGridSearch(page, 'Scan asset matrix...', assetName)
+  const row = await getWorkspaceLogicalRowByText(page, 'assets', assetName)
+  await row.action('More actions').click()
+  await page.getByRole('button', { name: action === 'delete' ? 'Archive' : 'Purge', exact: true }).click()
+
+  const previewResponsePromise = page.waitForResponse(response => (
+    response.url().includes('/api/v1/devices/bulk-action')
+    && response.request().method() === 'POST'
+    && response.status() === 200
+    && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
+  ))
+  await page.getByRole('button', { name: action === 'delete' ? 'Confirm Archive?' : 'Confirm Purge?', exact: true }).click()
+  const previewResponse = await previewResponsePromise
+  const preview = await previewResponse.json()
+  const previewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  await expect(previewDialog).toBeVisible()
+
+  const executionResponsePromise = page.waitForResponse(response => (
+    isBulkExecutionResponse(response)
+    && (response.request().postDataJSON() as { action?: string } | null)?.action === action
+  ))
+  await previewDialog.getByRole('button', {
+    name: action === 'delete' ? 'Confirm Archive selection' : 'Confirm Purge selection',
+  }).click()
+  const executionResponse = await executionResponsePromise
+  const receipt = executionResponse.ok() ? await executionResponse.json() : null
+  if (executionResponse.ok()) {
+    await expect(page.getByRole('dialog', { name: 'Assets bulk complete' })).toBeVisible()
+  }
+  return { preview, executionResponse, receipt }
+}
+
+async function createRecoveryAsset(request: any, name: string, system: string) {
+  return createAsset(request, {
+    name,
+    system,
+    status: 'Active',
+    type: 'Physical',
+    environment: 'Production',
+    serial_number: `${name}-SN`,
+    asset_tag: `${name}-TAG`,
+  })
+}
+
+function createPurgeExecutionGate(page: Page) {
+  let releaseRequest = () => undefined
+  let signalIntercepted = () => undefined
+  const held = new Promise<void>((resolve) => { releaseRequest = resolve })
+  const intercepted = new Promise<void>((resolve) => { signalIntercepted = resolve })
+  let requestedAction: string | undefined
+  let requestedIds: number[] | undefined
+  const handler = async (route: any) => {
+    const body = route.request().postDataJSON() as { action?: string; dry_run?: boolean; ids?: number[] } | null
+    if (body?.action === 'purge' && body.dry_run !== true) {
+      requestedAction = body.action
+      requestedIds = body.ids
+      signalIntercepted()
+      await held
+    }
+    await route.continue()
+  }
+  return {
+    handler,
+    intercepted,
+    release: () => releaseRequest(),
+    requested: () => ({ action: requestedAction, ids: requestedIds }),
+  }
+}
+
+async function startHeldPurge(page: Page, assetName: string, gate: ReturnType<typeof createPurgeExecutionGate>) {
+  await openToolbarButton(page, /^Archived/)
+  await fillGridSearch(page, 'Scan asset matrix...', assetName)
+  const row = await getWorkspaceLogicalRowByText(page, 'assets', assetName)
+  await row.action('More actions').click()
+  await page.getByRole('button', { name: 'Purge', exact: true }).click()
+
+  const previewResponsePromise = page.waitForResponse(response => (
+    response.url().includes('/api/v1/devices/bulk-action')
+    && response.request().method() === 'POST'
+    && response.status() === 200
+    && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
+  ))
+  await page.getByRole('button', { name: 'Confirm Purge?', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+  const previewResponse = await previewResponsePromise
+  const preview = await previewResponse.json()
+  expect(preview.can_execute).toBe(true)
+
+  const executionResponsePromise = page.waitForResponse(response => (
+    isBulkExecutionResponse(response)
+    && (response.request().postDataJSON() as { action?: string } | null)?.action === 'purge'
+  ))
+  const previewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  await previewDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
+  await gate.intercepted
+  return { preview, previewDialog, executionResponsePromise }
+}
+
+async function startHeldPurgeSelection(
+  page: Page,
+  assetNames: string[],
+  systemName: string,
+  gate: ReturnType<typeof createPurgeExecutionGate>,
+) {
+  await openToolbarButton(page, /^Archived/)
+  await fillGridSearch(page, 'Scan asset matrix...', systemName)
+  for (const [index, assetName] of assetNames.entries()) {
+    const row = await getWorkspaceLogicalRowByText(page, 'assets', assetName)
+    await selectWorkspaceLogicalRow(row, { additive: index > 0 })
+  }
+  await page.getByRole('button', { name: /Bulk Actions/i }).first().click()
+  await page.getByRole('button', { name: 'Purge', exact: true }).click()
+  const previewResponsePromise = page.waitForResponse(response => (
+    response.url().includes('/api/v1/devices/bulk-action')
+    && response.request().method() === 'POST'
+    && response.status() === 200
+    && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
+  ))
+  await page.getByRole('button', { name: 'Preview Permanent Purge' }).click()
+  const previewResponse = await previewResponsePromise
+  const preview = await previewResponse.json()
+  expect(preview.can_execute).toBe(true)
+
+  const executionResponsePromise = page.waitForResponse(response => (
+    isBulkExecutionResponse(response)
+    && (response.request().postDataJSON() as { action?: string } | null)?.action === 'purge'
+  ))
+  const previewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  await previewDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
+  await gate.intercepted
+  return { preview, previewDialog, executionResponsePromise }
+}
+
+async function getDeviceFromBackend(request: any, id: number) {
+  const response = await request.get(`${apiBase}/devices?include_deleted=true`)
+  expect(response.ok(), `GET devices failed (${response.status()}): ${await response.text()}`).toBeTruthy()
+  const devices = await response.json()
+  return devices.find((device: any) => Number(device.id) === Number(id))
+}
+
+async function archiveSelectedAssets(page: Page, assetNames: string[], systemName: string) {
+  await openToolbarButton(page, /^Existing/)
+  await fillGridSearch(page, 'Scan asset matrix...', systemName)
+  for (const [index, assetName] of assetNames.entries()) {
+    const row = await getWorkspaceLogicalRowByText(page, 'assets', assetName)
+    await selectWorkspaceLogicalRow(row, { additive: index > 0 })
+  }
+  await page.getByRole('button', { name: /Bulk Actions/i }).first().click()
+  await page.getByText('Archive Selection', { exact: true }).click()
+  const previewResponsePromise = page.waitForResponse(response => (
+    response.url().includes('/api/v1/devices/bulk-action')
+    && response.request().method() === 'POST'
+    && response.status() === 200
+    && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
+  ))
+  await page.getByRole('button', { name: 'Preview Archive' }).click()
+  const preview = await (await previewResponsePromise).json()
+  const previewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  await expect(previewDialog).toBeVisible()
+  const executionResponsePromise = page.waitForResponse(isBulkExecutionResponse)
+  await previewDialog.getByRole('button', { name: 'Confirm Archive selection' }).click()
+  const executionResponse = await executionResponsePromise
+  expect(executionResponse.ok()).toBeTruthy()
+  const receipt = await executionResponse.json()
+  await expect(page.getByRole('dialog', { name: 'Assets bulk complete' })).toBeVisible()
+  return { preview, receipt }
+}
+
 test.describe('Assets workflows', () => {
   test.use({ viewport: { width: 1920, height: 1080 } })
 
-  test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }) => {
+  test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }, testInfo) => {
     test.setTimeout(120_000)
     await resetBrowserState(page)
     const { stamp, systemName, primary, secondary, tertiary, monitoring } = await seedOperationalScenario(request)
+    const purgeImpactSeed = await request.post(`${apiBase}/devices/${secondary.id}/hardware`, {
+      data: { category: 'CPU', name: `PW-PURGE-IMPACT-${stamp}`, count: 1 },
+    })
+    expect(purgeImpactSeed.ok()).toBeTruthy()
 
-    // Keep Purged populated so the target-name search exercises the filtered-empty state.
+    // Keep Archived populated so the target-name search exercises the filtered-empty state.
     const purgedScopeKeeperResponse = await request.post(`${apiBase}/devices`, {
       data: {
         name: `PW-ASSET-PURGED-SCOPE-${stamp}`,
@@ -322,17 +512,27 @@ test.describe('Assets workflows', () => {
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
     )
     await secondDeletePreviewDialog.getByRole('button', { name: 'Confirm Archive selection' }).click()
-    await secondDeleteResponsePromise
+    const secondArchiveResponse = await secondDeleteResponsePromise
+    const secondArchiveReceipt = await secondArchiveResponse.json()
+    expect(secondArchiveReceipt.changed_ids).toEqual([secondary.id])
     await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const recoveryBeforePurge = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+    await expect(recoveryBeforePurge).toBeVisible()
+    await recoveryBeforePurge.click()
+    const recoveryBeforePurgeDialog = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+    await expect(recoveryBeforePurgeDialog).toContainText(`completed archive operation for ${secondary.name}?`)
+    const recoveryBeforePurgeConfirmation = await recoveryBeforePurgeDialog.innerText()
+    await recoveryBeforePurgeDialog.getByRole('button', { name: 'Close', exact: true }).click()
 
     // Settle React state before tab switch
 
-    // Switch to Purged Tab and verify row is present in Deleted scope
-    await openToolbarButton(page, /Purged/)
+    // Switch to Archived Tab and verify row is present in the reversible archive scope.
+    await openToolbarButton(page, /Archived/)
     await fillGridSearch(page, 'Scan asset matrix...', secondary.name)
     await verifyGridRowRobust(page, secondary.name)
 
-    // Target B.3: Deleted/purged scope suppression proof
+    // Target B.3: Archived scope suppression proof
     const purgedRowActions = page.getByTitle('More actions').filter({ visible: true }).first()
     await purgedRowActions.click()
     // Assert active-only actions are completely suppressed/not visible in the row menu
@@ -345,7 +545,8 @@ test.describe('Assets workflows', () => {
 
     // Settle layout before action click
 
-    // Perform permanent Purge lifecycle path on the deleted row
+    // Perform permanent Purge lifecycle path on the archived row.
+    await page.setViewportSize({ width: 1440, height: 900 })
     const purgeActionBtn = page.getByTitle('More actions').filter({ visible: true })
     await purgeActionBtn.waitFor({ state: 'visible' })
     await purgeActionBtn.click()
@@ -357,18 +558,155 @@ test.describe('Assets workflows', () => {
     )
     const confirmPurgeAction = page.getByRole('button', { name: 'Confirm Purge?', exact: true })
     await confirmPurgeAction.click()
-    await purgePreviewResponsePromise
+    const purgePreviewResponse = await purgePreviewResponsePromise
     const purgePreviewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+    const purgePreviewBody = await purgePreviewResponse.json()
+    const archivedScopeLabel = await page.getByRole('button', { name: /Archived/ }).first().innerText()
+    expect(archivedScopeLabel).toMatch(/^Archived\b/)
+    expect(purgePreviewBody.purge_impact.aggregate.deletes).toContainEqual(expect.objectContaining({ table: 'hardware_components', count: 1 }))
+    await expect(purgePreviewDialog.getByText('Permanent removal', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+    await expect(purgePreviewDialog.getByText('Records deleted', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByText('Hardware components', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' })).toBeEnabled()
+    const previewMetadata = {
+      route: '/asset',
+      profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+      viewport: { width: 1440, height: 900 },
+      scrollY: await page.evaluate(() => window.scrollY),
+      archivedScopeLabel,
+      readiness: 'Assets purge preview settled; backend response and rendered dependency impact agree.',
+      purgeImpact: purgePreviewBody.purge_impact,
+    }
+    await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+    await attachEvidence(testInfo, 'asset-purge-preview-1440x900.json', JSON.stringify(previewMetadata, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-preview-1440x900.png', await page.screenshot(), 'image/png')
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(purgePreviewDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+    await expect(purgePreviewDialog.getByText('Hardware components', { exact: true })).toBeVisible()
+    await expect(purgePreviewDialog.getByRole('button', { name: 'Cancel' })).toBeVisible()
+    const mobileConfirm = purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' })
+    await expect(mobileConfirm).toBeVisible()
+    const mobileConfirmBox = await mobileConfirm.boundingBox()
+    expect(mobileConfirmBox).not.toBeNull()
+    expect(mobileConfirmBox!.x).toBeGreaterThanOrEqual(0)
+    expect(mobileConfirmBox!.y).toBeGreaterThanOrEqual(0)
+    expect(mobileConfirmBox!.x + mobileConfirmBox!.width).toBeLessThanOrEqual(390)
+    expect(mobileConfirmBox!.y + mobileConfirmBox!.height).toBeLessThanOrEqual(844)
+    await attachEvidence(
+      testInfo,
+      'asset-purge-preview-390x844.json',
+      JSON.stringify({ ...previewMetadata, viewport: { width: 390, height: 844 }, scrollY: await page.evaluate(() => window.scrollY) }, null, 2),
+      'application/json',
+    )
+    await attachEvidence(testInfo, 'asset-purge-preview-390x844.png', await page.screenshot(), 'image/png')
+
     const purgeResponsePromise = page.waitForResponse(response =>
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
     )
-    await purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
-    await purgeResponsePromise
-    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+    await mobileConfirm.click()
+    const purgeResponse = await purgeResponsePromise
+    const purgeReceipt = await purgeResponse.json()
+    expect(purgeReceipt.changed_ids).toEqual([secondary.id])
+    expect(purgeReceipt.purge_impact_applied).toEqual(purgeReceipt.purge_impact)
+    const purgeReceiptDialog = page.getByRole('dialog', { name: 'Assets bulk complete' })
+    await expect(purgeReceiptDialog.getByTestId('operational-purge-impact')).toBeVisible()
+    await expect(purgeReceiptDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+    await expect(purgeReceiptDialog.getByRole('button', { name: 'Undo bulk changes' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+    await attachEvidence(testInfo, 'asset-purge-receipt-390x844.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        viewport: { width: 390, height: 844 },
+        scrollY: await page.evaluate(() => window.scrollY),
+        readiness: 'Permanent purge receipt settled; actual impact came from the execution response; generic undo is absent.',
+        receipt: purgeReceipt,
+      }, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-receipt-390x844.png', await page.screenshot(), 'image/png')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await expect(purgeReceiptDialog.getByTestId('operational-purge-impact')).toBeVisible()
+    await expect(purgeReceiptDialog.getByRole('button', { name: 'Undo bulk changes' })).toHaveCount(0)
+    await attachEvidence(testInfo, 'asset-purge-receipt-1440x900.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        viewport: { width: 1440, height: 900 },
+        scrollY: await page.evaluate(() => window.scrollY),
+        readiness: 'Permanent purge receipt settled; execution impact is shown and generic undo is absent.',
+        receipt: purgeReceipt,
+      }, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-receipt-1440x900.png', await page.screenshot(), 'image/png')
+    await purgeReceiptDialog.getByRole('button', { name: 'Close bulk receipt' }).click()
 
-    // Verify row has disappeared completely from Purged scope by reloading the page
+    const purgedDeviceAfterReceipt = await getDeviceFromBackend(request, secondary.id)
+    expect(purgedDeviceAfterReceipt).toBeUndefined()
+    await expect(getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })).toHaveCount(0)
+    const archivedScopeAfterPurge = await page.getByRole('button', { name: /Archived/ }).first().innerText()
+    expect(archivedScopeAfterPurge).toMatch(/^Archived\b/)
+    const desktopClosedReceiptMetrics = await page.evaluate(() => ({
+      viewportWidth: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      bodyWidth: document.body.scrollWidth,
+    }))
+    expect(desktopClosedReceiptMetrics.documentWidth).toBeLessThanOrEqual(1440)
+    await attachEvidence(testInfo, 'asset-purge-closed-desktop-1440x900.json', JSON.stringify({
+      route: '/asset',
+      profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+      viewport: { width: 1440, height: 900 },
+      target: { id: secondary.id, name: secondary.name },
+      priorRecovery: { ids: secondArchiveReceipt.changed_ids, labels: [secondary.name], confirmationText: recoveryBeforePurgeConfirmation },
+      purgeChangedIds: purgeReceipt.changed_ids,
+      receiptUndoVisible: false,
+      receiptRevertVisible: false,
+      archivedScope: archivedScopeAfterPurge,
+      receiptVocabulary: 'This purge cannot be restored or reverted.',
+      persistentRevertVisible: false,
+      backendDevicePresent: false,
+      documentWidth: desktopClosedReceiptMetrics.documentWidth,
+      bodyWidth: desktopClosedReceiptMetrics.bodyWidth,
+    }, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-closed-desktop-1440x900.png', await page.screenshot(), 'image/png')
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.getByRole('button', { name: 'Collapse application navigation' }).click()
+    const applicationSidebar = page.locator('[data-sg-app-sidebar]')
+    await expect.poll(async () => (await applicationSidebar.boundingBox())?.width ?? Infinity).toBeLessThanOrEqual(80)
+    await expect(getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })).toHaveCount(0)
+    const mobileArchivedScope = page.getByRole('button', { name: /Archived/ }).first()
+    await expect(mobileArchivedScope).toBeVisible()
+    await mobileArchivedScope.scrollIntoViewIfNeeded()
+    const mobileArchivedScopeBox = await mobileArchivedScope.boundingBox()
+    expect(mobileArchivedScopeBox).not.toBeNull()
+    expect(mobileArchivedScopeBox!.x).toBeGreaterThanOrEqual(0)
+    expect(mobileArchivedScopeBox!.x + mobileArchivedScopeBox!.width).toBeLessThanOrEqual(390)
+    const mobileClosedReceiptMetrics = await page.evaluate(() => ({
+      viewportWidth: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      bodyWidth: document.body.scrollWidth,
+    }))
+    expect(mobileClosedReceiptMetrics.documentWidth).toBeLessThanOrEqual(390)
+    await attachEvidence(testInfo, 'asset-purge-closed-mobile-390x844.json', JSON.stringify({
+      route: '/asset',
+      profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+      viewport: { width: 390, height: 844 },
+      target: { id: secondary.id, name: secondary.name },
+      priorRecovery: { ids: secondArchiveReceipt.changed_ids, labels: [secondary.name], confirmationText: recoveryBeforePurgeConfirmation },
+      purgeChangedIds: purgeReceipt.changed_ids,
+      receiptUndoVisible: false,
+      receiptRevertVisible: false,
+      archivedScope: archivedScopeAfterPurge,
+      receiptVocabulary: 'This purge cannot be restored or reverted.',
+      persistentRevertVisible: false,
+      backendDevicePresent: false,
+      archivedScopeWithinViewport: true,
+      documentWidth: mobileClosedReceiptMetrics.documentWidth,
+      bodyWidth: mobileClosedReceiptMetrics.bodyWidth,
+    }, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-purge-closed-mobile-390x844.png', await page.screenshot(), 'image/png')
+
+    // Verify row has disappeared completely from Archived scope by reloading the page
     await page.goto('/asset')
-    await openToolbarButton(page, /Purged/)
+    await openToolbarButton(page, /Archived/)
     await fillGridSearch(page, 'Scan asset matrix...', secondary.name)
     await expect(page.getByText('No assets match the current working view')).toBeVisible()
     await expect(getWorkspaceRoot(page, 'assets').getByRole('treegrid').getByText(secondary.name, { exact: true })).not.toBeVisible()
@@ -397,5 +735,613 @@ test.describe('Assets workflows', () => {
     await expect(page).toHaveURL(new RegExp(`/monitoring\\?id=${monitoring.id}$`))
     await expect(page.getByRole('heading', { name: 'Monitoring' })).toBeVisible()
     await expect(page.getByRole('heading', { name: monitoring.title, exact: true }).first()).toBeVisible()
+  })
+
+  test('preserves unrelated recovery and filters only purged IDs from partial recovery', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(180_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const unrelatedSystem = `PW-RECOVERY-UNRELATED-${stamp}`
+    const partialSystem = `PW-RECOVERY-PARTIAL-${stamp}`
+    const unrelatedA = await createRecoveryAsset(request, `PW-RECOVERY-A-${stamp}`, unrelatedSystem)
+    const unrelatedB = await createRecoveryAsset(request, `PW-RECOVERY-B-${stamp}`, unrelatedSystem)
+    const partialA = await createRecoveryAsset(request, `PW-RECOVERY-C-${stamp}`, partialSystem)
+    const partialB = await createRecoveryAsset(request, `PW-RECOVERY-D-${stamp}`, partialSystem)
+
+    const archiveUnrelatedBResponse = await request.post(`${apiBase}/devices/bulk-action`, {
+      data: { ids: [unrelatedB.id], action: 'delete' },
+    })
+    expect(archiveUnrelatedBResponse.ok()).toBeTruthy()
+    expect((await archiveUnrelatedBResponse.json()).changed_ids).toEqual([unrelatedB.id])
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archiveAResult = await runAssetRowLifecycleAction(page, 'delete', unrelatedA.name)
+    expect(archiveAResult.executionResponse.ok()).toBeTruthy()
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const purgeBResult = await runAssetRowLifecycleAction(page, 'purge', unrelatedB.name)
+    expect(purgeBResult.executionResponse.ok()).toBeTruthy()
+    expect(purgeBResult.receipt.changed_ids).toEqual([unrelatedB.id])
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const unrelatedRevert = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+    await expect(unrelatedRevert).toBeVisible()
+    await unrelatedRevert.click()
+    const unrelatedConfirm = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+    await expect(unrelatedConfirm).toContainText(`for ${unrelatedA.name}?`)
+    await expect(unrelatedConfirm).not.toContainText(unrelatedB.name)
+    await attachEvidence(testInfo, 'asset-unrelated-recovery-control.json', JSON.stringify({
+      scenario: 'purge B while A remains the tracked recovery',
+      purgeChangedIds: purgeBResult.receipt.changed_ids,
+      visibleControl: 'Revert last completed asset lifecycle operation',
+      confirmationText: await unrelatedConfirm.innerText(),
+      operationIdsBoundToA: [unrelatedA.id],
+      operationLabelsBoundToA: [unrelatedA.name],
+      purgedIds: [unrelatedB.id],
+      unrelatedRecoveryVisible: true,
+    }, null, 2), 'application/json')
+    await attachEvidence(testInfo, 'asset-unrelated-recovery-control.png', await page.screenshot(), 'image/png')
+    const restoreAResponsePromise = page.waitForResponse(response => (
+      isBulkExecutionResponse(response)
+      && response.request().postDataJSON().action === 'restore'
+    ))
+    const restoreARequestPromise = page.waitForRequest(request => (
+      request.url().includes('/api/v1/devices/bulk-action')
+      && request.postDataJSON()?.action === 'restore'
+    ))
+    await unrelatedConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+    const restoreARequest = await restoreARequestPromise
+    const restoreAResponse = await restoreAResponsePromise
+    expect(restoreARequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [unrelatedA.id] })
+    expect(restoreAResponse.ok()).toBeTruthy()
+    expect((await getDeviceFromBackend(request, unrelatedA.id)).is_deleted).toBe(false)
+    expect(await getDeviceFromBackend(request, unrelatedB.id)).toBeUndefined()
+
+    const partialArchive = await archiveSelectedAssets(page, [partialA.name, partialB.name], partialSystem)
+    expect(partialArchive.receipt.changed_ids).toEqual(expect.arrayContaining([partialA.id, partialB.id]))
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const partialPurge = await runAssetRowLifecycleAction(page, 'purge', partialB.name)
+    expect(partialPurge.executionResponse.ok()).toBeTruthy()
+    expect(partialPurge.receipt.changed_ids).toEqual([partialB.id])
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const partialRevert = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+    await expect(partialRevert).toBeVisible()
+    await partialRevert.click()
+    const partialConfirm = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+    await expect(partialConfirm).toContainText(`for ${partialA.name}?`)
+    await expect(partialConfirm).not.toContainText(partialB.name)
+    const partialConfirmationText = await partialConfirm.innerText()
+    const restorePartialResponsePromise = page.waitForResponse(response => (
+      isBulkExecutionResponse(response)
+      && response.request().postDataJSON().action === 'restore'
+    ))
+    const restorePartialRequestPromise = page.waitForRequest(request => (
+      request.url().includes('/api/v1/devices/bulk-action')
+      && request.postDataJSON()?.action === 'restore'
+    ))
+    await partialConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+    const restorePartialRequest = await restorePartialRequestPromise
+    const restorePartialResponse = await restorePartialResponsePromise
+    expect(restorePartialRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [partialA.id] })
+    expect(restorePartialResponse.ok()).toBeTruthy()
+    expect((await getDeviceFromBackend(request, partialA.id)).is_deleted).toBe(false)
+    expect(await getDeviceFromBackend(request, partialB.id)).toBeUndefined()
+    await attachEvidence(testInfo, 'asset-partial-recovery-result.json', JSON.stringify({
+      scenario: 'archive A+B, purge only B, then revert A only',
+      archiveChangedIds: partialArchive.receipt.changed_ids,
+      purgeChangedIds: partialPurge.receipt.changed_ids,
+      visibleConfirmationText: partialConfirmationText,
+      operationIdsAfterPurge: [partialA.id],
+      operationLabelsAfterPurge: [partialA.name],
+      restoreRequest: restorePartialRequest.postDataJSON(),
+      assetADeletedAfterRestore: (await getDeviceFromBackend(request, partialA.id)).is_deleted,
+      assetBPhysicallyPresent: await getDeviceFromBackend(request, partialB.id) !== undefined,
+    }, null, 2), 'application/json')
+  })
+
+  test('preserves recovery after a mixed existing/missing-ID purge is rejected with 409', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const target = await createRecoveryAsset(request, `PW-RECOVERY-BLOCKED-${stamp}`, `PW-RECOVERY-BLOCKED-SYS-${stamp}`)
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archiveResult = await runAssetRowLifecycleAction(page, 'delete', target.name)
+    expect(archiveResult.executionResponse.ok()).toBeTruthy()
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const missingId = 2_000_000_000
+    const purgePreviewResponse = await request.post(`${apiBase}/devices/bulk-action`, {
+      data: { ids: [target.id, missingId], action: 'purge', dry_run: true },
+    })
+    expect(purgePreviewResponse.ok()).toBeTruthy()
+    const purgePreview = await purgePreviewResponse.json()
+    expect(purgePreview.can_execute).toBe(false)
+    expect(purgePreview.missing_ids).toContain(missingId)
+    const failedPurgeResponse = await request.post(`${apiBase}/devices/bulk-action`, {
+      data: { ids: [target.id, missingId], action: 'purge' },
+    })
+    expect(failedPurgeResponse.status()).toBe(409)
+    const failedPurgeBody = await failedPurgeResponse.json()
+
+    const recoveryControl = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+    await expect(recoveryControl).toBeVisible()
+    await recoveryControl.click()
+    const revertConfirm = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+    await expect(revertConfirm).toContainText(`for ${target.name}?`)
+    const restoreResponsePromise = page.waitForResponse(response => (
+      isBulkExecutionResponse(response)
+      && response.request().postDataJSON().action === 'restore'
+    ))
+    const restoreRequestPromise = page.waitForRequest(request => (
+      request.url().includes('/api/v1/devices/bulk-action')
+      && request.postDataJSON()?.action === 'restore'
+    ))
+    await revertConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+    const restoreRequest = await restoreRequestPromise
+    const restoreResponse = await restoreResponsePromise
+    expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [target.id] })
+    expect(restoreResponse.ok()).toBeTruthy()
+    expect((await getDeviceFromBackend(request, target.id)).is_deleted).toBe(false)
+    await attachEvidence(testInfo, 'asset-blocked-purge-preserved-recovery.json', JSON.stringify({
+      scenario: 'mixed existing/missing-ID purge failed with 409',
+      target: { id: target.id, name: target.name },
+      archiveChangedIds: archiveResult.receipt.changed_ids,
+      purgePreviewCanExecute: purgePreview.can_execute,
+      purgePreviewMissingIds: purgePreview.missing_ids,
+      failedPurgeRequest: { action: 'purge', ids: [target.id, missingId] },
+      failedPurgeStatus: failedPurgeResponse.status(),
+      failedPurgeDetail: failedPurgeBody,
+      recoveryVisibleAfterFailure: true,
+      restoreRequest: restoreRequest.postDataJSON(),
+      deviceRestored: true,
+    }, null, 2), 'application/json')
+  })
+
+  test('trims a partially overlapping recovery only after the held purge succeeds', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const system = `PW-RECOVERY-PARTIAL-PENDING-${stamp}`
+    const assetA = await createRecoveryAsset(request, `PW-RECOVERY-PARTIAL-A-${stamp}`, system)
+    const assetB = await createRecoveryAsset(request, `PW-RECOVERY-PARTIAL-B-${stamp}`, system)
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archive = await archiveSelectedAssets(page, [assetA.name, assetB.name], system)
+    expect(archive.receipt.changed_ids).toEqual(expect.arrayContaining([assetA.id, assetB.id]))
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const gate = createPurgeExecutionGate(page)
+    let restoreRequestCount = 0
+    const countRestoreRequests = (browserRequest: any) => {
+      if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
+      try {
+        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+      } catch { /* Ignore non-JSON requests to the same endpoint. */ }
+    }
+    page.on('request', countRestoreRequests)
+    await page.route('**/api/v1/devices/bulk-action', gate.handler)
+
+    try {
+      const { preview, previewDialog, executionResponsePromise } = await startHeldPurge(page, assetB.name, gate)
+      await page.keyboard.press('Escape')
+      await expect(previewDialog).not.toBeVisible()
+      expect(gate.requested()).toEqual({ action: 'purge', ids: [assetB.id] })
+      const recovery = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recovery).toBeVisible()
+      await expect(recovery).toBeDisabled()
+      expect(restoreRequestCount).toBe(0)
+      await attachEvidence(testInfo, 'asset-pending-overlap-partial.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recoveryIds: archive.receipt.changed_ids,
+        pendingPurge: gate.requested(),
+        purgePreviewCanExecute: preview.can_execute,
+        modalClosed: true,
+        revertVisible: await recovery.isVisible(),
+        revertDisabled: await recovery.isDisabled(),
+        restoreRequestCount,
+      }, null, 2), 'application/json')
+
+      gate.release()
+      const purgeResponse = await executionResponsePromise
+      expect(purgeResponse.ok()).toBeTruthy()
+      const purgeReceipt = await purgeResponse.json()
+      expect(purgeReceipt.changed_ids).toEqual([assetB.id])
+      await expect(recovery).toBeVisible()
+      await expect(recovery).toBeEnabled()
+      await recovery.click()
+      const confirmation = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(confirmation).toContainText(`for ${assetA.name}?`)
+      await expect(confirmation).not.toContainText(assetB.name)
+      const restoreRequestPromise = page.waitForRequest(browserRequest => (
+        browserRequest.url().includes('/api/v1/devices/bulk-action')
+        && browserRequest.postDataJSON()?.action === 'restore'
+      ))
+      const restoreResponsePromise = page.waitForResponse(response => (
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+      ))
+      await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      const restoreRequest = await restoreRequestPromise
+      const restoreResponse = await restoreResponsePromise
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreResponse.ok()).toBeTruthy()
+      expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
+      expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
+      await attachEvidence(testInfo, 'asset-pending-overlap-partial-result.json', JSON.stringify({
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        purgeChangedIds: purgeReceipt.changed_ids,
+        recoveryIdsAfterPurge: [assetA.id],
+        recoveryLabelsAfterPurge: [assetA.name],
+        restoreRequest: restoreRequest.postDataJSON(),
+        assetARestored: true,
+        assetBPhysicallyAbsent: true,
+      }, null, 2), 'application/json')
+    } finally {
+      gate.release()
+      page.off('request', countRestoreRequests)
+      if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
+    }
+  })
+
+  test('keeps a disjoint recovery usable while another asset purge is held pending', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const system = `PW-RECOVERY-DISJOINT-PENDING-${stamp}`
+    const assetA = await createRecoveryAsset(request, `PW-RECOVERY-DISJOINT-A-${stamp}`, system)
+    const assetB = await createRecoveryAsset(request, `PW-RECOVERY-DISJOINT-B-${stamp}`, system)
+    const archiveBResponse = await request.post(`${apiBase}/devices/bulk-action`, { data: { ids: [assetB.id], action: 'delete' } })
+    expect(archiveBResponse.ok()).toBeTruthy()
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archiveA = await runAssetRowLifecycleAction(page, 'delete', assetA.name)
+    expect(archiveA.executionResponse.ok()).toBeTruthy()
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const gate = createPurgeExecutionGate(page)
+    await page.route('**/api/v1/devices/bulk-action', gate.handler)
+    try {
+      const { preview, previewDialog, executionResponsePromise } = await startHeldPurge(page, assetB.name, gate)
+      await page.keyboard.press('Escape')
+      await expect(previewDialog).not.toBeVisible()
+      expect(gate.requested()).toEqual({ action: 'purge', ids: [assetB.id] })
+      const recovery = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recovery).toBeVisible()
+      await expect(recovery).toBeEnabled()
+      await attachEvidence(testInfo, 'asset-pending-disjoint-recovery.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recovery: { ids: archiveA.receipt.changed_ids, labels: [assetA.name] },
+        pendingPurge: gate.requested(),
+        purgePreviewCanExecute: preview.can_execute,
+        modalClosed: true,
+        revertEnabled: await recovery.isEnabled(),
+        restoreRequestCountBeforeInvocation: 0,
+      }, null, 2), 'application/json')
+      await attachEvidence(testInfo, 'asset-pending-disjoint-recovery.png', await page.screenshot(), 'image/png')
+
+      await recovery.click()
+      const confirmation = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(confirmation).toContainText(`for ${assetA.name}?`)
+      await expect(confirmation).not.toContainText(assetB.name)
+      const restoreRequestPromise = page.waitForRequest(browserRequest => (
+        browserRequest.url().includes('/api/v1/devices/bulk-action')
+        && browserRequest.postDataJSON()?.action === 'restore'
+      ))
+      const restoreResponsePromise = page.waitForResponse(response => (
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+      ))
+      await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      const restoreRequest = await restoreRequestPromise
+      const restoreResponse = await restoreResponsePromise
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreResponse.ok()).toBeTruthy()
+      expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
+
+      gate.release()
+      const purgeResponse = await executionResponsePromise
+      expect(purgeResponse.ok()).toBeTruthy()
+      const purgeReceipt = await purgeResponse.json()
+      expect(purgeReceipt.changed_ids).toEqual([assetB.id])
+      await expect(recovery).toHaveCount(0)
+      expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
+      await attachEvidence(testInfo, 'asset-pending-disjoint-recovery-result.json', JSON.stringify({
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        restoreRequest: restoreRequest.postDataJSON(),
+        purgeChangedIds: purgeReceipt.changed_ids,
+        assetARestored: true,
+        assetBPurged: true,
+        staleRecoveryReintroduced: false,
+      }, null, 2), 'application/json')
+    } finally {
+      gate.release()
+      if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
+    }
+  })
+
+  test('re-enables the same recovery after an overlapping purge settles with 409', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const system = `PW-RECOVERY-FAILED-PENDING-${stamp}`
+    const assetA = await createRecoveryAsset(request, `PW-RECOVERY-FAILED-A-${stamp}`, system)
+    const assetB = await createRecoveryAsset(request, `PW-RECOVERY-FAILED-B-${stamp}`, system)
+    const archiveBResponse = await request.post(`${apiBase}/devices/bulk-action`, { data: { ids: [assetB.id], action: 'delete' } })
+    expect(archiveBResponse.ok()).toBeTruthy()
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archiveA = await runAssetRowLifecycleAction(page, 'delete', assetA.name)
+    expect(archiveA.executionResponse.ok()).toBeTruthy()
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const gate = createPurgeExecutionGate(page)
+    let restoreRequestCount = 0
+    const countRestoreRequests = (browserRequest: any) => {
+      if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
+      try {
+        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+      } catch { /* Ignore non-JSON requests to the same endpoint. */ }
+    }
+    page.on('request', countRestoreRequests)
+    await page.route('**/api/v1/devices/bulk-action', gate.handler)
+    try {
+      const { preview, previewDialog, executionResponsePromise } = await startHeldPurgeSelection(page, [assetA.name, assetB.name], system, gate)
+      await page.keyboard.press('Escape')
+      await expect(previewDialog).not.toBeVisible()
+      expect(gate.requested().action).toBe('purge')
+      expect(gate.requested().ids).toEqual(expect.arrayContaining([assetA.id, assetB.id]))
+      const recovery = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recovery).toBeDisabled()
+      await attachEvidence(testInfo, 'asset-pending-overlap-failed.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recovery: { ids: archiveA.receipt.changed_ids, labels: [assetA.name] },
+        pendingPurge: gate.requested(),
+        purgePreviewCanExecute: preview.can_execute,
+        modalClosed: true,
+        revertDisabled: await recovery.isDisabled(),
+        restoreRequestCount,
+      }, null, 2), 'application/json')
+
+      const concurrentPurge = await request.post(`${apiBase}/devices/bulk-action`, { data: { ids: [assetB.id], action: 'purge' } })
+      expect(concurrentPurge.ok()).toBeTruthy()
+      expect((await concurrentPurge.json()).changed_ids).toEqual([assetB.id])
+      gate.release()
+      const blockedPurgeResponse = await executionResponsePromise
+      expect(blockedPurgeResponse.status()).toBe(409)
+      const blockedPurgeBody = await blockedPurgeResponse.json()
+      expect(blockedPurgeBody.detail.preview.missing_ids).toContain(assetB.id)
+      await expect(recovery).toBeEnabled()
+      expect(restoreRequestCount).toBe(0)
+
+      await recovery.click()
+      const confirmation = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(confirmation).toContainText(`for ${assetA.name}?`)
+      const restoreRequestPromise = page.waitForRequest(browserRequest => (
+        browserRequest.url().includes('/api/v1/devices/bulk-action')
+        && browserRequest.postDataJSON()?.action === 'restore'
+      ))
+      const restoreResponsePromise = page.waitForResponse(response => (
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+      ))
+      await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      const restoreRequest = await restoreRequestPromise
+      const restoreResponse = await restoreResponsePromise
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreResponse.ok()).toBeTruthy()
+      expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
+      expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
+      await attachEvidence(testInfo, 'asset-pending-overlap-failed-result.json', JSON.stringify({
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        failedPurgeRequest: { action: 'purge', ids: gate.requested().ids },
+        failedPurgeStatus: blockedPurgeResponse.status(),
+        failedPurgeMissingIds: blockedPurgeBody.detail.preview.missing_ids,
+        recoveryIdsAfterFailure: archiveA.receipt.changed_ids,
+        recoveryLabelsAfterFailure: [assetA.name],
+        restoreRequest: restoreRequest.postDataJSON(),
+        restoreSucceeded: restoreResponse.ok(),
+        assetBPurgedByConcurrentExecution: true,
+      }, null, 2), 'application/json')
+    } finally {
+      gate.release()
+      page.off('request', countRestoreRequests)
+      if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
+    }
+  })
+
+  test('proves a pending purge serializes later Asset lifecycle execution', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const system = `PW-RECOVERY-GENERATION-${stamp}`
+    const purgeTarget = await createRecoveryAsset(request, `PW-RECOVERY-PURGE-P1-${stamp}`, system)
+    const newerRecoveryTarget = await createRecoveryAsset(request, `PW-RECOVERY-NEWER-${stamp}`, system)
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archiveP1 = await runAssetRowLifecycleAction(page, 'delete', purgeTarget.name)
+    expect(archiveP1.executionResponse.ok()).toBeTruthy()
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+    await expect(page.getByRole('button', { name: 'Revert', exact: true })).toBeVisible()
+
+    const purgeGate = createPurgeExecutionGate(page)
+    let restoreRequestCount = 0
+    const countRestoreRequests = (browserRequest: any) => {
+      if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
+      try {
+        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+      } catch { /* Ignore non-JSON requests to the same endpoint. */ }
+    }
+    page.on('request', countRestoreRequests)
+    await page.route('**/api/v1/devices/bulk-action', purgeGate.handler)
+
+    try {
+      const { preview: purgePreview, previewDialog: purgeDialog, executionResponsePromise: purgeExecutionResponsePromise } = await startHeldPurge(page, purgeTarget.name, purgeGate)
+
+      // The receipt preview can close during an in-flight request, but the workspace mutation stays pending.
+      await page.keyboard.press('Escape')
+      await expect(purgeDialog).not.toBeVisible()
+      expect(purgeGate.requested()).toEqual({ action: 'purge', ids: [purgeTarget.id] })
+      const recoveryControl = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recoveryControl).toBeVisible()
+      await expect(recoveryControl).toBeDisabled()
+      await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+
+      const capturePendingState = async (width: number, height: number, name: string) => {
+        await page.setViewportSize({ width, height })
+        if (width === 390) await page.getByRole('button', { name: 'Collapse application navigation' }).click()
+        const existingAction = page.getByRole('button', { name: /^Existing/ }).first()
+        const archivedAction = page.getByRole('button', { name: /^Archived/ }).first()
+        const getReachableBounds = async (control: typeof existingAction) => {
+          await control.scrollIntoViewIfNeeded()
+          const box = await control.boundingBox()
+          expect(box).not.toBeNull()
+          expect(box!.x).toBeGreaterThanOrEqual(0)
+          expect(box!.x + box!.width).toBeLessThanOrEqual(width)
+          return box
+        }
+        await expect(existingAction).toBeVisible()
+        const existingBox = await getReachableBounds(existingAction)
+        await expect(archivedAction).toBeVisible()
+        const archivedBox = await getReachableBounds(archivedAction)
+        await expect(recoveryControl).toBeVisible()
+        await expect(recoveryControl).toBeDisabled()
+        const recoveryBox = await getReachableBounds(recoveryControl)
+        const metrics = await page.evaluate(() => ({
+          viewportWidth: window.innerWidth,
+          documentWidth: document.documentElement.scrollWidth,
+          bodyWidth: document.body.scrollWidth,
+        }))
+        expect(metrics.documentWidth).toBeLessThanOrEqual(width)
+        expect(metrics.bodyWidth).toBeLessThanOrEqual(width)
+        const evidence = {
+          route: '/asset',
+          profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+          candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+          viewport: { width, height },
+          recovery: { ids: archiveP1.receipt.changed_ids, labels: [purgeTarget.name] },
+          pendingPurge: purgeGate.requested(),
+          purgePreviewCanExecute: purgePreview.can_execute,
+          modalClosed: !(await purgeDialog.isVisible()),
+          revertVisible: await recoveryControl.isVisible(),
+          revertDisabled: await recoveryControl.isDisabled(),
+          transientToastRevertVisible: await page.getByRole('button', { name: 'Revert', exact: true }).isVisible().catch(() => false),
+          restoreRequestCount,
+          surroundingActions: {
+            existingReachable: true,
+            archivedReachable: true,
+            reachableWithinViewport: true,
+          },
+          recoveryControlBounds: recoveryBox,
+          metrics,
+        }
+        await attachEvidence(testInfo, `${name}.json`, JSON.stringify(evidence, null, 2), 'application/json')
+        await attachEvidence(testInfo, `${name}.png`, await page.screenshot(), 'image/png')
+      }
+
+      await capturePendingState(1440, 900, 'asset-pending-overlap-same-target-1440x900')
+      await capturePendingState(390, 844, 'asset-pending-overlap-same-target-390x844')
+      expect(restoreRequestCount).toBe(0)
+      await page.setViewportSize({ width: 1920, height: 1080 })
+
+      // Invoke the toolbar callback directly as a stale/test-hook activation.
+      // React intentionally suppresses click events for disabled buttons, so
+      // call its captured callback and verify the command guard independently.
+      await recoveryControl.evaluate((button: HTMLButtonElement) => {
+        const reactPropsKey = Object.keys(button).find((key) => key.startsWith('__reactProps$'))
+        const onClick = reactPropsKey
+          ? (button as HTMLButtonElement & Record<string, any>)[reactPropsKey]?.onClick
+          : undefined
+        if (typeof onClick !== 'function') throw new Error('Could not access the toolbar callback for the stale-path guard proof')
+        onClick()
+      })
+      const blockedRecoveryConfirm = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(blockedRecoveryConfirm).toBeVisible()
+      await blockedRecoveryConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      await expect(blockedRecoveryConfirm).not.toBeVisible()
+      await expect(recoveryControl).toBeDisabled()
+      expect(restoreRequestCount).toBe(0)
+      await attachEvidence(testInfo, 'asset-pending-overlap-direct-guard.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recovery: { ids: archiveP1.receipt.changed_ids, labels: [purgeTarget.name] },
+        pendingPurge: purgeGate.requested(),
+        toolbarCallbackInvokedDirectly: true,
+        confirmationInvocationBlocked: true,
+        recoveryRetained: await recoveryControl.isVisible(),
+        recoveryDisabledAfterInvocation: await recoveryControl.isDisabled(),
+        restoreRequestCount,
+      }, null, 2), 'application/json')
+
+      await openToolbarButton(page, /^Existing/)
+      await fillGridSearch(page, 'Scan asset matrix...', newerRecoveryTarget.name)
+      const newerRow = await getWorkspaceLogicalRowByText(page, 'assets', newerRecoveryTarget.name)
+      await newerRow.action('More actions').click()
+      await page.getByRole('button', { name: 'Archive', exact: true }).click()
+      const newerPreviewResponsePromise = page.waitForResponse(response => (
+        response.url().includes('/api/v1/devices/bulk-action')
+        && response.request().method() === 'POST'
+        && response.status() === 200
+        && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
+      ))
+      await page.getByRole('button', { name: 'Confirm Archive?', exact: true }).click()
+      const newerPreview = await (await newerPreviewResponsePromise).json()
+      expect(newerPreview.can_execute).toBe(true)
+      const newerPreviewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+      const newerConfirm = newerPreviewDialog.getByRole('button', { name: 'Confirm Archive selection' })
+      await expect(newerConfirm).toBeDisabled()
+      await expect(newerConfirm).toHaveText('Applying…')
+      await attachEvidence(testInfo, 'asset-pending-purge-serialization.json', JSON.stringify({
+        scenario: 'same-target P1 recovery is disabled after the purge modal closes; later Archive confirmation also remains serialized',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        p1PurgeIds: [purgeTarget.id],
+        priorRecoveryIds: archiveP1.receipt.changed_ids,
+        sameTargetRevertDisabled: await recoveryControl.isDisabled(),
+        restoreRequestCount,
+        laterArchiveIds: [newerRecoveryTarget.id],
+        laterPreviewCanExecute: newerPreview.can_execute,
+        laterArchiveConfirmDisabled: await newerConfirm.isDisabled(),
+        laterArchiveConfirmText: await newerConfirm.innerText(),
+        newerLifecycleExecutionStarted: false,
+      }, null, 2), 'application/json')
+      await attachEvidence(testInfo, 'asset-pending-purge-serialization.png', await page.screenshot(), 'image/png')
+      await page.keyboard.press('Escape')
+      await expect(newerPreviewDialog).not.toBeVisible()
+
+      purgeGate.release()
+      const purgeExecutionResponse = await purgeExecutionResponsePromise
+      expect(purgeExecutionResponse.ok()).toBeTruthy()
+      const purgeReceipt = await purgeExecutionResponse.json()
+      expect(purgeReceipt.changed_ids).toEqual([purgeTarget.id])
+      await expect(getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })).toHaveCount(0)
+      expect(await getDeviceFromBackend(request, purgeTarget.id)).toBeUndefined()
+      expect((await getDeviceFromBackend(request, newerRecoveryTarget.id)).is_deleted).toBe(false)
+      await attachEvidence(testInfo, 'asset-pending-purge-serialization-result.json', JSON.stringify({
+        scenario: 'the UI prevents a newer lifecycle execution until P1 settles',
+        p1PurgeIds: purgeReceipt.changed_ids,
+        laterArchiveIds: [newerRecoveryTarget.id],
+        laterArchiveExecutionStarted: false,
+        laterArchiveConfirmDisabled: true,
+        p1SettledSuccessfully: true,
+        purgeTargetPhysicallyAbsent: true,
+        newerRecoveryCreated: false,
+      }, null, 2), 'application/json')
+    } finally {
+      purgeGate.release()
+      page.off('request', countRestoreRequests)
+      if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
+    }
   })
 })

@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { apiFetch } from '../../api/apiClient'
 import { downloadOperationalImportFile } from '../shared/OperationalImportExport'
 import { resolveOperationalDataState } from '../shared/OperationalDataState'
-import { showWorkspaceToast } from '../shared/WorkspaceToast'
+import { dismissWorkspaceToasts, showWorkspaceToast } from '../shared/WorkspaceToast'
 import { useOperationalBulkWorkflow } from '../shared/useOperationalBulkWorkflow'
 import { ASSET_GOLDEN_ALLOWED_COLUMN_FIELDS } from './assetGoldenColumns'
 import { usePersistentJsonState } from '../shared/OperationalWorkspaceHooks'
@@ -34,12 +34,66 @@ export type AssetQuickFilters = {
   owner: string[]
 }
 
-type AssetLifecycleOperation = Readonly<{
+export type AssetLifecycleOperation = Readonly<{
   ids: readonly number[]
   originalAction: 'delete' | 'restore'
   inverseAction: 'restore' | 'delete'
   targetLabels: readonly string[]
 }>
+
+type PendingAssetBulkMutation = {
+  isPending?: unknown
+  variables?: unknown
+}
+
+export function isAssetLifecycleRecoveryBlocked(
+  operation: AssetLifecycleOperation | null,
+  mutation: PendingAssetBulkMutation,
+): boolean {
+  if (!operation || mutation.isPending !== true) return false
+
+  const variables = mutation.variables
+  if (!variables || typeof variables !== 'object') return true
+  const { action, ids } = variables as { action?: unknown; ids?: unknown }
+  if (typeof action !== 'string' || !action) return true
+  if (action !== 'purge') return false
+
+  if (
+    !Array.isArray(ids)
+    || ids.length === 0
+    || ids.some((id) => typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0)
+    || !Array.isArray(operation.ids)
+    || operation.ids.length === 0
+    || operation.ids.some((id) => typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0)
+  ) return true
+
+  const recoveryIds = new Set(operation.ids)
+  return ids.some((id: number) => recoveryIds.has(id))
+}
+
+export function revokePurgedAssetLifecycleOperation(
+  operation: AssetLifecycleOperation | null,
+  purgedIds: readonly number[],
+): AssetLifecycleOperation | null {
+  if (!operation) return null
+  const purgedIdSet = new Set(purgedIds)
+  const remainingIndexes = operation.ids
+    .map((id, index) => ({ id, index }))
+    .filter(({ id }) => !purgedIdSet.has(id))
+  const overlapCount = operation.ids.length - remainingIndexes.length
+  if (overlapCount === 0) return operation
+  if (
+    operation.ids.length !== operation.targetLabels.length
+    || new Set(operation.ids).size !== operation.ids.length
+  ) return null
+  if (remainingIndexes.length === 0) return null
+
+  return Object.freeze({
+    ...operation,
+    ids: Object.freeze(remainingIndexes.map(({ id }) => id)),
+    targetLabels: Object.freeze(remainingIndexes.map(({ index }) => operation.targetLabels[index])),
+  })
+}
 
 const DEFAULT_HIDDEN_COLUMNS = [
   'is_deleted',
@@ -108,7 +162,7 @@ const DEFAULT_ASSET_VIEWS: AssetSavedView[] = [
   },
   {
     id: 'purged-registry',
-    name: 'Purged Registry',
+    name: 'Archived Assets',
     config: {
       activeTab: 'deleted',
       viewMode: 'grid',
@@ -371,6 +425,13 @@ export function useAssetGoldenWorkspace() {
   const [rowActionMenu, setRowActionMenu] = useState<{ asset: any; x: number; y: number } | null>(null)
   const [isReverting, setIsReverting] = useState(false)
   const [lastLifecycleOperation, setLastLifecycleOperation] = useState<AssetLifecycleOperation | null>(null)
+  const lastLifecycleOperationRef = useRef<AssetLifecycleOperation | null>(null)
+  const lifecycleRecoveryGenerationRef = useRef(0)
+  const setLifecycleOperation = useCallback((operation: AssetLifecycleOperation | null, newGeneration = true) => {
+    if (newGeneration) lifecycleRecoveryGenerationRef.current += 1
+    lastLifecycleOperationRef.current = operation
+    setLastLifecycleOperation(operation)
+  }, [])
 
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>('sysgrid_asset_favorites', [])
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>('sysgrid_asset_watches', [])
@@ -488,16 +549,16 @@ export function useAssetGoldenWorkspace() {
     emptyLabel: 'No assets have been registered yet.',
     filteredLabel: 'No assets match the current filters.',
     tabEmptyKind: activeTab === 'deleted' ? 'deleted-empty' : 'active-empty',
-    tabEmptyLabel: activeTab === 'deleted' ? 'No purged assets are available.' : 'No active assets are available.',
+    tabEmptyLabel: activeTab === 'deleted' ? 'No archived assets are available.' : 'No active assets are available.',
     errorTitle: 'Asset registry unavailable',
     errorDescription: 'The asset inventory request failed and no usable fallback rows are available.',
     emptyTitle: 'No assets registered',
     emptyDescription: 'Import a registry snapshot or register an asset to populate the workspace.',
     filteredTitle: 'No assets match the current working view',
     filteredDescription: 'Clear filters, search terms, or apply a broader saved view to bring assets back into scope.',
-    tabEmptyTitle: activeTab === 'deleted' ? 'No purged assets in scope' : 'No active assets in scope',
+    tabEmptyTitle: activeTab === 'deleted' ? 'No archived assets in scope' : 'No active assets in scope',
     tabEmptyDescription: activeTab === 'deleted'
-      ? 'The registry is loaded, but no purged assets are currently available.'
+      ? 'The registry is loaded, but no archived assets are currently available.'
       : 'The registry is loaded, but no active assets are currently available.',
     degradedNotice: isUsingLiveFallback ? {
       tone: 'warning',
@@ -673,20 +734,41 @@ export function useAssetGoldenWorkspace() {
       if (previousValues.length !== 1 || previousValues[0] === null || previousValues[0] === undefined) return null
       return { action: 'update', ids: changedIds, payload: { [key]: previousValues[0] } }
     },
-    onExecutionSuccess: ({ action, changedIds, targetLabels }) => {
+    onExecutionStart: (_ids, action) => action === 'purge'
+      ? { recoveryGeneration: lifecycleRecoveryGenerationRef.current }
+      : undefined,
+    onExecutionSuccess: ({ action, ids, changedIds, targetLabels, previousSnapshots, executionStartContext }) => {
       setRowActionMenu(null)
       setSelectedIds([])
       if ((action === 'delete' || action === 'restore') && changedIds.length > 0) {
-        setLastLifecycleOperation(Object.freeze({
+        const labelsById = new Map<number, string>()
+        if (targetLabels?.length === ids.length) {
+          ids.forEach((id, index) => labelsById.set(id, targetLabels[index]))
+        }
+        previousSnapshots.forEach((snapshot: any) => {
+          const id = Number(snapshot?.id)
+          if (!labelsById.has(id) && Number.isFinite(id)) {
+            labelsById.set(id, String(snapshot?.name || id))
+          }
+        })
+        const nextOperation = Object.freeze({
           ids: Object.freeze([...changedIds]),
           originalAction: action,
           inverseAction: action === 'delete' ? 'restore' : 'delete',
-          targetLabels: Object.freeze(targetLabels || changedIds.map(String)),
-        }))
+          targetLabels: Object.freeze(changedIds.map((id) => labelsById.get(id) || String(id))),
+        }) as AssetLifecycleOperation
+        setLifecycleOperation(nextOperation)
+      } else if (action === 'purge' && changedIds.length > 0) {
+        const startGeneration = (executionStartContext as { recoveryGeneration?: unknown } | undefined)?.recoveryGeneration
+        if (startGeneration === lifecycleRecoveryGenerationRef.current) {
+          setLifecycleOperation(revokePurgedAssetLifecycleOperation(lastLifecycleOperationRef.current, changedIds), false)
+        }
       }
     },
-    onRevertSuccess: () => setLastLifecycleOperation(null),
+    onRevertSuccess: () => setLifecycleOperation(null),
   })
+  const bulkMutationRef = useRef(bulkMutation)
+  bulkMutationRef.current = bulkMutation
 
   const openConfirm = useCallback((title: string, message: string, onConfirm: () => void) => {
     setConfirmState({ title, message, onConfirm })
@@ -698,10 +780,15 @@ export function useAssetGoldenWorkspace() {
       showWorkspaceToast('Select at least one asset first', { type: 'error' })
       return
     }
+    if (action === 'purge') dismissWorkspaceToasts()
     requestBulkPreview({ action, ids: targetIds, payload: payload || {} })
   }, [requestBulkPreview, selectedIds])
 
   const executeRevert = useCallback(async (operation: AssetLifecycleOperation) => {
+    if (isAssetLifecycleRecoveryBlocked(operation, bulkMutationRef.current)) {
+      showWorkspaceToast('Wait for the overlapping permanent purge to finish before reverting this asset operation', { type: 'error' })
+      return
+    }
     setIsReverting(true)
     try {
       const response = await apiFetch('/api/v1/devices/bulk-action', {
@@ -710,7 +797,7 @@ export function useAssetGoldenWorkspace() {
       })
       if (!response.ok) throw new Error(await response.text())
       await refreshAssetLifecycle()
-      setLastLifecycleOperation(null)
+      setLifecycleOperation(null)
       showWorkspaceToast('Reverted asset operation', { type: 'success' })
     } catch (error: any) {
       showWorkspaceToast(error?.message || 'Revert failed', { type: 'error' })
@@ -849,6 +936,7 @@ export function useAssetGoldenWorkspace() {
     reportFocusSection,
     refreshAll,
     isReverting,
+    isLastLifecycleRecoveryBlocked: isAssetLifecycleRecoveryBlocked(lastLifecycleOperation, bulkMutation),
     isBulkReverting,
     lastLifecycleOperation,
     executeRevert,

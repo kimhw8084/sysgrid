@@ -84,8 +84,12 @@ async def test_normalized_asset_architecture_pv1_traceability_and_lifecycle(clie
     assert updated_device_link.json()["link"]["relationship_type"] == "Maps To"
     purge_preview = await client.post("/api/v1/devices/bulk-action", headers=_headers(tenant_id), json={"ids": [device_id], "action": "purge", "dry_run": True})
     assert purge_preview.status_code == 200, purge_preview.text
+    assert purge_preview.json()["status"] == "preview"
     assert purge_preview.json()["can_execute"] is False
     assert "traceability" in purge_preview.json()["blockers"][0]["reason"].lower()
+    purge_execution = await client.post("/api/v1/devices/bulk-action", headers=_headers(tenant_id), json={"ids": [device_id], "action": "purge"})
+    assert purge_execution.status_code == 409, purge_execution.text
+    assert "traceability" in purge_execution.json()["detail"]["preview"]["blockers"][0]["reason"].lower()
 
     device_projection = await client.get(f"/api/v2/architecture/traceability/devices/{device_id}", headers=_headers(tenant_id))
     assert device_projection.status_code == 200, device_projection.text
@@ -217,6 +221,75 @@ async def test_normalized_asset_architecture_pv1_traceability_and_lifecycle(clie
     dangling_projection = await client.get(f"/api/v2/architecture/traceability/work/task/{task_id}", headers=_headers(tenant_id))
     assert dangling_projection.status_code == 422
     assert dangling_projection.json()["code"] == "DATA_INTEGRITY_ERROR"
+
+
+@pytest.mark.asyncio
+async def test_device_purge_rechecks_retired_traceability_added_after_preview(client, seeded_admin_tenant):
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    device_response = await client.post(
+        "/api/v1/devices",
+        headers=_headers(tenant_id),
+        json={"name": "TRACE-RACE-HOST", "system": "TRACE-RACE-SYS", "status": "Active", "type": "Physical"},
+    )
+    assert device_response.status_code == 200, device_response.text
+    device_id = device_response.json()["id"]
+
+    archive = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=_headers(tenant_id),
+        json={"ids": [device_id], "action": "delete"},
+    )
+    assert archive.status_code == 200
+    preview = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=_headers(tenant_id),
+        json={"ids": [device_id], "action": "purge", "dry_run": True},
+    )
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["status"] == "preview"
+    assert preview.json()["can_execute"] is True
+
+    factory = await _session_factory(seeded_admin_tenant)
+    async with factory() as tenant_db:
+        tenant_db.add(legacy_models.DeviceSoftware(device_id=device_id, name="race sentinel"))
+        tenant_db.add(pv1_models.PV1TraceabilityLink(
+            id=f"retired-race-{uuid4()}",
+            tenant_id=tenant_id,
+            entity_kind="task",
+            entity_id=f"synthetic-{uuid4()}",
+            target_kind="device",
+            target_key=str(device_id),
+            device_id=device_id,
+            relationship_type="Affected",
+            lifecycle="Retired",
+            revision=1,
+            created_by="admin_root",
+            updated_by="admin_root",
+        ))
+        await tenant_db.commit()
+
+    purge = await client.post(
+        "/api/v1/devices/bulk-action",
+        headers=_headers(tenant_id),
+        json={"ids": [device_id], "action": "purge"},
+    )
+    assert purge.status_code == 409, purge.text
+    assert "traceability" in purge.json()["detail"]["preview"]["blockers"][0]["reason"].lower()
+
+    async with factory() as tenant_db:
+        retained_device = await tenant_db.get(legacy_models.Device, device_id)
+        retained_software = await tenant_db.scalar(
+            select(legacy_models.DeviceSoftware).where(legacy_models.DeviceSoftware.device_id == device_id)
+        )
+        audit_rows = (await tenant_db.execute(
+            select(legacy_models.AuditLog).where(
+                legacy_models.AuditLog.target_table == "devices",
+                legacy_models.AuditLog.target_id == str(device_id),
+            )
+        )).scalars().all()
+        assert retained_device is not None and retained_device.is_deleted is True
+        assert retained_software is not None and retained_software.name == "race sentinel"
+        assert [row.action for row in audit_rows] == ["ARCHIVE"]
 
 
 @pytest.mark.asyncio

@@ -49,6 +49,7 @@ export type OperationalBulkOperationState = {
     changed_count: number
     unchanged_count: number
     can_revert: boolean
+    purge_impact?: OperationalBulkPreview['purge_impact']
   }
   onRevert?: () => Promise<void>
 }
@@ -58,6 +59,7 @@ export type OperationalBulkSuccessContext<TSnapshot> = {
   ids: number[]
   payload: Record<string, any>
   targetLabels?: string[]
+  executionStartContext?: unknown
   result: OperationalBulkExecutionResult
   changedIds: number[]
   previousSnapshots: TSnapshot[]
@@ -80,7 +82,7 @@ type UseOperationalBulkWorkflowOptions<TSnapshot> = {
   refresh: () => void | Promise<unknown>
   buildRevertRequest: (context: OperationalBulkRevertContext<TSnapshot>) => OperationalBulkRevertRequest | null
   onPreviewAccepted?: (state: OperationalBulkOperationState) => void | Promise<void>
-  onExecutionStart?: (ids: number[]) => void
+  onExecutionStart?: (ids: number[], action?: string) => unknown
   onExecutionSettled?: (ids: number[]) => void
   onExecutionSuccess?: (context: OperationalBulkSuccessContext<TSnapshot>) => void | Promise<void>
   onRevertSuccess?: (context: OperationalBulkSuccessContext<TSnapshot>) => void | Promise<void>
@@ -163,10 +165,10 @@ export function useOperationalBulkWorkflow<TSnapshot>({
   })
 
   const bulkMutation = useMutation({
-    onMutate: ({ ids: overrideIds }: OperationalBulkVariables) => {
+    onMutate: ({ action, ids: overrideIds }: OperationalBulkVariables) => {
       const ids = uniqueIds(overrideIds ?? selectedIds)
-      if (ids.length) onExecutionStart?.(ids)
-      return { ids }
+      const executionStartContext = ids.length ? onExecutionStart?.(ids, action) : undefined
+      return { ids, executionStartContext }
     },
     mutationFn: async ({ action, ids: overrideIds, payload = {}, targetLabels }: OperationalBulkVariables) => {
       const ids = resolveIds(overrideIds)
@@ -174,7 +176,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
       const result = await executeRequest({ action, ids, payload })
       return { result, action, ids, payload, targetLabels, previousSnapshots }
     },
-    onSuccess: async ({ result, action, ids, payload, targetLabels, previousSnapshots }) => {
+    onSuccess: async ({ result, action, ids, payload, targetLabels, previousSnapshots }, _variables, context) => {
       await refresh()
 
       const totalSelected = ids.length
@@ -187,6 +189,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
         ids,
         payload,
         targetLabels,
+        executionStartContext: context?.executionStartContext,
         result,
         changedIds,
         previousSnapshots,
@@ -222,6 +225,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
           changed_count: changedCount,
           unchanged_count: unchangedCount,
           can_revert: Boolean(receiptRevert),
+          ...(result?.purge_impact ? { purge_impact: result.purge_impact } : {}),
         },
         onRevert: receiptRevert,
       } : null)
