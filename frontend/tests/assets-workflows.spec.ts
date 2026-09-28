@@ -516,6 +516,7 @@ test.describe('Assets workflows', () => {
     await mobileConfirm.click()
     const purgeResponse = await purgeResponsePromise
     const purgeReceipt = await purgeResponse.json()
+    expect(purgeReceipt.changed_ids).toEqual([secondary.id])
     expect(purgeReceipt.purge_impact_applied).toEqual(purgeReceipt.purge_impact)
     const purgeReceiptDialog = page.getByRole('dialog', { name: 'Assets bulk complete' })
     await expect(purgeReceiptDialog.getByTestId('operational-purge-impact')).toBeVisible()
@@ -561,7 +562,10 @@ test.describe('Assets workflows', () => {
       profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
       viewport: { width: 1440, height: 900 },
       target: { id: secondary.id, name: secondary.name },
-      priorRecovery: { ids: secondArchiveReceipt.changed_ids, confirmationText: recoveryBeforePurgeConfirmation },
+      priorRecovery: { ids: secondArchiveReceipt.changed_ids, labels: [secondary.name], confirmationText: recoveryBeforePurgeConfirmation },
+      purgeChangedIds: purgeReceipt.changed_ids,
+      receiptUndoVisible: false,
+      receiptRevertVisible: false,
       archivedScope: archivedScopeAfterPurge,
       receiptVocabulary: 'This purge cannot be restored or reverted.',
       persistentRevertVisible: false,
@@ -594,7 +598,10 @@ test.describe('Assets workflows', () => {
       profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
       viewport: { width: 390, height: 844 },
       target: { id: secondary.id, name: secondary.name },
-      priorRecovery: { ids: secondArchiveReceipt.changed_ids, confirmationText: recoveryBeforePurgeConfirmation },
+      priorRecovery: { ids: secondArchiveReceipt.changed_ids, labels: [secondary.name], confirmationText: recoveryBeforePurgeConfirmation },
+      purgeChangedIds: purgeReceipt.changed_ids,
+      receiptUndoVisible: false,
+      receiptRevertVisible: false,
       archivedScope: archivedScopeAfterPurge,
       receiptVocabulary: 'This purge cannot be restored or reverted.',
       persistentRevertVisible: false,
