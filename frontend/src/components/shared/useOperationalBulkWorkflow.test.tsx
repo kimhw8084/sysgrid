@@ -172,6 +172,26 @@ describe('useOperationalBulkWorkflow', () => {
     expect(result.current.bulkOperationPreview).toBeNull()
   })
 
+  it('carries the execution-start generation into the matching successful result', async () => {
+    const onExecutionStart = vi.fn((_ids: number[], action?: string) => ({
+      action,
+      recoveryGeneration: 7,
+    }))
+    const onExecutionSuccess = vi.fn()
+    const { result } = renderWorkflow({ onExecutionStart, onExecutionSuccess })
+
+    act(() => {
+      result.current.bulkMutation.mutate({ action: 'purge', ids: [2] })
+    })
+
+    await waitFor(() => expect(onExecutionSuccess).toHaveBeenCalledTimes(1))
+    expect(onExecutionStart).toHaveBeenCalledWith([2], 'purge')
+    expect(onExecutionSuccess).toHaveBeenCalledWith(expect.objectContaining({
+      action: 'purge',
+      executionStartContext: { action: 'purge', recoveryGeneration: 7 },
+    }))
+  })
+
   it('fails closed on contradictory changed-record identity and does not advertise undo', async () => {
     const buildRevertRequest = vi.fn()
     const { result } = renderWorkflow({

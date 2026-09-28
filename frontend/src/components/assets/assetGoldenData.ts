@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { apiFetch } from '../../api/apiClient'
@@ -34,12 +34,36 @@ export type AssetQuickFilters = {
   owner: string[]
 }
 
-type AssetLifecycleOperation = Readonly<{
+export type AssetLifecycleOperation = Readonly<{
   ids: readonly number[]
   originalAction: 'delete' | 'restore'
   inverseAction: 'restore' | 'delete'
   targetLabels: readonly string[]
 }>
+
+export function revokePurgedAssetLifecycleOperation(
+  operation: AssetLifecycleOperation | null,
+  purgedIds: readonly number[],
+): AssetLifecycleOperation | null {
+  if (!operation) return null
+  const purgedIdSet = new Set(purgedIds)
+  const remainingIndexes = operation.ids
+    .map((id, index) => ({ id, index }))
+    .filter(({ id }) => !purgedIdSet.has(id))
+  const overlapCount = operation.ids.length - remainingIndexes.length
+  if (overlapCount === 0) return operation
+  if (
+    operation.ids.length !== operation.targetLabels.length
+    || new Set(operation.ids).size !== operation.ids.length
+  ) return null
+  if (remainingIndexes.length === 0) return null
+
+  return Object.freeze({
+    ...operation,
+    ids: Object.freeze(remainingIndexes.map(({ id }) => id)),
+    targetLabels: Object.freeze(remainingIndexes.map(({ index }) => operation.targetLabels[index])),
+  })
+}
 
 const DEFAULT_HIDDEN_COLUMNS = [
   'is_deleted',
@@ -371,6 +395,13 @@ export function useAssetGoldenWorkspace() {
   const [rowActionMenu, setRowActionMenu] = useState<{ asset: any; x: number; y: number } | null>(null)
   const [isReverting, setIsReverting] = useState(false)
   const [lastLifecycleOperation, setLastLifecycleOperation] = useState<AssetLifecycleOperation | null>(null)
+  const lastLifecycleOperationRef = useRef<AssetLifecycleOperation | null>(null)
+  const lifecycleRecoveryGenerationRef = useRef(0)
+  const setLifecycleOperation = useCallback((operation: AssetLifecycleOperation | null, newGeneration = true) => {
+    if (newGeneration) lifecycleRecoveryGenerationRef.current += 1
+    lastLifecycleOperationRef.current = operation
+    setLastLifecycleOperation(operation)
+  }, [])
 
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>('sysgrid_asset_favorites', [])
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>('sysgrid_asset_watches', [])
@@ -673,19 +704,38 @@ export function useAssetGoldenWorkspace() {
       if (previousValues.length !== 1 || previousValues[0] === null || previousValues[0] === undefined) return null
       return { action: 'update', ids: changedIds, payload: { [key]: previousValues[0] } }
     },
-    onExecutionSuccess: ({ action, changedIds, targetLabels }) => {
+    onExecutionStart: (_ids, action) => action === 'purge'
+      ? { recoveryGeneration: lifecycleRecoveryGenerationRef.current }
+      : undefined,
+    onExecutionSuccess: ({ action, ids, changedIds, targetLabels, previousSnapshots, executionStartContext }) => {
       setRowActionMenu(null)
       setSelectedIds([])
       if ((action === 'delete' || action === 'restore') && changedIds.length > 0) {
-        setLastLifecycleOperation(Object.freeze({
+        const labelsById = new Map<number, string>()
+        if (targetLabels?.length === ids.length) {
+          ids.forEach((id, index) => labelsById.set(id, targetLabels[index]))
+        }
+        previousSnapshots.forEach((snapshot: any) => {
+          const id = Number(snapshot?.id)
+          if (!labelsById.has(id) && Number.isFinite(id)) {
+            labelsById.set(id, String(snapshot?.name || id))
+          }
+        })
+        const nextOperation = Object.freeze({
           ids: Object.freeze([...changedIds]),
           originalAction: action,
           inverseAction: action === 'delete' ? 'restore' : 'delete',
-          targetLabels: Object.freeze(targetLabels || changedIds.map(String)),
-        }))
+          targetLabels: Object.freeze(changedIds.map((id) => labelsById.get(id) || String(id))),
+        }) as AssetLifecycleOperation
+        setLifecycleOperation(nextOperation)
+      } else if (action === 'purge' && changedIds.length > 0) {
+        const startGeneration = (executionStartContext as { recoveryGeneration?: unknown } | undefined)?.recoveryGeneration
+        if (startGeneration === lifecycleRecoveryGenerationRef.current) {
+          setLifecycleOperation(revokePurgedAssetLifecycleOperation(lastLifecycleOperationRef.current, changedIds), false)
+        }
       }
     },
-    onRevertSuccess: () => setLastLifecycleOperation(null),
+    onRevertSuccess: () => setLifecycleOperation(null),
   })
 
   const openConfirm = useCallback((title: string, message: string, onConfirm: () => void) => {
@@ -711,7 +761,7 @@ export function useAssetGoldenWorkspace() {
       })
       if (!response.ok) throw new Error(await response.text())
       await refreshAssetLifecycle()
-      setLastLifecycleOperation(null)
+      setLifecycleOperation(null)
       showWorkspaceToast('Reverted asset operation', { type: 'success' })
     } catch (error: any) {
       showWorkspaceToast(error?.message || 'Revert failed', { type: 'error' })
