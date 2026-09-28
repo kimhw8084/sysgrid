@@ -40,7 +40,10 @@ async function runAssetRowLifecycleAction(page: Page, action: 'delete' | 'purge'
   const previewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
   await expect(previewDialog).toBeVisible()
 
-  const executionResponsePromise = page.waitForResponse(isBulkExecutionResponse)
+  const executionResponsePromise = page.waitForResponse(response => (
+    isBulkExecutionResponse(response)
+    && (response.request().postDataJSON() as { action?: string } | null)?.action === action
+  ))
   await previewDialog.getByRole('button', {
     name: action === 'delete' ? 'Confirm Archive selection' : 'Confirm Purge selection',
   }).click()
@@ -62,6 +65,95 @@ async function createRecoveryAsset(request: any, name: string, system: string) {
     serial_number: `${name}-SN`,
     asset_tag: `${name}-TAG`,
   })
+}
+
+function createPurgeExecutionGate(page: Page) {
+  let releaseRequest = () => undefined
+  let signalIntercepted = () => undefined
+  const held = new Promise<void>((resolve) => { releaseRequest = resolve })
+  const intercepted = new Promise<void>((resolve) => { signalIntercepted = resolve })
+  let requestedAction: string | undefined
+  let requestedIds: number[] | undefined
+  const handler = async (route: any) => {
+    const body = route.request().postDataJSON() as { action?: string; dry_run?: boolean; ids?: number[] } | null
+    if (body?.action === 'purge' && body.dry_run !== true) {
+      requestedAction = body.action
+      requestedIds = body.ids
+      signalIntercepted()
+      await held
+    }
+    await route.continue()
+  }
+  return {
+    handler,
+    intercepted,
+    release: () => releaseRequest(),
+    requested: () => ({ action: requestedAction, ids: requestedIds }),
+  }
+}
+
+async function startHeldPurge(page: Page, assetName: string, gate: ReturnType<typeof createPurgeExecutionGate>) {
+  await openToolbarButton(page, /^Archived/)
+  await fillGridSearch(page, 'Scan asset matrix...', assetName)
+  const row = await getWorkspaceLogicalRowByText(page, 'assets', assetName)
+  await row.action('More actions').click()
+  await page.getByRole('button', { name: 'Purge', exact: true }).click()
+
+  const previewResponsePromise = page.waitForResponse(response => (
+    response.url().includes('/api/v1/devices/bulk-action')
+    && response.request().method() === 'POST'
+    && response.status() === 200
+    && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
+  ))
+  await page.getByRole('button', { name: 'Confirm Purge?', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+  const previewResponse = await previewResponsePromise
+  const preview = await previewResponse.json()
+  expect(preview.can_execute).toBe(true)
+
+  const executionResponsePromise = page.waitForResponse(response => (
+    isBulkExecutionResponse(response)
+    && (response.request().postDataJSON() as { action?: string } | null)?.action === 'purge'
+  ))
+  const previewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  await previewDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
+  await gate.intercepted
+  return { preview, previewDialog, executionResponsePromise }
+}
+
+async function startHeldPurgeSelection(
+  page: Page,
+  assetNames: string[],
+  systemName: string,
+  gate: ReturnType<typeof createPurgeExecutionGate>,
+) {
+  await openToolbarButton(page, /^Archived/)
+  await fillGridSearch(page, 'Scan asset matrix...', systemName)
+  for (const [index, assetName] of assetNames.entries()) {
+    const row = await getWorkspaceLogicalRowByText(page, 'assets', assetName)
+    await selectWorkspaceLogicalRow(row, { additive: index > 0 })
+  }
+  await page.getByRole('button', { name: /Bulk Actions/i }).first().click()
+  await page.getByRole('button', { name: 'Purge', exact: true }).click()
+  const previewResponsePromise = page.waitForResponse(response => (
+    response.url().includes('/api/v1/devices/bulk-action')
+    && response.request().method() === 'POST'
+    && response.status() === 200
+    && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
+  ))
+  await page.getByRole('button', { name: 'Preview Permanent Purge' }).click()
+  const previewResponse = await previewResponsePromise
+  const preview = await previewResponse.json()
+  expect(preview.can_execute).toBe(true)
+
+  const executionResponsePromise = page.waitForResponse(response => (
+    isBulkExecutionResponse(response)
+    && (response.request().postDataJSON() as { action?: string } | null)?.action === 'purge'
+  ))
+  const previewDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  await previewDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
+  await gate.intercepted
+  return { preview, previewDialog, executionResponsePromise }
 }
 
 async function getDeviceFromBackend(request: any, id: number) {
@@ -810,6 +902,264 @@ test.describe('Assets workflows', () => {
     }, null, 2), 'application/json')
   })
 
+  test('trims a partially overlapping recovery only after the held purge succeeds', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const system = `PW-RECOVERY-PARTIAL-PENDING-${stamp}`
+    const assetA = await createRecoveryAsset(request, `PW-RECOVERY-PARTIAL-A-${stamp}`, system)
+    const assetB = await createRecoveryAsset(request, `PW-RECOVERY-PARTIAL-B-${stamp}`, system)
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archive = await archiveSelectedAssets(page, [assetA.name, assetB.name], system)
+    expect(archive.receipt.changed_ids).toEqual(expect.arrayContaining([assetA.id, assetB.id]))
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const gate = createPurgeExecutionGate(page)
+    let restoreRequestCount = 0
+    const countRestoreRequests = (browserRequest: any) => {
+      if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
+      try {
+        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+      } catch { /* Ignore non-JSON requests to the same endpoint. */ }
+    }
+    page.on('request', countRestoreRequests)
+    await page.route('**/api/v1/devices/bulk-action', gate.handler)
+
+    try {
+      const { preview, previewDialog, executionResponsePromise } = await startHeldPurge(page, assetB.name, gate)
+      await page.keyboard.press('Escape')
+      await expect(previewDialog).not.toBeVisible()
+      expect(gate.requested()).toEqual({ action: 'purge', ids: [assetB.id] })
+      const recovery = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recovery).toBeVisible()
+      await expect(recovery).toBeDisabled()
+      expect(restoreRequestCount).toBe(0)
+      await attachEvidence(testInfo, 'asset-pending-overlap-partial.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recoveryIds: archive.receipt.changed_ids,
+        pendingPurge: gate.requested(),
+        purgePreviewCanExecute: preview.can_execute,
+        modalClosed: true,
+        revertVisible: await recovery.isVisible(),
+        revertDisabled: await recovery.isDisabled(),
+        restoreRequestCount,
+      }, null, 2), 'application/json')
+
+      gate.release()
+      const purgeResponse = await executionResponsePromise
+      expect(purgeResponse.ok()).toBeTruthy()
+      const purgeReceipt = await purgeResponse.json()
+      expect(purgeReceipt.changed_ids).toEqual([assetB.id])
+      await expect(recovery).toBeVisible()
+      await expect(recovery).toBeEnabled()
+      await recovery.click()
+      const confirmation = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(confirmation).toContainText(`for ${assetA.name}?`)
+      await expect(confirmation).not.toContainText(assetB.name)
+      const restoreRequestPromise = page.waitForRequest(browserRequest => (
+        browserRequest.url().includes('/api/v1/devices/bulk-action')
+        && browserRequest.postDataJSON()?.action === 'restore'
+      ))
+      const restoreResponsePromise = page.waitForResponse(response => (
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+      ))
+      await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      const restoreRequest = await restoreRequestPromise
+      const restoreResponse = await restoreResponsePromise
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreResponse.ok()).toBeTruthy()
+      expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
+      expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
+      await attachEvidence(testInfo, 'asset-pending-overlap-partial-result.json', JSON.stringify({
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        purgeChangedIds: purgeReceipt.changed_ids,
+        recoveryIdsAfterPurge: [assetA.id],
+        recoveryLabelsAfterPurge: [assetA.name],
+        restoreRequest: restoreRequest.postDataJSON(),
+        assetARestored: true,
+        assetBPhysicallyAbsent: true,
+      }, null, 2), 'application/json')
+    } finally {
+      gate.release()
+      page.off('request', countRestoreRequests)
+      if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
+    }
+  })
+
+  test('keeps a disjoint recovery usable while another asset purge is held pending', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const system = `PW-RECOVERY-DISJOINT-PENDING-${stamp}`
+    const assetA = await createRecoveryAsset(request, `PW-RECOVERY-DISJOINT-A-${stamp}`, system)
+    const assetB = await createRecoveryAsset(request, `PW-RECOVERY-DISJOINT-B-${stamp}`, system)
+    const archiveBResponse = await request.post(`${apiBase}/devices/bulk-action`, { data: { ids: [assetB.id], action: 'delete' } })
+    expect(archiveBResponse.ok()).toBeTruthy()
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archiveA = await runAssetRowLifecycleAction(page, 'delete', assetA.name)
+    expect(archiveA.executionResponse.ok()).toBeTruthy()
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const gate = createPurgeExecutionGate(page)
+    await page.route('**/api/v1/devices/bulk-action', gate.handler)
+    try {
+      const { preview, previewDialog, executionResponsePromise } = await startHeldPurge(page, assetB.name, gate)
+      await page.keyboard.press('Escape')
+      await expect(previewDialog).not.toBeVisible()
+      expect(gate.requested()).toEqual({ action: 'purge', ids: [assetB.id] })
+      const recovery = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recovery).toBeVisible()
+      await expect(recovery).toBeEnabled()
+      await attachEvidence(testInfo, 'asset-pending-disjoint-recovery.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recovery: { ids: archiveA.receipt.changed_ids, labels: [assetA.name] },
+        pendingPurge: gate.requested(),
+        purgePreviewCanExecute: preview.can_execute,
+        modalClosed: true,
+        revertEnabled: await recovery.isEnabled(),
+        restoreRequestCountBeforeInvocation: 0,
+      }, null, 2), 'application/json')
+      await attachEvidence(testInfo, 'asset-pending-disjoint-recovery.png', await page.screenshot(), 'image/png')
+
+      await recovery.click()
+      const confirmation = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(confirmation).toContainText(`for ${assetA.name}?`)
+      await expect(confirmation).not.toContainText(assetB.name)
+      const restoreRequestPromise = page.waitForRequest(browserRequest => (
+        browserRequest.url().includes('/api/v1/devices/bulk-action')
+        && browserRequest.postDataJSON()?.action === 'restore'
+      ))
+      const restoreResponsePromise = page.waitForResponse(response => (
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+      ))
+      await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      const restoreRequest = await restoreRequestPromise
+      const restoreResponse = await restoreResponsePromise
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreResponse.ok()).toBeTruthy()
+      expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
+
+      gate.release()
+      const purgeResponse = await executionResponsePromise
+      expect(purgeResponse.ok()).toBeTruthy()
+      const purgeReceipt = await purgeResponse.json()
+      expect(purgeReceipt.changed_ids).toEqual([assetB.id])
+      await expect(recovery).toHaveCount(0)
+      expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
+      await attachEvidence(testInfo, 'asset-pending-disjoint-recovery-result.json', JSON.stringify({
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        restoreRequest: restoreRequest.postDataJSON(),
+        purgeChangedIds: purgeReceipt.changed_ids,
+        assetARestored: true,
+        assetBPurged: true,
+        staleRecoveryReintroduced: false,
+      }, null, 2), 'application/json')
+    } finally {
+      gate.release()
+      if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
+    }
+  })
+
+  test('re-enables the same recovery after an overlapping purge settles with 409', async ({ page, sysApi: request }, testInfo) => {
+    test.setTimeout(120_000)
+    await resetBrowserState(page)
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const system = `PW-RECOVERY-FAILED-PENDING-${stamp}`
+    const assetA = await createRecoveryAsset(request, `PW-RECOVERY-FAILED-A-${stamp}`, system)
+    const assetB = await createRecoveryAsset(request, `PW-RECOVERY-FAILED-B-${stamp}`, system)
+    const archiveBResponse = await request.post(`${apiBase}/devices/bulk-action`, { data: { ids: [assetB.id], action: 'delete' } })
+    expect(archiveBResponse.ok()).toBeTruthy()
+
+    await page.goto('/asset')
+    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible()
+    const archiveA = await runAssetRowLifecycleAction(page, 'delete', assetA.name)
+    expect(archiveA.executionResponse.ok()).toBeTruthy()
+    await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+
+    const gate = createPurgeExecutionGate(page)
+    let restoreRequestCount = 0
+    const countRestoreRequests = (browserRequest: any) => {
+      if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
+      try {
+        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+      } catch { /* Ignore non-JSON requests to the same endpoint. */ }
+    }
+    page.on('request', countRestoreRequests)
+    await page.route('**/api/v1/devices/bulk-action', gate.handler)
+    try {
+      const { preview, previewDialog, executionResponsePromise } = await startHeldPurgeSelection(page, [assetA.name, assetB.name], system, gate)
+      await page.keyboard.press('Escape')
+      await expect(previewDialog).not.toBeVisible()
+      expect(gate.requested().action).toBe('purge')
+      expect(gate.requested().ids).toEqual(expect.arrayContaining([assetA.id, assetB.id]))
+      const recovery = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recovery).toBeDisabled()
+      await attachEvidence(testInfo, 'asset-pending-overlap-failed.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recovery: { ids: archiveA.receipt.changed_ids, labels: [assetA.name] },
+        pendingPurge: gate.requested(),
+        purgePreviewCanExecute: preview.can_execute,
+        modalClosed: true,
+        revertDisabled: await recovery.isDisabled(),
+        restoreRequestCount,
+      }, null, 2), 'application/json')
+
+      const concurrentPurge = await request.post(`${apiBase}/devices/bulk-action`, { data: { ids: [assetB.id], action: 'purge' } })
+      expect(concurrentPurge.ok()).toBeTruthy()
+      expect((await concurrentPurge.json()).changed_ids).toEqual([assetB.id])
+      gate.release()
+      const blockedPurgeResponse = await executionResponsePromise
+      expect(blockedPurgeResponse.status()).toBe(409)
+      const blockedPurgeBody = await blockedPurgeResponse.json()
+      expect(blockedPurgeBody.detail.preview.missing_ids).toContain(assetB.id)
+      await expect(recovery).toBeEnabled()
+      expect(restoreRequestCount).toBe(0)
+
+      await recovery.click()
+      const confirmation = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(confirmation).toContainText(`for ${assetA.name}?`)
+      const restoreRequestPromise = page.waitForRequest(browserRequest => (
+        browserRequest.url().includes('/api/v1/devices/bulk-action')
+        && browserRequest.postDataJSON()?.action === 'restore'
+      ))
+      const restoreResponsePromise = page.waitForResponse(response => (
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+      ))
+      await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      const restoreRequest = await restoreRequestPromise
+      const restoreResponse = await restoreResponsePromise
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreResponse.ok()).toBeTruthy()
+      expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
+      expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
+      await attachEvidence(testInfo, 'asset-pending-overlap-failed-result.json', JSON.stringify({
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        failedPurgeRequest: { action: 'purge', ids: gate.requested().ids },
+        failedPurgeStatus: blockedPurgeResponse.status(),
+        failedPurgeMissingIds: blockedPurgeBody.detail.preview.missing_ids,
+        recoveryIdsAfterFailure: archiveA.receipt.changed_ids,
+        recoveryLabelsAfterFailure: [assetA.name],
+        restoreRequest: restoreRequest.postDataJSON(),
+        restoreSucceeded: restoreResponse.ok(),
+        assetBPurgedByConcurrentExecution: true,
+      }, null, 2), 'application/json')
+    } finally {
+      gate.release()
+      page.off('request', countRestoreRequests)
+      if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
+    }
+  })
+
   test('proves a pending purge serializes later Asset lifecycle execution', async ({ page, sysApi: request }, testInfo) => {
     test.setTimeout(120_000)
     await resetBrowserState(page)
@@ -823,43 +1173,118 @@ test.describe('Assets workflows', () => {
     const archiveP1 = await runAssetRowLifecycleAction(page, 'delete', purgeTarget.name)
     expect(archiveP1.executionResponse.ok()).toBeTruthy()
     await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+    await expect(page.getByRole('button', { name: 'Revert', exact: true })).toBeVisible()
 
-    let releasePurgeRequest = () => undefined
-    let signalPurgeIntercepted = () => undefined
-    const purgeHold = new Promise<void>(resolve => { releasePurgeRequest = resolve })
-    const purgeIntercepted = new Promise<void>(resolve => { signalPurgeIntercepted = resolve })
-    await page.route('**/api/v1/devices/bulk-action', async route => {
-      const body = route.request().postDataJSON() as { action?: string; dry_run?: boolean } | null
-      if (body?.action === 'purge' && body.dry_run !== true) {
-        signalPurgeIntercepted()
-        await purgeHold
-      }
-      await route.continue()
-    })
+    const purgeGate = createPurgeExecutionGate(page)
+    let restoreRequestCount = 0
+    const countRestoreRequests = (browserRequest: any) => {
+      if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
+      try {
+        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+      } catch { /* Ignore non-JSON requests to the same endpoint. */ }
+    }
+    page.on('request', countRestoreRequests)
+    await page.route('**/api/v1/devices/bulk-action', purgeGate.handler)
 
     try {
-      await openToolbarButton(page, /^Archived/)
-      await fillGridSearch(page, 'Scan asset matrix...', purgeTarget.name)
-      const purgeRow = await getWorkspaceLogicalRowByText(page, 'assets', purgeTarget.name)
-      await purgeRow.action('More actions').click()
-      await page.getByRole('button', { name: 'Purge', exact: true }).click()
-      const previewResponsePromise = page.waitForResponse(response => (
-        response.url().includes('/api/v1/devices/bulk-action')
-        && response.request().method() === 'POST'
-        && response.status() === 200
-        && (response.request().postDataJSON() as { dry_run?: boolean } | null)?.dry_run === true
-      ))
-      await page.getByRole('button', { name: 'Confirm Purge?', exact: true }).click()
-      const purgePreview = await (await previewResponsePromise).json()
-      expect(purgePreview.can_execute).toBe(true)
-      const purgeDialog = page.getByRole('dialog', { name: 'Assets bulk preview' })
-      const purgeExecutionResponsePromise = page.waitForResponse(isBulkExecutionResponse)
-      await purgeDialog.getByRole('button', { name: 'Confirm Purge selection' }).click()
-      await purgeIntercepted
+      const { preview: purgePreview, previewDialog: purgeDialog, executionResponsePromise: purgeExecutionResponsePromise } = await startHeldPurge(page, purgeTarget.name, purgeGate)
 
       // The receipt preview can close during an in-flight request, but the workspace mutation stays pending.
       await page.keyboard.press('Escape')
       await expect(purgeDialog).not.toBeVisible()
+      expect(purgeGate.requested()).toEqual({ action: 'purge', ids: [purgeTarget.id] })
+      const recoveryControl = getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })
+      await expect(recoveryControl).toBeVisible()
+      await expect(recoveryControl).toBeDisabled()
+      await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
+
+      const capturePendingState = async (width: number, height: number, name: string) => {
+        await page.setViewportSize({ width, height })
+        if (width === 390) await page.getByRole('button', { name: 'Collapse application navigation' }).click()
+        const existingAction = page.getByRole('button', { name: /^Existing/ }).first()
+        const archivedAction = page.getByRole('button', { name: /^Archived/ }).first()
+        const getReachableBounds = async (control: typeof existingAction) => {
+          await control.scrollIntoViewIfNeeded()
+          const box = await control.boundingBox()
+          expect(box).not.toBeNull()
+          expect(box!.x).toBeGreaterThanOrEqual(0)
+          expect(box!.x + box!.width).toBeLessThanOrEqual(width)
+          return box
+        }
+        await expect(existingAction).toBeVisible()
+        const existingBox = await getReachableBounds(existingAction)
+        await expect(archivedAction).toBeVisible()
+        const archivedBox = await getReachableBounds(archivedAction)
+        await expect(recoveryControl).toBeVisible()
+        await expect(recoveryControl).toBeDisabled()
+        const recoveryBox = await getReachableBounds(recoveryControl)
+        const metrics = await page.evaluate(() => ({
+          viewportWidth: window.innerWidth,
+          documentWidth: document.documentElement.scrollWidth,
+          bodyWidth: document.body.scrollWidth,
+        }))
+        expect(metrics.documentWidth).toBeLessThanOrEqual(width)
+        expect(metrics.bodyWidth).toBeLessThanOrEqual(width)
+        const evidence = {
+          route: '/asset',
+          profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+          candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+          viewport: { width, height },
+          recovery: { ids: archiveP1.receipt.changed_ids, labels: [purgeTarget.name] },
+          pendingPurge: purgeGate.requested(),
+          purgePreviewCanExecute: purgePreview.can_execute,
+          modalClosed: !(await purgeDialog.isVisible()),
+          revertVisible: await recoveryControl.isVisible(),
+          revertDisabled: await recoveryControl.isDisabled(),
+          transientToastRevertVisible: await page.getByRole('button', { name: 'Revert', exact: true }).isVisible().catch(() => false),
+          restoreRequestCount,
+          surroundingActions: {
+            existingReachable: true,
+            archivedReachable: true,
+            reachableWithinViewport: true,
+          },
+          recoveryControlBounds: recoveryBox,
+          metrics,
+        }
+        await attachEvidence(testInfo, `${name}.json`, JSON.stringify(evidence, null, 2), 'application/json')
+        await attachEvidence(testInfo, `${name}.png`, await page.screenshot(), 'image/png')
+      }
+
+      await capturePendingState(1440, 900, 'asset-pending-overlap-same-target-1440x900')
+      await capturePendingState(390, 844, 'asset-pending-overlap-same-target-390x844')
+      expect(restoreRequestCount).toBe(0)
+      await page.setViewportSize({ width: 1920, height: 1080 })
+
+      // Invoke the toolbar callback directly as a stale/test-hook activation.
+      // React intentionally suppresses click events for disabled buttons, so
+      // call its captured callback and verify the command guard independently.
+      await recoveryControl.evaluate((button: HTMLButtonElement) => {
+        const reactPropsKey = Object.keys(button).find((key) => key.startsWith('__reactProps$'))
+        const onClick = reactPropsKey
+          ? (button as HTMLButtonElement & Record<string, any>)[reactPropsKey]?.onClick
+          : undefined
+        if (typeof onClick !== 'function') throw new Error('Could not access the toolbar callback for the stale-path guard proof')
+        onClick()
+      })
+      const blockedRecoveryConfirm = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
+      await expect(blockedRecoveryConfirm).toBeVisible()
+      await blockedRecoveryConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
+      await expect(blockedRecoveryConfirm).not.toBeVisible()
+      await expect(recoveryControl).toBeDisabled()
+      expect(restoreRequestCount).toBe(0)
+      await attachEvidence(testInfo, 'asset-pending-overlap-direct-guard.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
+        recovery: { ids: archiveP1.receipt.changed_ids, labels: [purgeTarget.name] },
+        pendingPurge: purgeGate.requested(),
+        toolbarCallbackInvokedDirectly: true,
+        confirmationInvocationBlocked: true,
+        recoveryRetained: await recoveryControl.isVisible(),
+        recoveryDisabledAfterInvocation: await recoveryControl.isDisabled(),
+        restoreRequestCount,
+      }, null, 2), 'application/json')
+
       await openToolbarButton(page, /^Existing/)
       await fillGridSearch(page, 'Scan asset matrix...', newerRecoveryTarget.name)
       const newerRow = await getWorkspaceLogicalRowByText(page, 'assets', newerRecoveryTarget.name)
@@ -879,8 +1304,12 @@ test.describe('Assets workflows', () => {
       await expect(newerConfirm).toBeDisabled()
       await expect(newerConfirm).toHaveText('Applying…')
       await attachEvidence(testInfo, 'asset-pending-purge-serialization.json', JSON.stringify({
-        scenario: 'P1 purge execution is pending while the user opens a later Archive preview',
+        scenario: 'same-target P1 recovery is disabled after the purge modal closes; later Archive confirmation also remains serialized',
+        candidateSha: process.env.SYSGRID_CANDIDATE_SHA || null,
         p1PurgeIds: [purgeTarget.id],
+        priorRecoveryIds: archiveP1.receipt.changed_ids,
+        sameTargetRevertDisabled: await recoveryControl.isDisabled(),
+        restoreRequestCount,
         laterArchiveIds: [newerRecoveryTarget.id],
         laterPreviewCanExecute: newerPreview.can_execute,
         laterArchiveConfirmDisabled: await newerConfirm.isDisabled(),
@@ -891,7 +1320,7 @@ test.describe('Assets workflows', () => {
       await page.keyboard.press('Escape')
       await expect(newerPreviewDialog).not.toBeVisible()
 
-      releasePurgeRequest()
+      purgeGate.release()
       const purgeExecutionResponse = await purgeExecutionResponsePromise
       expect(purgeExecutionResponse.ok()).toBeTruthy()
       const purgeReceipt = await purgeExecutionResponse.json()
@@ -910,7 +1339,8 @@ test.describe('Assets workflows', () => {
         newerRecoveryCreated: false,
       }, null, 2), 'application/json')
     } finally {
-      releasePurgeRequest()
+      purgeGate.release()
+      page.off('request', countRestoreRequests)
       if (!page.isClosed()) await page.unroute('**/api/v1/devices/bulk-action')
     }
   })

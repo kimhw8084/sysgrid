@@ -41,6 +41,36 @@ export type AssetLifecycleOperation = Readonly<{
   targetLabels: readonly string[]
 }>
 
+type PendingAssetBulkMutation = {
+  isPending?: unknown
+  variables?: unknown
+}
+
+export function isAssetLifecycleRecoveryBlocked(
+  operation: AssetLifecycleOperation | null,
+  mutation: PendingAssetBulkMutation,
+): boolean {
+  if (!operation || mutation.isPending !== true) return false
+
+  const variables = mutation.variables
+  if (!variables || typeof variables !== 'object') return true
+  const { action, ids } = variables as { action?: unknown; ids?: unknown }
+  if (typeof action !== 'string' || !action) return true
+  if (action !== 'purge') return false
+
+  if (
+    !Array.isArray(ids)
+    || ids.length === 0
+    || ids.some((id) => typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0)
+    || !Array.isArray(operation.ids)
+    || operation.ids.length === 0
+    || operation.ids.some((id) => typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0)
+  ) return true
+
+  const recoveryIds = new Set(operation.ids)
+  return ids.some((id: number) => recoveryIds.has(id))
+}
+
 export function revokePurgedAssetLifecycleOperation(
   operation: AssetLifecycleOperation | null,
   purgedIds: readonly number[],
@@ -737,6 +767,8 @@ export function useAssetGoldenWorkspace() {
     },
     onRevertSuccess: () => setLifecycleOperation(null),
   })
+  const bulkMutationRef = useRef(bulkMutation)
+  bulkMutationRef.current = bulkMutation
 
   const openConfirm = useCallback((title: string, message: string, onConfirm: () => void) => {
     setConfirmState({ title, message, onConfirm })
@@ -753,6 +785,10 @@ export function useAssetGoldenWorkspace() {
   }, [requestBulkPreview, selectedIds])
 
   const executeRevert = useCallback(async (operation: AssetLifecycleOperation) => {
+    if (isAssetLifecycleRecoveryBlocked(operation, bulkMutationRef.current)) {
+      showWorkspaceToast('Wait for the overlapping permanent purge to finish before reverting this asset operation', { type: 'error' })
+      return
+    }
     setIsReverting(true)
     try {
       const response = await apiFetch('/api/v1/devices/bulk-action', {
@@ -900,6 +936,7 @@ export function useAssetGoldenWorkspace() {
     reportFocusSection,
     refreshAll,
     isReverting,
+    isLastLifecycleRecoveryBlocked: isAssetLifecycleRecoveryBlocked(lastLifecycleOperation, bulkMutation),
     isBulkReverting,
     lastLifecycleOperation,
     executeRevert,

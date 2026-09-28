@@ -490,8 +490,11 @@ export default function AssetGoldenOperationalWorkspace() {
                     () => { void workspace.executeRevert(operation) },
                   )
                 }}
-                disabled={workspace.isReverting}
-                title="Revert last completed asset lifecycle operation"
+                disabled={workspace.isReverting || workspace.isLastLifecycleRecoveryBlocked}
+                ariaLabel="Revert last completed asset lifecycle operation"
+                title={workspace.isLastLifecycleRecoveryBlocked
+                  ? 'Wait for the overlapping permanent purge to finish before reverting this asset operation'
+                  : 'Revert last completed asset lifecycle operation'}
               >
                 <span className="flex items-center gap-2">
                   <RotateCcw size={14} />
