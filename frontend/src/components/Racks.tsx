@@ -47,12 +47,12 @@ const highlightAnimation = `
 `
 
 const STATUS_CONFIG: Record<string, { color: string; dot: string; badge: string }> = {
-  Active:        { color: 'text-emerald-400', dot: 'bg-emerald-400', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' },
-  Maintenance:   { color: 'text-amber-400',   dot: 'bg-amber-400',   badge: 'bg-amber-500/15 text-amber-400 border-amber-500/25' },
-  Decommissioned:{ color: 'text-rose-400',    dot: 'bg-rose-400',    badge: 'bg-rose-500/15 text-rose-400 border-rose-500/25' },
-  Offline:       { color: 'text-slate-400',   dot: 'bg-slate-500',   badge: 'bg-slate-500/15 text-slate-400 border-slate-500/25' },
-  Standby:       { color: 'text-sky-400',     dot: 'bg-sky-400',     badge: 'bg-sky-500/15 text-sky-400 border-sky-500/25' },
-  Reserved:      { color: 'text-violet-400',  dot: 'bg-violet-400',  badge: 'bg-violet-500/15 text-violet-400 border-violet-500/25' },
+  Active:        { color: 'text-[var(--state-success)]', dot: 'bg-[var(--state-success)]', badge: 'bg-[var(--panel-item-bg)] text-[var(--state-success)] border-[var(--state-success-border)]' },
+  Maintenance:   { color: 'text-[var(--state-warning)]', dot: 'bg-[var(--state-warning)]', badge: 'bg-[var(--panel-item-bg)] text-[var(--state-warning)] border-[var(--state-warning-border)]' },
+  Decommissioned:{ color: 'text-[var(--state-danger)]', dot: 'bg-[var(--state-danger)]', badge: 'bg-[var(--state-danger-surface)] text-[var(--state-danger)] border-[var(--state-danger-border)]' },
+  Offline:       { color: 'text-[var(--text-secondary)]', dot: 'bg-[var(--text-secondary)]', badge: 'bg-[var(--panel-item-bg)] text-[var(--text-secondary)] border-[var(--grid-border)]' },
+  Standby:       { color: 'text-[var(--state-info)]', dot: 'bg-[var(--state-info)]', badge: 'bg-[var(--state-info-surface)] text-[var(--state-info)] border-[var(--state-info-border)]' },
+  Reserved:      { color: 'text-violet-700 [.dark_&]:text-violet-300', dot: 'bg-violet-700 [.dark_&]:bg-violet-300', badge: 'bg-violet-500/10 text-violet-700 [.dark_&]:text-violet-300 border-violet-500/30' },
 }
 
 const TYPE_CONFIG: Record<string, { color: string; short: string }> = {
@@ -594,7 +594,7 @@ const RackUnit = ({ uNumber, loc, isTop, isBottom, highlight, onSelect, onManage
         {isBottom && device && (
           <div className="flex-1 flex items-center justify-between overflow-hidden gap-1 pl-1">
             <div className="flex items-center gap-1.5 overflow-hidden">
-              <span className={`shrink-0 ${statusCfg?.dot} w-1.5 h-1.5 rounded-full ${isReservation ? 'animate-pulse' : ''}`} />
+              <span role="img" aria-label={`Status: ${isReservation ? 'Reserved' : device.status || 'Unknown'}`} title={`Status: ${isReservation ? 'Reserved' : device.status || 'Unknown'}`} className={`shrink-0 ${statusCfg?.dot} w-1.5 h-1.5 rounded-full ${isReservation ? 'animate-pulse' : ''}`} />
               <div className="flex flex-col min-w-0">
                 <span title={device.name} className="text-xs font-semibold truncate leading-none text-[var(--text-primary)]">
                   {device.name}
@@ -1262,16 +1262,9 @@ interface RackElevationProps {
 const AssetLegend = () => (
   <div className="flex flex-wrap items-center gap-2 bg-[var(--surface-elevated)] px-3 py-2 rounded-lg border border-[var(--grid-border)]">
     <span className="text-[11px] font-medium text-[var(--text-secondary)] mr-1">Status:</span>
-    {[
-      { label: 'Active',         color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-      { label: 'Standby',        color: 'bg-sky-500/20 text-sky-400 border-sky-500/30' },
-      { label: 'Maintenance',    color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-      { label: 'Decommissioned', color: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
-      { label: 'Offline',        color: 'bg-slate-500/20 text-slate-400 border-slate-500/30' },
-      { label: 'Reserved',       color: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
-    ].map(l => (
-      <div key={l.label} className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${l.color}`}>
-        <span className="text-[10px] font-medium">{l.label}</span>
+    {['Active', 'Standby', 'Maintenance', 'Decommissioned', 'Offline', 'Reserved'].map(label => (
+      <div key={label} className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${STATUS_CONFIG[label].badge}`}>
+        <span className="text-[11px] font-medium">{label}</span>
       </div>
     ))}
   </div>
@@ -1780,23 +1773,23 @@ const SiteCapacityBar = ({ racks }: { racks: any[] }) => {
   const totalPowerCapKw = racks.reduce((a: number, r: any) => a + (r.max_power_kw || 10), 0)
 
   const stats = [
-    { label: 'Racks',     value: String(racks.length),                icon: <Server size={12}/>,      color: 'text-blue-400' },
-    { label: 'Assets',    value: String(totalDevices),                 icon: <Package size={12}/>,     color: 'text-violet-400' },
-    { label: 'Fill',      value: `${fillPct}%`,                        icon: <BarChart3 size={12}/>,   color: fillPct >= 90 ? 'text-rose-400' : fillPct >= 70 ? 'text-amber-400' : 'text-emerald-400' },
-    { label: 'Typical Est.', value: `${estimatedPowerKw.toFixed(1)}kW`, icon: <Zap size={12}/>,        color: 'text-sky-400' },
-    { label: 'Configured Ceiling', value: `${totalPowerCapKw.toFixed(0)}kW`, icon: <TrendingUp size={12}/>, color: 'text-slate-400' },
+    { label: 'Racks',     value: String(racks.length),                icon: <Server size={14}/>,      color: 'text-[var(--text-primary)]' },
+    { label: 'Assets',    value: String(totalDevices),                 icon: <Package size={14}/>,     color: 'text-[var(--text-primary)]' },
+    { label: 'Fill',      value: `${fillPct}%`,                        icon: <BarChart3 size={14}/>,   color: fillPct >= 90 ? 'text-[var(--state-danger)]' : fillPct >= 70 ? 'text-[var(--state-warning)]' : 'text-[var(--state-success)]' },
+    { label: 'Typical Est.', value: `${estimatedPowerKw.toFixed(1)}kW`, icon: <Zap size={14}/>,        color: 'text-[var(--text-primary)]' },
+    { label: 'Configured Ceiling', value: `${totalPowerCapKw.toFixed(0)}kW`, icon: <TrendingUp size={14}/>, color: 'text-[var(--text-primary)]' },
   ]
 
   return (
-    <div className="flex items-center gap-4 px-4 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 rounded-lg bg-[var(--surface-elevated)] border border-[var(--grid-border)]">
       {stats.map((s, i) => (
         <React.Fragment key={s.label}>
-          {i > 0 && <div className="h-5 w-px bg-white/10" />}
-          <div className="flex items-center gap-1.5">
-            <span className={`${s.color} opacity-70`}>{s.icon}</span>
+          {i > 0 && <div className="h-6 w-px bg-[var(--grid-border)]" />}
+          <div className="flex items-center gap-2">
+            <span className="text-[var(--text-secondary)]">{s.icon}</span>
             <div>
-              <div className={`text-[11px] font-black tabular-nums ${s.color}`}>{s.value}</div>
-              <div className="text-[7px] text-slate-600 uppercase font-bold tracking-wider">{s.label}</div>
+              <div className={`text-sm font-semibold tabular-nums ${s.color}`}>{s.value}</div>
+              <div className="text-[11px] text-[var(--text-secondary)] font-medium">{s.label}</div>
             </div>
           </div>
         </React.Fragment>
