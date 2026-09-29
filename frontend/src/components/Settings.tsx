@@ -38,31 +38,32 @@ const PERMISSION_COMMIT_DEBOUNCE_MS = 900
 
 const SettingField = ({ label, description, children, icon: Icon, onHistory, isEditable, onEdit, isPending, absPath, isModified, paramName }: any) => {
   return (
-    <div className={`flex min-h-[244px] flex-col space-y-3 p-5 bg-[var(--panel-item-bg)] rounded-lg border transition-all group relative overflow-hidden ${isEditable ? 'border-blue-500/50 bg-blue-500/5' : 'border-[var(--glass-border)] hover:border-blue-500/30'}`}>
+    <div role="group" aria-label={label} className={`flex min-h-[244px] min-w-0 flex-col space-y-3 p-5 bg-[var(--panel-item-bg)] rounded-lg border transition-all group relative overflow-hidden ${isEditable ? 'border-blue-500/50 bg-blue-500/5' : 'border-[var(--grid-border)] hover:border-blue-500/30'}`}>
       <div className="flex min-h-[72px] items-start justify-between">
-        <div className="flex items-start gap-4">
+        <div className="flex min-w-0 items-start gap-3">
           {Icon && <div className={`p-2.5 rounded-lg transition-transform group-hover:scale-110 ${isEditable ? 'bg-blue-600 text-white' : 'bg-blue-500/10 text-blue-400'}`}><Icon size={16} /></div>}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] leading-none">{label}</label>
+          <div className="flex min-w-0 flex-col">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-semibold text-[var(--text-primary)] leading-5 [overflow-wrap:anywhere]">{label}</span>
               {isModified ? (
-                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-[7px] font-black text-amber-500 uppercase animate-pulse">
+                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-[var(--state-warning-surface)] border border-[var(--state-warning-border)] rounded-lg text-[10px] font-medium text-[var(--state-warning)]">
                    Modified
                 </span>
               ) : (
-                <span className="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[7px] font-black text-emerald-500 uppercase">
+                <span className="px-1.5 py-0.5 bg-[var(--state-success-surface)] border border-[var(--state-success-border)] rounded-lg text-[10px] font-medium text-[var(--state-success)]">
                   Loaded
                 </span>
               )}
             </div>
-            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mt-1 leading-relaxed">{description}</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-1 leading-5 [overflow-wrap:anywhere]">{description}</p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           {onEdit && (
             <button 
               onClick={onEdit}
-              className={`p-1.5 transition-colors rounded-lg ${isEditable ? 'bg-rose-600 text-white' : 'text-[var(--text-muted)] hover:text-blue-400 hover:bg-blue-500/10'}`}
+              aria-label={`${isEditable ? 'Discard changes to' : 'Edit'} ${label}`}
+              className={`h-8 w-8 flex items-center justify-center transition-colors rounded-lg ${isEditable ? 'bg-[var(--state-danger-surface)] text-[var(--state-danger)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'}`}
               title={isEditable ? "Lock & Discard Changes" : "Edit Field"}
             >
               {isEditable ? <Lock size={14} /> : <Edit2 size={14} />}
@@ -71,7 +72,8 @@ const SettingField = ({ label, description, children, icon: Icon, onHistory, isE
           {onHistory && (
             <button 
               onClick={onHistory}
-              className="p-1.5 text-[var(--text-muted)] hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
+              aria-label={`History for ${label}`}
+              className="h-8 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
               title="View Change History"
             >
               <HistoryIcon size={14} />
@@ -82,25 +84,26 @@ const SettingField = ({ label, description, children, icon: Icon, onHistory, isE
       
       <div className="flex min-h-[38px] flex-col gap-1.5 px-0.5">
           {paramName && (
-              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-blue-500/80 tracking-tighter">
+              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)] [overflow-wrap:anywhere]">
                   <Terminal size={10} /> PARAM: {paramName}
               </div>
           )}
           {absPath && (
-              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-slate-500 tracking-tighter">
+              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)] [overflow-wrap:anywhere]">
                   <FolderTree size={10} /> FILE: {absPath}
               </div>
           )}
       </div>
 
       <div className="mt-auto flex items-center gap-3">
-        <div className="flex-1 relative">
+        <div className="flex-1 min-w-0 relative">
             {children}
         </div>
         {isModified && isEditable && (
             <motion.button 
                 initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                 onClick={() => onEdit('save')}
+                aria-label={`Save ${label}`}
                 className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg shadow-blue-500/20 transition-all active:scale-95"
             >
                 <Save size={16} />
@@ -231,7 +234,7 @@ const SettingsWayfinding = ({
           data-settings-tab={option.value}
           type="button"
           onClick={() => onChange(option.value)}
-          className={`min-h-[36px] shrink-0 rounded-lg px-0.5 py-0 text-[10px] font-bold tracking-widest transition-all ${
+          className={`min-h-10 shrink-0 rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
             value === option.value
               ? 'bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20'
               : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
@@ -966,13 +969,13 @@ export default function SettingsPage() {
   const getImpactTone = (impact?: string) => {
     switch (impact) {
       case 'CRITICAL':
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+        return 'bg-[var(--state-danger-surface)] text-[var(--state-danger)] border-[var(--state-danger-border)]'
       case 'HIGH':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+        return 'bg-[var(--state-warning-surface)] text-[var(--state-warning)] border-[var(--state-warning-border)]'
       case 'MEDIUM':
-        return 'bg-sky-500/10 text-sky-400 border-sky-500/20'
+        return 'bg-[var(--state-info-surface)] text-[var(--state-info)] border-[var(--state-info-border)]'
       default:
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+        return 'bg-[var(--state-success-surface)] text-[var(--state-success)] border-[var(--state-success-border)]'
     }
   }
 
@@ -1738,13 +1741,13 @@ export default function SettingsPage() {
       <section className="flex w-full min-w-0 shrink-0 flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-6" data-golden-page-header="true" data-settings-header="true">
         <div className="w-full min-w-0 flex-1 space-y-1 sm:w-auto sm:min-w-[200px]">
           <div className="space-y-0.5">
-            <h1 className="text-xl font-black tracking-tighter text-[var(--text-primary)]">
+            <h1 className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">
               <span className="flex items-center gap-3">
                 <SettingsIcon className="text-blue-500" size={18} />
                 <span>Settings</span>
               </span>
             </h1>
-            <p className="max-w-3xl text-[10px] font-bold tracking-[0.04em] text-[var(--text-secondary)]">
+            <p className="max-w-3xl text-sm text-[var(--text-secondary)]">
               System Configuration & Golden Template
             </p>
           </div>
@@ -1755,7 +1758,7 @@ export default function SettingsPage() {
               <ToolbarButton
                   onClick={() => setTopTab('standards')}
                   variant="secondary"
-                  className="!flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20"
+                  className="!h-auto !min-h-10 !py-2 !flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 [&>svg]:shrink-0 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20"
               >
                   <Layout size={14} className="mr-2 inline-block" />
                   <span>Golden Template</span>
@@ -1765,7 +1768,7 @@ export default function SettingsPage() {
               <ToolbarButton
                   onClick={() => envMutation.mutate(getPersistableEnvSettings())}
                   variant="secondary"
-                  className={`!flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 ${isDirty() ? 'bg-amber-600/10 border-amber-500/30 text-amber-500 animate-pulse' : 'bg-emerald-600/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-600/20'}`}
+                  className={`!h-auto !min-h-10 !py-2 !flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 [&>svg]:shrink-0 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 ${isDirty() ? 'bg-amber-600/10 border-amber-500/30 text-amber-500 animate-pulse' : 'bg-emerald-600/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-600/20'}`}
               >
                   <Zap size={14} className={`mr-2 inline-block ${envMutation.isPending ? 'animate-pulse' : ''}`} />
                   <span>Force Hot Reload</span>
@@ -1947,11 +1950,11 @@ export default function SettingsPage() {
           )}
           {topTab === 'environments' && (
             <motion.div key="environments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2" data-settings-tab-content="environments">
-               <div className="rounded-lg border border-white/5 bg-black/20 p-4" data-settings-personal-preferences="true">
+               <div className="rounded-lg border border-[var(--grid-border)] bg-[var(--surface-elevated)] p-4" data-settings-personal-preferences="true">
                  <div className="flex flex-wrap items-center justify-between gap-3">
                    <div>
-                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-300">Personal Preferences</p>
-                     <p className="mt-1 text-[9px] font-semibold text-slate-500">Choose the visual mode for your operator session.</p>
+                     <p className="text-sm font-semibold text-[var(--text-primary)]">Personal Preferences</p>
+                     <p className="mt-1 text-xs text-[var(--text-secondary)]">Choose the visual mode for your operator session.</p>
                    </div>
                    <div className="flex items-center gap-2">
                      {themeOptions.map((theme) => (
@@ -1960,7 +1963,7 @@ export default function SettingsPage() {
                          type="button"
                          aria-pressed={currentTheme === theme.id}
                          onClick={() => changeTheme(theme.id)}
-                         className={`rounded-lg border px-3 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${currentTheme === theme.id ? 'border-blue-500/40 bg-blue-500/15 text-blue-300' : 'border-white/10 bg-black/20 text-slate-400 hover:border-white/20 hover:text-white'}`}
+                         className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${currentTheme === theme.id ? 'border-[var(--action-primary)] bg-[var(--action-primary)] text-white' : 'border-[var(--grid-border)] bg-[var(--surface-base)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'}`}
                        >
                          {theme.label}
                        </button>
@@ -1981,12 +1984,13 @@ export default function SettingsPage() {
                        className="max-w-2xl"
                      />
                      <ToolbarGroup>
-                       <div className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3">
+                       <div className="flex min-h-10 items-center gap-2 rounded-lg border border-[var(--grid-border)] bg-[var(--surface-base)] px-3">
                           <Filter size={14} className="text-slate-500" />
                           <select
                             value={envImpactFilter}
+                            aria-label="Parameter impact"
                             onChange={(e) => setEnvImpactFilter(e.target.value as any)}
-                            className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none cursor-pointer focus:text-blue-400"
+                            className="min-h-10 bg-transparent text-xs text-[var(--text-primary)] cursor-pointer"
                           >
                             <option value="ALL">All Impact</option>
                             <option value="CRITICAL">Critical Only</option>
@@ -2024,11 +2028,11 @@ export default function SettingsPage() {
                   {visibleCategories.map((cat: any) => (
                       <div key={cat} className="space-y-4">
                           <div className="flex items-center justify-between gap-4 px-1">
-                            <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                            <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                                {cat === 'Infrastructure' ? <Cpu size={12} /> : cat === 'UI' ? <Layout size={12} /> : <Box size={12} />} 
                                {cat} Domain
                             </h3>
-                            <div className="text-[8px] font-black uppercase tracking-widest text-slate-600 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
+                            <div className="text-xs text-[var(--text-secondary)] bg-[var(--surface-elevated)] px-2 py-1 rounded-lg border border-[var(--grid-border)]">
                               {filteredEnvEntries.filter(([key]) => localEnv._metadata?.[key]?.category === cat).length} parameters
                             </div>
                           </div>
@@ -2046,7 +2050,7 @@ export default function SettingsPage() {
                                       paramName={localEnv._metadata?.[key]?.param}
                                   >
                                       <div className="space-y-3">
-                                        <div className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-[7px] font-black uppercase tracking-widest ${getImpactTone(envHelp[key]?.impact)}`}>
+                                        <div className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-[10px] font-medium ${getImpactTone(envHelp[key]?.impact)}`}>
                                           {envHelp[key]?.impact || 'LOW'} Impact
                                         </div>
                                         {typeof value === 'boolean' ? (
@@ -2056,13 +2060,13 @@ export default function SettingsPage() {
                                                     onChange={(e: any) => setLocalEnv({...localEnv, [key]: e.target.checked})}
                                                     activeColor="bg-emerald-600"
                                                 />
-                                                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{value ? 'Enabled' : 'Disabled'}</span>
+                                                <span className="text-xs text-[var(--text-secondary)]">{value ? 'Enabled' : 'Disabled'}</span>
                                             </div>
                                         ) : (
                                             <input 
-                                                disabled={!editableFields[key]} value={value || ''} 
+                                                aria-label={key.replace(/_/g, ' ')} readOnly={!editableFields[key]} value={value ?? ''}
                                                 onChange={e => setLocalEnv({...localEnv, [key]: e.target.value})} 
-                                                className="w-full bg-black/40 border border-white/5 rounded-lg px-3 py-2 text-[11px] font-bold font-mono text-emerald-400 outline-none focus:border-blue-500/50 transition-all disabled:opacity-50 h-9" 
+                                                className="w-full min-h-10 bg-[var(--surface-base)] border border-[var(--grid-border)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--text-primary)] focus:border-[var(--accent-primary)] transition-colors read-only:bg-[var(--grid-bg)]"
                                             />
                                         )}
                                       </div>
