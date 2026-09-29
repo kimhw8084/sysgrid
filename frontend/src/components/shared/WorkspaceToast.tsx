@@ -77,7 +77,7 @@ export const WorkspaceToast = ({ t, message, onRevert, type = 'success' }: Works
                   setIsConfirmingRevert(true)
                 }
               }}
-              onMouseLeave={() => setIsConfirmingRevert(false)}
+              onBlur={() => setIsConfirmingRevert(false)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all ${
                 isConfirmingRevert 
                   ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 hover:bg-rose-500/30' 

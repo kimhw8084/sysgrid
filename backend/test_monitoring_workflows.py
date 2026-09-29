@@ -95,7 +95,7 @@ async def test_monitoring_bulk_actions_create_history_entries(seeded_admin_tenan
 
 
 @pytest.mark.anyio
-async def test_monitoring_purge_revert_restores_deleted_row_from_backend_snapshot(seeded_admin_tenant):
+async def test_monitoring_purge_is_irreversible_even_with_a_former_snapshot(seeded_admin_tenant):
     client = seeded_admin_tenant["client"]
     tenant_id = seeded_admin_tenant["tenant_id"]
     headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
@@ -140,9 +140,15 @@ async def test_monitoring_purge_revert_restores_deleted_row_from_backend_snapsho
     assert deleted_monitor["status"] == "Deleted"
     assert deleted_monitor["is_deleted"] is True
 
+    preview_res = await client.post("/api/v1/monitoring/bulk-action", json={
+        "ids": [monitor["id"]], "action": "purge", "dry_run": True,
+    }, headers=headers)
+    assert preview_res.status_code == 200, preview_res.text
+    assert preview_res.json()["can_execute"] is True
     purge_res = await client.post("/api/v1/monitoring/bulk-action", json={
         "ids": [monitor["id"]],
         "action": "purge",
+        "precondition": preview_res.json()["precondition"],
     }, headers=headers)
     assert purge_res.status_code == 200, purge_res.text
     assert purge_res.json()["changed"] == 1
@@ -156,15 +162,12 @@ async def test_monitoring_purge_revert_restores_deleted_row_from_backend_snapsho
         "action": "restore_purged",
         "payload": {"snapshots": [deleted_monitor]},
     }, headers=headers)
-    assert restore_res.status_code == 200, restore_res.text
-    assert restore_res.json()["changed"] == 1
+    assert restore_res.status_code == 400, restore_res.text
+    assert "unsupported" in restore_res.json()["detail"]
 
     restored_list_res = await client.get("/api/v1/monitoring?include_deleted=true", headers=headers)
     assert restored_list_res.status_code == 200, restored_list_res.text
-    restored_monitor = next(item for item in restored_list_res.json() if item["id"] == monitor["id"])
-    assert restored_monitor["title"] == deleted_monitor["title"]
-    assert restored_monitor["status"] == "Deleted"
-    assert restored_monitor["is_deleted"] is True
+    assert all(item["id"] != monitor["id"] for item in restored_list_res.json())
 
 
 @pytest.mark.anyio

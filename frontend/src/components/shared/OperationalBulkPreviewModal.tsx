@@ -37,7 +37,8 @@ export type OperationalPurgeImpact = {
   permanent: boolean
   recovery_supported: boolean
   aggregate: {
-    device_count: number
+    device_count?: number
+    monitoring_count?: number
     delete_count: number
     detach_count: number
     deletes: OperationalPurgeImpactEntry[]
@@ -67,6 +68,9 @@ type OperationalBulkPreviewModalProps = {
   onConfirm: () => void
   onRevert?: () => void
   previewBasis?: 'backend' | 'workspace-snapshot'
+  isLoading?: boolean
+  error?: string
+  onRefresh?: () => void
 }
 
 const SummaryCard = ({ label, value, tone }: { label: string; value: number; tone: 'neutral' | 'success' | 'warning' | 'danger' }) => {
@@ -99,10 +103,13 @@ export function OperationalBulkPreviewModal({
   onConfirm,
   onRevert,
   previewBasis = 'backend',
+  isLoading = false,
+  error = '',
+  onRefresh,
 }: OperationalBulkPreviewModalProps) {
   const isComplete = Boolean(result)
   const hasBlockingIssues = Boolean(preview && (preview.blocked_count > 0 || preview.missing_count > 0))
-  const canConfirm = Boolean(preview?.can_execute) && !isExecuting && !isComplete
+  const canConfirm = Boolean(preview?.can_execute) && !isExecuting && !isComplete && !isLoading && !error
   const purgeImpact = isComplete ? result?.purge_impact : preview?.purge_impact
 
   return (
@@ -160,6 +167,13 @@ export function OperationalBulkPreviewModal({
       )}
     >
       <div className="space-y-5 pt-2" data-testid={isComplete ? 'operational-bulk-result' : 'operational-bulk-preview'}>
+        {isLoading ? <p role="status" className="text-sm text-slate-300">Loading the current impact…</p> : null}
+        {error ? (
+          <div role="alert" className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">
+            <p>{error}</p>
+            {onRefresh ? <ToolbarButton onClick={onRefresh} disabled={isLoading || isExecuting}>Review fresh preview</ToolbarButton> : null}
+          </div>
+        ) : null}
         <div className="rounded-xl border border-white/10 bg-slate-950/70 px-5 py-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Requested action</p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-100">

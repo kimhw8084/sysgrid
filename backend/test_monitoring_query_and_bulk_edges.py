@@ -136,8 +136,16 @@ async def test_monitoring_list_filters_and_bulk_edge_behaviors(seeded_admin_tena
         json={"ids": [monitor_b["id"], 999999], "action": "purge"},
         headers=headers,
     )
-    assert purge_res.status_code == 200, purge_res.text
-    purge_payload = purge_res.json()
-    assert purge_payload["changed"] == 1
-    assert purge_payload["skipped"] == 1
-    assert purge_payload["summary"] == "Purged monitors: 1 changed | 1 unchanged"
+    assert purge_res.status_code == 409, purge_res.text
+    assert purge_res.json()["detail"]["preview"]["missing_ids"] == [999999]
+    remaining = await client.get("/api/v1/monitoring?include_deleted=true", headers=headers)
+    assert any(item["id"] == monitor_b["id"] for item in remaining.json())
+    preview = await client.post("/api/v1/monitoring/bulk-action", json={
+        "ids": [monitor_b["id"]], "action": "purge", "dry_run": True,
+    }, headers=headers)
+    assert preview.status_code == 200, preview.text
+    executed = await client.post("/api/v1/monitoring/bulk-action", json={
+        "ids": [monitor_b["id"]], "action": "purge", "precondition": preview.json()["precondition"],
+    }, headers=headers)
+    assert executed.status_code == 200, executed.text
+    assert executed.json()["changed_ids"] == [monitor_b["id"]]

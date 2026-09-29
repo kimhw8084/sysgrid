@@ -449,3 +449,210 @@ test.describe('Monitoring workflows', () => {
     await expect(getPrimaryGrid(page, 'monitoring')).not.toContainText(invalidTitle)
   })
 })
+
+test.describe('Monitoring permanent-purge authority', () => {
+  test('late purge completion preserves the route after leaving Monitoring', async ({ page, request }) => {
+    await resetBrowserState(page)
+    const { monitoring } = await seedOperationalScenario(request)
+    const archived = await request.post(`${apiBase}/monitoring/bulk-action`, { headers: testApiHeaders, data: { ids: [monitoring.id], action: 'delete' } })
+    expect(archived.ok()).toBeTruthy()
+    await gotoView(page, '/asset', 'Assets', 'assets')
+    await page.getByRole('link', { name: 'Monitoring', exact: true }).click()
+    await expectWorkspaceRoute(page, '/monitoring')
+    await page.getByRole('button', { name: 'Archived', exact: true }).click()
+    await fillGridSearch(page, 'Scan matrix...', monitoring.title, 'monitoring')
+    await openMonitoringDetailFromLogicalRow(page, monitoring.title)
+    let release!: () => void
+    let held!: () => void
+    const gate = new Promise<void>(resolve => { release = resolve })
+    const pending = new Promise<void>(resolve => { held = resolve })
+    await page.route('**/api/v1/monitoring/bulk-action', async route => {
+      const body = route.request().postDataJSON()
+      if (body.action === 'purge' && body.dry_run !== true) {
+        held(); await gate
+        await route.fulfill({ response: await route.fetch() })
+      } else await route.continue()
+    })
+    try {
+      await page.getByRole('dialog').getByRole('button', { name: 'Purge', exact: true }).click()
+      const preview = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Monitoring bulk preview' }) })
+      await expect(preview.getByRole('button', { name: 'Confirm Permanent purge' })).toBeEnabled()
+      await preview.getByRole('button', { name: 'Confirm Permanent purge' }).click()
+      await pending
+      await page.goBack()
+      await expectWorkspaceRoute(page, '/asset')
+      const completed = page.waitForResponse(response => response.url().endsWith('/monitoring/bulk-action') && response.request().postDataJSON()?.action === 'purge')
+      release()
+      expect((await completed).ok()).toBeTruthy()
+      await expect.poll(async () => {
+        const rows = await (await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })).json()
+        return rows.some((item: any) => item.id === monitoring.id)
+      }).toBe(false)
+      await expectWorkspaceRoute(page, '/asset')
+      await expect(getWorkspaceRoot(page, 'assets')).toBeVisible()
+    } finally { release() }
+  })
+
+  test('ordinary Archive still offers a working Revert', async ({ page, request }) => {
+    await resetBrowserState(page)
+    const { monitoring } = await seedOperationalScenario(request)
+    await gotoView(page, '/monitoring', 'Monitoring', 'monitoring')
+    await fillGridSearch(page, 'Scan matrix...', monitoring.title, 'monitoring')
+    const row = await getWorkspaceLogicalRowByText(page, 'monitoring', monitoring.title)
+    await row.action('More actions').click()
+    await page.getByRole('button', { name: 'Archive', exact: true }).click()
+    await page.getByRole('button', { name: 'Confirm?', exact: true }).click()
+    await expectToast(page, 'Archived 1 of 1 selected records.')
+    const archived = await (await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })).json()
+    expect(archived.find((item: any) => item.id === monitoring.id)?.is_deleted).toBe(true)
+    await page.getByRole('button', { name: 'Revert', exact: true }).click()
+    await page.getByRole('button', { name: 'Confirm Undo?', exact: true }).click()
+    await expectToast(page, 'Bulk operation reverted.')
+    await expect.poll(async () => {
+      const rows = await (await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })).json()
+      return rows.find((item: any) => item.id === monitoring.id)?.is_deleted
+    }).toBe(false)
+    await expect(getPrimaryGrid(page, 'monitoring')).toContainText(monitoring.title)
+  })
+
+  for (const overlap of [true, false]) {
+    test(`pending purge ${overlap ? 'blocks overlapping' : 'allows disjoint'} restore after dismissal`, async ({ page, request }) => {
+      await resetBrowserState(page)
+      const { monitoring, primary } = await seedOperationalScenario(request)
+      const other = await createMonitoring(request, { device_id: primary.id, category: 'Hardware', status: 'Existing', title: `${monitoring.title}-PURGE-B`, platform: 'Zabbix' })
+      const archived = await request.post(`${apiBase}/monitoring/bulk-action`, { headers: testApiHeaders, data: { ids: [monitoring.id, other.id], action: 'delete' } })
+      expect(archived.ok()).toBeTruthy()
+      await gotoView(page, '/monitoring', 'Monitoring', 'monitoring')
+      await page.getByRole('button', { name: 'Archived', exact: true }).click()
+      await fillGridSearch(page, 'Scan matrix...', monitoring.title, 'monitoring')
+      let release!: () => void
+      let held!: () => void
+      const gate = new Promise<void>(resolve => { release = resolve })
+      const pending = new Promise<void>(resolve => { held = resolve })
+      let restoreRequests = 0
+      page.on('request', message => {
+        if (message.url().endsWith('/monitoring/bulk-action') && message.method() === 'POST' && message.postDataJSON()?.action === 'restore') restoreRequests++
+      })
+      await page.route('**/api/v1/monitoring/bulk-action', async route => {
+        const body = route.request().postDataJSON()
+        if (body.action === 'purge' && body.dry_run !== true) {
+          held(); await gate
+          await route.fulfill({ response: await route.fetch() })
+        } else await route.continue()
+      })
+      try {
+        const purgeRow = await getWorkspaceLogicalRowByText(page, 'monitoring', other.title)
+        await purgeRow.action('More actions').click()
+        await page.getByRole('button', { name: 'Purge', exact: true }).click()
+        const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Monitoring bulk preview' }) })
+        await expect(dialog.getByRole('button', { name: 'Confirm Permanent purge' })).toBeEnabled()
+        await dialog.getByRole('button', { name: 'Confirm Permanent purge' }).click()
+        await pending
+        await dialog.getByTitle('Close', { exact: true }).click()
+        await expect(dialog).not.toBeVisible()
+        const target = overlap ? other : monitoring
+        const restoreRow = await getWorkspaceLogicalRowByText(page, 'monitoring', target.title)
+        await restoreRow.action('More actions').click()
+        await page.getByRole('button', { name: 'Restore', exact: true }).click()
+        if (overlap) {
+          await expectToast(page, 'An overlapping operation is still pending.')
+          expect(restoreRequests).toBe(0)
+          // A real separate transaction invalidates the held preview.
+          for (const action of ['restore', 'delete']) {
+            const changed = await request.post(`${apiBase}/monitoring/bulk-action`, { headers: testApiHeaders, data: { ids: [other.id], action } })
+            expect(changed.ok()).toBeTruthy()
+          }
+          release()
+          await expectToast(page, /Nothing was purged/)
+          const retryRow = await getWorkspaceLogicalRowByText(page, 'monitoring', other.title)
+          await retryRow.action('More actions').click()
+          await page.getByRole('button', { name: 'Restore', exact: true }).click()
+        } else {
+          await expect.poll(() => restoreRequests).toBe(1)
+          await page.getByRole('button', { name: 'Existing', exact: true }).click()
+          await openMonitoringDetailFromLogicalRow(page, monitoring.title)
+          release()
+        }
+        await expect.poll(async () => {
+          const rows = await (await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })).json()
+          return rows.find((item: any) => item.id === target.id)?.is_deleted
+        }).toBe(false)
+        if (!overlap) await expect.poll(async () => {
+          const rows = await (await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })).json()
+          return rows.some((item: any) => item.id === other.id)
+        }).toBe(false)
+        if (!overlap) {
+          await expect(page.getByRole('dialog').getByRole('heading', { name: monitoring.title, exact: true })).toBeVisible()
+          expect(new URL(page.url()).searchParams.get('id')).toBe(String(monitoring.id))
+        }
+      } finally { release() }
+    })
+  }
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    for (const entry of ['row', 'detail'] as const) {
+      test(`${entry} preview and irreversible receipt at ${viewport.width}`, async ({ page, request }, testInfo) => {
+        await page.setViewportSize(viewport)
+        await resetBrowserState(page)
+        const failedReads: string[] = []
+        page.on('response', response => {
+          if (response.url().includes('/api/') && response.request().method() === 'GET' && response.status() >= 400) failedReads.push(`${response.status()} ${response.url()}`)
+        })
+        const { monitoring } = await seedOperationalScenario(request)
+        const archived = await request.post(`${apiBase}/monitoring/bulk-action`, {
+          headers: testApiHeaders, data: { ids: [monitoring.id], action: 'delete' },
+        })
+        expect(archived.ok(), await archived.text()).toBeTruthy()
+        await gotoView(page, '/monitoring', 'Monitoring', 'monitoring')
+        await page.getByRole('button', { name: 'Archived', exact: true }).click()
+        await fillGridSearch(page, 'Scan matrix...', monitoring.title, 'monitoring')
+        const row = await getWorkspaceLogicalRowByText(page, 'monitoring', monitoring.title)
+        if (entry === 'detail') {
+          await row.action('Open details').click()
+          await page.getByRole('dialog').getByRole('button', { name: 'Purge', exact: true }).click()
+        } else {
+          await row.action('More actions').click()
+          await page.getByRole('button', { name: 'Purge', exact: true }).click()
+        }
+        const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Monitoring bulk preview' }) })
+        await expect(dialog).toBeVisible()
+        await expect(dialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+        await expect(dialog.getByRole('button', { name: 'Confirm Permanent purge' })).toBeEnabled()
+        await expect(dialog.getByText('Monitoring history', { exact: true })).toBeVisible()
+        await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy()
+        const before = await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })
+        expect((await before.json()).some((item: any) => item.id === monitoring.id)).toBeTruthy()
+        await testInfo.attach('preview-state', { body: JSON.stringify({ viewport, entry, targetId: monitoring.id, url: page.url(), text: await dialog.innerText() }), contentType: 'application/json' })
+        await expect(dialog.locator(':scope > .glass-panel').first()).toHaveCSS('opacity', '1')
+        await page.screenshot({ path: testInfo.outputPath(`purge-preview-${entry}-${viewport.width}.png`), animations: 'disabled' })
+
+        if (entry === 'row' && viewport.width === 1440) {
+          const restored = await request.post(`${apiBase}/monitoring/bulk-action`, { headers: testApiHeaders, data: { ids: [monitoring.id], action: 'restore' } })
+          expect(restored.ok()).toBeTruthy()
+          const rearchived = await request.post(`${apiBase}/monitoring/bulk-action`, { headers: testApiHeaders, data: { ids: [monitoring.id], action: 'delete' } })
+          expect(rearchived.ok()).toBeTruthy()
+          await dialog.getByRole('button', { name: 'Confirm Permanent purge' }).click()
+          await expect(dialog.getByRole('alert')).toContainText('Nothing was purged')
+          const retained = await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })
+          expect((await retained.json()).some((item: any) => item.id === monitoring.id)).toBeTruthy()
+          await dialog.getByRole('button', { name: 'Review fresh preview' }).click()
+          await expect(dialog.getByRole('button', { name: 'Confirm Permanent purge' })).toBeEnabled()
+        }
+        await dialog.getByRole('button', { name: 'Confirm Permanent purge' }).click()
+        const receipt = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Monitoring bulk complete' }) })
+        await expect(receipt).toBeVisible()
+        await expect(receipt.getByRole('button', { name: /Undo|Revert/ })).toHaveCount(0)
+        await expect(receipt.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+        const after = await request.get(`${apiBase}/monitoring?include_deleted=true`, { headers: testApiHeaders })
+        expect((await after.json()).some((item: any) => item.id === monitoring.id)).toBeFalsy()
+        await testInfo.attach('receipt-state', { body: JSON.stringify({ viewport, entry, targetId: monitoring.id, url: page.url(), text: await receipt.innerText() }), contentType: 'application/json' })
+        await expect(receipt.locator(':scope > .glass-panel').first()).toHaveCSS('opacity', '1')
+        await page.screenshot({ path: testInfo.outputPath(`purge-receipt-${entry}-${viewport.width}.png`), animations: 'disabled' })
+        await receipt.getByRole('button', { name: 'Close bulk receipt' }).click()
+        await expect(receipt).not.toBeVisible()
+        await expect(page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: monitoring.title, exact: true }) })).not.toBeVisible()
+        expect(new URL(page.url()).searchParams.get('id')).not.toBe(String(monitoring.id))
+        expect(failedReads).toEqual([])
+      })
+    }
+  }
+})

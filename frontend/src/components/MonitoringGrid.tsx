@@ -27,7 +27,7 @@ import {
   NOTIFICATION_THROTTLE_MIN,
 } from '../domain/monitoringContract'
 import { STATUSES, type MonitoringOwner, type OperatorRecord } from './monitoring/monitoringWorkspaceContract'
-import { monitoringSupportsRestorePurged } from '../utils/monitoringPurgeRevertCapability'
+import { MonitoringPurgeDialog } from './monitoring/MonitoringPurgeDialog'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
 import { ConfigRegistryModal } from "./ConfigRegistry"
@@ -122,7 +122,6 @@ import {
   showOperationalBulkResultToast,
   showOperationalBulkRevertedToast,
 } from './shared/OperationalBulkContract'
-import { buildOperationalLifecycleToastMessage } from './shared/OperationalLifecycleToasts'
 import { useCollaborativeWorkspaceViews } from './shared/CollaborativeWorkspaceViews'
 import { ModulePolicyButton, useModuleActionPolicy } from '../policy/ModulePolicy'
 
@@ -459,6 +458,11 @@ export default function MonitoringGrid() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [detailItem, setDetailItem] = useState<any>(null)
+  const workspaceMounted = useRef(false)
+  useEffect(() => {
+    workspaceMounted.current = true
+    return () => { workspaceMounted.current = false }
+  }, [])
   const [historyItem, setHistoryItem] = useState<any>(null)
   const [showImportModal, setShowImportModal] = useState(false)
   const [recipientPopup, setRecipientPopup] = useState<{ recipients: string[], method: string } | null>(null)
@@ -568,7 +572,8 @@ export default function MonitoringGrid() {
   const { triggerRef: viewsMenuButtonRef, panelRef: viewsMenuPanelRef, panelStyle: viewsMenuStyle } = useWorkspaceAnchoredLayer(showViewsMenu, { minWidth: 420 })
   const { triggerRef: bulkMenuButtonRef, panelRef: bulkMenuPanelRef, panelStyle: bulkMenuStyle } = useWorkspaceAnchoredLayer(showBulkMenu, { minWidth: 340 })
   const lastUndoRef = useRef<any>(null)
-  const purgeRestoreCapabilityRef = useRef<{ supported: boolean; reason: string } | null>(null)
+  const pendingLifecycleIds = useRef(new Set<number>())
+  const [purgeIds, setPurgeIds] = useState<number[] | null>(null)
   const [newViewName, setNewViewName] = useState('')
 
   const isWorkspaceDirty = useMemo(() => {
@@ -1550,23 +1555,18 @@ export default function MonitoringGrid() {
     queryFn: async () => (await apiFetch('/api/v1/devices/')).json()
   })
 
-  const runUndo = async () => {
-    const undo = lastUndoRef.current
-    if (!undo) return
+  const runUndo = async (undo: any) => {
+    if (!undo || undo !== lastUndoRef.current) throw new Error('This recovery is no longer available.')
+    const ids: number[] = undo.ids || undo.snapshots.map((snapshot: any) => snapshot.id)
+    if (ids.some(id => pendingLifecycleIds.current.has(id))) {
+      throw new Error('Wait for the overlapping operation to finish before reverting.')
+    }
+    ids.forEach(id => pendingLifecycleIds.current.add(id))
+    try {
     if (undo.mode === 'bulk') {
       const res = await apiFetch('/api/v1/monitoring/bulk-action', {
         method: 'POST',
         body: JSON.stringify({ ids: undo.ids, action: undo.action, payload: undo.payload || {} })
-      })
-      if (!res.ok) throw new Error(await res.text())
-    } else if (undo.mode === 'restore_purged') {
-      const res = await apiFetch('/api/v1/monitoring/bulk-action', {
-        method: 'POST',
-        body: JSON.stringify({
-          ids: undo.snapshots.map((snapshot: any) => snapshot.id),
-          action: 'restore_purged',
-          payload: { snapshots: undo.snapshots },
-        })
       })
       if (!res.ok) throw new Error(await res.text())
     } else if (undo.mode === 'restore_snapshots') {
@@ -1578,47 +1578,12 @@ export default function MonitoringGrid() {
         if (!res.ok) throw new Error(await res.text())
       }
     }
-    lastUndoRef.current = null
+    if (lastUndoRef.current === undo) lastUndoRef.current = null
     queryClient.invalidateQueries({ queryKey: ['monitoring-items'] })
+    } finally {
+      ids.forEach(id => pendingLifecycleIds.current.delete(id))
+    }
   }
-
-  const ensurePurgeRestoreCapability = useCallback(async () => {
-    if (purgeRestoreCapabilityRef.current !== null) return purgeRestoreCapabilityRef.current
-    try {
-      await apiFetch('/api/v1/monitoring/bulk-action', {
-        method: 'POST',
-        body: JSON.stringify({ ids: [0], action: 'restore_purged', payload: {} })
-      })
-      purgeRestoreCapabilityRef.current = {
-        supported: true,
-        reason: 'restore_purged probe request succeeded.',
-      }
-    } catch (error: any) {
-      const detail = (
-        typeof error?.data?.detail === 'string' && error.data.detail.trim()
-          ? error.data.detail.trim()
-          : error instanceof Error && error.message.trim()
-            ? error.message.trim()
-            : 'Unknown restore_purged probe failure'
-      )
-      const status = Number.isFinite(Number(error?.status)) ? Number(error.status) : null
-      const supported = monitoringSupportsRestorePurged(error)
-      const detailPrefix = status ? `${status} ` : ''
-      purgeRestoreCapabilityRef.current = supported
-        ? {
-            supported: true,
-            reason: `restore_purged probe returned ${detailPrefix}${detail}; treating backend support as present.`,
-          }
-        : {
-            supported: false,
-            reason: `Revert unavailable: restore_purged probe returned ${detailPrefix}${detail}.`,
-          }
-    }
-    return purgeRestoreCapabilityRef.current ?? {
-      supported: false,
-      reason: 'Revert unavailable: restore_purged capability probe produced no result.',
-    }
-  }, [])
 
   const bulkMutation = useMutation({
     onMutate: ({ action, ids: overrideIds }: any) => {
@@ -1631,7 +1596,10 @@ export default function MonitoringGrid() {
     },
     mutationFn: async ({ action, payload = {}, ids: overrideIds }: any) => {
       const idsToUse = overrideIds ?? selectedIds
-      // Capture the full pre-purge rows here; truthful restore_purged depends on real snapshots, not ids alone.
+      if (action === 'purge' || action === 'restore_purged') throw new Error('Use the permanent-purge preview.')
+      if (idsToUse.some((id: number) => pendingLifecycleIds.current.has(id))) throw new Error('An overlapping operation is still pending.')
+      idsToUse.forEach((id: number) => pendingLifecycleIds.current.add(id))
+      try {
       const previousSnapshots = (allItems || []).filter((item: any) => idsToUse.includes(item.id)).map((item: any) => ({ ...item }))
       const res = await apiFetch('/api/v1/monitoring/bulk-action', {
         method: 'POST',
@@ -1640,6 +1608,9 @@ export default function MonitoringGrid() {
       if (!res.ok) throw new Error(await res.text())
       const result = await res.json()
       return { result, action, payload, idsToUse, previousSnapshots }
+      } finally {
+        idsToUse.forEach((id: number) => pendingLifecycleIds.current.delete(id))
+      }
     },
     onSuccess: async ({ result, action, payload, idsToUse, previousSnapshots }: any) => {
       queryClient.invalidateQueries({ queryKey: ['monitoring-items'] })
@@ -1663,56 +1634,22 @@ export default function MonitoringGrid() {
       const unchangedCount = Math.max(0, totalSelected - changedCount)
       const fieldLabel = resolveBulkFieldLabel(payload, MONITORING_BULK_FIELD_LABELS)
       const actionId = action === 'delete' ? 'archive' : action
-      const availableSnapshots = Array.isArray(previousSnapshots) ? previousSnapshots.filter(Boolean) : []
-      const shouldEvaluatePurgeRevert = action === 'purge' && changedCount > 0
-      let purgeSuppressionReason: string | null = null
-      let purgeRestoreCapability = null as null | { supported: boolean; reason: string }
-
-      if (shouldEvaluatePurgeRevert) {
-        if (availableSnapshots.length === 0) {
-          purgeSuppressionReason = 'Revert unavailable: missing restore snapshots before purge.'
-        } else {
-          purgeRestoreCapability = await ensurePurgeRestoreCapability()
-          if (!purgeRestoreCapability.supported) {
-            purgeSuppressionReason = purgeRestoreCapability.reason
-          }
-        }
-      }
-
       if (changedCount <= 0) lastUndoRef.current = null
       else if (action === 'delete') lastUndoRef.current = { mode: 'bulk', ids: idsToUse, action: 'restore' }
       else if (action === 'restore') lastUndoRef.current = { mode: 'bulk', ids: idsToUse, action: 'delete' }
-      else if (action === 'purge' && availableSnapshots.length > 0 && purgeRestoreCapability?.supported) {
-        lastUndoRef.current = { mode: 'restore_purged', snapshots: availableSnapshots }
-      }
       else if (action === 'update') lastUndoRef.current = { mode: 'restore_snapshots', snapshots: previousSnapshots, payload }
       else lastUndoRef.current = null
 
-      // When purge cannot expose Revert, emit the exact suppression cause in the success toast instead of hiding it silently.
-      if (action === 'purge' && changedCount > 0 && purgeSuppressionReason) {
-        showWorkspaceToast(
-          `${buildOperationalLifecycleToastMessage({
-            action: actionId,
-            totalSelected,
-            changedCount,
-            unchangedCount,
-            fieldLabel,
-          })} ${purgeSuppressionReason}`,
-          { type: 'success' }
-        )
-        return
-      }
-
+      const recovery = lastUndoRef.current
       showOperationalBulkResultToast({
         action: actionId,
         totalSelected,
         changedCount,
         unchangedCount,
         fieldLabel,
-        onRevert: lastUndoRef.current ? async () => {
+        onRevert: recovery ? async () => {
           try {
-            await runUndo()
-            lastUndoRef.current = null
+            await runUndo(recovery)
             showOperationalBulkRevertedToast()
           } catch (error: any) {
             showOperationalBulkRevertErrorToast(error.message || 'Bulk revert failed')
@@ -2243,8 +2180,13 @@ export default function MonitoringGrid() {
                             variant: 'inline' as OperationalRowActionVariant,
                             confirming: rowDeleteConfirmId === item.id,
                             onClick: () => {
+                              if (activeTab === 'deleted') {
+                                setPurgeIds([item.id])
+                                setRowActionMenu(null)
+                                return
+                              }
                                 if (rowDeleteConfirmId !== item.id) { setRowDeleteConfirmId(item.id); return }
-                                bulkMutation.mutate({ action: activeTab === 'active' ? 'delete' : 'purge', ids: [item.id] });
+                                bulkMutation.mutate({ action: 'delete', ids: [item.id] });
                                 setRowActionMenu(null); setRowDeleteConfirmId(null);
                             }
                         }
@@ -2381,6 +2323,22 @@ export default function MonitoringGrid() {
         message={confirmModal.message}
         variant={confirmModal.variant}
       />
+      <MonitoringPurgeDialog
+        ids={purgeIds}
+        pendingIds={pendingLifecycleIds}
+        onClose={() => setPurgeIds(null)}
+        onPurged={(ids) => {
+          const recovery = lastUndoRef.current
+          const recoveryIds: number[] = recovery?.ids || recovery?.snapshots?.map((snapshot: any) => snapshot.id) || []
+          if (recoveryIds.some(id => ids.includes(id))) lastUndoRef.current = null
+          if (workspaceMounted.current && detailItem && ids.includes(detailItem.id)) {
+            detailRoute.closeDetail()
+            setDetailDeleteConfirm(false)
+          }
+          queryClient.invalidateQueries({ queryKey: ['monitoring-items'] })
+          ids.forEach(id => queryClient.invalidateQueries({ queryKey: ['monitoring-history', id] }))
+        }}
+      />
 
       <AnimatePresence>
         {isFormOpen && (
@@ -2436,11 +2394,17 @@ export default function MonitoringGrid() {
               })
             }}
             onDelete={(monitor: any) => {
+              if (monitor.is_deleted) {
+                setPurgeIds([monitor.id])
+                detailRoute.closeDetail()
+                setDetailDeleteConfirm(false)
+                return
+              }
               if (!detailDeleteConfirm) {
                 setDetailDeleteConfirm(true)
                 return
               }
-              bulkMutation.mutate({ action: activeTab === 'active' ? 'delete' : 'purge', ids: [monitor.id] })
+              bulkMutation.mutate({ action: 'delete', ids: [monitor.id] })
               detailRoute.closeDetail()
               setDetailDeleteConfirm(false)
             }}
@@ -2829,19 +2793,6 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
   const [expandedLogic, setExpandedLogic] = useState<number | null>(item.logic_json?.[0]?.id || null)
   const [showLineNumbers, setShowLineNumbers] = useState(true)
   const [interventionDoc, setInterventionDoc] = useState<any>(null)
-
-  const { data: suggestedKnowledge } = useQuery({
-    queryKey: ['monitoring-knowledge-suggestions', item.id, item.device_id],
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      params.append('monitoring_id', String(item.id))
-      params.append('embedded_consumer', 'monitoring')
-      const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
-      const linked = await response.json()
-      if (Array.isArray(linked) && linked.length > 0) return linked
-      return linked
-    }
-  })
 
   const recoveryDocContent = (doc: any, index: number) => (
     <>
