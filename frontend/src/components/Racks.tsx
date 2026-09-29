@@ -2953,7 +2953,7 @@ export default function Racks() {
   const isMaskMode = isPlanInitialized || !!diffBaseVersion
 
   return (
-    <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-hidden">
+    <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
       
       {isPlanMode && (
         <PlanBanner 
@@ -3263,7 +3263,7 @@ export default function Racks() {
       )}
 
       {/* ── Rack Grid ── */}
-      <div id="racks-grid" className="h-[480px] flex-none md:h-full md:flex-1 flex gap-8 overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar px-1 min-h-0 relative">
+      <div id="racks-grid" className="h-[480px] flex-none md:h-full md:min-h-[480px] md:flex-1 flex gap-8 overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar px-1 min-h-0 relative">
         
         {viewMode === 'spatial' ? (
           <SpatialMap

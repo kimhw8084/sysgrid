@@ -19,7 +19,7 @@ export const ShellHeader = ({
 }) => (
   <header className="shrink-0 border-b border-[var(--border-default)] bg-[var(--bg-header)] px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8" data-sg-shell-header="true">
     <div className="flex min-h-[40px] flex-wrap items-center justify-between gap-3">
-      <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:flex-1">{left}</div>
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:min-w-[24rem] md:flex-1">{left}</div>
       {right && <div className="flex w-full min-w-0 max-w-full flex-wrap items-center justify-end gap-2 sm:gap-3 md:w-auto">{right}</div>}
     </div>
   </header>

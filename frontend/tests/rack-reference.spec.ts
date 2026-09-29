@@ -76,6 +76,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await expect(page.getByText(`${racks[2].name} Summary`, { exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Close', exact: true }).last().click()
 
+    if (process.env.SYSGRID_DESKTOP_ONLY === '1') return
     await page.setViewportSize({ width: 390, height: 844 })
     const search = page.getByPlaceholder('Search racks & devices...')
     await search.scrollIntoViewIfNeeded()

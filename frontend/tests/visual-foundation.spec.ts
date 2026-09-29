@@ -29,6 +29,30 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
     tokens: Object.fromEntries(['--bg-primary', '--text-primary', '--text-secondary', '--text-muted', '--accent-primary'].map(key => [key, getComputedStyle(document.documentElement).getPropertyValue(key).trim()])),
   }))
   expect(metrics.overflow).toBeLessThanOrEqual(2)
+  if (metrics.viewport.width >= 1024 && !await page.getByRole('dialog').count()) {
+    const shell = await page.locator('[data-sg-shell-header]').evaluate(header => {
+      const search = header.querySelector('[data-sg-app-search]')!.getBoundingClientRect()
+      const tools = header.querySelector(':scope > div > div:last-child')!.getBoundingClientRect()
+      return { search: search.toJSON(), tools: tools.toJSON(), overlap: Math.max(0, Math.min(search.right, tools.right) - Math.max(search.left, tools.left)) * Math.max(0, Math.min(search.bottom, tools.bottom) - Math.max(search.top, tools.top)) }
+    })
+    await testInfo.attach(`${name}-desktop-shell-bounds`, { body: JSON.stringify(shell), contentType: 'application/json' })
+    expect.soft(shell.overlap, 'Global search overlaps tenant or app controls').toBeLessThanOrEqual(2)
+    const controls = await page.locator('[data-golden-page-toolbar] button, [data-golden-page-toolbar] input:not([type="hidden"]), [data-golden-page-toolbar] select').evaluateAll(nodes => nodes.flatMap(node => {
+      const rect = node.getBoundingClientRect()
+      if (!rect.width || !rect.height || getComputedStyle(node).visibility === 'hidden') return []
+      let left = 0, right = innerWidth
+      for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+        if (/hidden|clip|auto|scroll/.test(getComputedStyle(parent).overflowX)) {
+          const bounds = parent.getBoundingClientRect()
+          left = Math.max(left, bounds.left)
+          right = Math.min(right, bounds.right)
+        }
+      }
+      return [{ name: node.getAttribute('aria-label') || node.getAttribute('title') || node.getAttribute('placeholder') || node.textContent?.trim(), left: rect.left, right: rect.right, clipLeft: left, clipRight: right }]
+    }))
+    await testInfo.attach(`${name}-desktop-toolbar-bounds`, { body: JSON.stringify(controls), contentType: 'application/json' })
+    expect.soft(controls.filter(control => control.left < control.clipLeft - 2 || control.right > control.clipRight + 2), `${name} desktop toolbar controls are horizontally clipped`).toEqual([])
+  }
   const cdp = await page.context().newCDPSession(page)
   await cdp.send('DOM.enable')
   await cdp.send('CSS.enable')
@@ -49,7 +73,7 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
 }
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }, { width: 1024, height: 768 }, { width: 1280, height: 800 }, { width: 1920, height: 1080 }]) {
     test(`visual foundation ${theme} ${viewport.width}`, async ({ page, sysApi: request }, testInfo) => {
       await page.setViewportSize(viewport)
       await resetBrowserState(page)
@@ -109,6 +133,16 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
         if (route.slug === 'settings') await expect(page.getByText('Infrastructure Domain', { exact: true })).toBeVisible()
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
         await capture(page, testInfo, route.slug)
+        if (route.slug === 'racks' && viewport.width >= 1024) {
+          const elevation = page.locator(`#racks-grid .glass-panel[data-rack-id="${rack.id}"]`)
+          const equipment = elevation.getByText(host.name, { exact: true })
+          const geometry = await elevation.evaluate(node => ({ height: node.getBoundingClientRect().height, equipmentViewportHeight: node.querySelector('.overflow-y-auto')?.getBoundingClientRect().height ?? 0 }))
+          await testInfo.attach('rack-desktop-equipment-geometry', { body: JSON.stringify(geometry), contentType: 'application/json' })
+          expect(geometry.equipmentViewportHeight).toBeGreaterThanOrEqual(120)
+          await equipment.scrollIntoViewIfNeeded()
+          await expect(equipment).toBeInViewport({ ratio: 0.9 })
+          await capture(page, testInfo, 'racks-equipment')
+        }
         if (route.slug === 'home') {
           const charts = await page.locator('.recharts-wrapper').evaluateAll(nodes => nodes.map(node => ({
             width: node.getBoundingClientRect().width,
