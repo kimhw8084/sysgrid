@@ -740,25 +740,21 @@ export function WorkspaceModalHeader({
   }
 
   return (
-    <div className="z-30 border-b border-white/10 bg-[#0b1222] px-6 py-5 sm:px-8">
-      <div className="flex items-start justify-between gap-6">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="flex items-center gap-2 self-start pt-1">
-            {closeControl}
-            {maximizeControl}
-          </div>
-          <div className={`ml-2 flex h-12 w-12 shrink-0 items-center justify-center ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-blue-500/20 bg-blue-600/10 text-blue-400`}>
+    <div data-workspace-modal-header className="z-30 shrink-0 border-b border-[var(--border-default)] bg-[var(--surface-base)] px-4 py-4 sm:px-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 basis-full items-start gap-3">
+          <div className={`hidden h-11 w-11 shrink-0 items-center justify-center sm:flex ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-[var(--border-default)] bg-[var(--accent-glow)] text-[var(--accent-primary)]`}>
             {icon}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-4">
-               <div>
-                  <h2 className="text-xl font-black tracking-tighter text-white">{title}</h2>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="text-[10px] font-bold text-slate-400">{subtitle}</span>
+               <div className="min-w-0 flex-1">
+                  <h2 className="min-w-0 break-words text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] [&>div]:min-w-0 [&>div]:flex-wrap">{title}</h2>
+                  <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2 [&>div]:min-w-0 [&>div]:flex-wrap">
+                    <span className="min-w-0 break-words text-xs leading-relaxed text-[var(--text-secondary)]">{subtitle}</span>
                     {status && (
                       <>
-                        <span className="w-1 h-1 rounded-full bg-slate-700 hidden sm:block" />
+                        <span className="hidden h-1 w-1 rounded-full bg-[var(--text-secondary)] sm:block" />
                         {status}
                       </>
                     )}
@@ -766,24 +762,27 @@ export function WorkspaceModalHeader({
                </div>
                
                {forensicLineage && (
-                  <div className="hidden xl:flex items-center gap-6 rounded-lg bg-black/40 border border-white/5 px-4 py-2 shadow-inner">
+                  <div className="hidden xl:flex items-center gap-5 border-l border-[var(--border-default)] pl-5">
                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Created genesis</span>
-                        <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">{formatDate(forensicLineage.createdAt)}</span>
+                        <span className="text-xs text-[var(--text-secondary)]">Created</span>
+                        <span className="mt-1 text-xs font-medium text-[var(--text-primary)] whitespace-nowrap">{formatDate(forensicLineage.createdAt)}</span>
                      </div>
-                     <div className="h-6 w-px bg-white/10" />
                      <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Last modified</span>
-                        <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">{formatDate(forensicLineage.updatedAt)}</span>
+                        <span className="text-xs text-[var(--text-secondary)]">Last modified</span>
+                        <span className="mt-1 text-xs font-medium text-[var(--text-primary)] whitespace-nowrap">{formatDate(forensicLineage.updatedAt)}</span>
                      </div>
                   </div>
                )}
             </div>
           </div>
+          <div className="flex shrink-0 items-center gap-1">
+            {maximizeControl}
+            {closeControl}
+          </div>
         </div>
 
         {tabs && activeTab && onTabChange && (
-          <div className="hidden lg:block shrink-0">
+          <div className="min-w-0 max-w-full overflow-x-auto">
             <WorkspaceTabStrip tabs={tabs} activeTab={activeTab} onChange={onTabChange} />
           </div>
         )}
@@ -800,10 +799,10 @@ export function WorkspaceModalFooter({
   right: React.ReactNode
 }) {
   return (
-    <div className="border-t border-white/10 px-6 py-5 sm:px-8 sm:py-6 modal-footer-spacing">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center space-x-2 pl-1">{left}</div>
-        <div className="flex flex-wrap items-center justify-end gap-3 pr-1">{right}</div>
+    <div data-workspace-modal-footer className="shrink-0 border-t border-[var(--border-default)] bg-[var(--surface-base)] px-4 py-4 sm:px-6">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {left && <div className="flex min-w-0 flex-wrap items-center gap-2">{left}</div>}
+        <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2 [&>div]:min-w-0 [&>div]:flex-wrap [&>div]:gap-2">{right}</div>
       </div>
     </div>
   )

@@ -76,7 +76,7 @@ import {
   useOperationalDetailRoute,
   useOperationalSelection,
 } from './shared/OperationalWorkspaceHooks'
-import { WorkspaceCompareShell, WorkspaceDossierShell, WorkspaceHistoryShell } from './shared/WorkspaceModalShells'
+import { WorkspaceCompareShell, WorkspaceDetailFields, WorkspaceDetailSection, WorkspaceDossierShell, WorkspaceHistoryShell } from './shared/WorkspaceModalShells'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
@@ -2796,11 +2796,11 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
 
   const recoveryDocContent = (doc: any, index: number) => (
     <>
-      <div className="p-1.5 bg-black/40 rounded-lg text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all"><FileText size={14}/></div>
+      <div className="rounded-md bg-[var(--state-warning-surface)] p-2 text-[var(--state-warning)]"><FileText size={16}/></div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-bold text-slate-300 tracking-tight leading-tight group-hover:text-white truncate">{doc.title}</p>
+        <p className="break-words text-sm font-medium leading-snug text-[var(--text-primary)]">{doc.title}</p>
         <div className="flex items-center justify-between mt-0.5">
-          <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Procedure {index + 1}</p>
+          <p className="text-xs text-[var(--text-secondary)]">Procedure {index + 1}</p>
           {doc.note && (
             <div className="flex items-center gap-1 text-blue-500/60">
               <MessageSquare size={8} />
@@ -2840,7 +2840,7 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
         </div>
       }
       footerRight={
-        <div className="flex items-center gap-3">
+        <>
             <ToolbarButton onClick={() => onEdit?.(item)}>Edit Monitor</ToolbarButton>
             <ToolbarButton onClick={() => onOpenHistory?.(item)}>History</ToolbarButton>
             <ToolbarButton onClick={() => onOpenBkm?.(item)}>Recovery</ToolbarButton>
@@ -2863,7 +2863,7 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                 ? (item.is_deleted ? 'Confirm Purge?' : 'Confirm Archive?') 
                 : (item.is_deleted ? 'Purge' : 'Archive')}
             </ToolbarButton>
-        </div>
+        </>
       }
     >
       <WorkspaceDossierShell
@@ -2872,7 +2872,7 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
              className="gap-8"
              sidebar={<div className="space-y-8">
                  <section className="space-y-3">
-                    <h3 className="px-1 text-[11px] font-black text-slate-500 uppercase tracking-widest">Target scope</h3>
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)]">Target scope</h3>
                     <div className="space-y-3">
                        <button
                          disabled={!item.device_id}
@@ -2880,22 +2880,22 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                          className="w-full rounded-lg border border-blue-500/20 bg-blue-500/10 p-4 text-left transition-all hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-30 shadow-inner group"
                        >
                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Registry asset</p>
+                            <p className="text-xs font-medium text-[var(--accent-primary)]">Registry asset</p>
                             <ArrowRightLeft size={10} className="text-blue-500/50 group-hover:translate-x-1 transition-transform" />
                          </div>
-                         <p className="text-[11px] font-black text-slate-100">{item.device_name || 'No linked asset'}</p>
+                         <p className="text-sm font-medium text-[var(--text-primary)]">{item.device_name || 'No linked asset'}</p>
                        </button>
                        
-                       <div className="bg-black/20 border border-white/5 rounded-lg p-4 shadow-inner space-y-3">
-                          <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Monitored services</p>
+                       <div className="space-y-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
+                          <p className="text-xs font-medium text-[var(--text-secondary)]">Monitored services</p>
                           <div className="flex flex-wrap gap-1.5">
                              {item.monitored_service_names?.map((name: string, i: number) => (
-                               <span key={`${i}-${item.id}`} className="bg-blue-600/10 border border-blue-500/20 text-blue-300 px-2 py-0.5 rounded-lg text-[9px] font-bold">
+                               <span key={`${i}-${item.id}`} className="rounded-md border border-[var(--border-default)] bg-[var(--accent-glow)] px-2 py-1 text-xs font-medium text-[var(--text-primary)]">
                                   {name}
                                </span>
                              ))}
                              {(!item.monitored_service_names || item.monitored_service_names.length === 0) && (
-                               <span key="no-services" className="text-[9px] font-bold text-slate-700 italic">No services mapped</span>
+                               <span key="no-services" className="text-sm text-[var(--text-secondary)]">No services mapped</span>
                              )}
                           </div>
                        </div>
@@ -2903,14 +2903,14 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                  </section>
 
                  <section className="space-y-3">
-                    <h3 className="px-1 text-[11px] font-black text-slate-500 uppercase tracking-widest">Recovery protocol</h3>
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)]">Recovery protocol</h3>
                     <div className="space-y-2">
                        {item.recovery_doc_details?.map((doc: any, i: number) => doc.note ? (
                          <button
                            key={`${i}-${item.id}`}
                            type="button"
                            onClick={() => setInterventionDoc(doc)}
-                           className="w-full bg-slate-900/60 border border-white/5 rounded-lg p-3 flex items-center space-x-3 hover:border-amber-500/30 transition-all cursor-pointer group text-left shadow-inner"
+                           className="flex w-full items-center gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-3 text-left transition-colors hover:border-[var(--state-warning)]"
                          >
                            {recoveryDocContent(doc, i)}
                          </button>
@@ -2919,7 +2919,7 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                            key={`${i}-${item.id}`}
                            moduleId="knowledge"
                            onClick={() => onOpenKnowledge?.(doc.id)}
-                           className="w-full bg-slate-900/60 border border-white/5 rounded-lg p-3 flex items-center space-x-3 hover:border-amber-500/30 transition-all cursor-pointer group text-left shadow-inner"
+                           className="flex w-full items-center gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-3 text-left transition-colors hover:border-[var(--state-warning)]"
                          >
                            {recoveryDocContent(doc, i)}
                          </ModulePolicyButton>
@@ -2930,26 +2930,13 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                     </div>
                  </section>
 
-                 <section className="space-y-3">
-                    <h3 className="px-1 text-[11px] font-black text-slate-500 uppercase tracking-widest">Operational meta</h3>
-                    <div className="bg-white/5 border border-white/5 rounded-lg overflow-hidden divide-y divide-white/5 shadow-inner">
-                       {[
-                          { label: 'Platform', value: item.platform, color: 'text-blue-400', icon: Globe },
-                          { label: 'Frequency', value: `${item.check_interval}s`, color: 'text-slate-300', icon: Clock },
-                          { label: 'Throttle', value: `${item.notification_throttle}s`, color: 'text-amber-400', icon: Zap }
-                       ].map((stat, i) => (
-                          <div key={`${i}-${item.id}-meta`} className="p-3 flex items-center justify-between hover:bg-white/5 transition-all">
-                             <div className="flex items-center gap-3">
-                                <div className="p-1.5 bg-black/40 rounded-lg text-slate-600">
-                                   <stat.icon size={12} />
-                                </div>
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
-                             </div>
-                             <span className={`text-[10px] font-black ${stat.color}`}>{stat.value}</span>
-                          </div>
-                       ))}
-                    </div>
-                 </section>
+                 <WorkspaceDetailSection title="Operational meta">
+                   <WorkspaceDetailFields columns={1} fields={[
+                     { label: 'Platform', value: item.platform || 'Not recorded' },
+                     { label: 'Frequency', value: item.check_interval == null ? 'Not recorded' : `${item.check_interval}s` },
+                     { label: 'Throttle', value: item.notification_throttle == null ? 'Not recorded' : `${item.notification_throttle}s` },
+                   ]} />
+                 </WorkspaceDetailSection>
 
                  {item.monitoring_url && (
                     <button 
@@ -2962,32 +2949,16 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                  )}
              </div>}
              main={<div className="space-y-8">
-                 <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="bg-white/[0.03] border border-white/5 rounded-lg p-5 group hover:border-white/10 transition-all shadow-inner">
-                       <div className="flex items-center gap-3 mb-3">
-                          <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg"><Info size={14}/></div>
-                          <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Operational Purpose</h4>
-                       </div>
-                       <p className="text-[12px] font-bold text-slate-400 leading-relaxed pl-1">
-                          {item.purpose || 'No purpose defined.'}
-                       </p>
-                    </div>
-                    <div className="bg-white/[0.03] border border-white/5 rounded-lg p-5 group hover:border-white/10 transition-all shadow-inner">
-                       <div className="flex items-center gap-3 mb-3">
-                          <div className="p-2 bg-rose-500/10 text-rose-400 rounded-lg"><Zap size={14}/></div>
-                          <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Failure Impact</h4>
-                       </div>
-                       <p className="text-[12px] font-bold text-slate-400 leading-relaxed pl-1">
-                          {item.impact || 'No impact analysis defined.'}
-                       </p>
-                    </div>
-                 </section>
+                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                   <WorkspaceDetailSection title="Operational Purpose" description={item.purpose || 'No purpose defined.'} />
+                   <WorkspaceDetailSection title="Failure Impact" description={item.impact || 'No impact analysis defined.'} />
+                 </div>
 
                  <section className="space-y-4">
                     <div className="flex items-center justify-between px-1">
                       <div className="flex items-center gap-3">
                          <div className="p-2 bg-slate-800 text-slate-400 rounded-lg"><Code size={16} /></div>
-                         <h3 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Logic Specification</h3>
+                         <h3 className="text-sm font-semibold text-[var(--text-primary)]">Logic Specification</h3>
                       </div>
                       <button 
                          onClick={() => setShowLineNumbers(!showLineNumbers)}
@@ -3042,20 +3013,20 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                  <section className="space-y-4">
                     <div className="flex items-center gap-3 px-1">
                        <div className="p-2 bg-blue-600/10 text-blue-400 rounded-lg"><Users size={16} /></div>
-                       <h3 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Ownership Matrix</h3>
+                       <h3 className="text-sm font-semibold text-[var(--text-primary)]">Ownership Matrix</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                       <div className="bg-white/[0.03] border border-white/5 rounded-lg p-5 shadow-inner">
-                          <h4 className="text-[10px] font-black text-slate-500 mb-3 uppercase tracking-widest">Primary Team Mapping</h4>
+                       <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5">
+                          <h4 className="mb-3 text-xs font-medium text-[var(--text-secondary)]">Primary Team Mapping</h4>
                           <div className="flex items-center gap-3">
                              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
                                 <Briefcase size={14} />
                              </div>
-                             <p className="text-[12px] font-black text-slate-200">{item.owner_team || 'Unassigned'}</p>
+                             <p className="text-sm font-medium text-[var(--text-primary)]">{item.owner_team || 'Unassigned'}</p>
                           </div>
                        </div>
-                       <div className="bg-white/[0.03] border border-white/5 rounded-lg p-5 shadow-inner">
-                          <h4 className="text-[10px] font-black text-slate-500 mb-3 uppercase tracking-widest">Assigned Personnel</h4>
+                       <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5">
+                          <h4 className="mb-3 text-xs font-medium text-[var(--text-secondary)]">Assigned Personnel</h4>
                           <div className="flex flex-wrap gap-2">
                              {item.owners?.map((o: any, i: number) => (
                                <div key={`${i}-${o.operator_id}`} className="bg-blue-600/10 border border-blue-500/20 text-blue-300 px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-2">
@@ -3064,9 +3035,9 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
                                </div>
                              ))}
                              {(!item.owners || item.owners.length === 0) && (
-                               <div className="flex items-center gap-2 text-slate-600 py-1">
+                               <div className="flex items-center gap-2 text-[var(--text-secondary)] py-1">
                                   <AlertCircle size={12} />
-                                  <span className="text-[10px] font-black uppercase tracking-widest">No individual owners assigned</span>
+                                  <span className="text-sm">No individual owners assigned</span>
                                </div>
                              )}
                           </div>

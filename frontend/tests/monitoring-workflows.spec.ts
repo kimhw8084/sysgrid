@@ -149,7 +149,7 @@ test.describe('Monitoring workflows', () => {
     await expect(compareModal.getByRole('heading', { name: 'Compare Monitors' })).toBeVisible()
     await expect(compareModal.getByRole('heading', { name: monitorA.title })).toBeVisible()
     await expect(compareModal.getByRole('heading', { name: monitorB.title })).toBeVisible()
-    await compareModal.locator('button').first().click()
+    await compareModal.getByTitle('Close', { exact: true }).click()
     await expect(compareModal).not.toBeVisible()
 
     await fillGridSearch(page, 'Scan matrix...', titlePrefix, 'monitoring')

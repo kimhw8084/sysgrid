@@ -14,6 +14,11 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
   const panel = page.getByRole('dialog').locator(':scope > .glass-panel').first()
   if (await panel.count()) await expect(panel).toHaveCSS('opacity', '1')
   await expect(page.getByText('Unexpected Application Error!', { exact: true })).not.toBeVisible()
+  if (name === 'home') {
+    for (const card of await page.locator('a[aria-label^="Open "] > div[style]').all()) {
+      await expect(card).toHaveCSS('opacity', '1')
+    }
+  }
   const metrics = await page.evaluate(() => ({
     theme: document.documentElement.dataset.theme,
     viewport: { width: innerWidth, height: innerHeight },
@@ -69,7 +74,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
       const service = await createService(request, {
         name: 'Orders database · Primary', service_type: 'Database', status: 'Active', environment: 'Production', device_id: host.id,
         purpose: 'Authoritative order storage for the regional application cluster.',
-        version: '16.4', config_json: JSON.stringify({ endpoint: 'orders-primary.production.internal:5432', replication: { mode: 'synchronous', replicas: 2 }, maintenance_window: 'Sunday 02:00–03:00 UTC', encryption: true }),
+        version: '16.4', config_json: { endpoint: 'orders-primary.production.internal:5432', replication: { mode: 'synchronous', replicas: 2 }, maintenance_window: 'Sunday 02:00–03:00 UTC', encryption: true },
       })
       const peer = await createAsset(request, {
         name: `orders-standby-${theme === 'pure-clarity' ? 'light' : 'dark'}-${viewport.width}`, system: `Platform ${suffix}`, type: 'Physical',
@@ -116,7 +121,31 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
         await page.goto(detail.path)
         const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: detail.name, exact: true }) })
         await expect(dialog).toBeVisible()
+        await expect(dialog.locator(':scope > .glass-panel')).toHaveCSS('opacity', '1')
+        const bounds = await dialog.locator(':scope > .glass-panel').boundingBox()
+        expect(bounds).not.toBeNull()
+        for (const button of await dialog.locator('[data-workspace-modal-footer] button').all()) {
+          await expect(button).toBeVisible()
+          const box = await button.boundingBox()
+          expect(box!.x).toBeGreaterThanOrEqual(bounds!.x - 1)
+          expect(box!.x + box!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width + 1)
+        }
+        const closeBox = await dialog.getByTitle('Close', { exact: true }).boundingBox()
+        expect(closeBox!.width).toBeGreaterThanOrEqual(44)
+        expect(closeBox!.height).toBeGreaterThanOrEqual(44)
+        if (detail.slug === 'service-detail') {
+          await expect(dialog.getByText('orders-primary.production.internal:5432', { exact: true })).toBeVisible()
+          await expect(dialog.getByText(/"mode": "synchronous"/)).toBeVisible()
+        }
         await capture(page, testInfo, detail.slug)
+        if (detail.slug === 'service-detail') {
+          await dialog.getByText(/"mode": "synchronous"/).scrollIntoViewIfNeeded()
+          await expect(dialog.getByText(/"mode": "synchronous"/)).toBeInViewport()
+          await capture(page, testInfo, 'service-metadata')
+        }
+        await dialog.getByTitle('Maximize', { exact: true }).click()
+        await expect(dialog.getByTitle('Restore size', { exact: true })).toBeVisible()
+        await dialog.getByTitle('Restore size', { exact: true }).click()
         await dialog.getByTitle('Close', { exact: true }).click()
         await expect(dialog).not.toBeVisible()
         await expect(page).not.toHaveURL(/[?&]id=/)

@@ -263,7 +263,7 @@ export function WorkspaceModal({
   if (!isOpen) return null
 
   const resolvedFooterRight = (
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 [&>div]:min-w-0 [&>div]:flex-wrap [&>div]:justify-end [&>div]:gap-2">
       {!hideFooterClose ? (
         <ToolbarButton onClick={() => requestDiscard()} className="whitespace-nowrap">
           Close
@@ -291,7 +291,8 @@ export function WorkspaceModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className={`${getWorkspaceModalShellClass(isMaximized ? 'fullscreen' : size)} glass-panel flex flex-col overflow-hidden bg-[#0b1222] ${(isMaximized || size === 'fullscreen') ? '' : `${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.62)]`} ${className}`}
+          className={`${getWorkspaceModalShellClass(isMaximized ? 'fullscreen' : size)} glass-panel flex min-w-0 flex-col overflow-hidden ${(isMaximized || size === 'fullscreen') ? '' : `${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-[var(--border-default)] shadow-[0_24px_80px_rgba(0,0,0,0.35)]`} ${className}`}
+          style={{ backgroundColor: 'var(--surface-base)' }}
         >
           <WorkspaceModalHeader
             icon={icon}
@@ -301,16 +302,17 @@ export function WorkspaceModal({
             forensicLineage={forensicLineage}
             closeControl={
               hideCloseButton ? (
-                <div className="w-3 h-3" />
+                null
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center">
                   <button
                     type="button"
                     onClick={() => requestDiscard()}
-                    className="group flex h-3 w-3 items-center justify-center rounded-full bg-[#ff5f57] transition-all hover:bg-[#ff5f57]/80"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--state-danger-surface)] hover:text-[var(--state-danger)]"
                     title="Close"
+                    aria-label="Close"
                   >
-                    <X size={8} strokeWidth={4} className="text-[#4c0000] opacity-0 transition-opacity group-hover:opacity-100" />
+                    <X size={18} aria-hidden="true" />
                   </button>
                 </div>
               )
@@ -320,13 +322,14 @@ export function WorkspaceModal({
                 <button
                   type="button"
                   onClick={onMaximizeToggle}
-                  className="group flex h-3 w-3 items-center justify-center rounded-full bg-[#28c940] transition-all hover:bg-[#28c940]/80"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)]"
                   title={isMaximized ? 'Restore size' : 'Maximize'}
+                  aria-label={isMaximized ? 'Restore size' : 'Maximize'}
                 >
                   {isMaximized ? (
-                    <Minimize2 size={8} strokeWidth={4} className="text-[#003300] opacity-0 transition-opacity group-hover:opacity-100" />
+                    <Minimize2 size={18} aria-hidden="true" />
                   ) : (
-                    <Maximize2 size={8} strokeWidth={4} className="text-[#003300] opacity-0 transition-opacity group-hover:opacity-100" />
+                    <Maximize2 size={18} aria-hidden="true" />
                   )}
                 </button>
               )
@@ -336,7 +339,7 @@ export function WorkspaceModal({
             onTabChange={onTabChange}
           />
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-20 sm:px-8 modal-content-spacing">
+          <div data-workspace-modal-body className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain custom-scrollbar px-4 pb-6 sm:px-6 modal-content-spacing">
             {children}
           </div>
 
@@ -364,13 +367,13 @@ export function WorkspaceModal({
                 initial={{ opacity: 0, scale: 0.96, y: 12 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 12 }}
-                className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0b1222] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.62)]"
+                className="w-full max-w-lg rounded-xl border border-[var(--border-default)] bg-[var(--surface-base)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
               >
                 <div className="space-y-3">
-                  <h3 id={confirmTitleId} className="text-sm font-semibold text-slate-100">{dirtyConfirmTitle}</h3>
-                  <p id={confirmMessageId} className="text-sm text-slate-400">{dirtyConfirmMessage}</p>
+                  <h3 id={confirmTitleId} className="text-base font-semibold text-[var(--text-primary)]">{dirtyConfirmTitle}</h3>
+                  <p id={confirmMessageId} className="text-sm leading-relaxed text-[var(--text-secondary)]">{dirtyConfirmMessage}</p>
                 </div>
-                <div className="mt-6 flex items-center justify-end gap-3">
+                <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
                   <ToolbarButton onClick={cancelDiscard} className="whitespace-nowrap">
                     Close
                   </ToolbarButton>

@@ -1,6 +1,38 @@
 import React from 'react'
 import { WorkspaceStickyIdentityBar } from './OperationalWorkspacePrimitives'
 
+export function WorkspaceDetailSection({ title, description, children }: {
+  title: string
+  description?: React.ReactNode
+  children?: React.ReactNode
+}) {
+  const headingId = React.useId()
+  return (
+    <section aria-labelledby={headingId} className="min-w-0 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4 sm:p-5">
+      <h3 id={headingId} className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">{title}</h3>
+      {description && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">{description}</p>}
+      {children && <div className="mt-4 min-w-0">{children}</div>}
+    </section>
+  )
+}
+
+export function WorkspaceDetailFields({ fields, columns = 3 }: {
+  fields: { label: string; value: React.ReactNode }[]
+  columns?: 1 | 2 | 3
+}) {
+  const layout = columns === 1 ? 'grid-cols-1' : columns === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+  return (
+    <dl className={`grid min-w-0 gap-x-6 gap-y-4 ${layout}`}>
+      {fields.map(({ label, value }) => (
+        <div key={label} className="min-w-0 border-t border-[var(--border-subtle)] pt-3">
+          <dt className="text-xs font-medium text-[var(--text-secondary)]">{label}</dt>
+          <dd className="mt-1 break-words text-sm font-medium leading-relaxed text-[var(--text-primary)]">{value ?? 'Not recorded'}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
 export function WorkspaceDossierShell({
   header,
   actions,

@@ -46,7 +46,8 @@ test.describe('View deep-link matrix', () => {
     failures.splice(0)
 
     await page.goto(`/services?id=${service.id}`)
-    await expect(page.getByRole('heading', { level: 3, name: service.name })).toBeVisible()
+    await expect(page.getByRole('dialog').getByRole('heading', { level: 2, name: service.name, exact: true })).toBeVisible()
+    await expect(page.getByRole('dialog').locator('dd').getByText(service.name, { exact: true })).toBeVisible()
 
     if (project) {
       await page.goto(`/projects?id=${project.id}`)

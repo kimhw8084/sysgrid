@@ -2950,7 +2950,7 @@ function ServiceRecordDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset
         </div>
       }
       footerRight={
-        <div className="flex items-center gap-3">
+        <>
           {item.is_deleted ? (
             <span className="max-w-[280px] text-[10px] font-semibold text-amber-200">
               {SERVICES_PURGE_BLOCKED_REASON}
@@ -2974,7 +2974,7 @@ function ServiceRecordDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset
               </ToolbarButton>
             </OperationalDisabledActionTooltip>
           )}
-        </div>
+        </>
       }
     >
       <WorkspaceDossierShell body={<ServiceDetailsView service={item} options={options} devices={devices} />} />

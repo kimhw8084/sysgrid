@@ -7,6 +7,7 @@ import { AgGridReact } from "ag-grid-react"
 import toast from "react-hot-toast"
 import { apiFetch } from "../api/apiClient"
 import { WorkspaceModal } from "./shared/WorkspaceModal"
+import { WorkspaceDetailFields, WorkspaceDetailSection } from './shared/WorkspaceModalShells'
 import { ToolbarButton } from "./shared/LayoutPrimitives"
 import { BulkImportModal } from "./shared/BulkImportModal"
 import { ConfigRegistryModal } from "./ConfigRegistry"
@@ -161,37 +162,32 @@ const MetadataEditor = ({ value, onChange, onError }: { value: any, onChange: (v
 }
 
 const MetadataViewer = ({ data }: { data: any }) => {
-  let obj: any = {}
+  let obj: Record<string, unknown> = {}
+  let invalid = false
   try {
-    obj = typeof data === 'string' ? JSON.parse(data || '{}') : (data || {})
+    const parsed = typeof data === 'string' ? JSON.parse(data || '{}') : (data ?? {})
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) invalid = true
+    else obj = parsed
   } catch {
-    obj = {}
+    invalid = true
   }
   return (
-    <div className="bg-black/20 rounded-lg border border-white/5 overflow-hidden">
-      <div className="px-3 py-1.5 bg-white/5 border-b border-white/5">
-        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 ">Configuration Metadata</span>
-      </div>
-      <table className="w-full text-[10px]">
-        <thead className="bg-white/5 border-b border-white/5">
-          <tr>
-            <th className="px-4 py-1.5 text-left font-bold uppercase tracking-widest text-slate-500 ">Key</th>
-            <th className="px-4 py-1.5 text-left font-bold uppercase tracking-widest text-slate-500 ">Value</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/5">
-          {Object.entries(obj).map(([k, v]) => (
-            <tr key={k} className="hover:bg-white/5 transition-colors">
-              <td className="px-4 py-2 font-bold uppercase text-blue-400  w-1/3">{k}</td>
-              <td className="px-4 py-2 font-bold text-slate-300 truncate max-w-[200px]">{String(v)}</td>
-            </tr>
+    <WorkspaceDetailSection title="Configuration Metadata">
+      {invalid ? <p role="status" className="text-sm text-[var(--state-warning)]">Configuration metadata could not be read.</p> : Object.keys(obj).length === 0 ? (
+        <p className="text-sm text-[var(--text-muted)]">No metadata keys documented</p>
+      ) : (
+        <dl className="min-w-0 divide-y divide-[var(--border-subtle)]">
+          {Object.entries(obj).map(([key, value]) => (
+            <div key={key} className="grid min-w-0 gap-2 py-3 first:pt-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-6">
+              <dt className="break-words text-sm font-medium text-[var(--text-secondary)]">{key}</dt>
+              <dd className="min-w-0 whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-[var(--text-primary)]">
+                {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+              </dd>
+            </div>
           ))}
-          {Object.keys(obj).length === 0 && (
-            <tr><td colSpan={2} className="px-4 py-8 text-center text-slate-600 font-bold uppercase  tracking-widest">No metadata keys documented</td></tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+        </dl>
+      )}
+    </WorkspaceDetailSection>
   )
 }
 
@@ -262,6 +258,7 @@ const ServiceSecretsTab = ({ serviceId }: { serviceId: number }) => {
 
 export const ServiceDetailsView = ({ service, options, devices }: { service: any, options: any, devices: any }) => {
     const [tab, setTab] = useState<'metadata' | 'secrets'>('metadata')
+    useEffect(() => { setTab('metadata') }, [service.id])
     const fundamentals = [
       { label: 'Name', value: service.name || 'N/A' },
       { label: 'Host', value: service.device_name || 'Unassigned' },
@@ -278,67 +275,35 @@ export const ServiceDetailsView = ({ service, options, devices }: { service: any
     ]
 
     return (
-      <div className="space-y-6">
-        <section className="rounded-xl border border-white/8 bg-gradient-to-br from-slate-950/95 via-slate-900/95 to-blue-950/60 p-5 shadow-inner">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <div className="space-y-4">
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-blue-400">Fundamental Data</p>
-                <h3 className="mt-2 text-lg font-black tracking-tight text-white">{service.name || 'Unnamed Service'}</h3>
-                <p className="mt-2 text-[11px] font-bold leading-relaxed text-slate-300">
-                  {service.purpose || 'No service purpose documented.'}
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {fundamentals.map((entry) => (
-                  <div key={entry.label} className="rounded-lg border border-white/8 bg-black/20 px-3 py-3">
-                    <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">{entry.label}</p>
-                    <p className="mt-1 truncate text-[11px] font-bold text-slate-100">{entry.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-xl border border-white/8 bg-black/20 p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-400">Service Snapshot</p>
-              <div className="mt-3 space-y-3">
-                <div className="rounded-lg border border-white/8 bg-white/[0.03] px-3 py-3">
-                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">Metadata Keys</p>
-                  <p className="mt-1 text-[12px] font-black text-white">{Object.keys(service.config_json || {}).length}</p>
-                </div>
-                <div className="rounded-lg border border-white/8 bg-white/[0.03] px-3 py-3">
-                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">Secrets</p>
-                  <p className="mt-1 text-[12px] font-black text-white">{service.secret_count ?? service.secrets?.length ?? 0}</p>
-                </div>
-                <div className="rounded-lg border border-white/8 bg-white/[0.03] px-3 py-3">
-                  <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">License</p>
-                  <p className="mt-1 text-[11px] font-bold text-slate-100">{service.purchase_type || 'N/A'}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+      <div className="space-y-5">
+        <WorkspaceDetailSection title="Service overview" description={service.purpose || 'No service purpose documented.'}>
+          <WorkspaceDetailFields fields={fundamentals} />
+        </WorkspaceDetailSection>
 
         <div className="flex items-center justify-between">
-          <div className="flex space-x-0.5 rounded-lg border border-white/5 bg-black/40 p-0.5">
+          <div className="flex gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-1" role="group" aria-label="Service information">
             {[
               { id: 'metadata', label: 'Metadata', icon: List },
               { id: 'secrets', label: 'Secrets', icon: Tag },
             ].map((entry) => (
               <button
                 key={entry.id}
+                type="button"
+                aria-pressed={tab === entry.id}
                 onClick={() => setTab(entry.id as 'metadata' | 'secrets')}
-                className={`flex items-center space-x-2 rounded-lg px-4 py-1.5 text-[9px] font-bold uppercase tracking-widest transition-all ${
-                  tab === entry.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-300'
+                className={`flex min-h-10 items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  tab === entry.id ? 'bg-[var(--action-primary)] text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
                 }`}
               >
-                <entry.icon size={12} />
+                <entry.icon size={15} aria-hidden="true" />
                 <span>{entry.label}</span>
+                {entry.id === 'secrets' && <span className="text-xs opacity-80">{service.secret_count ?? service.secrets?.length ?? 0}</span>}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="glass-panel rounded-lg border-white/5 overflow-hidden p-6 bg-black/20">
+        <div className="min-w-0">
           {tab === 'metadata' && <MetadataViewer data={service.config_json} />}
           {tab === 'secrets' && <ServiceSecretsTab serviceId={service.id} />}
         </div>

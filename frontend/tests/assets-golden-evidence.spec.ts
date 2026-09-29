@@ -775,6 +775,13 @@ test.describe('Assets golden evidence capture', () => {
 
       for (const viewportConfig of applicableViewports) {
         await page.setViewportSize(viewportConfig.viewport)
+        // Resizing can start a font request in the outgoing document. Finish
+        // that work before the next navigation; keep every request failure blocking.
+        await page.evaluate(async () => {
+          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+          await document.fonts.ready
+        })
+        await page.waitForLoadState('networkidle')
 
         const runtimeEvents: RuntimeConsoleEvent[] = []
         const requestFailures: Array<Omit<RequestFailureEntry, 'count' | 'classification' | 'justification'>> = []
