@@ -719,6 +719,7 @@ test.describe('Assets workflows', () => {
     await expect(getWorkspaceRoot(page, 'assets').getByRole('treegrid').getByText(secondary.name, { exact: true })).not.toBeVisible()
 
     // B. Toolbar / Export / Template Disabled state check when the registry is empty or filtered-empty
+    await page.getByRole('button', { name: 'View & filters', exact: true }).click()
     await page.getByTitle('Export asset data').click()
     await expect(page.getByRole('button', { name: /^Export CSV/ })).toBeDisabled()
     await expect(page.getByRole('button', { name: /^Snapshot/ })).toBeDisabled()

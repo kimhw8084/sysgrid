@@ -87,12 +87,8 @@ export function OperationalWorkspaceShell({
   archetype?: GoldenWorkspaceArchetype
 }) {
   const resolvedCommandBar = commandBar ?? {
-    left: (
-      <>
-        {toolbarSearch}
-        {toolbarControls}
-      </>
-    ),
+    left: toolbarSearch,
+    controls: toolbarControls,
     right: toolbarActions,
     secondary: secondaryToolbar,
     filterChips,

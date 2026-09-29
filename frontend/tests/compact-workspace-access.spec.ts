@@ -1,21 +1,22 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { resetBrowserState, seedOperationalScenario } from './helpers/sysgrid'
+import { createConnection, resetBrowserState, seedOperationalScenario } from './helpers/sysgrid'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   for (const width of [320, 390, 960]) {
     test(`compact workspace access ${theme} ${width}`, async ({ page, sysApi: request }, testInfo) => {
       await page.setViewportSize({ width, height: 720 })
       await resetBrowserState(page)
-      await seedOperationalScenario(request)
+      const { primary, secondary } = await seedOperationalScenario(request)
+      await createConnection(request, { device_a_id: primary.id, source_port: 'eth0', device_b_id: secondary.id, target_port: 'eth1', link_type: 'Data', speed_gbps: 10, unit: 'Gbps', status: 'Active' })
       await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
       const preference = await request.patch(`${process.env.PW_API_BASE}/settings/user/settings`, { data: { theme } })
       expect(preference.ok()).toBeTruthy()
       for (const route of [
-        { path: '/monitoring', name: 'Monitoring' },
-        { path: '/asset', name: 'Assets' },
-        { path: '/services', name: 'Services' },
-        { path: '/network', name: 'Network' },
+        { path: '/monitoring', name: 'Monitoring', identity: 'title' },
+        { path: '/asset', name: 'Assets', identity: 'name' },
+        { path: '/services', name: 'Services', identity: 'name' },
+        { path: '/network', name: 'Network', identity: 'src_node' },
       ]) {
         await page.goto(route.path)
         await expect(page.getByRole('heading', { name: route.name, exact: true })).toBeVisible()
@@ -54,8 +55,29 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         const main = page.locator('#sg-main-content')
         expect(await main.evaluate(node => getComputedStyle(node).overflowY)).toMatch(/auto|scroll/)
         const workspace = page.locator('[data-golden-workspace-shell]')
+        if (width < 768) {
+          const record = workspace.locator(`.ag-row[row-index="0"] [col-id="${route.identity}"]`).first()
+          await expect(record).not.toHaveText('')
+          await testInfo.attach(`${route.name}-first-record`, {
+            body: JSON.stringify(await record.evaluate(node => ({ identity: node.textContent, fragment: node.parentElement?.parentElement?.className, bounds: node.getBoundingClientRect().toJSON(), viewport: { width: innerWidth, height: innerHeight } }))),
+            contentType: 'application/json',
+          })
+          await expect(record).toBeInViewport({ ratio: 0.1 })
+          await page.screenshot({ path: testInfo.outputPath(`${route.name}-first-view.png`), animations: 'disabled' })
+          const tools = workspace.getByRole('button', { name: 'View & filters', exact: true })
+          await expect(tools).toHaveAttribute('aria-expanded', 'false')
+          await tools.click()
+          await expect(tools).toHaveAttribute('aria-expanded', 'true')
+        }
         await expect(workspace.getByRole('button', { name: 'Views', exact: true })).toBeVisible()
         await expect(workspace.getByRole('button', { name: 'Display', exact: true })).toBeVisible()
+        if (width < 768) {
+          await workspace.getByRole('button', { name: 'Views', exact: true }).click()
+          const closeViews = page.getByRole('button', { name: 'Close saved views', exact: true })
+          await expect(closeViews).toBeVisible()
+          await closeViews.click()
+          await expect(closeViews).not.toBeVisible()
+        }
         for (const toolbar of await workspace.locator('[data-golden-page-toolbar]').all()) {
           const bounds = await toolbar.boundingBox()
           for (const button of await toolbar.getByRole('button').all()) {
