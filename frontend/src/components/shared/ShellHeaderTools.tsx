@@ -14,6 +14,7 @@ export function ShellHeaderTools({
   errors,
   onOpenErrorConsole,
   compact = false,
+  onOpenPatchNotes,
 }: {
   pathname: string
   isOnline: boolean
@@ -23,6 +24,7 @@ export function ShellHeaderTools({
   errors: ErrorSummary[]
   onOpenErrorConsole: () => void
   compact?: boolean
+  onOpenPatchNotes?: () => void
 }) {
   const outstandingErrors = errors.filter((error) => !error.acknowledged).length
   const statusLabel = isHealthError ? 'Unavailable' : isHealthLoading ? 'Checking' : isOnline ? 'Operational' : 'Unavailable'
@@ -30,7 +32,7 @@ export function ShellHeaderTools({
 
   const tools = (
     <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
-      <TenantSelector />
+      {!compact && <TenantSelector />}
       <div className="min-w-[6.5rem] border-l border-[var(--border-subtle)] pl-3" role="status" aria-live="polite" aria-label={`System status: ${statusLabel}`}>
         <span className="block text-[10px] font-medium text-[var(--text-muted)]">System status</span>
         <span className={`text-sm font-semibold ${statusTone}`}>{statusLabel}</span>
@@ -63,13 +65,17 @@ export function ShellHeaderTools({
       >
         <Settings size={18} aria-hidden="true" />
       </Link>
+      {compact && onOpenPatchNotes && <button type="button" onClick={onOpenPatchNotes} className="min-h-10 rounded-md border border-[var(--border-default)] px-3 py-2 text-sm text-[var(--text-primary)]">Patch Notes</button>}
     </div>
   )
 
   return compact ? (
-    <details className="sg-app-tools relative min-w-0 max-w-full">
+    <div className="flex w-full min-w-0 items-center gap-2">
+    <TenantSelector compact />
+    <details className="sg-app-tools relative shrink-0">
       <summary className="min-h-10 cursor-pointer rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus-visible:outline-none">App tools</summary>
       <div className="absolute right-3 top-14 z-30 max-w-[calc(100vw-1.5rem)] rounded-md border border-[var(--border-default)] bg-[var(--surface-overlay)] p-3 shadow-xl">{tools}</div>
     </details>
+    </div>
   ) : tools
 }

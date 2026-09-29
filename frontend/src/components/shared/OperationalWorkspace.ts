@@ -32,14 +32,14 @@ export const OPERATIONAL_WORKSPACE_VISUALS = {
   panelSurface: 'rounded-lg border border-white/10 bg-white/[0.03]',
   insetSurface: 'rounded-lg border border-white/10 bg-black/20',
   floatingSurface: 'rounded-lg border border-white/10 bg-[#020617]',
-  controlSurface: 'rounded-lg border border-white/10 bg-slate-950/70',
+  controlSurface: 'rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)]',
   toolbarSurface: 'rounded-lg border border-white/5 bg-white/5',
   titleText: 'text-sm font-black tracking-tight text-slate-100',
   subtitleText: 'text-[10px] font-semibold text-slate-400',
   hintText: 'text-[10px] font-semibold text-slate-500',
-  fieldLabelText: 'text-[clamp(10px,0.82vw,12px)] font-black text-slate-500',
-  fieldErrorText: 'text-[clamp(10px,0.78vw,11px)] font-black text-rose-400',
-  bodyControlText: 'text-[clamp(12px,0.95vw,14px)] font-bold text-white',
+  fieldLabelText: 'text-xs font-semibold text-[var(--text-secondary)]',
+  fieldErrorText: 'text-xs font-medium text-[var(--state-danger)]',
+  bodyControlText: 'text-sm text-[var(--text-primary)]',
   selectionText: 'text-[clamp(11px,0.9vw,13px)] font-black',
 } as const
 

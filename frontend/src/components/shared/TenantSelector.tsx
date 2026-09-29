@@ -10,7 +10,7 @@ import {
   useWorkspaceAnchoredLayer,
 } from "./OperationalWorkspacePrimitives"
 
-export function TenantSelector() {
+export function TenantSelector({ compact = false }: { compact?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 256 })
@@ -75,27 +75,27 @@ export function TenantSelector() {
   }, [panelRef, triggerRef])
 
   return (
-    <div className="relative">
+    <div className={`relative ${compact ? 'min-w-0 flex-1' : ''}`}>
       <button 
         ref={(node) => {
           triggerRef.current = node
         }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex min-h-10 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 hover:bg-[var(--surface-hover)]"
+        className={`flex min-h-10 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 hover:bg-[var(--surface-hover)] ${compact ? 'w-full min-w-0' : ''}`}
         aria-label="Switch tenant"
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--action-primary)] text-white">
+        <div className={`${compact ? 'hidden sm:flex' : 'flex'} h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[var(--action-primary)] text-white`}>
            <Database size={14} aria-hidden="true" />
         </div>
-        <div className="flex flex-col items-start min-w-[120px]">
+        <div className={`flex flex-col items-start ${compact ? 'min-w-0 flex-1' : 'min-w-[120px]'}`}>
            <span className="text-[10px] font-medium text-[var(--text-muted)]">Current tenant</span>
-           <span className="max-w-[150px] truncate text-sm font-medium text-[var(--text-primary)]">
+           <span className={`${compact ? 'max-w-full' : 'max-w-[150px]'} truncate text-sm font-medium text-[var(--text-primary)]`} title={activeTenant ? getTenantLabel(activeTenant) : 'Default tenant'}>
              {isLoading ? 'Loading...' : (activeTenant ? getTenantLabel(activeTenant) : 'Default tenant')}
            </span>
         </div>
-        <ChevronDown size={14} aria-hidden="true" className={`text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} aria-hidden="true" className={`shrink-0 text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && typeof document !== "undefined" && createPortal(

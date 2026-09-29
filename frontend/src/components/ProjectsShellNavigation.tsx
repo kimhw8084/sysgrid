@@ -10,8 +10,8 @@ export function useProjectsNavigation(pathname: string, expanded: boolean, setEx
   const toggleRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => { let raf = 0; const update = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setWidth(window.innerWidth)) }; window.addEventListener('resize', update); return () => { window.removeEventListener('resize', update); cancelAnimationFrame(raf) } }, [])
   useEffect(() => { if (!active) return; previous.current = expanded; return () => setExpanded(previous.current) }, [active]) // preference preserved on route exit
-  const mobile = active && width < 768
-  useEffect(() => { if (active) setExpanded(mobile ? open : width >= 1440 && previous.current) }, [active, mobile, open, width >= 1440])
+  const mobile = width < 768
+  useEffect(() => { if (active && !mobile) setExpanded(width >= 1440 && previous.current) }, [active, mobile, width >= 1440])
   useEffect(() => { setOpen(false) }, [pathname])
   const close = () => { setOpen(false); requestAnimationFrame(() => toggleRef.current?.focus()) }
   useEffect(() => {
@@ -33,7 +33,7 @@ export function useProjectsNavigation(pathname: string, expanded: boolean, setEx
     document.addEventListener('keydown', keys)
     return () => { document.removeEventListener('keydown', keys); if (main) main.inert = wasInert || false }
   }, [mobile, open])
-  const sidebarExpanded = active ? (mobile ? open : width >= 1440 && previous.current) : expanded
+  const sidebarExpanded = mobile ? open : active ? width >= 1440 && previous.current : expanded
   return { active, mobile, open, sidebarExpanded, toggleRef, close, toggle: () => setOpen(value => !value) }
 }
 

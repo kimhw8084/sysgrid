@@ -19,8 +19,8 @@ export function WorkspaceCommandBar({
 }) {
   return (
     <div className={GOLDEN_COMMAND_BAR_STACK_CLASS} data-golden-command-bar="true">
-      <PageToolbar left={left} right={right} />
-      {secondary ? <PageToolbar left={secondary} className={GOLDEN_COMMAND_BAR_SECONDARY_CLASS} /> : null}
+      <PageToolbar left={left} right={right} wrapOnMobile />
+      {secondary ? <PageToolbar left={secondary} className={GOLDEN_COMMAND_BAR_SECONDARY_CLASS} wrapOnMobile /> : null}
       <AnimatePresence>
         {!!filterChips?.length && (
           <motion.div

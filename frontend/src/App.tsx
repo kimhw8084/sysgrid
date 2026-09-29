@@ -337,7 +337,7 @@ function MainLayout() {
   }, [userSettings]);
 
   const THEMES = [
-    { id: 'nordic-frost-v1', label: 'Dark Mode', color: 'bg-[#1a1b26]' },
+    { id: 'nordic-frost-v1', label: 'Dark Mode', color: 'bg-[#020617]' },
     { id: 'pure-clarity', label: 'Light Mode', color: 'bg-[#ffffff]' }
   ]
 
@@ -448,27 +448,27 @@ function MainLayout() {
   }, [currentTheme])
 
   return (
-    <div className="sg-app-shell flex h-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" data-sg-projects-app={projectNavigation.active ? "true" : undefined}>
+    <div className="sg-app-shell flex h-[100dvh] overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" data-sg-projects-app={projectNavigation.active ? "true" : undefined} data-sg-mobile={projectNavigation.mobile ? 'true' : undefined}>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <ProjectsNavigationBackdrop nav={projectNavigation} />
       <a href="#sg-main-content" className="skip-link">Skip to content</a>
       <motion.aside
-        initial={projectNavigation.active ? false : undefined}
+        initial={projectNavigation.active || projectNavigation.mobile ? false : undefined}
         transition={projectNavigation.active ? { duration: 0 } : undefined}
-        animate={{ width: projectNavigation.active ? (projectNavigation.sidebarExpanded ? 240 : 80) : (isSidebarOpen ? 240 : 80) }}
+        animate={{ width: projectNavigation.sidebarExpanded ? 240 : 80 }}
         className="glass-panel relative z-20 flex shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--sidebar-bg)] shadow-xl"
         aria-label="Application navigation"
         data-sg-app-sidebar="true"
         data-sg-nav-open={projectNavigation.sidebarExpanded ? "true" : "false"}
       >
-        <div className={`flex items-center border-b border-[var(--border-subtle)] p-4 ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
+        <div className={`flex items-center border-b border-[var(--border-subtle)] p-4 ${projectNavigation.sidebarExpanded ? 'justify-between' : 'justify-center'}`}>
           <Link to="/" className="group flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none" aria-label="SysGrid home">
              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/5 bg-[var(--action-primary)] shadow-lg transition-transform group-hover:scale-105">
                 <Grid3X3 size={20} aria-hidden="true" className="text-white" />
              </div>
-             {isSidebarOpen && <span className="truncate text-lg font-semibold tracking-tight text-[var(--text-primary)]">SYSGRID</span>}
+             {projectNavigation.sidebarExpanded && <span className="truncate text-lg font-semibold tracking-tight text-[var(--text-primary)]">SYSGRID</span>}
           </Link>
-          {isSidebarOpen ? (
+          {projectNavigation.sidebarExpanded ? (
             <button
               type="button"
               onClick={() => projectNavigation.mobile ? projectNavigation.close() : setIsSidebarOpen(false)}
@@ -481,7 +481,7 @@ function MainLayout() {
             </button>
           ) : null}
         </div>
-        {!isSidebarOpen && (
+        {!projectNavigation.sidebarExpanded && (
           <div className="flex justify-center border-b border-[var(--border-subtle)] py-2">
             <button
               type="button"
@@ -497,7 +497,7 @@ function MainLayout() {
         )}
         <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4 custom-scrollbar" aria-label="Primary navigation">
           {SHELL_NAV_GROUPS.map((group) => (
-            <ShellNavGroup key={group.label} label={group.label} isSidebarOpen={isSidebarOpen} defaultExpanded={group.defaultExpanded}>
+            <ShellNavGroup key={group.label} label={group.label} isSidebarOpen={projectNavigation.sidebarExpanded} defaultExpanded={group.defaultExpanded}>
               {group.items.map((item) => {
                 const module = modulePolicy.data?.modules?.[item.moduleId]
                 return (
@@ -508,7 +508,7 @@ function MainLayout() {
                     label={module?.label || item.label}
                     path={item.path}
                     active={isShellRouteActive(location.pathname, item.path, item.aliases)}
-                    isOpen={isSidebarOpen}
+                    isOpen={projectNavigation.sidebarExpanded}
                     unavailableReason={module?.blocked_reason}
                   />
                 )
@@ -518,16 +518,16 @@ function MainLayout() {
         </nav>
         
         {/* User Profile Section */}
-        <div className={`space-y-2 border-t border-[var(--border-subtle)] p-3 ${!isSidebarOpen ? 'flex flex-col items-center' : ''}`}>
+        <div className={`space-y-2 border-t border-[var(--border-subtle)] p-3 ${!projectNavigation.sidebarExpanded ? 'flex flex-col items-center' : ''}`}>
            {modulePolicy.data?.actions?.diagnostics?.read ? <button
               onClick={() => setShowLinuxEnv(true)}
-              className={`flex items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-2 hover:bg-[var(--surface-hover)] ${!isSidebarOpen ? 'h-10 w-10 justify-center' : 'w-full text-left'}`}
+              className={`flex items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-2 hover:bg-[var(--surface-hover)] ${!projectNavigation.sidebarExpanded ? 'h-10 w-10 justify-center' : 'w-full text-left'}`}
               aria-label="Open environment details"
            >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-hover)] text-[var(--accent-primary)]">
                  <Globe size={16} aria-hidden="true" />
               </div>
-              {isSidebarOpen && (
+              {projectNavigation.sidebarExpanded && (
                 <div className="flex flex-col min-w-0">
                    <span className="truncate text-xs font-medium text-[var(--text-primary)]">{userProfile?.full_name || userProfile?.username || 'Operator'}</span>
                    <span className="truncate text-[10px] text-[var(--text-muted)]">{userProfile?.username || 'Signed-in user'}</span>
@@ -536,33 +536,33 @@ function MainLayout() {
            </button> : null}
 
            {/* Direct Theme Toggles */}
-           <div className={`flex items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1 ${!isSidebarOpen ? 'flex-col' : 'w-full'}`} aria-label="Theme">
+           <div className={`flex items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1 ${!projectNavigation.sidebarExpanded ? 'flex-col' : 'w-full'}`} aria-label="Theme">
               {THEMES.map(theme => (
                 <button 
                   key={theme.id}
                   onClick={() => changeTheme(theme.id)}
                   type="button"
-                  className={`flex min-h-9 flex-1 items-center gap-2 rounded-md p-2 text-xs transition-colors ${currentTheme === theme.id ? 'border border-[var(--action-primary)] bg-[var(--action-primary-muted)] text-[var(--action-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'} ${!isSidebarOpen ? 'w-full justify-center' : ''}`}
+                  className={`flex min-h-9 flex-1 items-center gap-2 rounded-md p-2 text-xs transition-colors ${currentTheme === theme.id ? 'border border-[var(--action-primary)] bg-[var(--action-primary-muted)] text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'} ${!projectNavigation.sidebarExpanded ? 'w-full justify-center' : ''}`}
                   title={theme.label}
-                  aria-label={isSidebarOpen ? undefined : `Use ${theme.label}`}
+                  aria-label={projectNavigation.sidebarExpanded ? undefined : `Use ${theme.label}`}
                   aria-pressed={currentTheme === theme.id}
                 >
                    <div className={`w-3 h-3 rounded-full ${theme.color} border border-white/10 shrink-0`} />
-                   {isSidebarOpen && <span className="text-[9px] font-black uppercase tracking-widest">{theme.label.split(' ')[0]}</span>}
+                   {projectNavigation.sidebarExpanded && <span className="text-xs font-medium">{theme.label.split(' ')[0]}</span>}
                 </button>
               ))}
            </div>
         </div>
 
         <div className="border-t border-[var(--border-subtle)] p-3 text-center">
-           {isSidebarOpen ? <p className="text-[10px] text-[var(--text-muted)]">Version {APP_VERSION}</p> : <span className="sr-only">Version {APP_VERSION}</span>}
+           {projectNavigation.sidebarExpanded ? <p className="text-[10px] text-[var(--text-muted)]">Version {APP_VERSION}</p> : <span className="sr-only">Version {APP_VERSION}</span>}
         </div>
       </motion.aside>
-      <main className="flex-1 flex flex-col overflow-hidden relative" data-sg-app-main="true">
+      <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden" data-sg-app-main="true">
         <ShellHeader
           left={
             <><ProjectsNavigationButton nav={projectNavigation} />{<>
-              <ToolbarButton onClick={() => setShowPatchNotes(true)}>Patch Notes</ToolbarButton>
+              <ToolbarButton onClick={() => setShowPatchNotes(true)} className="hidden md:inline-flex">Patch Notes</ToolbarButton>
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="group flex min-w-0 max-w-full flex-1 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 text-[var(--text-secondary)] transition-colors hover:border-[var(--action-primary)] hover:text-[var(--text-primary)] md:min-w-[320px]" data-sg-app-search="true" aria-label="Search released and authorized records"
@@ -580,7 +580,8 @@ function MainLayout() {
             pathname={location.pathname}
             errors={errors}
             onOpenErrorConsole={() => setErrorConsoleOpen(true)}
-            compact={projectNavigation.active}
+            compact={projectNavigation.active || projectNavigation.mobile}
+            onOpenPatchNotes={() => setShowPatchNotes(true)}
           />}
         />
 

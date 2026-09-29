@@ -133,14 +133,14 @@ export const AppDropdown = ({
           className={`
             w-full flex items-center justify-between
             ${OPERATIONAL_WORKSPACE_VISUALS.controlSurface}
-            px-4 py-2.5 text-[11px] font-semibold outline-none focus:border-blue-500/50
+            min-h-10 px-3 py-2 text-sm outline-none focus:border-[var(--accent-primary)]
             transition-all ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} 
-            ${(!value || (Array.isArray(value) && value.length === 0)) ? 'text-slate-500' : 'text-slate-200'}
+            ${(!value || (Array.isArray(value) && value.length === 0)) ? 'text-[var(--text-muted)]' : 'text-[var(--text-primary)]'}
             ${error ? 'border-rose-500/50 ring-1 ring-rose-500/20' : ''}
           `}
         >
           <span className="truncate">{getLabel()}</span>
-          <ChevronDown size={14} className={`text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown size={14} className={`shrink-0 text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {error && <div id={errorId}><WorkspaceFieldError message={error} /></div>}
@@ -149,7 +149,7 @@ export const AppDropdown = ({
         {isOpen && typeof document !== 'undefined' && createPortal(
           <div
             ref={panelRef}
-            style={panelStyle}
+            style={{ ...panelStyle, backgroundColor: 'var(--surface-base)' }}
             data-workspace-panel="true"
             onMouseDown={(e) => e.stopPropagation()}
             className={`${getWorkspaceFloatingPanelClass('menu')} overflow-hidden shadow-2xl flex flex-col`}
@@ -161,7 +161,7 @@ export const AppDropdown = ({
                 placeholder="Search options..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-blue-500/50"
+                className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               />
             </div>
             <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-1">
@@ -173,8 +173,8 @@ export const AppDropdown = ({
                     type="button"
                     onClick={() => handleSelect(opt.value)}
                     className={`
-                      w-full flex items-center justify-between px-3 py-2 rounded-lg text-[10px] font-semibold transition-all
-                      ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}
+                      w-full flex min-h-10 items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors
+                      ${active ? 'bg-[var(--action-primary)] text-white' : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'}
                     `}
                   >
                     <div className="flex items-center gap-2 truncate">

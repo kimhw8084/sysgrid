@@ -5,10 +5,10 @@ import { isGoldenActivityColumnsTitle } from './OperationalGoldenToolbarContract
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ')
 
 export const GOLDEN_PAGE_HEADER_CLASS = 'flex flex-wrap items-start justify-between gap-6'
-export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex items-center gap-3 overflow-x-auto rounded-lg border border-white/5 bg-black/20 px-4 py-3 backdrop-blur-xl lg:flex-wrap lg:justify-between lg:overflow-visible'
+export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'
 export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-1 lg:flex-wrap'
 export const GOLDEN_TOOLBAR_RIGHT_CLASS = 'flex min-w-max flex-nowrap items-center justify-end gap-3 lg:flex-wrap'
-const TOOLBAR_CONTROL_HEIGHT = 'h-9'
+const TOOLBAR_CONTROL_HEIGHT = 'h-10'
 
 export const ShellHeader = ({
   left,
@@ -19,8 +19,8 @@ export const ShellHeader = ({
 }) => (
   <header className="shrink-0 border-b border-[var(--border-default)] bg-[var(--bg-header)] px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8" data-sg-shell-header="true">
     <div className="flex min-h-[40px] flex-wrap items-center justify-between gap-3">
-      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">{left}</div>
-      {right && <div className="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2 sm:gap-3">{right}</div>}
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:flex-1">{left}</div>
+      {right && <div className="flex w-full min-w-0 max-w-full flex-wrap items-center justify-end gap-2 sm:gap-3 md:w-auto">{right}</div>}
     </div>
   </header>
 )
@@ -41,19 +41,19 @@ export const PageHeader = ({
   className?: string
 }) => (
   <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} data-golden-page-header="true">
-    <div className="min-w-[200px] flex-1 space-y-1">
+    <div className="min-w-0 basis-[200px] flex-1 space-y-1">
       {eyebrow && <div className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--accent-primary)]">{eyebrow}</div>}
       <div className="space-y-0.5">
-        <h1 className="text-xl font-black tracking-tighter text-[var(--text-primary)]">{title}</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">{title}</h1>
         {subtitle && (
-          <p className="max-w-3xl text-[10px] font-bold tracking-[0.04em] text-[var(--text-secondary)]">
+          <p className="max-w-3xl text-xs leading-relaxed text-[var(--text-secondary)]">
             {subtitle}
           </p>
         )}
       </div>
       {meta && <div className="flex flex-wrap items-center gap-3">{meta}</div>}
     </div>
-    {actions && <div className="flex shrink-0 items-start gap-3">{actions}</div>}
+    {actions && <div className="flex min-w-0 max-w-full shrink-0 flex-wrap items-start gap-3">{actions}</div>}
   </section>
 )
 
@@ -114,7 +114,7 @@ export const ToolbarSearch = ({
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      className={`${TOOLBAR_CONTROL_HEIGHT} w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] pl-10 pr-4 py-0 text-[10px] font-medium tracking-[0.04em] text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--action-primary)] focus:bg-[var(--surface-hover)]`}
+      className={`${TOOLBAR_CONTROL_HEIGHT} w-full rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] pl-10 pr-4 py-0 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--action-primary)] focus:bg-[var(--surface-hover)]`}
     />
   </div>
 )
@@ -165,7 +165,7 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
       aria-label={ariaLabel || title}
       aria-pressed={active || undefined}
       className={join(
-        `${TOOLBAR_CONTROL_HEIGHT} inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap shrink-0 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40`,
+        `${TOOLBAR_CONTROL_HEIGHT} inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors disabled:cursor-not-allowed disabled:opacity-40`,
         variantClass,
         className
       )}
@@ -266,7 +266,7 @@ export const ToolbarSegmented = ({
             type="button"
             onClick={() => onChange(option.value)}
             className={join(
-              `${TOOLBAR_CONTROL_HEIGHT} shrink-0 whitespace-nowrap rounded-lg px-4 py-0 text-[10px] font-bold tracking-widest transition-all`,
+              `${TOOLBAR_CONTROL_HEIGHT} shrink-0 whitespace-nowrap rounded-lg px-4 py-0 text-xs font-semibold transition-colors`,
               value === option.value
                 ? 'bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20'
                 : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
@@ -294,7 +294,7 @@ export const HeaderScopeSwitch = ({
   value: string
   onChange: (value: string) => void
 }) => (
-  <div className="flex items-center gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1.5">
+  <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1.5">
     <div className="px-2">
       <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">{label}</p>
       {summary ? <p className="pt-0.5 text-[10px] font-semibold text-[var(--text-primary)]">{summary}</p> : null}

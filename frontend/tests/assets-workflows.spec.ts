@@ -668,9 +668,10 @@ test.describe('Assets workflows', () => {
     await attachEvidence(testInfo, 'asset-purge-closed-desktop-1440x900.png', await page.screenshot(), 'image/png')
 
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.getByRole('button', { name: 'Collapse application navigation' }).click()
+    await expect(page.getByRole('button', { name: 'Open application navigation' })).toBeVisible()
     const applicationSidebar = page.locator('[data-sg-app-sidebar]')
-    await expect.poll(async () => (await applicationSidebar.boundingBox())?.width ?? Infinity).toBeLessThanOrEqual(80)
+    await expect(applicationSidebar).not.toBeVisible()
+    await expect.poll(async () => (await page.locator('[data-sg-app-main]').boundingBox())?.x ?? Infinity).toBe(0)
     await expect(getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })).toHaveCount(0)
     const mobileArchivedScope = page.getByRole('button', { name: /Archived/ }).first()
     await expect(mobileArchivedScope).toBeVisible()
@@ -1200,7 +1201,10 @@ test.describe('Assets workflows', () => {
 
       const capturePendingState = async (width: number, height: number, name: string) => {
         await page.setViewportSize({ width, height })
-        if (width === 390) await page.getByRole('button', { name: 'Collapse application navigation' }).click()
+        if (width === 390) {
+          await expect(page.getByRole('button', { name: 'Open application navigation' })).toBeVisible()
+          await expect(page.locator('[data-sg-app-sidebar]')).not.toBeVisible()
+        }
         const existingAction = page.getByRole('button', { name: /^Existing/ }).first()
         const archivedAction = page.getByRole('button', { name: /^Archived/ }).first()
         const getReachableBounds = async (control: typeof existingAction) => {

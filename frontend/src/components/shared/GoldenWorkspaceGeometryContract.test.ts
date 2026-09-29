@@ -29,7 +29,7 @@ describe('Golden workspace geometry contract', () => {
     expect(shell).toContain('data-golden-geometry-version={GOLDEN_WORKSPACE_GEOMETRY_VERSION}')
 
     expect(layout).toContain("GOLDEN_PAGE_HEADER_CLASS = 'flex flex-wrap items-start justify-between gap-6'")
-    expect(layout).toContain("GOLDEN_PAGE_TOOLBAR_CLASS = 'flex items-center gap-3 overflow-x-auto rounded-lg border border-white/5 bg-black/20 px-4 py-3 backdrop-blur-xl lg:flex-wrap lg:justify-between lg:overflow-visible'")
+    expect(layout).toContain("GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'")
     expect(layout).toContain('data-golden-page-header="true"')
     expect(layout).toContain('data-golden-page-toolbar="true"')
 
@@ -44,6 +44,7 @@ describe('Golden workspace geometry contract', () => {
     expect(source).not.toContain('h-full min-h-0 flex flex-col space-y-4')
     expect(source).not.toContain('flex flex-wrap items-start justify-between gap-6')
     expect(source).not.toContain('overflow-x-auto rounded-lg border border-white/5 bg-black/20 px-4 py-3')
+    expect(source).not.toContain('overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3')
     expect(source).not.toContain('rounded-t-none border-x border-b border-white/5')
   })
 

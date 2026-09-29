@@ -171,7 +171,7 @@
   --glass-border: rgba(0, 0, 0, 0.05);
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --accent-primary: #2563eb;
   --accent-glow: rgba(37, 99, 235, 0.1);
   --sidebar-bg: #ffffff;
@@ -190,7 +190,7 @@
   --glass-border: rgba(0, 0, 0, 0.08); /* Darker border for light mode visibility */
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --accent-primary: #2563eb;
   --accent-glow: rgba(37, 99, 235, 0.1);
   --sidebar-bg: #ffffff;
@@ -269,6 +269,47 @@
 
 .skip-link:focus {
   transform: translateY(0);
+}
+
+/* Compact workspaces keep navigation off canvas and content in one scroll path. */
+@media (max-width: 767px) {
+  .sg-app-shell[data-sg-mobile='true'] [data-sg-app-sidebar] {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 100;
+    width: min(280px, calc(100vw - 48px)) !important;
+    height: 100dvh;
+    transform: translateX(-100%);
+    visibility: hidden;
+  }
+
+  .sg-app-shell[data-sg-mobile='true'] [data-sg-app-sidebar][data-sg-nav-open='true'] {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+}
+
+@media (max-width: 1023px), (max-height: 760px) {
+  .sg-app-shell:not([data-sg-projects-app='true']) #sg-main-content {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sg-app-shell:not([data-sg-projects-app='true']) [data-golden-workspace-shell] {
+    height: auto;
+    flex: 1 0 auto;
+  }
+
+  .sg-app-shell:not([data-sg-projects-app='true']) [data-golden-page-header],
+  .sg-app-shell:not([data-sg-projects-app='true']) [data-golden-command-bar] {
+    flex-shrink: 0;
+  }
+
+  .sg-app-shell:not([data-sg-projects-app='true']) [data-golden-grid-surface] {
+    flex: 1 0 400px;
+    min-height: 400px;
+  }
 }
 
 /* Global spacing utility */
