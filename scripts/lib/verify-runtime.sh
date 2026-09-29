@@ -162,10 +162,10 @@ verify_runtime_select_port() {
   local selected
   if [[ -n "$configured" ]]; then
     selected="$configured"
-    verify_runtime_assert_port_free "$selected" "$label"
+    verify_runtime_assert_port_free "$selected" "$label" || return 1
   else
     selected="$(verify_runtime_allocate_port)"
-    verify_runtime_assert_port_free "$selected" "$label"
+    verify_runtime_assert_port_free "$selected" "$label" || return 1
   fi
   printf '%s' "$selected"
 }
@@ -312,7 +312,7 @@ verify_runtime_start_frontend() {
     cd "$VERIFY_RUNTIME_FRONTEND_DIR"
     VITE_API_BASE_URL="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
     VITE_FRONTEND_ORIGIN="$VERIFY_RUNTIME_FRONTEND_ORIGIN" \
-    "$NODE_BIN" "$vite_entry" \
+    exec "$NODE_BIN" "$vite_entry" \
       --host "$VERIFY_RUNTIME_FRONTEND_HOST" --port "$VERIFY_RUNTIME_FRONTEND_PORT" --strictPort
   ) >"$VERIFY_RUNTIME_LOG_DIR/frontend.log" 2>&1 &
   VERIFY_RUNTIME_FRONTEND_PID=$!
@@ -416,9 +416,11 @@ verify_runtime_cleanup() {
   VERIFY_RUNTIME_CLEANED="true"
   if [[ -n "$VERIFY_RUNTIME_FRONTEND_PID" ]] && kill -0 "$VERIFY_RUNTIME_FRONTEND_PID" 2>/dev/null; then
     verify_runtime_terminate_process_tree "$VERIFY_RUNTIME_FRONTEND_PID"
+    wait "$VERIFY_RUNTIME_FRONTEND_PID" 2>/dev/null || true
   fi
   if [[ -n "$VERIFY_RUNTIME_BACKEND_PID" ]] && kill -0 "$VERIFY_RUNTIME_BACKEND_PID" 2>/dev/null; then
     verify_runtime_terminate_process_tree "$VERIFY_RUNTIME_BACKEND_PID"
+    wait "$VERIFY_RUNTIME_BACKEND_PID" 2>/dev/null || true
   fi
   if [[ -n "$VERIFY_RUNTIME_DIR" ]]; then
     if [[ "${SYSGRID_VERIFY_KEEP_LOGS:-0}" == "1" ]]; then
