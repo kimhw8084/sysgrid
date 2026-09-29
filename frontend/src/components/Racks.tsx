@@ -154,14 +154,14 @@ const MiniBar = ({ value, max, colorFn, label, unit, overflowLabel = 'CAPACITY A
   return (
     <div className="space-y-0.5 group/bar relative">
       <div className="flex justify-between items-center">
-        <span className={`text-[7px] uppercase font-bold tracking-wider ${isOverflow ? 'text-rose-400 animate-pulse' : 'text-slate-500'}`}>
+        <span className={`text-[11px] font-medium ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>
           {label} {isOverflow && <span className="text-[6px] font-black ml-1">[{overflowLabel}]</span>}
         </span>
-        <span className={`text-[8px] font-black tabular-nums transition-colors ${isOverflow ? 'text-rose-500' : 'text-slate-300'}`}>
-          {value.toFixed(1)}<span className="text-slate-500 font-normal">/{max}{unit}</span>
+        <span className={`text-[11px] font-semibold tabular-nums transition-colors ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-primary)]'}`}>
+          {value.toFixed(1)}<span className="text-[var(--text-secondary)] font-normal">/{max}{unit}</span>
         </span>
       </div>
-      <div className={`h-1.5 bg-white/5 rounded-lg overflow-hidden relative border border-white/5 ${isOverflow ? 'ring-1 ring-rose-500/50 shadow-[0_0_8px_rgba(225,29,72,0.3)]' : ''}`}>
+      <div className={`h-1.5 bg-[var(--grid-border)] rounded-lg overflow-hidden relative ${isOverflow ? 'ring-1 ring-rose-500/50' : ''}`}>
         <motion.div 
           className={`h-full rounded-lg transition-all duration-700 ease-out ${colorFn(pct)}`} 
           style={{ width: `${Math.min(pct, 100)}%` }} 
@@ -556,7 +556,7 @@ const RackUnit = ({ uNumber, loc, isTop, isBottom, highlight, onSelect, onManage
         isBottom ? 'border-b border-black/40' : 'border-b border-white/[0.03]',
         !isTop ? 'border-t-0' : '',
       ].join(' ')
-    : 'border-b border-white/[0.06]'
+    : 'border-b border-[var(--grid-border)]'
 
   const roundedClass = device
     ? `${isTop ? 'rounded-t-lg' : ''} ${isBottom ? 'rounded-b-lg' : ''}`
@@ -581,7 +581,7 @@ const RackUnit = ({ uNumber, loc, isTop, isBottom, highlight, onSelect, onManage
         onClick={(e) => { e.stopPropagation(); if (!isDeleted) onSelect(); }}
         className={`w-7 h-full flex items-center justify-center shrink-0 cursor-pointer border-r border-white/5 hover:bg-blue-500/20 group/u transition-colors`}
       >
-        <span className={`text-[8px] font-mono select-none tabular-nums transition-colors ${device ? 'text-slate-400 font-black' : 'text-slate-600 group-hover/u:text-blue-400'}`}>
+        <span className="text-[10px] font-mono select-none tabular-nums text-[var(--text-secondary)]">
           {uNumber}
         </span>
       </div>
@@ -596,7 +596,7 @@ const RackUnit = ({ uNumber, loc, isTop, isBottom, highlight, onSelect, onManage
             <div className="flex items-center gap-1.5 overflow-hidden">
               <span className={`shrink-0 ${statusCfg?.dot} w-1.5 h-1.5 rounded-full ${isReservation ? 'animate-pulse' : ''}`} />
               <div className="flex flex-col min-w-0">
-                <span className={`text-[9px] font-black truncate uppercase tracking-tight leading-none ${highlight || isFocused || isConnected ? 'text-white' : 'text-slate-100'}`}>
+                <span title={device.name} className="text-xs font-semibold truncate leading-none text-[var(--text-primary)]">
                   {device.name}
                   {isDiff && <span className="ml-2 text-amber-400 text-[7px] font-black uppercase tracking-widest">[Diff Change]</span>}
                 </span>
@@ -1077,8 +1077,8 @@ interface RackElevationProps {
    <div 
      data-rack-id={rack.id}
      style={{ width: `${rackWidth}px` }}
-     className={`glass-panel flex-shrink-0 rounded-lg overflow-hidden flex flex-col border transition-all group relative
-     ${isSelected ? 'border-blue-500/60 shadow-blue-500/15 shadow-2xl bg-blue-900/[0.07]' : 'border-white/[0.07] hover:border-white/20'}
+     className={`glass-panel max-w-none flex-shrink-0 rounded-lg overflow-hidden flex flex-col border transition-all group relative
+     ${isSelected ? 'border-blue-500/60 shadow-blue-500/15 shadow-2xl bg-blue-900/[0.07]' : 'border-[var(--grid-border)] hover:border-[var(--accent-primary)]'}
      ${isDeleted ? 'opacity-60 grayscale-[0.4]' : ''}
      ${isFillOver ? 'ring-1 ring-rose-500/50' : ''}
      h-full max-h-full ${className}
@@ -1087,26 +1087,19 @@ interface RackElevationProps {
 
       {/* Checkbox */}
       {showCheckbox && (
-        <div className="absolute top-4 left-4 z-20" onClick={e => e.stopPropagation()}>
-          <div
-            onClick={() => onToggleSelect(rack.id)}
-            className={`w-4 h-4 rounded-lg flex items-center justify-center cursor-pointer border transition-all ${
-              isSelected ? 'bg-blue-600 border-blue-500 text-white shadow-sm shadow-blue-500/50' : 'border-white/20 bg-black/30 hover:border-blue-400'
-            }`}
-          >
-            {isSelected && <Check size={10} strokeWidth={3.5} />}
-          </div>
-        </div>
+        <label className="absolute top-3 left-2 z-20 flex h-8 w-8 items-center justify-center cursor-pointer" onClick={e => e.stopPropagation()}>
+          <input type="checkbox" aria-label={`Select rack ${rack.name}`} checked={isSelected} onChange={() => onToggleSelect(rack.id)} className="h-4 w-4 accent-[var(--action-primary)]" />
+        </label>
       )}
 
       {/* Header - FIXED */}
-      <div className="px-4 pt-5 pb-3 bg-white/[0.03] border-b border-white/[0.06] space-y-2.5 shrink-0">
+      <div className="px-3 pt-4 pb-3 bg-[var(--grid-header-bg)] border-b border-[var(--grid-border)] space-y-2.5 shrink-0">
         <div className="flex items-start justify-between ml-6 gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="font-black text-[11px] uppercase tracking-widest text-white truncate leading-tight">{rack.name}</h3>
+            <h3 className="font-semibold text-sm text-[var(--text-primary)] leading-5 [overflow-wrap:anywhere]">{rack.name}</h3>
             <div className="flex items-center gap-1.5 mt-0.5">
               <MapPin size={9} className="text-slate-600 shrink-0" />
-              <span className="text-[8px] text-slate-500 font-bold uppercase truncate" style={{ color: rack.site_color }}>{rack.site_name || 'Unassigned'}</span>
+              <span className="text-[11px] text-[var(--text-secondary)] truncate" title={rack.site_name || 'Unassigned'}>{rack.site_name || 'Unassigned'}</span>
             </div>
           </div>
 
@@ -1131,7 +1124,9 @@ interface RackElevationProps {
               <div className="relative">
                 <button
                   onClick={() => setMenuOpen(v => !v)}
-                  className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-slate-300 transition-colors opacity-0 group-hover:opacity-100"
+                  aria-label={`Rack actions for ${rack.name}`}
+                  aria-expanded={menuOpen}
+                  className="h-8 w-8 flex items-center justify-center hover:bg-[var(--surface-hover)] rounded-lg text-[var(--text-secondary)] transition-colors"
                 >
                   <MoreVertical size={13} />
                 </button>
@@ -1175,20 +1170,20 @@ interface RackElevationProps {
         </div>
 
         {/* Capacity bars */}
-        <div className="space-y-1.5 px-0.5">
-          <div className="flex items-center justify-between mb-0.5 px-0.5">
+        <div className="space-y-2 px-0.5">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-0.5 px-0.5">
              <div className="flex gap-2">
-                <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-1">
                    <Server size={8} /> {serverCount} SRV
                 </span>
-                <span className="text-[7px] font-black text-violet-400 uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-1">
                    <Package size={8} /> {reservedCount} RES
                 </span>
              </div>
-             <div className="flex gap-2">
-                <span className={`text-[7px] font-black uppercase ${isFillOver ? 'text-rose-500' : 'text-slate-500'}`}>{Math.round((occupiedU/totalU)*100)}% SLOT</span>
-                <span className="text-[7px] font-black uppercase text-slate-500">CEILING {effectivePowerCapKw.toFixed(1)}kW</span>
-                <span className={`text-[7px] font-black uppercase ${isPlanningEstimateOver ? 'text-rose-500' : 'text-slate-500'}`}>TYP EST {Math.round((estimatedPowerKw/effectivePowerCapKw)*100)}%</span>
+             <div className="flex flex-wrap gap-x-2 gap-y-1">
+                <span className={`text-[10px] font-medium ${isFillOver ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>{Math.round((occupiedU/totalU)*100)}% slot</span>
+                <span className="text-[10px] font-medium text-[var(--text-secondary)]">Ceiling {effectivePowerCapKw.toFixed(1)}kW</span>
+                <span className={`text-[10px] font-medium ${isPlanningEstimateOver ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>Typ est {Math.round((estimatedPowerKw/effectivePowerCapKw)*100)}%</span>
              </div>
           </div>
           <MiniBar value={occupiedU} max={totalU} colorFn={fillColor} label="Fill" unit="U" />
@@ -1204,7 +1199,7 @@ interface RackElevationProps {
       </div>
 
       {/* Elevation grid - SCROLLABLE CONTENT WITH FIXED EDGES */}
-      <div className="flex-1 min-h-0 relative flex flex-col bg-slate-950/40">
+      <div className="flex-1 min-h-0 relative flex flex-col bg-[var(--grid-bg)]">
         {/* Fixed PDU Bar A */}
         <PduBar 
           side="A" 
@@ -1222,8 +1217,8 @@ interface RackElevationProps {
         />
 
         {/* Scrollable interior grid */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-2">
-          <div className="bg-black/30 border border-white/[0.05] rounded-lg overflow-hidden">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar px-5 py-2">
+          <div className="bg-[var(--surface-base)] border border-[var(--grid-border)] rounded-lg overflow-hidden">
             {units.map(u => {
               const loc = rack.device_locations?.find((l: any) => u >= l.start_unit && u < l.start_unit + l.size_u)
               const liveLoc = liveRack?.device_locations?.find((l: any) => u >= l.start_unit && u < l.start_unit + l.size_u)
@@ -1251,12 +1246,12 @@ interface RackElevationProps {
       </div>
 
       {/* Footer - FIXED */}
-      <div className="px-4 py-2.5 bg-white/[0.02] border-t border-white/[0.05] flex items-center justify-between shrink-0">
+      <div className="px-3 py-2 bg-[var(--grid-header-bg)] border-t border-[var(--grid-border)] flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-[7px] text-slate-500 font-black uppercase tracking-wider">{(rack.device_locations || []).length} ASSETS</span>
-          <span className="text-[7px] text-blue-500/80 font-black tracking-widest uppercase">{totalU}U</span>
+          <span className="text-[10px] text-[var(--text-secondary)] font-medium">{(rack.device_locations || []).length} assets</span>
+          <span className="text-[10px] text-[var(--text-secondary)] font-semibold">{totalU}U</span>
         </div>
-        <span className="text-[7px] text-emerald-400/80 font-black tracking-widest uppercase">{totalU - occupiedU}U FREE</span>
+        <span className="text-[10px] text-[var(--state-success)] font-semibold">{totalU - occupiedU}U free</span>
       </div>
     </div>
   )
@@ -1265,8 +1260,8 @@ interface RackElevationProps {
 // ─── Asset Legend ──────────────────────────────────────────────────────────────
 
 const AssetLegend = () => (
-  <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-lg border border-white/[0.06]">
-    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mr-1">Status Legend:</span>
+  <div className="flex flex-wrap items-center gap-2 bg-[var(--surface-elevated)] px-3 py-2 rounded-lg border border-[var(--grid-border)]">
+    <span className="text-[11px] font-medium text-[var(--text-secondary)] mr-1">Status:</span>
     {[
       { label: 'Active',         color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
       { label: 'Standby',        color: 'bg-sky-500/20 text-sky-400 border-sky-500/30' },
@@ -1276,7 +1271,7 @@ const AssetLegend = () => (
       { label: 'Reserved',       color: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
     ].map(l => (
       <div key={l.label} className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${l.color}`}>
-        <span className="text-[7px] font-black uppercase tracking-tighter">{l.label}</span>
+        <span className="text-[10px] font-medium">{l.label}</span>
       </div>
     ))}
   </div>
@@ -2958,7 +2953,7 @@ export default function Racks() {
   const isMaskMode = isPlanInitialized || !!diffBaseVersion
 
   return (
-    <div className="h-full flex flex-col gap-4 min-h-0 overflow-hidden">
+    <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-hidden">
       
       {isPlanMode && (
         <PlanBanner 
@@ -3090,6 +3085,7 @@ export default function Racks() {
 
       {/* ── Page Toolbar ── */}
       <PageToolbar 
+        wrapOnMobile
         className={`shrink-0 ${isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}`}
         left={
           <>
@@ -3115,7 +3111,7 @@ export default function Racks() {
               <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/[0.06]">
                 <Layers size={11} className="text-slate-500" />
                 <input 
-                  type="range" min={160} max={400} value={rackWidth}
+                  type="range" aria-label="Rack width" min={160} max={400} value={rackWidth}
                   onChange={e => setRackWidth(parseInt(e.target.value))}
                   className="w-24 accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                 />
@@ -3182,8 +3178,8 @@ export default function Racks() {
 
       {/* ── Site Tabs ── */}
       {!showCompareOnly && activeTab !== 'deleted' && !isMaskMode && (
-        <div className="flex items-center justify-between gap-4 shrink-0">
-          <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar items-center">
+        <div className="flex flex-col items-stretch gap-3 shrink-0 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1 custom-scrollbar items-center">
             <button
               onClick={() => setActiveSite(null)}
               className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all whitespace-nowrap flex items-center gap-1.5 ${!activeSite ? 'bg-blue-600 border-blue-500 text-white' : 'border-white/[0.07] text-slate-500 hover:border-white/20 hover:text-slate-300'}`}
@@ -3267,7 +3263,7 @@ export default function Racks() {
       )}
 
       {/* ── Rack Grid ── */}
-      <div id="racks-grid" className="h-full flex-1 flex gap-8 overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar px-1 min-h-0 relative">
+      <div id="racks-grid" className="h-[480px] flex-none md:h-full md:flex-1 flex gap-8 overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar px-1 min-h-0 relative">
         
         {viewMode === 'spatial' ? (
           <SpatialMap
@@ -3416,11 +3412,9 @@ export default function Racks() {
             })
 
             return Object.entries(groups).sort().map(([groupName, groupRacks]) => (
-              <div key={groupName} className="flex flex-col gap-4 shrink-0 h-full" data-rack-id={groupRacks[0]?.id}>
-                <div className="flex items-center gap-3 px-2 shrink-0">
-                  <div className="h-px w-8 bg-white/10" />
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] whitespace-nowrap">{groupName}</span>
-                  <div className="h-px flex-1 bg-white/5" />
+              <div key={groupName} className="flex max-w-none flex-col gap-3 shrink-0 h-full" style={{ width: groupRacks.length * rackWidth + Math.max(0, groupRacks.length - 1) * 16 }} data-rack-id={groupRacks[0]?.id}>
+                <div className="flex min-h-10 min-w-0 items-center px-1 shrink-0">
+                  <span className="text-xs font-semibold leading-5 text-[var(--text-secondary)] [overflow-wrap:anywhere]">{groupName}</span>
                 </div>
                 <div className="flex gap-4 flex-1 min-h-0">
                   {groupRacks.map((r: any) => (
