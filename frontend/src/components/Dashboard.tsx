@@ -36,7 +36,7 @@ import {
 import { apiFetch } from '../api/apiClient'
 import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
-import { formatAppDay, parseAppDate } from '../utils/dateUtils'
+import { formatAppDate, parseAppDate } from '../utils/dateUtils'
 import {
   ModulePolicyLink,
   resolveModuleActionState,
@@ -77,8 +77,15 @@ export function dashboardTruthLabel(truth: DashboardTruth | undefined): string {
 }
 
 export function dashboardTruthReason(truth: DashboardTruth | undefined): string {
-  if (!truth) return 'Home truth is unavailable.'
-  return truth.unavailable_reason || `Source: ${truth.source}`
+  if (!truth) return 'Source information is unavailable.'
+  const reasons: Record<string, string> = {
+    NO_AUTHORITATIVE_OBSERVATION_SOURCE: 'No observation source is connected.',
+    NO_CANONICAL_STABILITY_SOURCE: 'No stability measurements are available.',
+    NO_AUTHORITATIVE_INCIDENT_SOURCE: 'No incident source is connected.',
+    MODULE_UNAVAILABLE: 'This workspace is unavailable for your current access.',
+  }
+  if (truth.unavailable_reason) return reasons[truth.unavailable_reason] || truth.unavailable_reason
+  return `Source: ${truth.source}`
 }
 
 export function buildDashboardSearchPath(result: DashboardSearchResult): string {
@@ -89,12 +96,12 @@ export function buildDashboardSearchPath(result: DashboardSearchResult): string 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-white/10 bg-slate-900/90 p-3 shadow-2xl backdrop-blur-md">
-      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</p>
+    <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3 shadow-xl">
+      <p className="mb-2 text-xs font-medium text-[var(--text-secondary)]">{label}</p>
       {payload.map((entry: any, index: number) => (
         <div key={index} className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-          <p className="text-[11px] font-bold uppercase text-white">
+          <p className="text-sm text-[var(--text-primary)]">
             {entry.name}: <span className="tabular-nums">{entry.value}</span>
           </p>
         </div>
@@ -104,15 +111,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 const TruthValue = ({ label, truth }: { label: string; truth?: DashboardTruth }) => (
-  <div className="flex min-w-[150px] flex-col gap-1 text-right">
-    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</p>
-    <div className="flex items-center justify-end gap-2">
-      <span className="text-xl font-black tracking-tight text-slate-200" data-home-truth-state={truth?.available ? 'available' : 'unavailable'}>
+  <div className="flex min-w-0 flex-col gap-1">
+    <p className="text-xs text-[var(--text-secondary)]">{label}</p>
+    <div className="flex items-center gap-2">
+      <span className="text-sm font-semibold text-[var(--text-primary)]" data-home-truth-state={truth?.available ? 'available' : 'unavailable'}>
         {dashboardTruthLabel(truth)}
       </span>
-      <Info size={16} className="text-slate-500" aria-hidden="true" />
+      <Info size={16} className="shrink-0 text-[var(--text-secondary)]" aria-hidden="true" />
     </div>
-    <span className="text-[9px] font-bold uppercase tracking-wide text-slate-600">{dashboardTruthReason(truth)}</span>
+    <span className="text-xs text-[var(--text-secondary)]">{dashboardTruthReason(truth)}</span>
   </div>
 )
 
@@ -147,28 +154,28 @@ const StatCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-      className="group relative h-full cursor-pointer overflow-hidden rounded-lg border border-white/5 bg-black/20 p-6 shadow-lg backdrop-blur-xl transition-all hover:border-blue-500/30 hover:bg-white/[0.03]"
+      className="group relative h-full cursor-pointer overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4 transition-colors hover:border-[var(--accent-primary)] sm:p-5"
     >
       <div className={`absolute -right-4 -top-4 h-24 w-24 bg-gradient-to-br ${color} opacity-[0.03] blur-2xl transition-opacity group-hover:opacity-[0.1]`} />
-      <div className="relative z-10 flex items-start justify-between">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-lg border border-white/5 bg-gradient-to-br ${color} bg-opacity-10 shadow-inner transition-transform group-hover:rotate-3 group-hover:scale-110`}>
-          <Icon size={24} className="text-white" aria-hidden="true" />
+      <div className="relative z-10 flex flex-col items-start justify-between gap-3 sm:flex-row">
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${color}`}>
+          <Icon size={18} className="text-white" aria-hidden="true" />
         </div>
-        <div className="text-right">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{title}</p>
-          <h2 className="mt-1 text-3xl font-black tracking-tighter text-white tabular-nums">{truth.available ? total ?? 0 : 'Unavailable'}</h2>
+        <div className="min-w-0 text-left sm:text-right">
+          <p className="text-xs font-medium leading-snug text-[var(--text-secondary)]">{title}</p>
+          <h2 className={`mt-2 font-semibold tracking-tight text-[var(--text-primary)] tabular-nums ${truth.available ? 'text-2xl' : 'text-sm'}`}>{truth.available ? total ?? 0 : 'Unavailable'}</h2>
         </div>
       </div>
-      <div className="relative z-10 mt-8 space-y-4">
+      <div className="relative z-10 mt-5 space-y-3">
         {truth.available && Object.entries(metrics).slice(0, 2).map(([key, value]) => {
           const totalForType = Object.values(value).reduce((sum, count) => sum + count, 0)
           return (
             <div key={key} className="flex flex-col space-y-1.5">
-              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                <span className="truncate pr-2 text-slate-400">{key}</span>
-                <span className="text-white">{totalForType}</span>
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="truncate text-[var(--text-secondary)]">{key}</span>
+                <span className="font-medium text-[var(--text-primary)]">{totalForType}</span>
               </div>
-              <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-white/5 p-0.5" aria-label={`${key} persisted counts`}>
+              <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-[var(--surface-hover)] p-0.5" aria-label={`${key} persisted counts`}>
                 {Object.entries(value).map(([status, count]) => (
                   <div
                     key={status}
@@ -186,9 +193,9 @@ const StatCard = ({
           )
         })}
       </div>
-      <div className="mt-6 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400">Open released module</span>
-        <ArrowUpRight size={12} className="text-blue-400" aria-hidden="true" />
+      <div className="mt-5 flex items-center gap-2 text-[var(--accent-primary)]">
+        <span className="text-xs font-medium">Open workspace</span>
+        <ArrowUpRight size={14} className="shrink-0" aria-hidden="true" />
       </div>
     </motion.div>
   </ModulePolicyLink>
@@ -199,12 +206,12 @@ const DashboardChart = ({ title, icon: Icon, children, delay }: any) => (
     initial={{ opacity: 0, scale: 0.98 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ delay, duration: 0.5 }}
-    className="relative flex h-[300px] flex-col overflow-hidden rounded-lg border border-white/5 bg-black/20 p-6 shadow-xl backdrop-blur-xl transition-all hover:border-white/10"
+    className="relative flex h-[320px] min-w-0 flex-col overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5 [&_.recharts-wrapper]:max-w-none"
   >
     <div className="relative z-10 mb-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="rounded-lg border border-blue-500/20 bg-blue-600/10 p-2 text-blue-400"><Icon size={16} aria-hidden="true" /></div>
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">{title}</h3>
+        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--action-primary-muted)] p-2 text-[var(--accent-primary)]"><Icon size={16} aria-hidden="true" /></div>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
       </div>
     </div>
     <div className="relative z-10 min-h-0 flex-1">{children}</div>
@@ -212,9 +219,9 @@ const DashboardChart = ({ title, icon: Icon, children, delay }: any) => (
 )
 
 const EmptyChartState = ({ text }: { text: string }) => (
-  <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-slate-600">
+  <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-[var(--text-secondary)]">
     <ZapOff size={28} aria-hidden="true" />
-    <span className="text-[10px] font-black uppercase tracking-widest">{text}</span>
+    <span className="text-sm">{text}</span>
   </div>
 )
 
@@ -223,21 +230,21 @@ const SiteIdentity = ({ site, delay }: { site: { id: number; name: string }; del
     initial={{ opacity: 0, x: 20 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ delay }}
-    className="relative flex items-center justify-between overflow-hidden rounded-lg border border-white/5 bg-white/[0.03] px-5 py-4 shadow-md transition-all hover:border-blue-500/20"
+    className="relative flex min-w-0 items-center justify-between gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-base)] p-4"
   >
-    <div className="flex flex-col">
-      <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">{site.name}</span>
-      <span className="mt-1 text-[9px] font-bold uppercase tracking-tight text-slate-500">Persisted site record</span>
+    <div className="flex min-w-0 flex-col">
+      <span className="break-words text-sm font-medium text-[var(--text-primary)]">{site.name}</span>
+      <span className="mt-1 text-xs text-[var(--text-secondary)]">Persisted site record</span>
     </div>
-    <MapPin size={16} className="text-slate-500" aria-hidden="true" />
+    <MapPin size={16} className="shrink-0 text-[var(--text-secondary)]" aria-hidden="true" />
   </motion.div>
 )
 
 const StatePanel = ({ title, detail }: { title: string; detail: string }) => (
   <div className="flex h-full min-h-[300px] w-full items-center justify-center bg-[var(--bg-primary)] p-8">
-    <div className="max-w-xl rounded-lg border border-white/10 bg-black/20 p-8 text-center">
-      <h1 className="text-2xl font-black uppercase tracking-tight text-white">{title}</h1>
-      <p className="mt-3 text-sm text-slate-400">{detail}</p>
+    <div className="max-w-xl rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-8 text-center">
+      <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{title}</h1>
+      <p className="mt-3 text-sm text-[var(--text-secondary)]">{detail}</p>
     </div>
   </div>
 )
@@ -329,98 +336,97 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   }
 
   return (
-    <div className="flex h-full w-full flex-col space-y-8 overflow-hidden pr-2">
+    <div data-home-workspace className="flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto pb-6 pr-1">
       <div className="flex shrink-0 flex-wrap items-start justify-between gap-6">
-        <div className="flex items-center gap-6">
+        <div className="flex min-w-0 items-center gap-4">
           <div className="relative hidden sm:block">
             <div className="absolute inset-0 rounded-full bg-blue-600/30 blur-2xl" />
-            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 to-black shadow-2xl">
-              <Fingerprint size={32} className="text-blue-500" aria-hidden="true" />
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)]">
+              <Fingerprint size={24} className="text-[var(--accent-primary)]" aria-hidden="true" />
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
             </div>
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-blue-400">Operator session</span>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-600">System Management V1</span>
+              <span className="text-xs font-medium text-[var(--accent-primary)]">Operator session</span>
+              <span className="text-xs text-[var(--text-secondary)]">System Management V1</span>
             </div>
-            <h1 className="mt-1 text-4xl font-black leading-tight tracking-tighter text-white sm:text-5xl">
-              {greeting}, <span className="text-blue-500">{userProfile?.full_name?.split(' ')[0] || userProfile?.username || 'Operator'}</span>
+            <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight text-[var(--text-primary)] sm:text-3xl">
+              {greeting}, <span className="text-[var(--accent-primary)]">{userProfile?.full_name?.split(' ')[0] || userProfile?.username || 'Operator'}</span>
             </h1>
-            <p className="mt-1 text-[11px] font-bold uppercase tracking-tight text-slate-500">Persisted inventory, configuration, and recorded activity</p>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">Persisted inventory, configuration, and recorded activity</p>
           </div>
-        </div>
-        <div className="flex flex-wrap items-start gap-8">
-          <TruthValue label="Observed stability" truth={metrics.observed_health?.stability} />
-          <div className="hidden h-16 w-px bg-white/5 sm:block" />
-          <TruthValue label="Incident signal" truth={metrics.incident_summary} />
         </div>
       </div>
 
-      <div className="grid shrink-0 grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="glass-panel relative overflow-hidden rounded-lg border-white/5 bg-black/40 p-8 shadow-2xl xl:col-span-8">
+      <div className="grid shrink-0 grid-cols-2 gap-3 xl:grid-cols-4 sm:gap-4">
+        <StatCard title="Infrastructure assets" total={metrics.asset_overview.total} metrics={metrics.asset_overview.breakdown} truth={metrics.asset_overview.truth} icon={Server} color="from-blue-600 to-blue-800" moduleId="assets" path="/asset" />
+        <StatCard title="Logical services" total={metrics.service_overview.total} metrics={metrics.service_overview.breakdown} truth={metrics.service_overview.truth} icon={Layers} color="from-indigo-600 to-indigo-800" moduleId="services" path="/services" />
+        <StatCard title="Network connections" total={metrics.network_overview.total} metrics={metrics.network_overview.breakdown} truth={metrics.network_overview.truth} icon={Network} color="from-emerald-600 to-emerald-800" moduleId="network" path="/network" />
+        <StatCard title="Monitoring definitions" total={metrics.monitoring_overview.total} metrics={metrics.monitoring_overview.breakdown} truth={metrics.monitoring_overview.truth} icon={Activity} color="from-rose-600 to-rose-800" moduleId="monitoring" path="/monitoring" />
+      </div>
+
+      <div className="grid shrink-0 grid-cols-1 gap-4 xl:grid-cols-12">
+        <div className="relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5 xl:col-span-7">
           <div className="absolute right-0 top-0 p-8 opacity-10"><Activity size={110} className="text-blue-500" aria-hidden="true" /></div>
           <div className="relative z-10 flex flex-wrap items-start justify-between gap-5">
             <div>
-              <h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white">Observed health history (24h)</h2>
-              <p className="mt-1 text-[10px] font-bold uppercase text-slate-500">Unavailable until an authoritative observation series exists</p>
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Observed health history (24h)</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">Unavailable until an authoritative observation series exists</p>
             </div>
-            <span className="rounded border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-amber-300">Unavailable</span>
+            <span className="rounded-md border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-2 py-1 text-xs font-medium text-[var(--state-warning)]">Unavailable</span>
           </div>
-          <div className="relative z-10 mt-8 flex min-h-[148px] flex-col justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.02] p-6">
-            <p className="text-sm font-bold text-slate-300">No chart is rendered from monitoring definitions.</p>
-            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-500">{dashboardTruthReason(metrics.observed_health?.history)}</p>
-            <p className="mt-3 text-[9px] font-black uppercase tracking-widest text-slate-600">Request as of {metrics.observed_health?.history?.as_of || metrics.request_as_of}</p>
+          <div className="relative z-10 mt-4 border-t border-[var(--border-default)] pt-4">
+            <p className="text-sm text-[var(--text-secondary)]">No chart is rendered from monitoring definitions.</p>
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-[var(--text-secondary)]">{dashboardTruthReason(metrics.observed_health?.history)}</p>
+            <p className="mt-2 text-xs text-[var(--text-secondary)]">Request as of <time dateTime={metrics.observed_health?.history?.as_of || metrics.request_as_of}>{formatAppDate(metrics.observed_health?.history?.as_of || metrics.request_as_of, { month: 'short', second: undefined, timeZoneName: 'short' })}</time></p>
+            <div className="mt-4 grid gap-4 border-t border-[var(--border-default)] pt-4 sm:grid-cols-2">
+              <TruthValue label="Observed stability" truth={metrics.observed_health?.stability} />
+              <TruthValue label="Incident signal" truth={metrics.incident_summary} />
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 xl:col-span-4">
-          <div className="glass-panel flex-1 rounded-lg border-white/5 bg-black/40 p-8 shadow-xl">
+        <div className="flex flex-col gap-4 xl:col-span-5">
+          <div className="flex-1 rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5">
             <div className="flex items-center gap-3">
               <div className="rounded-lg border border-slate-500/20 bg-slate-500/10 p-2 text-slate-400"><AlertCircle size={16} aria-hidden="true" /></div>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500">Operational observation boundary</p>
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-tight text-slate-200">Unknown</h2>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Operational observation boundary</p>
+                <h2 className="mt-1 text-sm font-medium text-[var(--text-secondary)]">Unknown</h2>
               </div>
             </div>
-            <p className="mt-5 text-xs leading-relaxed text-slate-500">Home knows monitoring definitions and persisted status fields. It does not know live availability, latency, or incidents from those records.</p>
-            <ModulePolicyLink moduleId="monitoring" to="/monitoring" className="mt-5 inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-blue-400" aria-label="Open monitoring definitions">
+            <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">Home knows monitoring definitions and persisted status fields. It does not know live availability, latency, or incidents from those records.</p>
+            <ModulePolicyLink moduleId="monitoring" to="/monitoring" className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-medium text-[var(--accent-primary)]" aria-label="Open monitoring definitions">
               Review monitoring definitions <ChevronRight size={12} aria-hidden="true" />
             </ModulePolicyLink>
           </div>
-          <form onSubmit={handleGlobalSearch} className="relative shadow-xl" aria-label="Search released Home records">
-            <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" aria-hidden="true" />
+          <form onSubmit={handleGlobalSearch} className="relative" aria-label="Search released Home records">
+            <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" aria-hidden="true" />
             <input
               value={globalSearch}
               onChange={(event) => setGlobalSearch(event.target.value)}
               placeholder="Search released records..."
               aria-label="Search released Home records"
-              className="w-full rounded-lg border border-white/10 bg-black/60 py-4 pl-14 pr-12 text-[12px] font-black uppercase tracking-wider text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/50"
+              className={`w-full rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] py-3 pl-14 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-secondary)] focus:border-[var(--accent-primary)] ${searchState === 'loading' ? 'pr-24' : 'pr-4'}`}
             />
-            {searchState === 'loading' ? <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-widest text-blue-400">Searching</span> : null}
+            {searchState === 'loading' ? <span role="status" className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[var(--accent-primary)]">Searching</span> : null}
           </form>
-          {navigationNotice ? <p role="status" className="text-[9px] font-bold uppercase tracking-widest text-amber-400">{navigationNotice}</p> : null}
+          {navigationNotice ? <p role="status" className="text-sm text-[var(--text-secondary)]">{navigationNotice}</p> : null}
         </div>
       </div>
 
-      <div className="flex-1 space-y-8 overflow-y-auto pb-10 pr-2">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard title="Infrastructure assets" total={metrics.asset_overview.total} metrics={metrics.asset_overview.breakdown} truth={metrics.asset_overview.truth} icon={Server} color="from-blue-600 to-blue-800" moduleId="assets" path="/asset" delay={0.1} />
-          <StatCard title="Logical services" total={metrics.service_overview.total} metrics={metrics.service_overview.breakdown} truth={metrics.service_overview.truth} icon={Layers} color="from-indigo-600 to-indigo-800" moduleId="services" path="/services" delay={0.2} />
-          <StatCard title="Network connections" total={metrics.network_overview.total} metrics={metrics.network_overview.breakdown} truth={metrics.network_overview.truth} icon={Network} color="from-emerald-600 to-emerald-800" moduleId="network" path="/network" delay={0.3} />
-          <StatCard title="Monitoring definitions" total={metrics.monitoring_overview.total} metrics={metrics.monitoring_overview.breakdown} truth={metrics.monitoring_overview.truth} icon={Activity} color="from-rose-600 to-rose-800" moduleId="monitoring" path="/monitoring" delay={0.4} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
+      <div className="shrink-0 space-y-6">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <DashboardChart title="Asset composition" icon={PieIcon} delay={0.5}>
             {metrics.asset_overview.truth.available && assetDistributionData.length ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={assetDistributionData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                  <Pie data={assetDistributionData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none" isAnimationActive={false}>
                     {assetDistributionData.map((entry, index) => <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend layout="vertical" verticalAlign="middle" align="right" formatter={(value) => <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{value}</span>} iconType="circle" />
+                  <Legend layout="horizontal" verticalAlign="bottom" formatter={(value) => <span className="text-xs text-[var(--text-secondary)]">{value}</span>} iconType="circle" />
                 </PieChart>
               </ResponsiveContainer>
             ) : <EmptyChartState text={metrics.asset_overview.truth.available ? 'No persisted assets' : 'Assets unavailable'} />}
@@ -430,11 +436,11 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             {metrics.service_overview.truth.available && serviceStatusData.length ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={serviceStatusData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 9, fontWeight: 900 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
                   <YAxis hide />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                     {serviceStatusData.map((entry, index) => <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />)}
                   </Bar>
                 </BarChart>
@@ -442,40 +448,40 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             ) : <EmptyChartState text={metrics.service_overview.truth.available ? 'No persisted services' : 'Services unavailable'} />}
           </DashboardChart>
 
-          <div className="glass-panel flex flex-col rounded-lg border-white/5 bg-black/20 p-6 shadow-xl">
+          <div className="flex h-[320px] min-w-0 flex-col rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5">
             <div className="mb-6 flex items-center gap-3">
               <div className="rounded-lg border border-amber-500/20 bg-amber-600/10 p-2 text-amber-400"><Globe size={16} aria-hidden="true" /></div>
-              <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Persisted sites</h2>
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Persisted sites</h2>
             </div>
-            <div className="flex-1 space-y-3 overflow-y-auto pr-2">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-2">
               {metrics.rack_overview.truth.total_sites.available && metrics.rack_overview.sites?.map((site: { id: number; name: string }, index: number) => <SiteIdentity key={site.id} site={site} delay={index * 0.1} />)}
               {!metrics.rack_overview.truth.total_sites.available ? <EmptyChartState text="Rack inventory unavailable" /> : null}
               {metrics.rack_overview.truth.total_sites.available && !metrics.rack_overview.sites?.length ? <EmptyChartState text="No persisted site records" /> : null}
             </div>
-            <div className="mt-5 flex items-center justify-between border-t border-white/5 pt-4 text-[9px] font-black uppercase tracking-widest text-slate-500">
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-subtle)] pt-4 text-xs text-[var(--text-secondary)]">
               <span>{metrics.rack_overview.truth.total_racks.available ? `${metrics.rack_overview.total_racks ?? 0} racks` : 'Rack count unavailable'}</span>
-              <ModulePolicyLink moduleId="racks" to="/racks" className="text-blue-400" aria-label="Open racks">Open Racks</ModulePolicyLink>
+              <ModulePolicyLink moduleId="racks" to="/racks" className="inline-flex min-h-10 items-center text-[var(--accent-primary)]" aria-label="Open racks">Open Racks</ModulePolicyLink>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
-          <div className="glass-panel flex h-[400px] flex-col rounded-lg border-white/5 bg-black/20 p-8 shadow-xl xl:col-span-4">
-            <div className="mb-8 flex items-center justify-between">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          <div className="flex h-[400px] min-w-0 flex-col rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5 xl:col-span-4">
+            <div className="mb-5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-4">
                 <div className="rounded-lg border border-blue-500/20 bg-blue-600/10 p-3 text-blue-400"><History size={18} aria-hidden="true" /></div>
-                <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-white">Recent audit activity</h2>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Recent audit activity</h2>
               </div>
-              <ModulePolicyLink moduleId="logs" to="/logs" className="rounded-lg p-2 text-slate-500 transition-all hover:bg-white/5 hover:text-white" aria-label="Open audit logs"><ExternalLink size={16} aria-hidden="true" /></ModulePolicyLink>
+              <ModulePolicyLink moduleId="logs" to="/logs" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]" aria-label="Open audit logs"><ExternalLink size={16} aria-hidden="true" /></ModulePolicyLink>
             </div>
-            <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
               {metrics.recent.truth.available && metrics.recent.activity?.map((log: any) => (
-                <div key={log.id} className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="truncate text-[9px] font-black uppercase tracking-widest text-blue-400">{log.user || 'Recorded event'}</span>
-                    <span className="text-[9px] font-bold uppercase tabular-nums text-slate-600">{log.timestamp ? formatDistanceToNow(parseAppDate(log.timestamp)!, { addSuffix: true }) : 'Time unavailable'}</span>
+                <div key={log.id} className="rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-base)] p-4">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <span className="break-words text-xs font-medium text-[var(--accent-primary)]">{log.user || 'Recorded event'}</span>
+                    <span className="text-xs tabular-nums text-[var(--text-secondary)]">{log.timestamp ? formatDistanceToNow(parseAppDate(log.timestamp)!, { addSuffix: true }) : 'Time unavailable'}</span>
                   </div>
-                  <p className="text-[11px] font-bold uppercase leading-tight tracking-tight text-slate-300">{log.description || `${log.action || 'Activity'} ${log.target || ''}`}</p>
+                  <p className="break-words text-sm leading-relaxed text-[var(--text-primary)]">{log.description || `${log.action || 'Activity'} ${log.target || ''}`}</p>
                 </div>
               ))}
               {!metrics.recent.truth.available ? <EmptyChartState text="Audit activity unavailable" /> : null}
@@ -483,27 +489,27 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
             </div>
           </div>
 
-          <div className="glass-panel rounded-lg border-white/5 bg-black/20 p-8 shadow-xl xl:col-span-8">
-            <div className="mb-8 flex items-center gap-4">
+          <div className="min-w-0 rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5 xl:col-span-8">
+            <div className="mb-5 flex items-center gap-4">
               <div className="rounded-lg border border-indigo-500/20 bg-indigo-600/10 p-3 text-indigo-400"><Server size={18} aria-hidden="true" /></div>
               <div>
-                <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-white">Released entry points</h2>
-                <p className="mt-1 text-[10px] font-bold uppercase text-slate-500">Destinations are enabled by effective server policy</p>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Released entry points</h2>
+                <p className="mt-1 text-xs text-[var(--text-secondary)]">Destinations are enabled by effective server policy</p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {releasedSurfaces.map((surface) => (
-                <ModulePolicyLink key={surface.moduleId} moduleId={surface.moduleId} to={surface.path} className="group flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] p-4 transition-all hover:border-blue-500/20 hover:bg-white/[0.05]" aria-label={`Open ${surface.label}`}>
+                <ModulePolicyLink key={surface.moduleId} moduleId={surface.moduleId} to={surface.path} className="group flex items-center justify-between gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-base)] p-4 transition-colors hover:border-[var(--accent-primary)] hover:bg-[var(--surface-hover)]" aria-label={`Open ${surface.label}`}>
                   <div className="min-w-0">
-                    <p className="truncate text-[11px] font-black uppercase tracking-tight text-slate-200 group-hover:text-blue-400">{surface.label}</p>
-                    <p className="mt-1 truncate text-[9px] font-bold uppercase tracking-widest text-slate-600">{surface.detail}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]">{surface.label}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">{surface.detail}</p>
                   </div>
-                  <ChevronRight size={14} className="shrink-0 text-slate-700 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  <ChevronRight size={16} className="shrink-0 text-[var(--text-secondary)] transition-transform group-hover:translate-x-1" aria-hidden="true" />
                 </ModulePolicyLink>
               ))}
             </div>
-            <div className="mt-8 flex items-center gap-3 border-t border-white/5 pt-5 text-[9px] font-bold uppercase tracking-widest text-slate-600">
-              <Info size={13} aria-hidden="true" />
+            <div className="mt-5 flex items-start gap-3 border-t border-[var(--border-subtle)] pt-5 text-xs leading-relaxed text-[var(--text-secondary)]">
+              <Info size={16} className="shrink-0" aria-hidden="true" />
               <span>Preview and unreleased modules are not Home entry points.</span>
             </div>
           </div>

@@ -109,6 +109,30 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
         if (route.slug === 'settings') await expect(page.getByText('Infrastructure Domain', { exact: true })).toBeVisible()
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
         await capture(page, testInfo, route.slug)
+        if (route.slug === 'home') {
+          const charts = await page.locator('.recharts-wrapper').evaluateAll(nodes => nodes.map(node => ({
+            width: node.getBoundingClientRect().width,
+            height: node.getBoundingClientRect().height,
+            maxWidth: getComputedStyle(node).maxWidth,
+            parentWidth: node.parentElement!.getBoundingClientRect().width,
+            svgWidth: node.querySelector(':scope > svg.recharts-surface')?.getBoundingClientRect().width ?? 0,
+          })))
+          await testInfo.attach('home-chart-geometry', { body: JSON.stringify(charts), contentType: 'application/json' })
+          expect(charts).toHaveLength(2)
+          for (const chart of charts) {
+            expect(chart.width).toBeGreaterThan(180)
+            expect(chart.svgWidth).toBeGreaterThan(180)
+            expect(chart.height).toBeGreaterThan(100)
+          }
+          const inventory = await page.getByRole('link', { name: 'Open Infrastructure assets', exact: true }).boundingBox()
+          const observations = await page.getByRole('heading', { name: 'Observed health history (24h)', exact: true }).boundingBox()
+          expect(inventory!.y + inventory!.height).toBeLessThan(observations!.y)
+          await expect(page.getByRole('link', { name: 'Open Infrastructure assets', exact: true })).toBeInViewport()
+          await page.getByRole('heading', { name: 'Asset composition', exact: true }).scrollIntoViewIfNeeded()
+          await capture(page, testInfo, 'home-inventory-charts')
+          await page.getByRole('heading', { name: 'Released entry points', exact: true }).scrollIntoViewIfNeeded()
+          await capture(page, testInfo, 'home-activity-and-links')
+        }
       }
       // A reload must keep the user's persisted theme identity, including its legacy ID.
       await page.reload()

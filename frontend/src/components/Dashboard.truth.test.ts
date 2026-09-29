@@ -17,7 +17,7 @@ const unavailableObservation: DashboardTruth = {
 describe('Home truth presentation contract', () => {
   it('renders unavailable observations without a numeric fallback', () => {
     expect(dashboardTruthLabel(unavailableObservation)).toBe('Unavailable')
-    expect(dashboardTruthReason(unavailableObservation)).toBe('NO_AUTHORITATIVE_OBSERVATION_SOURCE')
+    expect(dashboardTruthReason(unavailableObservation)).toBe('No observation source is connected.')
   })
 
   it('keeps persisted configuration distinct from observed health', () => {
