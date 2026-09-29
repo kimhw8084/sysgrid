@@ -110,7 +110,7 @@ async def test_resource_safety_versions_pin_limit_and_exports(client, seeded_adm
 
 
 @pytest.mark.asyncio
-async def test_reports_activity_and_notification_retry_are_snapshot_safe(client, seeded_admin_tenant, setup_db):
+async def test_reports_activity_and_notification_retry_are_snapshot_safe(client, seeded_admin_tenant, setup_db, provision_module_operator):
     tenant_id = seeded_admin_tenant["tenant_id"]
     project_id, project = await create_project(client, tenant_id)
     session_factory = await _tenant_session_factory(setup_db, tenant_id)
@@ -118,6 +118,7 @@ async def test_reports_activity_and_notification_retry_are_snapshot_safe(client,
     async with config_session_factory() as config_session:
         config_session.add(UserTenantAccess(user_id="reviewer", tenant_id=tenant_id, role="VIEWER", is_selected=True))
         await config_session.commit()
+    await provision_module_operator(tenant_id, 'reviewer', 'projects', preview=True)
     async with session_factory() as session:
         project_record = await session.get(models.PV1Project, project_id)
         project_record.phase = "Executing"

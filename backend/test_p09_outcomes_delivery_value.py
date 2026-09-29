@@ -71,7 +71,7 @@ async def prepare_delivery(setup_db, tenant_id: int, project_id: str) -> None:
 
 
 @pytest.mark.asyncio
-async def test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify(client, seeded_admin_tenant, setup_db):
+async def test_journey_6_delivery_is_independent_and_two_verified_adoption_periods_qualify(client, seeded_admin_tenant, setup_db, outcome_reference_date):
     tenant_id = seeded_admin_tenant["tenant_id"]
     created = await client.post("/api/v2/projects", headers=headers(tenant_id, str(uuid4())), json={"name": "Journey 6 Adoption", "objective": "Prove adoption after delivery."})
     assert created.status_code == 200, created.text

@@ -66,9 +66,10 @@ async def test_canonical_model_object_relation_identity_and_idempotency(client, 
 
 
 @pytest.mark.asyncio
-async def test_changeset_review_apply_is_atomic_and_current_stays_unchanged(client, seeded_admin_tenant, setup_db):
+async def test_changeset_review_apply_is_atomic_and_current_stays_unchanged(client, seeded_admin_tenant, setup_db, provision_module_operator):
     tenant_id = seeded_admin_tenant["tenant_id"]
     await _grant_user(setup_db, tenant_id, "approver")
+    await provision_module_operator(tenant_id, 'approver', 'architecture', preview=True)
     model_id = (await client.post("/api/v2/architecture/models", headers=_headers(tenant_id, "admin_root", str(uuid4())), json={"name": "Review model"})).json()["model"]["id"]
     change_id = str(uuid4())
     change = await client.post("/api/v2/architecture/change-sets", headers=_headers(tenant_id, "admin_root", change_id), json={"command_id": change_id, "model_id": model_id, "operations": [{"op_type": "object.create", "target_id": "planned-db", "payload": {"kind": "Datastore", "name": "Planned DB", "lifecycle": "Planned"}}]})
@@ -118,9 +119,10 @@ async def test_project_association_is_reference_only_and_assessment_requires_evi
 
 
 @pytest.mark.asyncio
-async def test_stale_object_write_and_stale_change_set_apply_require_rebase(client, seeded_admin_tenant, setup_db):
+async def test_stale_object_write_and_stale_change_set_apply_require_rebase(client, seeded_admin_tenant, setup_db, provision_module_operator):
     tenant_id = seeded_admin_tenant["tenant_id"]
     await _grant_user(setup_db, tenant_id, "approver-2")
+    await provision_module_operator(tenant_id, 'approver-2', 'architecture', preview=True)
     model_id = (await client.post("/api/v2/architecture/models", headers=_headers(tenant_id, "admin_root", str(uuid4())), json={"name": "Conflict model"})).json()["model"]["id"]
     create_id = str(uuid4())
     created = await client.post(f"/api/v2/architecture/models/{model_id}/commands", headers=_headers(tenant_id, "admin_root", create_id), json=_envelope(create_id, "object.create", {"id": "conflict-object", "kind": "Component", "name": "Conflict object"}, {"model_revision": 1}))

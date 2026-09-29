@@ -418,3 +418,62 @@ async def seeded_admin_tenant(client, tmp_path, tmp_path_factory, setup_db):
     await tenant_engine.dispose()
     
     return {"tenant_id": tenant_id, "tenant_name": tenant_name, "client": client}
+
+
+@pytest.fixture
+def provision_module_operator(setup_db, monkeypatch):
+    """Opt-in module identity; registry access and domain membership remain separate."""
+    async def provision(tenant_id, user_id, *module_ids, preview=False):
+        from app.api.module_policy import MODULES
+        from app.database import get_tenant_engine
+        from app.models.config import Tenant, UserTenantAccess
+        from app.models.models import Operator
+        from sqlalchemy import select
+        from sqlalchemy.ext.asyncio import async_sessionmaker
+
+        async with setup_db[1]() as config_session:
+            tenant = await config_session.get(Tenant, tenant_id)
+            assert tenant is not None
+            access = await config_session.scalar(select(UserTenantAccess).where(
+                UserTenantAccess.tenant_id == tenant_id, UserTenantAccess.user_id == user_id,
+            ))
+            assert access is not None, 'Provision registry access explicitly before module capability'
+            engine = get_tenant_engine(tenant.db_url)
+        permissions = {}
+        for module_id in module_ids:
+            capability = MODULES[module_id]['required_capability']
+            assert capability
+            permissions[capability] = 3
+        assert permissions
+        if preview:
+            assert all(MODULES[module_id]['default_stage'] == 'preview' for module_id in module_ids)
+            # Reserved disposable identity for this domain test only. The release
+            # gate and all domain-role checks still run; monkeypatch restores the
+            # deployment allow-list after this individual test.
+            monkeypatch.setattr(settings, 'SYSTEM_ROOT_USER_IDS', ','.join(sorted(settings.system_root_user_ids | {user_id})))
+        try:
+            async with async_sessionmaker(engine, expire_on_commit=False)() as session:
+                operator = await session.scalar(select(Operator).where(Operator.username == user_id))
+                if operator is None:
+                    operator = Operator(username=user_id, full_name=user_id, registration_status='Verified', is_admin=False)
+                    session.add(operator)
+                operator.custom_permissions = {**(operator.custom_permissions or {}), **permissions}
+                await session.commit()
+        finally:
+            await engine.dispose()
+    return provision
+
+
+@pytest.fixture
+def outcome_reference_date(monkeypatch):
+    """Keep the August measurement journeys deterministic without disabling freshness."""
+    from datetime import date
+    from app.pv1 import outcomes
+
+    class ReferenceDate(date):
+        @classmethod
+        def today(cls):
+            return cls(2026, 9, 2)
+
+    monkeypatch.setattr(outcomes, 'date', ReferenceDate)
+    return ReferenceDate.today()

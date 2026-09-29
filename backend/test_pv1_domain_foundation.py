@@ -133,11 +133,12 @@ async def test_command_idempotency_stale_revision_and_atomic_event(client, seede
 
 
 @pytest.mark.asyncio
-async def test_project_membership_enforces_task_ownership_and_revocation(client, seeded_admin_tenant, setup_db):
+async def test_project_membership_enforces_task_ownership_and_revocation(client, seeded_admin_tenant, setup_db, provision_module_operator):
     tenant_id = seeded_admin_tenant["tenant_id"]
     async with setup_db[1]() as config_session:
         config_session.add(UserTenantAccess(user_id="contributor", tenant_id=tenant_id, role="EDITOR", is_selected=False))
         await config_session.commit()
+    await provision_module_operator(tenant_id, 'contributor', 'projects', preview=True)
 
     created = await client.post(
         "/api/v2/projects",
@@ -263,7 +264,7 @@ async def test_outcome_does_not_follow_progress_and_attribution_is_bounded(clien
 
 
 @pytest.mark.asyncio
-async def test_metric_delivery_acceptance_and_verified_outcome_are_independent(client, seeded_admin_tenant, setup_db):
+async def test_metric_delivery_acceptance_and_verified_outcome_are_independent(client, seeded_admin_tenant, setup_db, outcome_reference_date):
     tenant_id = seeded_admin_tenant["tenant_id"]
     created = await client.post(
         "/api/v2/projects",
@@ -489,7 +490,7 @@ async def test_metric_delivery_acceptance_and_verified_outcome_are_independent(c
 
 
 @pytest.mark.asyncio
-async def test_same_project_id_is_not_readable_from_another_tenant(client, seeded_admin_tenant, setup_db, tmp_path):
+async def test_same_project_id_is_not_readable_from_another_tenant(client, seeded_admin_tenant, setup_db, tmp_path, provision_module_operator):
     tenant_a_id = seeded_admin_tenant["tenant_id"]
     created = await client.post(
         "/api/v2/projects",
@@ -510,6 +511,7 @@ async def test_same_project_id_is_not_readable_from_another_tenant(client, seede
         config_session.add(UserTenantAccess(user_id="admin_root", tenant_id=tenant_b.id, role="ADMIN", is_selected=False))
         await config_session.commit()
 
+    await provision_module_operator(tenant_b_id, 'admin_root', 'projects')
     hidden = await client.get(f"/api/v2/projects/{project_id}", headers=_headers(tenant_b_id))
     assert hidden.status_code == 404
 

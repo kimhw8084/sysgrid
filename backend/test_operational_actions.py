@@ -695,7 +695,7 @@ async def test_maintenance_context_and_verification_failure_are_durable(client, 
 
 
 @pytest.mark.asyncio
-async def test_missing_cross_tenant_and_unsupported_requests_fail_closed(client, seeded_admin_tenant, setup_db, tmp_path):
+async def test_missing_cross_tenant_and_unsupported_requests_fail_closed(client, seeded_admin_tenant, setup_db, tmp_path, provision_module_operator):
     tenant_id = seeded_admin_tenant["tenant_id"]
     device_id = await _device(client, tenant_id, name="OPS-ACTION-TENANT-A")
     missing = await client.post(
@@ -727,6 +727,7 @@ async def test_missing_cross_tenant_and_unsupported_requests_fail_closed(client,
     from app.api.tenants import run_alembic_upgrade
     upgraded, error = await __import__("asyncio").to_thread(run_alembic_upgrade, tenant_b_url)
     assert upgraded, error
+    await provision_module_operator(tenant_b_id, 'admin_root', 'monitoring')
     cross_tenant = await client.post(
         "/api/v1/operational-actions",
         headers=_headers(tenant_b_id, idempotency_key=str(uuid4())),

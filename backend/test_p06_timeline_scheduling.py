@@ -370,7 +370,7 @@ def test_schedule_migration_preserves_existing_ids_dates_and_round_trips(tmp_pat
 
 
 @pytest.mark.asyncio
-async def test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation(client, seeded_admin_tenant, setup_db, monkeypatch):
+async def test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mutation(client, seeded_admin_tenant, setup_db, monkeypatch, provision_module_operator):
     tenant_id = seeded_admin_tenant["tenant_id"]
     project_id, revisions = await _create_project(client, tenant_id, "Preview identity")
     created = await _command(client, tenant_id, project_id, "task.create", revisions, {"title": "Bound preview", "start_date": "2026-10-05", "end_date": "2026-10-05"})
@@ -378,6 +378,7 @@ async def test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mu
     async with setup_db[1]() as config_session:
         config_session.add(UserTenantAccess(user_id="other-scheduler", tenant_id=tenant_id, role="ADMIN", is_selected=False))
         await config_session.commit()
+    await provision_module_operator(tenant_id, 'other-scheduler', 'projects', preview=True)
     access = await _command(client, tenant_id, project_id, "project.set_access", revisions, {"members": [{"user_id": "admin_root", "role": "Owner"}, {"user_id": "other-scheduler", "role": "Lead"}]})
     assert access.status_code == 200, access.text
 
