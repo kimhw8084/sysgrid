@@ -218,8 +218,8 @@ export default function AuditLogs() {
   ], [navigate])
 
   return (
-    <div className="h-full min-h-0 min-w-0 flex flex-col overflow-y-auto bg-[#020617]" data-audit-ledger="true">
-      <div className="min-w-0 shrink-0 space-y-4 border-b border-white/5 bg-slate-950/40 px-3 py-4 backdrop-blur-xl sm:px-8 sm:py-6">
+    <div className="h-full min-h-0 min-w-0 flex flex-col overflow-y-auto bg-[var(--surface-base)]" data-audit-ledger="true">
+      <div className="min-w-0 shrink-0 space-y-4 border-b border-[var(--grid-border)] bg-[var(--surface-base)] px-3 py-4 sm:px-8 sm:py-6">
         <PageHeader
           eyebrow="Registry"
           title={
@@ -229,13 +229,13 @@ export default function AuditLogs() {
           }
           subtitle="Immutable record of system state changes and operator actions"
           meta={
-            <div className="flex flex-wrap items-center gap-3 text-[9px] font-black uppercase tracking-[0.2em]">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
               {(targetTableParam || targetIdParam) && (
-                <span className="text-blue-400">
+                <span className="text-[var(--accent-primary)]">
                   Scoped: {targetTableParam || 'Any Table'} {targetIdParam ? `// ${targetIdParam}` : ''}
                 </span>
               )}
-              <span className="text-slate-500">{scopeText}</span>
+              <span className="text-[var(--text-secondary)]">{scopeText}</span>
             </div>
           }
         />
@@ -267,16 +267,16 @@ export default function AuditLogs() {
           }
           right={
             <>
-              <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-slate-900/80 px-3 py-2 shadow-inner">
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--grid-border)] bg-[var(--surface-base)] px-3 py-2">
                 <Calendar size={14} className="ml-1 text-blue-500" />
                 <div className="flex flex-col">
-                  <span className="text-[7px] font-black uppercase text-slate-600">Start</span>
-                  <input type="date" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="bg-transparent text-[10px] font-black text-white outline-none" />
+                  <span className="text-xs text-[var(--text-secondary)]">Start</span>
+                  <input type="date" aria-label="Audit start date" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="min-h-9 bg-transparent text-xs text-[var(--text-primary)]" />
                 </div>
                 <div className="mx-1 h-6 w-px bg-white/5" />
                 <div className="flex flex-col">
-                  <span className="text-[7px] font-black uppercase text-slate-600">End</span>
-                  <input type="date" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="bg-transparent text-[10px] font-black text-white outline-none" />
+                  <span className="text-xs text-[var(--text-secondary)]">End</span>
+                  <input type="date" aria-label="Audit end date" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="min-h-9 bg-transparent text-xs text-[var(--text-primary)]" />
                 </div>
               </div>
               <ToolbarButton onClick={handleExportCSV} variant="primary" className="px-5 py-3">
@@ -293,14 +293,15 @@ export default function AuditLogs() {
         {showCharts && (
           <motion.div 
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: isMobileLayout ? 'auto' : 180, opacity: 1 }}
+            animate={{ height: isMobileLayout ? 'auto' : 208, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="shrink-0 overflow-hidden bg-slate-950/60 border-b border-white/5 px-3 py-3 flex flex-col items-stretch gap-3 sm:px-8 sm:py-0 sm:flex-row sm:items-center sm:gap-12"
+            className="shrink-0 overflow-hidden bg-[var(--surface-base)] border-b border-[var(--grid-border)] px-3 py-3 flex flex-col items-stretch gap-4 sm:px-6 sm:py-0 sm:flex-row sm:items-center sm:gap-6"
           >
-             <div className="min-w-0 w-full h-[140px] py-4 sm:flex-1">
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+             <div className="min-w-0 w-full sm:flex-1">
+                <p className="text-xs font-medium text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                    <Activity size={12} className="text-blue-500" /> Transaction Velocity (Loaded result/page)
                 </p>
+                <div className="h-32 [&_.recharts-wrapper]:max-w-none">
                 <ResponsiveContainer width="100%" height="100%">
                    <AreaChart data={chartData}>
                       <defs>
@@ -309,46 +310,50 @@ export default function AuditLogs() {
                             <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                          </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                      <XAxis dataKey="name" hide />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--grid-border)" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} minTickGap={24} />
+                      <YAxis allowDecimals={false} width={28} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} />
                       <Tooltip 
-                         contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
-                         itemStyle={{ color: '#3b82f6' }}
+                         contentStyle={{ backgroundColor: 'var(--surface-base)', border: '1px solid var(--grid-border)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
+                         itemStyle={{ color: 'var(--accent-primary)' }}
                       />
-                      <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+                      <Area isAnimationActive={false} type="monotone" dataKey="count" stroke="var(--accent-primary)" strokeWidth={2} dot={{ r: 3 }} fillOpacity={1} fill="url(#colorCount)" />
                    </AreaChart>
                 </ResponsiveContainer>
+                </div>
              </div>
 
-             <div className="min-w-0 w-full h-[140px] py-4 sm:w-[300px] sm:shrink-0">
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+             <div className="min-w-0 w-full sm:w-[300px] sm:shrink-0">
+                <p className="text-xs font-medium text-[var(--text-secondary)] mb-2 flex items-center gap-2">
                    <Filter size={12} className="text-indigo-500" /> Operation Distribution (Loaded result/page)
                 </p>
+                <div className="h-32 [&_.recharts-wrapper]:max-w-none">
                 <ResponsiveContainer width="100%" height="100%">
                    <BarChart data={opsData} layout="vertical">
                       <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" hide />
+                      <YAxis dataKey="name" type="category" width={76} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} />
                       <Tooltip 
-                         contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '10px', fontWeight: '900' }}
+                         contentStyle={{ backgroundColor: 'var(--surface-base)', border: '1px solid var(--grid-border)', borderRadius: '8px', fontSize: '12px', color: 'var(--text-primary)' }}
                       />
-                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      <Bar isAnimationActive={false} dataKey="value" radius={[0, 4, 4, 0]} label={{ position: 'insideRight', fill: '#ffffff', fontSize: 12 }}>
                          {opsData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={['#10b981', '#3b82f6', '#f43f5e', '#6366f1', '#f59e0b'][index % 5]} />
+                            <Cell key={`cell-${index}`} fill={['#047857', '#1d4ed8', '#be123c', '#4338ca', '#92400e'][index % 5]} />
                          ))}
                       </Bar>
                    </BarChart>
                 </ResponsiveContainer>
+                </div>
              </div>
              
-             <div className="min-w-0 w-full flex flex-col justify-center border-t border-white/5 pt-3 sm:h-[140px] sm:w-[200px] sm:shrink-0 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 lg:pl-12">
+             <div className="min-w-0 w-full flex flex-col justify-center border-t border-[var(--grid-border)] pt-3 sm:h-[140px] sm:w-[144px] sm:shrink-0 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
                 <div className="space-y-4">
                    <div>
-                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Loaded Logs</p>
-                      <p className="text-2xl font-black text-white">{logs?.length || 0}</p>
+                      <p className="text-xs text-[var(--text-secondary)]">Loaded Logs</p>
+                      <p className="text-2xl font-semibold text-[var(--text-primary)]">{logs?.length || 0}</p>
                    </div>
                    <div>
-                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Unique Admins</p>
-                      <p className="text-2xl font-black text-blue-400">{new Set(logs?.map(l => l.user_id)).size || 0}</p>
+                      <p className="text-xs text-[var(--text-secondary)]">Unique Admins</p>
+                      <p className="text-2xl font-semibold text-[var(--accent-primary)]">{new Set(logs?.map(l => l.user_id)).size || 0}</p>
                    </div>
                 </div>
              </div>
@@ -405,7 +410,7 @@ export default function AuditLogs() {
 
       <div className="min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark">
         {isLoading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#020617]/80 backdrop-blur-sm space-y-4">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[var(--surface-overlay)] backdrop-blur-sm space-y-4">
              <RefreshCcw size={32} className="text-blue-400 animate-spin" />
              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Synchronizing Ledger Matrix...</p>
           </div>
@@ -474,52 +479,52 @@ export default function AuditLogs() {
       </AnimatePresence>
 
       <style>{`
-        .ag-theme-alpine-dark {
-          --ag-background-color: #020617;
-          --ag-header-background-color: #0f172a;
-          --ag-border-color: rgba(255, 255, 255, 0.05);
-          --ag-foreground-color: #f1f5f9;
-          --ag-header-foreground-color: #3b82f6;
+        [data-audit-ledger] .ag-theme-alpine-dark {
+          --ag-background-color: var(--grid-bg);
+          --ag-odd-row-background-color: var(--surface-base);
+          --ag-header-background-color: var(--grid-header-bg);
+          --ag-border-color: var(--grid-border);
+          --ag-foreground-color: var(--text-primary);
+          --ag-header-foreground-color: var(--text-secondary);
           --ag-font-family: 'Inter', sans-serif;
           --ag-font-size: ${fontSize}px;
           --ag-grid-size: 4px;
           --ag-list-item-height: 24px;
         }
-        .ag-root-wrapper { border: none !important; }
-        .ag-header-cell-label { 
+        [data-audit-ledger] .ag-root-wrapper { border: none !important; }
+        [data-audit-ledger] .ag-header-cell-label {
             font-weight: 900 !important; 
             text-transform: uppercase !important; 
             letter-spacing: 0.15em !important; 
-            font-size: ${fontSize - 2}px !important; 
+            font-size: ${Math.max(10, fontSize - 1)}px !important;
             justify-content: center !important; 
-            color: #64748b !important;
+            color: var(--text-secondary) !important;
         }
-        .ag-header-cell-pinned::after {
+        [data-audit-ledger] .ag-header-cell-pinned::after {
             background-color: rgba(59, 130, 246, 0.2) !important;
         }
-        .ag-cell { 
+        [data-audit-ledger] .ag-cell {
             display: flex; 
             align-items: center; 
             justify-content: center !important; 
             font-weight: 700 !important;
             font-size: ${fontSize}px !important;
-            border-right: 1px solid rgba(255,255,255,0.02) !important;
+            border-right: 1px solid var(--grid-border) !important;
         }
-        .ag-cell-focus { border: 1px solid #3b82f6 !important; background-color: rgba(59, 130, 246, 0.05) !important; }
-        .ag-row { border-bottom: 1px solid rgba(255,255,255,0.03) !important; }
-        .ag-row-hover { background-color: rgba(59, 130, 246, 0.03) !important; }
-        .ag-row-selected { background-color: rgba(59, 130, 246, 0.1) !important; }
-        .ag-paging-panel {
-            background-color: #0f172a !important;
-            border-top: 1px solid rgba(255,255,255,0.05) !important;
-            color: #64748b !important;
-            font-size: 10px !important;
-            font-weight: 900 !important;
-            text-transform: uppercase !important;
+        [data-audit-ledger] .ag-cell-focus { border: 1px solid var(--accent-primary) !important; background-color: var(--accent-glow) !important; }
+        [data-audit-ledger] .ag-row { border-bottom: 1px solid var(--grid-border) !important; }
+        [data-audit-ledger] .ag-row-hover { background-color: var(--surface-hover) !important; }
+        [data-audit-ledger] .ag-row-selected { background-color: var(--accent-glow) !important; }
+        [data-audit-ledger] .ag-paging-panel {
+            background-color: var(--grid-header-bg) !important;
+            border-top: 1px solid var(--grid-border) !important;
+            color: var(--text-secondary) !important;
+            font-size: 11px !important;
+            font-weight: 500 !important;
             height: 40px !important;
         }
         @media (max-width: 640px) {
-          .ag-paging-panel {
+          [data-audit-ledger] .ag-paging-panel {
             box-sizing: border-box;
             height: auto !important;
             min-height: 40px;
@@ -529,13 +534,13 @@ export default function AuditLogs() {
             gap: 2px 4px;
           }
         }
-        .ag-icon { color: #3b82f6 !important; }
+        [data-audit-ledger] .ag-icon { color: var(--accent-primary) !important; }
         
         /* Custom Scrollbar for Grid */
-        .ag-body-viewport::-webkit-scrollbar { width: 10px; height: 10px; }
-        .ag-body-viewport::-webkit-scrollbar-track { background: transparent; }
-        .ag-body-viewport::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .ag-body-viewport::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.1); }
+        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar { width: 10px; height: 10px; }
+        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar-track { background: transparent; }
+        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar-thumb { background: var(--grid-border); border-radius: 10px; }
+        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
       `}</style>
     </div>
   )
