@@ -11,7 +11,9 @@ const timeline = fs.readFileSync(path.join(root, 'components/ProjectsTimeline.ts
 
 describe('OUT-38 source contract', () => {
   it('keeps one Gantt renderer while routing canonical deep links to the v2 schedule authority', () => {
-    expect(app).toContain('import Projects from "./components/ProjectsSchedulingCompletion"')
+    expect(app).toContain("const Projects = lazy(() => import('./components/ProjectsSchedulingCompletion'))")
+    expect(app).toContain('<Route path="/projects/*" element={<ModulePolicyGate moduleId="projects"><Projects /></ModulePolicyGate>} />')
+    expect(app).not.toMatch(/import\s+Projects\s+from\s/)
     expect(wrapper).toContain("import ProjectsGolden from './ProjectsGolden'")
     expect(wrapper).toContain('<ProjectsGolden />')
     expect(wrapper).toContain("view === 'timeline'")

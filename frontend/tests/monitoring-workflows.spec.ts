@@ -553,6 +553,11 @@ test.describe('Monitoring permanent-purge authority', () => {
         const target = overlap ? other : monitoring
         const restoreRow = await getWorkspaceLogicalRowByText(page, 'monitoring', target.title)
         await restoreRow.action('More actions').click()
+        const restoreFinished = !overlap ? page.waitForResponse(response => {
+          const message = response.request()
+          return message.url().endsWith('/monitoring/bulk-action') && message.method() === 'POST'
+            && message.postDataJSON()?.action === 'restore' && message.postDataJSON()?.ids?.includes(target.id)
+        }) : null
         await page.getByRole('button', { name: 'Restore', exact: true }).click()
         if (overlap) {
           await expectToast(page, 'An overlapping operation is still pending.')
@@ -569,8 +574,13 @@ test.describe('Monitoring permanent-purge authority', () => {
           await page.getByRole('button', { name: 'Restore', exact: true }).click()
         } else {
           await expect.poll(() => restoreRequests).toBe(1)
+          expect((await restoreFinished!).ok()).toBeTruthy()
           await page.getByRole('button', { name: 'Existing', exact: true }).click()
-          await openMonitoringDetailFromLogicalRow(page, monitoring.title)
+          // The archived purge target shares the title prefix. Bind this action
+          // to the restored ID while the grid transitions between datasets.
+          const restoredRow = getPrimaryGrid(page, 'monitoring').locator(`.ag-pinned-right-cols-container .ag-row[row-id="${monitoring.id}"]`)
+          await restoredRow.getByRole('button', { name: 'Open details', exact: true }).click()
+          await expect(page.getByRole('dialog').getByRole('heading', { name: monitoring.title, exact: true })).toBeVisible()
           release()
         }
         await expect.poll(async () => {

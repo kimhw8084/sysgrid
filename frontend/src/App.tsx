@@ -1,41 +1,37 @@
 // SYSGRID_VISUAL_REPAIR_R4
 // SYSGRID_VISUAL_REPAIR_R3
 // SYSGRID_VISUAL_REPAIR_V1
-import { useProjectsNavigation, ProjectsNavigationButton, ProjectsNavigationBackdrop } from './components/ProjectsWorkspaceLayout'
-import React, { useState, useEffect, useRef, Component, ErrorInfo, ReactNode } from "react"
+import { useProjectsNavigation, ProjectsNavigationButton, ProjectsNavigationBackdrop } from './components/ProjectsShellNavigation'
+import React, { lazy, Suspense, useState, useEffect, useRef, Component, ErrorInfo, ReactNode } from "react"
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
 import { Routes, Route, Link, useLocation, useNavigate, Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { Terminal, X, ChevronRight, Info, Star, RefreshCcw, Grid3X3, Clock, Globe, Search } from "lucide-react"
+import { Terminal, X, ChevronRight, Info, Star, RefreshCcw, Grid3X3, Globe, Search } from "lucide-react"
 import { Toaster, toast } from "react-hot-toast"
-import { apiFetch, subscribeToLatency, getConfig, getRequestScopeKey } from "./api/apiClient"
+import { apiFetch, getConfig, getRequestScopeKey } from "./api/apiClient"
 import { errorManager, useErrors } from "./stores/errorStore"
 import { ErrorConsole } from "./components/shared/ErrorConsole"
 
-import Dashboard from "./components/Dashboard"
-import AssetGrid_Legacy from "./components/AssetGrid_Legacy"
-import Assets from "./components/Assets"
-import Intelligence from "./components/Intelligence"
-import AuditLogs from "./components/AuditLogs"
-import ServicesReal from "./components/ServicesReal"
-import SettingsPage from "./components/Settings"
-import Maintenance from "./components/Maintenance"
-import MonitoringGrid from "./components/MonitoringGrid"
-import Research from "./components/Research"
-import NetworkReal from "./components/NetworkReal"
-import VendorsReal from "./components/VendorsReal"
-import Knowledge from "./components/Knowledge"
-import FAR from "./components/FAR"
-import ArchitectureWorkspace from "./components/ArchitectureWorkspace"
-import DataFlowDesigner from "./components/DataFlowDesigner"
-import Projects from "./components/ProjectsSchedulingCompletion"
-import External from "./components/External"
-import Temp1 from "./components/Temp1"
-import Racks from "./components/Racks"
+const Dashboard = lazy(() => import('./components/Dashboard'))
+const Assets = lazy(() => import('./components/Assets'))
+const AuditLogs = lazy(() => import('./components/AuditLogs'))
+const ServicesReal = lazy(() => import('./components/ServicesReal'))
+const SettingsPage = lazy(() => import('./components/Settings'))
+const MonitoringGrid = lazy(() => import('./components/MonitoringGrid'))
+const Research = lazy(() => import('./components/Research'))
+const NetworkReal = lazy(() => import('./components/NetworkReal'))
+const VendorsReal = lazy(() => import('./components/VendorsReal'))
+const Knowledge = lazy(() => import('./components/Knowledge'))
+const FAR = lazy(() => import('./components/FAR'))
+const ArchitectureWorkspace = lazy(() => import('./components/ArchitectureWorkspace'))
+const DataFlowDesigner = lazy(() => import('./components/DataFlowDesigner'))
+const Projects = lazy(() => import('./components/ProjectsSchedulingCompletion'))
+const External = lazy(() => import('./components/External'))
+const Racks = lazy(() => import('./components/Racks'))
 import metadata from "./metadata.json"
 import { GlobalSearch } from "./components/shared/GlobalSearch"
 import { ShellHeader, ToolbarButton } from "./components/shared/LayoutPrimitives"
-import { ShellHeaderTools } from "./components/shared/ShellHeaderTools"
+import { LiveShellHeaderTools, ShellFooter } from "./components/shared/ShellLiveRegions"
 import { FatalErrorState, PermissionDeniedState } from "./components/shared/ShellStates"
 import { SHELL_NAV_GROUPS, ShellNavGroup, ShellNavItem, isShellRouteActive } from "./components/shared/ShellNavigation"
 import { normalizeTheme } from "./components/shared/theme"
@@ -290,26 +286,9 @@ function MainLayout() {
   const [showLinuxEnv, setShowLinuxEnv] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState(normalizeTheme(localStorage.getItem('sysgrid-theme')));
-  const [latency, setLatency] = useState(0);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const modulePolicy = useModulePolicy()
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   useRouteFocus(location, mainContentRef)
-
-  const formatTime = (date: Date, timeZone: string) => {
-    return new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(date);
-  };
 
   useEffect(() => {
     document.title = getConfig('VITE_APP_TITLE', 'SYSGRID INFRASTRUCTURE');
@@ -357,10 +336,6 @@ function MainLayout() {
     }
   }, [userSettings]);
 
-  useEffect(() => {
-    return subscribeToLatency(setLatency);
-  }, []);
-
   const THEMES = [
     { id: 'nordic-frost-v1', label: 'Dark Mode', color: 'bg-[#1a1b26]' },
     { id: 'pure-clarity', label: 'Light Mode', color: 'bg-[#ffffff]' }
@@ -388,19 +363,6 @@ function MainLayout() {
       body: JSON.stringify({ theme: normalizedTheme })
     }).catch(() => {});
   }
-
-  const { data: healthData, isLoading: isHealthLoading, isError: isHealthError } = useQuery({
-    queryKey: ['health'],
-    queryFn: async () => {
-      const response = await apiFetch("/api/v1/health");
-      return response.json();
-    },
-    refetchInterval: 10000,
-    retry: 2,
-    staleTime: 5000
-  });
-
-  const isOnline = !!healthData && !isHealthError;
 
   const { errors, setOpen: setErrorConsoleOpen } = useErrors();
 
@@ -614,12 +576,8 @@ function MainLayout() {
               </button>
             </>}</>
           }
-          right={<ShellHeaderTools
+          right={<LiveShellHeaderTools
             pathname={location.pathname}
-            isOnline={isOnline}
-            isHealthLoading={isHealthLoading}
-            isHealthError={isHealthError}
-            latency={latency}
             errors={errors}
             onOpenErrorConsole={() => setErrorConsoleOpen(true)}
             compact={projectNavigation.active}
@@ -628,6 +586,7 @@ function MainLayout() {
 
         <div ref={mainContentRef} id="sg-main-content" tabIndex={-1} className={`relative flex min-h-0 flex-1 flex-col overflow-hidden focus-visible:outline-none ${location.pathname === '/architecture' || location.pathname === '/logs' || location.pathname === '/projects' ? '' : 'p-4 sm:p-8'}`} data-sg-content-panel="true">
           <ErrorBoundary>
+            <Suspense fallback={<div role="status" className="flex min-h-40 flex-1 items-center justify-center text-sm text-[var(--text-secondary)]" data-sg-state="route-loading">Loading workspace…</div>}>
             <Routes>
               <Route path="/" element={<Dashboard onNavigate={(p:any) => navigate("/" + p)} />} />
               <Route path="/projects/*" element={<ModulePolicyGate moduleId="projects"><Projects /></ModulePolicyGate>} />
@@ -649,21 +608,10 @@ function MainLayout() {
               <Route path="/settings" element={<ModulePolicyGate moduleId="settings"><SettingsPage /></ModulePolicyGate>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </Suspense>
           </ErrorBoundary>
         </div>
-        <footer className="min-h-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-[var(--border-subtle)] bg-[var(--bg-primary)]/20 px-4 py-2 text-[10px] text-[var(--text-muted)] sm:px-8">
-           <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                 <Globe size={10} aria-hidden="true" className="text-[var(--text-muted)]" />
-                 <span>YOUR TIME ({Intl.DateTimeFormat().resolvedOptions().timeZone}): <span className="text-blue-400 tabular-nums">{formatTime(currentTime, Intl.DateTimeFormat().resolvedOptions().timeZone)}</span></span>
-              </div>
-              <div className="flex items-center gap-2 border-l border-white/5 pl-6">
-                 <Clock size={10} aria-hidden="true" className="text-[var(--text-muted)]" />
-                 <span>SOUTH KOREA (KST): <span className="text-[var(--text-primary)] tabular-nums">{formatTime(currentTime, 'Asia/Seoul')}</span></span>
-              </div>
-           </div>
-           <span className="text-[var(--accent-primary)]">Version {APP_VERSION}</span>
-        </footer>
+        <ShellFooter version={APP_VERSION} />
       </main>
       <AnimatePresence>
         {showPatchNotes && <PatchNotesModal onClose={() => setShowPatchNotes(false)} />}
