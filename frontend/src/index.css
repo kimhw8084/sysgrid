@@ -5,6 +5,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter/InterVariable-Italic.woff2') format('woff2');
+}
+
 :root {
   scrollbar-gutter: stable;
   /* Dark Mode (Default) */
@@ -54,21 +70,26 @@
 }
 
 [data-theme='nordic-frost-v1'] {
-  --bg-primary: #1a1b26;
-  --bg-header: rgba(26, 27, 38, 0.9);
-  --glass-bg: rgba(36, 40, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --text-primary: #a9b1d6;
-  --text-secondary: #787c99;
-  --text-muted: #565f89;
-  --accent-primary: #7aa2f7;
-  --accent-glow: rgba(122, 162, 247, 0.1);
-  --sidebar-bg: #16161e;
-  --grid-bg: #1a1b26;
-  --grid-header-bg: #16161e;
-  --grid-border: #292e42;
-  --panel-item-bg: #1f2335;
-  --input-bg: #1a1b26;
+  /* Preserve the persisted theme id while restoring SysGrid's navy identity. */
+  --bg-primary: #020617;
+  --bg-header: rgba(15, 23, 42, 0.94);
+  --glass-bg: rgba(15, 23, 42, 0.92);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --accent-primary: #60a5fa;
+  --accent-glow: rgba(59, 130, 246, 0.14);
+  --sidebar-bg: #0f172a;
+  --grid-bg: #020617;
+  --grid-header-bg: #0f172a;
+  --grid-border: #1e293b;
+  --panel-item-bg: #0f172a;
+  --input-bg: #020617;
+  --state-success: #4ade80;
+  --state-warning: #fbbf24;
+  --state-danger: #f87171;
+  --state-info: #38bdf8;
 }
 
 [data-theme='industrial-slate'] {
@@ -317,11 +338,12 @@
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell).ag-theme-alpine-dark {
-  --ag-background-color: #1a1b26;
-  --ag-header-background-color: #24283b;
-  --ag-border-color: rgba(255, 255, 255, 0.05);
-  --ag-foreground-color: #f1f5f9;
-  --ag-header-foreground-color: #3b82f6;
+  --ag-font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+  --ag-background-color: var(--grid-bg);
+  --ag-header-background-color: var(--grid-header-bg);
+  --ag-border-color: var(--grid-border);
+  --ag-foreground-color: var(--text-primary);
+  --ag-header-foreground-color: var(--accent-primary);
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header {
@@ -420,8 +442,8 @@
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-side-bar {
-  background-color: #24283b !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background-color: var(--grid-header-bg) !important;
+  border-left: 1px solid var(--grid-border) !important;
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .row-action-trigger {
