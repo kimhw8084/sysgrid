@@ -1283,7 +1283,7 @@ async def get_env_history(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
-    res = await db.execute(select(models.EnvHistory).filter(models.EnvHistory.field == field).order_by(models.EnvHistory.timestamp.desc()))
+    res = await db.execute(select(models.EnvHistory).filter(models.EnvHistory.field == field).order_by(models.EnvHistory.timestamp.desc(), models.EnvHistory.id.desc()))
     return res.scalars().all()
 
 @router.get("/operators")

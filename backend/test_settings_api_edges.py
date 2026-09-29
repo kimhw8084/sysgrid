@@ -86,6 +86,40 @@ async def _ensure_admin(seeded_admin_tenant, setup_db):
 
 
 @pytest.mark.anyio
+async def test_parameter_history_orders_same_second_revisions_newest_first(seeded_admin_tenant, setup_db):
+    from datetime import datetime
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+    from app.database import get_tenant_engine
+    from app.models.models import EnvHistory
+
+    client = seeded_admin_tenant["client"]
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
+    await _ensure_admin(seeded_admin_tenant, setup_db)
+    field = "HISTORY_ORDER_REFERENCE"
+    for value in ["previous", "current"]:
+        response = await client.post("/api/v1/settings/global", json={field: value}, headers=headers)
+        assert response.status_code == 200, response.text
+    async with setup_db[1]() as config_db:
+        tenant = await config_db.get(Tenant, tenant_id)
+        engine = get_tenant_engine(tenant.db_url)
+    async with async_sessionmaker(engine, expire_on_commit=False)() as db:
+        records = (await db.scalars(select(EnvHistory).where(EnvHistory.field == field).order_by(EnvHistory.id))).all()
+        assert len(records) == 2
+        ids = [record.id for record in records]
+        for record in records:
+            record.timestamp = datetime(2026, 9, 29, 12, 0, 0)
+        await db.commit()
+    response = await client.get("/api/v1/settings/env/history", params={"field": field}, headers=headers)
+    assert response.status_code == 200, response.text
+    history = response.json()
+    assert [record["id"] for record in history] == ids[::-1]
+    assert [record["new_value"] for record in history] == ["current", "previous"]
+    missing = await client.get("/api/v1/settings/env/history", params={"field": "NO_SUCH_PARAMETER"}, headers=headers)
+    assert missing.status_code == 200 and missing.json() == []
+
+
+@pytest.mark.anyio
 async def test_settings_user_profile_env_and_global_edges(seeded_admin_tenant, setup_db, monkeypatch):
     client = seeded_admin_tenant["client"]
     tenant_id = seeded_admin_tenant["tenant_id"]
