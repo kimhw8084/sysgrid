@@ -326,13 +326,19 @@ async def update_service(service_id: int, data: dict, request: Request, db: Asyn
 
 @router.delete("/{service_id}")
 async def delete_service(service_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.LogicalService).filter(models.LogicalService.id == service_id))
-    svc = result.scalar_one_or_none()
-    if not svc: raise HTTPException(404)
-    
-    name = svc.name
-    affected_device_id = svc.device_id
-    svc.is_deleted = True
+    result = await db.execute(
+        update(models.LogicalService)
+        .where(models.LogicalService.id == service_id, models.LogicalService.is_deleted.is_not(True))
+        .values(is_deleted=True)
+        .returning(models.LogicalService.name, models.LogicalService.device_id)
+    )
+    archived = result.first()
+    if archived is None:
+        exists = await db.scalar(select(models.LogicalService.id).where(models.LogicalService.id == service_id))
+        if exists is None: raise HTTPException(404)
+        return {"status": "no_op"}
+
+    name, affected_device_id = archived
     await sync_device_os_state(affected_device_id, db)
     log = build_audit_log(
         request=request,
