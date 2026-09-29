@@ -65,11 +65,11 @@ export function WorkspaceHistoryShell({
   content: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col h-full">
-      {header && <div className="mb-8 flex items-center justify-between">{header}</div>}
-      <div className={`flex min-h-0 flex-1 space-x-10 ${!header ? 'pt-6' : ''}`}>
-        <div className="flex w-72 min-h-0 flex-col">{sidebar}</div>
-        <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-white/10 bg-black/40 shadow-inner">
+    <div data-workspace-history className="flex min-w-0 flex-col gap-5">
+      {header && <div className="flex flex-wrap items-center justify-between gap-3">{header}</div>}
+      <div className={`grid min-w-0 gap-5 lg:grid-cols-[16rem_minmax(0,1fr)] ${!header ? 'pt-6' : ''}`}>
+        <div data-workspace-history-versions className="flex max-h-72 min-h-0 min-w-0 flex-col overflow-y-auto lg:max-h-[60vh]">{sidebar}</div>
+        <div data-workspace-history-content className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-white/10 bg-black/40 shadow-inner">
           {content}
         </div>
       </div>

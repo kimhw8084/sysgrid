@@ -28,7 +28,7 @@ import {
 } from '../domain/monitoringContract'
 import { STATUSES, type MonitoringOwner, type OperatorRecord } from './monitoring/monitoringWorkspaceContract'
 import { MonitoringPurgeDialog } from './monitoring/MonitoringPurgeDialog'
-import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
+import { formatAppDate, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
 import { ConfigRegistryModal } from "./ConfigRegistry"
 import { ConfirmationModal } from "./shared/ConfirmationModal"
@@ -3230,9 +3230,9 @@ function MonitoringHistoryModal({ item, onClose }: any) {
       status={
         <div className="flex items-center gap-4">
           <StatusPill value={item?.status} />
-          <div className="h-4 w-px bg-white/10" />
-          <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest italic whitespace-nowrap">
-            {indexedVersions?.length || 0} Snapshot(s)
+          <div className="h-4 w-px bg-[var(--border-default)]" />
+          <p className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
+            {indexedVersions?.length || 0} revisions
           </p>
         </div>
       }
@@ -3242,65 +3242,67 @@ function MonitoringHistoryModal({ item, onClose }: any) {
           sidebar={
            <div className="flex h-full flex-col min-h-0">
               <div className="mb-4 flex items-center justify-between px-1">
-                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Revision Timeline</h3>
-                 <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-lg border border-blue-500/20">{indexedVersions.length} states</span>
+                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">Revision Timeline</h3>
+                 <span className="text-xs text-[var(--text-secondary)]">{indexedVersions.length} states</span>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+              <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
                 {isLoading ? (
                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
                       <RefreshCcw size={24} className="animate-spin text-blue-500" />
-                      <span className="text-[10px] font-black text-blue-500 animate-pulse uppercase tracking-widest">Syncing timeline...</span>
+                      <span role="status" className="text-sm text-[var(--text-secondary)]">Loading history…</span>
                    </div>
                 ) : (
                   indexedVersions.map((h: any, idx: number) => {
                     const isSelected = selectedIndices.includes(idx);
                     const isNewest = idx === Math.min(...selectedIndices);
                     return (
-                      <button 
+                      <div
                         key={h.id}
-                        onClick={() => toggleSelection(idx)}
-                        className={`w-full p-4 rounded-lg border text-left transition-all relative group overflow-hidden ${
+                        className={`w-full rounded-lg border relative overflow-hidden ${
                           isSelected 
-                            ? isNewest ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/5' : 'bg-slate-800 border-slate-600' 
-                            : 'bg-white/5 border-white/5 hover:border-white/10'
+                            ? 'bg-[var(--action-primary-muted)] border-[var(--accent-primary)]'
+                            : 'bg-[var(--surface-base)] border-[var(--border-default)]'
                         }`}
                       >
+                        <button type="button" onClick={() => toggleSelection(idx)} aria-pressed={isSelected} aria-label={`Select revision ${h.v_num}`} className="w-full p-4 text-left hover:bg-[var(--surface-hover)]">
                         {isSelected && (
-                          <div className={`absolute top-0 right-0 px-2 py-0.5 text-[8px] font-black uppercase rounded-lg ${isNewest ? 'bg-blue-400 text-blue-950' : 'bg-slate-500 text-slate-200'}`}>
+                          <div className="mb-2 text-xs font-medium text-[var(--accent-primary)]">
                              {isNewest ? 'Primary' : 'Ref'}
                           </div>
                         )}
                         <div className="flex items-center justify-between mb-2">
-                           <span className={`text-[11px] font-black tracking-tighter ${isSelected ? 'text-white' : 'text-blue-400'}`}>v{h.v_num}</span>
-                           <span className={`text-[9px] font-bold ${isSelected ? 'text-white/60' : 'text-slate-500'}`}>
+                           <span className="text-sm font-semibold text-[var(--text-primary)]">v{h.v_num}</span>
+                           <span className="text-xs text-[var(--text-secondary)]">
                               {formatAppDay(h.created_at)}
                            </span>
                         </div>
-                        <p className={`text-[10px] font-bold leading-tight line-clamp-2 ${isSelected ? 'text-white/90' : 'text-slate-300'}`}>
+                        <p className="break-words text-sm leading-relaxed text-[var(--text-primary)]">
                            {h.change_summary || 'Configuration Modification'}
                         </p>
                         {Array.isArray(h.changed_labels) && h.changed_labels.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {h.changed_labels.slice(0, 3).map((label: string) => (
-                              <span key={label} className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-400">
+                              <span key={label} className="rounded border border-[var(--border-default)] px-1.5 py-0.5 text-xs text-[var(--text-secondary)]">
                                 {label}
                               </span>
                             ))}
                             {h.changed_labels.length > 3 && (
-                              <span className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-500">
+                              <span className="rounded border border-[var(--border-default)] px-1.5 py-0.5 text-xs text-[var(--text-secondary)]">
                                 +{h.changed_labels.length - 3}
                               </span>
                             )}
                           </div>
                         )}
-                        <div className="mt-2 flex items-center space-x-2 justify-between">
-                           <div className="flex items-center space-x-2">
-                             <Clock size={10} className={isSelected ? 'text-white/40' : 'text-slate-600'} />
-                             <span className={`text-[8px] font-semibold ${isSelected ? 'text-white/40' : 'text-slate-600'}`}>
-                                {formatAppTime(h.created_at)}
-                             </span>
+                           <p className="mt-2 break-words text-xs text-[var(--text-secondary)]">Recorded by {h.created_by_user_id || 'Not recorded'}</p>
+                           <div className="mt-2 flex items-center gap-2 text-[var(--text-secondary)]">
+                             <Clock size={14} aria-hidden="true" />
+                             <time dateTime={h.created_at} className="text-xs">{formatAppDate(h.created_at, { year: undefined, month: undefined, day: undefined, second: undefined, timeZoneName: 'short' })}</time>
                            </div>
+                        </button>
+                        <div className="border-t border-[var(--border-subtle)] px-3 py-1">
                            <button 
+                             type="button"
+                             aria-label={`Restore revision ${h.v_num}`}
                              onClick={async (e) => {
                                e.stopPropagation()
                                showWorkspaceToast('Restoring state...', { type: 'loading' })
@@ -3314,12 +3316,12 @@ function MonitoringHistoryModal({ item, onClose }: any) {
                                  showWorkspaceToast('Restore failed', { type: 'error' })
                                }
                              }}
-                             className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${isSelected ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/40' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
+                             className="min-h-10 rounded-md px-2 py-1 text-xs font-semibold text-[var(--accent-primary)] hover:bg-[var(--surface-hover)]"
                            >
                              Restore
                            </button>
                         </div>
-                      </button>
+                      </div>
                     )
                   })
                 )}
@@ -3327,64 +3329,45 @@ function MonitoringHistoryModal({ item, onClose }: any) {
            </div>
           }
           content={
-           <>
-              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md sticky top-0 z-10">
-                 <div className="flex items-center space-x-4">
+           <div className="flex min-w-0 flex-1 flex-col bg-[var(--grid-bg)]">
+              <div className="border-b border-[var(--border-default)] p-4 sm:p-5">
+                 <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center space-x-2">
-                       <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-[12px] font-black">v{newer?.v_num}</div>
-                       <div className="w-4 h-px bg-slate-700" />
-                       <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center text-slate-500 text-[12px] font-black">{older ? `v${older.v_num}` : 'Ø'}</div>
+                       <div className="flex h-8 min-w-8 items-center justify-center rounded-lg border border-[var(--accent-primary)] px-2 text-xs font-semibold text-[var(--accent-primary)]">v{newer?.v_num}</div>
+                       <span className="text-xs text-[var(--text-secondary)]">vs</span>
+                       <div className="flex h-8 min-w-8 items-center justify-center rounded-lg border border-[var(--border-default)] px-2 text-xs text-[var(--text-secondary)]">{older ? `v${older.v_num}` : 'Ø'}</div>
                     </div>
                     <div>
-                       <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest">Semantic Delta</h3>
-                       <p className="text-[9px] font-bold text-slate-600">{diffs.length} modification vectors detected</p>
+                       <h3 className="text-sm font-semibold text-[var(--text-primary)]">Changed fields</h3>
+                       <p className="mt-1 text-xs text-[var(--text-secondary)]">{diffs.length} {diffs.length === 1 ? 'change' : 'changes'} between these versions</p>
                     </div>
                  </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+              <div className="min-w-0 flex-1 p-4 sm:p-5">
                  {diffs.length > 0 ? (
-                    <div className="space-y-6">
-                       <div className="overflow-hidden rounded-lg border border-white/5 bg-black/20">
-                          <table className="w-full text-left border-collapse">
-                             <thead>
-                                <tr className="bg-white/5 text-[9px] font-black uppercase text-slate-500 tracking-widest">
-                                   <th className="p-4 w-1/4">Property</th>
-                                   <th className="p-4 w-3/8 text-rose-500/70">Previous (v{older?.v_num || 'Ø'})</th>
-                                   <th className="p-4 w-3/8 text-emerald-500/70">Current (v{newer?.v_num})</th>
-                                </tr>
-                             </thead>
-                             <tbody className="divide-y divide-white/5">
-                                {diffs.map((d: any, i: number) => (
-                                   <tr key={`${i}-row`} className="hover:bg-white/[0.02] transition-colors">
-                                      <td className="p-4 align-top">
-                                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{d.label || d.field}</span>
-                                      </td>
-                                      <td className="p-4 align-top">
-                                         <div className={`rounded-lg p-3 overflow-hidden ${d.changeType === 'added' ? 'bg-slate-500/5 border border-slate-500/10' : 'bg-rose-500/5 border border-rose-500/10'}`}>
-                                            <pre className={`text-[10px] whitespace-pre-wrap font-mono leading-relaxed break-all ${d.changeType === 'added' ? 'text-slate-600' : 'text-slate-500 line-through'}`}>
-                                               {typeof d.old === 'object' ? JSON.stringify(d.old, null, 2) : String(d.old ?? '(empty)')}
-                                            </pre>
-                                         </div>
-                                      </td>
-                                      <td className="p-4 align-top">
-                                         <div className={`rounded-lg p-3 overflow-hidden ${d.changeType === 'removed' ? 'bg-slate-500/5 border border-slate-500/10' : 'bg-emerald-500/5 border border-emerald-500/10'}`}>
-                                            <pre className={`text-[10px] whitespace-pre-wrap font-mono font-bold leading-relaxed break-all ${d.changeType === 'removed' ? 'text-slate-500' : 'text-emerald-400'}`}>
-                                               {typeof d.new === 'object' ? JSON.stringify(d.new, null, 2) : String(d.new ?? '(empty)')}
-                                            </pre>
-                                         </div>
-                                      </td>
-                                   </tr>
-                                ))}
-                             </tbody>
-                          </table>
-                       </div>
+                    <div className="space-y-5">
+                      {diffs.map((d: any, i: number) => (
+                        <section key={`${i}-row`} aria-label={d.label || d.field} className="min-w-0">
+                          <h4 className="mb-2 break-words text-sm font-semibold text-[var(--text-primary)]">{d.label || d.field}</h4>
+                          <dl className="grid min-w-0 gap-3 md:grid-cols-2">
+                            <div className="min-w-0 rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
+                              <dt className="mb-2 text-xs font-medium text-[var(--text-secondary)]">Previous (v{older?.v_num || 'Ø'})</dt>
+                              <dd className="whitespace-pre-wrap [overflow-wrap:anywhere] font-mono text-xs leading-relaxed text-[var(--text-primary)]">{typeof d.old === 'object' ? JSON.stringify(d.old, null, 2) : String(d.old ?? '(empty)')}</dd>
+                            </div>
+                            <div className="min-w-0 rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] p-3">
+                              <dt className="mb-2 text-xs font-medium text-[var(--text-secondary)]">Current (v{newer?.v_num}) · {d.changeType}</dt>
+                              <dd className="whitespace-pre-wrap [overflow-wrap:anywhere] font-mono text-xs leading-relaxed text-[var(--text-primary)]">{typeof d.new === 'object' ? JSON.stringify(d.new, null, 2) : String(d.new ?? '(empty)')}</dd>
+                            </div>
+                          </dl>
+                        </section>
+                      ))}
                     </div>
                  ) : !isLoading ? (
                     <WorkspaceEmptyState icon={<HistoryIcon size={32} />} title="No Diff Data" description="Select two versions to compare or pick a version to see changes from its predecessor." />
                  ) : null}
               </div>
-           </>
+           </div>
           }
       />
     </WorkspaceModal>
