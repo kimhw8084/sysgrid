@@ -1,0 +1,364 @@
+{
+  "accepted_at": "2026-09-29T02:24:05Z",
+  "changed_files": [],
+  "checks": [
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n -- '--ag-background-color:|--ag-header-background-color:|ag-theme-alpine-dark \\\\{' frontend/src/components/AuditLogs.tsx frontend/src/components/AssetReal.tsx frontend/src/components/NetworkReal.tsx frontend/src/components/MonitoringGrid.tsx frontend/src/components/ServiceRegistry.tsx frontend/src/components/Racks.tsx frontend/src/components/DataFlowDesigner.tsx frontend/src/components/vendors/VendorGoldenOperationalWorkspace.tsx frontend/src/components/AssetGrid_Legacy.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n \\\"import .*from ['\\\\\\\"]\\\\./components/(Dashboard|Assets|AuditLogs|ServicesReal|Settings|MonitoringGrid|Research|NetworkReal|VendorsReal|Knowledge|FAR|ArchitectureWorkspace|DataFlowDesigner|ProjectsSchedulingCompletion|External|Racks|ProjectsWorkspaceLayout)\\\" frontend/src/App.tsx\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'ProjectsModernGantt|ProjectsWorkspaceLayout|ProjectsNavigation' frontend/src/App.tsx frontend/src/components/ProjectsWorkspaceLayout.tsx frontend/src/components/shared/ProjectsNavigation.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'Inter|SF Pro Display' frontend/src frontend/tailwind.config.js\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '180,265p' frontend/src/components/ServiceRegistry.tsx\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'logical-services|/secrets|service-secrets' backend/app/api\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'secret_count|secrets.*length' backend frontend/src\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '90,125p' frontend/tests/deploy-ui-stability.spec.ts\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk mkdir -p /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node <<'NODE'\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst cp = require('child_process');\nconst root = process.cwd();\nconst base = '902ba0e823eafc71c52cd02e404828d65b3d7281';\nconst handoffDir = '/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1';\nconst runnerPath = path.join(handoffDir, 'apply-and-verify.sh');\nconst patchPath = path.join(handoffDir, 'immutable.patch');\nlet patch = cp.execFileSync('git', ['diff', '--binary', 'HEAD'], {cwd: root});\nconst untracked = cp.execFileSync('git', ['ls-files', '--others', '--exclude-standard'], {cwd: root, encoding: 'utf8'}).trim().split('\\\\n').filter(Boolean).sort();\nfor (const file of untracked) {\n  const result = cp.spawnSync('git', ['diff', '--no-index', '--binary', '/dev/null', file], {cwd: root, encoding: null});\n  if (result.status \"'!== 1 && result.status !== 0) throw new Error(`new file diff failed for ${file}: ${result.stderr?.toString()}`);\n  if (result.stdout?.length) {\n    if (patch.length && patch[patch.length - 1] !== 10) patch = Buffer.concat([patch, Buffer.from('\"'\\\\n')]);\n    patch = Buffer.concat([patch, result.stdout]);\n  }\n}\nif (\"'!patch.length) throw new Error('\"'empty patch');\nconst sha = crypto.createHash('sha256').update(patch).digest('hex');\nconst paths = [...new Set(cp.execFileSync('git', ['diff', '--name-only', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim().split('\\\\n').filter(Boolean).concat(untracked))].sort();\nconst pre = [];\nconst post = [];\nfor (const file of paths) {\n  let expected = 'ABSENT';\n  try {\n    const old = cp.execFileSync('git', ['show', \"'`${base}:${file}`], {cwd: root, encoding: null});\n    expected = crypto.createHash('\"'sha256').update(old).digest('hex');\n  } catch {}\n  pre.push(\"'`${file} ${expected}`);\n  const current = fs.readFileSync(path.join(root, file));\n  post.push(`${file} ${crypto.createHash('\"'sha256').update(current).digest('hex')}\"'`);\n}\nlet runner = fs.readFileSync(runnerPath, '\"'utf8');\nconst replaceOnce = (token, value) => {\n  if (\"'!runner.includes(token)) throw new Error(`runner placeholder missing: ${token}`);\n  runner = runner.replace(token, value);\n};\nreplaceOnce('\"'@@PATCH_SHA256@@', sha);\nreplaceOnce('@@PATCH_B64@@', patch.toString('base64'));\nreplaceOnce('@@PREHASHES@@', pre.join('\\\\n'));\nreplaceOnce('@@POSTHASHES@@', post.join('\\\\n'));\nreplaceOnce('@@CHANGED_PATHS@@', paths.join('\\\\n'));\nreplaceOnce('@@CHANGED_PATH_LINES@@', paths.map((file) => \"'`'\"'\"'${file}'\"'\"'`).join('\"'\\\\n'));\nif (runner.includes('@@')) throw new Error('unfilled runner placeholder remains');\nfs.writeFileSync(patchPath, patch);\nfs.writeFileSync(runnerPath, runner);\nfs.chmodSync(runnerPath, 0o755);\nconsole.log(JSON.stringify({patch_sha256: sha, patch_bytes: patch.length, changed_paths: paths.length, untracked_paths: untracked.length, runner: runnerPath, patch: patchPath}, null, 2));\nNODE\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node <<'NODE'\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst cp = require('child_process');\nconst root = process.cwd();\nconst base = '902ba0e823eafc71c52cd02e404828d65b3d7281';\nconst handoffDir = '/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1';\nconst runnerPath = path.join(handoffDir, 'apply-and-verify.sh');\nconst patchPath = path.join(handoffDir, 'immutable.patch');\nlet patch = cp.execFileSync('git', ['diff', '--binary', 'HEAD'], {cwd: root});\nconst untracked = cp.execFileSync('git', ['ls-files', '--others', '--exclude-standard'], {cwd: root, encoding: 'utf8'}).trim().split('\\\\n').filter(Boolean).sort();\nfor (const file of untracked) {\n  const result = cp.spawnSync('git', ['diff', '--no-index', '--binary', '/dev/null', file], {cwd: root, encoding: null, stdio: ['ignore', 'pipe', 'ignore']});\n  if (result.status \"'!== 1 && result.status !== 0) throw new Error(`new file diff failed for ${file}`);\n  if (result.stdout?.length) {\n    if (patch.length && patch[patch.length - 1] !== 10) patch = Buffer.concat([patch, Buffer.from('\"'\\\\n')]);\n    patch = Buffer.concat([patch, result.stdout]);\n  }\n}\nif (\"'!patch.length) throw new Error('\"'empty patch');\nconst sha = crypto.createHash('sha256').update(patch).digest('hex');\nconst paths = [...new Set(cp.execFileSync('git', ['diff', '--name-only', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim().split('\\\\n').filter(Boolean).concat(untracked))].sort();\nconst pre = [];\nconst post = [];\nfor (const file of paths) {\n  let expected = 'ABSENT';\n  try {\n    const old = cp.execFileSync('git', ['show', \"'`${base}:${file}`], {cwd: root, encoding: null, stdio: ['\"'ignore', 'pipe', 'ignore']});\n    expected = crypto.createHash('sha256').update(old).digest('hex');\n  } catch {}\n  pre.push(\"'`${file} ${expected}`);\n  const current = fs.readFileSync(path.join(root, file));\n  post.push(`${file} ${crypto.createHash('\"'sha256').update(current).digest('hex')}\"'`);\n}\nlet runner = fs.readFileSync(runnerPath, '\"'utf8');\nconst replaceOnce = (token, value) => {\n  if (\"'!runner.includes(token)) throw new Error(`runner placeholder missing: ${token}`);\n  runner = runner.replace(token, value);\n};\nreplaceOnce('\"'@@PATCH_SHA256@@', sha);\nreplaceOnce('@@PATCH_B64@@', patch.toString('base64'));\nreplaceOnce('@@PREHASHES@@', pre.join('\\\\n'));\nreplaceOnce('@@POSTHASHES@@', post.join('\\\\n'));\nrunner = runner.replaceAll('@@CHANGED_PATHS@@', paths.join('\\\\n'));\nreplaceOnce('@@CHANGED_PATH_LINES@@', paths.map((file) => \"'`'\"'\"'${file}'\"'\"'`).join('\"'\\\\n'));\nif (runner.includes('@@')) throw new Error('unfilled runner placeholder remains');\nfs.writeFileSync(patchPath, patch);\nfs.writeFileSync(runnerPath, runner);\nfs.chmodSync(runnerPath, 0o755);\nconsole.log(JSON.stringify({patch_sha256: sha, patch_bytes: patch.length, changed_paths: paths.length, untracked_paths: untracked.length, runner: runnerPath, patch: patchPath}, null, 2));\nNODE\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '@@' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node <<'NODE'\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\nconst cp = require('child_process');\nconst root = process.cwd();\nconst base = '902ba0e823eafc71c52cd02e404828d65b3d7281';\nconst handoffDir = '/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1';\nconst runnerPath = path.join(handoffDir, 'apply-and-verify.sh');\nconst patchPath = path.join(handoffDir, 'immutable.patch');\nlet patch = cp.execFileSync('git', ['diff', '--binary', 'HEAD'], {cwd: root});\nconst untracked = cp.execFileSync('git', ['ls-files', '--others', '--exclude-standard'], {cwd: root, encoding: 'utf8'}).trim().split('\\\\n').filter(Boolean).sort();\nfor (const file of untracked) {\n  const result = cp.spawnSync('git', ['diff', '--no-index', '--binary', '/dev/null', file], {cwd: root, encoding: null, stdio: ['ignore', 'pipe', 'ignore']});\n  if (result.status \"'!== 1 && result.status !== 0) throw new Error(`new file diff failed for ${file}`);\n  if (result.stdout?.length) {\n    if (patch.length && patch[patch.length - 1] !== 10) patch = Buffer.concat([patch, Buffer.from('\"'\\\\n')]);\n    patch = Buffer.concat([patch, result.stdout]);\n  }\n}\nif (\"'!patch.length) throw new Error('\"'empty patch');\nconst sha = crypto.createHash('sha256').update(patch).digest('hex');\nconst paths = [...new Set(cp.execFileSync('git', ['diff', '--name-only', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim().split('\\\\n').filter(Boolean).concat(untracked))].sort();\nconst pre = [];\nconst post = [];\nfor (const file of paths) {\n  let expected = 'ABSENT';\n  try {\n    const old = cp.execFileSync('git', ['show', \"'`${base}:${file}`], {cwd: root, encoding: null, stdio: ['\"'ignore', 'pipe', 'ignore']});\n    expected = crypto.createHash('sha256').update(old).digest('hex');\n  } catch {}\n  pre.push(\"'`${file} ${expected}`);\n  const current = fs.readFileSync(path.join(root, file));\n  post.push(`${file} ${crypto.createHash('\"'sha256').update(current).digest('hex')}\"'`);\n}\nlet runner = fs.readFileSync(runnerPath, '\"'utf8');\nconst replaceOnce = (token, value) => {\n  if (\"'!runner.includes(token)) throw new Error(`runner placeholder missing: ${token}`);\n  runner = runner.replace(token, value);\n};\nreplaceOnce('\"'@@PATCH_SHA256@@', sha);\nreplaceOnce('@@PATCH_B64@@', patch.toString('base64'));\nreplaceOnce('@@PREHASHES@@', pre.join('\\\\n'));\nrunner = runner.replaceAll('@@POSTHASHES@@', post.join('\\\\n'));\nrunner = runner.replaceAll('@@CHANGED_PATHS@@', paths.join('\\\\n'));\nreplaceOnce('@@CHANGED_PATH_LINES@@', paths.map((file) => \"'`'\"'\"'${file}'\"'\"'`).join('\"'\\\\n'));\nif (runner.includes('@@')) throw new Error('unfilled runner placeholder remains');\nfs.writeFileSync(patchPath, patch);\nfs.writeFileSync(runnerPath, runner);\nfs.chmodSync(runnerPath, 0o755);\nconsole.log(JSON.stringify({patch_sha256: sha, patch_bytes: patch.length, changed_paths: paths.length, untracked_paths: untracked.length, runner: runnerPath, patch: patchPath}, null, 2));\nNODE\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '195,410p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,135p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash -n /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy shasum -a 256 /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --name-only HEAD'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk pwd && rtk git status --short && rtk sed -n '1,100p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh && rtk rg -n '@@|run_gate|POSTFLIGHT_OK|python3 - <<|UPLOAD_THIS' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '160,250p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh && rtk sed -n '250,375p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh && rtk sed -n '370,470p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh && rtk sed -n '470,640p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash -n /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '(\"'^|[[:space:];|&])(codex|opencode|chatgpt|aider|claude|ollama|llama|llm|agent-runner)([[:space:]]|$)'\"' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh scripts/run-e2e.sh scripts/lib/verify-runtime.sh\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk shasum -a 256 /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch && rtk rg -n 'PATCH_SHA256=|@@|PLACEHOLDER' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git diff --check && rtk git diff --stat && rtk git status --short --branch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e 'const fs=require(\\\"fs\\\"); const p=\\\"/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\\\"; let s=fs.readFileSync(p,\\\"utf8\\\"); const marker=\\\"ROOT_DIR=\\\\\\\"\"'$(rtk git rev-parse --show-toplevel 2>/dev/null)'\"\\\\\\\" || fail '\\\\''run from the bound SysGrid worktree'\\\\''\\\\n\\\"; if(s.split(marker).length\"'!==2) throw new Error(\"root marker mismatch\"); s=s.replace(marker,marker+\"cd '\"\\\\\\\"\"'$ROOT_DIR'\"\\\\\\\" || fail '\\\\''cannot enter the bound worktree'\\\\''\\\\n\\\"); fs.writeFileSync(p,s);'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,22p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash -n /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport ast, pathlib\npath = pathlib.Path('/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh')\nlines = path.read_text().splitlines()\nblocks = []\ni = 0\nwhile i < len(lines):\n    line = lines[i]\n    if \\\"<<'PY'\\\" in line and 'python3' in line:\n        j = i + 1\n        while j < len(lines) and lines[j] \"'!= '\"'PY':\n            j += 1\n        if j == len(lines):\n            raise SystemExit(f'unclosed Python heredoc at line {i + 1}')\n        source = '\\\\n'.join(lines[i + 1:j])\n        try:\n            ast.parse(source, filename=f'{path}:{i + 1}')\n        except SyntaxError as exc:\n            raise SystemExit(f'{exc.filename}:{exc.lineno}: {exc.msg}')\n        blocks.append(i + 1)\n        i = j\n    i += 1\nprint(f'Embedded Python syntax: PASS ({len(blocks)} blocks at {blocks})')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git rev-parse HEAD && rtk git rev-parse refs/heads/main && rtk git branch --show-current && rtk git show-ref --verify --quiet refs/heads/codex-fabric/evidence/sysgrid/sysgrid-deploy-ui-stability-detail-shell-fix-v1; rtk git status --porcelain --untracked-files=all | rtk wc -l'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport pathlib, subprocess, hashlib, sys\nroot=pathlib.Path.cwd()\nrun=lambda *args: subprocess.run(args, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\ntracked=run('git','diff','--binary','HEAD')\nif tracked.returncode: raise SystemExit(tracked.stderr.decode())\npatch=bytearray(tracked.stdout)\nothers=run('git','ls-files','--others','--exclude-standard','-z')\nif others.returncode: raise SystemExit(others.stderr.decode())\nfor raw in sorted(filter(None, others.stdout.split(b'\\\\0'))):\n    name=raw.decode()\n    result=run('git','diff','--no-index','--binary','/dev/null',name)\n    if result.returncode not in (0,1): raise SystemExit(result.stderr.decode())\n    patch.extend(result.stdout)\npath=pathlib.Path('/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch')\nexpected=path.read_bytes()\nactual=bytes(patch)\nprint(f'worktree patch sha256={hashlib.sha256(actual).hexdigest()} bytes={len(actual)}; saved sha256={hashlib.sha256(expected).hexdigest()} bytes={len(expected)}')\nif actual \"'!= expected: raise SystemExit('\"'immutable patch differs from current authored worktree')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '1,220p' scripts/run-e2e.sh && rtk rg -n 'run-e2e\\\\.sh|--output|config=' frontend/package.json package.json scripts/run-e2e.sh scripts/lib/verify-runtime.sh\"",
+      "exit_code": 2,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply -R --check --binary /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply -R --binary /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk git status --short --branch && rtk git rev-parse HEAD && rtk proxy git apply --check --binary /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch && rtk git diff --check'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '560,640p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node <<'NODE'\nconst fs = require('fs');\nconst p = '/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh';\nlet s = fs.readFileSync(p, 'utf8');\nconst oldVerdict = \\\"verdict = 'GO_READY_EVIDENCE' if gate_pass and chunk_proof and chunk_proof.get('verdict') and detail_proof else 'VERIFY_REQUIRED'\\\";\nif (s.split(oldVerdict).length \"'!== 2) throw new Error('\"'initial verdict marker mismatch');\ns = s.replace(oldVerdict, \\\"verdict = 'VERIFY_REQUIRED'  # final verdict is set only after archive verification\\\");\nconst start = s.indexOf(\\\"printf 'Evidence bundle: %s\\\\\\\\nVisual carrier: %s\\\\\\\\n'\\\");\nif (start < 0) throw new Error('final output marker missing');\nconst block = String.raw\"'`printf '\"'upload-package\\\\tPASS\\\\t0\\\\n' >> \\\"\"'$GATES_FILE\"\n\nrtk python3 - \"$ROOT_DIR\" \"$EVIDENCE_ROOT\" \"$CARRIER_ROOT\" <<'\"'PY'\nimport hashlib, json, pathlib, sys, zipfile\n\nroot, evidence, carrier = map(pathlib.Path, sys.argv[1:])\nreport_path = evidence / 'candidate.json'\nreport = json.loads(report_path.read_text())\ngates = []\nfor line in (evidence / 'gates.tsv').read_text().splitlines()[1:]:\n    if line.strip():\n        name, status, code = line.split('\\\\t')\n        gates.append({'gate': name, 'status': status, 'exit_code': int(code)})\nreport['gate_results'] = gates\nchunk = report.get('build_comparison')\ndetail = report.get('render_timing_and_theme_proof')\nall_pass = bool(gates) and all(item['status'] == 'PASS' for item in gates)\nreport['conclusion'] = 'GO_READY_EVIDENCE' if all_pass and chunk and chunk.get('verdict') and detail else 'VERIFY_REQUIRED'\nreport_path.write_text(json.dumps(report, indent=2) + '\\\\n')\n\nartifact = carrier / 'artifact'\ncarrier_evidence = carrier / 'evidence'\nshutil_targets = [(report_path, carrier_evidence / 'candidate.json'), (report_path, artifact / 'candidate.json')]\nfor source, target in shutil_targets:\n    target.parent.mkdir(parents=True, exist_ok=True)\n    target.write_bytes(source.read_bytes())\n\ndef write_manifest(folder):\n    lines = []\n    for file in sorted(path for path in folder.rglob('*') if path.is_file() and path.name \"'!= '\"'MANIFEST.sha256'):\n        lines.append(f\\\"{hashlib.sha256(file.read_bytes()).hexdigest()}  ./{file.relative_to(folder).as_posix()}\\\")\n    (folder / 'MANIFEST.sha256').write_text('\\\\n'.join(lines) + ('\\\\n' if lines else ''))\n\nwrite_manifest(artifact)\nwrite_manifest(carrier_evidence)\n\narchive = evidence / 'UPLOAD_THIS_TO_CHATGPT.zip'\nselected = []\nfor rel in ('candidate.json', 'gates.tsv', 'candidate-tree.tsv', 'remote-heads.txt', 'remote-heads.stderr.log', 'chunk-comparison.json'):\n    path = evidence / rel\n    if path.is_file(): selected.append(path)\nfor pattern in ('gates/**/*.log', 'visual/**/*', 'golden-visual/**/*', 'playwright-v1-output/**/*', 'playwright-golden-output/**/*', 'runtime-v1/logs/*.log', 'runtime-golden/logs/*.log'):\n    for path in evidence.glob(pattern):\n        if path.is_file() and path.suffix.lower() in {'.log', '.json', '.png', '.webm', '.zip'}:\n            selected.append(path)\nselected = sorted(set(selected))\nmanifest_lines = [f\\\"{hashlib.sha256(path.read_bytes()).hexdigest()}  ./{path.relative_to(evidence).as_posix()}\\\" for path in selected]\n(evidence / 'MANIFEST.sha256').write_text('\\\\n'.join(manifest_lines) + '\\\\n')\nwith zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as bundle:\n    for path in selected:\n        bundle.write(path, path.relative_to(evidence).as_posix())\n    bundle.write(evidence / 'MANIFEST.sha256', 'MANIFEST.sha256')\nwith zipfile.ZipFile(archive) as bundle:\n    if bundle.testzip() is not None: raise SystemExit('final ZIP CRC verification failed')\n    members = set(bundle.namelist())\n    for line in manifest_lines:\n        digest, name = line.split('  ', 1)\n        member = name.removeprefix('./')\n        if member not in members or hashlib.sha256(bundle.read(member)).hexdigest() \"'!= digest:\n            raise SystemExit(f'\"'final manifest verification failed for {member}')\nmatches = list(evidence.rglob('UPLOAD_THIS_TO_CHATGPT.zip'))\nif matches \"'!= [archive]: raise SystemExit(f'\"'expected exactly one upload ZIP, found {matches}')\n(evidence / 'UPLOAD_THIS_TO_CHATGPT.zip.sha256').write_text(f\\\"{hashlib.sha256(archive.read_bytes()).hexdigest()}  UPLOAD_THIS_TO_CHATGPT.zip\\\\n\\\")\nprint(json.dumps({'conclusion': report['conclusion'], 'archive': str(archive), 'archive_bytes': archive.stat().st_size, 'manifested_files': len(selected), 'gate_count': len(gates)}, sort_keys=True))\nPY\nFINALIZE_CODE=\"'$?\nif [[ \"$FINALIZE_CODE\" != 0 ]]; then\n  printf '\"'evidence-finalization\\\\tFAIL\\\\t%s\\\\n' \\\"\"'$FINALIZE_CODE\" >> \"$GATES_FILE\"\n  fail '\"'final report, carrier manifest, or upload archive verification failed'\nfi\n\nprintf 'Evidence bundle: %s\\\\nVisual carrier: %s\\\\n' \\\"\"'$EVIDENCE_ROOT/UPLOAD_THIS_TO_CHATGPT.zip\" \"$CARRIER_ROOT\"\n`;\ns = s.slice(0, start) + block;\nfs.writeFileSync(p, s);\nNODE'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e 'const fs=require(\\\"fs\\\"); const p=\\\"/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\\\"; let s=fs.readFileSync(p,\\\"utf8\\\"); const i=s.indexOf(\\\"printf '\\\\''upload-package\\\"); if(i<0) throw new Error(\\\"finalization block missing\\\"); let head=s.slice(0,i), tail=s.slice(i); tail=tail.replaceAll(\\\"\\\\\\\\\\\\\\\\t\\\",\\\"\\\\\\\\t\\\").replaceAll(\\\"\\\\\\\\\\\\\\\\n\\\",\\\"\\\\\\\\n\\\"); fs.writeFileSync(p,head+tail);'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n 'upload-package|FINALIZE_CODE|finalized|candidate\\\\[.conclusion.\\\\]|expected exactly one upload|\"'^PY$'\"' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '(\"'^|[[:space:];|&])(codex|opencode|chatgpt|aider|claude|ollama|llama|llm|agent-runner)([[:space:]]|$)'\"' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh scripts/run-e2e.sh scripts/lib/verify-runtime.sh\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash -n /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh && rtk tail -n 30 /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport ast, pathlib\npath = pathlib.Path('/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh')\nlines = path.read_text().splitlines()\ncount = 0\nfor i, line in enumerate(lines):\n    if \\\"<<'PY'\\\" in line and 'python3' in line:\n        j = i + 1\n        while j < len(lines) and lines[j] \"'!= '\"'PY': j += 1\n        if j == len(lines): raise SystemExit(f'unclosed heredoc at {i + 1}')\n        ast.parse('\\\\n'.join(lines[i + 1:j]), filename=f'{path}:{i + 1}')\n        count += 1\nprint(f'Embedded Python syntax: PASS ({count} blocks)')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh')\nfor n,line in enumerate(p.read_text().splitlines(),1):\n    if line.startswith('PATCH_B64='): continue\n    if any(token in line for token in ('subprocess.check_output', \\\"['git'\\\", 'mkdir -p ', ' git ', ' shasum ', ' node ', ' npm ', ' python3 ', ' bash ')):\n        print(f'{n}:{line[:240]}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk node -e 'const fs=require(\\\"fs\\\"); const p=\\\"/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\\\"; let s=fs.readFileSync(p,\\\"utf8\\\"); if((s.match(/subprocess\\\\.check_output\\\\(\\\\[\\\\x27git\\\\x27,/g)||[]).length\"'!==3) throw new Error(\"expected three raw Python git calls\"); s=s.replaceAll(\"subprocess.check_output(['\"\\\\x27git\\\\x27,\\\", \\\"subprocess.check_output([\\\\x27rtk\\\\x27, \\\\x27proxy\\\\x27, \\\\x27git\\\\x27,\\\"); s=s.replace(\\\"\\\\nmkdir -p \\\\\\\"\"'$EVIDENCE_ROOT'\"\\\\\\\"\\\", \\\"\\\\nrtk mkdir -p \\\\\\\"\"'$EVIDENCE_ROOT'\"\\\\\\\"\\\"); fs.writeFileSync(p,s);'\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk rg -n '(\"'^|[[:space:];|&])(codex|opencode|chatgpt|aider|claude|ollama|llama|llm|agent-runner)([[:space:]]|$)'\"' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh scripts/run-e2e.sh scripts/lib/verify-runtime.sh\"",
+      "exit_code": 1,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nfrom pathlib import Path\np=Path('/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh')\nfor n,line in enumerate(p.read_text().splitlines(),1):\n    if line.startswith('PATCH_B64='): continue\n    if \\\"subprocess.check_output(['git'\\\" in line or line.startswith('mkdir ') or line.startswith('git ') or line.startswith('shasum ') or line.startswith('node ') or line.startswith('npm ') or line.startswith('python3 ') or line.startswith('bash '):\n        print(f'{n}:{line[:200]}')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport ast, pathlib\npath=pathlib.Path('/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh')\nlines=path.read_text().splitlines()\ncount=0\nfor i,line in enumerate(lines):\n    if \\\"<<'PY'\\\" in line and 'python3' in line:\n        j=i+1\n        while j<len(lines) and lines[j]\"'!='\"'PY': j+=1\n        if j==len(lines): raise SystemExit(f'unclosed Python heredoc at {i+1}')\n        ast.parse('\\\\n'.join(lines[i+1:j]), filename=f'{path}:{i+1}')\n        count+=1\nprint(f'Embedded Python syntax: PASS ({count} blocks)')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk bash -n /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh && rtk tail -n 8 /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk sed -n '160,176p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh && rtk sed -n '398,440p' /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/apply-and-verify.sh\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc 'rtk proxy git apply --check --binary /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch && rtk git status --short --branch && rtk git rev-parse HEAD && rtk git rev-parse refs/heads/main && rtk git rev-parse 902ba0e823eafc71c52cd02e404828d65b3d7281''^{tree} && rtk shasum -a 256 /Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1/immutable.patch'",
+      "exit_code": 0,
+      "type": "command_execution"
+    },
+    {
+      "command": "/bin/zsh -lc \"rtk python3 - <<'PY'\nimport ast, hashlib, pathlib, subprocess\nhandoff=pathlib.Path('/Users/haewonkim/.codex-fabric/handoffs/sysgrid-deploy-ui-stability-detail-shell-fix-v1')\nscript=(handoff/'apply-and-verify.sh').read_text().splitlines()\nvalues={}\nfor line in script:\n    if line.startswith(('PATCH_B64=','PATCH_SHA256=')):\n        key,raw=line.split('=',1)\n        values[key]=ast.literal_eval(raw)\npatch=__import__('base64').b64decode(values['PATCH_B64'])\ndigest=hashlib.sha256(patch).hexdigest()\nassert patch==(handoff/'immutable.patch').read_bytes()\nassert digest==values['PATCH_SHA256']\nassert digest=='0b231080ce9d7d68a28b375428c804d0e789ff5d3687a6f41b506f5cd9d7f1c1'\npaths=[line.split(' b/',1)[1] for line in patch.decode('utf-8','replace').splitlines() if line.startswith('diff --git a/')]\nassert len(paths)==32, len(paths)\nfor rel in ('evidence/sysgrid-deploy-ui-stability-detail-shell-fix-v1','carriers/sysgrid-deploy-ui-stability-detail-shell-fix-v1'):\n    p=pathlib.Path.home()/'.codex-fabric'/rel\n    assert not p.exists(), f'request output already exists: {p}'\nref='refs/heads/codex-fabric/evidence/sysgrid/sysgrid-deploy-ui-stability-detail-shell-fix-v1'\nresult=subprocess.run(['rtk','proxy','git','show-ref','--verify','--quiet',ref])\nassert result.returncode==1, f'evidence ref exists or could not be checked: {result.returncode}'\nprint(f'Embedded patch payload: PASS ({len(paths)} paths; sha256 {digest})')\nprint('Request evidence/carrier paths: absent; deterministic evidence ref: absent')\nPY\"",
+      "exit_code": 0,
+      "type": "command_execution"
+    }
+  ],
+  "codex": {
+    "cli_version": "codex-cli 0.157.0",
+    "configured_model": "gpt-6-luna",
+    "event_count": 529,
+    "provider_reported_model": null,
+    "reasoning_effort": "xhigh",
+    "terminal_type": "turn.completed",
+    "usage": {
+      "cache_hit_percent": 97.15,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 20679680,
+      "fresh_input_tokens": 606024,
+      "input_tokens": 21285704,
+      "non_reasoning_output_tokens": 82056,
+      "output_tokens": 215865,
+      "reasoning_output_tokens": 133809,
+      "total_processed_tokens": 21501569
+    },
+    "warnings": []
+  },
+  "commits": [],
+  "diff": {
+    "additions": 0,
+    "changed_files": 0,
+    "commit_count": 0,
+    "deletions": 0
+  },
+  "error_code": null,
+  "evidence_manifest": {
+    "count": 0,
+    "items": [],
+    "version": 1
+  },
+  "evidence_publisher_release": "1.2.5-dashboard-controls-candidate",
+  "fabric_capture": {
+    "applied": false,
+    "paths_before": 0,
+    "transient_untracked_removed": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "fabric_release": "1.2.5-dashboard-controls-candidate",
+  "failure_class": null,
+  "finished_at": "2026-09-29T03:35:49Z",
+  "git": {
+    "base_is_ancestor": true,
+    "base_sha": "902ba0e823eafc71c52cd02e404828d65b3d7281",
+    "branch": "codex/sysgrid-deploy-ui-stability-detail-shell-fix-v1",
+    "detached_verify": false,
+    "head_sha": "902ba0e823eafc71c52cd02e404828d65b3d7281",
+    "remote_exact_head": true,
+    "remote_head_sha": "902ba0e823eafc71c52cd02e404828d65b3d7281",
+    "target_branch": "main",
+    "target_drifted_since_acceptance": false,
+    "target_head_observed_after_execution": "902ba0e823eafc71c52cd02e404828d65b3d7281",
+    "work_branch": "codex/sysgrid-deploy-ui-stability-detail-shell-fix-v1",
+    "worktree_clean": true
+  },
+  "instructions": {
+    "files": [
+      {
+        "bytes": 2184,
+        "path": "AGENTS.md",
+        "sha256": "a3e899f736bab62edd2eab1e3a5f726472cbb3e8a7651ce496b8cfcae46eba0e"
+      }
+    ],
+    "total_bytes": 2184,
+    "warning": null
+  },
+  "job_id": "CF-dc3d09b967ca928ac25405c3",
+  "kind": "codex-fabric-audit-evidence",
+  "locator": {
+    "branch": "codex-fabric/evidence/sysgrid/sysgrid-deploy-ui-stability-detail-shell-fix-v1",
+    "path": ".codex-fabric/audit.json",
+    "ref": "refs/heads/codex-fabric/evidence/sysgrid/sysgrid-deploy-ui-stability-detail-shell-fix-v1"
+  },
+  "operation": "FIX",
+  "policy": {
+    "environment_policy_sha256": "e077daca74297b3c30bee8989f00f8ca5338f7610b4d016a6c48db524205d064",
+    "fabric_release": "1.2.5-dashboard-controls-candidate",
+    "policy_sha256": "123615bf2f6e57dcac197e49ca98ceac59ada86a55e2c84445ea5d00812c0833",
+    "registry_sha256": "af81b8552f9d6a33847310e3c6bcd2d48401782b963a58efd2993e93570cb4aa"
+  },
+  "project_id": "sysgrid",
+  "recovery": {
+    "model_rerun_safe": false,
+    "recovery_required": false,
+    "retry_safe": false,
+    "retry_scope": null,
+    "worktree_retained": true
+  },
+  "request": "sysgrid-deploy-ui-stability-detail-shell-fix-v1",
+  "schema_version": 1,
+  "started_at": "2026-09-29T02:24:06Z",
+  "status": "EXECUTED_NO_CHANGE",
+  "timing": {
+    "execution_seconds": 4303,
+    "queue_seconds": 1,
+    "total_seconds": 4304
+  },
+  "transport": {
+    "bytes": 11814,
+    "envelope": "FABRIC/2",
+    "prompt_bytes": 11466,
+    "prompt_sha256": "a1a5b13f025054960a4f2c12bdb95afe38730cfd83b875eb8f0e772c75ad0b9b",
+    "sha256": "dc3d09b967ca928ac25405c3eb6f93a9f0dec8484c22f773bfb5956063e17eb8"
+  }
+}
