@@ -435,6 +435,7 @@ export const ServiceForm = ({
   }
 
   const handleSave = () => {
+    if (isPending) return
     if (metadataError) {
       setGeneralError('Fix metadata errors before saving')
       toast.error('Fix metadata errors before saving')
