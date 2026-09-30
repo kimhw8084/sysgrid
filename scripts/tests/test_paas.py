@@ -7,6 +7,7 @@ from contextlib import closing
 import importlib.util
 import sqlite3
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -37,6 +38,20 @@ class PaasTests(unittest.TestCase):
                 env = PAAS.runtime_env(config)
                 PAAS.validate_runtime(env)
                 PAAS.initialize(env)
+
+                probe = subprocess.run(
+                    [sys.executable, "-c", (
+                        "from fastapi.testclient import TestClient; "
+                        "from app.main import app; "
+                        "client = TestClient(app, base_url='https://sysgrid.invalid'); "
+                        "assert client.get('/api/v1/readiness').status_code == 200; "
+                        "response = client.get('/api/v1/tenants/me', "
+                        "headers={'X-Authenticated-User': 'owner'}); "
+                        "assert response.status_code == 200 and len(response.json()) == 1"
+                    )],
+                    cwd=PAAS.BACKEND, env=env, capture_output=True, text=True,
+                )
+                self.assertEqual(probe.returncode, 0, probe.stderr)
 
                 tenant_path = root / "sysgrid" / "tenants" / "sysgrid.db"
                 with closing(sqlite3.connect(tenant_path)) as database, database:
