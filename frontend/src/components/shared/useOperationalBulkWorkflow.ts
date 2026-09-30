@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type SetStateAction } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import {
   resolveBulkFieldLabel,
@@ -133,8 +133,17 @@ export function useOperationalBulkWorkflow<TSnapshot>({
   onExecutionSuccess,
   onRevertSuccess,
 }: UseOperationalBulkWorkflowOptions<TSnapshot>) {
-  const [bulkOperationPreview, setBulkOperationPreview] = useState<OperationalBulkOperationState | null>(null)
+  const [bulkOperationPreview, updateBulkOperationPreview] = useState<OperationalBulkOperationState | null>(null)
   const [isBulkReverting, setIsBulkReverting] = useState(false)
+  const previewGeneration = useRef(0)
+
+  useEffect(() => () => { previewGeneration.current += 1 }, [])
+
+  const setBulkOperationPreview = useCallback((state: SetStateAction<OperationalBulkOperationState | null>) => {
+    // Dismissal also invalidates requests that have not produced a dialog yet.
+    previewGeneration.current += 1
+    updateBulkOperationPreview(state)
+  }, [])
 
   const resolveIds = useCallback((overrideIds?: number[]) => {
     const ids = uniqueIds(overrideIds ?? selectedIds)
@@ -143,7 +152,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
   }, [selectedIds, selectionErrorMessage])
 
   const bulkPreviewMutation = useMutation({
-    mutationFn: async ({ action, ids: overrideIds, payload = {} }: OperationalBulkVariables) => {
+    mutationFn: async ({ action, ids: overrideIds, payload = {} }: OperationalBulkVariables & { generation: number }) => {
       const ids = resolveIds(overrideIds)
       const preview = await previewRequest({ action, ids, payload })
       const fieldLabel = action === 'update' ? resolveBulkFieldLabel(payload, fieldLabels) : undefined
@@ -157,18 +166,33 @@ export function useOperationalBulkWorkflow<TSnapshot>({
         preview,
       } satisfies OperationalBulkOperationState
     },
-    onSuccess: async (state) => {
-      setBulkOperationPreview(state)
+    onSuccess: async (state, variables) => {
+      if (variables.generation !== previewGeneration.current) return
+      updateBulkOperationPreview(state)
       await onPreviewAccepted?.(state)
     },
-    onError: (error: any) => showOperationalBulkErrorToast(error?.message || previewErrorMessage),
+    onError: (error: any, variables) => {
+      if (variables.generation === previewGeneration.current) {
+        showOperationalBulkErrorToast(error?.message || previewErrorMessage)
+      }
+    },
   })
 
   const bulkMutation = useMutation({
-    onMutate: ({ action, ids: overrideIds }: OperationalBulkVariables) => {
+    onMutate: ({ action, ids: overrideIds, payload = {} }: OperationalBulkVariables) => {
       const ids = uniqueIds(overrideIds ?? selectedIds)
       const executionStartContext = ids.length ? onExecutionStart?.(ids, action) : undefined
-      return { ids, executionStartContext }
+      const ownsPreview = bulkOperationPreview?.action === action
+        && bulkOperationPreview.ids.length === ids.length
+        && bulkOperationPreview.ids.every((id) => ids.includes(id))
+        && Object.keys(bulkOperationPreview.payload).length === Object.keys(payload).length
+        && Object.keys(payload).every((key) => Object.is(bulkOperationPreview.payload[key], payload[key]))
+      return {
+        ids,
+        executionStartContext,
+        preview: ownsPreview ? bulkOperationPreview : null,
+        generation: previewGeneration.current,
+      }
     },
     mutationFn: async ({ action, ids: overrideIds, payload = {}, targetLabels }: OperationalBulkVariables) => {
       const ids = resolveIds(overrideIds)
@@ -201,24 +225,37 @@ export function useOperationalBulkWorkflow<TSnapshot>({
         ? buildRevertRequest({ ...successContext, changedSnapshots })
         : null
 
-      const receiptRevert = revertRequest ? async () => {
-        try {
-          await executeRequest({
-            action: revertRequest.action,
-            ids: uniqueIds(revertRequest.ids),
-            payload: revertRequest.payload || {},
-          })
-          await refresh()
-          await onRevertSuccess?.(successContext)
-          showOperationalBulkRevertedToast()
-          setBulkOperationPreview(null)
-        } catch (error: any) {
-          showOperationalBulkRevertErrorToast(error?.message || revertErrorMessage)
-          throw error
-        }
+      let revertInFlight: Promise<void> | null = null
+      let revertApplied = false
+      let revertComplete = false
+      const receiptRevert = revertRequest ? (): Promise<void> => {
+        if (revertInFlight) return revertInFlight
+        if (revertComplete) return Promise.resolve()
+        // The toast and receipt share one undo. A refresh retry must not repeat a write.
+        revertInFlight = (async () => {
+          try {
+            if (!revertApplied) {
+              await executeRequest({
+                action: revertRequest.action,
+                ids: uniqueIds(revertRequest.ids),
+                payload: revertRequest.payload || {},
+              })
+              revertApplied = true
+            }
+            await refresh()
+            await onRevertSuccess?.(successContext)
+            revertComplete = true
+            showOperationalBulkRevertedToast()
+            updateBulkOperationPreview((current) => current?.onRevert === receiptRevert ? null : current)
+          } catch (error: any) {
+            showOperationalBulkRevertErrorToast(error?.message || revertErrorMessage)
+            throw error
+          }
+        })().finally(() => { revertInFlight = null })
+        return revertInFlight
       } : undefined
 
-      setBulkOperationPreview((current) => current ? {
+      updateBulkOperationPreview((current) => current && current === context?.preview && context.generation === previewGeneration.current ? {
         ...current,
         result: {
           selected_count: totalSelected,
@@ -228,7 +265,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
           ...(result?.purge_impact ? { purge_impact: result.purge_impact } : {}),
         },
         onRevert: receiptRevert,
-      } : null)
+      } : current)
 
       showOperationalBulkResultToast({
         action: action === 'delete' ? 'archive' : action as any,
@@ -247,7 +284,8 @@ export function useOperationalBulkWorkflow<TSnapshot>({
   })
 
   const requestBulkPreview = useCallback((variables: OperationalBulkVariables) => {
-    bulkPreviewMutation.mutate(variables)
+    const generation = ++previewGeneration.current
+    bulkPreviewMutation.mutate({ ...variables, generation })
   }, [bulkPreviewMutation])
 
   const runBulkReceiptRevert = useCallback(async () => {
