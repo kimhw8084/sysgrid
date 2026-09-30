@@ -556,8 +556,8 @@ check_versions() {
 
   python3 - <<'PY'
 import sys
-if sys.version_info < (3, 11):
-    raise SystemExit(f"Python 3.11+ is required; found {sys.version.split()[0]}")
+if sys.version_info < (3, 12):
+    raise SystemExit(f"Python 3.12+ is required; found {sys.version.split()[0]}")
 print(f"Python: {sys.version.split()[0]}")
 PY
   node - <<'JS'
@@ -666,10 +666,10 @@ install_dependencies() {
   if [[ -x "$backend_python" ]]; then
     if ! "$backend_python" - <<'PY' >/dev/null 2>&1
 import sys
-raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
+raise SystemExit(0 if sys.version_info >= (3, 12) else 1)
 PY
     then
-      echo "Recreating backend virtual environment for Python 3.11+..."
+      echo "Recreating backend virtual environment for Python 3.12+..."
       rm -rf "$ROOT_DIR/backend/venv"
     fi
   fi

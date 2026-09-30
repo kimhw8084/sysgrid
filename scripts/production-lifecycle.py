@@ -43,7 +43,7 @@ def _record(checks: list[dict[str, Any]], name: str, status: str, **detail: Any)
 
 def _runtime_versions() -> tuple[bool, dict[str, int]]:
     versions: dict[str, int] = {"python_major": sys.version_info.major, "python_minor": sys.version_info.minor}
-    if sys.version_info < (3, 11):
+    if sys.version_info < (3, 12):
         return False, versions
     for binary, key, minimum in (("node", "node_major", 22), ("npm", "npm_major", 9)):
         executable = shutil.which(binary)

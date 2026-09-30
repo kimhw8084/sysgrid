@@ -22,7 +22,7 @@ daemon.
 
 ## Prerequisites and deterministic install
 
-Use Python 3.11 or newer, Node.js 22 LTS (22.13.0 minimum), npm 9 or newer, and file-backed
+Use Python 3.12 or newer (CI qualifies Python 3.14), Node.js 22 LTS (22.13.0 minimum), npm 9 or newer, and file-backed
 SQLite storage on a supported local or corporate persistent volume. Keep the
 backend and frontend as separate project roots.
 

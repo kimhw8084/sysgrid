@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import namedtuple
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import importlib.util
 import json
@@ -148,6 +149,12 @@ class RuntimeVersionTests(unittest.TestCase):
     def test_retains_npm_minimum(self):
         self.assertFalse(self.check_runtime(npm_version="8.19.4")[0])
         self.assertTrue(self.check_runtime(npm_version="9.0.0")[0])
+
+    def test_python_floor_matches_the_locked_numpy_requirement(self):
+        Version = namedtuple("Version", "major minor micro")
+        for minor, accepted in ((11, False), (12, True), (13, True), (14, True)):
+            with self.subTest(minor=minor), patch.object(MODULE.sys, "version_info", Version(3, minor, 0)):
+                self.assertEqual(self.check_runtime()[0], accepted)
 
 
 if __name__ == "__main__":
