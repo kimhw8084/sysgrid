@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import { useWorkspaceDialogLayer } from './WorkspaceOverlay';
 import { Search, X, Loader2, Server, Briefcase, AlertTriangle, ChevronRight, Activity, Layers, BookOpen, Network, MapPin, ScrollText, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +22,7 @@ interface SearchResult {
 }
 
 export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const dialogProps = useWorkspaceDialogLayer(isOpen, onClose);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,32 +46,38 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    let current = true;
+    const controller = new AbortController();
     const handler = setTimeout(async () => {
       const trimmedQuery = query.trim();
       if (trimmedQuery.length >= 2) {
         setIsLoading(true);
         setSearchError(false);
         try {
-          const res = await apiFetch(`/api/v1/dashboard/search?q=${encodeURIComponent(trimmedQuery)}`);
+          const res = await apiFetch(`/api/v1/dashboard/search?q=${encodeURIComponent(trimmedQuery)}`, { signal: controller.signal });
           if (!res.ok) throw new Error(`Search failed with status ${res.status}`);
           const data = await res.json();
+          if (!current) return;
           setResults(data.results || []);
           setSelectedIndex(0);
         } catch (err) {
+          if (!current || controller.signal.aborted) return;
           console.error('Search failed:', err);
           setResults([]);
           setSearchError(true);
         } finally {
-          setIsLoading(false);
+          if (current) setIsLoading(false);
         }
       } else {
+        setIsLoading(false);
         setResults([]);
         setSearchError(false);
       }
     }, 500); // Increased debounce for stability
 
-    return () => clearTimeout(handler);
-  }, [query]);
+    return () => { current = false; controller.abort(); clearTimeout(handler); };
+  }, [query, isOpen]);
 
   const groupedResults = useMemo(() => {
     const groups: Record<string, SearchResult[]> = {};
@@ -84,6 +93,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   }, [groupedResults]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); return; }
     if (flattenedResults.length === 0) return;
     if (e.key === 'ArrowDown') {
       setSelectedIndex((prev) => (prev + 1) % flattenedResults.length);
@@ -137,10 +147,10 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     }
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[15vh]" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
+        <div {...dialogProps} className="fixed inset-0 flex items-start justify-center px-4 pt-[15vh]" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -277,6 +287,6 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>, document.body
   );
 };

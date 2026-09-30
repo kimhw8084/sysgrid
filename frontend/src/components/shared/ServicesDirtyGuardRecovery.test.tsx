@@ -82,7 +82,7 @@ describe('Services dirty guard recovery', () => {
     expect(await screen.findByText('Discard Service Changes?')).toBeInTheDocument()
 
     const discardDialog = getDiscardDialog()
-    fireEvent.click(discardDialog.getByRole('button', { name: 'Close' }))
+    fireEvent.click(discardDialog.getByRole('button', { name: 'Keep editing' }))
 
     expect(screen.getByPlaceholderText('e.g. ERP DB Prod 01')).toHaveValue('ERP DB Prod 01')
     expect(screen.getByTestId('services-close-count')).toHaveTextContent('0')

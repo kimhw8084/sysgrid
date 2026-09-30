@@ -146,7 +146,7 @@ describe('shared lifecycle contract wiring', () => {
     expect(screen.getByText('Purge')).toBeTruthy()
     expect(screen.getByText('Blocked by linked credentials.')).toBeTruthy()
     const host = document.querySelector('[data-disabled-tooltip-host="true"]')
-    expect(host?.getAttribute('title')).toBe('Blocked by linked credentials.')
+    expect(host).toHaveAccessibleDescription('Blocked by linked credentials.')
     expect(host?.getAttribute('tabindex')).toBe('0')
   })
 
@@ -175,7 +175,7 @@ describe('shared lifecycle contract wiring', () => {
 
     expect(screen.getByText('Purge')).toBeTruthy()
     const host = document.querySelector('[data-disabled-tooltip-host="true"]')
-    expect(host?.getAttribute('title')).toContain('logical-services backend does not support truthful purge/revert yet')
+    expect(host).toHaveAccessibleDescription('Purge is unavailable because logical-services backend does not support truthful purge/revert yet.')
   })
 
   it('formats dependency blockers into a shared tooltip reason', () => {

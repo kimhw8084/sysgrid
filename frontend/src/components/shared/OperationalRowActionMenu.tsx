@@ -1,10 +1,11 @@
-import React, { useRef, useState, useLayoutEffect } from "react";
+import React, { useRef, useState, useLayoutEffect, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { WORKSPACE_LAYER_Z, WorkspaceFloatingPanel } from "./OperationalWorkspacePrimitives";
 import { computeRowActionGeometry } from "./OperationalRowActionGeometry";
 import { estimateRowActionHeaderTextWidth } from "./OperationalBulkContract";
 import { OperationalDisabledActionTooltip } from "./OperationalDisabledActionTooltip";
+import { getWorkspaceAnchorLayer, useWorkspacePopupDismiss } from "./WorkspaceOverlay";
 
 const SECTION_HORIZONTAL_PADDING = 12;
 
@@ -61,9 +62,22 @@ export function OperationalRowActionMenu({
   cursorX: number;
   cursorY: number;
 }) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef(document.activeElement as HTMLElement | null);
+  const [layer] = useState(() => getWorkspaceAnchorLayer(
+    (document.elementFromPoint?.(cursorX, cursorY) as HTMLElement | null) || triggerRef.current,
+    WORKSPACE_LAYER_Z.rowActionMenu,
+  ));
+  useWorkspacePopupDismiss(true, triggerRef, menuRef, onClose);
   const headerRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
+  const [viewport, setViewport] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
+  useEffect(() => {
+    const resize = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, []);
   const metaText = typeof meta === "string" ? meta : String(meta ?? "");
   const titleText = typeof title === "string" ? title : String(title ?? "");
   const headerContentWidth = Math.max(
@@ -74,8 +88,8 @@ export function OperationalRowActionMenu({
   const geometry = computeRowActionGeometry({
     sections,
     headerContentWidth,
-    viewportWidth: typeof window !== "undefined" ? window.innerWidth : 1000,
-    viewportHeight: typeof window !== "undefined" ? window.innerHeight : 1000,
+    viewportWidth: viewport.width,
+    viewportHeight: viewport.height,
     cursorX,
     cursorY,
     measuredHeight
@@ -89,10 +103,12 @@ export function OperationalRowActionMenu({
 
   const menuContent = (
     <div 
+        ref={menuRef}
+        data-workspace-panel="true"
         className="row-action-menu-container"
         style={{ 
             position: "fixed", 
-            zIndex: WORKSPACE_LAYER_Z.rowActionMenu,
+            zIndex: layer,
             visibility: measuredHeight === null ? "hidden" : "visible",
             ...geometry.style 
         }}

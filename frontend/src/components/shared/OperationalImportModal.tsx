@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useWorkspacePopupDismiss } from './WorkspaceOverlay'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertCircle, CheckSquare, Clipboard, Download, FileSpreadsheet, FileUp, Plus, Trash2, Upload, X, RefreshCcw, Terminal, Database } from 'lucide-react'
@@ -234,16 +235,7 @@ export function OperationalImportModal({
     setSelectedPreviewRows(validRowNumbers)
   }, [preview])
 
-  useEffect(() => {
-    if (!isValidationPopoutOpen) return
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (validationTriggerRef.current?.contains(target) || validationPanelRef.current?.contains(target)) return
-      setIsValidationPopoutOpen(false)
-    }
-    window.addEventListener('mousedown', handleClick)
-    return () => window.removeEventListener('mousedown', handleClick)
-  }, [isValidationPopoutOpen, validationTriggerRef, validationPanelRef])
+  useWorkspacePopupDismiss(isValidationPopoutOpen, validationTriggerRef, validationPanelRef, () => setIsValidationPopoutOpen(false))
 
   useEffect(() => {
     if (!isOpen) {

@@ -1,4 +1,5 @@
-import React, { useId } from 'react'
+import React from 'react'
+import { WorkspaceTooltip } from './WorkspaceTooltip'
 
 export function OperationalDisabledActionTooltip({
   disabled,
@@ -11,24 +12,19 @@ export function OperationalDisabledActionTooltip({
   children: React.ReactNode
   className?: string
 }) {
-  const tooltipId = useId()
 
   if (!disabled || !reason) {
     return <>{children}</>
   }
 
   return (
-    <span
+    <WorkspaceTooltip
       className={className}
-      tabIndex={0}
-      title={reason}
-      aria-describedby={tooltipId}
-      data-disabled-tooltip-host="true"
+      focusable
+      disabledReason
+      content={reason}
     >
-      <span id={tooltipId} className="sr-only">
-        {reason}
-      </span>
       {children}
-    </span>
+    </WorkspaceTooltip>
   )
 }

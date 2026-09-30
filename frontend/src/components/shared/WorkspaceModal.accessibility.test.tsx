@@ -82,7 +82,7 @@ describe('WorkspaceModal accessibility contract', () => {
     expect(confirm).toHaveAccessibleDescription('You have unsaved changes. Close this window and discard them?')
     expect(confirm).toContainElement(document.activeElement as HTMLElement)
 
-    fireEvent.click(within(confirm).getByRole('button', { name: 'Close' }))
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Keep editing' }))
     await waitFor(() => {
       expect(screen.queryByRole('alertdialog', { name: 'Unsaved Changes' })).not.toBeInTheDocument()
     })

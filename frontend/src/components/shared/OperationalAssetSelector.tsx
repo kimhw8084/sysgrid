@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useWorkspacePopupDismiss } from "./WorkspaceOverlay"
 import { ChevronDown } from 'lucide-react'
 import {
   WorkspaceFieldError,
@@ -58,19 +59,7 @@ export function OperationalAssetSelector({
     return matchesSystem && matchesSearch
   })
 
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (triggerRef.current?.contains(target) || panelRef.current?.contains(target)) return
-      setIsOpen(false)
-    }
-    window.addEventListener('mousedown', handleClick)
-
-    return () => {
-      window.removeEventListener('mousedown', handleClick)
-    }
-  }, [isOpen, panelRef, triggerRef])
+  useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
 
   return (
     <div className="space-y-1.5">

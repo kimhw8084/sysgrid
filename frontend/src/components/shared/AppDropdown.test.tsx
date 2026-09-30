@@ -105,7 +105,7 @@ describe('AppDropdown', () => {
     expect(screen.queryByPlaceholderText('Search options...')).not.toBeInTheDocument()
   })
 
-  it('ignores workspace-panel descendant clicks and falls back to raw values for unknown selections', () => {
+  it('closes for an unrelated portaled panel instead of treating every popup as its child', () => {
     const onChange = vi.fn()
     render(
       <AppDropdown
@@ -125,7 +125,7 @@ describe('AppDropdown', () => {
     document.body.appendChild(floatingPanel)
 
     fireEvent.mouseDown(floatingChild)
-    expect(screen.getByPlaceholderText('Search options...')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Search options...')).not.toBeInTheDocument()
 
     document.body.removeChild(floatingPanel)
   })

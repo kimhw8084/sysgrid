@@ -120,7 +120,7 @@ export function useWorkspaceDismissHandlers({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onDismiss()
+      if (event.key === 'Escape' && !event.defaultPrevented) onDismiss()
     }
 
     document.addEventListener('click', handleClick)

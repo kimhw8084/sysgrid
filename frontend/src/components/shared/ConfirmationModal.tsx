@@ -34,10 +34,10 @@ export const ConfirmationModal = ({
 
   const getVariantColor = () => {
     switch (variant) {
-      case 'danger': return 'bg-rose-600 hover:bg-rose-500 shadow-rose-500/20'
-      case 'warning': return 'bg-amber-600 hover:bg-amber-500 shadow-amber-500/20'
-      case 'success': return 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20'
-      default: return 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20'
+      case 'danger': return 'bg-rose-700 hover:bg-rose-800 shadow-rose-500/20'
+      case 'warning': return 'bg-amber-800 hover:bg-amber-900 shadow-amber-500/20'
+      case 'success': return 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-500/20'
+      default: return 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)]'
     }
   }
 
@@ -47,7 +47,6 @@ export const ConfirmationModal = ({
       onClose={onClose}
       size="compact"
       title={title}
-      subtitle={message}
       icon={getVariantIcon()}
       hideCloseButton={true}
       hideFooterClose={true}
@@ -72,7 +71,7 @@ export const ConfirmationModal = ({
     >
       <div className="py-4">
         <p className="text-[11px] font-bold leading-relaxed text-slate-400">
-          Please confirm you want to proceed with this action. This operation may be irreversible depending on the context.
+          {message}
         </p>
       </div>
     </WorkspaceModal>

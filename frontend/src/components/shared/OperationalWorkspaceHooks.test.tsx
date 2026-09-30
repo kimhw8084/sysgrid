@@ -117,7 +117,7 @@ describe('useOperationalDirtyGuard navigation protection', () => {
     })
 
     expect(await screen.findByText('Unsaved Changes')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Keep editing' }))
 
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/form')

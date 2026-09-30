@@ -5,9 +5,11 @@ import { useErrors, SysError } from '../../stores/errorStore'
 import { formatAppDate, formatAppTime } from '../../utils/dateUtils'
 import { toast } from 'react-hot-toast'
 import { redactText } from '../../api/bootstrapDiagnostics'
+import { useWorkspaceDialogLayer, WorkspacePortal } from './WorkspaceOverlay'
 
 export function ErrorConsole() {
   const { errors, isOpen, setOpen, clearErrors, acknowledgeError, acknowledgeAll } = useErrors()
+  const dialogProps = useWorkspaceDialogLayer(isOpen, () => setOpen(false))
   const [selectedErrorId, setSelectedErrorId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'frontend' | 'backend'>('all')
@@ -26,9 +28,11 @@ export function ErrorConsole() {
 
   const selectedError = useMemo(() => errors.find(e => e.id === selectedErrorId), [errors, selectedErrorId])
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success('Technical details copied')
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success('Technical details copied')
+    } catch { toast.error('Clipboard unavailable. Select and copy the details manually.') }
   }
 
   const buganizerUrl = (
@@ -76,7 +80,7 @@ export function ErrorConsole() {
   if (!isOpen) return null
 
   return (
-    <div className="sg-error-console fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-md p-6" role="dialog" aria-modal="true" aria-labelledby="sysgrid-error-console-title">
+    <WorkspacePortal><div {...dialogProps} className="sg-error-console fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md p-6" role="dialog" aria-modal="true" aria-labelledby="sysgrid-error-console-title">
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }} 
         animate={{ scale: 1, opacity: 1 }} 
@@ -348,6 +352,6 @@ export function ErrorConsole() {
           </div>
         </div>
       </motion.div>
-    </div>
+    </div></WorkspacePortal>
   )
 }

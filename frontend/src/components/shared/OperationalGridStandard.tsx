@@ -1,4 +1,5 @@
 import React from 'react'
+import { WorkspaceTooltip } from './WorkspaceTooltip'
 import { Clock, Eye, Star, User } from 'lucide-react'
 import { formatAppDate } from '../../utils/dateUtils'
 import {
@@ -624,24 +625,13 @@ export function createOperationalUtilityColumns({
         const dateStr = formatAppDate(p.data.updated_at || p.data.created_at)
         const author = p.data.created_by_user_id || 'System'
         return (
-          <div className="group relative flex items-center justify-center h-full w-full">
-            <div className="absolute h-10 w-10 rounded-lg bg-[radial-gradient(circle,_rgba(251,191,36,0.2)_0%,_transparent_70%)] blur-md animate-pulse" />
-            <span className="relative z-[1] block h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]" />
-            <div className="invisible group-hover:visible absolute bottom-full mb-3 left-1/2 -translate-x-1/2 z-[2000] w-52 p-3 rounded-lg border border-white/10 bg-slate-950/90 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl pointer-events-none transition-all duration-300 transform scale-95 group-hover:scale-100 opacity-0 group-hover:opacity-100">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">Recent Activity</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[11px] text-slate-100 font-bold leading-tight">{dateStr}</p>
-                <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-white/5">
-                  <User size={10} className="text-slate-500" />
-                  <p className="text-[9px] text-slate-500 font-bold tracking-widest">@{author}</p>
-                </div>
-              </div>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-950/90" />
-            </div>
-          </div>
+          <WorkspaceTooltip focusable className="relative flex items-center justify-center h-full w-full" content={<>
+            <p className="font-semibold text-[var(--state-warning)]">Recent Activity</p>
+            <p className="mt-1">{dateStr}</p>
+            <p className="mt-1 text-[var(--text-secondary)]">@{author}</p>
+          </>}>
+            <span className="block h-2.5 w-2.5 rounded-full bg-amber-400" />
+          </WorkspaceTooltip>
         )
       },
     }] : []),

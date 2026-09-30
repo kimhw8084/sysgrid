@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useWorkspacePopupDismiss } from "./WorkspaceOverlay"
 import { ChevronDown, Check } from 'lucide-react'
 import { OPERATIONAL_WORKSPACE_VISUALS } from './OperationalWorkspace'
 import { getWorkspaceFloatingPanelClass, useWorkspaceAnchoredLayer } from './OperationalWorkspacePrimitives'
@@ -56,17 +57,7 @@ export const AppDropdown = ({
     items.findIndex((candidate) => candidate.value === option.value) === index
   ))
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (triggerRef.current?.contains(target) || 
-          panelRef.current?.contains(target) ||
-          (target instanceof HTMLElement && target.closest('[data-workspace-panel]'))) return
-      setIsOpen(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [panelRef, triggerRef])
+  useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
 
   useEffect(() => {
     if (isOpen) setSearchTerm('')
@@ -128,6 +119,9 @@ export const AppDropdown = ({
           }}
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
           aria-invalid={!!error}
           aria-describedby={describedBy}
           className={`

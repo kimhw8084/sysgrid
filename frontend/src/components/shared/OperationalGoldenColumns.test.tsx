@@ -82,7 +82,7 @@ describe('operational golden grid cell contract', () => {
     }) as any
 
     const group = element.props.children
-    const [button] = group.props.children
+    const button = group.props.children
     button.props.onClick()
     expect(activate).toHaveBeenCalledWith(items)
     expect(activate.mock.calls[0][0]).not.toBe(items)

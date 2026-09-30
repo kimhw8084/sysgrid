@@ -224,7 +224,7 @@ function DismissLockHarness({ locked }: { locked: boolean }) {
 }
 
 describe('Operational anchored-panel interaction continuity', () => {
-  it('keeps one placement contract while clamping width and viewport height', () => {
+  it('keeps a usable placement and flips when resizing or scrolling removes its space', () => {
     const first = computeWorkspaceAnchoredPanelStyle({
       triggerRect: { top: 120, right: 220, bottom: 160, left: 100, width: 120 },
       viewportWidth: 800,
@@ -244,10 +244,10 @@ describe('Operational anchored-panel interaction continuity', () => {
       minWidth: 240,
       placement: first.placement,
     })
-    expect(moved.placement).toBe('below')
-    expect(moved.style.top).toBe(548)
-    expect(moved.style.bottom).toBeUndefined()
-    expect(moved.style.maxHeight).toBe(40)
+    expect(moved.placement).toBe('above')
+    expect(moved.style.top).toBeUndefined()
+    expect(moved.style.bottom).toBe(108)
+    expect(moved.style.maxHeight).toBe(480)
   })
 
   it('classifies only panel-descendant scroll as internal', () => {

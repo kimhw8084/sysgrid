@@ -11,6 +11,7 @@ import {
 import { OPERATIONAL_WORKSPACE_VISUALS } from './OperationalWorkspace'
 import { ToolbarButton } from './LayoutPrimitives'
 import { useOperationalDirtyGuard } from './OperationalWorkspaceHooks'
+import { isTopWorkspaceDialog, isWorkspacePopupDescendant, WORKSPACE_LAYER_Z } from './WorkspaceOverlay'
 
 export const WORKSPACE_MODAL_LAYER_CLASS = 'z-[3500]'
 export const WORKSPACE_MODAL_CONFIRM_LAYER_CLASS = 'z-[3600]'
@@ -204,6 +205,14 @@ export function WorkspaceModal({
   const confirmTitleId = React.useId()
   const confirmMessageId = React.useId()
   const accessibleTitle = React.useMemo(() => getWorkspaceModalAccessibleName(title), [title])
+  const [layer, setLayer] = React.useState<number>(WORKSPACE_LAYER_Z.modal)
+
+  React.useLayoutEffect(() => {
+    if (!isOpen || !dialogRef.current) return
+    const others = Array.from(document.querySelectorAll<HTMLElement>('[data-workspace-modal-root]')).filter((element) => element !== dialogRef.current)
+    setLayer(Math.max(WORKSPACE_LAYER_Z.modal, ...others.map((element) => Number(getComputedStyle(element).zIndex) + 100)))
+    window.dispatchEvent(new Event('workspace:modal-open'))
+  }, [isOpen])
 
   React.useEffect(() => {
     if (!isOpen || typeof document === 'undefined') return
@@ -232,14 +241,20 @@ export function WorkspaceModal({
   React.useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || !isTopWorkspaceDialog(dialogRef.current)) return
       if (event.key === 'Escape') {
-        requestDiscard()
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        if (isConfirmOpen) cancelDiscard()
+        else requestDiscard()
         return
       }
       if (event.key !== 'Tab') return
       const root = isConfirmOpen ? confirmRef.current : dialogRef.current
       if (!root) return
-      const focusable = getFocusableElements(root)
+      const ownedPanels = isConfirmOpen ? [] : Array.from(document.querySelectorAll<HTMLElement>('[data-workspace-anchor]'))
+        .filter((panel) => isWorkspacePopupDescendant(panel, root))
+      const focusable = [...getFocusableElements(root), ...ownedPanels.flatMap(getFocusableElements)]
       if (!focusable.length) {
         event.preventDefault()
         root.focus()
@@ -248,17 +263,18 @@ export function WorkspaceModal({
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
       const active = document.activeElement
-      if (event.shiftKey && (active === first || !(active instanceof Node) || !root.contains(active))) {
+      const containsActive = active instanceof Node && (root.contains(active) || ownedPanels.some((panel) => panel.contains(active)))
+      if (event.shiftKey && (active === first || !containsActive)) {
         event.preventDefault()
         last.focus()
-      } else if (!event.shiftKey && (active === last || !(active instanceof Node) || !root.contains(active))) {
+      } else if (!event.shiftKey && (active === last || !containsActive)) {
         event.preventDefault()
         first.focus()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, isConfirmOpen, requestDiscard])
+  }, [isOpen, isConfirmOpen, requestDiscard, cancelDiscard])
 
   if (!isOpen) return null
 
@@ -277,8 +293,10 @@ export function WorkspaceModal({
     <AnimatePresence>
       <div
         ref={dialogRef}
+        data-workspace-modal-root
+        style={{ zIndex: layer }}
         tabIndex={-1}
-        className={`fixed inset-0 ${WORKSPACE_MODAL_LAYER_CLASS} flex items-center justify-center bg-[#020617]/80 p-4 backdrop-blur-sm sm:p-6 lg:p-8`}
+        className={`fixed inset-0 ${WORKSPACE_MODAL_LAYER_CLASS} flex items-center justify-center bg-[var(--overlay-scrim)] p-4 backdrop-blur-sm sm:p-6 lg:p-8`}
         role="dialog"
         aria-modal="true"
         aria-label={accessibleTitle || undefined}
@@ -355,7 +373,7 @@ export function WorkspaceModal({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className={`absolute inset-0 ${WORKSPACE_MODAL_CONFIRM_LAYER_CLASS} flex items-center justify-center bg-[#020617]/82 p-4 backdrop-blur-sm`}
+              className={`absolute inset-0 ${WORKSPACE_MODAL_CONFIRM_LAYER_CLASS} flex items-center justify-center bg-[var(--overlay-scrim)] p-4 backdrop-blur-sm`}
             >
               <motion.div
                 ref={confirmRef}
@@ -375,7 +393,7 @@ export function WorkspaceModal({
                 </div>
                 <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
                   <ToolbarButton onClick={cancelDiscard} className="whitespace-nowrap">
-                    Close
+                    Keep editing
                   </ToolbarButton>
                   <ToolbarButton onClick={confirmDiscard} variant="primary" className="whitespace-nowrap">
                     {dirtyConfirmText}

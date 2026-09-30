@@ -26,6 +26,7 @@ export function computeFloatingPanelRect({
   bottom?: number;
 } {
   const edge = FLOATING_PANEL_EDGE;
+  y = Math.max(edge, Math.min(y, viewportHeight - edge));
   const viewportSafeWidth = Math.max(0, viewportWidth - edge * 2);
   const width = Math.min(preferredWidth, viewportSafeWidth);
   const left = Math.min(Math.max(x, edge), Math.max(edge, viewportWidth - width - edge));
@@ -139,6 +140,8 @@ export const getAnchoredFloatingStyle = ({
 }) => {
   const vW = window.innerWidth;
   const vH = window.innerHeight;
+  width = Math.min(width, Math.max(0, vW - FLOATING_PANEL_EDGE * 2));
+  height = Math.min(height, Math.max(0, vH - FLOATING_PANEL_EDGE * 2));
   
   let left = rect.right - width;
   let top = rect.bottom + offset;

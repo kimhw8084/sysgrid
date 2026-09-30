@@ -1,4 +1,5 @@
 import React from 'react'
+import { WorkspaceTooltip } from './WorkspaceTooltip'
 import {
   OPERATIONAL_GRID_BADGE_CLASS,
   OPERATIONAL_GRID_BADGE_TEXT_CLASS,
@@ -196,7 +197,12 @@ export function OperationalLinkedCountCell<T>({
 
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <div className="group relative">
+      <WorkspaceTooltip className="inline-flex" content={<>
+        <p className="mb-2 font-semibold">{previewTitle}</p>
+        <div className="space-y-1">{normalizedItems.map((item, index) => (
+          <p key={getItemKey(item, index)}>{getItemLabel(item, index)}</p>
+        ))}</div>
+      </>}>
         <button
           type="button"
           onClick={() => onActivate(normalizedItems)}
@@ -204,19 +210,7 @@ export function OperationalLinkedCountCell<T>({
         >
           <span style={{ fontSize: `${fontSize}px` }} className="font-bold leading-none">{count}</span>
         </button>
-        <div className="pointer-events-none absolute bottom-full left-1/2 z-[9999] mb-2 hidden -translate-x-1/2 group-hover:block">
-          <div className="min-w-[200px] rounded-lg border border-white/20 bg-slate-900 p-3 shadow-2xl">
-            <p className="mb-2 border-b border-white/5 pb-1 text-[9px] font-bold uppercase text-purple-400">{previewTitle}</p>
-            <div className="space-y-1">
-              {normalizedItems.map((item, index) => (
-                <div key={getItemKey(item, index)} className="py-0.5 text-[8px] font-bold uppercase text-slate-300">
-                  • {getItemLabel(item, index)}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      </WorkspaceTooltip>
     </div>
   )
 }

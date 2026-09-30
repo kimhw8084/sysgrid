@@ -1,17 +1,11 @@
-import React, { CSSProperties, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { CSSProperties, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { ChevronDown, Check, Info } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { OPERATIONAL_WORKSPACE_VISUALS } from './OperationalWorkspace'
+import { getWorkspaceAnchorLayer, WORKSPACE_LAYER_Z, useWorkspacePopupDismiss } from './WorkspaceOverlay'
+export { WORKSPACE_LAYER_Z } from './WorkspaceOverlay'
 
 export type WorkspaceModalSize = 'compact' | 'standard' | 'wide' | 'workspace' | 'fullscreen'
-
-export const WORKSPACE_LAYER_Z = {
-  modal: 3500,
-  floatingPanel: 3600,
-  rowActionMenu: 3610,
-  floatingBackdrop: 3590,
-  fullscreen: 4000,
-} as const
 
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ')
 
@@ -41,21 +35,25 @@ export function computeWorkspaceAnchoredPanelStyle({
   const maxWidth = Math.max(0, viewportWidth - padding * 2)
   const desiredWidth = Math.max(triggerRect.width, minWidth)
   const width = Math.min(desiredWidth, maxWidth)
-  const left = clamp(triggerRect.left, padding, viewportWidth - width - padding)
+  const left = clamp(triggerRect.left, padding, Math.max(padding, viewportWidth - width - padding))
   const availableBelow = Math.max(0, viewportHeight - triggerRect.bottom - offset - padding)
   const availableAbove = Math.max(0, triggerRect.top - offset - padding)
-  const resolvedPlacement = placement ?? (availableBelow >= availableAbove ? 'below' : 'above')
+  // Retain a stable side while usable, but flip when scrolling/resizing removes its space.
+  const preferred = placement ?? (availableBelow >= availableAbove ? 'below' : 'above')
+  const preferredSpace = preferred === 'below' ? availableBelow : availableAbove
+  const alternateSpace = preferred === 'below' ? availableAbove : availableBelow
+  const resolvedPlacement = preferredSpace < 120 && alternateSpace > preferredSpace ? (preferred === 'below' ? 'above' : 'below') : preferred
   const availableHeight = resolvedPlacement === 'below' ? availableBelow : availableAbove
 
   return {
     placement: resolvedPlacement,
     style: {
       position: 'fixed',
-      top: resolvedPlacement === 'below' ? triggerRect.bottom + offset : undefined,
-      bottom: resolvedPlacement === 'above' ? viewportHeight - triggerRect.top + offset : undefined,
+      top: resolvedPlacement === 'below' ? clamp(triggerRect.bottom + offset, padding, viewportHeight - padding) : undefined,
+      bottom: resolvedPlacement === 'above' ? clamp(viewportHeight - triggerRect.top + offset, padding, viewportHeight - padding) : undefined,
       left,
       width,
-      maxHeight: Math.max(40, availableHeight),
+      maxHeight: Math.min(availableHeight, Math.max(0, viewportHeight - padding * 2)),
       overflowY: 'auto',
       overscrollBehavior: 'contain',
       scrollbarGutter: 'stable',
@@ -83,7 +81,7 @@ export function getWorkspaceModalShellClass(size: WorkspaceModalSize) {
   if (size === 'standard') return 'w-full max-w-3xl max-h-[86vh]'
   if (size === 'wide') return 'w-full max-w-5xl max-h-[88vh]'
   if (size === 'workspace') return 'w-full max-w-[1440px] h-full sm:h-auto sm:max-h-[92vh]'
-  return 'fixed inset-0 w-screen h-screen max-w-none max-h-none z-[4000]'
+  return 'fixed inset-0 w-screen h-screen max-w-none max-h-none'
 }
 
 export function WorkspaceFieldLabel({
@@ -119,16 +117,9 @@ export function WorkspacePanelHint({ children }: { children: React.ReactNode }) 
 }
 
 export function getWorkspaceFloatingPanelClass(kind: 'menu' | 'context' | 'detail' = 'menu') {
-  const tone =
-    kind === 'context'
-      ? 'border-slate-700 bg-[#020617] shadow-[0_24px_80px_rgba(0,0,0,0.62)]'
-      : kind === 'detail'
-        ? 'border-white/10 bg-slate-950/95 shadow-[0_24px_60px_rgba(2,6,23,0.48)]'
-        : 'border-white/10 bg-slate-950/95 shadow-[0_24px_60px_rgba(2,6,23,0.48)]'
-
   return join(
-    `${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} backdrop-blur-xl`,
-    tone,
+    `${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-[var(--border-default)] bg-[var(--surface-overlay)] text-[var(--text-primary)] shadow-[0_12px_36px_rgba(0,0,0,0.25)]`,
+    kind === 'context' && 'workspace-context-panel',
   )
 }
 
@@ -137,6 +128,7 @@ export function useWorkspaceAnchoredLayer(isOpen: boolean, options?: { offset?: 
   const minWidth = options?.minWidth ?? 0
   const triggerRef = useRef<HTMLElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
+  const anchorId = useId()
   const placementRef = useRef<'above' | 'below' | null>(null)
   const frameRef = useRef<number | null>(null)
   const [panelStyle, setPanelStyle] = useState<CSSProperties>({
@@ -160,7 +152,9 @@ export function useWorkspaceAnchoredLayer(isOpen: boolean, options?: { offset?: 
       placement: placementRef.current,
     })
     placementRef.current = result.placement
-    const nextStyle = result.style
+    if (!trigger.id) trigger.id = anchorId
+    if (panelRef.current) panelRef.current.dataset.workspaceAnchor = trigger.id
+    const nextStyle = { ...result.style, zIndex: getWorkspaceAnchorLayer(trigger) }
 
     setPanelStyle((current) => {
       const keys = Object.keys(nextStyle) as Array<keyof CSSProperties>
@@ -169,7 +163,7 @@ export function useWorkspaceAnchoredLayer(isOpen: boolean, options?: { offset?: 
       }
       return nextStyle
     })
-  }, [minWidth, offset])
+  }, [minWidth, offset, anchorId])
 
   const schedulePositionUpdate = useCallback(() => {
     if (typeof window === 'undefined') return
@@ -208,6 +202,7 @@ export function useWorkspaceAnchoredLayer(isOpen: boolean, options?: { offset?: 
       observer = new ResizeObserver(() => schedulePositionUpdate())
       observerFrame = window.requestAnimationFrame(() => {
         if (panelRef.current) observer?.observe(panelRef.current)
+        if (triggerRef.current) observer?.observe(triggerRef.current)
       })
     }
 
@@ -223,14 +218,14 @@ export function useWorkspaceAnchoredLayer(isOpen: boolean, options?: { offset?: 
     }
   }, [isOpen, schedulePositionUpdate])
 
-  return { triggerRef, panelRef, panelStyle }
+  return { triggerRef, panelRef, panelStyle, updatePosition }
 }
 
 export const useEscapeDismiss = (onClose: () => void, active: boolean = true) => {
   useEffect(() => {
     if (!active) return
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape' && !event.defaultPrevented && !document.querySelector('[data-workspace-modal-root]')) onClose()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -439,16 +434,7 @@ export function WorkspaceInfoTooltip({
   const [isOpen, setIsOpen] = useState(false)
   const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 240 })
 
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (triggerRef.current?.contains(target) || panelRef.current?.contains(target)) return
-      setIsOpen(false)
-    }
-    window.addEventListener('mousedown', handleClick)
-    return () => window.removeEventListener('mousedown', handleClick)
-  }, [isOpen, panelRef, triggerRef])
+  useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
 
   return (
     <>
@@ -547,21 +533,7 @@ export function WorkspaceSelectField({
     ? options.filter((option) => `${option.label} ${option.description || ''}`.toLowerCase().includes(search.toLowerCase()))
     : options
 
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (triggerRef.current?.contains(target) || 
-          panelRef.current?.contains(target) || 
-          (target instanceof HTMLElement && target.closest('[data-workspace-panel]'))) return
-      setIsOpen(false)
-    }
-    window.addEventListener('mousedown', handleClick)
-
-    return () => {
-      window.removeEventListener('mousedown', handleClick)
-    }
-  }, [isOpen, panelRef, triggerRef])
+  useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
 
   return (
     <div className="space-y-1.5">
@@ -570,6 +542,8 @@ export function WorkspaceSelectField({
         <button
           type="button"
           disabled={disabled}
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
           onClick={() => setIsOpen((current) => !current)}
           ref={(node) => {
             triggerRef.current = node

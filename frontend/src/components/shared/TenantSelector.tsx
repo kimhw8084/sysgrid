@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
+import { useWorkspacePopupDismiss } from "./WorkspaceOverlay"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Database, ChevronDown, Check, Plus, Server } from "lucide-react"
 import { apiFetch } from "../../api/apiClient"
@@ -14,10 +15,6 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 256 })
-  useEscapeDismiss(() => {
-    setIsOpen(false)
-    requestAnimationFrame(() => triggerRef.current?.focus())
-  }, isOpen)
   const getTenantLabel = (tenant: any) => {
     if (tenant?.name?.trim()) return tenant.name
     const dbUrl = tenant?.db_url || ""
@@ -58,21 +55,7 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
 
   const activeTenant = tenants?.find((t: any) => t.is_selected)
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        triggerRef.current?.contains(target) ||
-        panelRef.current?.contains(target) ||
-        (target instanceof HTMLElement && target.closest('[data-workspace-panel]'))
-      ) {
-        return
-      }
-      setIsOpen(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [panelRef, triggerRef])
+  useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
 
   return (
     <div className={`relative ${compact ? 'min-w-0 flex-1' : ''}`}>
