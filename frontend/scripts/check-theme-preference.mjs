@@ -8,7 +8,7 @@ const configPath = path.resolve(process.argv[2] || 'tailwind.config.js')
 const { default: config } = await import(pathToFileURL(configPath).href)
 const result = await postcss([tailwindcss({
   ...config,
-  content: [{ raw: '<span class="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/5"></span>', extension: 'html' }],
+  content: [{ raw: '<span class="text-emerald-800 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/5"></span>', extension: 'html' }],
 })]).process('@tailwind utilities;', { from: undefined })
 
 const darkRules = []

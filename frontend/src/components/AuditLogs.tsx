@@ -136,14 +136,14 @@ export default function AuditLogs() {
       headerClass: 'text-center',
       cellRenderer: (params: any) => {
         const colors: Record<string, string> = { 
-            CREATE: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', 
-            UPDATE: 'bg-blue-500/10 text-blue-400 border-blue-500/20', 
-            DELETE: 'bg-rose-500/10 text-rose-400 border-rose-500/20', 
-            MOUNT: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', 
-            LINK: 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+            CREATE: 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20',
+            UPDATE: 'bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20',
+            DELETE: 'bg-rose-500/10 text-rose-800 dark:text-rose-400 border-rose-500/20',
+            MOUNT: 'bg-indigo-500/10 text-indigo-800 dark:text-indigo-400 border-indigo-500/20',
+            LINK: 'bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20'
         }
         return (
-          <div className={`px-2 py-1 rounded-lg border ${colors[params.value] || 'bg-slate-500/10 text-slate-400'} font-black text-[9px] uppercase tracking-widest`}>
+          <div className={`px-2 py-1 rounded-lg border ${colors[params.value] || 'bg-slate-500/10 text-slate-600 dark:text-slate-400'} font-black text-[9px] uppercase tracking-widest`}>
              {params.value || 'N/A'}
           </div>
         )

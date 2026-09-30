@@ -1758,7 +1758,7 @@ export default function SettingsPage() {
               <ToolbarButton
                   onClick={() => setTopTab('standards')}
                   variant="secondary"
-                  className="!h-auto !min-h-10 !py-2 !flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 [&>svg]:shrink-0 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20"
+                  className="!h-auto !min-h-10 !py-2 !flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 [&>svg]:shrink-0 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 bg-blue-600/10 border-blue-500/30 text-blue-800 dark:text-blue-400 hover:bg-blue-600/20"
               >
                   <Layout size={14} className="mr-2 inline-block" />
                   <span>Golden Template</span>
@@ -1768,7 +1768,7 @@ export default function SettingsPage() {
               <ToolbarButton
                   onClick={() => envMutation.mutate(getPersistableEnvSettings())}
                   variant="secondary"
-                  className={`!h-auto !min-h-10 !py-2 !flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 [&>svg]:shrink-0 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 ${isDirty() ? 'bg-amber-600/10 border-amber-500/30 text-amber-500 animate-pulse' : 'bg-emerald-600/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-600/20'}`}
+                  className={`!h-auto !min-h-10 !py-2 !flex-1 !min-w-0 max-w-[180px] !whitespace-normal !px-1 [&>svg]:shrink-0 sm:!flex-none sm:!whitespace-nowrap sm:!px-3 ${isDirty() ? 'bg-amber-600/10 border-amber-500/30 text-amber-800 dark:text-amber-400 animate-pulse' : 'bg-emerald-600/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-600/20'}`}
               >
                   <Zap size={14} className={`mr-2 inline-block ${envMutation.isPending ? 'animate-pulse' : ''}`} />
                   <span>Force Hot Reload</span>

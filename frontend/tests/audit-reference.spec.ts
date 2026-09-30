@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
+import { expectReadableGridText } from './helpers/grid-contrast'
 import { createService, resetBrowserState } from './helpers/sysgrid'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
@@ -15,6 +16,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       expect(changed.ok()).toBeTruthy()
       await page.goto(`/logs?target_table=logical_services&target_id=${service.id}`)
       await expect(page.getByText('Complete matching scope', { exact: true })).toBeVisible()
+      await page.waitForLoadState('networkidle')
+      await expectReadableGridText(page, testInfo, 'audit', '[data-audit-ledger] .ag-cell')
       if (width < 768) await page.getByRole('button', { name: /Analytics/i }).click()
       await expect(page.getByText('Transaction Velocity (Loaded result/page)', { exact: true })).toBeVisible()
       const charts = page.locator('.recharts-wrapper')

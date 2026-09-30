@@ -1,5 +1,6 @@
 import { expect, type Page, type TestInfo } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
+import { expectReadableGridText } from './helpers/grid-contrast'
 import { createAsset, createConnection, createEmbeddedKnowledgeFixture, createMonitoring, createRack, createService, createSite, mountRackDevice, resetBrowserState } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
@@ -14,6 +15,11 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
   const panel = page.getByRole('dialog').locator(':scope > .glass-panel').first()
   if (await panel.count()) await expect(panel).toHaveCSS('opacity', '1')
   await expect(page.getByText('Unexpected Application Error!', { exact: true })).not.toBeVisible()
+  if (['assets', 'monitoring', 'services', 'network'].includes(name)) await expectReadableGridText(page, testInfo, name)
+  if (['service-detail', 'monitoring-detail'].includes(name)) await expectReadableGridText(page, testInfo, name, '[role="dialog"] [data-sg-status-pill]')
+  if (['assets', 'monitoring', 'services', 'network', 'settings', 'audit'].includes(name)) {
+    await expectReadableGridText(page, testInfo, `${name}-controls`, '[data-golden-page-toolbar] button:not(:disabled), [data-settings-header-actions] button:not(:disabled), [data-audit-ledger] button:not(:disabled)')
+  }
   if (name === 'home') {
     for (const card of await page.locator('a[aria-label^="Open "] > div[style]').all()) {
       await expect(card).toHaveCSS('opacity', '1')

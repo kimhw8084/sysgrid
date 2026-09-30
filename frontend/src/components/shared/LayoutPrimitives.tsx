@@ -146,7 +146,7 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
         : variant === 'quiet'
           ? 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
           : active
-            ? 'bg-[var(--action-primary-muted)] text-[var(--action-primary)] border border-[var(--action-primary)]'
+            ? 'bg-[var(--action-primary-muted)] text-[var(--action-ink)] border border-[var(--action-primary)]'
             : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-default)] hover:text-[var(--text-primary)]'
   const activityColumnsToggle = isGoldenActivityColumnsTitle(title)
   const resolvedChildren = activityColumnsToggle ? (
@@ -206,7 +206,7 @@ export const ToolbarIconButton = React.forwardRef<HTMLButtonElement, {
       tone === 'danger'
         ? 'border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] text-[var(--state-danger)] hover:bg-[var(--state-danger-surface-strong)]'
         : active
-          ? 'border border-[var(--action-primary)] bg-[var(--action-primary-muted)] text-[var(--action-primary)]'
+          ? 'border border-[var(--action-primary)] bg-[var(--action-primary-muted)] text-[var(--action-ink)]'
           : 'border border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
     )}
   >

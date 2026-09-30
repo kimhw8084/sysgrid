@@ -51,6 +51,7 @@
   --action-primary: color-mix(in srgb, var(--accent-primary) 50%, #0b1f3a);
   --action-primary-hover: color-mix(in srgb, var(--action-primary) 82%, white);
   --action-primary-muted: var(--accent-glow);
+  --action-ink: #60a5fa;
   --text-disabled: var(--text-muted);
   --state-success: #15803d;
   --state-success-surface: rgba(21, 128, 61, 0.12);
@@ -165,6 +166,7 @@
 }
 
 [data-theme='pure-clarity'] {
+  --action-ink: #1e40af;
   --bg-primary: #ffffff;
   --bg-header: rgba(255, 255, 255, 0.9);
   --glass-bg: rgba(248, 250, 252, 0.8);
@@ -183,6 +185,7 @@
 }
 
 [data-theme='light'] {
+  --action-ink: #1e40af;
   /* Light Mode */
   --bg-primary: #f8fafc;
   --bg-header: rgba(255, 255, 255, 0.9);
@@ -435,6 +438,42 @@
   color: var(--text-primary) !important;
   font-size: var(--ag-font-size, 11px) !important;
   font-weight: 700 !important;
+}
+
+/* Legacy grid renderers also set child text colors. Keep their meaning and
+   density while providing readable ink on the light grid surface. */
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell :is(.text-slate-500, .text-slate-600) {
+  color: #94a3b8;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-slate-100, .text-slate-200, .text-slate-300) {
+  color: var(--text-primary);
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-slate-400, .text-slate-500, .text-slate-600) {
+  color: var(--text-secondary);
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600) {
+  color: #166534;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-amber-200, .text-amber-300, .text-amber-400, .text-amber-500, .text-amber-600) {
+  color: #854d0e;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-rose-200, .text-rose-300, .text-rose-400, .text-rose-500, .text-rose-600) {
+  color: #9f1239;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-blue-200, .text-blue-300, .text-blue-400, .text-blue-500, .text-blue-600) {
+  color: #1e40af;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-sky-300, .text-sky-400, .text-cyan-300, .text-cyan-400) {
+  color: #075985;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-purple-300, .text-purple-400, .text-violet-300, .text-violet-400) {
+  color: #6b21a8;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-orange-300, .text-orange-400) {
+  color: #9a3412;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell .bg-slate-800 {
+  background-color: #e2e8f0;
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header-cell-resize {
