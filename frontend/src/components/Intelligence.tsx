@@ -3,6 +3,7 @@ import { Upload, FileText, CheckCircle2, Clipboard, Download, AlertCircle, Refre
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { apiFetch } from '../api/apiClient'
+import { showWorkspaceToast } from './shared/WorkspaceToast'
 
 export default function Intelligence() {
   const [dragActive, setDragActive] = useState(false)
@@ -24,7 +25,7 @@ export default function Intelligence() {
       setTimeout(() => setStatus('idle'), 3000)
     },
     onError: (err: any) => {
-      alert(`Ingestion Error: ${err.message}`)
+      showWorkspaceToast(`Ingestion Error: ${err.message}`, { type: 'error' })
       setStatus('error')
     }
   })

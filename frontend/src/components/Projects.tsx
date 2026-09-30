@@ -1,5 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
+import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
+import { useWorkspacePrompt } from './shared/useWorkspacePrompt'
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { WorkspaceEmptyState } from "./shared/OperationalWorkspacePrimitives";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -796,6 +798,8 @@ const TaskRow = React.memo(({
 })
 
 const PrecisionGantt = ({ project, onUpdate }: any) => {
+  const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
+  const { ask, promptDialog } = useWorkspacePrompt()
   const [tasks, setTasks] = useState<any[]>(project?.tasks || [])
   const [taskComment, setTaskComment] = useState('')
   const [dragStartTasks, setDragStartTasks] = useState<any[] | null>(null)
@@ -1208,6 +1212,7 @@ const DependencyLines = React.memo(({ lines }: any) => {
 
   return (
     <div className="h-full flex flex-col bg-[#0b0c14] overflow-hidden">
+       {confirmation}{promptDialog}
        <div className="h-11 border-b border-white/10 flex items-center px-6 justify-between bg-[#0a0c14] z-40">
           <div className="flex items-center gap-6">
              <button onClick={() => setShowExecutiveChart(!showExecutiveChart)} className={`p-1.5 rounded-lg transition-all border ${showExecutiveChart ? 'bg-blue-600 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`} title="Performance Graph"><BarChart3 size={16}/></button>
@@ -1237,8 +1242,8 @@ const DependencyLines = React.memo(({ lines }: any) => {
           </div>
           <div className="flex items-center gap-4">
              <button 
-               onClick={() => {
-                 const name = prompt('New task identifier')
+               onClick={async () => {
+                 const name = await ask({ title: 'New task', label: 'Task identifier' })
                  if (!name) return
                  const newTask = { id: Date.now(), name: name, start_date: new Date().toISOString(), end_date: addDays(new Date(), 7).toISOString(), progress: 0, status: 'To Do', dependencies_json: [], metadata_json: {} }
                  const updated = [...tasks, newTask]
@@ -1391,8 +1396,8 @@ const DependencyLines = React.memo(({ lines }: any) => {
                       handleTaskUpdate(task.id, { metadata_json: { ...task.metadata_json, subtasks: newSubtasks } })
                     }
 
-                    const addSubtask = () => {
-                      const label = prompt('Subtask Description')
+                    const addSubtask = async () => {
+                      const label = await ask({ title: 'Add subtask', label: 'Subtask description' })
                       if (!label) return
                       const newSubtasks = [...subtasks, { label, completed: false }]
                       handleTaskUpdate(task.id, { metadata_json: { ...task.metadata_json, subtasks: newSubtasks } })
@@ -1423,7 +1428,7 @@ const DependencyLines = React.memo(({ lines }: any) => {
                            </div>
                            <div className="flex items-center gap-3">
                               <button 
-                                onClick={() => { if(confirm('Decommission this strategic milestone?')) { const updated = tasks.filter(t => t.id !== task.id); setTasks(updated); onUpdate({ ...project, tasks: updated }); setSelectedTaskId(null); } }}
+                                onClick={async () => { if(await confirmWorkspace({ title: 'Decommission milestone?', message: 'Decommission this strategic milestone?', confirmText: 'Decommission', variant: 'danger' })) { const updated = tasks.filter(t => t.id !== task.id); setTasks(updated); onUpdate({ ...project, tasks: updated }); setSelectedTaskId(null); } }}
                                 className="p-2 bg-rose-600/10 text-rose-500 hover:bg-rose-600 hover:text-white rounded-lg transition-all border border-rose-500/20"
                                 title="Decommission Task"
                               >
@@ -1853,6 +1858,8 @@ const DiagramBuilder = ({ data, onChange, onSave }: any) => {
 }
 
 const WorkbenchView = ({ project, onUpdate, isEditing, devices, services, options, users }: any) => {
+  const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
+  const { ask, promptDialog } = useWorkspacePrompt()
   const [name, setName] = useState(project?.name || '')
   const [problemStatement, setProblemStatement] = useState(project?.problem_statement || '')
   const [objective, setObjective] = useState(project?.objective || '')
@@ -1955,6 +1962,7 @@ const WorkbenchView = ({ project, onUpdate, isEditing, devices, services, option
 
   return (
     <div className="max-w-full mx-auto space-y-10 pb-20" onPaste={handlePaste}>
+       {confirmation}{promptDialog}
        <section className="bg-white/5 rounded-lg border border-white/5 overflow-hidden shadow-2xl">
           <div className="p-8 border-b border-white/5 bg-[#0a0c14]/50">
              <div className="grid grid-cols-3 gap-8">
@@ -2209,8 +2217,8 @@ const WorkbenchView = ({ project, onUpdate, isEditing, devices, services, option
                         <ChevronRight size={16} className={`text-slate-600 transition-transform ${activeDiagramIndex === idx ? 'rotate-90' : ''}`} />
                      </button>
                      <button 
-                       onClick={() => {
-                         if (confirm('Decommission this design?')) {
+                       onClick={async () => {
+                         if (await confirmWorkspace({ title: 'Decommission design?', message: 'Decommission this design?', confirmText: 'Decommission', variant: 'danger' })) {
                            const metadata = project.metadata_json || {}
                            const updated = metadata.diagrams.filter((_:any, i:number) => i !== idx)
                            handleFieldChange('metadata_json', { ...metadata, diagrams: updated })
@@ -2304,9 +2312,10 @@ const WorkbenchView = ({ project, onUpdate, isEditing, devices, services, option
                   </div>
                 ))}
                 <button 
-                  onClick={() => {
-                    const label = prompt('Reference Label')
-                    const url = prompt('Reference URL')
+                  onClick={async () => {
+                    const label = await ask({ title: 'Add reference', label: 'Reference label' })
+                    if (!label) return
+                    const url = await ask({ title: 'Add reference', label: 'Reference URL', type: 'url' })
                     if (label && url) {
                       const metadata = project?.metadata_json || {}
                       const references = [...(metadata.references || []), { label, url }]

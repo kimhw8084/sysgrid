@@ -1,3 +1,4 @@
+import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
@@ -1471,6 +1472,7 @@ const getFriendlyRestoreError = (msg: string): string => {
 }
 
 export default function External() {
+  const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
   const externalStorageNamespace = 'sysgrid_external'
   const externalViewStorageKey = `${externalStorageNamespace}_views_v1`
   const externalActiveViewKey = `${externalStorageNamespace}_active_view_v1`
@@ -2058,9 +2060,9 @@ export default function External() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [collaborativeViews.dirty])
 
-  const allowViewSwitch = (nextViewId: string | null) => {
+  const allowViewSwitch = async (nextViewId: string | null) => {
     if (!collaborativeViews.dirty || nextViewId === activeViewId) return true
-    return window.confirm('This workspace has unsaved view changes. Discard them and switch views?')
+    return confirmWorkspace({ title: 'Discard view changes?', message: 'This workspace has unsaved view changes. Discard them and switch views?', confirmText: 'Discard changes', variant: 'warning' })
   }
 
   useEffect(() => {
@@ -2097,8 +2099,8 @@ export default function External() {
     setSelectedIds([])
   }
 
-  const applySystemDefault = () => {
-    if (!allowViewSwitch(null)) return
+  const applySystemDefault = async () => {
+    if (!await allowViewSwitch(null)) return
     applyWorkspaceConfig(normalizeExternalWorkspaceState(null), null)
     collaborativeViews.setViewLink(null)
     setGroupBy('raw')
@@ -2176,8 +2178,8 @@ export default function External() {
     showWorkspaceToast(result.persisted ? 'External personal view removed' : 'External local fallback removed')
   }
 
-  const applySavedView = (viewId: string) => {
-    if (!allowViewSwitch(viewId)) return
+  const applySavedView = async (viewId: string) => {
+    if (!await allowViewSwitch(viewId)) return
     const view = normalizedSavedViews.find((entry: any) => entry.id === viewId)
     if (!view) return
     applyWorkspaceConfig(view.config, view.id)
@@ -3780,6 +3782,7 @@ export default function External() {
         variant={confirmModal.variant}
       />
 
+      {confirmation}
     </OperationalWorkspaceShell>
   )
 }

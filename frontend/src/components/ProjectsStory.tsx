@@ -1,3 +1,5 @@
+import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
+import { useWorkspacePrompt } from './shared/useWorkspacePrompt'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, ChevronDown, CircleDot, Clock3, Filter, LayoutList, Milestone, Plus, RefreshCcw, Search, ShieldCheck, Sparkles, Target, Users } from 'lucide-react'
@@ -200,6 +202,8 @@ function PortfolioAttention({ projects }: { projects: ProjectStoryItem[] }) {
 }
 
 function ProjectHomeScreen({ projectId }: { projectId: string }) {
+  const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
+  const { ask, promptDialog } = useWorkspacePrompt()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const summary = useQuery({ queryKey: ['pv1-project-summary', projectId], queryFn: () => readPV1ProjectSummary(projectId), staleTime: 60_000 })
@@ -226,22 +230,24 @@ function ProjectHomeScreen({ projectId }: { projectId: string }) {
   const metric = story.primary_metric
   const can = project.capabilities || {}
   const command = (type: string, payload: Record<string, unknown> = {}) => lifecycle.mutate({ type, payload })
-  const pauseProject = () => {
-    const reason = window.prompt('Why is this project being paused?')?.trim()
+  const pauseProject = async () => {
+    const reason = await ask({ title: 'Pause project', label: 'Why is this project being paused?' })
     if (!reason) return
-    const resumeReviewDate = window.prompt('Optional review date (YYYY-MM-DD). Leave blank if not scheduled.')?.trim()
+    const resumeReviewDate = await ask({ title: 'Pause project', label: 'Review date (optional)', type: 'date', optional: true })
+    if (resumeReviewDate === null) return
     command('project.pause', { reason, ...(resumeReviewDate ? { resume_review_date: resumeReviewDate } : {}) })
   }
-  const cancelProject = () => {
-    const reason = window.prompt('Why is this project being cancelled? The record and history will be preserved.')?.trim()
+  const cancelProject = async () => {
+    const reason = await ask({ title: 'Cancel project', label: 'Why is this project being cancelled? The record and history will be preserved.' })
     if (reason) command('project.cancel', { reason })
   }
   return <StoryShell active="home" project={project} projects={portfolio.data?.items || []} teams={teams.data || []} onProjectSelectorFocus={loadProjectsForSelector} onRefresh={() => summary.refetch()} refreshing={summary.isFetching} showProjectNavigation={false}>
+    {confirmation}{promptDialog}
     <main className="p04-home" data-p04-project-home="true">
       {banner ? <div className={`p04-lifecycle-banner p04-lifecycle-${project.archived_at ? 'archived' : project.run_state.toLowerCase()}`}>{banner}</div> : null}
       <section className="p04-home-cover">
         <div className="p04-breadcrumb"><a href="/projects">Portfolio</a><span>/</span><span>{project.display_key}</span></div>
-        <div className="p04-cover-row"><div><div className="p04-cover-kicker"><span>{project.archived_at ? 'Archived' : project.run_state === 'Active' ? project.phase : project.run_state}</span><span>{teamLabel(teams.data || [], project.team_id)}</span></div><h1>{project.name}</h1><p>{project.objective || 'Objective not recorded. Add the intended change before this project advances.'}</p><a href="#project-brief">Read brief</a></div><div className="p04-cover-actions"><a className="p04-button p04-button-primary" href={primary.href}>{primary.label}<ArrowRight size={16} /></a><details><summary className="p04-button">More <ChevronDown size={15} /></summary><div className="p04-menu">{can.edit ? <a href={`/projects/${project.id}/plan?section=brief`}>Edit project</a> : null}{can.manage_people ? <a href={`/projects/${project.id}/plan?section=people`}>Manage people</a> : null}<button onClick={() => navigator.clipboard?.writeText(window.location.href)}>Copy project link</button>{can.export ? <button onClick={() => window.print()}>Export summary</button> : null}{can.pause && project.run_state === 'Active' ? <button onClick={pauseProject}>Pause</button> : null}{can.pause && project.run_state === 'Paused' ? <button onClick={() => command('project.resume')}>Resume</button> : null}{can.cancel && project.run_state !== 'Cancelled' ? <button onClick={cancelProject}>Cancel</button> : null}{can.archive && (project.run_state === 'Cancelled' || (project.phase === 'Delivered' && project.outcome_result === 'Realized')) ? <button onClick={() => window.confirm('Archive this project? It will leave the active Portfolio but remain recoverable.') && command('project.archive')}>Archive</button> : null}{can.restore && project.archived_at ? <button onClick={() => command('project.restore')}>Restore</button> : null}</div></details></div></div>
+        <div className="p04-cover-row"><div><div className="p04-cover-kicker"><span>{project.archived_at ? 'Archived' : project.run_state === 'Active' ? project.phase : project.run_state}</span><span>{teamLabel(teams.data || [], project.team_id)}</span></div><h1>{project.name}</h1><p>{project.objective || 'Objective not recorded. Add the intended change before this project advances.'}</p><a href="#project-brief">Read brief</a></div><div className="p04-cover-actions"><a className="p04-button p04-button-primary" href={primary.href}>{primary.label}<ArrowRight size={16} /></a><details><summary className="p04-button">More <ChevronDown size={15} /></summary><div className="p04-menu">{can.edit ? <a href={`/projects/${project.id}/plan?section=brief`}>Edit project</a> : null}{can.manage_people ? <a href={`/projects/${project.id}/plan?section=people`}>Manage people</a> : null}<button onClick={() => navigator.clipboard?.writeText(window.location.href)}>Copy project link</button>{can.export ? <button onClick={() => window.print()}>Export summary</button> : null}{can.pause && project.run_state === 'Active' ? <button onClick={pauseProject}>Pause</button> : null}{can.pause && project.run_state === 'Paused' ? <button onClick={() => command('project.resume')}>Resume</button> : null}{can.cancel && project.run_state !== 'Cancelled' ? <button onClick={cancelProject}>Cancel</button> : null}{can.archive && (project.run_state === 'Cancelled' || (project.phase === 'Delivered' && project.outcome_result === 'Realized')) ? <button onClick={async () => { if (await confirmWorkspace({ title: 'Archive project?', message: 'It will leave the active Portfolio but remain recoverable.', confirmText: 'Archive', variant: 'warning' })) command('project.archive') }}>Archive</button> : null}{can.restore && project.archived_at ? <button onClick={() => command('project.restore')}>Restore</button> : null}</div></details></div></div>
         <div className="p04-property-band">{[
           ['Owner', ownerLabel(operators.data || [], project.owner_id)], ['Phase', project.run_state === 'Active' ? project.phase : project.run_state], ['Health', story.health.level], ['Priority', project.priority], ['Start → Target', `${project.start_date ? isoDate(project.start_date) : 'Not set'} → ${project.target_date ? isoDate(project.target_date) : 'Not set'}`],
         ].map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
@@ -271,6 +277,7 @@ const readRecovery = (): Recovery | null => {
 }
 
 function NewProjectScreen() {
+  const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
@@ -366,12 +373,13 @@ function NewProjectScreen() {
     } catch { /* failed save remains visible with local recovery and blocks a false Draft saved message */ }
   }
   const discard = async () => {
-    if (!window.confirm('Discard this Draft? Its audit record is preserved, but it will leave the active Portfolio.')) return
+    if (!await confirmWorkspace({ title: 'Discard draft?', message: 'Its audit record is preserved, but it will leave the active Portfolio.', confirmText: 'Discard draft', variant: 'danger' })) return
     try { if (project) await discardPV1Draft(project); localStorage.removeItem(RECOVERY_KEY); queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio'] }); navigate('/projects') } catch (error) { setSaveState('Save failed'); setSaveError(error instanceof Error ? error.message : 'Draft discard failed.') }
   }
 
   const steps = ['Purpose', 'Success', 'Delivery plan', 'Review']
   return <StoryShell active="new" teams={activeTeams} teamId={form.team_id} onTeamChange={(value) => setField('team_id', value)}>
+    {confirmation}
     <main className="p04-create" data-p04-new-project="true">
       <header className="p04-create-header"><div><p className="p04-eyebrow">New project</p><h1>Build a meaningful project story</h1><p>Four guided steps. Suggested content remains editable; dates, targets, and return are never invented.</p></div><div className={`p04-save-state is-${saveState.toLowerCase().replace(' ', '-')}`}><CircleDot size={14} /> {saveState}{project ? ` · ${project.display_key}` : ''}</div></header>
       {serverDraft.isError ? <div className="p04-local-error">Saved Draft unavailable. Your authorized local recovery remains loaded. <button onClick={() => serverDraft.refetch()}>Retry</button></div> : null}
