@@ -113,7 +113,9 @@ def main() -> None:
     assert "backend/test-results" in required_job
     assert "frontend/test-results" in required_job
     assert "frontend/test-results-v1" in required_job
+    assert "frontend/test-results-desktop" in required_job
     assert "frontend/test-results-root-preview" in required_job
+    assert "frontend/playwright-report-desktop" in required_job
     assert "owned-runtime" in required_job
     assert "application-ci-evidence-${{ env.CANDIDATE_SHA }}" in required_job
     assert "actions/upload-artifact@" in required_job

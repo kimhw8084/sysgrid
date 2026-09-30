@@ -196,8 +196,10 @@ jobs:
           copy_tree backend/test-results ci-evidence/backend-test-results
           copy_tree frontend/test-results ci-evidence/frontend-test-results
           copy_tree frontend/test-results-v1 ci-evidence/frontend-test-results-v1
+          copy_tree frontend/test-results-desktop ci-evidence/frontend-test-results-desktop
           copy_tree frontend/test-results-root-preview ci-evidence/frontend-test-results-root-preview
           copy_tree frontend/playwright-report ci-evidence/frontend-playwright-report
+          copy_tree frontend/playwright-report-desktop ci-evidence/frontend-playwright-report-desktop
           copy_tree frontend/blob-report ci-evidence/frontend-blob-report
 
           shopt -s nullglob

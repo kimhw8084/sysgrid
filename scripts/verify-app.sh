@@ -11,8 +11,10 @@ reset_generated_evidence() {
     "$BACKEND_DIR/test-results" \
     "$FRONTEND_DIR/test-results" \
     "$FRONTEND_DIR/test-results-v1" \
+    "$FRONTEND_DIR/test-results-desktop" \
     "$FRONTEND_DIR/test-results-root-preview" \
     "$FRONTEND_DIR/playwright-report" \
+    "$FRONTEND_DIR/playwright-report-desktop" \
     "$FRONTEND_DIR/blob-report"
   rm -f "$FRONTEND_DIR/llm-report.json"
   mkdir -p "$BACKEND_DIR/test-results" "$FRONTEND_DIR/test-results"
@@ -74,6 +76,8 @@ trap 'status=$?; verify_runtime_cleanup; exit "$status"' EXIT INT TERM
 
 (
   cd "$FRONTEND_DIR"
+  node scripts/check-theme-preference.mjs
+  node scripts/check-desktop-test-selection.mjs
   npm run check:operational-contracts
   npm run typecheck
   npm run test:coverage
@@ -93,6 +97,20 @@ PLAYWRIGHT_BIN="$FRONTEND_DIR/node_modules/.bin/playwright"
   verify_runtime_run_command \
     "$NODE_BIN" "$PLAYWRIGHT_BIN" test \
     --config=playwright.v1.config.ts
+)
+
+verify_runtime_cleanup
+VERIFY_RUNTIME_CLEANED="false"
+VERIFY_RUNTIME_DIR=""
+VERIFY_RUNTIME_BACKEND_PID=""
+VERIFY_RUNTIME_FRONTEND_PID=""
+export SYSGRID_VERIFY_PROFILE="normal-v1"
+verify_runtime_start
+(
+  cd "$FRONTEND_DIR"
+  SYSGRID_DESKTOP_ONLY=1 verify_runtime_run_command \
+    "$NODE_BIN" "$PLAYWRIGHT_BIN" test \
+    --config=playwright.desktop.config.ts
 )
 
 verify_runtime_cleanup
