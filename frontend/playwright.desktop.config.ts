@@ -6,6 +6,7 @@ import baseConfig from './playwright.config'
 export default defineConfig({
   ...baseConfig,
   testMatch: [
+    /(^|[\\/])overlay-audit\.spec\.ts$/,
     /(^|[\\/])(visual-foundation|rack-reference|audit-reference|settings-reference|settings-history-reference|history-reference|theme-preference)\.spec\.ts$/,
   ],
   // Existing phone cases remain available in the base configuration. The
