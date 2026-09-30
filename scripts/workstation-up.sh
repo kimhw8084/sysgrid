@@ -561,9 +561,9 @@ if sys.version_info < (3, 11):
 print(f"Python: {sys.version.split()[0]}")
 PY
   node - <<'JS'
-const major = Number(process.versions.node.split('.')[0]);
-if (major < 20) {
-  console.error(`Node.js 20+ is required; found ${process.versions.node}`);
+const [major, minor] = process.versions.node.split('.').map(Number);
+if (major !== 22 || minor < 13 || process.versions.node.includes('-')) {
+  console.error(`Node.js 22 LTS (22.13.0 minimum) is required; found ${process.versions.node}`);
   process.exit(1);
 }
 console.log(`Node.js: ${process.versions.node}`);

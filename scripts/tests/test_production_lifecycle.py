@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import threading
@@ -102,6 +103,51 @@ class ProductionLifecycleTests(unittest.TestCase):
         self.assertNotIn("SYSGRID_TEST_SENTINEL_SECRET", configured)
         self.assertEqual(configured["ENVIRONMENT"], "production")
         self.assertEqual(configured["AUTO_MIGRATE_ON_STARTUP"], "false")
+
+
+class RuntimeVersionTests(unittest.TestCase):
+    def check_runtime(self, node_version="v22.23.2", npm_version="10.9.8", *, missing=None, failed=None):
+        def locate(binary):
+            return None if binary == missing else "/runtime/" + binary
+
+        def version(argv, **kwargs):
+            binary = Path(argv[0]).name
+            output = node_version if binary == "node" else npm_version
+            return subprocess.CompletedProcess(argv, int(binary == failed), output, "")
+
+        with patch.object(MODULE.shutil, "which", side_effect=locate), patch.object(
+            MODULE.subprocess, "run", side_effect=version
+        ):
+            return MODULE._runtime_versions()
+
+    def test_accepts_qualified_lts_floor_and_current_patch(self):
+        for version in ("v22.13.0", "v22.23.2"):
+            with self.subTest(version=version):
+                accepted, versions = self.check_runtime(node_version=version)
+                self.assertTrue(accepted)
+                self.assertEqual(versions["node_major"], 22)
+                self.assertGreaterEqual(versions["node_minor"], 13)
+                self.assertEqual(versions["npm_major"], 10)
+
+    def test_rejects_eol_below_floor_prerelease_and_unqualified_lines(self):
+        for version in ("v18.20.8", "v20.19.4", "v21.7.3", "v22.12.0", "v23.1.0", "v24.0.0", "v22.13.0-rc.1"):
+            with self.subTest(version=version):
+                self.assertFalse(self.check_runtime(node_version=version)[0])
+
+    def test_rejects_missing_or_failed_runtime_commands(self):
+        for binary in ("node", "npm"):
+            with self.subTest(binary=binary):
+                self.assertFalse(self.check_runtime(missing=binary)[0])
+                self.assertFalse(self.check_runtime(failed=binary)[0])
+
+    def test_rejects_invalid_version_output(self):
+        for version in ("", "not a version", "22", "warning 22.13.0", "v22.13.0 trailing"):
+            with self.subTest(version=version):
+                self.assertFalse(self.check_runtime(node_version=version)[0])
+
+    def test_retains_npm_minimum(self):
+        self.assertFalse(self.check_runtime(npm_version="8.19.4")[0])
+        self.assertTrue(self.check_runtime(npm_version="9.0.0")[0])
 
 
 if __name__ == "__main__":

@@ -45,17 +45,22 @@ def _runtime_versions() -> tuple[bool, dict[str, int]]:
     versions: dict[str, int] = {"python_major": sys.version_info.major, "python_minor": sys.version_info.minor}
     if sys.version_info < (3, 11):
         return False, versions
-    for binary, key, minimum in (("node", "node_major", 20), ("npm", "npm_major", 9)):
+    for binary, key, minimum in (("node", "node_major", 22), ("npm", "npm_major", 9)):
         executable = shutil.which(binary)
         if not executable:
             return False, versions
         completed = subprocess.run(
             [executable, "--version"], capture_output=True, text=True, check=False
         )
-        match = re.search(r"(?:v)?(\d+)", completed.stdout.strip()) if completed.returncode == 0 else None
+        match = re.fullmatch(r"v?(\d+)\.(\d+)\.(\d+)", completed.stdout.strip()) if completed.returncode == 0 else None
         if not match:
             return False, versions
         versions[key] = int(match.group(1))
+        if binary == "node":
+            versions["node_minor"] = int(match.group(2))
+            versions["node_patch"] = int(match.group(3))
+            if versions[key] != 22 or versions["node_minor"] < 13:
+                return False, versions
         if versions[key] < minimum:
             return False, versions
     return True, versions

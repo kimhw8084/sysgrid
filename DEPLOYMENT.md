@@ -22,9 +22,14 @@ daemon.
 
 ## Prerequisites and deterministic install
 
-Use Python 3.11 or newer, Node.js 20 or newer, npm 9 or newer, and file-backed
+Use Python 3.11 or newer, Node.js 22 LTS (22.13.0 minimum), npm 9 or newer, and file-backed
 SQLite storage on a supported local or corporate persistent volume. Keep the
 backend and frontend as separate project roots.
+
+Install the current Node 22 security patch. CI, package engines, and lifecycle
+checks use this same LTS line; the 22.13.0 floor covers the locked frontend test
+tooling. Qualify the next LTS line before Node 22 support ends on 2027-04-30
+([upstream release schedule](https://github.com/nodejs/Release#release-schedule)).
 
 From a fresh authorized checkout, install exactly from the committed locks:
 
