@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion'
 import { Edit2, Search, X } from 'lucide-react'
+import { WorkspacePortal, useWorkspaceDialogLayer } from '../shared/WorkspaceOverlay'
 import {
   WorkspaceFloatingPanel,
   WorkspacePanelSubtitle,
   WorkspacePanelTitle,
   WorkspaceSectionBadge,
-  useEscapeDismiss,
 } from '../shared/OperationalWorkspacePrimitives'
 
 export default function AssetGoldenQuickLookPanel({
@@ -17,7 +17,7 @@ export default function AssetGoldenQuickLookPanel({
   onClose: () => void
   onEdit: (asset: any) => void
 }) {
-  useEscapeDismiss(onClose, true)
+  const dialogLayer = useWorkspaceDialogLayer(true, onClose)
 
   const statusTone =
     asset.status === 'Active'
@@ -27,7 +27,9 @@ export default function AssetGoldenQuickLookPanel({
         : 'rose'
 
   return (
-    <motion.div
+    <WorkspacePortal><motion.div
+      {...dialogLayer}
+      role="dialog" aria-modal="true" aria-label={`Asset quick look: ${asset.name}`}
       initial={{ opacity: 0, x: 32 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 32 }}
@@ -49,7 +51,7 @@ export default function AssetGoldenQuickLookPanel({
                 <WorkspacePanelSubtitle>{asset.system} // {asset.type}</WorkspacePanelSubtitle>
               </div>
             </div>
-            <button onClick={onClose} className="rounded-lg border border-white/10 bg-black/20 p-2 text-slate-500 transition-all hover:border-white/20 hover:text-white">
+            <button aria-label="Close quick look" onClick={onClose} className="rounded-lg border border-white/10 bg-black/20 p-2 text-slate-500 transition-all hover:border-white/20 hover:text-white">
               <X size={18} />
             </button>
           </div>
@@ -100,6 +102,6 @@ export default function AssetGoldenQuickLookPanel({
           </button>
         </div>
       </WorkspaceFloatingPanel>
-    </motion.div>
+    </motion.div></WorkspacePortal>
   )
 }

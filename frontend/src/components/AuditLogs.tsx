@@ -1,3 +1,4 @@
+import { WorkspaceDialogFrame } from './shared/WorkspaceDialogFrame'
 import React, { useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { useQuery } from '@tanstack/react-query'
@@ -437,12 +438,7 @@ export default function AuditLogs() {
 
       <AnimatePresence>
         {activeLog && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
-          >
+          <WorkspaceDialogFrame title="Audit Change Payload" onClose={() => setActiveLog(null)}>
             <motion.div
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -456,7 +452,7 @@ export default function AuditLogs() {
                     {activeLog.target_table} / {activeLog.target_id || 'N/A'}
                   </p>
                 </div>
-                <button onClick={() => setActiveLog(null)} className="text-slate-500 transition-colors hover:text-white">
+                <button aria-label="Close audit payload" onClick={() => setActiveLog(null)} className="text-slate-500 transition-colors hover:text-white">
                   <X size={18} />
                 </button>
               </div>
@@ -474,7 +470,7 @@ export default function AuditLogs() {
                 </div>
               </div>
             </motion.div>
-          </motion.div>
+          </WorkspaceDialogFrame>
         )}
       </AnimatePresence>
 

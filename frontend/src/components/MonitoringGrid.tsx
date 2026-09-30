@@ -1,3 +1,4 @@
+import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import { BkmListModal, BkmDetailModal, MonitoringForm } from './monitoring/Modals'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail, classifyDataStatus, normalizeOperationalListResponse } from './shared/OperationalDataStatus'
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
@@ -430,6 +431,7 @@ const ObservabilityHUD = ({ items }: any) => {
 }
 
 export default function MonitoringGrid() {
+  const { confirm: confirmWorkspaceAction, confirmation } = useWorkspaceConfirmation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const knowledgeAction = useModuleActionPolicy('knowledge')
@@ -1040,13 +1042,13 @@ export default function MonitoringGrid() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [collaborativeViews.dirty])
 
-  const allowViewSwitch = (nextViewId: string | null) => {
+  const allowViewSwitch = async (nextViewId: string | null) => {
     if (!collaborativeViews.dirty || nextViewId === activeViewId) return true
-    return window.confirm('This workspace has unsaved view changes. Discard them and switch views?')
+    return confirmWorkspaceAction({ title: 'Discard view changes?', message: 'This workspace has unsaved view changes. Discard them and switch views?', confirmText: 'Discard and switch', variant: 'warning' })
   }
 
-  const applySavedView = (viewId: string) => {
-    if (!allowViewSwitch(viewId)) return
+  const applySavedView = async (viewId: string) => {
+    if (!await allowViewSwitch(viewId)) return
     const nextView = savedViews.find((view) => view.id === viewId)
     if (!nextView) return
     const config = sanitizeMonitoringViewConfig(nextView.config)
@@ -1120,8 +1122,8 @@ export default function MonitoringGrid() {
     showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `Saved ${trimmed} locally; server unavailable`, { type: result.persisted ? 'success' : 'error' })
   }
 
-  const applySystemDefault = () => {
-    if (!allowViewSwitch(null)) return
+  const applySystemDefault = async () => {
+    if (!await allowViewSwitch(null)) return
     setActiveViewId(null)
     collaborativeViews.setViewLink(null)
     setTransientManualColumnWidths(false)
@@ -1819,7 +1821,7 @@ export default function MonitoringGrid() {
 
   const gridContext = useMemo(() => ({ favoriteIds, watchIds }), [favoriteIds, watchIds])
   return (
-   <OperationalWorkspaceShell
+   <>{confirmation}<OperationalWorkspaceShell
       archetype="table"
       workspace="monitoring"
       header={{
@@ -2470,7 +2472,7 @@ export default function MonitoringGrid() {
         />
       </AnimatePresence>
 
-    </OperationalWorkspaceShell>
+    </OperationalWorkspaceShell></>
   )
 }
 

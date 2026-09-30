@@ -1,4 +1,11 @@
+import { WorkspacePointPanel } from './shared/WorkspacePointPanel'
+import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { WorkspaceTooltip } from './shared/WorkspaceTooltip'
+import { WorkspaceDialogFrame } from './shared/WorkspaceDialogFrame'
+import { useWorkspaceDialogLayer, useWorkspacePopupDismiss, WORKSPACE_LAYER_Z } from './shared/WorkspaceOverlay'
+import { getPointFloatingStyle } from './shared/OperationalGridInteractions'
 import { AgGridReact } from 'ag-grid-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -7,7 +14,7 @@ import {
   Package, BarChart3, ExternalLink, Settings,
   Network, HardDrive, TrendingUp, Layers, List, Upload, Tag, History, Clipboard, Eye, EyeOff, Activity, Terminal, Clock
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { apiFetch } from '../api/apiClient'
 import { 
@@ -20,7 +27,7 @@ import {
   ToolbarSegmented 
 } from './shared/LayoutPrimitives'
 import { WorkspaceModal } from './shared/WorkspaceModal'
-import { WorkspaceTabStrip, WorkspaceEmptyState } from './shared/OperationalWorkspacePrimitives'
+import { WorkspaceTabStrip, WorkspaceEmptyState, useWorkspaceAnchoredLayer } from './shared/OperationalWorkspacePrimitives'
 import { formatAppDate, parseAppDate } from '../utils/dateUtils'
 import { BulkImportModal } from './shared/BulkImportModal'
 import { ConfirmationModal } from './shared/ConfirmationModal'
@@ -184,33 +191,16 @@ const MiniBar = ({ value, max, colorFn, label, unit, overflowLabel = 'CAPACITY A
 const PduBar = ({ side, name, capacity, onClick }: { side: 'A' | 'B'; name?: string; capacity?: number; onClick?: () => void }) => {
   const hasPdu = !!name && name !== 'None'
   return (
-    <div 
-      onClick={onClick}
-      className={`absolute ${side === 'A' ? 'left-1' : 'right-1'} top-1 bottom-1 w-2.5 rounded-lg bg-slate-900 border border-white/10 flex flex-col items-center justify-around py-4 cursor-pointer hover:bg-slate-800 transition-all z-20 group/pdu ${!hasPdu ? 'opacity-30 grayscale' : ''}`}
-    >
-      {Array.from({ length: 14 }).map((_, i) => (
-        <div key={i} className={`w-1.5 h-1 rounded-lg transition-all duration-300 ${!hasPdu ? 'bg-slate-700' : 'bg-slate-500/70 group-hover/pdu:bg-blue-400'}`} />
-      ))}
-      
-      {/* Tooltip on hover */}
-      {(
-        <div className={`absolute top-1/2 -translate-y-1/2 ${side === 'A' ? 'left-6' : 'right-6'} opacity-0 group-hover/pdu:opacity-100 pointer-events-none transition-all duration-200 z-50`}>
-          <div className="bg-slate-950/95 backdrop-blur-2xl border border-white/10 p-3 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.8)] min-w-[140px]">
-            <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Zap size={10} /> {name || `PDU-${side}`}
-            </p>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[7px] font-bold text-slate-400">
-                <span>CONFIGURED CAPACITY</span>
-                <span>{typeof capacity === 'number' ? `${capacity}kW` : 'Not set'}</span>
-              </div>
-              <p className="text-[7px] text-amber-300 border-t border-white/5 pt-2 text-center">Live PDU load telemetry unavailable</p>
-              <p className="text-[6px] text-slate-500 text-center">Click to configure mapping</p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <WorkspaceTooltip
+      className={`absolute ${side === 'A' ? 'left-1' : 'right-1'} top-1 bottom-1 w-2.5 rounded-lg bg-slate-900 border border-white/10 cursor-pointer hover:bg-slate-800 transition-all z-20 group/pdu ${!hasPdu ? 'opacity-30 grayscale' : ''}`}
+      content={<><p className="font-semibold">{name || `PDU-${side}`}</p>
+        <p className="mt-2">Configured capacity: {typeof capacity === 'number' ? `${capacity}kW` : 'Not set'}</p>
+        <p className="mt-2 text-[var(--state-warning)]">Live PDU load telemetry unavailable</p>
+        <p className="mt-1 text-[var(--text-secondary)]">Click to configure mapping</p></>}>
+      <button type="button" onClick={onClick} aria-label={`Configure PDU ${side}`} className="flex h-full w-full flex-col items-center justify-around py-4">
+        {Array.from({ length: 14 }).map((_, i) => <span key={i} className={`w-1.5 h-1 rounded-lg ${!hasPdu ? 'bg-slate-700' : 'bg-slate-500/70'}`} />)}
+      </button>
+    </WorkspaceTooltip>
   )
 }
 
@@ -218,29 +208,30 @@ const PduBar = ({ side, name, capacity, onClick }: { side: 'A' | 'B'; name?: str
 
 const DeviceOptionsMenu = ({ x, y, onClose, onShowConnections, onEdit, onDelete, onPatch, deviceName }: any) => {
   const menuRef = React.useRef<HTMLDivElement>(null)
-  const [pos, setPos] = React.useState({ x, y })
-
+  const triggerRef = React.useRef<HTMLElement | null>(document.activeElement as HTMLElement)
+  const [position, setPosition] = React.useState<React.CSSProperties>({})
+  useWorkspacePopupDismiss(true, triggerRef, menuRef, onClose)
   React.useLayoutEffect(() => {
-    if (menuRef.current) {
-      const rect = menuRef.current.getBoundingClientRect()
-      let nextX = x
-      let nextY = y
-      if (x + rect.width > window.innerWidth) nextX = window.innerWidth - rect.width - 20
-      if (y + rect.height > window.innerHeight) nextY = window.innerHeight - rect.height - 20
-      setPos({ x: nextX, y: nextY })
-    }
+    const place = () => setPosition(getPointFloatingStyle({
+      x, y, width: 216, height: menuRef.current?.scrollHeight || 220, zIndex: WORKSPACE_LAYER_Z.rowActionMenu,
+    }))
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
   }, [x, y])
 
-  return (
+  return createPortal(
     <>
-      <div className="fixed inset-0 z-[100]" onClick={onClose} />
+
       <motion.div
         ref={menuRef}
         initial={{ opacity: 0, scale: 0.95, y: -10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: -10 }}
-        style={{ left: pos.x, top: pos.y }}
-        className="fixed z-[110] w-48 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden p-1.5"
+        style={position}
+        data-workspace-panel="true"
+        aria-label={`Asset actions for ${deviceName}`}
+        className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-overlay)] shadow-xl overflow-auto p-1.5"
       >
         <div className="px-3 py-2 border-b border-white/5 mb-1">
           <p className="text-[10px] font-black text-white uppercase tracking-tighter truncate">{deviceName}</p>
@@ -269,7 +260,7 @@ const DeviceOptionsMenu = ({ x, y, onClose, onShowConnections, onEdit, onDelete,
           Delete
         </button>
       </motion.div>
-    </>
+    </>, document.body
   )
 }
 
@@ -278,6 +269,9 @@ const DeviceOptionsMenu = ({ x, y, onClose, onShowConnections, onEdit, onDelete,
 const ConnectionLines = ({ sourceDeviceId, targetDeviceIds, racks, connections, devices, onLineClick }: { sourceDeviceId: number; targetDeviceIds: number[]; racks: any[]; connections?: any[]; devices?: any[]; onLineClick?: (conn: any) => void }) => {
   const [lines, setLines] = React.useState<any[]>([])
   const [hoveredLine, setHoveredLine] = React.useState<any>(null)
+  const hoverLeave = useRef<ReturnType<typeof setTimeout>>()
+  const scheduleHoverClose = () => { hoverLeave.current = setTimeout(() => setHoveredLine(null), 120) }
+  useEffect(() => () => clearTimeout(hoverLeave.current), [])
   const [containerStyle, setContainerStyle] = React.useState({ width: '100%', height: '100%' })
   const requestRef = React.useRef<number | null>(null)
 
@@ -388,8 +382,8 @@ const ConnectionLines = ({ sourceDeviceId, targetDeviceIds, racks, connections, 
 
             return (
             <g key={l.id || i} className={`pointer-events-auto cursor-pointer group ${(l.isScrolledOut && !l.isInternal) ? 'opacity-20' : 'opacity-100'}`} 
-               onMouseEnter={(e) => setHoveredLine({ ...l, mouseX: e.clientX, mouseY: e.clientY })}
-               onMouseLeave={() => setHoveredLine(null)}
+               onMouseEnter={(e) => { clearTimeout(hoverLeave.current); setHoveredLine({ ...l, mouseX: e.clientX, mouseY: e.clientY }) }}
+               onMouseLeave={scheduleHoverClose}
                onClick={() => l.connection && onLineClick?.(l.connection)}>
               <path d={path} fill="none" stroke="#3b82f6" strokeWidth="8" strokeOpacity="0" />
               <path
@@ -415,18 +409,7 @@ const ConnectionLines = ({ sourceDeviceId, targetDeviceIds, racks, connections, 
 
       <AnimatePresence>
         {hoveredLine && hoveredLine.connection && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            style={{ 
-              position: 'fixed',
-              left: Math.min(window.innerWidth - 220, Math.max(20, hoveredLine.mouseX + 20)),
-              top: Math.min(window.innerHeight - 150, Math.max(20, hoveredLine.mouseY - 40)),
-              zIndex: 100
-            }}
-            className="bg-slate-900/95 backdrop-blur-xl border border-blue-500/30 p-3 rounded-lg shadow-2xl pointer-events-none min-w-[200px]"
-          >
+          <WorkspacePointPanel x={hoveredLine.mouseX} y={hoveredLine.mouseY} onMouseEnter={() => clearTimeout(hoverLeave.current)} onMouseLeave={scheduleHoverClose}>
             <div className="flex items-center gap-2 mb-2">
               <div className="p-1.5 bg-blue-500/20 rounded-lg">
                 <Network size={12} className="text-blue-400" />
@@ -494,7 +477,7 @@ const ConnectionLines = ({ sourceDeviceId, targetDeviceIds, racks, connections, 
                 </div>
               )}
             </div>
-          </motion.div>
+          </WorkspacePointPanel>
         )}
       </AnimatePresence>
     </div>
@@ -755,7 +738,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[500] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-8">
+        <WorkspaceDialogFrame title="Rack audit log" onClose={onClose}>
           <motion.div 
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -973,7 +956,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               .ag-row { border-bottom: 1px solid rgba(255,255,255,0.03) !important; }
             `}</style>
           </motion.div>
-        </div>
+        </WorkspaceDialogFrame>
       )}
     </AnimatePresence>
   )
@@ -1011,6 +994,8 @@ interface RackElevationProps {
   className = ''
   }: RackElevationProps) => {
   const [menuOpen, setMenuOpen] = useState(false)
+  const rackMenu = useWorkspaceAnchoredLayer(menuOpen, { minWidth: 180 })
+  useWorkspacePopupDismiss(menuOpen, rackMenu.triggerRef, rackMenu.panelRef, () => setMenuOpen(false))
   const scrollRef = useRef<HTMLDivElement>(null)
   const totalU = rack.total_u || 42
   const units = Array.from({ length: totalU }, (_, i) => totalU - i)
@@ -1123,6 +1108,7 @@ interface RackElevationProps {
             ) : (
               <div className="relative">
                 <button
+                  ref={(node) => { rackMenu.triggerRef.current = node }}
                   onClick={() => setMenuOpen(v => !v)}
                   aria-label={`Rack actions for ${rack.name}`}
                   aria-expanded={menuOpen}
@@ -1130,15 +1116,17 @@ interface RackElevationProps {
                 >
                   <MoreVertical size={13} />
                 </button>
-                <AnimatePresence>
+                {createPortal(<AnimatePresence>
                   {menuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-[60]" onClick={() => setMenuOpen(false)} />
                       <motion.div
+                        ref={rackMenu.panelRef}
+                        style={rackMenu.panelStyle}
+                        data-workspace-panel="true"
+                        aria-label={`Rack actions for ${rack.name}`}
                         initial={{ opacity: 0, scale: 0.95, y: -4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                        className="absolute right-0 top-8 w-40 bg-slate-950/95 backdrop-blur border border-white/10 rounded-lg shadow-2xl z-[70] overflow-hidden p-1"
+                        className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-overlay)] text-[var(--text-primary)] shadow-xl overflow-auto p-1"
                       >
                         <button onClick={() => { onShowInfo?.(rack); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-[8px] font-black uppercase text-blue-400 hover:bg-blue-500/10 rounded-lg flex items-center gap-2 transition-colors">
                           <BarChart3 size={9} /> Detailed Info
@@ -1161,9 +1149,8 @@ interface RackElevationProps {
                           <Trash2 size={9} /> Decommission
                         </button>
                       </motion.div>
-                    </>
                   )}
-                </AnimatePresence>
+                </AnimatePresence>, document.body)}
               </div>
             )}
           </div>
@@ -1273,6 +1260,24 @@ const AssetLegend = () => (
 // ─── Site Capacity Summary Bar ─────────────────────────────────────────────────
 
 const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: { deviceId: number, devices: any[], connections: any[], onClose: () => void, coords: { x: number, y: number } | null }) => {
+  const dialogLayer = useWorkspaceDialogLayer(true, onClose)
+  const x = useMotionValue(coords && coords.x > window.innerWidth / 2 ? 80 : Math.max(16, window.innerWidth - 470))
+  const y = useMotionValue(Math.max(80, Math.min((coords?.y ?? 300) - 200, window.innerHeight - 550)))
+  const [limits, setLimits] = useState({ left: 16, top: 16, right: Math.max(16, innerWidth - 466), bottom: 16 })
+  useEffect(() => {
+    const clamp = () => {
+      const rect = dialogLayer.ref.current?.getBoundingClientRect()
+      if (!rect) return
+      const right = Math.max(16, innerWidth - rect.width - 16), bottom = Math.max(16, innerHeight - rect.height - 16)
+      x.set(Math.min(right, Math.max(16, x.get()))); y.set(Math.min(bottom, Math.max(16, y.get())))
+      setLimits({ left: 16, top: 16, right, bottom })
+    }
+    clamp()
+    const observer = new ResizeObserver(clamp)
+    if (dialogLayer.ref.current) observer.observe(dialogLayer.ref.current)
+    window.addEventListener('resize', clamp)
+    return () => { observer.disconnect(); window.removeEventListener('resize', clamp) }
+  }, [x, y, dialogLayer.ref])
   const device = devices?.find(d => d.id === deviceId)
   const deviceConns = connections?.filter(c => c.source_device_id === deviceId || c.target_device_id === deviceId) || []
   
@@ -1297,14 +1302,15 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
     return stats
   }, [deviceConns, devices, deviceId])
 
-  // Improved positioning logic: ensure it stays within window bounds
-  const initialX = coords ? Math.max(20, Math.min(coords.x > window.innerWidth / 2 ? 80 : window.innerWidth - 470, window.innerWidth - 470)) : 100
-  const initialY = coords ? Math.max(80, Math.min(coords.y - 200, window.innerHeight - 550)) : 100
-  return (
+  return createPortal(
     <motion.div
+      {...dialogLayer}
+      role="dialog" aria-modal="true" aria-label="Impact Analysis"
+      style={{ ...dialogLayer.style, x, y, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100dvh - 32px)' }}
+      dragConstraints={limits} dragElastic={0}
       drag
       dragMomentum={false}
-      initial={{ x: initialX, y: initialY, opacity: 0 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="fixed top-0 left-0 z-[300] w-[450px] bg-slate-900/95 backdrop-blur-xl border border-blue-500/30 rounded-lg shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col cursor-move"
     >       <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/5">
@@ -1317,7 +1323,7 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
                 <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1.5 truncate max-w-[200px]">{device?.name}</p>
              </div>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors cursor-pointer"><X size={16}/></button>
+          <button aria-label="Close impact analysis" onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors cursor-pointer"><X size={16}/></button>
        </div>
 
        <div className="p-6 space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar">
@@ -1388,7 +1394,7 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
              Total system isolation of <span className="text-white">{(deviceConns.length * 2.4).toFixed(0)} services</span> estimated upon hardware failure.
           </p>
        </div>
-    </motion.div>
+    </motion.div>, document.body
   )
 }
 
@@ -1454,7 +1460,7 @@ const LabelGeneratorModal = ({ racks, onClose, devices, connections }: { racks: 
   }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-10">
+    <WorkspaceDialogFrame title="Cable labels" onClose={onClose}>
        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-full max-w-4xl max-h-[85vh] flex flex-col p-10 rounded-lg border border-white/10 shadow-2xl">
           <div className="flex justify-between items-start mb-8">
              <div>
@@ -1522,7 +1528,7 @@ const LabelGeneratorModal = ({ racks, onClose, devices, connections }: { racks: 
              </button>
           </div>
        </motion.div>
-    </div>
+    </WorkspaceDialogFrame>
   )
 }
 
@@ -1542,7 +1548,7 @@ const InfrastructureHistory = ({ onClose, onExecuteDiff }: { onClose: () => void
   }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-10">
+    <WorkspaceDialogFrame title="Infrastructure History" onClose={onClose}>
        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-full max-w-4xl max-h-[85vh] flex flex-col p-10 rounded-lg border border-white/10 shadow-2xl">
           <div className="flex justify-between items-start mb-8">
              <div>
@@ -1606,7 +1612,7 @@ const InfrastructureHistory = ({ onClose, onExecuteDiff }: { onClose: () => void
              </button>
           </div>
        </motion.div>
-    </div>
+    </WorkspaceDialogFrame>
   )
 }
 
@@ -1681,7 +1687,7 @@ const PlanBanner = ({ onAbort, onSave, onProceed, selectedCount, isInitialized, 
 )
 
 const PlanListModal = ({ plans, onClose, onLoadPlan, onAddPlan, onDeletePlan }: { plans: any[], onClose: () => void, onLoadPlan: (p: any) => void, onAddPlan: (type: 'blank' | 'asis') => void, onDeletePlan: (id: number) => void }) => (
-  <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md">
+  <WorkspaceDialogFrame title="Infrastructure plans" onClose={onClose}>
      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-[600px] p-10 rounded-lg border border-white/10 shadow-2xl space-y-8">
         <div className="flex justify-between items-start">
            <div className="flex items-center gap-4">
@@ -1760,7 +1766,7 @@ const PlanListModal = ({ plans, onClose, onLoadPlan, onAddPlan, onDeletePlan }: 
            )}
         </div>
      </motion.div>
-  </div>
+  </WorkspaceDialogFrame>
 )
 
 const SiteCapacityBar = ({ racks }: { racks: any[] }) => {
@@ -1875,7 +1881,7 @@ const DeviceDetailModal = ({ device, loc, rack, onClose, onUnmount, onUpdateMoun
   const eolExpired = eolDate && eolDate < new Date()
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-md p-4">
+    <WorkspaceDialogFrame title="Asset details" onClose={onClose}>
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -2055,7 +2061,7 @@ const DeviceDetailModal = ({ device, loc, rack, onClose, onUnmount, onUpdateMoun
         variant="warning"
         confirmText={device?.is_reservation ? "Remove" : "Unmount"}
       />
-    </div>
+    </WorkspaceDialogFrame>
   )
 }
 
@@ -2361,6 +2367,8 @@ export default function Racks() {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeSite, setActiveSite] = useState<number | null>(null)
   const [activeSiteMenu, setActiveSiteMenu] = useState<number | null>(null)
+  const siteMenu = useWorkspaceAnchoredLayer(activeSiteMenu !== null, { minWidth: 180 })
+  useWorkspacePopupDismiss(activeSiteMenu !== null, siteMenu.triggerRef, siteMenu.panelRef, () => setActiveSiteMenu(null))
   const [isAddingSite, setIsAddingSite] = useState(false)
   const [viewMode, setViewMode] = useState<'elevation' | 'spatial'>('elevation')
   const [isPlanMode, setIsPlanMode] = useState(false)
@@ -2431,6 +2439,8 @@ export default function Racks() {
   const [showOnlySandbox, setShowOnlySandbox] = useState(false)
   const [showPlanList, setShowPlanList] = useState(false)
   const [showAddMenu, setShowAddMenu] = useState(false)
+  const addMenu = useWorkspaceAnchoredLayer(showAddMenu, { minWidth: 180 })
+  useWorkspacePopupDismiss(showAddMenu, addMenu.triggerRef, addMenu.panelRef, () => setShowAddMenu(false))
   const [planDraftName, setPlanDraftName] = useState('')
   const [isCreatingPlan, setIsCreatingPlan] = useState<'blank' | 'asis' | null>(null)
   const { data: plansData, refetch: refetchPlans } = useQuery({ 
@@ -2483,6 +2493,24 @@ export default function Racks() {
     pdu_a_name: 'PDU-A', pdu_b_name: 'PDU-B', pdu_a_cap_kw: 10.0, pdu_b_cap_kw: 10.0
   })
   const [isEditingRack, setIsEditingRack] = useState<any>(null)
+  const { confirm: confirmEditorClose, confirmation: editorConfirmation } = useWorkspaceConfirmation()
+  const editorBaseline = useRef({ site: '', rack: '' })
+  useEffect(() => {
+    if (isAddingSite || isEditingSite) editorBaseline.current.site = JSON.stringify(isEditingSite || newSite)
+  }, [isAddingSite, isEditingSite?.id])
+  useEffect(() => {
+    if (isAddingRack || isEditingRack) editorBaseline.current.rack = JSON.stringify(isEditingRack || newRack)
+  }, [isAddingRack, isEditingRack?.id])
+  const closeSiteEditor = async () => {
+    if (JSON.stringify(isEditingSite || newSite) !== editorBaseline.current.site
+      && !await confirmEditorClose({ title: 'Discard site changes?', message: 'Your site changes have not been saved.', confirmText: 'Discard changes', variant: 'warning' })) return
+    setIsAddingSite(false); setIsEditingSite(null)
+  }
+  const closeRackEditor = async () => {
+    if (JSON.stringify(isEditingRack || newRack) !== editorBaseline.current.rack
+      && !await confirmEditorClose({ title: 'Discard rack changes?', message: 'Your rack changes have not been saved.', confirmText: 'Discard changes', variant: 'warning' })) return
+    setIsAddingRack(false); setIsEditingRack(null)
+  }
   const [isProvisioning, setIsProvisioning] = useState<any>(null)
   const [provisionMode, setProvisionMode] = useState<'asset' | 'reserve'>('asset')
   const [reserveInfo, setReserveInfo] = useState({ temporary_name: '', est_date: '', poc: '' })
@@ -2947,6 +2975,7 @@ export default function Racks() {
 
   return (
     <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
+      {editorConfirmation}
       
       {isPlanMode && (
         <PlanBanner 
@@ -3042,11 +3071,11 @@ export default function Racks() {
                 <BarChart3 size={14} className="mr-2 inline-block" /> Logs
               </ToolbarButton>
               <div className="relative shrink-0">
-                <ToolbarButton variant="primary" onClick={() => setShowAddMenu(!showAddMenu)}>
+                <ToolbarButton ref={addMenu.triggerRef as any} variant="primary" aria-expanded={showAddMenu} onClick={() => setShowAddMenu(!showAddMenu)}>
                   <Plus size={14} className="mr-2 inline-block" /> Add
                 </ToolbarButton>
-                {showAddMenu && (
-                  <div className="absolute right-0 top-full pt-2 z-[110]">
+                {showAddMenu && createPortal(
+                  <div ref={addMenu.panelRef} style={addMenu.panelStyle} data-workspace-panel="true">
                     <div className="bg-slate-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden p-1.5 min-w-[140px]">
                       <button
                         onClick={() => { 
@@ -3068,7 +3097,7 @@ export default function Racks() {
                         <MapPin size={14} /> Add Site
                       </button>
                     </div>
-                  </div>
+                  </div>, document.body
                 )}
               </div>
             </>
@@ -3206,13 +3235,13 @@ export default function Racks() {
                   </button>
 
                   <button
+                    aria-label={`Site actions for ${s.name}`}
+                    aria-expanded={isMenuOpen}
                     onClick={e => {
                       e.stopPropagation();
                       if (!isMenuOpen) {
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        const style = document.documentElement.style
-                        style.setProperty('--site-menu-x', `${rect.left}px`)
-                        style.setProperty('--site-menu-y', `${rect.bottom + 8}px`)
+                        siteMenu.triggerRef.current = e.currentTarget
+                        siteMenu.updatePosition()
                       }
                       setActiveSiteMenu(isMenuOpen ? null : s.id)
                     }}
@@ -3221,17 +3250,15 @@ export default function Racks() {
                     <MoreVertical size={12} />
                   </button>
 
-                  <AnimatePresence>
+                  {createPortal(<AnimatePresence>
                     {isMenuOpen && (
-                      <>
-                        <div className="fixed inset-0 z-[60]" onClick={() => setActiveSiteMenu(null)} />
                         <motion.div
+                          ref={siteMenu.panelRef}
+                          data-workspace-panel="true"
+                          aria-label={`Site actions for ${s.name}`}
                           initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                          className="fixed w-36 bg-slate-950/95 backdrop-blur border border-white/10 rounded-lg shadow-2xl z-[70] overflow-hidden p-1"
-                          style={{
-                            left: 'var(--site-menu-x, auto)',
-                            top: 'var(--site-menu-y, auto)',
-                          }}
+                          className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-overlay)] text-[var(--text-primary)] shadow-xl overflow-auto p-1"
+                          style={siteMenu.panelStyle}
                         >
                           <button onClick={e => { e.stopPropagation(); setIsEditingSite(s); setActiveSiteMenu(null) }}
                             className="w-full text-left px-3 py-2 text-[8px] font-bold uppercase text-slate-400 hover:bg-blue-500/10 hover:text-blue-400 rounded-lg flex items-center gap-2 transition-colors">
@@ -3243,9 +3270,8 @@ export default function Racks() {
                             <Trash2 size={9} /> Decommission
                           </button>
                         </motion.div>
-                      </>
                     )}
-                  </AnimatePresence>
+                  </AnimatePresence>, document.body)}
                 </div>
               )
             })}
@@ -3708,7 +3734,7 @@ export default function Racks() {
 
       {/* Confirm Modal */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur">
+        <WorkspaceDialogFrame title={confirmModal.title} onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}>
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             className="bg-slate-900 border border-white/10 rounded-lg p-6 w-96 space-y-4 shadow-2xl">
             <h3 className="text-sm font-black uppercase text-white">{confirmModal.title}</h3>
@@ -3718,7 +3744,7 @@ export default function Racks() {
               <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }) }} className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase transition-colors ${confirmModal.variant === 'danger' ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>{confirmModal.title}</button>
             </div>
           </motion.div>
-        </div>
+        </WorkspaceDialogFrame>
       )}
 
       {/* Provision Modal */}
@@ -3903,7 +3929,7 @@ export default function Racks() {
       </WorkspaceModal>
 
       {(isAddingSite || isEditingSite) && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+          <WorkspaceDialogFrame title={isEditingSite ? "Edit Site" : "Establish New Site"} onClose={closeSiteEditor}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="glass-panel w-[420px] p-8 rounded-lg space-y-6 border border-emerald-500/20 shadow-2xl">
               <div className="flex items-center gap-4">
@@ -3953,19 +3979,19 @@ export default function Racks() {
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={() => { setIsAddingSite(false); setIsEditingSite(null) }} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
+                <button onClick={closeSiteEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
                 <button onClick={() => siteMutation.mutate(isEditingSite || newSite)}
                   className="flex-1 py-3.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
                   {isEditingSite ? 'Update Site' : 'Create Site'}
                 </button>
               </div>
             </motion.div>
-          </div>
+          </WorkspaceDialogFrame>
         )}
 
         {/* Rack Create / Edit */}
         {(isAddingRack || isEditingRack) && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 overflow-y-auto">
+          <WorkspaceDialogFrame title={isEditingRack ? "Configure Rack" : "Deploy New Rack"} onClose={closeRackEditor}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="glass-panel w-[500px] p-8 rounded-lg space-y-6 border border-blue-500/20 shadow-2xl my-auto">
               <div className="flex items-center gap-4">
@@ -4087,7 +4113,7 @@ export default function Racks() {
                 )}
               </div>
               <div className="flex gap-3 pt-4 border-t border-white/5">
-                <button onClick={() => { setIsAddingRack(false); setIsEditingRack(null) }} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
+                <button onClick={closeRackEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
                 <button
                   onClick={() => {
                     if (!isEditingRack && !newRack.site_id) return toast.error('Site is required')
@@ -4098,7 +4124,7 @@ export default function Racks() {
                 </button>
               </div>
             </motion.div>
-          </div>
+          </WorkspaceDialogFrame>
         )}
 
         {/* Bulk Relocate */}
@@ -4113,11 +4139,7 @@ export default function Racks() {
 
         {/* Restore Wizard */}
         {restoreWizard && sites && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur flex items-center justify-center z-[100]"
-            onClick={() => setRestoreWizard(null)}
-          >
+          <WorkspaceDialogFrame title="Restore racks" onClose={() => setRestoreWizard(null)}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
@@ -4199,7 +4221,7 @@ export default function Racks() {
                 </>
               )}
             </motion.div>
-          </motion.div>
+          </WorkspaceDialogFrame>
         )}
 
         {/* Rack Info Summary Modal */}

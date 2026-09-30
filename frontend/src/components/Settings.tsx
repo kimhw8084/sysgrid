@@ -1,4 +1,6 @@
+import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import React, { useState, useEffect } from "react"
+import { WorkspaceTooltip } from './shared/WorkspaceTooltip'
 import { createPortal } from "react-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { 
@@ -726,6 +728,7 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
 import { ConfigSection } from "./ConfigRegistry"
 
 export default function SettingsPage() {
+  const { confirm: confirmWorkspaceAction, confirmation } = useWorkspaceConfirmation()
   const [topTab, setTopTab] = useState<SettingsTab>('environments')
   const [requestedTab] = useState<SettingsTab | null>(() => {
     if (typeof window === 'undefined') return null
@@ -1533,7 +1536,7 @@ export default function SettingsPage() {
     })
   }
 
-  const bulkDeleteSelectedOperators = () => {
+  const bulkDeleteSelectedOperators = async () => {
     const deletableIds = selectedOperators
       .filter((op: any) => op.username !== userProfile?.username)
       .map((op: any) => op.id)
@@ -1541,7 +1544,7 @@ export default function SettingsPage() {
       showWorkspaceToast("Protected identities cannot be removed", { type: 'error' })
       return
     }
-    if (!window.confirm(`Delete ${deletableIds.length} selected identities?`)) return
+    if (!await confirmWorkspaceAction({ title: 'Delete identities', message: `Delete ${deletableIds.length} selected identities? Their access will be removed.`, confirmText: 'Delete identities', variant: 'danger' })) return
     bulkOperatorDeleteMutation.mutate(deletableIds)
   }
 
@@ -1659,7 +1662,7 @@ export default function SettingsPage() {
     return 0;
   }
 
-  const togglePermission = (op: any, view: string) => {
+  const togglePermission = async (op: any, view: string) => {
     const queuedPayload = permissionCommitBufferRef.current[op.id]?.payload
     const workingOperator = queuedPayload
       ? {
@@ -1672,7 +1675,7 @@ export default function SettingsPage() {
     // Admin Lock-out Protection
     if (workingOperator.username === userProfile?.username && view === 'settings') {
         const current = getPermLevel(workingOperator, view);
-        if (current === 3 && !confirm("WARNING: Reducing your own 'Settings' permission may lock you out of this console. Proceed?")) {
+        if (current === 3 && !await confirmWorkspaceAction({ title: 'Change your Settings access', message: 'Reducing your own Settings permission may lock you out of this console.', confirmText: 'Change access', variant: 'warning' })) {
             return;
         }
     }
@@ -1687,6 +1690,7 @@ export default function SettingsPage() {
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto px-0 sm:px-4 overflow-x-hidden overflow-y-auto relative sm:overflow-hidden" data-settings-workspace="true">
+      {confirmation}
       <AnimatePresence>
         {isDisconnected && (
           <motion.div 
@@ -2502,40 +2506,24 @@ export default function SettingsPage() {
                               <span className="text-[10px] font-bold text-slate-300">{op.team || '—'}</span>
                             </td>
                             <td className="p-4 align-middle">
-                               <div className="group/tooltip relative inline-block">
-                                  <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 border border-white/5 rounded-lg hover:border-white/10 transition-colors">
-                                    <span className="text-[10px] font-bold text-slate-300">{firstName}</span>
-                                    {remainingCount > 0 && (
-                                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[8px] font-black text-blue-400">
-                                        <Plus size={8} /> {remainingCount}
-                                      </div>
-                                    )}
-                                  </div>
-                                  {assignedGroups.length > 0 && (
-                                    <div className="absolute top-full mt-2 left-0 p-3 bg-[#0f172a] border border-slate-700 rounded-lg shadow-2xl opacity-0 group-hover/tooltip:opacity-100 transition-all z-[100] pointer-events-none min-w-[140px] scale-95 group-hover/tooltip:scale-100 origin-top-left backdrop-blur-xl">
-                                      <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-1.5">
-                                         <Users size={10} className="text-blue-400" />
-                                         <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Active Membership</p>
-                                      </div>
-                                      <div className="space-y-1.5">
-                                        {assignedGroups.map((g: any) => (
-                                          <div key={g.id} className="flex items-center gap-2">
-                                             <div className="w-1 h-1 rounded-full bg-blue-500" />
-                                             <p className="text-[9px] font-bold text-slate-300 truncate">{g.name}</p>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                               </div>
+                               <WorkspaceTooltip focusable className="inline-block" content={<>
+                                 <p className="font-semibold">Active Membership</p>
+                                 {assignedGroups.length ? assignedGroups.map((g: any) => <p key={g.id} className="mt-1">{g.name}</p>) : <p className="mt-1">No assigned groups</p>}
+                               </>}>
+                                 <span className="flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] px-2 py-1">
+                                   <span className="text-xs text-[var(--text-primary)]">{firstName}</span>
+                                   {remainingCount > 0 && <span className="text-xs text-[var(--text-secondary)]">+{remainingCount}</span>}
+                                 </span>
+                               </WorkspaceTooltip>
                             </td>
                             <td className="p-4 text-center align-middle">
                               <div className="flex items-center justify-center min-h-[40px]" onClick={(e) => e.stopPropagation()}>
                                 <ToggleSwitch 
                                   checked={op.is_admin} 
-                                  onChange={(e: any) => {
-                                    if (op.username === userProfile?.username && !e.target.checked && !confirm("CRITICAL: Disabling your own Admin status will lock you out of this console. Proceed?")) return;
-                                    operatorMutation.mutate({ ...op, is_admin: e.target.checked });
+                                  onChange={async (e: any) => {
+                                    const checked = e.target.checked
+                                    if (op.username === userProfile?.username && !checked && !await confirmWorkspaceAction({ title: 'Remove your admin access', message: 'Disabling your own Admin status will lock you out of this console.', confirmText: 'Remove admin access', variant: 'danger' })) return
+                                    operatorMutation.mutate({ ...op, is_admin: checked });
                                   }} 
                                   activeColor="bg-emerald-600"
                                 />
@@ -3209,20 +3197,11 @@ export default function SettingsPage() {
          <PermissionHistoryModal versions={poolVersions || []} allViews={allViews} onClose={() => setShowPermissionHistory(false)} />
       )}
 
-      {/* Snapshot Data Modal */}
-      <AnimatePresence>
-        {settingsManage && viewVersionData && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewVersionData(null)} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]" />
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[80vh] bg-[#0c121e] border border-white/10 rounded-lg shadow-2xl z-[201] flex flex-col overflow-hidden">
-                <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-xl font-black uppercase text-white tracking-widest italic">Snapshot Trace</h3>
-                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Inspection of synchronized identity records</p>
-                    </div>
-                    <button onClick={() => setViewVersionData(null)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
-                </div>
-                <div className="flex-1 overflow-auto custom-scrollbar p-6 bg-black/20">
+      {/* Snapshot and script inspection share the same nested-dialog contract. */}
+      {settingsManage && viewVersionData && (
+        <WorkspaceModal isOpen onClose={() => setViewVersionData(null)} size="workspace"
+          title="Snapshot Trace" subtitle="Inspection of synchronized identity records">
+          <div className="max-h-[65vh] overflow-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-white/5">
@@ -3243,45 +3222,18 @@ export default function SettingsPage() {
                             ))}
                         </tbody>
                     </table>
-                </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Script History Modal */}
-      <AnimatePresence>
-        {settingsManage && viewVersionScript && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewVersionScript(null)} className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200]" />
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] bg-[#0c121e] border border-white/10 rounded-lg shadow-2xl z-[201] flex flex-col overflow-hidden">
-                <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <FileCode className="text-amber-500" size={24} />
-                        <div>
-                            <h3 className="text-xl font-black uppercase text-white tracking-widest italic">Historical Logic</h3>
-                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Verification of previous pipeline instructions</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <ToolbarButton 
-                            onClick={() => { setUserPoolScript(viewVersionScript); setViewVersionScript(null); setShowPoolLogic(true); showWorkspaceToast("Script restored to editor"); }}
-                            variant="primary"
-                            className="h-9"
-                        >
-                            Restore to Editor
-                        </ToolbarButton>
-                        <button onClick={() => setViewVersionScript(null)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
-                    </div>
-                </div>
-                <div className="flex-1 p-6 bg-black/40 font-mono text-[11px] text-emerald-400 overflow-auto custom-scrollbar leading-relaxed">
-                    {viewVersionScript}
-                </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
+          </div>
+        </WorkspaceModal>
+      )}
+      {settingsManage && viewVersionScript && (
+        <WorkspaceModal isOpen onClose={() => setViewVersionScript(null)} size="wide"
+          title="Historical Logic" subtitle="Verification of previous pipeline instructions"
+          footerRight={<ToolbarButton variant="primary" onClick={() => {
+            setUserPoolScript(viewVersionScript); setViewVersionScript(null); setShowPoolLogic(true); showWorkspaceToast("Script restored to editor")
+          }}>Restore to Editor</ToolbarButton>}>
+          <pre className="max-h-[65vh] overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] p-6 font-mono text-xs leading-relaxed text-[var(--text-primary)]">{viewVersionScript}</pre>
+        </WorkspaceModal>
+      )}
     </div>
   )
 }
