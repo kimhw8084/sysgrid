@@ -734,9 +734,13 @@ export function useAssetGoldenWorkspace() {
       if (previousValues.length !== 1 || previousValues[0] === null || previousValues[0] === undefined) return null
       return { action: 'update', ids: changedIds, payload: { [key]: previousValues[0] } }
     },
-    onExecutionStart: (_ids, action) => action === 'purge'
-      ? { recoveryGeneration: lifecycleRecoveryGenerationRef.current }
-      : undefined,
+    onExecutionStart: (_ids, action) => {
+      if (action !== 'purge') return undefined
+      // Every entry point (row menu, receipt, bulk toolbar) invalidates transient undo.
+      // The guarded durable recovery control remains available for disjoint records.
+      dismissWorkspaceToasts()
+      return { recoveryGeneration: lifecycleRecoveryGenerationRef.current }
+    },
     onExecutionSuccess: ({ action, ids, changedIds, targetLabels, previousSnapshots, executionStartContext }) => {
       setRowActionMenu(null)
       setSelectedIds([])

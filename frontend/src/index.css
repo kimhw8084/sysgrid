@@ -1,6 +1,7 @@
 @import 'reactflow/dist/style.css';
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
+@import './theme-compatibility.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,6 +43,7 @@
 
   /* Semantic shell tokens. Existing theme ids continue to drive the source values above. */
   --surface-base: var(--bg-primary);
+  --overlay-scrim: rgb(0 0 0 / 55%);
   --surface-elevated: var(--glass-bg);
   --surface-overlay: var(--bg-header);
   --surface-hover: color-mix(in srgb, var(--text-primary) 8%, var(--surface-elevated));
@@ -74,6 +76,7 @@
 [data-theme='nordic-frost-v1'],
 [data-theme='dark'] {
   /* Soft Carbon. Keep saved dark-theme ids compatible without a preference migration. */
+  color-scheme: dark;
   --bg-primary: #252525;
   --bg-header: #303030;
   --glass-bg: #303030;
@@ -181,6 +184,7 @@
 }
 
 [data-theme='pure-clarity'] {
+  color-scheme: light;
   --action-ink: #1e40af;
   --bg-primary: #ffffff;
   --bg-header: rgba(255, 255, 255, 0.9);
@@ -200,6 +204,7 @@
 }
 
 [data-theme='light'] {
+  color-scheme: light;
   --action-ink: #1e40af;
   /* Light Mode */
   --bg-primary: #f8fafc;
@@ -269,6 +274,60 @@
 .skip-link:focus {
   transform: translateY(0);
 }
+
+/* All notification APIs share this bounded, keyboard-pausable stack. */
+.workspace-toaster {
+  position: fixed;
+  z-index: 10000;
+  bottom: 20px;
+  left: 16px;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(440px, calc(100dvh - 120px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: none;
+  padding: 4px;
+}
+.workspace-toast {
+  flex-shrink: 0;
+  width: 100%;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--surface-overlay);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+  overflow: hidden;
+  pointer-events: auto;
+  animation: workspace-notice-in 160ms ease-out;
+}
+@media (max-width: 767px) {
+  .workspace-toaster { top: 80px; bottom: auto; }
+}
+.workspace-toast[data-visible='false'] { display: none; }
+.workspace-toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid color-mix(in srgb, var(--toast-tone) 35%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--toast-tone) 10%, transparent);
+  color: var(--toast-tone);
+}
+.workspace-toast-gauge { height: 3px; background: var(--border-subtle); }
+.workspace-toast-gauge > div { height: 100%; background: var(--toast-tone); }
+.workspace-dialog-frame > :first-child {
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  min-height: 0;
+}
+@keyframes workspace-notice-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) { .workspace-toast { animation: none; } }
 
 /* Compact workspaces keep navigation off canvas and content in one scroll path. */
 @media (max-width: 767px) {

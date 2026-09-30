@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 import { Routes, Route, Link, useLocation, useNavigate, Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Terminal, X, ChevronRight, Info, Star, RefreshCcw, Grid3X3, Globe, Search } from "lucide-react"
-import { Toaster, toast } from "react-hot-toast"
+import { toast } from "react-hot-toast"
 import { apiFetch, getConfig, getRequestScopeKey } from "./api/apiClient"
 import { errorManager, useErrors } from "./stores/errorStore"
 import { ErrorConsole } from "./components/shared/ErrorConsole"
@@ -49,7 +49,8 @@ function ArchitectureRoute() {
 
 import { QueryCache, MutationCache } from "@tanstack/react-query"
 
-import { showWorkspaceToast } from "./components/shared/WorkspaceToast"
+import { showWorkspaceToast, WorkspaceToaster } from "./components/shared/WorkspaceToast"
+import { useWorkspaceDialogLayer, WorkspacePortal } from "./components/shared/WorkspaceOverlay"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -176,10 +177,11 @@ function useModalFocus() {
 }
 
 const PatchNotesModal = ({ onClose }: any) => {
+  const dialogProps = useWorkspaceDialogLayer(true, onClose)
   const [expandedIndex, setExpandedIndex] = useState(0)
   const closeButtonRef = useModalFocus()
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="patch-notes-title">
+    <WorkspacePortal><div {...dialogProps} className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="patch-notes-title">
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-10 rounded-lg border-blue-500/30">
          <div className="flex items-center justify-between border-b border-white/10 pb-6">
             <div className="flex items-center space-x-4">
@@ -217,11 +219,12 @@ const PatchNotesModal = ({ onClose }: any) => {
          </div>
          <button type="button" onClick={onClose} className="w-full mt-8 py-4 bg-blue-600 text-white rounded-lg font-black uppercase shadow-lg shadow-blue-500/20">Close patch notes</button>
       </motion.div>
-    </div>
+    </div></WorkspacePortal>
   )
 }
 
 const LinuxEnvModal = ({ onClose }: any) => {
+  const dialogProps = useWorkspaceDialogLayer(true, onClose)
   const closeButtonRef = useModalFocus()
   const { data: envVars, isLoading } = useQuery({
     queryKey: ['linux-env-vars'],
@@ -232,7 +235,7 @@ const LinuxEnvModal = ({ onClose }: any) => {
   });
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-10" role="dialog" aria-modal="true" aria-labelledby="environment-details-title">
+    <WorkspacePortal><div {...dialogProps} className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-md p-10" role="dialog" aria-modal="true" aria-labelledby="environment-details-title">
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-[700px] max-h-[80vh] flex flex-col p-10 rounded-lg border border-blue-500/30 overflow-hidden shadow-2xl">
          <div className="flex items-center justify-between border-b border-white/5 pb-6">
             <div className="flex items-center space-x-4">
@@ -272,7 +275,7 @@ const LinuxEnvModal = ({ onClose }: any) => {
 
          <button onClick={onClose} className="w-full mt-8 py-4 bg-blue-600 text-white rounded-lg font-black uppercase shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Close Diagnostic View</button>
       </motion.div>
-    </div>
+    </div></WorkspacePortal>
   )
 }
 
@@ -449,7 +452,7 @@ function MainLayout() {
 
   return (
     <div className="sg-app-shell flex h-[100dvh] overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" data-sg-projects-app={projectNavigation.active ? "true" : undefined} data-sg-mobile={projectNavigation.mobile ? 'true' : undefined}>
-      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+      <WorkspaceToaster />
       <ProjectsNavigationBackdrop nav={projectNavigation} />
       <a href="#sg-main-content" className="skip-link">Skip to content</a>
       <motion.aside

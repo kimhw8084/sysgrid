@@ -1,0 +1,675 @@
+/* Compatibility for the existing view library. Neutral utilities use the same
+   semantic materials as new components; equipment/status fills keep their meaning. */
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-100,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-200 {
+  color: var(--text-primary);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-400 {
+  color: var(--text-secondary);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-600,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-slate-700 {
+  color: var(--text-muted);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700 {
+  background-color: var(--border-default);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/20 {
+  background-color: color-mix(in srgb, var(--border-default) 20%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/30 {
+  background-color: color-mix(in srgb, var(--border-default) 30%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/40 {
+  background-color: color-mix(in srgb, var(--border-default) 40%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/50 {
+  background-color: color-mix(in srgb, var(--border-default) 50%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/60 {
+  background-color: color-mix(in srgb, var(--border-default) 60%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/68 {
+  background-color: color-mix(in srgb, var(--border-default) 68%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/70 {
+  background-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/75 {
+  background-color: color-mix(in srgb, var(--border-default) 75%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/78 {
+  background-color: color-mix(in srgb, var(--border-default) 78%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/80 {
+  background-color: color-mix(in srgb, var(--border-default) 80%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/82 {
+  background-color: color-mix(in srgb, var(--border-default) 82%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/85 {
+  background-color: color-mix(in srgb, var(--border-default) 85%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/86 {
+  background-color: color-mix(in srgb, var(--border-default) 86%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/88 {
+  background-color: color-mix(in srgb, var(--border-default) 88%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/90 {
+  background-color: color-mix(in srgb, var(--border-default) 90%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-700\/95 {
+  background-color: color-mix(in srgb, var(--border-default) 95%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .hover\:bg-slate-700:hover {
+  background-color: var(--surface-hover);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .border-slate-700 {
+  border-color: var(--border-default);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800 {
+  background-color: var(--surface-hover);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/20 {
+  background-color: color-mix(in srgb, var(--surface-hover) 20%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/30 {
+  background-color: color-mix(in srgb, var(--surface-hover) 30%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/40 {
+  background-color: color-mix(in srgb, var(--surface-hover) 40%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/50 {
+  background-color: color-mix(in srgb, var(--surface-hover) 50%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/60 {
+  background-color: color-mix(in srgb, var(--surface-hover) 60%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/68 {
+  background-color: color-mix(in srgb, var(--surface-hover) 68%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/70 {
+  background-color: color-mix(in srgb, var(--surface-hover) 70%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/75 {
+  background-color: color-mix(in srgb, var(--surface-hover) 75%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/78 {
+  background-color: color-mix(in srgb, var(--surface-hover) 78%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/80 {
+  background-color: color-mix(in srgb, var(--surface-hover) 80%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/82 {
+  background-color: color-mix(in srgb, var(--surface-hover) 82%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/85 {
+  background-color: color-mix(in srgb, var(--surface-hover) 85%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/86 {
+  background-color: color-mix(in srgb, var(--surface-hover) 86%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/88 {
+  background-color: color-mix(in srgb, var(--surface-hover) 88%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/90 {
+  background-color: color-mix(in srgb, var(--surface-hover) 90%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-800\/95 {
+  background-color: color-mix(in srgb, var(--surface-hover) 95%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .hover\:bg-slate-800:hover {
+  background-color: var(--surface-hover);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .border-slate-800 {
+  border-color: var(--border-default);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/20 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 20%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/30 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 30%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/40 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 40%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/50 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/60 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 60%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/68 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 68%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/70 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 70%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/75 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 75%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/78 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/80 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 80%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/82 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/85 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 85%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/86 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 86%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/88 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/90 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 90%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-900\/95 {
+  background-color: color-mix(in srgb, var(--surface-elevated) 95%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .hover\:bg-slate-900:hover {
+  background-color: var(--surface-hover);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .border-slate-900 {
+  border-color: var(--border-default);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950 {
+  background-color: var(--surface-base);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/20 {
+  background-color: color-mix(in srgb, var(--surface-base) 20%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/30 {
+  background-color: color-mix(in srgb, var(--surface-base) 30%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/40 {
+  background-color: color-mix(in srgb, var(--surface-base) 40%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/50 {
+  background-color: color-mix(in srgb, var(--surface-base) 50%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/60 {
+  background-color: color-mix(in srgb, var(--surface-base) 60%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/68 {
+  background-color: color-mix(in srgb, var(--surface-base) 68%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/70 {
+  background-color: color-mix(in srgb, var(--surface-base) 70%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/75 {
+  background-color: color-mix(in srgb, var(--surface-base) 75%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/78 {
+  background-color: color-mix(in srgb, var(--surface-base) 78%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/80 {
+  background-color: color-mix(in srgb, var(--surface-base) 80%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/82 {
+  background-color: color-mix(in srgb, var(--surface-base) 82%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/85 {
+  background-color: color-mix(in srgb, var(--surface-base) 85%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/86 {
+  background-color: color-mix(in srgb, var(--surface-base) 86%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/88 {
+  background-color: color-mix(in srgb, var(--surface-base) 88%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/90 {
+  background-color: color-mix(in srgb, var(--surface-base) 90%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-slate-950\/95 {
+  background-color: color-mix(in srgb, var(--surface-base) 95%, transparent);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .hover\:bg-slate-950:hover {
+  background-color: var(--surface-hover);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .border-slate-950 {
+  border-color: var(--border-default);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#020617\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#020617\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#020617\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#020617\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#020617\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#020617\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#020617\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f172a\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f172a\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f172a\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f172a\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f172a\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f172a\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f172a\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0a0c14\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0a0c14\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0a0c14\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0a0c14\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0a0c14\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0a0c14\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0a0c14\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0f17\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0f17\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0f17\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0f17\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0f17\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0f17\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0f17\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0c121e\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0c121e\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0c121e\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0c121e\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0c121e\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0c121e\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0c121e\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1220\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1220\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1220\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1220\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1220\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1220\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1220\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b0c14\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b0c14\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b0c14\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b0c14\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b0c14\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b0c14\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b0c14\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d1425\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d1425\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d1425\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d1425\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d1425\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d1425\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d1425\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f111a\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f111a\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f111a\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f111a\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f111a\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f111a\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0f111a\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#1e293b\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#1e293b\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#1e293b\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#1e293b\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#1e293b\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#1e293b\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#1e293b\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1222\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1222\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1222\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1222\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1222\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1222\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0b1222\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0e12\],
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0e12\]\/30,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0e12\]\/40,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0e12\]\/50,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0e12\]\/80,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0e12\]\/90,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .bg-\[\#0d0e12\]\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-emerald-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-emerald-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-emerald-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-emerald-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-emerald-600,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-green-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-green-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-green-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-green-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-green-600 {
+  color: var(--state-success);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-rose-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-rose-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-rose-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-rose-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-rose-600,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-red-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-red-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-red-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-red-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-red-600 {
+  color: var(--state-danger);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-amber-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-amber-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-amber-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-amber-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-amber-600,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-orange-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-orange-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-orange-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-orange-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-orange-600,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-yellow-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-yellow-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-yellow-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-yellow-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-yellow-600 {
+  color: var(--state-warning);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-sky-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-sky-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-sky-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-sky-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-sky-600,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-cyan-200,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-cyan-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-cyan-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-cyan-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-cyan-600 {
+  color: var(--state-info);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-blue-300,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-blue-400,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .text-blue-500 {
+  color: var(--action-ink);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) button.bg-blue-600,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) button.bg-blue-500,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) a.bg-blue-600 {
+  background-color: var(--action-primary);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) button.hover\:bg-blue-500:hover,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) button.hover\:bg-blue-600:hover {
+  background-color: var(--action-primary-hover);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-slate-100,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-slate-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-slate-300 {
+  color: var(--text-primary);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-slate-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-slate-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-slate-600,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-slate-700 {
+  color: var(--text-secondary);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-700,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-700\/50,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-700\/70,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-700\/80,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-700\/90,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-700\/95,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-800,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-800\/50,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-800\/70,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-800\/80,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-800\/90,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-800\/95,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-900,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-900\/50,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-900\/70,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-900\/80,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-900\/90,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-900\/95,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-950,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-950\/50,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-950\/70,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-950\/80,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-950\/90,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-slate-950\/95 {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#020617\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0f172a\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0a0c14\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0d0f17\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0c121e\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0b1220\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0b0c14\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0d1425\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0f111a\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#1e293b\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0b1222\],
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .bg-\[\#0d0e12\] {
+  background-color: var(--surface-elevated);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-emerald-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-emerald-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-emerald-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-emerald-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-emerald-600,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-green-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-green-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-green-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-green-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-green-600 {
+  color: var(--state-success);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-rose-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-rose-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-rose-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-rose-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-rose-600,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-red-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-red-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-red-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-red-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-red-600 {
+  color: var(--state-danger);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-amber-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-amber-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-amber-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-amber-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-amber-600,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-orange-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-orange-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-orange-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-orange-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-orange-600,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-yellow-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-yellow-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-yellow-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-yellow-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-yellow-600 {
+  color: var(--state-warning);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-sky-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-sky-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-sky-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-sky-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-sky-600,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-cyan-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-cyan-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-cyan-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-cyan-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-cyan-600,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-blue-200,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-blue-300,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-blue-400,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-blue-500,
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) .text-blue-600 {
+  color: var(--state-info);
+}
+
+.fixed.inset-0:is([class*='bg-black/'], [class*='bg-slate-950/'], [class*='bg-[#020617]/']) {
+  background-color: var(--overlay-scrim);
+}
+
+/* Legacy dialog headings and neutral inset panels must remain readable in light mode. */
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [data-workspace-panel], .workspace-tooltip) :is(h1,h2,h3,h4,p,span,pre).text-white {
+  color: var(--text-primary);
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [data-workspace-panel], .workspace-tooltip) :is([class*='bg-black/'], [class*='bg-white/']):not(.fixed):not(button) {
+  background-color: var(--input-bg);
+}
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is([data-pv1-projects-route], .sg-pv1-detail-panel) {
+  --projects-page: var(--surface-base);
+  --projects-surface-1: var(--surface-elevated);
+  --projects-surface-2: var(--surface-hover);
+  --projects-floating: var(--surface-overlay);
+  --projects-text-primary: var(--text-primary);
+  --projects-text-secondary: var(--text-secondary);
+  --projects-text-muted: var(--text-muted);
+  --projects-accent: var(--action-ink);
+  --projects-border: var(--border-default);
+  --pv1-floating: var(--surface-overlay);
+  --pv1-surface-1: var(--surface-elevated);
+  --pv1-surface-2: var(--surface-hover);
+  --pv1-text-primary: var(--text-primary);
+  --pv1-border: var(--border-default);
+}
+
+/* Selected controls and decorative accents in overlays use the approved neutral palette. */
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) :is(.bg-blue-500\/5, .bg-blue-500\/10, .bg-blue-500\/15, .bg-blue-500\/20, .bg-blue-500\/25, .bg-blue-500\/30, .bg-blue-500\/40, .bg-blue-600\/5, .bg-blue-600\/10, .bg-blue-600\/15, .bg-blue-600\/20, .bg-blue-600\/25, .bg-blue-600\/30, .bg-blue-600\/40) { background-color: var(--surface-hover); }
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel], .workspace-context-panel, .workspace-tooltip) :is(.border-blue-400\/10, .border-blue-400\/20, .border-blue-400\/25, .border-blue-400\/30, .border-blue-400\/40, .border-blue-400\/50, .border-blue-500\/10, .border-blue-500\/20, .border-blue-500\/25, .border-blue-500\/30, .border-blue-500\/40, .border-blue-500\/50, .border-blue-600\/10, .border-blue-600\/20, .border-blue-600\/25, .border-blue-600\/30, .border-blue-600\/40, .border-blue-600\/50) { border-color: var(--border-default); }
+
+/* Filled legacy actions keep readable text; semantic color stays on warnings/destructive actions. */
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) button:is(.bg-emerald-500,.bg-emerald-600,.bg-green-500,.bg-green-600) {
+  background-color: var(--action-primary); color: #fff;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) button:is(.bg-emerald-500,.bg-emerald-600,.bg-green-500,.bg-green-600) {
+  background-color: #047857; color: #fff;
+}
+button:is(.bg-amber-500,.bg-amber-600,.bg-orange-500,.bg-orange-600) { background-color: #92400e; color: #fff; }
+button:is(.bg-rose-500,.bg-rose-600,.bg-red-500,.bg-red-600) { background-color: #be123c; color: #fff; }

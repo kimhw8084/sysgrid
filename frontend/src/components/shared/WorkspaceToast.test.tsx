@@ -3,7 +3,7 @@ import type { Toast } from 'react-hot-toast'
 import { describe, expect, it, vi } from 'vitest'
 import { WorkspaceToast } from './WorkspaceToast'
 
-vi.mock('react-hot-toast', () => ({ toast: { dismiss: vi.fn() } }))
+vi.mock('react-hot-toast', () => ({ toast: { dismiss: vi.fn(), custom: vi.fn() }, useToasterStore: () => ({ pausedAt: undefined }) }))
 
 describe('recovery toast confirmation', () => {
   it('keeps confirmation armed during pointer movement and completes exactly once', () => {

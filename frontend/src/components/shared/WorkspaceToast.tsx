@@ -1,135 +1,123 @@
-import React, { useEffect, useState } from 'react'
-import { toast, Toast } from 'react-hot-toast'
-import { X, RotateCcw, AlertTriangle, Check } from 'lucide-react'
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { resolveValue, toast, Toast, useToaster, useToasterStore } from 'react-hot-toast'
+import { X, RotateCcw, AlertTriangle, Check, Info, LoaderCircle } from 'lucide-react'
 
+type ToastTone = 'success' | 'error' | 'loading' | 'info'
+type RevertAction = () => void | Promise<void>
 interface WorkspaceToastProps {
   t: Toast
-  message: string
-  onRevert?: () => void
-  type?: 'success' | 'error' | 'loading'
+  message: React.ReactNode
+  onRevert?: RevertAction
+  type?: ToastTone
 }
+type WorkspaceToastOptions = { onRevert?: RevertAction; type?: ToastTone }
 
-type WorkspaceToastOptions = {
-  onRevert?: () => void
-  type?: 'success' | 'error' | 'loading'
-}
+const toastTitles = { success: 'Completed', error: 'Action needed', loading: 'In progress', info: 'Notice' }
+const toastIcons = { success: Check, error: AlertTriangle, loading: LoaderCircle, info: Info }
+const ToastPauseContext = createContext<number | undefined>(undefined)
 
 export const WorkspaceToast = ({ t, message, onRevert, type = 'success' }: WorkspaceToastProps) => {
+  const pausedAt = useContext(ToastPauseContext)
+  const [now, setNow] = useState(Date.now)
   const [isConfirmingRevert, setIsConfirmingRevert] = useState(false)
-  const [progress, setProgress] = useState(100)
-  const duration = t.duration || 2000
-  
-  useEffect(() => {
-    if (!t.visible) return
-    
-    const startTime = Date.now()
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const remaining = Math.max(0, 100 - (elapsed / duration) * 100)
-      setProgress(remaining)
-      if (remaining <= 0) {
-        clearInterval(interval)
-        toast.dismiss(t.id)
-      }
-    }, 50)
+  const [isReverting, setIsReverting] = useState(false)
+  const [revertError, setRevertError] = useState('')
+  const inFlight = useRef(false)
+  const duration = t.duration ?? 4000
+  const persistent = !Number.isFinite(duration)
+  // The library owns dismissal. The gauge reads the same clock, including hover/focus pauses.
+  const elapsed = Math.max(0, (pausedAt || now) - (t.createdAt || now) - (t.pauseDuration || 0))
+  const progress = persistent ? 100 : Math.max(0, 100 * (1 - elapsed / duration))
+  const Icon = toastIcons[isReverting ? 'loading' : type]
 
-    return () => clearInterval(interval)
-  }, [t.visible, duration, t.id])
+  useEffect(() => {
+    setNow(Date.now())
+    if (!t.visible || pausedAt || persistent) return
+    const timer = setInterval(() => setNow(Date.now()), 50)
+    return () => clearInterval(timer)
+  }, [t.visible, t.createdAt, pausedAt, persistent])
+
+  const revert = async () => {
+    if (!onRevert || inFlight.current) return
+    if (!isConfirmingRevert) { setIsConfirmingRevert(true); return }
+    inFlight.current = true
+    setIsReverting(true)
+    setRevertError('')
+    // A slow request must not expire, and a failed revert must remain available to retry.
+    toast.custom(t.message, { id: t.id, duration: Infinity })
+    try {
+      await onRevert()
+      toast.dismiss(t.id)
+    } catch (error) {
+      setRevertError(error instanceof Error ? error.message : 'Could not revert. Try again.')
+      setIsConfirmingRevert(false)
+    } finally {
+      inFlight.current = false
+      setIsReverting(false)
+    }
+  }
 
   return (
-    <div
-      className={`${
-        t.visible ? 'animate-enter' : 'animate-leave'
-      } max-w-md w-full bg-[#0f172a]/95 backdrop-blur-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-lg pointer-events-auto flex flex-col overflow-hidden transition-all duration-300`}
-    >
-      <div className="flex items-center p-4">
-        <div className="flex-shrink-0 pt-0.5">
-          {type === 'success' ? (
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-              <Check size={16} className="text-emerald-400" />
-            </div>
-          ) : type === 'error' ? (
-            <div className="h-8 w-8 rounded-lg bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
-              <AlertTriangle size={16} className="text-rose-400" />
-            </div>
-          ) : (
-            <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500/30 animate-pulse">
-              <div className="h-3 w-3 bg-blue-400 rounded-full" />
-            </div>
-          )}
+    <div data-workspace-toast={type} data-visible={t.visible} className="workspace-toast" style={{ '--toast-tone': `var(--state-${type === 'error' ? 'danger' : type === 'loading' ? 'info' : type})` } as React.CSSProperties}>
+      <div className="flex items-start gap-3 p-4">
+        <div className="workspace-toast-icon"><Icon size={18} aria-hidden="true" className={isReverting || type === 'loading' ? 'animate-spin' : ''} /></div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-[var(--text-primary)]">{isReverting ? 'Reverting change' : toastTitles[type]}</p>
+          <div {...(t.ariaProps || { role: 'status', 'aria-live': 'polite' })} className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">{message}</div>
+          {revertError && <p role="alert" className="mt-2 text-xs text-[var(--state-danger)]">{revertError}</p>}
+          {onRevert && <button type="button" onClick={revert} onBlur={() => setIsConfirmingRevert(false)} disabled={isReverting}
+            className="mt-3 inline-flex min-h-8 items-center gap-2 rounded-md border border-[var(--border-default)] bg-[var(--surface-hover)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--action-primary-muted)] disabled:opacity-60">
+            <RotateCcw size={13} aria-hidden="true" />{isReverting ? 'Reverting…' : isConfirmingRevert ? 'Confirm Undo?' : 'Revert'}
+          </button>}
         </div>
-        <div className="ml-3 flex-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-100">
-            {type === 'success' ? 'Operation Success' : type === 'error' ? 'System Error' : 'Processing...'}
-          </p>
-          <p className="mt-1 text-[12px] font-bold text-slate-400 leading-snug">
-            {message}
-          </p>
-        </div>
-        <div className="ml-4 flex-shrink-0 flex gap-2">
-          {onRevert && (
-            <button
-              onClick={() => {
-                if (isConfirmingRevert) {
-                  onRevert()
-                  toast.dismiss(t.id)
-                } else {
-                  setIsConfirmingRevert(true)
-                }
-              }}
-              onBlur={() => setIsConfirmingRevert(false)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all ${
-                isConfirmingRevert 
-                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 hover:bg-rose-500/30' 
-                  : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <RotateCcw size={12} className={isConfirmingRevert ? 'animate-spin' : ''} />
-              {isConfirmingRevert ? 'Confirm Undo?' : 'Revert'}
-            </button>
-          )}
-          
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-white/5 hover:text-white transition-all"
-          >
-            <X size={14} />
-          </button>
-        </div>
+        <button type="button" onClick={() => toast.dismiss(t.id)} disabled={isReverting} aria-label="Dismiss notification"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-40"><X size={16} aria-hidden="true" /></button>
       </div>
-
-      {/* Progress Bar Gauge */}
-      <div className="h-0.5 w-full bg-white/5 overflow-hidden">
-        <div 
-          className={`h-full transition-all duration-75 ease-linear ${type === 'success' ? 'bg-emerald-500' : type === 'error' ? 'bg-rose-500' : 'bg-blue-500'}`}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+      <div data-toast-gauge className="workspace-toast-gauge" aria-hidden="true"><div style={{ width: `${progress}%` }} /></div>
     </div>
   )
 }
 
-export const showWorkspaceToast = (message: string, options?: WorkspaceToastOptions) => {
-  // Source of truth: operational workspace toast behavior.
-  // Use message as ID to ensure uniqueness for this specific message
-  toast.dismiss(message);
-  
-  toast.custom((t) => (
-    <WorkspaceToast 
-      t={t} 
-      message={message} 
-      onRevert={options?.onRevert} 
-      type={options?.type} 
-    />
-  ), {
-    duration: options?.onRevert ? 5000 : 2000,
-    position: 'top-right',
-    id: message 
-  })
+// One renderer covers existing success/error/blank/promise calls as well as reversible custom notices.
+export function WorkspaceToaster() {
+  const { toasts, handlers } = useToaster({ duration: 4000, loading: { duration: Infinity }, error: { duration: 6000 } })
+  // Keep subscriptions at the persistent stack. A toast unmount must never
+  // unsubscribe the renderer (react-hot-toast groups subscriptions by toaster ID).
+  const { pausedAt } = useToasterStore()
+  const hovered = useRef(false)
+  const focused = useRef(false)
+  const paused = useRef(false)
+  const syncPause = () => {
+    const next = hovered.current || focused.current
+    if (next === paused.current) return
+    paused.current = next
+    if (next) handlers.startPause()
+    else handlers.endPause()
+  }
+  useEffect(() => {
+    if (toasts.some((t) => t.visible)) return
+    hovered.current = false
+    focused.current = false
+    if (paused.current) { paused.current = false; handlers.endPause() }
+  }, [toasts, handlers.endPause])
+  return createPortal(
+    <ToastPauseContext.Provider value={pausedAt}><section aria-label="Notifications" data-workspace-toaster className="workspace-toaster"
+      onMouseEnter={() => { hovered.current = true; syncPause() }} onMouseLeave={() => { hovered.current = false; syncPause() }}
+      onFocusCapture={() => { focused.current = true; syncPause() }} onBlurCapture={(event) => {
+        if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return
+        focused.current = false; syncPause()
+      }}>
+      {toasts.map((t) => <React.Fragment key={t.id}>{t.type === 'custom' ? resolveValue(t.message, t) :
+        <WorkspaceToast t={t} type={t.type === 'blank' ? 'info' : t.type} message={resolveValue(t.message, t)} />}</React.Fragment>)}
+    </section></ToastPauseContext.Provider>, document.body)
 }
 
-export const dismissWorkspaceToasts = () => toast.dismiss()
-
-export const showWorkspaceRevertToast = (message: string, onRevert: () => void) => (
-  showWorkspaceToast(message, { onRevert, type: 'success' })
+export const showWorkspaceToast = (message: string, options?: WorkspaceToastOptions) => (
+  toast.custom((t) => <WorkspaceToast t={t} message={message} onRevert={options?.onRevert} type={options?.type} />, {
+    duration: options?.type === 'loading' ? Infinity : options?.onRevert ? 10000 : options?.type === 'error' ? 6000 : 4000,
+    position: 'top-right', id: message,
+  })
 )
+export const dismissWorkspaceToasts = () => toast.dismiss()
+export const showWorkspaceRevertToast = (message: string, onRevert: RevertAction) => showWorkspaceToast(message, { onRevert, type: 'success' })
