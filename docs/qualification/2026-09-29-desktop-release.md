@@ -92,3 +92,30 @@ reports two large shared chunks; aggregate frontend statement coverage is 22.18%
 across the repository, including unreleased areas. Passing checks and visual
 review reduce regression risk; they do not prove zero bugs, pixel perfection in
 every state, production traffic capacity or company-domain SSO behavior.
+
+## Approved Soft Carbon follow-up - 2026-09-29
+
+The owner selected Soft Carbon from five captures of the actual Assets view.
+Dark mode now uses a neutral `#252525` canvas, `#303030` panels, `#e1e1e1` text,
+and gray navigation/actions. Existing `nordic-frost-v1` and `dark` preferences
+remain compatible. The preceding release record describes the earlier batch;
+this follow-up changes only appearance and the dark-choice color swatch.
+
+The rack equipment rectangles, density, fonts, table geometry, and light-theme
+colors are preserved. The dark-choice swatch now shows the chosen gray even when
+Light is selected. Legacy grid badge text uses brighter neutral and semantic
+colors where the lighter background otherwise reduced contrast, including
+selected rows. Equipment status and site colors retain their existing meaning.
+
+Validation: typecheck, production build, and theme compatibility unit test passed.
+The 30-case desktop suite passed; after final badge refinements, the eight affected
+dark-theme cases passed again at 1024, 1280, 1440, and 1920 px. The built app was
+captured in all eight major views in both themes. Before/after measurements
+confirmed unchanged geometry and light-theme colors except the dark-choice
+swatch. All 1,719 sampled populated-grid text checks passed, including selected
+rows; the lowest measured ratio was 4.64:1 against a 4.5:1 requirement. This is
+the sampled surface coverage, not a claim of whole-app accessibility compliance.
+
+The palette is isolated in one follow-up commit. Its parent,
+`621e0428f13f77e28683b61f304e7088e49b05c9`, is the rollback boundary. No backend,
+data, permissions, or workflow behavior changes are part of this update.

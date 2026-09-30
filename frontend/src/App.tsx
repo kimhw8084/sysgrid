@@ -337,7 +337,7 @@ function MainLayout() {
   }, [userSettings]);
 
   const THEMES = [
-    { id: 'nordic-frost-v1', label: 'Dark Mode', color: 'bg-[#020617]' },
+    { id: 'nordic-frost-v1', label: 'Dark Mode', color: 'bg-[#252525]' },
     { id: 'pure-clarity', label: 'Light Mode', color: 'bg-[#ffffff]' }
   ]
 

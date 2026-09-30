@@ -70,27 +70,42 @@
   --nav-active-text: #ffffff;
 }
 
-[data-theme='nordic-frost-v1'] {
-  /* Preserve the persisted theme id while restoring SysGrid's navy identity. */
-  --bg-primary: #020617;
-  --bg-header: rgba(15, 23, 42, 0.94);
-  --glass-bg: rgba(15, 23, 42, 0.92);
-  --glass-border: rgba(148, 163, 184, 0.2);
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --accent-primary: #60a5fa;
-  --accent-glow: rgba(59, 130, 246, 0.14);
-  --sidebar-bg: #0f172a;
-  --grid-bg: #020617;
-  --grid-header-bg: #0f172a;
-  --grid-border: #1e293b;
-  --panel-item-bg: #0f172a;
-  --input-bg: #020617;
-  --state-success: #4ade80;
-  --state-warning: #fbbf24;
-  --state-danger: #f87171;
-  --state-info: #38bdf8;
+:root:not([data-theme]),
+[data-theme='nordic-frost-v1'],
+[data-theme='dark'] {
+  /* Soft Carbon. Keep saved dark-theme ids compatible without a preference migration. */
+  --bg-primary: #252525;
+  --bg-header: #303030;
+  --glass-bg: #303030;
+  --glass-border: #474747;
+  --text-primary: #e1e1e1;
+  --text-secondary: #c4c4c4;
+  --text-muted: #acacac;
+  --accent-primary: #c8c8c8;
+  --accent-glow: color-mix(in srgb, #c8c8c8 12%, transparent);
+  --sidebar-bg: #292929;
+  --grid-bg: #2b2b2b;
+  --grid-header-bg: #353535;
+  --grid-border: #474747;
+  --panel-item-bg: #303030;
+  --input-bg: #252525;
+  --action-primary: #505050;
+  --action-ink: #c8c8c8;
+  --nav-active-bg: #484848;
+  --nav-active-text: #e1e1e1;
+  --state-success: #93d2ac;
+  --state-warning: #e5c583;
+  --state-danger: #e4a5a0;
+  --state-info: #b4c9cb;
+}
+
+/* Match legacy accent utilities to the shared dark palette without changing
+   equipment geometry, status fills, or either light-theme alias. */
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.text-blue-300, .text-blue-400, .text-blue-500, .text-sky-300, .text-sky-400, .text-cyan-300, .text-cyan-400) {
+  color: var(--accent-primary) !important;
+}
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) [class*='shadow-blue-'] {
+  --tw-shadow-color: rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-theme='industrial-slate'] {
@@ -202,25 +217,6 @@
   --grid-border: #e2e8f0;
   --panel-item-bg: #ffffff;
   --input-bg: #f8fafc;
-}
-
-[data-theme='dark'] {
-  /* Explicit Dark Mode */
-  --bg-primary: #020617;
-  --bg-header: rgba(15, 23, 42, 0.8);
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #475569;
-  --accent-primary: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.2);
-  --sidebar-bg: #0f172a;
-  --grid-bg: #020617;
-  --grid-header-bg: #0f172a;
-  --grid-border: #1e293b;
-  --panel-item-bg: #0f172a;
-  --input-bg: #020617;
 }
 
 @layer base {
@@ -443,7 +439,19 @@
 /* Legacy grid renderers also set child text colors. Keep their meaning and
    density while providing readable ink on the light grid surface. */
 :is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell :is(.text-slate-500, .text-slate-600) {
-  color: #94a3b8;
+  color: var(--text-muted) !important;
+}
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell .text-rose-400 {
+  color: var(--state-danger);
+}
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell .text-slate-400 {
+  color: var(--text-secondary);
+}
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell .text-emerald-400 {
+  color: var(--state-success);
+}
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell .text-orange-400 {
+  color: var(--state-warning);
 }
 :is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) :is(.text-slate-100, .text-slate-200, .text-slate-300) {
   color: var(--text-primary);
@@ -512,6 +520,13 @@
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-row-selected {
   background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-row-hover {
+  background: color-mix(in srgb, var(--text-primary) 5%, var(--grid-bg)) !important;
+}
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-row-selected {
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--grid-bg)) !important;
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-center-cols-viewport,
