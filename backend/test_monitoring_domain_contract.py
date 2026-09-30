@@ -1,3 +1,4 @@
+import json
 import math
 from pathlib import Path
 
@@ -139,8 +140,10 @@ async def test_monitoring_create_uses_typed_request_and_rejects_raw_numeric_form
     for field_name, invalid_value in invalid_values:
         response = await client.post(
             "/api/v1/monitoring",
-            json={**base_payload, "title": f"{base_payload['title']}-{field_name}", field_name: invalid_value},
-            headers=headers,
+            # Send the deliberately malformed non-finite values over the wire;
+            # httpx's json= encoder rejects them before the API can validate them.
+            content=json.dumps({**base_payload, "title": f"{base_payload['title']}-{field_name}", field_name: invalid_value}),
+            headers={**headers, "Content-Type": "application/json"},
         )
         assert response.status_code == 422, response.text
         assert any(field_name in str(error["loc"]) for error in response.json()["detail"])
