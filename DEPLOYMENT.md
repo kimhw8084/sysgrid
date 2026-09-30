@@ -1,5 +1,9 @@
 # SysGrid Production Lifecycle
 
+For the shortest first deployment on a PaaS that can host one Dockerfile-based
+web app, see [PAAS-START.md](PAAS-START.md). This document remains the operator
+reference for separate backend/frontend projects and controlled upgrades.
+
 This is the current production operator guide for System Management V1: Home,
 Assets, Monitoring, Services, Network, Racks, Audit Logs, and Settings/Access.
 It defines source-side qualification and the supported corporate publish path.

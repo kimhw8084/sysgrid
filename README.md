@@ -1,5 +1,9 @@
 # SysGrid Infrastructure
 
+For a first work-cloud deployment from `main`, start with
+[PAAS-START.md](PAAS-START.md). It builds one app and creates the first tenant
+on an empty persistent volume.
+
 SysGrid is a multi-tenant infrastructure operations platform. This guide covers the supported development startup, disposable seeding, forwarded/remote environments, health checks, recovery, and bug reporting.
 
 ## 1. Prerequisites
