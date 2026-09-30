@@ -27,9 +27,9 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: frontendPort,
-      host: true,
+      host: '127.0.0.1',
       strictPort: true,
-      allowedHosts: true,
+      allowedHosts: [],
       fs: {
         allow: ['..'],
       },

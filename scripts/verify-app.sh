@@ -77,6 +77,7 @@ trap 'status=$?; verify_runtime_cleanup; exit "$status"' EXIT INT TERM
 (
   cd "$FRONTEND_DIR"
   node scripts/check-theme-preference.mjs
+  node scripts/check-dev-server-boundary.mjs
   node scripts/check-desktop-test-selection.mjs
   npm run check:operational-contracts
   npm run typecheck

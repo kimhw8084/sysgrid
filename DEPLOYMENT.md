@@ -31,6 +31,12 @@ checks use this same LTS line; the 22.13.0 floor covers the locked frontend test
 tooling. Qualify the next LTS line before Node 22 support ends on 2027-04-30
 ([upstream release schedule](https://github.com/nodejs/Release#release-schedule)).
 
+The Vite development server binds to `127.0.0.1` and validates request hostnames
+by default. Company access uses the deployed static frontend. If an authorized
+development session requires remote access, explicitly configure its bind address
+and the exact trusted hostname; retain Vite's hostname validation. See
+[Vite server options](https://v6.vite.dev/config/server-options).
+
 From a fresh authorized checkout, install exactly from the committed locks:
 
 ```bash
