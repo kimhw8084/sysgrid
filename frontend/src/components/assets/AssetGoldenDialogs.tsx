@@ -138,7 +138,7 @@ export function AssetGoldenDialogs({
           setServiceDetails={setServiceDetails} setServiceEdit={setServiceEdit} onCloseLinkEdit={onCloseLinkEdit} onCloseLinkDetails={onCloseLinkDetails} />
       ) : null}
 
-      {editingAsset ? <AssetRecordFormModal item={editingAsset} onClose={onCloseEdit} onSuccess={onRefresh} /> : null}
+      {editingAsset ? <AssetRecordFormModal item={editingAsset} onClose={onCloseEdit} onSuccess={() => { onCloseEdit(); onRefresh() }} /> : null}
       {editingLink ? (
         <NetworkConnectionForm
           item={editingLink}

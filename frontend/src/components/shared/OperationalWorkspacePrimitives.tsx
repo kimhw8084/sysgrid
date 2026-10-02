@@ -87,21 +87,23 @@ export function getWorkspaceModalShellClass(size: WorkspaceModalSize) {
 export function WorkspaceFieldLabel({
   label,
   required = false,
+  htmlFor,
 }: {
   label: string
   required?: boolean
+  htmlFor?: string
 }) {
   return (
-    <label className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldLabelText}`}>
+    <label htmlFor={htmlFor} className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldLabelText}`}>
       {label}
       {required && <span className="ml-1 text-rose-400">*</span>}
     </label>
   )
 }
 
-export function WorkspaceFieldError({ message }: { message?: string }) {
+export function WorkspaceFieldError({ message, id }: { message?: string; id?: string }) {
   if (!message) return null
-  return <p className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldErrorText}`}>{message}</p>
+  return <p id={id} className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldErrorText}`}>{message}</p>
 }
 
 export function WorkspacePanelTitle({ children }: { children: React.ReactNode }) {
