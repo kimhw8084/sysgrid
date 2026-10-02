@@ -6,7 +6,7 @@ from typing import Optional
 from ..database import get_db
 from ..models import models
 from ..database_base import Base
-from .utils import build_audit_log, filter_valid_columns, parse_iso_date
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor, parse_iso_date
 from .operational_bulk import (
     build_operational_bulk_summary,
     normalize_operational_bulk_ids,
@@ -19,6 +19,29 @@ from .secret_vault import can_manage_vault, commit_vault_audit, require_vault_de
 from fastapi.responses import JSONResponse
 
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
+_DEVICE_SERVER_FIELDS = {'id', 'tenant_id', 'created_at', 'updated_at', 'created_by_user_id', 'is_deleted'}
+_DEVICE_WRITABLE_FIELDS = {
+    'name', 'system', 'environment', 'status', 'type', 'size_u',
+    'manufacturer', 'model', 'serial_number', 'asset_tag', 'part_number',
+    'os_name', 'os_version', 'management_ip', 'primary_ip', 'management_url',
+    'owner', 'business_unit', 'vendor', 'purchase_order', 'cost_center',
+    'purchase_date', 'install_date', 'warranty_end', 'eol_date', 'role',
+    'power_supply_count', 'power_max_w', 'power_typical_w', 'btu_hr', 'depth',
+    'tool_group', 'fab_area', 'recipe_critical', 'metadata_json',
+    'is_reservation', 'reservation_info', 'logic_json',
+}
+
+
+def _device_write_data(data: dict, *, creating: bool = False) -> dict:
+    clean = {key: value for key, value in data.items() if key in _DEVICE_WRITABLE_FIELDS}
+    required = ('name', 'system') if creating else ('name',) if 'name' in clean else ()
+    for field in required:
+        value = clean.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise HTTPException(400, f'Field {field} must be non-empty text')
+    if clean.get('system') is not None and not isinstance(clean['system'], str):
+        raise HTTPException(400, 'Field system must be text or null')
+    return clean
 
 
 def _device_purge_table_label(table_name: str) -> str:
@@ -656,24 +679,21 @@ async def get_device_interfaces(request: Request, device_id: int, db: AsyncSessi
 @router.post("")
 async def create_device(request: Request, data: dict, db: AsyncSession = Depends(get_db)):
     tenant_id = request.state.tenant_id
-    required = ["name", "system"]
-    for f in required:
-        if not data.get(f): raise HTTPException(400, f"Field {f} is mandatory")
+    clean_data = _device_write_data(data, creating=True)
     
     # Case-insensitive duplicate check
     dup_res = await db.execute(select(models.Device).filter(
-        func.lower(models.Device.name) == data["name"].lower(), 
+        func.lower(models.Device.name) == clean_data["name"].lower(),
         models.Device.tenant_id == tenant_id,
         models.Device.is_deleted == False
     ))
     if dup_res.scalars().first():
         raise HTTPException(409, "DUPLICATE_HOSTNAME")
 
-    clean_data = filter_valid_columns(models.Device, data)
     for date_f in ["purchase_date", "install_date", "warranty_end", "eol_date"]:
         if date_f in clean_data: clean_data[date_f] = parse_iso_date(clean_data[date_f])
     
-    db_device = models.Device(**clean_data, tenant_id=tenant_id)
+    db_device = models.Device(**clean_data, tenant_id=tenant_id, created_by_user_id=get_audit_actor(request))
     db.add(db_device)
     await db.flush() # Flush to get ID
 
@@ -694,23 +714,18 @@ async def update_device(request: Request, device_id: int, data: dict, db: AsyncS
     result = await db.execute(select(models.Device).filter(models.Device.id == device_id, models.Device.tenant_id == tenant_id))
     db_device = result.scalar_one_or_none()
     if not db_device: raise HTTPException(404)
+    clean_data = _device_write_data(data)
     
-    if 'name' in data and data['name'].lower() != db_device.name.lower():
+    if 'name' in clean_data and clean_data['name'].lower() != (db_device.name or '').lower():
         # Check for duplicate name in ANOTHER active device (case-insensitive)
         dup_res = await db.execute(select(models.Device).filter(
-            func.lower(models.Device.name) == data["name"].lower(), 
+            func.lower(models.Device.name) == clean_data["name"].lower(),
             models.Device.is_deleted == False, 
             models.Device.id != device_id,
             models.Device.tenant_id == tenant_id
         ))
         if dup_res.scalars().first():
             raise HTTPException(409, "DUPLICATE_HOSTNAME")
-
-    clean_data = filter_valid_columns(models.Device, data)
-    # Exclude read-only fields
-    for ro_field in ["id", "created_at", "updated_at", "created_by_user_id"]:
-        if ro_field in clean_data:
-            del clean_data[ro_field]
 
     for k, v in clean_data.items():
         if k in ["purchase_date", "install_date", "warranty_end", "eol_date"]:
@@ -783,13 +798,12 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     purge_impact_plan: dict | None = None
 
     if action == "update":
-        protected_fields = {"id", "tenant_id", "created_at", "updated_at", "created_by_user_id", "is_deleted"}
         clean_update = {
             key: value
-            for key, value in filter_valid_columns(models.Device, payload).items()
-            if key not in protected_fields and value is not None
+            for key, value in _device_write_data(payload).items()
+            if value is not None
         }
-        unsupported = sorted(set(payload) - set(clean_update) - protected_fields)
+        unsupported = sorted(set(payload) - set(clean_update) - _DEVICE_SERVER_FIELDS)
         if unsupported:
             raise HTTPException(status_code=400, detail=f"Unsupported asset bulk fields: {', '.join(unsupported)}")
         if not clean_update:
