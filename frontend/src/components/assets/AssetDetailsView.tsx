@@ -661,7 +661,7 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div role="region" aria-label="Hardware components" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
-      <table className="w-full min-w-[24rem] text-[10px]">
+      <table aria-busy={updateMutation.isPending} className="w-full min-w-[24rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-center font-bold uppercase tracking-widest text-slate-500">Category</th>
@@ -678,6 +678,7 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
                 {editingId === h.id ? (
                     <StyledSelect
                         value={editData.category}
+                        disabled={updateMutation.isPending}
                         onChange={e => setEditData({...editData, category: e.target.value})}
                         options={catOptions}
                         className="w-24 mx-auto"
@@ -688,29 +689,29 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
               </td>
               <td className="px-4 py-2 font-bold text-slate-200 text-center text-[10px]">
                 {editingId === h.id ? (
-                    <input value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : h.name}
               </td>
               <td className="px-4 py-2 text-slate-500 text-center font-bold text-[10px]">
                 {editingId === h.id ? (
-                    <input value={editData.specs} onChange={e => setEditData({...editData, specs: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.specs} onChange={e => setEditData({...editData, specs: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : h.specs}
               </td>
               <td className="px-4 py-2 text-center text-slate-400 font-bold text-[10px]">
                 {editingId === h.id ? (
-                    <input type="number" aria-label="Component quantity" min={0} step={1} value={editData.count == null || Number.isNaN(editData.count) ? '' : editData.count} onChange={e => setEditData({...editData, count: e.target.value === '' ? Number.NaN : Number(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-1 py-1.5 text-[10px] w-12 outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} type="number" aria-label="Component quantity" min={0} step={1} value={editData.count == null || Number.isNaN(editData.count) ? '' : editData.count} onChange={e => setEditData({...editData, count: e.target.value === '' ? Number.NaN : Number(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-1 py-1.5 text-[10px] w-12 outline-none focus:border-blue-500" />
                 ) : validHardwareQuantity(h.count) ? `x${h.count}` : 'Quantity unavailable'}
               </td>
               <td className="px-4 py-2 text-center">
                 {editingId === h.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                        <button aria-label="Save hardware component" disabled={updateMutation.isPending} onClick={() => { if (!validHardwareQuantity(editData.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); updateMutation.mutate(editData) }} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
+                        <button aria-label="Save hardware component" disabled={updateMutation.isPending} onClick={() => { if (!validHardwareQuantity(editData.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); updateMutation.mutate(editData) }} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
                         <button aria-label="Cancel hardware edit" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button aria-label="Edit hardware component" onClick={() => { setEditingId(h.id); setEditData({...h}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                        <button aria-label="Remove hardware component" disabled={delMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Purge Component', message: 'Purge this hardware component?', onConfirm: () => delMutation.mutate(h.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                        <button aria-label="Edit hardware component" disabled={updateMutation.isPending} onClick={() => { setEditingId(h.id); setEditData({...h}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                        <button aria-label="Remove hardware component" disabled={delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Purge Component', message: 'Purge this hardware component?', onConfirm: () => delMutation.mutate(h.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                 )}
               </td>
@@ -814,7 +815,7 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="p-0">
-      <table className="w-full text-[10px]">
+      <table aria-busy={updateMutation.isPending} className="w-full text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Type</th>
@@ -831,6 +832,7 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
                 {editingId === s.id ? (
                     <StyledSelect
                         value={editData.secret_type}
+                        disabled={updateMutation.isPending}
                         onChange={e => setEditData({...editData, secret_type: e.target.value})}
                         options={secOptions}
                         className="w-32"
@@ -839,31 +841,31 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
               </td>
               <td className="px-4 py-2 font-bold text-slate-200">
                 {editingId === s.id ? (
-                    <input value={editData.username} onChange={e => setEditData({...editData, username: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.username} onChange={e => setEditData({...editData, username: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : s.username}
               </td>
               <td className="px-4 py-2 text-slate-400">
                 {editingId === s.id ? (
-                    <input type="password" autoComplete="new-password" aria-label="Replacement credential value" value={editData.encrypted_payload} onChange={e => setEditData({...editData, encrypted_payload: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" placeholder="Leave blank to keep stored value" />
+                    <input disabled={updateMutation.isPending} type="password" autoComplete="new-password" aria-label="Replacement credential value" value={editData.encrypted_payload} onChange={e => setEditData({...editData, encrypted_payload: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" placeholder="Leave blank to keep stored value" />
                 ) : (
                     <CredentialValue deviceId={deviceId} secretId={s.id} canReveal={s.can_reveal} hasPayload={s.has_payload} />
                 )}
               </td>
               <td className="px-4 py-2 text-slate-500">
                 {editingId === s.id ? (
-                    <input value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : s.notes}
               </td>
               <td className="px-4 py-2 text-center">
                 {editingId === s.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                        <button aria-label="Save credential" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
+                        <button aria-label="Save credential" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
                         <button aria-label="Cancel credential editing" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button aria-label="Edit credential" disabled={!s.can_manage} onClick={() => { setEditingId(s.id); setEditData({...s, encrypted_payload: ''}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                        <button aria-label="Delete credential" disabled={!s.can_manage || delMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Credential', message: 'Remove this credential?', onConfirm: () => delMutation.mutate(s.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                        <button aria-label="Edit credential" disabled={!s.can_manage || updateMutation.isPending} onClick={() => { setEditingId(s.id); setEditData({...s, encrypted_payload: ''}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                        <button aria-label="Delete credential" disabled={!s.can_manage || delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Credential', message: 'Remove this credential?', onConfirm: () => delMutation.mutate(s.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                 )}
               </td>
@@ -1037,7 +1039,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div role="region" aria-label="Asset relationships" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
-      <table className="w-full min-w-[36rem] text-[10px]">
+      <table aria-busy={updateMutation.isPending} className="w-full min-w-[36rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Local Identity</th>
@@ -1058,7 +1060,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
               <tr key={r.id} className="hover:bg-white/5 transition-colors">
                 <td className="px-4 py-3">
                    {editingId === r.id ? (
-                     <select aria-label="Local role" value={isSource ? editData.source_role : editData.target_role} onChange={e => isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                     <select disabled={updateMutation.isPending} aria-label="Local role" value={isSource ? editData.source_role : editData.target_role} onChange={e => isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                        <option>Consumer</option>
                        <option>Provider</option>
                        <option>Hypervisor</option>
@@ -1081,7 +1083,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 </td>
                 <td className="px-4 py-3 text-center">
                   {editingId === r.id ? (
-                    <select aria-label="Relationship type" value={editData.relationship_type} onChange={e => setEditData({...editData, relationship_type: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                    <select disabled={updateMutation.isPending} aria-label="Relationship type" value={editData.relationship_type} onChange={e => setEditData({...editData, relationship_type: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                       <option>Depends On</option>
                       <option>Hosts</option>
                       <option>Backs Up</option>
@@ -1101,7 +1103,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 </td>
                 <td className="px-4 py-3">
                     {editingId === r.id ? (
-                      <select aria-label="Peer role" value={!isSource ? editData.source_role : editData.target_role} onChange={e => !isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                      <select disabled={updateMutation.isPending} aria-label="Peer role" value={!isSource ? editData.source_role : editData.target_role} onChange={e => !isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                         <option>Consumer</option>
                         <option>Provider</option>
                         <option>Hypervisor</option>
@@ -1125,13 +1127,13 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 <td className="px-4 py-3 text-center">
                   {editingId === r.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                      <button aria-label="Save relationship" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all disabled:opacity-50"><Check size={14}/></button>
+                      <button aria-label="Save relationship" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all disabled:opacity-50">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
                       <button aria-label="Cancel relationship edit" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-slate-500/20 text-slate-500 rounded-lg transition-all disabled:opacity-50"><X size={14}/></button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center space-x-1">
-                      <button aria-label="Edit relationship" onClick={() => { setEditingId(r.id); setEditData({...r}) }} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                      <button aria-label="Remove relationship" disabled={delMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Relationship', message: 'Remove this relationship?', onConfirm: () => delMutation.mutate(r.id) })} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
+                      <button aria-label="Edit relationship" disabled={updateMutation.isPending} onClick={() => { setEditingId(r.id); setEditData({...r}) }} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                      <button aria-label="Remove relationship" disabled={delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Relationship', message: 'Remove this relationship?', onConfirm: () => delMutation.mutate(r.id) })} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                   )}
                 </td>
