@@ -60,6 +60,14 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     const saved = await request.get(`${apiBase}/logical-services?device_id=${host.id}`)
     expect(saved.ok()).toBeTruthy()
     expect(await saved.json()).toEqual([expect.objectContaining({ name, version: '000007', installation_date: '2026-10-03T00:00:00' })])
+    await page.getByRole('button', { name: /^Open error console/ }).click()
+    const diagnostics = page.getByRole('dialog', { name: 'Error console', exact: true })
+    await diagnostics.getByRole('button', { name: 'Inspect error: Request validation failed. Review the submitted values and try again.', exact: true }).click()
+    await expect(diagnostics).not.toContainText('[object Object]')
+    await expect(diagnostics).toContainText('422')
+    await expect(diagnostics).toContainText('Review the deployment date before saving.')
+    await page.screenshot({ path: testInfo.outputPath(`service-save-diagnostics-${theme}.png`), animations: 'disabled' })
+    await diagnostics.getByRole('button', { name: 'Close error console', exact: true }).click()
   })
 
   test(`Service import rejects unavailable hosts and preserves identifiers in ${theme}`, async ({ page, sysApi: request }, testInfo) => {

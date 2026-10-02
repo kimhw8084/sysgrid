@@ -203,6 +203,23 @@ export function getRequestScopeKey(): string {
 
 let lastRequestScopeKey = ''
 
+function apiErrorMessage(data: unknown, status: number): string {
+  const payload = data && typeof data === 'object' && !Array.isArray(data)
+    ? data as Record<string, unknown> : {}
+  const detail = payload.detail
+  const nested = detail && typeof detail === 'object' && !Array.isArray(detail)
+    ? detail as Record<string, unknown> : {}
+  for (const candidate of [detail, nested.message, payload.message, data]) {
+    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim().slice(0, 500)
+  }
+  // Keep field names, rejected input and structured diagnostics in error.data;
+  // never stringify them into a toast or error-history title.
+  if (Array.isArray(detail) || nested.field_errors || payload.field_errors) {
+    return 'Request validation failed. Review the submitted values and try again.'
+  }
+  return `API error: ${status}`
+}
+
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const requestScopeKey = getRequestScopeKey()
   if (requestScopeKey !== lastRequestScopeKey) {
@@ -320,7 +337,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   })
 
   if (!response.ok) {
-    let errorData: any = {};
+    let errorData: unknown = {};
     let rawBody = '';
     try {
       rawBody = await response.clone().text();
@@ -329,7 +346,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
       errorData = { detail: `API Error ${response.status}: ${response.statusText}`, raw: rawBody };
     }
     
-    const errorMessage = errorData.detail || errorData.message || `API error: ${response.status}`;
+    const errorMessage = apiErrorMessage(errorData, response.status);
     const error = decorateApiError(new Error(errorMessage), {
       status: response.status,
       statusText: response.statusText,

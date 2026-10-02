@@ -244,6 +244,42 @@ describe('apiClient', () => {
     })
   })
 
+  it.each([
+    ['nested message', { detail: { message: 'Review the current revision.' } }, 'Review the current revision.'],
+    ['message beside unknown detail', { detail: { code: 'CONFLICT' }, message: 'Refresh and review.' }, 'Refresh and review.'],
+    ['field diagnostics', { detail: { field_errors: { cost: 'Must be nonnegative' } } }, 'Request validation failed. Review the submitted values and try again.'],
+    ['top-level field diagnostics', { field_errors: { name: 'Required' } }, 'Request validation failed. Review the submitted values and try again.'],
+    ['validation entries', { detail: [{ loc: ['body', 'password'], msg: 'Invalid value', input: 'private-sentinel' }] }, 'Request validation failed. Review the submitted values and try again.'],
+    ['null', null, 'API error: 422'],
+    ['number', 7, 'API error: 422'],
+    ['boolean', false, 'API error: 422'],
+    ['array', ['private-sentinel'], 'API error: 422'],
+    ['unknown object', { detail: { input: 'private-sentinel' } }, 'API error: 422'],
+    ['unknown message shape', { message: { input: 'private-sentinel' } }, 'API error: 422'],
+    ['blank detail', { detail: '  ', message: 'Useful message' }, 'Useful message'],
+    ['trimmed string detail', { detail: '  Useful message  ' }, 'Useful message'],
+    ['string body', 'Review the current revision.', 'Review the current revision.'],
+  ])('preserves HTTP diagnostics and a readable message for %s', async (_name, body, message) => {
+    const response = makeJsonErrorResponse(422, 'Unprocessable Entity', body)
+    response.headers.set('x-request-id', 'error-contract-request')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response))
+    const error = await apiFetch('/api/v1/logical-services', { method: 'POST', body: '{}' }).catch(value => value)
+    expect(error).toBeInstanceOf(Error)
+    expect(error).toMatchObject({ message, status: 422, statusText: 'Unprocessable Entity',
+      method: 'POST', url: expect.stringMatching(/\/api\/v1\/logical-services$/), requestId: 'error-contract-request', data: body })
+    expect(error.rawBody).toBe(JSON.stringify(body))
+    expect(error.message).not.toContain('[object Object]')
+    expect(error.message).not.toContain('private-sentinel')
+  })
+
+  it('bounds display messages while preserving the structured error payload', async () => {
+    const body = { detail: { message: 'x'.repeat(2000), field_errors: { name: 'Required' } } }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(makeJsonErrorResponse(422, 'Unprocessable Entity', body)))
+    const error = await apiFetch('/invalid').catch(value => value)
+    expect(error.message).toBe('x'.repeat(500))
+    expect(error.data).toEqual(body)
+  })
+
   it('supports the convenience get, put, delete, and patch helpers', async () => {
     const fetchMock = vi
       .fn()
