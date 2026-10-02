@@ -11,6 +11,49 @@ const hasControlPlaneAuthority = () => (process.env.CONTROL_PLANE_ADMIN_USER_IDS
   .filter(Boolean)
   .includes(testUserId)
 
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`operator privilege controls persist explicit booleans in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const username = `pw-privilege-${Date.now()}`
+    const created = await request.post(`${apiBase}/settings/operators`, { data: {
+      external_id: username, username, full_name: 'Privilege validation operator', is_admin: false,
+    } })
+    expect(created.ok()).toBeTruthy()
+    const operator = await created.json()
+    const rejected = await request.patch(`${apiBase}/settings/operators/${operator.id}`, { data: { is_admin: 'false' } })
+    expect(rejected.status()).toBe(422)
+    await page.goto('/settings?tab=permissions')
+    await page.getByPlaceholder('Search identity, department, or team...').fill(username)
+    const row = page.getByRole('row').filter({ hasText: username })
+    const admin = row.getByRole('checkbox').nth(1)
+    await expect(admin).not.toBeChecked()
+    const saved = page.waitForResponse(response => response.url().endsWith(`/settings/operators/${operator.id}`) && response.request().method() === 'PATCH')
+    await admin.focus()
+    await page.keyboard.press('Space')
+    const result = await saved
+    expect(result.ok()).toBeTruthy()
+    expect(result.request().postDataJSON().is_admin).toBe(true)
+    await page.reload()
+    await page.getByPlaceholder('Search identity, department, or team...').fill(username)
+    await expect(admin).toBeChecked()
+    await row.getByRole('checkbox').first().check()
+    await page.getByRole('button', { name: 'Bulk Actions', exact: true }).click()
+    const bulkSaved = page.waitForResponse(response => response.url().endsWith('/settings/operators/bulk-update') && response.request().method() === 'POST')
+    await page.getByRole('button', { name: 'Unset Admin', exact: true }).click()
+    const bulkResult = await bulkSaved
+    expect(bulkResult.ok()).toBeTruthy()
+    expect(bulkResult.request().postDataJSON()).toEqual({ updates: [{ id: operator.id, payload: { is_admin: false } }] })
+    await expect(admin).not.toBeChecked()
+    await page.reload()
+    await page.getByPlaceholder('Search identity, department, or team...').fill(username)
+    await expect(admin).not.toBeChecked()
+    await page.screenshot({ path: testInfo.outputPath(`operator-privileges-${theme}.png`), animations: 'disabled' })
+  })
+}
+
 test.describe('Settings and audit workflows', () => {
   test('persists theme and loads major settings sections', async ({ page }) => {
     await resetBrowserState(page)

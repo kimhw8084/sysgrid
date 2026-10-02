@@ -189,6 +189,11 @@ def canonical_operator_state(operator: models.Operator) -> dict:
     }
 
 
+def validate_operator_admin_flag(payload: dict) -> None:
+    if "is_admin" in payload and not isinstance(payload["is_admin"], bool):
+        raise HTTPException(422, {"field_errors": {"is_admin": "Must be a boolean"}})
+
+
 def apply_operator_canonicalization(
     operator: models.Operator,
     *,
@@ -201,7 +206,7 @@ def apply_operator_canonicalization(
             setattr(operator, field, normalize_string(payload.get(field)))
 
     if "is_admin" in payload:
-        operator.is_admin = bool(payload.get("is_admin"))
+        operator.is_admin = payload["is_admin"]
     if "role_id" in payload:
         operator.role_id = payload.get("role_id")
     if "custom_permissions" in payload:
@@ -626,6 +631,7 @@ async def apply_operator_patch(
     data: dict,
     user_id: str,
 ) -> dict:
+    validate_operator_admin_flag(data)
     previous_state = canonical_operator_state(op)
     next_external_id = normalize_string(data.get("external_id")) if "external_id" in data else op.external_id
     next_username = normalize_string(data.get("username")) if "username" in data else op.username
@@ -1473,6 +1479,7 @@ async def create_operator(
     db: AsyncSession = Depends(get_db),
 ):
     from sqlalchemy.exc import IntegrityError
+    validate_operator_admin_flag(data)
     external_id = normalize_string(data.get("external_id"))
     username = normalize_string(data.get("username"))
     if not external_id:
@@ -1518,7 +1525,7 @@ async def create_operator(
             "email": normalize_string(data.get("email")),
             "department": normalize_string(data.get("department")),
             "registration_status": normalize_string(data.get("registration_status")),
-            "is_admin": bool(data.get("is_admin", False)),
+            "is_admin": data.get("is_admin", False),
             "custom_permissions": normalize_permission_map(data.get("custom_permissions")),
             "role_id": data.get("role_id"),
             "teams": normalize_string_list(data.get("teams") or []),
@@ -1621,8 +1628,8 @@ async def bulk_update_operators(
             raise HTTPException(status_code=400, detail=f"updates[{index}] must be an object")
         op_id = update_item.get("id")
         payload = update_item.get("payload")
-        if not isinstance(op_id, int):
-            raise HTTPException(status_code=400, detail=f"updates[{index}].id must be an integer")
+        if type(op_id) is not int or not 1 <= op_id <= 2 ** 63 - 1:
+            raise HTTPException(status_code=400, detail=f"updates[{index}].id must be a positive integer within the supported range")
         if not isinstance(payload, dict):
             raise HTTPException(status_code=400, detail=f"updates[{index}].payload must be an object")
         res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
@@ -1667,8 +1674,8 @@ async def bulk_delete_operators(
     deleted_count = 0
 
     for index, op_id in enumerate(ids):
-        if not isinstance(op_id, int):
-            raise HTTPException(status_code=400, detail=f"ids[{index}] must be an integer")
+        if type(op_id) is not int or not 1 <= op_id <= 2 ** 63 - 1:
+            raise HTTPException(status_code=400, detail=f"ids[{index}] must be a positive integer within the supported range")
         res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
         op = res.scalar_one_or_none()
         if not op:

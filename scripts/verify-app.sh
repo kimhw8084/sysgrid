@@ -69,6 +69,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_operational_actions.py
   test_settings_api_edges.py
   test_settings_workflows.py
+  test_settings_operator_input_integrity.py
   test_monitoring_query_and_bulk_edges.py
   test_monitoring_restore_edges.py
   test_monitoring_workflows.py
