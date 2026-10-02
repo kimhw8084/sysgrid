@@ -83,8 +83,8 @@ for pass in first second; do
   VERIFY_RUNTIME_CLEANED=false
   verify_runtime_assert_port_free "$3" frontend
   verify_runtime_start_frontend
-  command="$(ps -p "$VERIFY_RUNTIME_FRONTEND_PID" -o command=)"
-  [[ "$command" == *vite/bin/vite.js* ]] || { echo 'FRONTEND_PID_IS_NOT_VITE' >&2; exit 1; }
+  command="$(ps -ww -p "$VERIFY_RUNTIME_FRONTEND_PID" -o command=)"
+  [[ "$command" == *vite/bin/vite.js* ]] || { echo "FRONTEND_PID_IS_NOT_VITE: $command" >&2; exit 1; }
   "$PYTHON_BIN" - "$VERIFY_RUNTIME_FRONTEND_ORIGIN" "$VERIFY_RUNTIME_DIR" <<'PY'
 import hashlib
 import json
