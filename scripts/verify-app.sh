@@ -37,6 +37,7 @@ verify_runtime_resolve_python
 
 BACKEND_QUALIFICATION_TESTS=(
   test_migration_graph.py
+  tests/test_database_isolation.py
   test_system_management_v1_policy.py
   test_chg13_authorization_security.py
   test_environment_identity.py
