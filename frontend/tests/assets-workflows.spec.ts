@@ -606,7 +606,7 @@ test.describe('Assets workflows', () => {
 
     // Verify parser parsed cells and transitioned to builder layout
     await expect(page.getByText('Manual Data Builder')).toBeVisible()
-    await expect(page.locator('tbody tr input').first()).toHaveValue('PW-IMPORTED-ASSET-01')
+    await expect(importDialog.getByRole('textbox', { name: 'Name, row 1', exact: true })).toHaveValue('PW-IMPORTED-ASSET-01')
 
     // Close import modal cleanly (handling dirty state guard)
     await importDialog.getByRole('button', { name: 'Close', exact: true }).filter({ hasText: 'Close' }).click()
