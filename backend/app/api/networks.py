@@ -7,6 +7,7 @@ from ..models import models
 from ..schemas import schemas
 from .utils import build_audit_log, filter_valid_columns
 from .module_policy import require_module_access
+from .asset_links import require_relationship_asset
 
 router = APIRouter(
     prefix="/networks",
@@ -57,16 +58,37 @@ async def _validate_network_enums(
         raise HTTPException(status_code=400, detail=f"Invalid status '{status}'")
 
 
-async def _get_connection_by_id(db: AsyncSession, conn_id: int):
-    result = await db.execute(select(models.PortConnection).filter(models.PortConnection.id == conn_id))
+def _connection_scope(request: Request):
+    # The tenant database owns custom-IP endpoints. Every referenced asset must
+    # also belong to the authorized tenant; archived assets remain readable.
+    owned_assets = select(models.Device.id).where(models.Device.tenant_id == request.state.tenant_id)
+    return and_(
+        or_(models.PortConnection.source_device_id.is_(None), models.PortConnection.source_device_id.in_(owned_assets)),
+        or_(models.PortConnection.target_device_id.is_(None), models.PortConnection.target_device_id.in_(owned_assets)),
+    )
+
+
+async def _get_connection_by_id(request: Request, db: AsyncSession, conn_id: int):
+    if not 1 <= conn_id <= 2 ** 63 - 1:
+        return None
+    result = await db.execute(select(models.PortConnection).where(
+        models.PortConnection.id == conn_id, _connection_scope(request),
+    ))
     return result.scalar_one_or_none()
 
 
-async def _get_connections_for_ids(db: AsyncSession, ids: list[int]):
+async def _get_connections_for_ids(request: Request, db: AsyncSession, ids: list[int]):
     if not ids:
         return []
-    result = await db.execute(select(models.PortConnection).filter(models.PortConnection.id.in_(ids)))
-    return result.scalars().all()
+    if any(not 1 <= conn_id <= 2 ** 63 - 1 for conn_id in ids):
+        raise HTTPException(404, 'Connection not found')
+    result = await db.execute(select(models.PortConnection).where(
+        models.PortConnection.id.in_(ids), _connection_scope(request),
+    ))
+    connections = result.scalars().all()
+    if len(connections) != len(set(ids)):
+        raise HTTPException(404, 'Connection not found')
+    return connections
 
 @router.get("/interfaces")
 async def get_interfaces(db: AsyncSession = Depends(get_db)):
@@ -100,7 +122,7 @@ async def update_interface(interface_id: int, data: dict, db: AsyncSession = Dep
     return item
 
 @router.get("/connections")
-async def get_connections(device_id: int = None, include_deleted: bool = False, db: AsyncSession = Depends(get_db)):
+async def get_connections(request: Request, device_id: int = None, include_deleted: bool = False, db: AsyncSession = Depends(get_db)):
     from sqlalchemy.orm import aliased
     DeviceA = aliased(models.Device)
     DeviceB = aliased(models.Device)
@@ -143,7 +165,9 @@ async def get_connections(device_id: int = None, include_deleted: bool = False, 
      .outerjoin(LocB, LocB.id == target_location_subquery.c.location_id) \
      .outerjoin(RackB, LocB.rack_id == RackB.id)
     
-    if device_id:
+    query = query.where(_connection_scope(request))
+    if device_id is not None:
+        await require_relationship_asset(request, db, device_id)
         query = query.filter(or_(models.PortConnection.source_device_id == device_id, models.PortConnection.target_device_id == device_id))
     if not include_deleted:
         query = query.filter(or_(models.PortConnection.status != "Deleted", models.PortConnection.status.is_(None)))
@@ -211,6 +235,9 @@ async def create_connection(data: schemas.NetworkConnectionCreate, request: Requ
     cable_type_value = payload.get("cable_type")
     unit_value = payload.get("unit", "Gbps")
 
+    await require_relationship_asset(request, db, source_device_id, active=True)
+    await require_relationship_asset(request, db, target_device_id, active=True)
+
     if unit_value not in NETWORK_UNIT_VALUES:
         raise HTTPException(status_code=400, detail=f"Invalid unit '{unit_value}'")
     await _validate_network_enums(
@@ -264,7 +291,8 @@ async def create_connection(data: schemas.NetworkConnectionCreate, request: Requ
 
 @router.post("/connections/bulk-status")
 async def bulk_update_status(data: schemas.NetworkConnectionBulkStatus, request: Request, db: AsyncSession = Depends(get_db)):
-    ids = data.ids
+    connections = await _get_connections_for_ids(request, db, data.ids)
+    ids = [conn.id for conn in connections]
     new_status = data.status
     if new_status not in NETWORK_STATUS_VALUES:
         raise HTTPException(status_code=400, detail=f"Invalid status '{new_status}'")
@@ -282,8 +310,8 @@ async def bulk_update_status(data: schemas.NetworkConnectionBulkStatus, request:
 
 @router.post("/connections/bulk-restore")
 async def bulk_restore_connections(data: schemas.NetworkConnectionBulkIds, request: Request, db: AsyncSession = Depends(get_db)):
-    ids = data.ids
-    connections = await _get_connections_for_ids(db, ids)
+    connections = await _get_connections_for_ids(request, db, data.ids)
+    ids = [conn.id for conn in connections]
     if not connections:
         return {"status": "success", "count": 0, "changed": 0, "summary": "No deleted connections restored"}
     if any(conn.status != "Deleted" for conn in connections):
@@ -306,8 +334,7 @@ async def bulk_delete_connections(data: schemas.NetworkConnectionBulkIds, reques
     if not ids:
         raise HTTPException(status_code=400, detail="IDs required")
 
-    result = await db.execute(select(models.PortConnection).filter(models.PortConnection.id.in_(ids)))
-    connections = result.scalars().all()
+    connections = await _get_connections_for_ids(request, db, ids)
     if not connections:
         return {"status": "success", "count": 0, "changed": 0, "summary": "No connections archived"}
 
@@ -327,7 +354,7 @@ async def bulk_purge_connections(data: schemas.NetworkConnectionBulkIds, request
     if not ids:
         raise HTTPException(status_code=400, detail="IDs required")
 
-    connections = await _get_connections_for_ids(db, ids)
+    connections = await _get_connections_for_ids(request, db, ids)
     if not connections:
         return {"status": "success", "count": 0, "changed": 0, "summary": "No deleted connections purged"}
     if any(conn.status != "Deleted" for conn in connections):
@@ -343,7 +370,7 @@ async def bulk_purge_connections(data: schemas.NetworkConnectionBulkIds, request
 
 @router.put("/connections/{conn_id}")
 async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate, request: Request, db: AsyncSession = Depends(get_db)):
-    conn = await _get_connection_by_id(db, conn_id)
+    conn = await _get_connection_by_id(request, db, conn_id)
     if not conn:
         raise HTTPException(status_code=404, detail="Connection not found")
 
@@ -368,6 +395,10 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
     farm_value = payload.get('farm', conn.farm)
     cable_type_value = payload.get('cable_type', conn.cable_type)
     unit_value = payload.get('unit', conn.unit or 'Gbps')
+
+    for field_name in ('source_device_id', 'target_device_id'):
+        if field_name in payload and payload[field_name] != getattr(conn, field_name):
+            await require_relationship_asset(request, db, payload[field_name], active=True)
 
     if unit_value not in NETWORK_UNIT_VALUES:
         raise HTTPException(status_code=400, detail=f"Invalid unit '{unit_value}'")
@@ -424,7 +455,7 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
 
 @router.delete("/connections/{conn_id}")
 async def delete_connection(conn_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    conn = await _get_connection_by_id(db, conn_id)
+    conn = await _get_connection_by_id(request, db, conn_id)
     if not conn:
         raise HTTPException(status_code=404, detail="Connection not found")
 
@@ -436,7 +467,7 @@ async def delete_connection(conn_id: int, request: Request, db: AsyncSession = D
 
 @router.post("/connections/{conn_id}/restore")
 async def restore_connection(conn_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    conn = await _get_connection_by_id(db, conn_id)
+    conn = await _get_connection_by_id(request, db, conn_id)
     if not conn:
         raise HTTPException(status_code=404, detail="Connection not found")
     if conn.status != "Deleted":
@@ -450,7 +481,7 @@ async def restore_connection(conn_id: int, request: Request, db: AsyncSession = 
 
 @router.post("/connections/{conn_id}/purge")
 async def purge_connection(conn_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    conn = await _get_connection_by_id(db, conn_id)
+    conn = await _get_connection_by_id(request, db, conn_id)
     if not conn:
         raise HTTPException(status_code=404, detail="Connection not found")
     if conn.status != "Deleted":

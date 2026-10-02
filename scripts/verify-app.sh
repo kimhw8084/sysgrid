@@ -72,6 +72,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_monitoring_restore_edges.py
   test_monitoring_workflows.py
   test_network_workflows.py
+  test_network_endpoint_authorization.py
   test_service_workflows.py
   test_racks_api_edges.py
   test_rack_read_queries.py
