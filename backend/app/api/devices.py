@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 from sqlalchemy import select, delete, update, or_, and_, func
 from datetime import datetime
+from math import isfinite
 from typing import Optional
 from ..database import get_db
 from ..models import models
@@ -24,16 +25,20 @@ from fastapi.responses import JSONResponse
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
 _DEVICE_SERVER_FIELDS = {'id', 'tenant_id', 'created_at', 'updated_at', 'created_by_user_id', 'is_deleted'}
 _DEVICE_DATE_FIELDS = {'purchase_date', 'install_date', 'warranty_end', 'eol_date'}
-_DEVICE_WRITABLE_FIELDS = {
-    'name', 'system', 'environment', 'status', 'type', 'size_u',
+_DEVICE_TEXT_FIELDS = {
+    'name', 'system', 'environment', 'status', 'type',
     'manufacturer', 'model', 'serial_number', 'asset_tag', 'part_number',
     'os_name', 'os_version', 'management_ip', 'primary_ip', 'management_url',
     'owner', 'business_unit', 'vendor', 'purchase_order', 'cost_center',
-    'purchase_date', 'install_date', 'warranty_end', 'eol_date', 'role',
-    'power_supply_count', 'power_max_w', 'power_typical_w', 'btu_hr', 'depth',
-    'tool_group', 'fab_area', 'recipe_critical', 'metadata_json',
-    'is_reservation', 'reservation_info', 'logic_json',
+    'role', 'depth', 'tool_group', 'fab_area',
 }
+_DEVICE_INTEGER_MINIMUMS = {'size_u': 1, 'power_supply_count': 0}
+_DEVICE_POWER_FIELDS = {'power_max_w', 'power_typical_w', 'btu_hr'}
+_DEVICE_BOOLEAN_FIELDS = {'recipe_critical', 'is_reservation'}
+_DEVICE_WRITABLE_FIELDS = (
+    _DEVICE_TEXT_FIELDS | _DEVICE_DATE_FIELDS | _DEVICE_INTEGER_MINIMUMS.keys()
+    | _DEVICE_POWER_FIELDS | _DEVICE_BOOLEAN_FIELDS | {'metadata_json', 'reservation_info', 'logic_json'}
+)
 
 
 def _device_write_data(data: dict, *, creating: bool = False) -> dict:
@@ -45,6 +50,26 @@ def _device_write_data(data: dict, *, creating: bool = False) -> dict:
             raise HTTPException(400, f'Field {field} must be non-empty text')
     if clean.get('system') is not None and not isinstance(clean['system'], str):
         raise HTTPException(400, 'Field system must be text or null')
+    for field in _DEVICE_TEXT_FIELDS & clean.keys():
+        if clean[field] is not None and not isinstance(clean[field], str):
+            raise HTTPException(422, f'Field {field} must be text or null')
+    for field, minimum in _DEVICE_INTEGER_MINIMUMS.items():
+        value = clean.get(field)
+        if value is not None and (type(value) is not int or not minimum <= value <= 2 ** 63 - 1):
+            raise HTTPException(422, f'Field {field} must be a whole number from {minimum} to {2 ** 63 - 1}, or null')
+    for field in _DEVICE_POWER_FIELDS & clean.keys():
+        value = clean[field]
+        if value is None:
+            continue
+        try:
+            valid = type(value) in (int, float) and value >= 0 and isfinite(value)
+        except OverflowError:
+            valid = False
+        if not valid:
+            raise HTTPException(422, f'Field {field} must be a finite non-negative number or null')
+    for field in _DEVICE_BOOLEAN_FIELDS & clean.keys():
+        if clean[field] is not None and type(clean[field]) is not bool:
+            raise HTTPException(422, f'Field {field} must be a boolean or null')
     for field in _DEVICE_DATE_FIELDS & clean.keys():
         value = clean[field]
         if value is None or value == '':
