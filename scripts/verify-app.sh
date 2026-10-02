@@ -49,6 +49,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_tenant_isolation.py
   test_tenant_workflows.py
   test_maintenance_integrity.py
+  test_maintenance_window_lifecycle.py
   test_cross_module_integrations.py
   test_operational_actions.py
   test_settings_api_edges.py
