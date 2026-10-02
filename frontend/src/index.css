@@ -45,7 +45,7 @@
   --surface-base: var(--bg-primary);
   --overlay-scrim: rgb(0 0 0 / 55%);
   --surface-elevated: var(--glass-bg);
-  --surface-overlay: var(--bg-header);
+  --surface-overlay: var(--panel-item-bg);
   --surface-hover: color-mix(in srgb, var(--text-primary) 8%, var(--surface-elevated));
   --border-subtle: color-mix(in srgb, var(--glass-border) 70%, transparent);
   --border-default: var(--glass-border);

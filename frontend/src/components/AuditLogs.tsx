@@ -453,7 +453,7 @@ export default function AuditLogs() {
               animate={{ scale: 1, opacity: 1 }}
               exit={reducedMotion ? { opacity: 1 } : { scale: 0.96, opacity: 0 }}
               transition={reducedMotion ? { duration: 0 } : undefined}
-              className="w-full max-w-4xl overflow-hidden rounded-lg border border-white/10 bg-slate-950 shadow-2xl"
+              className="w-full max-w-4xl overflow-hidden rounded-lg border border-white/10 bg-[var(--surface-overlay)] shadow-2xl"
             >
               <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-default)] bg-[var(--panel-item-bg)] p-5">
                 <div>
