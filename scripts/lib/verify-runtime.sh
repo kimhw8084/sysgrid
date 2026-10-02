@@ -309,11 +309,48 @@ verify_runtime_start_frontend() {
     echo "Vite is not installed at $vite_entry. Install qualified dependencies before running verification; the gate will not install them." >&2
     return 1
   }
+  local build_dir
+  build_dir="$(mktemp -d "$VERIFY_RUNTIME_DIR/frontend-build.XXXXXX")" || return 1
+  echo "Building the production frontend for the owned browser runtime..."
   (
-    cd "$VERIFY_RUNTIME_FRONTEND_DIR"
+    cd "$VERIFY_RUNTIME_FRONTEND_DIR" || exit 1
     VITE_API_BASE_URL="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
     VITE_FRONTEND_ORIGIN="$VERIFY_RUNTIME_FRONTEND_ORIGIN" \
-    exec "$NODE_BIN" "$vite_entry" \
+    "$NODE_BIN" "$vite_entry" build --mode production --outDir "$build_dir"
+  ) >"$VERIFY_RUNTIME_LOG_DIR/frontend-build.log" 2>&1 || {
+    echo "Frontend build failed; no frontend server was started. See $VERIFY_RUNTIME_LOG_DIR/frontend-build.log" >&2
+    return 1
+  }
+  "$PYTHON_BIN" - "$build_dir" "$VERIFY_RUNTIME_DIR" "$VERIFY_RUNTIME_LOG_DIR" \
+    "$VERIFY_RUNTIME_BACKEND_ORIGIN" "$VERIFY_RUNTIME_FRONTEND_ORIGIN" <<'PY' || return 1
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+build, runtime, logs, backend_origin, frontend_origin = sys.argv[1:]
+root = Path(build)
+assert (root / 'index.html').is_file(), 'Production build has no index.html'
+receipt = json.dumps({
+    'mode': 'production',
+    'backend_origin': backend_origin,
+    'frontend_origin': frontend_origin,
+    'files': {
+        path.relative_to(root).as_posix(): {
+            'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+            'bytes': path.stat().st_size,
+        }
+        for path in sorted(root.rglob('*')) if path.is_file()
+    },
+}, indent=2) + '\n'
+for directory in {runtime, logs}:
+    (Path(directory) / 'frontend-build.json').write_text(receipt, encoding='utf-8')
+PY
+  (
+    cd "$VERIFY_RUNTIME_FRONTEND_DIR" || exit 1
+    VITE_API_BASE_URL="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    VITE_FRONTEND_ORIGIN="$VERIFY_RUNTIME_FRONTEND_ORIGIN" \
+    exec "$NODE_BIN" "$vite_entry" preview --outDir "$build_dir" \
       --host "$VERIFY_RUNTIME_FRONTEND_HOST" --port "$VERIFY_RUNTIME_FRONTEND_PORT" --strictPort
   ) >"$VERIFY_RUNTIME_LOG_DIR/frontend.log" 2>&1 &
   VERIFY_RUNTIME_FRONTEND_PID=$!
