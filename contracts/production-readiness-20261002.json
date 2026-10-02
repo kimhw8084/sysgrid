@@ -11,29 +11,49 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "f014798e0f3826fa44f9a24b11391aacb7312b22",
+    "candidate": "f4d6e8a679f99a6a49eeea5585311c87d18fd9b1",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37071367594",
-    "tested_merge": "afb7486d662f966833ff2b88fa24540cb140a2ac",
-    "completed_at": "2026-10-02T22:44:57Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37075150782",
+    "tested_merge": "4f0ab2fd80b7c10b3061a5e81c6ffbbde9a874ff",
+    "completed_at": "2026-10-02T23:29:44Z",
     "conclusion": "success",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 922,
-      "frontend": 839,
-      "normal_browser": 184,
+      "backend": 1147,
+      "frontend": 846,
+      "normal_browser": 188,
       "normal_browser_preexisting_skips": 2,
       "desktop_browser": 35,
       "root_preview_browser": 6
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "b18a299c013b738127dcd412df622de5df722eb9 adds trusted ordinary Service creation/no-op receipts, strict date and scalar/finite-value validation, accessible structured save errors with one notice, and Home ownership/count integrity. Latest local proof: 1147 canonical backend tests across 60 files; unchanged frontend Product source retains 846 tests across 158 files; 25 distinct normal-profile Home/domain/navigation cases and six root-profile cases. Preceding Service value and form slices pass 44 and 40 browser cases respectively; overlapping cases are not summed. Negative controls and all new-test selector corrections remain preserved. Fresh assembled hosted CI is required.",
-    "job_duration_seconds": 1851,
-    "backend_duration_seconds": 169.36
+    "later_source": "fd47a42749cef79f8e29a13123a9628b2e17b757 adds robust HTTP error messages, Home IP search/source availability, normalized Network deep-link values, shared UTC-aware forensic timestamps, strict operator privilege/bulk-ID inputs, and readable, accessible Settings permission editing with explicit async team loading. Latest local: 1240 canonical backend tests across 61 files, 868 frontend tests across 159 files, 24 Settings browser cases. Preceding slices independently pass 30 HTTP/Service/Monitoring, 22 Home/Network and 35 shared timestamp/overlay cases; overlapping counts are not summed. Final contrast samples exceed 4.9:1. Negative controls, grouped-edit failures and low-contrast WRITE state are preserved and repaired without changing retries/timeouts. Fresh assembled hosted CI is required.",
+    "job_duration_seconds": 1969,
+    "backend_duration_seconds": 216.73
   },
   "ci_history": [
+    {
+      "candidate": "f014798e0f3826fa44f9a24b11391aacb7312b22",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37071367594",
+      "tested_merge": "afb7486d662f966833ff2b88fa24540cb140a2ac",
+      "completed_at": "2026-10-02T22:44:57Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 922,
+        "frontend": 839,
+        "normal_browser": 184,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1851,
+      "backend_duration_seconds": 169.36
+    },
     {
       "candidate": "ff9e065ee8be5e1116c961bee21daf32c14ba700",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -139,7 +159,15 @@
       "tested_merge": "d28f75e30c2442ae3797e2d07ecea7a9aeaf4ff1",
       "completed_at": "2026-10-02T19:00:54Z",
       "conclusion": "failure",
-      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 489, "frontend": 830, "normal_browser_passed": 163, "normal_browser_failed": 1, "normal_browser_preexisting_skips": 2 },
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 489,
+        "frontend": 830,
+        "normal_browser_passed": 163,
+        "normal_browser_failed": 1,
+        "normal_browser_preexisting_skips": 2
+      },
       "failure": "Assets end-to-end import selected tbody tr input after the multiline editor became a labeled textarea. Hosted DOM and screenshot show the correct imported value. The same selector failed locally; desktop/root profiles did not run.",
       "recovery": "d9a5a868 selects the exact Name, row 1 textbox within the import dialog, preserving value assertion, full workflow, timeout and retries. All 61 local import/Assets/Audit/Monitoring/Network/overlay/Rack/Services cases pass. The later assembled hosted run on 7733c705 passes all three browser profiles."
     },
@@ -150,23 +178,47 @@
       "tested_merge": "8db45e39c78df92c3e2947509d3d5d948df16cd0",
       "completed_at": "2026-10-02T04:10:08Z",
       "conclusion": "success",
-      "counts": { "startup_and_recovery": 71, "subtests": 23, "backend": 188, "frontend": 773, "normal_browser": 91, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+      "counts": {
+        "startup_and_recovery": 71,
+        "subtests": 23,
+        "backend": 188,
+        "frontend": 773,
+        "normal_browser": 91,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
     },
     {
-    "candidate": "0f0ec2fa2d0fe5dbf31a26f309fad093304cab9f",
-    "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36964933511",
-    "conclusion": "failure",
-    "counts": { "startup_and_recovery": 71, "subtests": 23, "backend": 206, "frontend": 786, "normal_browser_passed": 98, "normal_browser_failed": 1, "normal_browser_preexisting_skips": 2 },
-    "failure": "Assets multi-selection disappeared before the overlapping-purge scenario. Later desktop/root browser profiles did not run.",
-    "recovery": "c4fe60fc reproduces and repairs stale React selection overwriting a newer grid selection. Local proof and the later successful assembled run on 597c2dd9 cover this repair."
+      "candidate": "0f0ec2fa2d0fe5dbf31a26f309fad093304cab9f",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36964933511",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 71,
+        "subtests": 23,
+        "backend": 206,
+        "frontend": 786,
+        "normal_browser_passed": 98,
+        "normal_browser_failed": 1,
+        "normal_browser_preexisting_skips": 2
+      },
+      "failure": "Assets multi-selection disappeared before the overlapping-purge scenario. Later desktop/root browser profiles did not run.",
+      "recovery": "c4fe60fc reproduces and repairs stale React selection overwriting a newer grid selection. Local proof and the later successful assembled run on 597c2dd9 cover this repair."
     },
     {
       "candidate": "7c91ef720e845212915302f18e96755fabfa222d",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
       "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36968683132",
       "conclusion": "failure",
-      "counts": { "backend": 225, "frontend": 789, "normal_browser": 106, "normal_browser_preexisting_skips": 2, "desktop_browser_passed": 34, "desktop_browser_failed": 1 },
+      "counts": {
+        "backend": 225,
+        "frontend": 789,
+        "normal_browser": 106,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser_passed": 34,
+        "desktop_browser_failed": 1
+      },
       "failure": "Pure Clarity 1920 visual journey reached the 60-second deadline at its final font assertion after visual assertions. Root profile did not run.",
       "recovery": "0c9cabcf serves a freshly built, hashed production frontend for browser qualification. Existing assertions, timeouts and zero retries are preserved; 597c2dd9 subsequently passed all three hosted browser profiles."
     },
@@ -176,7 +228,11 @@
       "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37006716089",
       "tested_merge": "505528a2ea4d89837f7720bf41a266fa51a269d8",
       "conclusion": "failure",
-      "counts": { "startup_and_recovery_passed": 75, "startup_and_recovery_failed": 1, "subtests": 23 },
+      "counts": {
+        "startup_and_recovery_passed": 75,
+        "startup_and_recovery_failed": 1,
+        "subtests": 23
+      },
       "failure": "Linux ps truncated the owned runtime command in the newly included process-identity check; later gates did not run.",
       "recovery": "597c2dd9 reads full ps arguments and includes observed command text in failures while preserving the exact process assertion. The subsequent hosted run passed 76 startup/recovery checks and every later gate."
     },
@@ -187,7 +243,17 @@
       "tested_merge": "794b9b96737113ab408882a1a2a8f50375bb2673",
       "completed_at": "2026-10-02T14:02:33Z",
       "conclusion": "failure",
-      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 318, "frontend": 791, "normal_browser": 114, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser_passed": 5, "root_preview_browser_failed": 1 },
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 318,
+        "frontend": 791,
+        "normal_browser": 114,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser_passed": 5,
+        "root_preview_browser_failed": 1
+      },
       "failure": "The Pure Clarity tenant-switch test read session storage during the intentional page reload and lost its execution context. The old document had briefly displayed the new tenant label.",
       "recovery": "2a56682a observes DOMContentLoaded before the switch click, waits for the replacement document and additionally checks its timeOrigin increased. All existing scope/draft/write assertions and timeouts/retries remain. Six local root-profile journeys and the subsequent full hosted run on 978b14d5 pass."
     },
@@ -198,7 +264,16 @@
       "tested_merge": "227e8610cf5ae4098f11ca7128c139eadcfc1a4b",
       "completed_at": "2026-10-02T13:05:00Z",
       "conclusion": "success",
-      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 225, "frontend": 791, "normal_browser": 112, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 225,
+        "frontend": 791,
+        "normal_browser": 112,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
     },
     {
       "candidate": "978b14d53508175e674878565014fd5b88019b2e",
@@ -207,7 +282,16 @@
       "tested_merge": "d2bb1acd865d1f541da12aa184e3e2bce3ae7943",
       "completed_at": "2026-10-02T14:48:15Z",
       "conclusion": "success",
-      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 363, "frontend": 791, "normal_browser": 117, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 363,
+        "frontend": 791,
+        "normal_browser": 117,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
     },
     {
       "candidate": "5bace2101c5f0bcdf8d5dd26307e6303afdcefc6",
@@ -216,7 +300,16 @@
       "tested_merge": "f464ea376264bd3c51904b009a46034a7c420f28",
       "completed_at": "2026-10-02T15:38:02Z",
       "conclusion": "success",
-      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 412, "frontend": 791, "normal_browser": 136, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 412,
+        "frontend": 791,
+        "normal_browser": 136,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
     },
     {
       "candidate": "71b214828a13098df69b23bdd4f201e191189dbd",
@@ -225,13 +318,22 @@
       "tested_merge": "31c85a5c6ba43f4c3c5bd3af6386b274b351cb49",
       "completed_at": "2026-10-02T16:40:49Z",
       "conclusion": "success",
-      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 435, "frontend": 820, "normal_browser": 148, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 435,
+        "frontend": 820,
+        "normal_browser": 148,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
     }
   ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "b18a299c013b738127dcd412df622de5df722eb9",
+    "source_head": "fd47a42749cef79f8e29a13123a9628b2e17b757",
     "registered_api_operations": 310,
     "static_ui_declarations": 3132,
     "static_ui_routes": 19,
@@ -744,6 +846,36 @@
       "commit": "b18a299c013b738127dcd412df622de5df722eb9",
       "scope": "Home counts/search inherit registry authority and preserve every grouped inventory record",
       "archive_sha256": "57210b88cc34d2764bb48b5ff763ae152d93d4bebbdbc844fabf1b1f71f01f67"
+    },
+    {
+      "commit": "f4d6e8a679f99a6a49eeea5585311c87d18fd9b1",
+      "scope": "Record reviewed Service and Home checkpoint with exact prior hosted CI and 80 verified archives",
+      "archive_sha256": "027dd9f44b2ecfb8e8112b1e4b55fa1166387f2e7a2d016378292de76486f6ce"
+    },
+    {
+      "commit": "07d8d2e56d3826a88d8e31391b870448ec394d9e",
+      "scope": "Preserve HTTP status and useful bounded messages for null, primitive and structured error responses",
+      "archive_sha256": "7f10aabe04591f24e936ec3cb83a38ce3bff7e7f0def04bf43cf8b234704af13"
+    },
+    {
+      "commit": "3badc66a583d7f1aa103fddc2dd1f2fa3bbc6734",
+      "scope": "Search Network endpoint IPs, preserve deep-link values and truthfully report Home source availability",
+      "archive_sha256": "5702d426c82a61fcf7f69a731a1f4ee271ca5b3fb6dcf14ce1786eb31194d397"
+    },
+    {
+      "commit": "9c1ee62676512b4987d5773881c4c950139ff20b",
+      "scope": "Render consistent UTC-derived forensic timestamps with explicit local timezone and unavailable states",
+      "archive_sha256": "d5eac918391d28bb4208e225d137f56ec34f8989b494aaed0cc53b1ae07e3530"
+    },
+    {
+      "commit": "fcd095eda20cf77b66cc44a9c02ff1942226f8e5",
+      "scope": "Require boolean operator privilege flags and bounded integer bulk IDs with atomic rejection",
+      "archive_sha256": "da578af10bc2e12340651ab6468e8f68690ab695abbb8f3a88bc91029efe1035"
+    },
+    {
+      "commit": "fd47a42749cef79f8e29a13123a9628b2e17b757",
+      "scope": "Make Settings permission controls readable and accessible; repair grouped-operator permission saves",
+      "archive_sha256": "a96da2713d78d902fc506e570fd6bafeae7bb4564bf3e436985557e067b781a1"
     }
   ],
   "groups": [
@@ -800,7 +932,8 @@
           "status": "scoped_implementation_verified",
           "reviewed_commits": [
             "8b2ec178",
-            "0b41d3c7", "2a56682a"
+            "0b41d3c7",
+            "2a56682a"
           ],
           "remaining": "Scoped tenant fixes and corrected reload synchronization passed assembled CI at 978b14d5, including six root-preview journeys. Company-host trust and final release-candidate proof remain separate."
         },
@@ -813,7 +946,12 @@
           "status": "in_progress",
           "reviewed_commits": [
             "944c8709",
-            "8b2ec178", "ba72aa15", "9edd3e47", "70ade100", "d838deac", "4629b134"
+            "8b2ec178",
+            "ba72aa15",
+            "9edd3e47",
+            "70ade100",
+            "d838deac",
+            "4629b134"
           ],
           "remaining": "Asset inline and ordinary draft protection passed assembled CI at 71b21482. Later import proof covers pending closure, retry, old receipts and malformed-paste draft preservation. Other forms, cross-route/browser-tab/restart persistence and optimistic conflicts remain."
         },
@@ -834,9 +972,11 @@
             "4b567bbf",
             "1089cb11",
             "a307320c",
-            "062dd490"
+            "062dd490",
+            "07d8d2e5",
+            "fcd095ed"
           ],
-          "remaining": "Service saves preserve rejected drafts, display structured field errors with accessible associations and one notice, and permit correction and retry in both themes. Dates and values now reject malformed backend input; import previews expose matching name/cost constraints. Other forms, conflicts, uncertain outcomes and cross-request concurrency remain."
+          "remaining": "HTTP errors now retain status/metadata and produce bounded human-readable messages for null, primitive and structured failures; Service error-console readback remains useful. Operator privilege inputs reject malformed booleans without side effects. Other forms, conflicts, uncertain outcomes and cross-request concurrency remain."
         },
         {
           "id": "B4",
@@ -851,9 +991,10 @@
             "290e1db7",
             "755bc2db",
             "c1a9050f",
-            "01777425"
+            "01777425",
+            "9c1ee626"
           ],
-          "remaining": "Shared modal and dirty confirmation now respect reduced motion; real rendered samples, focus trapping/return, Escape, preserved drafts and explicit discard pass in both themes. Existing opaque overlays and Audit payload remain verified. Other independent overlays, anchoring and viewport states still require qualification."
+          "remaining": "Shared dialog headers now parse naive API timestamps as UTC, retain explicit offsets, show the local timezone and mark missing/invalid dates unavailable. Chicago/Seoul in both themes and existing overlay/motion cases pass. Remaining overlay states, focus/scroll behavior and full dialog inventory still need qualification."
         },
         {
           "id": "B5",
@@ -872,9 +1013,10 @@
             "4629b134",
             "c1a9050f",
             "4b567bbf",
-            "ac01628f"
+            "ac01628f",
+            "fd47a427"
           ],
-          "remaining": "Selected import VALID badges now meet measured contrast in both themes (5.964:1 light, 5.348:1 dark); final screenshots and surrounding overlay journeys pass. Earlier theme repairs remain. Full state/viewport/permission visual-system qualification remains."
+          "remaining": "Settings permission overview/table now uses established theme tokens and readable typography; light-mode dark sticky cells and faint labels are repaired. Permission-state/hover samples pass at minimum 4.976:1 in both themes. Expanded sync, bulk flyouts, remaining views and full visual-state coverage remain."
         },
         {
           "id": "B6",
@@ -883,8 +1025,17 @@
           "tag": "Known repair",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709","be33d285","259ebc52","290e1db7","70ade100","d838deac","755bc2db"],
-          "remaining": "Audit payload at 390x844 and 740x360 now keeps dismissal visible during keyboard scrolling. Existing dialog containment was already correct. Earlier Asset and import header repairs remain reviewed; other long-content, short-height and large-text states need qualification."
+          "reviewed_commits": [
+            "944c8709",
+            "be33d285",
+            "259ebc52",
+            "290e1db7",
+            "70ade100",
+            "d838deac",
+            "755bc2db",
+            "fd47a427"
+          ],
+          "remaining": "Settings identity columns remain sticky on desktop and scroll on narrow screens so permission buttons remain reachable. Real saves and no page overflow pass at 1440 and 390 widths in both themes. Wider responsive/zoom/data-density coverage remains."
         },
         {
           "id": "B7",
@@ -902,9 +1053,10 @@
             "755bc2db",
             "4b567bbf",
             "01777425",
-            "1089cb11"
+            "1089cb11",
+            "fd47a427"
           ],
-          "remaining": "Service scalar controls now have unique label/error associations, invalid/required states and native label-click focus. Rejected-date correction clears stale diagnostics and saves correctly in both themes. Earlier reduced-motion, readable import and Audit controls remain. Full keyboard/assistive-technology/zoom/reflow and other dynamic overlay states remain."
+          "remaining": "Settings Sort, row selection, admin toggles and permission buttons have explicit accessible names; switches expose focus and admin-inherited permission buttons are disabled. Earlier Service label/error associations and keyboard proof remain. Full assistive-technology, zoom/reflow and remaining controls remain."
         },
         {
           "id": "B8",
@@ -912,8 +1064,12 @@
           "outcome": "Reliable filtering, sorting, selection, grouping, saved views, column preferences, bulk actions, history, and comparison where applicable.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["82c2586e","1255794d"],
-          "remaining": "Network restores remote search, display and views when browser storage is empty/partial; actual local fields and explicitly empty favorites retain precedence. Malformed local collections no longer crash the route. Delayed typing remains protected. Other modules/fields, user/tenant namespaces and cross-device conflicts remain."
+          "reviewed_commits": [
+            "82c2586e",
+            "1255794d",
+            "fd47a427"
+          ],
+          "remaining": "Settings permission tables now provide named controls, explicit selection state, accurate empty-row span and reachable horizontal actions. Broader saved views, filters, selection, import/export and table behavior remain."
         },
         {
           "id": "B9",
@@ -930,18 +1086,24 @@
             "4629b134",
             "5d147d7b",
             "4b567bbf",
-            "1089cb11"
+            "1089cb11",
+            "07d8d2e5",
+            "3badc66a",
+            "9c1ee626"
           ],
-          "remaining": "Shared form-error parsing now reads structured apiFetch data to retain field diagnostics. Service saves show one useful notice while preserving the global diagnostic record; draft/retry behavior passes rendered checks. Other loading/empty/stale/partial/denied/conflict and unknown-outcome states remain."
+          "remaining": "apiFetch preserves HTTP error metadata and bounded useful messages for null/primitive/structured failures; Home truth envelopes require an available source and actual value while retaining valid zero. Shared forensic dates show unavailable honestly. Other loading/stale/partial/denied/conflict and unknown outcomes remain."
         },
         {
           "id": "B10",
           "title": "Improve navigation and daily efficiency",
           "outcome": "Reliable deep links, Back behavior, preserved context, tenant-scoped preferences, useful search, clear terminology, dates, units, and shortcuts.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Reliable deep links, Back behavior, preserved context, tenant-scoped preferences, useful search, clear terminology, dates, units, and shortcuts."
+          "status": "in_progress",
+          "reviewed_commits": [
+            "3badc66a",
+            "9c1ee626"
+          ],
+          "remaining": "Home/global endpoint-IP search reaches the correct Network record with saved IP/port values; shared timestamps agree with detail bodies in Chicago and Seoul. Back/context/preferences, broader search and date/unit/shortcut coverage remain."
         }
       ]
     },
@@ -986,9 +1148,11 @@
             "c2453f26",
             "a307320c",
             "1089cb11",
-            "062dd490"
+            "062dd490",
+            "07d8d2e5",
+            "fcd095ed"
           ],
-          "remaining": "Services now normalize valid calendar dates, reject invalid date/type/cost/finite-JSON values, preserve omissions and explicit optional clears, and share validation across ordinary/bulk/import entry points. Numeric-text and JSON import compatibility remain. Form errors consume structured API data. Full request/response/OpenAPI typing, pagination and other domains remain."
+          "remaining": "Shared HTTP errors normalize nullable/primitive/object responses without losing status or original diagnostics. Operator admin flags require booleans; bulk IDs require bounded positive integers. Earlier Service omitted/null/date/scalar/import rules remain. Full typed request/response/OpenAPI, pagination and other domains remain."
         },
         {
           "id": "C3",
@@ -1006,9 +1170,11 @@
             "602cdf6a",
             "91f0b916",
             "ac01628f",
-            "b18a299c"
+            "b18a299c",
+            "3badc66a",
+            "fcd095ed"
           ],
-          "remaining": "Home Asset/Service/Network counts and search now share registry ownership constraints for tenant admins and System Root. Racked-asset counts exclude foreign and archived records; floating Services and owned historical relationships remain supported. Earlier Service/Network guards remain. Complete roles, remaining embedded projections and cross-writer races remain."
+          "remaining": "Home source availability follows Asset/Rack capabilities; endpoint-IP search preserves tenant/record ownership for normal/root callers. Settings malformed privilege inputs cannot coerce access; reader denials and distinct control-plane policy remain verified. Full roles, embedded projections and company identity qualification remain."
         },
         {
           "id": "C4",
@@ -1031,9 +1197,11 @@
             "0d29d2bd",
             "91f0b916",
             "ac01628f",
-            "c2453f26"
+            "c2453f26",
+            "fcd095ed",
+            "fd47a427"
           ],
-          "remaining": "Ordinary Service no-op updates and repeated mounts no longer mutate timestamps or add misleading audit receipts; actual updates identify changed fields. Prior OS-move and import atomic rollback controls remain. Cross-request conflicts, idempotent creation, retries/unknown outcomes and remaining writers remain."
+          "remaining": "Invalid late operator batch items leave Operators, Teams, TeamAudit and UserPoolVersion unchanged. Grouped single/bulk edits explicitly await team loading and preserve accurate snapshots. Cross-request conflicts, debounced edit departure, idempotency, retries/unknown outcomes and remaining writers remain."
         },
         {
           "id": "C5",
@@ -1074,9 +1242,12 @@
             "ac01628f",
             "a307320c",
             "062dd490",
-            "b18a299c"
+            "b18a299c",
+            "3badc66a",
+            "fcd095ed",
+            "fd47a427"
           ],
-          "remaining": "Services reject malformed scalar/date/cost/JSON values before changing records, hosts or audit; valid identifiers, dates and explicit clears round-trip. Home ownership and grouped-count conservation now match registry truth, including legacy NULL/empty/Unknown values. Cross-request referential/lifecycle races, uniqueness and remaining relationships remain."
+          "remaining": "Home IP search includes retained legacy null-endpoint records without exposing foreign/deleted rows; normalized detail preserves saved endpoints. Operator IDs cannot alias booleans; grouped permission edits preserve/change/clear primary teams consistently with history. Upsert omissions, role/team scalar schemas, uniqueness and concurrent relationships remain."
         },
         {
           "id": "C7",
@@ -1101,9 +1272,10 @@
             "ac01628f",
             "c2453f26",
             "a307320c",
-            "062dd490"
+            "062dd490",
+            "fcd095ed"
           ],
-          "remaining": "Service creation conflicts are sanitized; dates, text shapes, boolean/negative/nonfinite/overflow costs and nested nonfinite JSON are rejected before persistence. Import validates original cost and device-ID shapes and reports bounded row diagnostics. Existing file/request limits and identifier preservation remain. Remaining typed schemas and complete resource-bound qualification remain."
+          "remaining": "Operator privilege values reject strings/numbers/null/containers; bool/nonpositive/overflow bulk IDs reject before database use with atomic persistence checks. Existing Service date/cost/finite-JSON and import limits remain. Remaining typed schemas and resource-bound qualification remain."
         },
         {
           "id": "C8",
@@ -1111,7 +1283,11 @@
           "outcome": "Approved provider references, privileged access, rotation and revocation, and redaction. Inspect tracked configuration and history; remediate any actual exposure found.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["e5160949", "8b8a8db4", "a5d268f6"],
+          "reviewed_commits": [
+            "e5160949",
+            "8b8a8db4",
+            "a5d268f6"
+          ],
           "remaining": "Ordinary vault reads are metadata-only; reveal is privileged/audited/no-store, UI values expire, metadata edits preserve values, SQL parameters are hidden. Public validation errors no longer echo inputs/custom exceptions and persisted browser diagnostics use metadata only, with legacy migration. Provider custody/rotation, remaining logs/proxy diagnostics and manual report privacy are not qualified; company provider selection is pending."
         },
         {
@@ -1148,9 +1324,10 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "b18a299c"
+            "b18a299c",
+            "3badc66a"
           ],
-          "remaining": "Home aggregate/search ownership matches Asset/Service/Network registries; Deleted Network rows and foreign rack occupants are excluded. Grouped totals conserve NULL, empty and literal Unknown categories. Both-theme counts/drill-through and normal/root navigation pass. Full role/freshness/multi-source availability behavior, custom-IP endpoint search and authentic observation integrations remain."
+          "remaining": "Home count/search ownership and grouped conservation remain verified. Endpoint-IP search and mixed Asset/Rack source availability now pass, including zero versus unavailable values. Full roles/freshness/performance and authentic multi-source observation integrations remain."
         },
         {
           "id": "D2",
@@ -1158,7 +1335,26 @@
           "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7", "28e0579b", "679f366a", "ba72aa15", "9edd3e47", "5b6520d2", "70ade100", "adce6f8e", "d838deac", "bf236cad", "4629b134", "5d147d7b"],
+          "reviewed_commits": [
+            "944c8709",
+            "e5160949",
+            "c4fe60fc",
+            "c4bbbd49",
+            "259ebc52",
+            "7323ef6d",
+            "290e1db7",
+            "28e0579b",
+            "679f366a",
+            "ba72aa15",
+            "9edd3e47",
+            "5b6520d2",
+            "70ade100",
+            "adce6f8e",
+            "d838deac",
+            "bf236cad",
+            "4629b134",
+            "5d147d7b"
+          ],
           "remaining": "Earlier draft/scalar/form repairs passed assembled CI. Later reviewed stages cover ordinary create/edit audit, service synchronization rollback, quoted multiline paste/edit/readback, truthful errors and bounded import admission. Header mapping, deeper resource complexity, bulk-table feedback, optimistic conflicts, roles and large datasets remain."
         },
         {
@@ -1183,9 +1379,10 @@
             "c2453f26",
             "a307320c",
             "1089cb11",
-            "062dd490"
+            "062dd490",
+            "07d8d2e5"
           ],
-          "remaining": "Service omitted fields, host authority, OS synchronization, import/snapshot/history, trusted ordinary creators and accurate no-op receipts are covered. Date/scalar/finite-value rules preserve valid legacy round trips. Accessible fields, one useful save-error notice and corrected retries pass both themes. Lifecycle authority, typed response/OpenAPI, pagination, broader UX/roles/performance and concurrency remain."
+          "remaining": "Service form recovery and error-console inspection now retain useful HTTP messages/status/field diagnostics; existing host/import/date/value/audit safeguards remain. Lifecycle authority, typed response/OpenAPI, pagination, broader UX/roles/performance and concurrency remain."
         },
         {
           "id": "D5",
@@ -1206,9 +1403,11 @@
             "d8523809",
             "3ea3b70a",
             "eedcd4de",
-            "0d29d2bd"
+            "0d29d2bd",
+            "3badc66a",
+            "9c1ee626"
           ],
-          "remaining": "Earlier Network integrity passes hosted CI at e488ff50. Later local proof covers no-op truthfulness, editable legacy custom-IP links and atomic per-record import/bulk history, with both-theme Audit readback and exact target navigation. Canonical backend passes 763 tests and shared-modal regression passes 52 browser journeys. Dormant revision UI, historical aggregate reconstruction, canonicalization/precision, concurrency and full role/performance coverage remain."
+          "remaining": "Endpoint-IP search preserves ownership and supports legacy custom-only records; row/deep-link normalization displays saved IPs, peer ports and original speed text. Shared forensic timestamps agree with body dates in both themes/timezones. Legacy custom-only embedded Knowledge query, dormant revision UI, precision/concurrency and full roles/performance remain."
         },
         {
           "id": "D6",
@@ -1216,7 +1415,10 @@
           "outcome": "Transaction-safe placement and collision checks, credible capacity information, responsive planning, reliable relocation and recovery.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["0390df80", "d838deac"],
+          "reviewed_commits": [
+            "0390df80",
+            "d838deac"
+          ],
           "remaining": "Earlier Rack query batching is reviewed. Nullable imported asset types no longer crash mount search; the explicit regression preserves site navigation, blank-plan mounting and collision rejection. Broad placement concurrency, capacity, responsive planning, relocation and recovery remain."
         },
         {
@@ -1242,9 +1444,12 @@
           "title": "Settings / Access",
           "outcome": "Predictable administration, privilege boundaries, safe tenant, user, and role changes, actionable diagnostics, and recovery from administrative mistakes.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Predictable administration, privilege boundaries, safe tenant, user, and role changes, actionable diagnostics, and recovery from administrative mistakes."
+          "status": "in_progress",
+          "reviewed_commits": [
+            "fcd095ed",
+            "fd47a427"
+          ],
+          "remaining": "Strict privilege booleans and bounded bulk IDs reject atomically; grouped user edits preserve primary-team authority and history. Both-theme keyboard admin toggle, bulk revoke, reload, readable named permission controls and mobile horizontal actions pass. Debounced departure, expanded sync/bulk styles, upsert omissions, role/team schemas, history/restore policy and concurrency remain."
         }
       ]
     },
@@ -1268,7 +1473,11 @@
           "outcome": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["0390df80", "679f366a", "5d147d7b"],
+          "reviewed_commits": [
+            "0390df80",
+            "679f366a",
+            "5d147d7b"
+          ],
           "remaining": "Rack SELECTs reduced from 241 to 2 for 40 racks/120 placements; interface reads use three SELECTs at 1/40/600 ports. Import file parsing now runs off the request event loop with bounded row admission. Aggregate concurrency/memory/CPU, pagination, broader scale, indexes, contention and process topology remain unqualified."
         },
         {
@@ -1334,9 +1543,11 @@
             "a307320c",
             "1089cb11",
             "062dd490",
-            "b18a299c"
+            "b18a299c",
+            "fcd095ed",
+            "fd47a427"
           ],
-          "remaining": "Hosted f014798e succeeds on tested merge afb7486d: 76 startup/recovery plus 23 subtests, 922 backend, 839 frontend, 184 normal browser plus two pre-existing skips, 35 desktop and six root-preview. Required job 30m51s; backend 169.36s within unchanged 45-minute deadline. Later local proof reaches 1147 canonical backend, 846 frontend, 25 distinct normal Home/navigation and six root cases, with preceding 44 Service-value and 40 form cases. Fresh assembled hosted proof, supply chain and final release checks remain."
+          "remaining": "Hosted f4d6e8a succeeds on merge 4f0ab2fd: 76 startup/recovery plus 23 subtests, 1147 backend, 846 frontend, 188 normal browser plus two existing skips, 35 desktop and six root-preview. Job 32m49s; backend 216.73s within unchanged 45-minute deadline. Later local proof reaches 1240 backend, 868 frontend and 24 Settings browser cases; new regressions join canonical discovery. Fresh assembled CI, supply chain and final release checks remain."
         },
         {
           "id": "E7",
@@ -1392,7 +1603,10 @@
           "tag": "Expanded scope",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["bc40bdc9", "8c85f832"],
+          "reviewed_commits": [
+            "bc40bdc9",
+            "8c85f832"
+          ],
           "remaining": "Simulation workspace plus window authoring/idempotent save/nondestructive cancellation passed assembled CI at 597c2dd9. Cancellation preserves history and blocks stale execution. Real provider adapters, runbook integration and authentic company evidence remain."
         },
         {
