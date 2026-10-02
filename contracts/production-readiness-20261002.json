@@ -11,16 +11,16 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "978b14d53508175e674878565014fd5b88019b2e",
+    "candidate": "5bace2101c5f0bcdf8d5dd26307e6303afdcefc6",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37018340948",
-    "tested_merge": "d2bb1acd865d1f541da12aa184e3e2bce3ae7943",
-    "completed_at": "2026-10-02T14:48:15Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37023854421",
+    "tested_merge": "f464ea376264bd3c51904b009a46034a7c420f28",
+    "completed_at": "2026-10-02T15:38:02Z",
     "conclusion": "success",
-    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 363, "frontend": 791, "normal_browser": 117, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
+    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 412, "frontend": 791, "normal_browser": 136, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "ba72aa1585cfc1b3f5b908ea5a537de6f5f02d52 adds modern-color contrast measurement, asset calendar-date integrity, scoped interface projections without per-port queries and inline pending-save protection. These reviewed slices have local proof and require fresh assembled CI."
+    "later_source": "70ade100e314434e9a73eb0a81c8efd1e930f419 adds inline draft persistence across asset tabs, safe scalar writes, accessible ordinary asset fields and verified save completion/recovery. These reviewed slices have local proof and require fresh assembled CI."
   },
   "ci_history": [
     {
@@ -79,17 +79,26 @@
       "completed_at": "2026-10-02T13:05:00Z",
       "conclusion": "success",
       "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 225, "frontend": 791, "normal_browser": 112, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+    },
+    {
+      "candidate": "978b14d53508175e674878565014fd5b88019b2e",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37018340948",
+      "tested_merge": "d2bb1acd865d1f541da12aa184e3e2bce3ae7943",
+      "completed_at": "2026-10-02T14:48:15Z",
+      "conclusion": "success",
+      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 363, "frontend": 791, "normal_browser": 117, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
     }
   ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "ba72aa1585cfc1b3f5b908ea5a537de6f5f02d52",
+    "source_head": "70ade100e314434e9a73eb0a81c8efd1e930f419",
     "registered_api_operations": 310,
-    "static_ui_declarations": 3150,
+    "static_ui_declarations": 3132,
     "static_ui_routes": 19,
     "static_ui_overlays": 259,
-    "static_ui_controls": 2872,
+    "static_ui_controls": 2854,
     "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
   },
   "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
@@ -387,6 +396,26 @@
       "commit": "ba72aa1585cfc1b3f5b908ea5a537de6f5f02d52",
       "scope": "Inline hardware, relationship and credential pending-save safety and failed-save recovery",
       "archive_sha256": "d35f8014b396bf6153d7a3c06bef63db945ce43929589525e9e469881714376c"
+    },
+    {
+      "commit": "5bace2101c5f0bcdf8d5dd26307e6303afdcefc6",
+      "scope": "Fifth ledger checkpoint with exact-head CI success and source inventories",
+      "archive_sha256": "b1eb01ab0e868361ca75b36fac8c7e1a3db43af205f317205e9286dc7af2908b"
+    },
+    {
+      "commit": "9edd3e4782f5073ce8011b6667c705aec569d7bb",
+      "scope": "Inline asset drafts survive tabs and require deliberate discard; pending writes guard departure",
+      "archive_sha256": "7ec466a8674f0dce8b683b1662e999d83f8a96c8127c3a8494540ee8155248ab"
+    },
+    {
+      "commit": "5b6520d219d93ad9aa5daa293f0fac5c8ef7c977",
+      "scope": "Strict scalar types and bounds before ordinary and bulk asset writes",
+      "archive_sha256": "55e914c9c71d5f8016bf3ba1b99e18429dc3cd386fef59a47126eb33521bb5cf"
+    },
+    {
+      "commit": "70ade100e314434e9a73eb0a81c8efd1e930f419",
+      "scope": "Accessible asset form fields, inline scalar feedback and protected save/failure/completion lifecycle",
+      "archive_sha256": "99459ab194e3ef50f7763aeca4baef5745b00c30895f5cf4d283d1e25ab01dd8"
     }
   ],
   "groups": [
@@ -456,9 +485,9 @@
           "status": "in_progress",
           "reviewed_commits": [
             "944c8709",
-            "8b2ec178"
+            "8b2ec178", "ba72aa15", "9edd3e47", "70ade100"
           ],
-          "remaining": "Maintenance/shared cancellation repair passed assembled CI. ba72aa15 protects inline drafts during pending saves and retains failed drafts for retry in both themes. Cross-tab/unmount/close and pre-submit row-switch draft persistence remain unqualified."
+          "remaining": "Initial inline-save guards passed assembled CI at 5bace210. Later 9edd3e47 retains hardware/relationship/credential drafts across tab unmounts, guards dirty departure and competing row edits; 70ade100 protects pending ordinary edits and closes successful forms. These later slices have local proof. Other forms, cross-route/browser-tab/restart persistence and optimistic conflicts remain."
         },
         {
           "id": "B3",
@@ -466,8 +495,8 @@
           "outcome": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["259ebc52", "ba72aa15"],
-          "remaining": "Hardware quantities preserve invalid drafts with one local notice. Hardware/relationship/credential inline saves freeze inputs and competing actions, expose busy feedback and preserve failed drafts for real-backend retry. Remaining forms, close/tab behavior, errors and concurrency still need qualification."
+          "reviewed_commits": ["259ebc52", "ba72aa15", "9edd3e47", "70ade100"],
+          "remaining": "Ordinary Assets fields now show associated numeric errors before writes, preserve invalid input, lock pending controls and departure, retain failed drafts for real retry and close on success. All 31 Assets browser checks pass locally, plus two overlapping phone-width pending cases. Other forms, bulk-table feedback, uncertain outcomes and concurrency remain."
         },
         {
           "id": "B4",
@@ -487,9 +516,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7"
+            "944c8709", "be33d285", "259ebc52", "290e1db7", "bb6bf5d5", "70ade100"
           ],
-          "remaining": "Relationship badge contrast improved from 3.488/2.633 to 5.186/7.594 in both themes. bb6bf5d5 measures modern CSS transition colors and retains negative contrast controls. Captures remain source-scoped; whole-surface visual states remain unqualified."
+          "remaining": "Relationship badge and modern CSS measurement repairs passed assembled CI. 70ade100 locally qualifies visible ordinary Asset form text at two error-state scroll positions in both themes; error contrast is 6.819/6.470. Captures remain source-scoped; whole-surface visual states remain unqualified."
         },
         {
           "id": "B6",
@@ -499,9 +528,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7"
+            "944c8709", "be33d285", "259ebc52", "290e1db7", "70ade100"
           ],
-          "remaining": "Diagnostic, hardware and relationship mobile layouts have rendered proof. Relationship role values remain readable in a stacked phone form and dropdown text reserves caret space. Full long-content and large-text qualification remains."
+          "remaining": "Diagnostic, hardware and relationship mobile layouts have rendered proof. 70ade100 adds ordinary Asset form error and pending-save proof at phone width; the busy header and primary controls remain contained. Full long-content, short-height and large-text qualification remains."
         },
         {
           "id": "B7",
@@ -510,9 +539,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7"
+            "944c8709", "be33d285", "259ebc52", "290e1db7", "70ade100"
           ],
-          "remaining": "Hardware/relationship actions are named, relationship targets are 44 pixels, table scroll regions accept keyboard focus, and shared select labels now name controls while preserving error/hint descriptions. Complete keyboard, zoom and assistive-technology acceptance remains."
+          "remaining": "Hardware/relationship actions and select labeling have scoped proof. 70ade100 associates all 22 native Asset form fields with visible labels, proves label-click focus and links invalid state/error descriptions. Remaining custom-dropdown names, complete keyboard/zoom and assistive-technology acceptance remain."
         },
         {
           "id": "B8",
@@ -528,9 +557,9 @@
           "title": "Make every asynchronous state truthful",
           "outcome": "Loading, empty, stale, partial, unavailable, denied, conflict, and failure states have distinct explanations and useful recovery actions.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Loading, empty, stale, partial, unavailable, denied, conflict, and failure states have distinct explanations and useful recovery actions."
+          "status": "in_progress",
+          "reviewed_commits": ["ba72aa15", "9edd3e47", "70ade100"],
+          "remaining": "Selected Assets inline and ordinary forms now distinguish pending writes from failed drafts, preserve retry inputs and retire successful edits. Other loading/empty/stale/partial/denied/conflict states across the product remain unqualified."
         },
         {
           "id": "B10",
@@ -566,8 +595,8 @@
           "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d", "28e0579b"],
-          "remaining": "Firewall/hardware/software/relationship typed boundaries passed assembled CI. 28e0579b validates all four asset calendar fields consistently across create/update/bulk preview/execution; invalid dates cannot silently clear values. Remaining schemas, scalar types and pagination are unqualified."
+          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d", "28e0579b", "5b6520d2"],
+          "remaining": "Typed boundaries and asset calendar integrity passed assembled CI at 5bace210. 5b6520d2 adds locally qualified strict text/count/power/boolean validation before ordinary/bulk writes, preserving nulls and full projections. Generic imports bypass that validator and require repair; nested JSON, full OpenAPI schemas and pagination remain."
         },
         {
           "id": "C3",
@@ -605,8 +634,8 @@
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a"],
-          "remaining": "Asset/firewall/hardware/software/relationship boundaries passed assembled CI. Date validation now preserves existing values on invalid input. Interface projections hide foreign peers, preserve archived/custom-IP history and correct both loopback directions. Uniqueness concurrency, full relationships and other legacy data remain."
+          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2"],
+          "remaining": "Asset date and interface integrity passed assembled CI. 5b6520d2 locally proves 560 invalid scalar writes preserve both selected assets, service synchronization and audit state; valid preview/execute/no-op behavior remains. Generic asset import tenant/type/lifecycle convergence, uniqueness concurrency and other legacy data remain."
         },
         {
           "id": "C7",
@@ -614,8 +643,8 @@
           "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a"],
-          "remaining": "Trusted-actor throttling, redaction and firewall/asset/hardware/software/relationship protections passed assembled CI. Date fields reject invalid calendars/non-text input before writes; interface IDs reject overflow before SQLite. Remaining URLs, uploads, rich content, exports, request sizes, other scalar/date schemas and distributed limits remain."
+          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2"],
+          "remaining": "Trusted-actor throttling, redaction, dates and scoped definition boundaries passed assembled CI. 5b6520d2 locally rejects invalid text/boolean/count types, non-finite power, overflow and negative physical quantities before writes. Remaining import/upload, nested JSON, URLs, rich content, request sizes and distributed limits remain."
         },
         {
           "id": "C8",
@@ -668,8 +697,8 @@
           "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7", "28e0579b", "679f366a", "ba72aa15"],
-          "remaining": "Asset/hardware/software/relationship repairs passed assembled CI at 978b14d5. Later calendar-date integrity, authorized interface projections and pending inline saves have local backend/browser proof. Broader editing/import, complete inline draft lifecycle, role and large-dataset qualification remains."
+          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7", "28e0579b", "679f366a", "ba72aa15", "9edd3e47", "5b6520d2", "70ade100"],
+          "remaining": "Calendar, interface and initial inline-save repairs passed assembled CI at 5bace210. Later inline draft lifecycle, strict scalar writes and accessible ordinary form validation/save completion have reviewed local proof. Generic imports, bulk-table feedback, optimistic conflicts, role and large-dataset qualification remain."
         },
         {
           "id": "D3",
@@ -789,7 +818,7 @@
           "reviewed_commits": [
             "38c82a58", "0c9cabcf", "597c2dd9", "2a56682a"
           ],
-          "remaining": "978b14d5 passed 76 startup/recovery checks plus 23 subtests, 363 backend, 791 frontend, 117 normal browser journeys with two existing skips, 35 desktop and six root journeys. Later contrast/date/interface/inline-save changes need assembled CI; supply-chain and final release checks remain."
+          "remaining": "5bace210 passed 76 startup/recovery checks plus 23 subtests, 412 backend, 791 frontend, 136 normal browser checks with two existing skips, 35 desktop and six root journeys. Later draft lifecycle, scalar and ordinary form changes need fresh assembled CI; supply-chain and final release checks remain."
         },
         {
           "id": "E7",
