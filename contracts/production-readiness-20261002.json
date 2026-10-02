@@ -20,7 +20,7 @@
     "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 225, "frontend": 791, "normal_browser": 112, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "259ebc5289b567097067bf03e413a8a41676df10 includes reviewed firewall, asset write-boundary and hardware/mobile repairs after this successful run. These later changes require fresh assembled CI."
+    "later_source": "2a56682afcea41192ef2184d91f8cd0fdee3b37a includes later firewall, asset, hardware, relationship/software and responsive-UI repairs plus corrected tenant reload proof. The d3640e00 assembled run passed backend/frontend/normal/desktop gates but failed one root test; the newer assembled candidate requires fresh CI."
   },
   "ci_history": [
     {
@@ -59,12 +59,23 @@
       "counts": { "startup_and_recovery_passed": 75, "startup_and_recovery_failed": 1, "subtests": 23 },
       "failure": "Linux ps truncated the owned runtime command in the newly included process-identity check; later gates did not run.",
       "recovery": "597c2dd9 reads full ps arguments and includes observed command text in failures while preserving the exact process assertion. The subsequent hosted run passed 76 startup/recovery checks and every later gate."
+    },
+    {
+      "candidate": "d3640e004f3174d0ee0a1bb060d1782c254a1769",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37013407447",
+      "tested_merge": "794b9b96737113ab408882a1a2a8f50375bb2673",
+      "completed_at": "2026-10-02T14:02:33Z",
+      "conclusion": "failure",
+      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 318, "frontend": 791, "normal_browser": 114, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser_passed": 5, "root_preview_browser_failed": 1 },
+      "failure": "The Pure Clarity tenant-switch test read session storage during the intentional page reload and lost its execution context. The old document had briefly displayed the new tenant label.",
+      "recovery": "2a56682a observes DOMContentLoaded before the switch click, waits for the replacement document and additionally checks its timeOrigin increased. All existing scope/draft/write assertions and timeouts/retries remain. Six local root-profile journeys pass; fresh hosted CI remains required."
     }
   ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "259ebc5289b567097067bf03e413a8a41676df10",
+    "source_head": "2a56682afcea41192ef2184d91f8cd0fdee3b37a",
     "registered_api_operations": 310,
     "static_ui_declarations": 3150,
     "static_ui_routes": 19,
@@ -322,6 +333,26 @@
       "commit": "259ebc5289b567097067bf03e413a8a41676df10",
       "scope": "Hardware parent and quantity validation, atomic audit and mobile editing",
       "archive_sha256": "0418c185b05a14f1c80af9f21cbdb61912e2cdbd264cdb2f29d696add2b9af79"
+    },
+    {
+      "commit": "d3640e004f3174d0ee0a1bb060d1782c254a1769",
+      "scope": "Third production CI and source-inventory checkpoint",
+      "archive_sha256": "8864700b3c33b2c1ef6a89c5a214d760350c6ec9d3d3af8838204a1c2ae66e6a"
+    },
+    {
+      "commit": "7323ef6d7fbd6d109da24a95286c296522f3c6e4",
+      "scope": "Relationship/software ownership, typed validation, read isolation and atomic audit",
+      "archive_sha256": "69b91073c8e56b21d0f97db9ad4b705841c0b4c150a277011347ec950f927791"
+    },
+    {
+      "commit": "290e1db76c0cc47d24ca1913290d7d61ba5de95f",
+      "scope": "Responsive relationship editing, labeled selects, named actions and theme contrast",
+      "archive_sha256": "a8904b87eba50596a097dd74b81f4dcc9acc7cedc85aae66f72875ffd5d34eb4"
+    },
+    {
+      "commit": "2a56682afcea41192ef2184d91f8cd0fdee3b37a",
+      "scope": "Observe the replacement document before tenant-scope browser assertions",
+      "archive_sha256": "5d08f4f791535ac966f2cb855fd773addcc1975077d5d06984690881c244fea0"
     }
   ],
   "groups": [
@@ -378,7 +409,7 @@
           "status": "scoped_implementation_verified",
           "reviewed_commits": [
             "8b2ec178",
-            "0b41d3c7"
+            "0b41d3c7", "2a56682a"
           ],
           "remaining": "Scoped tenant fixes passed assembled PR32 CI including six root-preview journeys. Company-host trust and final release-candidate proof remain separate."
         },
@@ -411,9 +442,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52"
+            "944c8709", "be33d285", "259ebc52", "290e1db7"
           ],
-          "remaining": "be33d285 repairs error-console mobile/short layout, focus/filter state and App tools stacking; 259ebc52 confines hardware table scrolling so editing cannot displace the enclosing form. Remaining overlays, keyboard and viewport states require qualification."
+          "remaining": "Diagnostic overlays and hardware/relationship table scroll ownership have scoped proof; editing rightmost columns no longer displaces surrounding forms. Remaining overlays, keyboard and viewport states require qualification."
         },
         {
           "id": "B5",
@@ -422,9 +453,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52"
+            "944c8709", "be33d285", "259ebc52", "290e1db7"
           ],
-          "remaining": "Initial 60 route captures, be33d285 diagnostic contrast proof and 259ebc52 hardware screenshots/contrast are scoped to their source. Whole-surface visual states remain unqualified."
+          "remaining": "Initial route/diagnostic/hardware captures remain scoped to their source. Relationship badge contrast is repaired from 3.488/2.633 to 5.186/7.594 in the two themes using existing tokens. Whole-surface visual states remain unqualified."
         },
         {
           "id": "B6",
@@ -434,9 +465,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52"
+            "944c8709", "be33d285", "259ebc52", "290e1db7"
           ],
-          "remaining": "be33d285 verifies diagnostic long-content/short/mobile layouts. 259ebc52 reproduces and repairs mobile hardware form clipping after table editing. Full long-content and large-text qualification remains."
+          "remaining": "Diagnostic, hardware and relationship mobile layouts have rendered proof. Relationship role values remain readable in a stacked phone form and dropdown text reserves caret space. Full long-content and large-text qualification remains."
         },
         {
           "id": "B7",
@@ -445,9 +476,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52"
+            "944c8709", "be33d285", "259ebc52", "290e1db7"
           ],
-          "remaining": "be33d285 adds diagnostic semantics/focus handling; 259ebc52 names hardware actions and adds a keyboard-focusable table scroll region. Complete keyboard, target-size, zoom and assistive-technology acceptance remains."
+          "remaining": "Hardware/relationship actions are named, relationship targets are 44 pixels, table scroll regions accept keyboard focus, and shared select labels now name controls while preserving error/hint descriptions. Complete keyboard, zoom and assistive-technology acceptance remains."
         },
         {
           "id": "B8",
@@ -501,8 +532,8 @@
           "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "259ebc52"],
-          "remaining": "Firewall and hardware have typed writable definitions with omitted-field preservation, protected identities and safe validation errors. Remaining request/response schemas, pagination and other resource contracts are unqualified."
+          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d"],
+          "remaining": "Firewall, hardware, relationship and legacy software definitions have typed writable fields. Relationship select digit strings, omitted-target 400 behavior, software ISO dates/nulls and read round trips are preserved. Remaining request/response schemas, pagination and other resource contracts are unqualified."
         },
         {
           "id": "C3",
@@ -512,9 +543,9 @@
           "status": "in_progress",
           "reviewed_commits": [
             "27873d89",
-            "0b41d3c7"
+            "0b41d3c7", "7323ef6d"
           ],
-          "remaining": "Explicit environment identity verified; complete API/role/tenant matrix and authentic host trust remain."
+          "remaining": "Explicit environment identity and selected vault/asset/relationship boundaries are verified. Relationship reads authorize both endpoints; real tenant and module write guards are covered for software/relationship mutations. Complete API/role/tenant matrix and authentic host trust remain."
         },
         {
           "id": "C4",
@@ -522,8 +553,8 @@
           "outcome": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52"],
-          "remaining": "Maintenance lifecycle/retry proof passed assembled CI at 597c2dd9. Firewall reference-race rollback, single-transition archive audit and hardware mutation/audit rollback have local proof. Their assembled CI, optimistic edits, other domains and concurrent hardware deletion remain."
+          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d"],
+          "remaining": "Maintenance lifecycle/retry proof passed assembled CI. Firewall/hardware backend checks passed the later failed d3640e00 run. Software/relationship audit rollback, disappearing-parent conflicts and concurrent deletion with one audit have local proof. Optimistic edits, duplicate creation, other domains and concurrent hardware deletion remain."
         },
         {
           "id": "C5",
@@ -540,8 +571,8 @@
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52"],
-          "remaining": "Asset server identity/lifecycle fields, firewall reference scope and hardware parent/quantity integrity have local proof. Legacy unknown hardware counts remain stored and visible without breaking inventory. Software/relationship boundaries, uniqueness concurrency and other legacy data remain."
+          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d"],
+          "remaining": "Asset, firewall, hardware and software/relationship ownership/reference boundaries have scoped proof. Relationship reads authorize both endpoints; historical authorized links remain readable. Legacy unknown hardware counts are preserved. Uniqueness concurrency, full canonical relationships and other legacy data remain."
         },
         {
           "id": "C7",
@@ -549,8 +580,8 @@
           "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52"],
-          "remaining": "Trusted-actor throttling and diagnostic redaction passed assembled CI. New firewall/asset/hardware malformed-input and identity protections have local proof. Remaining URLs, uploads, rich content, exports, request sizes, scalar/date schemas and distributed rate limits remain."
+          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d"],
+          "remaining": "Trusted-actor throttling and diagnostic redaction passed assembled CI. Firewall/asset/hardware protections passed the d3640e00 backend gate. Relationship numeric IDs and software dates, including extreme UTC conversion overflow, have local rejection/rollback proof. Remaining URLs, uploads, rich content, exports, request sizes, other scalar/date schemas and distributed limits remain."
         },
         {
           "id": "C8",
@@ -603,8 +634,8 @@
           "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52"],
-          "remaining": "Credential and selection repairs passed assembled CI. Asset write boundaries and hardware quantity/parent/audit/mobile editing have local proof: 80 related backend checks and ten Assets browser scenarios. Full relationship/software, editing/import, role and large-dataset qualification remains."
+          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7"],
+          "remaining": "Credential/selection repairs passed assembled CI. Further asset/hardware checks passed d3640e00 before its root harness failure. Software/relationship integrity has 45 new passing backend cases, and all 13 Assets browser journeys pass with responsive relationship editing. Broader editing/import, inline draft lifecycle, role and large-dataset qualification remains."
         },
         {
           "id": "D3",
@@ -722,9 +753,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "38c82a58", "0c9cabcf", "597c2dd9"
+            "38c82a58", "0c9cabcf", "597c2dd9", "2a56682a"
           ],
-          "remaining": "PR33 passed Application CI on 597c2dd9: 76 startup/recovery plus 23 subtests, 225 backend, 791 frontend, 112 normal browser with two existing skips, 35 desktop and six root-preview journeys. Browser profiles serve fresh hashed production bundles. Later firewall/asset/hardware source requires fresh assembled CI; supply-chain and final release checks remain."
+          "remaining": "597c2dd9 remains the last full CI success. d3640e00 passed 318 backend, 791 frontend, 114 normal and 35 desktop journeys but failed one of six root journeys during document replacement. The reviewed synchronization repair passes six local root journeys; the newer assembled candidate, supply-chain and final release checks remain."
         },
         {
           "id": "E7",
