@@ -11,29 +11,49 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "7733c705a9becc9e338119c11c4a1c3369e49215",
+    "candidate": "2073f7ae1a865797d49232c2ac2d23f457fbd83e",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37053710667",
-    "tested_merge": "6f5e71ea0a5d7d8bd448790d7484bfb58399427c",
-    "completed_at": "2026-10-02T19:51:46Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37058723114",
+    "tested_merge": "1673b6b17e914eb996d2ca92dc69ff176a930e26",
+    "completed_at": "2026-10-02T20:38:33Z",
     "conclusion": "success",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 498,
-      "frontend": 836,
-      "normal_browser": 176,
+      "backend": 580,
+      "frontend": 839,
+      "normal_browser": 178,
       "normal_browser_preexisting_skips": 2,
       "desktop_browser": 35,
       "root_preview_browser": 6
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "4b567bbf6ec1cb58515f6413c100267a3882b314 adds scoped direct Network connections, request-owned import discovery/validation/export, transactional import audit and readable shared import previews with truthful row feedback. Local proof includes 580 canonical backend, 839 frontend, 44 earlier cross-consumer browser, 41 final cross-consumer browser and two final strengthened Network capture passes. Overlapping runs are not summed; fresh assembled hosted CI is required for this later source.",
-    "job_duration_seconds": 1745,
-    "backend_duration_seconds": 111.11
+    "later_source": "d8523809a38c24469e83d1d9fe60b2ae40a03c71 adds scoped/typed raw Network interfaces with atomic audit, CSV/XLSX text fidelity, strict scalar/row and finite-value validation, plus ordinary connection creator/target audit. Local canonical backend proof is 724 tests across 50 files. Later production-browser runs pass 41 import/Assets/Monitoring, 34 Network/import/Assets/Monitoring, 20 Network/import/Assets and 10 Audit journeys; results overlap and are not summed. Fresh assembled hosted CI is required for this later source.",
+    "job_duration_seconds": 1764,
+    "backend_duration_seconds": 122.48
   },
   "ci_history": [
+    {
+      "candidate": "7733c705a9becc9e338119c11c4a1c3369e49215",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37053710667",
+      "tested_merge": "6f5e71ea0a5d7d8bd448790d7484bfb58399427c",
+      "completed_at": "2026-10-02T19:51:46Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 498,
+        "frontend": 836,
+        "normal_browser": 176,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1745,
+      "backend_duration_seconds": 111.11
+    },
     {
       "candidate": "1362951eaa0ecb5100e845741845257afeed8b2a",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -151,7 +171,7 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "4b567bbf6ec1cb58515f6413c100267a3882b314",
+    "source_head": "d8523809a38c24469e83d1d9fe60b2ae40a03c71",
     "registered_api_operations": 310,
     "static_ui_declarations": 3132,
     "static_ui_routes": 19,
@@ -564,6 +584,31 @@
       "commit": "4b567bbf6ec1cb58515f6413c100267a3882b314",
       "scope": "Shared import source and hint readability, truthful preview counts and both-theme rendered proof",
       "archive_sha256": "2967d79d69b5af1a6d3342572fad2ade0399302e777707f346e20b27379d9bfb"
+    },
+    {
+      "commit": "2073f7ae1a865797d49232c2ac2d23f457fbd83e",
+      "scope": "Tenth checkpoint binds Network endpoint/import proof and complete hosted recovery success",
+      "archive_sha256": "eb89a050bffe90d078b281c6065ad765ebecc24c9d91c7b9471686fabbe2be89"
+    },
+    {
+      "commit": "602cdf6aa00c0321d9cb271942a989103e72be68",
+      "scope": "Raw Network interface ownership, typed definitions, protected metadata and atomic per-record audit",
+      "archive_sha256": "a6add65e9e9e635277f3e8d4dbe6008779b5b3a5322dd91ab6853e1eade06d91"
+    },
+    {
+      "commit": "ead9b5089f23f44aa8e89c5a89373bf683393e78",
+      "scope": "Network CSV/XLSX import preserves port/MAC identifiers and literal NA values",
+      "archive_sha256": "dd6fe1baf8562a09efaf13a2aa0ae420d146e05490ff258ca97c75eada6b04b8"
+    },
+    {
+      "commit": "5bb99964f082006d474bb994255615dd2d681364",
+      "scope": "Network scalar, finite-value and malformed-row validation prevents coercion and partial writes",
+      "archive_sha256": "f7d228060fb30e1cd549a639799ed6054df4f1f611b5950028e5440a75dee0ff"
+    },
+    {
+      "commit": "d8523809a38c24469e83d1d9fe60b2ae40a03c71",
+      "scope": "Ordinary connection creation records trusted creator and atomic record-target audit",
+      "archive_sha256": "2ce24f177dd3dbd3de29ca1fc13701b2adc0a293920e68a1a68e4cfc706d2e17"
     }
   ],
   "groups": [
@@ -735,8 +780,8 @@
           "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d", "28e0579b", "5b6520d2", "adce6f8e", "bf236cad", "5d147d7b"],
-          "remaining": "Ordinary/bulk scalar and date validation passed assembled CI. Later asset writes add atomic audit and sanitized integrity conflicts; imports share strict conversion and expose/enforce byte/batch policy. Other profiles, nested JSON, full OpenAPI schemas and pagination remain."
+          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d", "28e0579b", "5b6520d2", "adce6f8e", "bf236cad", "5d147d7b", "602cdf6a", "5bb99964"],
+          "remaining": "Earlier Asset contracts passed assembled CI. Raw Network interfaces now use typed create/update definitions and protected metadata. Direct/import Network writes reject boolean numeric values, non-text fields and non-finite speeds; malformed rows receive diagnostics without server errors. Native numeric strings, aliases and optional nulls remain supported. Full response/OpenAPI consistency, pagination and other domains remain."
         },
         {
           "id": "C3",
@@ -744,8 +789,8 @@
           "outcome": "A complete permission matrix across reads, mutations, search, aggregates, exports, embedded projections, and direct URLs. Admin and System Root remain distinct.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["27873d89", "0b41d3c7", "7323ef6d", "679f366a", "9e04102f", "18f0527f"],
-          "remaining": "Direct Network reads/mutations now scope both endpoints to owned assets, fail closed for any unauthorized bulk member and require active owned new assignments. Import schema/ID/name/tag lookup and snapshots are request-scoped; oversized and ambiguous references are rejected. Custom-IP and owned archived history remain readable. Raw Network interface routes, complete role/tenant matrices and authentic host trust remain."
+          "reviewed_commits": ["27873d89", "0b41d3c7", "7323ef6d", "679f366a", "9e04102f", "18f0527f", "602cdf6a"],
+          "remaining": "Direct Network connection/import ownership passed hosted CI at 2073f7ae. Raw interface list/update now scopes parent ownership and hides foreign/orphan rows; new parent assignments require active owned assets while owned archived history remains editable. Complete API/role/tenant matrix, export coverage outside this scope and authentic host trust remain."
         },
         {
           "id": "C4",
@@ -753,8 +798,8 @@
           "outcome": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d", "adce6f8e", "bf236cad", "18f0527f"],
-          "remaining": "Earlier Asset atomic writes passed hosted CI. Network imports now add trusted-actor batch audit in the same transaction as rows; injected audit/integrity failures roll back and sanitize conflicts. Bulk connection membership is preflighted before mutation. Per-record import history, optimistic edits, concurrent uniqueness and uncertain outcomes remain."
+          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d", "adce6f8e", "bf236cad", "18f0527f", "602cdf6a", "5bb99964", "d8523809"],
+          "remaining": "Earlier atomic Asset and Network import writes passed hosted CI. Raw interface create/update and ordinary connection creation now retain trusted per-record audit, rollback injected failures and sanitize integrity conflicts; interface no-ops avoid audit mutation. Rejected malformed/non-finite batches leave rows and audit unchanged. Per-record import/bulk history, optimistic edits, uniqueness races and uncertain outcomes remain."
         },
         {
           "id": "C5",
@@ -771,8 +816,8 @@
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "4629b134", "9e04102f", "18f0527f"],
-          "remaining": "Direct connection and import endpoints require owned valid parents; import lookup rejects ambiguous names/tags and preview rejects duplicate endpoint-port use across distinct rows. Full 580 backend tests pass locally. Network file text/scalars, raw interfaces, cross-request uniqueness, header mapping and legacy inconsistent data remain."
+          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "4629b134", "9e04102f", "18f0527f", "602cdf6a", "ead9b508", "5bb99964"],
+          "remaining": "Direct/import endpoint ownership passed hosted CI. Raw interfaces protect parent and server metadata; Network CSV/XLSX preserves leading-zero ports/MAC text and literal NA/N/A while parsing VLAN zero/4094 and fractional speed. Invalid scalars/row shapes and aliases that mask malformed canonical values are rejected. Legacy data, numeric precision policy, MAC/IP canonicalization, header mapping and concurrent uniqueness remain."
         },
         {
           "id": "C7",
@@ -780,8 +825,8 @@
           "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "bf236cad", "5d147d7b"],
-          "remaining": "Trusted-actor throttling/redaction and strict asset scalars passed assembled CI. Later local proof bounds import requests to 12 MiB, files to 10 MiB, archive-declared expansion to 64 MiB/4096 entries and batches to the canonical 250 records; counts actual streamed bytes. Audit free-form values and parser exception values stay out of new public records. Nested JSON, cell/column/workbook complexity, aggregate concurrency, URLs/rich content/export injection, all legacy Excel engines and distributed limits remain."
+          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "bf236cad", "5d147d7b", "5bb99964"],
+          "remaining": "Earlier bounded Asset/import admission passed hosted CI. Network rejects booleans as identities/numbers, non-text definitions and non-finite JSON/speeds before mutation. Row diagnostics omit raw Pydantic input and exception values. Nested complexity, column/cell/workbook budgets, distributed limits, unsafe URL/export handling across other domains and legacy engines remain."
         },
         {
           "id": "C8",
@@ -861,8 +906,8 @@
           "outcome": "Valid endpoints, ports, direction and connection semantics; consistent creation, import, and bulk validation; useful relationship navigation.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["679f366a", "82c2586e", "1255794d", "9e04102f", "18f0527f", "4b567bbf"],
-          "remaining": "Preferences passed hosted CI at 7733c705. Later direct connection authorization and request-scoped imports preserve owned archived/custom-IP history, reject foreign/missing/ambiguous endpoints and batch port reuse, and commit import audit atomically. Both-theme file journeys prove invalid rows excluded, valid-only submission, grid refresh and API readback; shared preview contrast/feedback repaired. Raw interfaces, per-record history, text/scalar preservation, lifecycle no-ops, concurrency and full role/performance coverage remain."
+          "reviewed_commits": ["679f366a", "82c2586e", "1255794d", "9e04102f", "18f0527f", "4b567bbf", "602cdf6a", "ead9b508", "5bb99964", "d8523809"],
+          "remaining": "Connection/import ownership and readable previews passed hosted CI at 2073f7ae. Later local proof covers raw interface parent/metadata integrity, atomic audit, CSV/XLSX text fidelity, scalar/row/finite-value rejection and ordinary CREATE actor/record history. All 724 canonical backend tests pass; both-theme Network browser workflows remain green. Per-record import/bulk history, dormant revision UI wiring, lifecycle no-ops, precision/canonicalization, concurrency and full role/performance coverage remain."
         },
         {
           "id": "D6",
@@ -879,8 +924,8 @@
           "outcome": "Correct actor and target history, date and filter semantics, stable pagination, complete-scope exports, useful record links, and protected retention.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["bf236cad","755bc2db","c1a9050f"],
-          "remaining": "Ordinary Asset writes have atomic actor/target audit; Audit payload keyboard scrolling, close targets, short-screen dismissal, reduced motion, focus return and opaque surfaces pass both-theme browser checks. Full writer coverage, pagination/export scope, roles and retention remain."
+          "reviewed_commits": ["bf236cad", "755bc2db", "c1a9050f", "602cdf6a", "d8523809"],
+          "remaining": "Earlier Asset audit and accessible opaque Audit payloads passed hosted CI. Interface create/update and ordinary connection CREATE now bind trusted actor and target with atomic failure behavior; scoped Audit API readback and ten Audit browser journeys pass locally. Network batch/per-record history, complete writer coverage, export/pagination scope, roles and retention remain."
         },
         {
           "id": "D8",
@@ -952,8 +997,8 @@
           "outcome": "Required checks protect the actual PR and main candidate; dependency locks, vulnerability checks, secret scanning, and risk-based regression coverage stay current.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["38c82a58", "0c9cabcf", "597c2dd9", "2a56682a", "adce6f8e", "bf236cad", "5d147d7b", "b772c8bc", "d9a5a868", "9e04102f", "18f0527f"],
-          "remaining": "Hosted 7733c705 succeeds: 76 startup/recovery plus 23 subtests, 498 backend, 836 frontend, 176 normal browser plus two pre-existing skips, 35 desktop and six root-preview. Job 29m05s within unchanged 45-minute deadline; backend 111.11s versus earlier fa0f5fac 968.41s with fewer tests. Hosted observations are not identical-machine controlled benchmarks; local same-25 fixture profile is 29.87s to 5.26s. Later source passes 580 backend and 839 frontend locally; new assembled hosted CI, supply-chain and final release checks remain."
+          "reviewed_commits": ["38c82a58", "0c9cabcf", "597c2dd9", "2a56682a", "adce6f8e", "bf236cad", "5d147d7b", "b772c8bc", "d9a5a868", "9e04102f", "18f0527f", "602cdf6a", "ead9b508", "5bb99964", "d8523809"],
+          "remaining": "Hosted 2073f7ae succeeds: 76 startup/recovery plus 23 subtests, 580 backend, 839 frontend, 178 normal browser plus two pre-existing skips, 35 desktop and six root-preview. Job 29m24s; backend 122.48s within unchanged 45-minute deadline. Four later reviewed Network slices pass 724 canonical backend tests and their relevant browser checks locally. Fresh assembled hosted proof for the later source, supply-chain controls and final release checks remain."
         },
         {
           "id": "E7",
