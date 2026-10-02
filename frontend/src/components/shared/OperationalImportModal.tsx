@@ -273,7 +273,11 @@ export function OperationalImportModal({
     onSuccess: (data, lifecycle) => {
       if (!isOpen || lifecycle !== lifecycleRef.current) return
       setPreview(data)
-      showWorkspaceToast(`Validated ${data.total_rows} row${data.total_rows === 1 ? '' : 's'}`)
+      const ready = `${data.valid_rows} row${data.valid_rows === 1 ? '' : 's'} ready to import`
+      const correction = data.invalid_rows > 0
+        ? `; ${data.invalid_rows} row${data.invalid_rows === 1 ? ' needs' : 's need'} correction`
+        : ''
+      showWorkspaceToast(`${ready}${correction}.`, { type: data.invalid_rows > 0 ? 'error' : 'info' })
     },
     onError: (error: any, lifecycle) => {
       if (!isOpen || lifecycle !== lifecycleRef.current) return
@@ -575,7 +579,7 @@ export function OperationalImportModal({
                         {unsupportedFields.length} column{unsupportedFields.length === 1 ? '' : 's'} stay visible but are intentionally disabled in the builder because they require the richer add/edit workspace.
                       </div>
                     )}
-                    <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                    <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
                       <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Download Mode</p>
                       <div className="mt-3 flex gap-2">
                         {[
@@ -591,7 +595,7 @@ export function OperationalImportModal({
                             className={`flex-1 rounded-lg border px-2 py-2 text-center transition-all ${
                               templateMode === option.id
                                 ? 'border-blue-500/30 bg-blue-500/10 text-blue-300'
-                                : 'border-white/10 bg-slate-950/60 text-slate-400 hover:text-slate-200'
+                                : 'border-[var(--border-default)] bg-[var(--panel-item-bg)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
                             }`}
                           >
                             <p className="text-[9px] font-black uppercase tracking-widest">{option.label}</p>
@@ -604,14 +608,14 @@ export function OperationalImportModal({
                       <button
                         type="button"
                         onClick={selectAllOptionalColumns}
-                        className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] font-black uppercase text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+                        className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-3 py-2 text-[10px] font-black uppercase text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         Select All
                       </button>
                       <button
                         type="button"
                         onClick={unselectAllOptionalColumns}
-                        className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] font-black uppercase text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-3 py-2 text-[10px] font-black uppercase text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         Unselect All
                       </button>
@@ -683,12 +687,12 @@ export function OperationalImportModal({
                                   : field.unsupported_reason}
                               </p>
                               {fieldOptions.length > 0 && (
-                                <p className="mt-1 text-[8px] font-semibold uppercase tracking-widest text-blue-300/80">
+                                <p className="mt-1 text-[9px] font-medium leading-relaxed text-[var(--state-info)]">
                                   Allowed values: {getChoicePreview(fieldOptions)}
                                 </p>
                               )}
                               {fieldValidationRules.length > 0 && (
-                                <p className="mt-1 text-[8px] font-semibold uppercase tracking-widest text-amber-300/80">
+                                <p className="mt-1 text-[9px] font-medium leading-relaxed text-[var(--state-warning)]">
                                   {fieldValidationRules.join(' ')}
                                 </p>
                               )}
@@ -754,13 +758,13 @@ export function OperationalImportModal({
                           // Update state after the dialog begins opening to avoid blocking the main thread
                           setTimeout(() => setIsPickerOpening(true), 0)
                         }}
-                        className="flex min-h-[220px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-white/10 bg-black/20 text-slate-400 transition-all hover:border-blue-500/30 hover:bg-blue-500/5 group"
+                        className="flex min-h-[220px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-[var(--border-default)] bg-[var(--panel-item-bg)] text-[var(--text-secondary)] transition-colors hover:border-[var(--state-info)] hover:bg-[var(--state-info-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group"
                       >
                         <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/10 group-hover:scale-105 transition-transform text-blue-500">
                           <FileUp size={36} />
                         </div>
                         <div className="text-center px-4">
-                          <p className="text-[11px] font-black uppercase tracking-widest text-white">{file?.name || (isPickerOpening ? 'Opening...' : 'Browse Vector Source')}</p>
+                          <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)]">{file?.name || (isPickerOpening ? 'Opening...' : 'Choose CSV or Excel file')}</p>
                           <p className="mt-2 text-[9px] font-semibold text-slate-500 uppercase tracking-widest">
                             Choose a CSV or Excel file from disk. Max {schema?.limits ? schema.limits.max_file_bytes / (1024 * 1024) : 10} MiB.
                             {schema?.limits && ` Up to ${schema.limits.max_rows} rows per import.`}
@@ -771,13 +775,13 @@ export function OperationalImportModal({
                         type="button"
                         onPaste={handlePastedFile}
                         onClick={() => setMode('file')}
-                        className="flex min-h-[220px] w-full flex-col items-center justify-center gap-4 rounded-lg border border-white/10 bg-slate-950/60 px-5 text-center text-slate-400 transition-all hover:border-blue-500/30 hover:bg-blue-500/5 focus:border-blue-500/40 focus:outline-none group"
+                        className="flex min-h-[220px] w-full flex-col items-center justify-center gap-4 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-5 text-center text-[var(--text-secondary)] transition-colors hover:border-[var(--state-info)] hover:bg-[var(--state-info-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group"
                       >
                         <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/10 group-hover:scale-105 transition-transform text-emerald-500">
                           <Clipboard size={36} />
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-widest text-white">Paste File From Clipboard</p>
+                          <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)]">Paste File From Clipboard</p>
                           <p className="mt-2 text-[9px] font-semibold text-slate-500 uppercase tracking-widest leading-relaxed">Click here, then press <span className="text-slate-300 font-bold border-b border-dashed border-slate-500">Ctrl+V</span> or <span className="text-slate-300 font-bold border-b border-dashed border-slate-500">Cmd+V</span> if your OS clipboard contains a real file.</p>
                         </div>
                       </button>
@@ -1048,7 +1052,7 @@ export function OperationalImportModal({
                   <div className="mt-6 space-y-4">
                     <div className="flex items-center justify-between px-1">
                       <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2">
-                        <CheckSquare size={14} /> Normalized Vector Stream
+                        <CheckSquare size={14} /> Import preview
                       </span>
                       <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                         Ready to import: {selectedImportCount}
