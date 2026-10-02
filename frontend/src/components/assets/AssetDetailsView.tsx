@@ -24,6 +24,9 @@ const getAssetConsoleUrl = (asset: any) => {
 const MonitoringTab = ({ deviceId }: { deviceId: number }) => <MiniMonitoringTable deviceId={deviceId} />
 
 const emptyHardwareDraft = () => ({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 })
+const validHardwareQuantity = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+const hardwareQuantityMessage = 'Quantity must be a whole number of zero or more'
+const hardwareQuantityToastId = (deviceId: number) => `hardware-quantity-${deviceId}`
 const emptyCredentialDraft = () => ({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' })
 const emptyRelationshipDraft = () => ({ target_device_id: '', relationship_type: 'Depends On', source_role: 'Consumer', target_role: 'Provider' })
 type DraftProps<T> = { draft: T; setDraft: React.Dispatch<React.SetStateAction<T>>; onPendingChange: (pending: boolean) => void }
@@ -606,15 +609,15 @@ const HWTab = ({ deviceId, draft: newComp, setDraft: setNewComp, onPendingChange
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-2 bg-white/5 p-3 rounded-lg border border-white/5">
+      <div role="group" aria-label="Add hardware component" className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-2 bg-white/5 p-3 rounded-lg border border-white/5 [&>input]:min-w-0 [&>input]:w-full [&>select]:min-w-0 [&>select]:w-full">
          <select value={newComp.category} onChange={e => setNewComp({...newComp, category: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] outline-none">
             <option>CPU</option><option>Memory</option><option>Card</option><option>Disk</option><option>NIC</option><option>PSU</option>
          </select>
          <input value={newComp.name} onChange={e => setNewComp({...newComp, name: e.target.value})} placeholder="Component Name" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
          <input value={newComp.manufacturer} onChange={e => setNewComp({...newComp, manufacturer: e.target.value})} placeholder="Manufacturer" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
          <input value={newComp.specs} onChange={e => setNewComp({...newComp, specs: e.target.value})} placeholder="Specifications" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
-         <input type="number" value={newComp.count} onChange={e => setNewComp({...newComp, count: parseInt(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
-         <button disabled={mutation.isPending} onClick={() => { if(!newComp.name) return toast.error("Name required"); mutation.mutate(newComp) }} className="bg-blue-600 text-white rounded-lg text-[9px] font-bold uppercase disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
+         <input type="number" aria-label="New component quantity" min={0} step={1} value={Number.isNaN(newComp.count) ? '' : newComp.count} onChange={e => setNewComp({...newComp, count: e.target.value === '' ? Number.NaN : Number(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
+         <button disabled={mutation.isPending} onClick={() => { if(!newComp.name.trim()) return toast.error("Name required"); if (!validHardwareQuantity(newComp.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); mutation.mutate(newComp) }} className="bg-blue-600 text-white rounded-lg text-[9px] font-bold uppercase disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
       </div>
       <HWTable deviceId={deviceId} />
     </div>
@@ -657,8 +660,8 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
   ]
 
   return (
-    <div className="p-0">
-      <table className="w-full text-[10px]">
+    <div role="region" aria-label="Hardware components" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
+      <table className="w-full min-w-[24rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-center font-bold uppercase tracking-widest text-slate-500">Category</th>
@@ -695,19 +698,19 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
               </td>
               <td className="px-4 py-2 text-center text-slate-400 font-bold text-[10px]">
                 {editingId === h.id ? (
-                    <input type="number" value={editData.count} onChange={e => setEditData({...editData, count: parseInt(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-1 py-1.5 text-[10px] w-12 outline-none focus:border-blue-500" />
-                ) : `x${h.count}`}
+                    <input type="number" aria-label="Component quantity" min={0} step={1} value={editData.count == null || Number.isNaN(editData.count) ? '' : editData.count} onChange={e => setEditData({...editData, count: e.target.value === '' ? Number.NaN : Number(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-1 py-1.5 text-[10px] w-12 outline-none focus:border-blue-500" />
+                ) : validHardwareQuantity(h.count) ? `x${h.count}` : 'Quantity unavailable'}
               </td>
               <td className="px-4 py-2 text-center">
                 {editingId === h.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
-                        <button onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
+                        <button aria-label="Save hardware component" disabled={updateMutation.isPending} onClick={() => { if (!validHardwareQuantity(editData.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); updateMutation.mutate(editData) }} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
+                        <button aria-label="Cancel hardware edit" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => { setEditingId(h.id); setEditData({...h}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                        <button onClick={() => setConfirmModal({ isOpen: true, title: 'Purge Component', message: 'Purge this hardware component?', onConfirm: () => delMutation.mutate(h.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                        <button aria-label="Edit hardware component" onClick={() => { setEditingId(h.id); setEditData({...h}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
+                        <button aria-label="Remove hardware component" disabled={delMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Purge Component', message: 'Purge this hardware component?', onConfirm: () => delMutation.mutate(h.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
                     </div>
                 )}
               </td>

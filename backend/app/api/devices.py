@@ -16,6 +16,7 @@ from .operational_bulk import (
 from .module_policy import require_module_access
 from .authorization import require_capability, resolve_current_operator
 from .secret_vault import can_manage_vault, commit_vault_audit, require_vault_device, scoped_vault_query, serialize_secret_vault_entry
+from .asset_hardware import HardwarePayload, commit_hardware_audit, hardware_update_payload, require_hardware_parent, scoped_hardware_query
 from fastapi.responses import JSONResponse
 
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
@@ -505,14 +506,18 @@ async def get_devices(request: Request, system: Optional[str] = None, include_de
         # Hardware Summary (Resource Snapshot)
         comps = hw_map.get(d.id, [])
         hw_summary = []
-        cpu = sum(c.count for c in comps if c.category == 'CPU')
-        mem = sum(c.count for c in comps if c.category == 'Memory')
-        disk = sum(c.count for c in comps if c.category == 'Disk')
+        quantified = [c for c in comps if type(c.count) is int and c.count >= 0]
+        device_dict['hardware_summary_complete'] = len(quantified) == len(comps)
+        cpu = sum(c.count for c in quantified if c.category == 'CPU')
+        mem = sum(c.count for c in quantified if c.category == 'Memory')
+        disk = sum(c.count for c in quantified if c.category == 'Disk')
         # Clever summary: check specs too if possible? 
         # Actually count is most straightforward for now.
         if cpu: hw_summary.append(f"{cpu}x CPU")
         if mem: hw_summary.append(f"{mem}x MEM")
         if disk: hw_summary.append(f"{disk}x DSK")
+        if not device_dict['hardware_summary_complete']:
+            hw_summary.append('Quantity unavailable')
         device_dict["hardware_summary"] = " / ".join(hw_summary) if hw_summary else "No Components"
 
         # Hardware Age
@@ -988,16 +993,20 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
 
 @router.get("/{device_id}/hardware")
 async def get_hardware(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(models.HardwareComponent).filter(models.HardwareComponent.device_id == device_id))
+    await require_hardware_parent(request, db, device_id)
+    res = await db.execute(scoped_hardware_query(request).where(models.HardwareComponent.device_id == device_id))
     return res.scalars().all()
 
 @router.post("/{device_id}/hardware")
-async def add_hardware(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db)):
-    # Audit: Ensure data is not empty
-    if not data or not any(data.values()): raise HTTPException(400, "Empty hardware data")
-    clean = filter_valid_columns(models.HardwareComponent, data)
-    comp = models.HardwareComponent(device_id=device_id, **clean)
-    db.add(comp); await db.commit(); return comp
+async def add_hardware(request: Request, device_id: int, data: HardwarePayload, db: AsyncSession = Depends(get_db)):
+    await require_hardware_parent(request, db, device_id)
+    clean = data.model_dump(exclude_unset=True)
+    if not clean or not any(clean.values()): raise HTTPException(400, "Empty hardware data")
+    comp = models.HardwareComponent(device_id=device_id, created_by_user_id=get_audit_actor(request), **clean)
+    db.add(comp)
+    await commit_hardware_audit(request, db, comp, 'CREATE', clean)
+    await db.refresh(comp)
+    return comp
 
 @router.get("/{device_id}/secrets")
 async def get_secrets(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
@@ -1082,6 +1091,13 @@ async def delete_device(request: Request, device_id: int, db: AsyncSession = Dep
 async def delete_resource(request: Request, resource: str, id: int, db: AsyncSession = Depends(get_db)):
     model_map = {"hardware": models.HardwareComponent, "software": models.DeviceSoftware, "secrets": models.SecretVault, "relationships": models.DeviceRelationship}
     if resource not in model_map: raise HTTPException(400)
+    if resource == 'hardware':
+        component = await db.scalar(scoped_hardware_query(request).where(models.HardwareComponent.id == id))
+        if component is None:
+            raise HTTPException(404, 'Hardware component not found')
+        await db.delete(component)
+        await commit_hardware_audit(request, db, component, 'DELETE', {'name': component.name, 'count': component.count})
+        return {'status': 'success'}
     if resource == 'secrets':
         await require_capability('secrets', 3)(request=request, db=db)
         secret = await db.scalar(scoped_vault_query(request).where(models.SecretVault.id == id))
@@ -1097,6 +1113,19 @@ async def delete_resource(request: Request, resource: str, id: int, db: AsyncSes
 async def update_resource(request: Request, resource: str, id: int, data: dict, db: AsyncSession = Depends(get_db)):
     model_map = {"hardware": models.HardwareComponent, "software": models.DeviceSoftware, "secrets": models.SecretVault, "relationships": models.DeviceRelationship}
     if resource not in model_map: raise HTTPException(400)
+    if resource == 'hardware':
+        component = await db.scalar(scoped_hardware_query(request).where(models.HardwareComponent.id == id))
+        if component is None:
+            raise HTTPException(404, 'Hardware component not found')
+        clean = hardware_update_payload(data)
+        changes = {key: {'before': getattr(component, key), 'after': value}
+                   for key, value in clean.items() if getattr(component, key) != value}
+        for key, change in changes.items():
+            setattr(component, key, change['after'])
+        if changes:
+            await commit_hardware_audit(request, db, component, 'UPDATE', changes)
+        await db.refresh(component)
+        return component
 
     if resource == 'secrets':
         await require_capability('secrets', 3)(request=request, db=db)

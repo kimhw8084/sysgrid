@@ -2,8 +2,63 @@ import { clickResilientButton, createAsset, expectWorkspaceLogicalRowSelected, f
 import { expect, type Page, type TestInfo } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import fs from 'fs';
+import { expectReadableGridText } from './helpers/grid-contrast';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
+for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] as const) {
+  test(`hardware quantity validation preserves input and supports audited edits in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width, height: 900 })
+    await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const asset = await createAsset(request, { name: `Quantity proof ${theme} ${Date.now()}`, system: 'Hardware proof' })
+    await page.goto(`/asset?id=${asset.id}`)
+    const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: asset.name, exact: true }) })
+    const name = dialog.getByPlaceholder('Component Name')
+    const quantity = dialog.getByRole('spinbutton')
+    await name.fill('Precision CPU')
+    let writes = 0
+    page.on('request', request => {
+      if (new URL(request.url()).pathname === `/api/v1/devices/${asset.id}/hardware` && request.method() === 'POST') writes++
+    })
+    await quantity.fill('1.5')
+    await expect(quantity).toHaveValue('1.5')
+    await dialog.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Quantity must be a whole number of zero or more' })).toBeVisible()
+    expect(writes).toBe(0)
+    await expect(name).toHaveValue('Precision CPU')
+    await quantity.fill('')
+    await expect(quantity).toHaveValue('')
+    await dialog.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Quantity must be a whole number of zero or more' })).toHaveCount(1)
+    expect(writes).toBe(0)
+    await quantity.fill('2')
+    await dialog.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Quantity must be a whole number of zero or more' })).toHaveCount(0)
+    const row = dialog.getByRole('row').filter({ hasText: 'Precision CPU' })
+    await expect(row).toContainText('x2')
+    await row.getByRole('button', { name: 'Edit hardware component', exact: true }).click()
+    const editor = dialog.getByRole('row').filter({ has: page.getByRole('button', { name: 'Save hardware component', exact: true }) })
+    await editor.getByRole('spinbutton', { name: 'Component quantity', exact: true }).fill('3')
+    await editor.getByRole('button', { name: 'Save hardware component', exact: true }).click()
+    await expect(row).toContainText('x3')
+    const stored = await request.get(`${apiBase}/devices/${asset.id}/hardware`)
+    expect(stored.ok()).toBeTruthy()
+    expect((await stored.json()).find((item: any) => item.name === 'Precision CPU').count).toBe(3)
+    const notices = page.locator('[data-workspace-toast][data-visible="true"]')
+    while (await notices.count()) await notices.first().getByRole('button', { name: 'Dismiss notification', exact: true }).click()
+    const dialogBounds = await dialog.boundingBox()
+    for (const control of [name, dialog.getByRole('spinbutton', { name: 'New component quantity', exact: true })]) {
+      const bounds = await control.boundingBox()
+      expect(bounds).not.toBeNull()
+      expect(bounds!.x, 'Editing table columns must not scroll the add form out of the dialog').toBeGreaterThanOrEqual(dialogBounds!.x)
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(dialogBounds!.x + dialogBounds!.width)
+    }
+    await expectReadableGridText(page, testInfo, 'hardware-quantity', '[role="dialog"]')
+    await page.screenshot({ path: testInfo.outputPath('hardware-quantity.png'), animations: 'disabled' })
+  })
+}
 
 test('preserves asset selection on preview cancellation and clears it after a status change or scope change', async ({ page, sysApi: request }) => {
   await resetBrowserState(page)
