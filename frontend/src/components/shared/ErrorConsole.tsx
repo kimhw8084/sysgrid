@@ -149,6 +149,7 @@ export function ErrorConsole() {
         </div>
 
         {/* Search Bar */}
+        <p className="border-b border-[var(--border-default)] px-8 py-3 text-xs text-[var(--text-secondary)]">Saved history contains metadata only. Detailed diagnostics are available until this page is reloaded.</p>
         <div className="px-8 py-4 border-b border-white/5 bg-black/40 flex items-center gap-4">
            <div className="relative flex-1">
               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />

@@ -41,7 +41,8 @@ describe('errorStore', () => {
 
     const persisted = JSON.parse(localStorage.getItem('SYSGRID_ERROR_LOGS') || '[]')
     expect(persisted).toHaveLength(1)
-    expect(persisted[0].message).toBe('Request failed')
+    expect(persisted[0].message).toContain('API error (500)')
+    expect(persisted[0]).not.toHaveProperty('url')
   })
 
   it('supports acknowledge, bulk acknowledge, open state, and clearing', async () => {
@@ -76,6 +77,34 @@ describe('errorStore', () => {
 
     errorManager.clearErrors()
     expect(errorManager.getErrors()).toEqual([])
+  })
+
+  it('persists diagnostic metadata without free-form credential-bearing content', async () => {
+    const { errorManager } = await loadStore()
+    const secret = 'synthetic-private-value-DO-NOT-RECORD'
+    errorManager.addError({
+      type: 'backend', severity: 'error', status: 422, method: 'POST',
+      message: `Rejected ${secret}`, data: { input: { password: secret } }, rawBody: secret,
+      stack: secret, url: `/api/action?key=${secret}`, finalUrl: `https://example.test/${secret}`,
+      requestId: '8f728a12-b92b-4f73-871c-a104888b25ac',
+    })
+    const stored = localStorage.getItem('SYSGRID_ERROR_LOGS')!
+    expect(stored).not.toContain(secret)
+    expect(JSON.parse(stored)[0]).toMatchObject({ status: 422, method: 'POST', requestId: '8f728a12-b92b-4f73-871c-a104888b25ac' })
+    expect(errorManager.getErrors()[0].rawBody).toBe(secret)
+  })
+
+  it('migrates legacy raw diagnostics to metadata while retaining time and acknowledgement', async () => {
+    const secret = 'synthetic-legacy-private-value'
+    localStorage.setItem('SYSGRID_ERROR_LOGS', JSON.stringify([{
+      id: 'legacy1', timestamp: '2026-10-02T01:00:00.000Z', type: 'backend', severity: 'critical',
+      acknowledged: true, status: 500, message: secret, data: { input: secret }, rawBody: secret,
+    }]))
+    const { errorManager } = await loadStore()
+    expect(errorManager.getErrors()).toHaveLength(1)
+    expect(errorManager.getErrors()[0]).toMatchObject({ id: 'legacy1', timestamp: '2026-10-02T01:00:00.000Z', acknowledged: true, status: 500, severity: 'critical' })
+    expect(JSON.stringify(errorManager.getErrors())).not.toContain(secret)
+    expect(localStorage.getItem('SYSGRID_ERROR_LOGS')).not.toContain(secret)
   })
 
   it('opens when the shell dispatches the global event', async () => {

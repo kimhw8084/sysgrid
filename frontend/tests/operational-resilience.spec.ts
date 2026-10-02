@@ -77,3 +77,48 @@ test('error console opens and closes without navigating or losing the current wo
   await expect(page).toHaveURL(/\/racks$/)
   await expect(page.getByRole('heading', { name: 'Racks', exact: true })).toBeVisible()
 })
+
+test('error diagnostics remain transient while saved metadata survives acknowledgement and reload', async ({ page }) => {
+  await resetBrowserState(page)
+  await page.goto('/racks')
+  await expect(page.getByRole('heading', { name: 'Racks', exact: true })).toBeVisible()
+  const marker = 'synthetic-diagnostic-private-value'
+  await page.evaluate(value => {
+    window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', {
+      promise: Promise.resolve(), reason: { message: value, status: 422, data: { input: { credential: value } } },
+    }))
+  }, marker)
+  await page.getByRole('button', { name: /^Open error console/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Error console', exact: true })
+  await expect(dialog.getByRole('button', { name: `Inspect error: ${marker}`, exact: true })).toBeVisible()
+  await expect(dialog).toContainText('Saved history contains metadata only')
+  const stored = await page.evaluate(() => localStorage.getItem('SYSGRID_ERROR_LOGS')!)
+  expect(stored).not.toContain(marker)
+  const entry = JSON.parse(stored).find((item: any) => item.status === 422)
+  expect(entry).toBeTruthy()
+  await dialog.getByRole('button', { name: 'Acknowledge All', exact: true }).click()
+  await page.reload()
+  await page.getByRole('button', { name: /^Open error console/ }).click()
+  await expect(dialog.getByRole('button', { name: /Inspect error: API error \(422\)/ })).toBeVisible()
+  await expect(dialog).not.toContainText(marker)
+  const reloaded = await page.evaluate(() => JSON.parse(localStorage.getItem('SYSGRID_ERROR_LOGS')!))
+  expect(reloaded.find((item: any) => item.id === entry.id)).toMatchObject({ timestamp: entry.timestamp, status: 422, acknowledged: true })
+})
+
+test('opening an upgraded app removes legacy diagnostic payloads without losing event history', async ({ page }) => {
+  await resetBrowserState(page)
+  await page.goto('/racks')
+  await page.evaluate(() => localStorage.setItem('SYSGRID_ERROR_LOGS', JSON.stringify([{
+    id: 'legacy1', timestamp: '2026-10-02T01:00:00.000Z', type: 'backend', severity: 'critical', status: 500,
+    acknowledged: true, message: 'synthetic-legacy-secret', rawBody: 'synthetic-legacy-secret', data: { password: 'synthetic-legacy-secret' },
+  }])))
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Racks', exact: true })).toBeVisible()
+  const stored = await page.evaluate(() => localStorage.getItem('SYSGRID_ERROR_LOGS')!)
+  expect(stored).not.toContain('synthetic-legacy-secret')
+  expect(JSON.parse(stored)).toEqual([expect.objectContaining({ id: 'legacy1', timestamp: '2026-10-02T01:00:00.000Z', acknowledged: true })])
+  await page.getByRole('button', { name: /^Open error console/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Error console', exact: true })
+  await expect(dialog.getByRole('button', { name: /Inspect error: API error \(500\)/ })).toBeVisible()
+  await expect(dialog).not.toContainText('synthetic-legacy-secret')
+})

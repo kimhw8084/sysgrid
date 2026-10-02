@@ -42,6 +42,8 @@ BACKEND_QUALIFICATION_TESTS=(
   test_rate_limit_identity.py
   test_device_secret_boundary.py
   test_database_parameter_privacy.py
+  test_validation_privacy.py
+  tests/test_error_utils.py
   test_sync_authorization.py
   test_production_startup_policy.py
   test_runtime_diagnostics.py
