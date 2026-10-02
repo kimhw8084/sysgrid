@@ -77,8 +77,15 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
 
     await selector.click()
     await page.getByRole('menuitem', { name: new RegExp(name) }).click()
-    await confirmation.getByRole('button', { name: 'Switch tenant', exact: true }).click()
+    const previousDocument = await page.evaluate(() => performance.timeOrigin)
+    // The old document can display the new tenant just before its intentional
+    // reload. Observe the new document before checking its storage and scope.
+    await Promise.all([
+      page.waitForEvent('domcontentloaded'),
+      confirmation.getByRole('button', { name: 'Switch tenant', exact: true }).click(),
+    ])
     await expect(selector).toContainText(name)
+    expect(await page.evaluate(() => performance.timeOrigin)).toBeGreaterThan(previousDocument)
     expect(await page.evaluate(() => sessionStorage.getItem('SYSGRID_TAB_TENANT_ID'))).toBe(String(tenant.id))
     await expect(draft).toHaveValue('Preserved CPU draft')
     await expect(other.getByRole('button', { name: 'Switch tenant', exact: true })).toContainText('Playwright Gate')
