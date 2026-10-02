@@ -11,16 +11,16 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "597c2dd94602e5635e2e705d8bdab74c4ea6efad",
+    "candidate": "978b14d53508175e674878565014fd5b88019b2e",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37007525305",
-    "tested_merge": "227e8610cf5ae4098f11ca7128c139eadcfc1a4b",
-    "completed_at": "2026-10-02T13:05:00Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37018340948",
+    "tested_merge": "d2bb1acd865d1f541da12aa184e3e2bce3ae7943",
+    "completed_at": "2026-10-02T14:48:15Z",
     "conclusion": "success",
-    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 225, "frontend": 791, "normal_browser": 112, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
+    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 363, "frontend": 791, "normal_browser": 117, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "2a56682afcea41192ef2184d91f8cd0fdee3b37a includes later firewall, asset, hardware, relationship/software and responsive-UI repairs plus corrected tenant reload proof. The d3640e00 assembled run passed backend/frontend/normal/desktop gates but failed one root test; the newer assembled candidate requires fresh CI."
+    "later_source": "ba72aa1585cfc1b3f5b908ea5a537de6f5f02d52 adds modern-color contrast measurement, asset calendar-date integrity, scoped interface projections without per-port queries and inline pending-save protection. These reviewed slices have local proof and require fresh assembled CI."
   },
   "ci_history": [
     {
@@ -69,13 +69,22 @@
       "conclusion": "failure",
       "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 318, "frontend": 791, "normal_browser": 114, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser_passed": 5, "root_preview_browser_failed": 1 },
       "failure": "The Pure Clarity tenant-switch test read session storage during the intentional page reload and lost its execution context. The old document had briefly displayed the new tenant label.",
-      "recovery": "2a56682a observes DOMContentLoaded before the switch click, waits for the replacement document and additionally checks its timeOrigin increased. All existing scope/draft/write assertions and timeouts/retries remain. Six local root-profile journeys pass; fresh hosted CI remains required."
+      "recovery": "2a56682a observes DOMContentLoaded before the switch click, waits for the replacement document and additionally checks its timeOrigin increased. All existing scope/draft/write assertions and timeouts/retries remain. Six local root-profile journeys and the subsequent full hosted run on 978b14d5 pass."
+    },
+    {
+      "candidate": "597c2dd94602e5635e2e705d8bdab74c4ea6efad",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37007525305",
+      "tested_merge": "227e8610cf5ae4098f11ca7128c139eadcfc1a4b",
+      "completed_at": "2026-10-02T13:05:00Z",
+      "conclusion": "success",
+      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 225, "frontend": 791, "normal_browser": 112, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
     }
   ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "2a56682afcea41192ef2184d91f8cd0fdee3b37a",
+    "source_head": "ba72aa1585cfc1b3f5b908ea5a537de6f5f02d52",
     "registered_api_operations": 310,
     "static_ui_declarations": 3150,
     "static_ui_routes": 19,
@@ -353,6 +362,31 @@
       "commit": "2a56682afcea41192ef2184d91f8cd0fdee3b37a",
       "scope": "Observe the replacement document before tenant-scope browser assertions",
       "archive_sha256": "5d08f4f791535ac966f2cb855fd773addcc1975077d5d06984690881c244fea0"
+    },
+    {
+      "commit": "978b14d53508175e674878565014fd5b88019b2e",
+      "scope": "Fourth ledger checkpoint and source inventories",
+      "archive_sha256": "ff4a7d741e7ddb2459ae2eb236954013213115d55138b786b02a7cb33359c2b9"
+    },
+    {
+      "commit": "bb6bf5d50b223fbbe806dac544e84db3cd25e597",
+      "scope": "Modern CSS color contrast measurement with positive and negative controls",
+      "archive_sha256": "3f8c297349c3075295b3352d4f3954e525e15e057a0150553a22db9ca1ee5a6c"
+    },
+    {
+      "commit": "28e0579baf40094ccf68876063b786d1039afd3a",
+      "scope": "Consistent asset calendar-date validation before create, edit and bulk writes",
+      "archive_sha256": "ef0a808bb75ccf397f7455e8333bb62e788f72963a568ee025f0d4eb5eb8aa16"
+    },
+    {
+      "commit": "679f366a9ac7bb7e4c0545b420f94b5412eb427d",
+      "scope": "Authorized interface peers, correct loopback projection and constant SELECT counts",
+      "archive_sha256": "075dc42b18df3cc583629cf5222983b39cbfab6fe66094a93763b688272bdc81"
+    },
+    {
+      "commit": "ba72aa1585cfc1b3f5b908ea5a537de6f5f02d52",
+      "scope": "Inline hardware, relationship and credential pending-save safety and failed-save recovery",
+      "archive_sha256": "d35f8014b396bf6153d7a3c06bef63db945ce43929589525e9e469881714376c"
     }
   ],
   "groups": [
@@ -411,7 +445,7 @@
             "8b2ec178",
             "0b41d3c7", "2a56682a"
           ],
-          "remaining": "Scoped tenant fixes passed assembled PR32 CI including six root-preview journeys. Company-host trust and final release-candidate proof remain separate."
+          "remaining": "Scoped tenant fixes and corrected reload synchronization passed assembled CI at 978b14d5, including six root-preview journeys. Company-host trust and final release-candidate proof remain separate."
         },
         {
           "id": "B2",
@@ -424,7 +458,7 @@
             "944c8709",
             "8b2ec178"
           ],
-          "remaining": "Maintenance and shared confirmation cancellation now have a reproduced regression and repair at bc40bdc9. Preserve drafts in remaining inline, nested and preview workflows; newest source needs assembled CI."
+          "remaining": "Maintenance/shared cancellation repair passed assembled CI. ba72aa15 protects inline drafts during pending saves and retains failed drafts for retry in both themes. Cross-tab/unmount/close and pre-submit row-switch draft persistence remain unqualified."
         },
         {
           "id": "B3",
@@ -432,8 +466,8 @@
           "outcome": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["259ebc52"],
-          "remaining": "Hardware quantities preserve fractional/blank drafts, reject invalid submission before HTTP and reuse one validation notice that clears after correction. Remaining forms, field-level errors, concurrency and retry states need qualification."
+          "reviewed_commits": ["259ebc52", "ba72aa15"],
+          "remaining": "Hardware quantities preserve invalid drafts with one local notice. Hardware/relationship/credential inline saves freeze inputs and competing actions, expose busy feedback and preserve failed drafts for real-backend retry. Remaining forms, close/tab behavior, errors and concurrency still need qualification."
         },
         {
           "id": "B4",
@@ -455,7 +489,7 @@
           "reviewed_commits": [
             "944c8709", "be33d285", "259ebc52", "290e1db7"
           ],
-          "remaining": "Initial route/diagnostic/hardware captures remain scoped to their source. Relationship badge contrast is repaired from 3.488/2.633 to 5.186/7.594 in the two themes using existing tokens. Whole-surface visual states remain unqualified."
+          "remaining": "Relationship badge contrast improved from 3.488/2.633 to 5.186/7.594 in both themes. bb6bf5d5 measures modern CSS transition colors and retains negative contrast controls. Captures remain source-scoped; whole-surface visual states remain unqualified."
         },
         {
           "id": "B6",
@@ -532,8 +566,8 @@
           "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d"],
-          "remaining": "Firewall, hardware, relationship and legacy software definitions have typed writable fields. Relationship select digit strings, omitted-target 400 behavior, software ISO dates/nulls and read round trips are preserved. Remaining request/response schemas, pagination and other resource contracts are unqualified."
+          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d", "28e0579b"],
+          "remaining": "Firewall/hardware/software/relationship typed boundaries passed assembled CI. 28e0579b validates all four asset calendar fields consistently across create/update/bulk preview/execution; invalid dates cannot silently clear values. Remaining schemas, scalar types and pagination are unqualified."
         },
         {
           "id": "C3",
@@ -543,9 +577,9 @@
           "status": "in_progress",
           "reviewed_commits": [
             "27873d89",
-            "0b41d3c7", "7323ef6d"
+            "0b41d3c7", "7323ef6d", "679f366a"
           ],
-          "remaining": "Explicit environment identity and selected vault/asset/relationship boundaries are verified. Relationship reads authorize both endpoints; real tenant and module write guards are covered for software/relationship mutations. Complete API/role/tenant matrix and authentic host trust remain."
+          "remaining": "Environment identity and selected vault/asset/relationship boundaries passed assembled CI. 679f366a now authorizes interface parents and both connection endpoints, preserving custom-IP links while hiding foreign-tenant metadata. Complete API/role/tenant matrix and authentic host trust remain."
         },
         {
           "id": "C4",
@@ -554,7 +588,7 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d"],
-          "remaining": "Maintenance lifecycle/retry proof passed assembled CI. Firewall/hardware backend checks passed the later failed d3640e00 run. Software/relationship audit rollback, disappearing-parent conflicts and concurrent deletion with one audit have local proof. Optimistic edits, duplicate creation, other domains and concurrent hardware deletion remain."
+          "remaining": "Maintenance lifecycle/retry, firewall/hardware atomic writes and software/relationship rollback, disappearing-parent conflicts and concurrent deletion with one audit passed assembled CI at 978b14d5. Optimistic edits, duplicate creation, other domains and concurrent hardware deletion remain."
         },
         {
           "id": "C5",
@@ -571,8 +605,8 @@
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d"],
-          "remaining": "Asset, firewall, hardware and software/relationship ownership/reference boundaries have scoped proof. Relationship reads authorize both endpoints; historical authorized links remain readable. Legacy unknown hardware counts are preserved. Uniqueness concurrency, full canonical relationships and other legacy data remain."
+          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a"],
+          "remaining": "Asset/firewall/hardware/software/relationship boundaries passed assembled CI. Date validation now preserves existing values on invalid input. Interface projections hide foreign peers, preserve archived/custom-IP history and correct both loopback directions. Uniqueness concurrency, full relationships and other legacy data remain."
         },
         {
           "id": "C7",
@@ -580,8 +614,8 @@
           "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d"],
-          "remaining": "Trusted-actor throttling and diagnostic redaction passed assembled CI. Firewall/asset/hardware protections passed the d3640e00 backend gate. Relationship numeric IDs and software dates, including extreme UTC conversion overflow, have local rejection/rollback proof. Remaining URLs, uploads, rich content, exports, request sizes, other scalar/date schemas and distributed limits remain."
+          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a"],
+          "remaining": "Trusted-actor throttling, redaction and firewall/asset/hardware/software/relationship protections passed assembled CI. Date fields reject invalid calendars/non-text input before writes; interface IDs reject overflow before SQLite. Remaining URLs, uploads, rich content, exports, request sizes, other scalar/date schemas and distributed limits remain."
         },
         {
           "id": "C8",
@@ -634,8 +668,8 @@
           "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7"],
-          "remaining": "Credential/selection repairs passed assembled CI. Further asset/hardware checks passed d3640e00 before its root harness failure. Software/relationship integrity has 45 new passing backend cases, and all 13 Assets browser journeys pass with responsive relationship editing. Broader editing/import, inline draft lifecycle, role and large-dataset qualification remains."
+          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7", "28e0579b", "679f366a", "ba72aa15"],
+          "remaining": "Asset/hardware/software/relationship repairs passed assembled CI at 978b14d5. Later calendar-date integrity, authorized interface projections and pending inline saves have local backend/browser proof. Broader editing/import, complete inline draft lifecycle, role and large-dataset qualification remains."
         },
         {
           "id": "D3",
@@ -662,7 +696,7 @@
           "approval": "yes",
           "status": "unqualified",
           "reviewed_commits": [],
-          "remaining": "Valid endpoints, ports, direction and connection semantics; consistent creation, import, and bulk validation; useful relationship navigation."
+          "remaining": "679f366a qualifies the Assets interface projection: authorized endpoints, custom-IP links and both loopback directions, with 18 passing Assets/Network journeys. Network endpoint creation/import/bulk contracts and broader semantics remain unqualified."
         },
         {
           "id": "D6",
@@ -713,8 +747,8 @@
           "outcome": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["0390df80"],
-          "remaining": "Rack list SELECTs reduced from 241 to 2 for 40 racks/120 placements with unchanged records and CI-passing behavior. Broader scale, indexes, contention and process topology remain unqualified."
+          "reviewed_commits": ["0390df80", "679f366a"],
+          "remaining": "Rack SELECTs reduced from 241 to 2 for 40 racks/120 placements. Interface reads now use three SELECTs at 1, 40 and 600 ports, down from 602 at 600 ports. Payload pagination, broader scale, indexes, contention and process topology remain unqualified."
         },
         {
           "id": "E3",
@@ -755,7 +789,7 @@
           "reviewed_commits": [
             "38c82a58", "0c9cabcf", "597c2dd9", "2a56682a"
           ],
-          "remaining": "597c2dd9 remains the last full CI success. d3640e00 passed 318 backend, 791 frontend, 114 normal and 35 desktop journeys but failed one of six root journeys during document replacement. The reviewed synchronization repair passes six local root journeys; the newer assembled candidate, supply-chain and final release checks remain."
+          "remaining": "978b14d5 passed 76 startup/recovery checks plus 23 subtests, 363 backend, 791 frontend, 117 normal browser journeys with two existing skips, 35 desktop and six root journeys. Later contrast/date/interface/inline-save changes need assembled CI; supply-chain and final release checks remain."
         },
         {
           "id": "E7",
