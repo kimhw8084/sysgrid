@@ -102,9 +102,11 @@ def normalize_service_payload(data: dict) -> dict:
     clean_data = filter_valid_columns(models.LogicalService, data, exclude=IMMUTABLE_SERVICE_FIELDS)
     if "status" in clean_data:
         clean_data["status"] = canonicalize_service_status(clean_data.get("status")) or "Existing"
-    clean_data["config_json"] = normalize_json_object(clean_data.get("config_json"))
-    clean_data["custom_attributes"] = normalize_json_object(clean_data.get("custom_attributes"))
-    clean_data["logic_json"] = normalize_json_list(clean_data.get("logic_json"))
+    for field in ("config_json", "custom_attributes"):
+        if field in clean_data:
+            clean_data[field] = normalize_json_object(clean_data[field])
+    if "logic_json" in clean_data:
+        clean_data["logic_json"] = normalize_json_list(clean_data["logic_json"])
     for date_field in ["purchase_date", "expiry_date", "installation_date"]:
         if date_field in clean_data:
             clean_data[date_field] = parse_iso_date(clean_data.get(date_field))
