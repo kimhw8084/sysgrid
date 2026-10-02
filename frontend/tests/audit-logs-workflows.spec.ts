@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { AuditLogsView } from './pom/AuditLogsView';
-import { createConnection, resetBrowserState, seedOperationalScenario, seedRackScenario } from './helpers/sysgrid';
+import { createAsset, createConnection, resetBrowserState, seedOperationalScenario, seedRackScenario } from './helpers/sysgrid';
 import { test } from './helpers/sysgrid-test';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1';
@@ -17,6 +17,39 @@ test.describe('Audit Logs Workflows', () => {
 
     // Check Golden Template Primitives
     await expect(page.locator('h1').first()).toBeVisible();
+  });
+
+  for (const theme of ['nordic-frost-v1', 'pure-clarity']) test(`ordinary asset writes expose scoped audit history in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy();
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme);
+    const device = await createAsset(request, { name: `Audit write ${theme} ${Date.now()}`, system: 'Audit browser proof' });
+    const saved = await request.put(`${apiBase}/devices/${device.id}`, {
+      data: { owner: 'private-owner-proof', os_name: 'Linux', os_version: '2' },
+    });
+    expect(saved.ok()).toBeTruthy();
+    const noop = await request.put(`${apiBase}/devices/${device.id}`, {
+      data: { owner: 'private-owner-proof', os_name: 'Linux', os_version: '2' },
+    });
+    expect(noop.ok()).toBeTruthy();
+    await page.goto(`/logs?target_table=devices&target_id=${device.id}`);
+    await expect(page.getByText(`Scoped: devices // ${device.id}`)).toBeVisible();
+    const rows = page.locator('.ag-center-cols-container .ag-row');
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0)).toContainText('Updated asset');
+    await expect(rows.nth(1)).toContainText('Created asset');
+    await page.getByRole('button', { name: 'View change payload', exact: true }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'Audit Change Payload', exact: true });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('pre')).toContainText('"changed_fields"');
+    await expect(dialog.locator('pre')).toContainText('"owner"');
+    await expect(dialog.locator('pre')).toContainText('"os_service_changed": true');
+    await expect(dialog).not.toContainText('private-owner-proof');
+    await page.screenshot({ path: testInfo.outputPath('asset-audit-payload.png'), animations: 'disabled' });
+    await dialog.getByRole('button', { name: 'Close audit payload', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await page.getByRole('button', { name: 'Open target record', exact: true }).first().click();
+    await expect(page).toHaveURL(new RegExp(`/asset\\?id=${device.id}(?:&|$)`));
+    await expect(page.getByText(device.name, { exact: true }).first()).toBeVisible();
   });
 
   test('target scope changes refetch the new target and export names loaded-page semantics', async ({ page }) => {

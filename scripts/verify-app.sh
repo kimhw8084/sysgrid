@@ -44,6 +44,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_device_secret_boundary.py
   test_firewall_integrity.py
   test_asset_write_boundary.py
+  test_asset_write_audit.py
   test_hardware_integrity.py
   test_asset_link_integrity.py
   test_asset_date_integrity.py

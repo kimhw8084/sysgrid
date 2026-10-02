@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 from sqlalchemy import select, delete, update, or_, and_, func
 from datetime import datetime
@@ -453,9 +454,9 @@ async def sync_device_to_os(device, db: AsyncSession):
         svc = result.scalar_one_or_none()
         
         if svc:
-            svc.name = device.os_name
-            svc.version = device.os_version
-            svc.environment = device.environment or svc.environment or "Production"
+            desired = (device.os_name, device.os_version, device.environment or svc.environment or "Production")
+            changed = (svc.name, svc.version, svc.environment) != desired
+            svc.name, svc.version, svc.environment = desired
         else:
             svc = models.LogicalService(
                 device_id=device.id,
@@ -466,7 +467,31 @@ async def sync_device_to_os(device, db: AsyncSession):
                 environment=device.environment or "Production"
             )
             db.add(svc)
+            changed = True
         # No internal commit here, calling code handles it
+        return changed
+    return False
+
+
+async def _commit_device_definition(request, db, device, action, changed_fields):
+    try:
+        await db.flush()
+        os_service_changed = await sync_device_to_os(device, db)
+        if action == 'CREATE' or changed_fields or os_service_changed:
+            db.add(build_audit_log(
+                request=request, action=action, target_table='devices', target_id=str(device.id),
+                description='Created asset' if action == 'CREATE' else 'Updated asset',
+                # Free-form fields can contain private values. Record only the
+                # bounded field inventory and whether synchronization changed.
+                changes={'changed_fields': sorted(changed_fields), 'os_service_changed': os_service_changed},
+            ))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Asset conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
 
 @router.get("")
 async def get_devices(request: Request, system: Optional[str] = None, include_deleted: bool = False, db: AsyncSession = Depends(get_db)):
@@ -742,12 +767,7 @@ async def create_device(request: Request, data: dict, db: AsyncSession = Depends
 
     db_device = models.Device(**clean_data, tenant_id=tenant_id, created_by_user_id=get_audit_actor(request))
     db.add(db_device)
-    await db.flush() # Flush to get ID
-
-    # Sync OS to services
-    await sync_device_to_os(db_device, db)
-    
-    await db.commit()
+    await _commit_device_definition(request, db, db_device, 'CREATE', clean_data.keys())
     await db.refresh(db_device)
 
     # Re-fetch for full response consistency (all enriched fields)
@@ -774,20 +794,19 @@ async def update_device(request: Request, device_id: int, data: dict, db: AsyncS
         if dup_res.scalars().first():
             raise HTTPException(409, "DUPLICATE_HOSTNAME")
 
+    changed_fields = []
     for k, v in clean_data.items():
         if k == "metadata_json" and isinstance(v, str):
             try:
                 import json
-                setattr(db_device, k, json.loads(v))
+                v = json.loads(v)
             except:
-                setattr(db_device, k, v)
-        else:
+                pass
+        if getattr(db_device, k) != v:
+            changed_fields.append(k)
             setattr(db_device, k, v)
-    
-    # Sync OS to services
-    await sync_device_to_os(db_device, db)
-    
-    await db.commit()
+
+    await _commit_device_definition(request, db, db_device, 'UPDATE', changed_fields)
     await db.refresh(db_device)
     return db_device
 
