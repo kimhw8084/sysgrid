@@ -11,6 +11,7 @@ import { AppDropdown } from './AppDropdown'
 import { WorkspaceModal } from './WorkspaceModal'
 import { ToolbarButton } from './LayoutPrimitives'
 import { downloadOperationalImportFile } from './OperationalImportExport'
+import { parseDelimitedText } from './OperationalImportText'
 import {
   WorkspaceEmptyState,
   WorkspaceFieldLabel,
@@ -88,54 +89,6 @@ const SOURCE_MODES: Array<{ id: ImportMode; label: string; icon: React.ReactNode
 
 function normalizeHeader(value: string) {
   return value.trim().toLowerCase().replace(/[\s_-]+/g, '')
-}
-
-function parseDelimitedLine(line: string, delimiter: string) {
-  const values: string[] = []
-  let current = ''
-  let inQuotes = false
-
-  for (let index = 0; index < line.length; index += 1) {
-    const char = line[index]
-    const next = line[index + 1]
-
-    if (char === '"') {
-      if (inQuotes && next === '"') {
-        current += '"'
-        index += 1
-      } else {
-        inQuotes = !inQuotes
-      }
-      continue
-    }
-
-    if (char === delimiter && !inQuotes) {
-      values.push(current)
-      current = ''
-      continue
-    }
-
-    current += char
-  }
-
-  values.push(current)
-  return values.map((value) => value.replace(/\r/g, '').trim())
-}
-
-function parseDelimitedText(text: string) {
-  const lines = text
-    .replace(/\r\n/g, '\n')
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter((line) => line.trim().length > 0)
-
-  if (lines.length === 0) return { delimiter: ',', rows: [] as string[][] }
-
-  const delimiter = lines[0].includes('\t') ? '\t' : ','
-  return {
-    delimiter,
-    rows: lines.map((line) => parseDelimitedLine(line, delimiter)),
-  }
 }
 
 function valueToCell(value: any) {
@@ -414,6 +367,10 @@ export function OperationalImportModal({
     }
 
     const parsed = parseDelimitedText(pasteText)
+    if (parsed.error) {
+      showWorkspaceToast(parsed.error, { type: 'error' })
+      return
+    }
     if (parsed.rows.length === 0) {
       showWorkspaceToast('No rows were found in the pasted data.')
       return
@@ -473,7 +430,11 @@ export function OperationalImportModal({
   const handleCellPaste = (rowIndex: number, columnIndex: number, text: string) => {
     if (!schema) return
     const parsed = parseDelimitedText(text)
-    if (parsed.rows.length <= 1 && parsed.rows[0]?.length <= 1) return
+    if (parsed.error) {
+      showWorkspaceToast(parsed.error, { type: 'error' })
+      return
+    }
+    if (parsed.rows.length === 0) return
 
     const allColumnNames = activeColumns.map((field) => field.name)
     setDraftRows((current) => {
@@ -910,7 +871,9 @@ export function OperationalImportModal({
                             {draftRows.map((row, rowIndex) => (
                               <tr key={`draft-row-${rowIndex}`} className="hover:bg-white/[0.02] transition-colors">
                                 <td className="px-4 py-3 align-middle text-center text-[10px] font-mono font-bold text-slate-500">#{rowIndex + 1}</td>
-                                {activeColumns.map((field, columnIndex) => (
+                                {activeColumns.map((field, columnIndex) => {
+                                  const CellControl = field.input_control === 'number' ? 'input' : 'textarea'
+                                  return (
                                   <td key={`${rowIndex}-${field.name}`} className="px-2 py-2 align-middle">
                                     {field.input_control === 'select' ? (
                                       <AppDropdown
@@ -921,24 +884,26 @@ export function OperationalImportModal({
                                         placeholder={field.required ? `Select ${field.label}` : `Optional`}
                                       />
                                     ) : (
-                                      <input
+                                      <CellControl
                                         aria-label={`${field.label}, row ${rowIndex + 1}`}
-                                        type={field.input_control === 'number' ? 'number' : 'text'}
+                                        type={field.input_control === 'number' ? 'number' : undefined}
+                                        rows={row[field.name]?.includes('\n') ? 3 : 1}
                                         value={row[field.name] || ''}
                                         onChange={(event) => updateDraftCell(rowIndex, field.name, event.target.value)}
                                         onPaste={(event) => {
                                           const text = event.clipboardData.getData('text')
-                                          if (text.includes('\n') || text.includes('\t')) {
+                                          if (text.includes('\n') || text.includes('\t') || text.includes('\r')) {
                                             event.preventDefault()
                                             handleCellPaste(rowIndex, columnIndex, text)
                                           }
                                         }}
                                         placeholder={field.template_hint}
-                                        className="w-full rounded-lg border border-white/5 bg-black/20 px-3 py-2.5 text-[10px] font-semibold text-slate-200 outline-none transition-all focus:border-blue-500/40 focus:bg-black/40 placeholder:text-slate-600"
+                                        className="w-full resize-y rounded-lg border border-white/5 bg-black/20 px-3 py-2.5 text-[10px] font-semibold text-slate-200 outline-none transition-all focus:border-blue-500/40 focus:bg-black/40 placeholder:text-slate-600"
                                       />
                                     )}
                                   </td>
-                                ))}
+                                  )
+                                })}
                                 <td className="px-4 py-3 align-middle text-center">
                                   <button
                                     type="button"
