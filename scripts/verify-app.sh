@@ -23,6 +23,12 @@ reset_generated_evidence() {
 reset_generated_evidence
 verify_runtime_resolve_python
 
+(
+  cd "$ROOT_DIR"
+  "$PYTHON_BIN" -m pytest -q scripts/tests/test_safe_startup.py scripts/tests/test_runtime_origin_config.py
+  bash scripts/workstation-up.sh --self-test
+)
+
 BACKEND_QUALIFICATION_TESTS=(
   test_migration_graph.py
   test_system_management_v1_policy.py
