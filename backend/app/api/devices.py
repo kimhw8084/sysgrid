@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 from sqlalchemy import select, delete, update, or_, and_, func
 from datetime import datetime
 from typing import Optional
@@ -623,44 +624,48 @@ async def get_devices_summary(
 
 @router.get("/{device_id}/interfaces")
 async def get_device_interfaces(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
+    await require_relationship_asset(request, db, device_id)
     # Fetch interfaces for the device
-    res = await db.execute(select(models.NetworkInterface).filter(models.NetworkInterface.device_id == device_id))
+    res = await db.execute(select(models.NetworkInterface).filter(models.NetworkInterface.device_id == device_id).order_by(models.NetworkInterface.id))
     interfaces = res.scalars().all()
-    
-    # Fetch all connections involving this device to map to interfaces
-    conn_res = await db.execute(select(models.PortConnection).filter(
+
+    # Join both endpoints once. Custom-IP endpoints have no asset ID; every
+    # referenced asset must belong to the same authorized tenant.
+    source, target = aliased(models.Device), aliased(models.Device)
+    conn_res = await db.execute(select(models.PortConnection, source.name, target.name).outerjoin(
+        source, source.id == models.PortConnection.source_device_id,
+    ).outerjoin(target, target.id == models.PortConnection.target_device_id).where(
         or_(
             models.PortConnection.source_device_id == device_id,
             models.PortConnection.target_device_id == device_id
-        )
-    ))
-    connections = conn_res.scalars().all()
-    
+        ),
+        or_(models.PortConnection.source_device_id.is_(None), source.tenant_id == request.state.tenant_id),
+        or_(models.PortConnection.target_device_id.is_(None), target.tenant_id == request.state.tenant_id),
+    ).order_by(models.PortConnection.id))
+    by_port = {}
+    for conn, source_name, target_name in conn_res.all():
+        if conn.source_device_id == device_id:
+            by_port.setdefault(conn.source_port, (conn, True, target_name))
+        if conn.target_device_id == device_id:
+            by_port.setdefault(conn.target_port, (conn, False, source_name))
+
     result = []
     for i in interfaces:
         iface_dict = {c.name: getattr(i, c.name) for c in i.__table__.columns}
-        
-        # Find connection matching this interface name (port)
-        conn = next((c for c in connections if 
-            (c.source_device_id == device_id and c.source_port == i.name) or
-            (c.target_device_id == device_id and c.target_port == i.name)
-        ), None)
-        
-        if conn:
-            peer_device_id = conn.target_device_id if conn.source_device_id == device_id else conn.source_device_id
-            peer_port = conn.target_port if conn.source_device_id == device_id else conn.source_port
-            peer_ip = conn.target_ip if conn.source_device_id == device_id else conn.source_ip
-            peer_mac = conn.target_mac if conn.source_device_id == device_id else conn.source_mac
-            peer_vlan = conn.target_vlan if conn.source_device_id == device_id else conn.source_vlan
-            
-            # Local side info from the connection record
-            local_mac = conn.source_mac if conn.source_device_id == device_id else conn.target_mac
-            local_vlan = conn.source_vlan if conn.source_device_id == device_id else conn.target_vlan
-            local_ip = conn.source_ip if conn.source_device_id == device_id else conn.target_ip
+        matched = by_port.get(i.name)
+        if matched:
+            conn, is_source, peer_name = matched
+            peer_device_id = conn.target_device_id if is_source else conn.source_device_id
+            peer_port = conn.target_port if is_source else conn.source_port
+            peer_ip = conn.target_ip if is_source else conn.source_ip
+            peer_mac = conn.target_mac if is_source else conn.source_mac
+            peer_vlan = conn.target_vlan if is_source else conn.source_vlan
 
-            peer_res = await db.execute(select(models.Device).filter(models.Device.id == peer_device_id))
-            peer_dev = peer_res.scalar_one_or_none()
-            
+            # Local side info from the connection record
+            local_mac = conn.source_mac if is_source else conn.target_mac
+            local_vlan = conn.source_vlan if is_source else conn.target_vlan
+            local_ip = conn.source_ip if is_source else conn.target_ip
+
             iface_dict["connection"] = {
                 "id": conn.id,
                 "source_device_id": conn.source_device_id,
@@ -676,7 +681,7 @@ async def get_device_interfaces(request: Request, device_id: int, db: AsyncSessi
                 "direction": conn.direction,
                 "unit": conn.unit,
                 "peer_device_id": peer_device_id,
-                "peer_device_name": peer_dev.name if peer_dev else "Unknown",
+                "peer_device_name": peer_name if peer_name is not None else "Unknown",
                 "peer_port": peer_port,
                 "peer_ip": peer_ip,
                 "peer_mac": peer_mac,
