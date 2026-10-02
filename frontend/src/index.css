@@ -55,7 +55,7 @@
   --action-primary-muted: var(--accent-glow);
   --action-ink: #60a5fa;
   --text-disabled: var(--text-muted);
-  --state-success: #15803d;
+  --state-success: #166534;
   --state-success-surface: rgba(21, 128, 61, 0.12);
   --state-success-border: rgba(21, 128, 61, 0.35);
   --state-warning: #a16207;

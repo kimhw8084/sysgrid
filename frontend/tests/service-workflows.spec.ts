@@ -2,8 +2,68 @@ import { clickResilientButton } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import { createAsset, createService, resetBrowserState } from './helpers/sysgrid'
+import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`Service import rejects unavailable hosts and preserves identifiers in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const name = `Service import ${theme} ${Date.now()}`
+    const host = await createAsset(request, { name: `Host ${name}`, system: 'Service import proof' })
+    const csv = `name,service_type,status,version,device_id,license_key,purpose\n${name},OS,Existing,000007,${host.id},0000123,NA\nUnavailable host,OS,Existing,1,900000000,,`
+    await page.goto('/services')
+    await page.getByRole('button', { name: 'Import service rows', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Services Import', exact: true })
+    await dialog.locator('input[type="file"]').setInputFiles({ name: 'services-proof.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
+    const preview = page.waitForResponse(response => response.url().includes('/api/v1/import/preview-file'))
+    await dialog.getByRole('button', { name: 'Initiate Audit', exact: true }).click()
+    const previewResponse = await preview
+    expect(previewResponse.ok()).toBeTruthy()
+    expect(await previewResponse.json()).toMatchObject({ total_rows: 2, valid_rows: 1, invalid_rows: 1 })
+    const table = dialog.getByRole('table').filter({ has: page.getByRole('columnheader', { name: 'Diagnostics', exact: true }) })
+    const rows = table.locator('tbody tr')
+    await expect(rows).toHaveCount(2)
+    await expect(rows.nth(0).getByRole('checkbox')).toBeChecked()
+    await expect(rows.nth(1).getByRole('checkbox')).toBeDisabled()
+    await expect(rows.nth(1).getByRole('checkbox')).not.toBeChecked()
+    await expect(rows.nth(1)).toContainText('Asset not found')
+    await table.scrollIntoViewIfNeeded()
+    await expect(dialog).toHaveCSS('opacity', '1')
+    await expectReadableGridText(page, testInfo, 'service-import-preview', '[role="dialog"][aria-label="Services Import"] :is(th, td)')
+    await page.screenshot({ path: testInfo.outputPath(`service-import-preview-${theme}.png`), animations: 'disabled' })
+    const save = page.waitForResponse(response => response.url().includes('/api/v1/import/execute'))
+    await dialog.getByRole('button', { name: 'Import 1', exact: true }).click()
+    const saved = await save
+    expect(saved.ok()).toBeTruthy()
+    expect(await saved.json()).toEqual({ status: 'success', count: 1 })
+    expect(saved.request().postDataJSON().rows).toHaveLength(1)
+    await expect(dialog).toHaveCount(0)
+    await page.getByPlaceholder('Search services, hosts, or metadata...').fill(name)
+    await expect(page.locator('.ag-center-cols-container .ag-row')).toHaveCount(1)
+    await expect(page.locator('.ag-center-cols-container .ag-row')).toContainText(host.name)
+    const readback = await request.get(`${apiBase}/logical-services?device_id=${host.id}`)
+    expect(readback.ok()).toBeTruthy()
+    const imported = await readback.json()
+    expect(imported).toEqual([expect.objectContaining({ name, device_id: host.id, version: '000007', license_key: '0000123', purpose: 'NA' })])
+    const assets = await request.get(`${apiBase}/devices`)
+    expect(assets.ok()).toBeTruthy()
+    expect((await assets.json()).find((asset: { id: number }) => asset.id === host.id))
+      .toMatchObject({ os_name: name, os_version: '000007' })
+    await page.goto(`/logs?target_table=logical_services&target_id=${imported[0].id}`)
+    const historyRows = page.locator('.ag-center-cols-container .ag-row')
+    await expect(historyRows).toHaveCount(1)
+    await expect(historyRows).toContainText('Imported logical service')
+    await page.getByRole('button', { name: 'Open target record', exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(`/services\\?id=${imported[0].id}(?:&|$)`))
+    const detail = page.getByRole('dialog').filter({ has: page.getByRole('heading', { level: 2, name, exact: true }) })
+    await expect(detail).toBeVisible()
+    await expect(detail.locator('dt').filter({ hasText: /^Version$/ }).locator('..').locator('dd')).toHaveText('000007')
+  })
+}
 
 test.describe('Service workflows', () => {
   test('adopts searchable Host selection and saves the selected numeric device id', async ({ page, sysApi: request }) => {

@@ -34,6 +34,7 @@ from .module_policy import ensure_module_access
 from .asset_import import execute_asset_rows, preview_asset_rows
 from .devices import _DEVICE_WRITABLE_FIELDS
 from .networks import _connection_scope
+from .logical_services import _normalize_service_device_id, _service_scope, sync_device_os_state
 from ..import_limits import (
     IMPORT_LIMITS, MAX_IMPORT_FILE_BYTES, MAX_IMPORT_WORKBOOK_BYTES,
     MAX_IMPORT_WORKBOOK_ENTRIES, require_import_row_limit,
@@ -280,6 +281,84 @@ async def execute_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
         ))
         await db.commit()
     return {"status": "success", "count": count}
+
+
+async def preview_service_rows(request: Request, db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    try:
+        json.dumps(rows, allow_nan=False)
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(422, 'Service import values must be valid finite JSON') from exc
+
+    preview = await preview_generic_rows(db, models.LogicalService, [row if isinstance(row, dict) else {} for row in rows])
+    for result, raw_row in zip(preview['results'], rows):
+        result['source'] = raw_row
+        if not isinstance(raw_row, dict):
+            result['errors'].append('Each Service row must be an object')
+            continue
+        try:
+            # Validate the original reference: generic integer coercion truncates
+            # fractions and accepts booleans before relationship authorization.
+            result['normalized']['device_id'] = _normalize_service_device_id(normalize_scalar(raw_row.get('device_id')))
+            json.dumps(result['normalized'], allow_nan=False)
+        except HTTPException as exc:
+            result['errors'].append(str(exc.detail))
+        except (ValueError, TypeError):
+            result['errors'].append('Service import values must be valid finite JSON')
+
+    device_ids = {result['normalized'].get('device_id') for result in preview['results']
+                  if not result['errors'] and result['normalized'].get('device_id') is not None}
+    owned_ids = set(await db.scalars(select(models.Device.id).where(
+        models.Device.id.in_(device_ids), models.Device.tenant_id == request.state.tenant_id,
+        models.Device.is_deleted == False,
+    ))) if device_ids else set()
+    for result in preview['results']:
+        device_id = result['normalized'].get('device_id')
+        if not result['errors'] and device_id is not None and device_id not in owned_ids:
+            result['errors'].append('Asset not found')
+        result['status'] = 'INVALID' if result['errors'] else 'VALID'
+        if result['errors']:
+            result['normalized'] = {}
+    preview['invalid_rows'] = sum(result['status'] == 'INVALID' for result in preview['results'])
+    preview['valid_rows'] = preview['total_rows'] - preview['invalid_rows']
+    preview['total_errors'] = sum(len(result['errors']) for result in preview['results'])
+    return preview
+
+
+async def execute_service_rows(request: Request, db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    preview = await preview_service_rows(request, db, rows)
+    invalid = [result for result in preview['results'] if result['status'] == 'INVALID']
+    if invalid:
+        return {'status': 'failed', 'errors': [f"Row {result['row']}: {', '.join(result['errors'])}" for result in invalid], 'count': 0}
+
+    count = len(preview['results'])
+    try:
+        imported = []
+        for result in preview['results']:
+            service = models.LogicalService(**result['normalized'], created_by_user_id=get_audit_actor(request))
+            db.add(service)
+            imported.append((service, result['normalized']))
+        if count:
+            await db.flush()
+            for device_id in {service.device_id for service, _ in imported if service.service_type == 'OS' and service.device_id is not None}:
+                await sync_device_os_state(device_id, db)
+            for service, normalized in imported:
+                db.add(build_audit_log(
+                    request=request, action='CREATE', target_table='logical_services', target_id=str(service.id),
+                    description='Imported logical service',
+                    changes={'changed_fields': sorted(normalized), 'batch_count': count},
+                ))
+            db.add(build_audit_log(
+                request=request, action='BULK_IMPORT', target_table='LOGICAL_SERVICES', target_id='MULTIPLE',
+                description=f'Bulk imported {count} records into logical_services.', changes={'count': count},
+            ))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Service import conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
+    return {'status': 'success', 'count': count}
 
 
 MONITORING_IMPORT_REQUIRED_FIELD_NAMES = {"category", "status", "title"}
@@ -1696,6 +1775,13 @@ async def enforce_import_profile_access(profile: ImportProfile, request: Request
 
 
 def get_import_profile(table_name: str, request: Request) -> ImportProfile:
+    if table_name == 'logical_services':
+        return ImportProfile(
+            key=table_name, display_name='Logical Services', model=models.LogicalService,
+            fields=IMPORT_PROFILES[table_name].fields,
+            preview_rows=lambda db, rows: preview_service_rows(request, db, rows),
+            execute_rows=lambda db, rows, _user_id: execute_service_rows(request, db, rows),
+        )
     if table_name == 'port_connections':
         # Bind trusted request identity without retaining it in the global registry.
         return ImportProfile(
@@ -1896,6 +1982,8 @@ async def download_snapshot(table_name: str, request: Request, export_token: Opt
             query = query.where(models.Device.tenant_id == request.state.tenant_id)
         elif model is models.PortConnection:
             query = query.where(_connection_scope(request))
+        elif model is models.LogicalService:
+            query = query.where(_service_scope(request))
         if hasattr(model, "is_deleted"):
             query = query.where(model.is_deleted == False)
 
@@ -1939,7 +2027,7 @@ async def preview_import_file(request: Request, table_name: str = Form(...), fil
     try:
         df = await run_in_threadpool(
             load_dataframe_from_upload, file, content,
-            preserve_text=profile.model in {models.Device, models.PortConnection},
+            preserve_text=profile.model in {models.Device, models.PortConnection, models.LogicalService},
         )
     except (ValueError, OSError, zipfile.BadZipFile) as exc:
         raise HTTPException(400, 'Could not parse the import file. Check its format and contents.') from exc
