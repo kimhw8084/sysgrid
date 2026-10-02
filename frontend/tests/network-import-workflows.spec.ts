@@ -14,7 +14,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     const name = `Network import ${theme} ${Date.now()}`
     const source = await createAsset(request, { name, system: 'Import proof' })
     const peer = await createAsset(request, { name: `Peer ${name}`, system: 'Import proof' })
-    const csv = `source_device_id,source_port,target_device_id,target_port,link_type,status\n${source.id},valid-source,${peer.id},valid-peer,Data,Active\n${source.id},invalid-source,900000000,invalid-peer,Data,Active`
+    const csv = `source_device_id,source_port,target_device_id,target_port,link_type,status\n${source.id},000007,${peer.id},NA,Data,Active\n${source.id},invalid-source,900000000,invalid-peer,Data,Active`
     await page.goto('/network')
     await page.getByRole('button', { name: 'Import network rows', exact: true }).click()
     const dialog = page.getByRole('dialog', { name: 'Network Import', exact: true })
@@ -48,10 +48,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await expect(dialog).toHaveCount(0)
     await page.getByPlaceholder('Scan matrix...').fill(name)
     await expect(page.locator('.ag-center-cols-container .ag-row')).toHaveCount(1)
-    await expect(page.locator('.ag-center-cols-container .ag-row')).toContainText('valid-source')
+    await expect(page.locator('.ag-center-cols-container .ag-row')).toContainText('000007')
     const readback = await request.get(`${apiBase}/networks/connections?device_id=${source.id}`)
     expect(readback.ok()).toBeTruthy()
     expect(await readback.json()).toEqual([expect.objectContaining({ source_device_id: source.id,
-      target_device_id: peer.id, source_port: 'valid-source', target_port: 'valid-peer' })])
+      target_device_id: peer.id, source_port: '000007', target_port: 'NA' })])
   })
 }

@@ -1906,7 +1906,10 @@ async def preview_import_file(request: Request, table_name: str = Form(...), fil
     if len(content) > MAX_IMPORT_FILE_BYTES:
         raise HTTPException(413, 'Import files are limited to 10 MiB. Split the data into smaller files.')
     try:
-        df = await run_in_threadpool(load_dataframe_from_upload, file, content, preserve_text=profile.model is models.Device)
+        df = await run_in_threadpool(
+            load_dataframe_from_upload, file, content,
+            preserve_text=profile.model in {models.Device, models.PortConnection},
+        )
     except (ValueError, OSError, zipfile.BadZipFile) as exc:
         raise HTTPException(400, 'Could not parse the import file. Check its format and contents.') from exc
     require_import_row_limit(df)

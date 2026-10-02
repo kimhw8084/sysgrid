@@ -2,6 +2,7 @@
 import csv
 import io
 
+import pandas as pd
 import pytest
 from sqlalchemy import event, select
 from sqlalchemy.exc import IntegrityError
@@ -142,3 +143,34 @@ async def test_import_rejects_a_port_reused_within_the_same_batch(network_scope,
     else:
         assert response.json()['invalid_rows'] == 1
     assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('extension', ['csv', 'xlsx'])
+async def test_file_import_preserves_port_identifiers_and_literal_na(network_scope, setup_db, extension):
+    c = network_scope
+    row = {**valid_row(c), 'source_port': '000007', 'target_port': 'NA', 'purpose': 'N/A',
+           'source_mac': '000000000123', 'source_vlan': '0', 'target_vlan': '4094',
+           'speed_gbps': '2.5', 'source_ip': '', 'target_ip': ''}
+    stream = io.BytesIO()
+    if extension == 'csv':
+        stream.write(pd.DataFrame([row]).to_csv(index=False).encode())
+    else:
+        pd.DataFrame([row]).to_excel(stream, index=False)
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post('/api/v1/import/preview-file', headers=c['headers'],
+        data={'table_name': 'port_connections'}, files={'file': (f'network.{extension}', stream.getvalue())})
+    assert response.status_code == 200 and response.json()['valid_rows'] == 1, response.text
+    parsed = response.json()['results'][0]
+    for field in ['source_port', 'target_port', 'purpose', 'source_mac']:
+        assert parsed['source'][field] == parsed['normalized'][field] == row[field]
+    assert parsed['normalized']['source_vlan'] == 0 and parsed['normalized']['target_vlan'] == 4094
+    assert parsed['normalized']['speed_gbps'] == 2.5 and parsed['normalized']['source_ip'] is None
+    assert await snapshot(c, setup_db) == before
+    saved = await send_rows(c, 'execute', [parsed['source']])
+    assert saved.status_code == 200 and saved.json() == {'status': 'success', 'count': 1}, saved.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        stored = await db.scalar(select(models.PortConnection).where(models.PortConnection.source_port == '000007'))
+        assert stored is not None and stored.target_port == 'NA' and stored.purpose == 'N/A'
+        assert stored.source_mac == '000000000123' and stored.source_vlan == 0 and stored.target_vlan == 4094
+        assert stored.speed_gbps == 2.5 and stored.source_ip is None and stored.target_ip is None
