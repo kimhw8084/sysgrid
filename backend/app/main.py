@@ -25,6 +25,7 @@ from .api import (
 )
 from .api.error_utils import standardize_validation_errors
 from .api.import_engine import ROUND_TRIP_EXPOSE_HEADER_NAMES, ROUND_TRIP_EXPOSE_HEADERS
+from .import_limits import ImportRequestLimitMiddleware
 from .core.config import settings
 from .database import ConfigSessionLocal, config_engine, default_engine
 from .models.config import Tenant, UserTenantAccess
@@ -146,6 +147,7 @@ EXPOSED_DOWNLOAD_HEADERS = list(ROUND_TRIP_EXPOSE_HEADER_NAMES)
 origins = settings.cors_origins
 allow_creds = False if "*" in origins else True
 
+app.add_middleware(ImportRequestLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

@@ -53,6 +53,7 @@ interface ImportSchemaResponse {
   fields: ImportFieldMeta[]
   required_fields: string[]
   example_records: Array<{ id: number; label: string }>
+  limits?: { max_file_bytes: number; max_rows: number }
 }
 
 interface ImportPreviewRow {
@@ -760,7 +761,10 @@ export function OperationalImportModal({
                         </div>
                         <div className="text-center px-4">
                           <p className="text-[11px] font-black uppercase tracking-widest text-white">{file?.name || (isPickerOpening ? 'Opening...' : 'Browse Vector Source')}</p>
-                          <p className="mt-2 text-[9px] font-semibold text-slate-500 uppercase tracking-widest">Choose a CSV or Excel file from disk. Max 10MB.</p>
+                          <p className="mt-2 text-[9px] font-semibold text-slate-500 uppercase tracking-widest">
+                            Choose a CSV or Excel file from disk. Max {schema?.limits ? schema.limits.max_file_bytes / (1024 * 1024) : 10} MiB.
+                            {schema?.limits && ` Up to ${schema.limits.max_rows} rows per import.`}
+                          </p>
                         </div>
                       </button>
                       <button

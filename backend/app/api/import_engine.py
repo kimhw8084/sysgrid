@@ -5,11 +5,13 @@ from datetime import datetime
 import io
 import json
 import re
+import zipfile
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 import pandas as pd
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 from sqlalchemy import and_, func, inspect, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -29,6 +31,10 @@ from .utils import filter_valid_columns, get_current_user_id
 from .module_policy import ensure_module_access
 from .asset_import import execute_asset_rows, preview_asset_rows
 from .devices import _DEVICE_WRITABLE_FIELDS
+from ..import_limits import (
+    IMPORT_LIMITS, MAX_IMPORT_FILE_BYTES, MAX_IMPORT_WORKBOOK_BYTES,
+    MAX_IMPORT_WORKBOOK_ENTRIES, require_import_row_limit,
+)
 
 router = APIRouter(prefix="/import", tags=["Intelligence Engine"])
 MONITORING_IMPORT_SCHEMA_VERSION = "2026-06-monitoring-v1"
@@ -148,9 +154,16 @@ def rows_from_dataframe(df: pd.DataFrame) -> list[dict[str, Any]]:
 def load_dataframe_from_upload(file: UploadFile, content: bytes, *, preserve_text: bool = False) -> pd.DataFrame:
     lower_name = (file.filename or "").lower()
     options = {"dtype": str, "keep_default_na": False} if preserve_text else {}
+    options['nrows'] = IMPORT_LIMITS['max_rows'] + 1
     if lower_name.endswith(".csv"):
         return pd.read_csv(io.BytesIO(content), **options)
     if lower_name.endswith(".xlsx") or lower_name.endswith(".xls"):
+        if lower_name.endswith('.xlsx') or zipfile.is_zipfile(io.BytesIO(content)):
+            with zipfile.ZipFile(io.BytesIO(content)) as workbook:
+                entries = workbook.infolist()
+                if (len(entries) > MAX_IMPORT_WORKBOOK_ENTRIES
+                        or sum(entry.file_size for entry in entries) > MAX_IMPORT_WORKBOOK_BYTES):
+                    raise HTTPException(413, 'Excel workbook exceeds the expanded-size limit. Split it into smaller files.')
         return pd.read_excel(io.BytesIO(content), **options)
     raise HTTPException(status_code=400, detail="Only CSV and Excel uploads are supported")
 
@@ -1753,6 +1766,7 @@ async def get_import_schema(table_name: str, request: Request, db: AsyncSession 
         "required_fields": [field.name for field in profile.fields if field.required],
         "example_records": context.get("example_records", []),
         "schema_version": headers.get("schema_version"),
+        "limits": IMPORT_LIMITS,
     }
 
 
@@ -1877,11 +1891,14 @@ async def get_snapshot_manifest(table_name: str, request: Request, db: AsyncSess
 async def preview_import_file(request: Request, table_name: str = Form(...), file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
     profile = get_import_profile(table_name)
     await enforce_import_profile_access(profile, request, db)
-    content = await file.read()
+    content = await file.read(MAX_IMPORT_FILE_BYTES + 1)
+    if len(content) > MAX_IMPORT_FILE_BYTES:
+        raise HTTPException(413, 'Import files are limited to 10 MiB. Split the data into smaller files.')
     try:
-        df = load_dataframe_from_upload(file, content, preserve_text=profile.model is models.Device)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        df = await run_in_threadpool(load_dataframe_from_upload, file, content, preserve_text=profile.model is models.Device)
+    except (ValueError, OSError, zipfile.BadZipFile) as exc:
+        raise HTTPException(400, 'Could not parse the import file. Check its format and contents.') from exc
+    require_import_row_limit(df)
     rows = rows_from_dataframe(df)
     # Asset identity and uniqueness require the request's trusted tenant.
     preview = (await preview_asset_rows(request, db, rows) if profile.model is models.Device
@@ -1901,6 +1918,7 @@ async def preview_import_rows(
     rows = payload.get("rows")
     if not isinstance(rows, list):
         raise HTTPException(status_code=400, detail="rows must be a list")
+    require_import_row_limit(rows)
     preview = (await preview_asset_rows(request, db, rows) if profile.model is models.Device
                else await profile.preview_rows(db, rows))
     return {"table_name": table_name, **preview}
@@ -1926,6 +1944,7 @@ async def execute_import(
         rows = body
     if not isinstance(rows, list):
         raise HTTPException(status_code=400, detail="rows must be a list")
+    require_import_row_limit(rows)
 
     user_id = get_current_user_id(request)
     if profile.model is models.Device:

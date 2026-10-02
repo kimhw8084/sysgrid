@@ -50,6 +50,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_asset_date_integrity.py
   test_asset_scalar_integrity.py
   test_asset_import_integrity.py
+  test_import_resource_limits.py
   test_asset_interface_integrity.py
   test_database_parameter_privacy.py
   test_validation_privacy.py
