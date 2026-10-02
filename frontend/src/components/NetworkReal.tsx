@@ -723,7 +723,12 @@ export default function NetworkReal() {
   )
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(NETWORK_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(NETWORK_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
-  const [searchTerm, setSearchTerm] = useState(persistedUiState?.searchTerm ?? '')
+  const [searchTerm, setSearchTermState] = useState(persistedUiState?.searchTerm ?? '')
+  const searchChangedRef = useRef(false)
+  const setSearchTerm = useCallback((value: string) => {
+    searchChangedRef.current = true
+    setSearchTermState(value)
+  }, [])
   const [groupBy, setGroupBy] = useState<string>(persistedUiState?.groupBy ?? 'raw')
   const [bulkDraft, setBulkDraft] = useState({ status: '', link_type: '', direction: '' })
   const [expandedBulkSection, setExpandedBulkSection] = useState<'status' | 'link_type' | 'direction' | null>(null)
@@ -856,7 +861,8 @@ export default function NetworkReal() {
       setQuickFilters(payload?.uiState.quickFilters ?? normalizeNetworkQuickFilters(null))
       setGroupBy(payload?.uiState.groupBy ?? 'raw')
       setColumnLayoutState(payload?.uiState.columnLayoutState ?? [])
-      setSearchTerm(payload?.uiState.searchTerm ?? '')
+      // Preferences loaded after a toolbar edit are older than that intent.
+      if (!searchChangedRef.current) setSearchTermState(payload?.uiState.searchTerm ?? '')
       return
     }
 

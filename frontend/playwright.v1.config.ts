@@ -4,6 +4,7 @@ import baseConfig from './playwright.config'
 export default defineConfig({
   ...baseConfig,
   testMatch: [
+    /(^|[\\/])network-preference-race\.spec\.ts$/,
     /(^|[\\/])asset-import-workflows\.spec\.ts$/,
     /(^|[\\/])asset-form-safety\.spec\.ts$/,
     /(^|[\\/])asset-inline-save\.spec\.ts$/,
