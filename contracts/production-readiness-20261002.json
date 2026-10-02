@@ -11,18 +11,47 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "1362951eaa0ecb5100e845741845257afeed8b2a",
+    "candidate": "7733c705a9becc9e338119c11c4a1c3369e49215",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37040933835",
-    "tested_merge": "07b9a86210bc4d8b2819c758de19033d8fdc31f8",
-    "completed_at": "2026-10-02T18:12:25Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37053710667",
+    "tested_merge": "6f5e71ea0a5d7d8bd448790d7484bfb58399427c",
+    "completed_at": "2026-10-02T19:51:46Z",
     "conclusion": "success",
-    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 464, "frontend": 822, "normal_browser": 158, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
+    "counts": {
+      "startup_and_recovery": 76,
+      "subtests": 23,
+      "backend": 498,
+      "frontend": 836,
+      "normal_browser": 176,
+      "normal_browser_preexisting_skips": 2,
+      "desktop_browser": 35,
+      "root_preview_browser": 6
+    },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "d9a5a8682d7df8ebc65300c1c19820d944f24c99 adds isolated migrated test templates, correct Network preference restoration, accessible Audit payloads, opaque shared reading surfaces and a semantic import test selector. Local proof includes 498 backend, 836 frontend, 61 cross-consumer production-browser and eight desktop saved-theme passes. The preceding hosted candidate fa0f5fac failed one stale import selector after 163 normal browser passes; desktop/root profiles did not run. Overlapping results are not summed; fresh assembled CI remains required."
+    "later_source": "4b567bbf6ec1cb58515f6413c100267a3882b314 adds scoped direct Network connections, request-owned import discovery/validation/export, transactional import audit and readable shared import previews with truthful row feedback. Local proof includes 580 canonical backend, 839 frontend, 44 earlier cross-consumer browser, 41 final cross-consumer browser and two final strengthened Network capture passes. Overlapping runs are not summed; fresh assembled hosted CI is required for this later source.",
+    "job_duration_seconds": 1745,
+    "backend_duration_seconds": 111.11
   },
   "ci_history": [
+    {
+      "candidate": "1362951eaa0ecb5100e845741845257afeed8b2a",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37040933835",
+      "tested_merge": "07b9a86210bc4d8b2819c758de19033d8fdc31f8",
+      "completed_at": "2026-10-02T18:12:25Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 464,
+        "frontend": 822,
+        "normal_browser": 158,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
+    },
     {
       "candidate": "fa0f5facf169cefb2e950357935509ef5258b1c3",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -32,7 +61,7 @@
       "conclusion": "failure",
       "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 489, "frontend": 830, "normal_browser_passed": 163, "normal_browser_failed": 1, "normal_browser_preexisting_skips": 2 },
       "failure": "Assets end-to-end import selected tbody tr input after the multiline editor became a labeled textarea. Hosted DOM and screenshot show the correct imported value. The same selector failed locally; desktop/root profiles did not run.",
-      "recovery": "d9a5a868 selects the exact Name, row 1 textbox within the import dialog, preserving value assertion, full workflow, timeout and retries. All 61 local import/Assets/Audit/Monitoring/Network/overlay/Rack/Services cases pass. Fresh assembled hosted proof remains required."
+      "recovery": "d9a5a868 selects the exact Name, row 1 textbox within the import dialog, preserving value assertion, full workflow, timeout and retries. All 61 local import/Assets/Audit/Monitoring/Network/overlay/Rack/Services cases pass. The later assembled hosted run on 7733c705 passes all three browser profiles."
     },
     {
       "candidate": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
@@ -122,7 +151,7 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "d9a5a8682d7df8ebc65300c1c19820d944f24c99",
+    "source_head": "4b567bbf6ec1cb58515f6413c100267a3882b314",
     "registered_api_operations": 310,
     "static_ui_declarations": 3132,
     "static_ui_routes": 19,
@@ -515,6 +544,26 @@
       "commit": "d9a5a8682d7df8ebc65300c1c19820d944f24c99",
       "scope": "Semantic import editor selector repairs proven hosted failure without weakening the workflow",
       "archive_sha256": "d89552ddb8b4979c3d44698a6039a38f8ee287712f14ac97a3e012fdde621764"
+    },
+    {
+      "commit": "7733c705a9becc9e338119c11c4a1c3369e49215",
+      "scope": "Ninth qualification checkpoint preserves failed CI and reviewed recovery evidence",
+      "archive_sha256": "d039b73a6a7c8db853e66407da507bef8224a45440b41648958c6a6e767717b0"
+    },
+    {
+      "commit": "9e04102f0730f168175467cc3e174b0d2d9852b7",
+      "scope": "Direct Network connection reads, endpoint assignment and whole-batch mutations enforce tenant ownership",
+      "archive_sha256": "dacc1f1b27765d51dd20ce0be1f9f1dacd2d2df8d1e8b0c9b873d8cf7ee337f5"
+    },
+    {
+      "commit": "18f0527f7be7e45aa9fb167d1a639987f93794fa",
+      "scope": "Network imports scope discovery and export, reject invalid endpoints and batch port reuse, and commit audit atomically",
+      "archive_sha256": "9c291ad8db1e1b4c3777bdbc4e5c2f98a084836662709512b624acdeaf54bef1"
+    },
+    {
+      "commit": "4b567bbf6ec1cb58515f6413c100267a3882b314",
+      "scope": "Shared import source and hint readability, truthful preview counts and both-theme rendered proof",
+      "archive_sha256": "2967d79d69b5af1a6d3342572fad2ade0399302e777707f346e20b27379d9bfb"
     }
   ],
   "groups": [
@@ -594,8 +643,8 @@
           "outcome": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["259ebc52", "ba72aa15", "9edd3e47", "70ade100", "d838deac", "4629b134", "5d147d7b"],
-          "remaining": "Ordinary Assets validation/save behavior passed assembled CI. Import local proof covers pending locks, malformed/oversize feedback, preserved drafts, correction/retry and successful closure. Multiline values remain editable through preview and persistence. Other forms, bulk-table feedback, uncertain outcomes and concurrency remain."
+          "reviewed_commits": ["259ebc52", "ba72aa15", "9edd3e47", "70ade100", "d838deac", "4629b134", "5d147d7b", "4b567bbf"],
+          "remaining": "Earlier form/import behavior passed assembled CI at 7733c705. Shared preview feedback now distinguishes ready rows and rows needing correction; it no longer implies a committed import. Other forms, bulk-table feedback, uncertain outcomes and concurrency remain."
         },
         {
           "id": "B4",
@@ -612,8 +661,8 @@
           "outcome": "Consistent colors, contrast, typography, spacing, borders, icons, status badges, and hover, selected, and disabled states across populated screens.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709","be33d285","259ebc52","290e1db7","bb6bf5d5","70ade100","d838deac","4629b134","c1a9050f"],
-          "remaining": "Shared Views/Display/notification surfaces and Audit payload are opaque in both themes; baseline light surfaces were 90%/80% opaque. Real populated screenshots and sampled contrast pass. Earlier form/import contrast remains scoped evidence. Complete product visual-state coverage is still open."
+          "reviewed_commits": ["944c8709", "be33d285", "259ebc52", "290e1db7", "bb6bf5d5", "70ade100", "d838deac", "4629b134", "c1a9050f", "4b567bbf"],
+          "remaining": "Opaque shared overlays passed hosted CI at 7733c705. Import source/template cards and hint colors now use theme-owned surfaces and readable text; light baseline contrast 1.3449:1 improves to at least 4.9232:1 in final samples. Both-theme rendered screenshots are reviewed. Full product visual-state and viewport coverage remain."
         },
         {
           "id": "B6",
@@ -631,8 +680,8 @@
           "outcome": "Keyboard-only workflows, screen-reader semantics, visible focus, adequate targets, zoom and reflow, and reduced-motion behavior.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709","be33d285","259ebc52","290e1db7","70ade100","d838deac","755bc2db"],
-          "remaining": "Audit JSON is a labeled keyboard-focusable scrolling region; close is 40x40, remains visible after scrolling, returns focus and respects reduced motion. Existing shared form semantics remain. Full keyboard, zoom/reflow and assistive-technology acceptance is still required."
+          "reviewed_commits": ["944c8709", "be33d285", "259ebc52", "290e1db7", "70ade100", "d838deac", "755bc2db", "4b567bbf"],
+          "remaining": "Audit keyboard, dismissal and reduced-motion repair passed assembled CI. Shared import file cards now have visible semantic focus rings and readable hints. Full keyboard, zoom/reflow and assistive-technology acceptance, plus shared-modal reduced-motion behavior, remain."
         },
         {
           "id": "B8",
@@ -649,8 +698,8 @@
           "outcome": "Loading, empty, stale, partial, unavailable, denied, conflict, and failure states have distinct explanations and useful recovery actions.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ba72aa15", "9edd3e47", "70ade100", "d838deac", "82c2586e", "4629b134", "5d147d7b"],
-          "remaining": "Asset form states passed assembled CI. Imports locally prove pending/failure/retry, old-receipt protection, truthful paste errors and rejected-batch correction; Network search survives delayed preferences. Other loading/empty/stale/partial/denied/conflict states across the product remain unqualified."
+          "reviewed_commits": ["ba72aa15", "9edd3e47", "70ade100", "d838deac", "82c2586e", "4629b134", "5d147d7b", "4b567bbf"],
+          "remaining": "Earlier Asset/import pending, failure, retry and stale-receipt behavior passed hosted CI. Shared preview now reports exact valid/invalid counts with informative or action-needed tone; positive/mixed/all-invalid unit controls and both-theme Network import journeys pass. Other loading/empty/stale/partial/denied/conflict states remain."
         },
         {
           "id": "B10",
@@ -695,11 +744,8 @@
           "outcome": "A complete permission matrix across reads, mutations, search, aggregates, exports, embedded projections, and direct URLs. Admin and System Root remain distinct.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": [
-            "27873d89",
-            "0b41d3c7", "7323ef6d", "679f366a"
-          ],
-          "remaining": "Environment identity and selected vault/asset/relationship boundaries passed assembled CI. 679f366a now authorizes interface parents and both connection endpoints, preserving custom-IP links while hiding foreign-tenant metadata. Complete API/role/tenant matrix and authentic host trust remain."
+          "reviewed_commits": ["27873d89", "0b41d3c7", "7323ef6d", "679f366a", "9e04102f", "18f0527f"],
+          "remaining": "Direct Network reads/mutations now scope both endpoints to owned assets, fail closed for any unauthorized bulk member and require active owned new assignments. Import schema/ID/name/tag lookup and snapshots are request-scoped; oversized and ambiguous references are rejected. Custom-IP and owned archived history remain readable. Raw Network interface routes, complete role/tenant matrices and authentic host trust remain."
         },
         {
           "id": "C4",
@@ -707,8 +753,8 @@
           "outcome": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d", "adce6f8e", "bf236cad"],
-          "remaining": "Earlier transaction repairs passed assembled CI. Imports and ordinary asset writes now commit asset, OS service and audit atomically. Six ordinary create/edit failure injections prove rollback; normalized no-ops avoid mutation logs while actual service-only repairs are audited. Optimistic edits, concurrent uniqueness, uncertain outcomes, other domains and concurrent hardware deletion remain."
+          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d", "adce6f8e", "bf236cad", "18f0527f"],
+          "remaining": "Earlier Asset atomic writes passed hosted CI. Network imports now add trusted-actor batch audit in the same transaction as rows; injected audit/integrity failures roll back and sanitize conflicts. Bulk connection membership is preflighted before mutation. Per-record import history, optimistic edits, concurrent uniqueness and uncertain outcomes remain."
         },
         {
           "id": "C5",
@@ -725,8 +771,8 @@
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "4629b134"],
-          "remaining": "Ordinary/bulk asset scalar integrity passed assembled CI. Imports locally preserve trusted identity, whole-batch validation, file identifiers and quoted multiline edited values through persistence. Snapshot isolation holds even with foreign rows in one physical database. Cross-request uniqueness, header mapping and other legacy data remain."
+          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "4629b134", "9e04102f", "18f0527f"],
+          "remaining": "Direct connection and import endpoints require owned valid parents; import lookup rejects ambiguous names/tags and preview rejects duplicate endpoint-port use across distinct rows. Full 580 backend tests pass locally. Network file text/scalars, raw interfaces, cross-request uniqueness, header mapping and legacy inconsistent data remain."
         },
         {
           "id": "C7",
@@ -815,8 +861,8 @@
           "outcome": "Valid endpoints, ports, direction and connection semantics; consistent creation, import, and bulk validation; useful relationship navigation.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["679f366a","82c2586e","1255794d"],
-          "remaining": "Assets interface projection is tenant-aware; Network search and preference restoration now have both-theme browser proof, including malformed storage and server readback. Direct Network endpoint creation, read/mutation scoping, import/bulk contracts and broader semantics remain unqualified."
+          "reviewed_commits": ["679f366a", "82c2586e", "1255794d", "9e04102f", "18f0527f", "4b567bbf"],
+          "remaining": "Preferences passed hosted CI at 7733c705. Later direct connection authorization and request-scoped imports preserve owned archived/custom-IP history, reject foreign/missing/ambiguous endpoints and batch port reuse, and commit import audit atomically. Both-theme file journeys prove invalid rows excluded, valid-only submission, grid refresh and API readback; shared preview contrast/feedback repaired. Raw interfaces, per-record history, text/scalar preservation, lifecycle no-ops, concurrency and full role/performance coverage remain."
         },
         {
           "id": "D6",
@@ -906,8 +952,8 @@
           "outcome": "Required checks protect the actual PR and main candidate; dependency locks, vulnerability checks, secret scanning, and risk-based regression coverage stay current.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["38c82a58","0c9cabcf","597c2dd9","2a56682a","adce6f8e","bf236cad","5d147d7b","b772c8bc","d9a5a868"],
-          "remaining": "Hosted fa0f5fac passed 489 backend and 830 frontend tests but failed one stale import selector after 163 normal browser passes; later profiles did not run. The semantic selector repair passes all 61 cross-consumer browser checks locally. Profiling the same 25 backend tests reduced local runtime from29.87s to5.26s by migrating once and cloning independent databases; all498 canonical backend tests and836 frontend tests pass locally. Fresh hosted timing/proof, supply-chain controls and final release checks remain."
+          "reviewed_commits": ["38c82a58", "0c9cabcf", "597c2dd9", "2a56682a", "adce6f8e", "bf236cad", "5d147d7b", "b772c8bc", "d9a5a868", "9e04102f", "18f0527f"],
+          "remaining": "Hosted 7733c705 succeeds: 76 startup/recovery plus 23 subtests, 498 backend, 836 frontend, 176 normal browser plus two pre-existing skips, 35 desktop and six root-preview. Job 29m05s within unchanged 45-minute deadline; backend 111.11s versus earlier fa0f5fac 968.41s with fewer tests. Hosted observations are not identical-machine controlled benchmarks; local same-25 fixture profile is 29.87s to 5.26s. Later source passes 580 backend and 839 frontend locally; new assembled hosted CI, supply-chain and final release checks remain."
         },
         {
           "id": "E7",
