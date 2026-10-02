@@ -442,21 +442,23 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
         status=status_value,
     )
 
-    if source_device_id == target_device_id:
+    if source_device_id is not None and source_device_id == target_device_id:
         raise HTTPException(status_code=400, detail="Source and peer assets must be different")
 
-    dup_query = select(models.PortConnection).filter(
-        models.PortConnection.id != conn_id,
-        or_(
-            and_(models.PortConnection.source_device_id == source_device_id, models.PortConnection.source_port == source_port),
-            and_(models.PortConnection.target_device_id == source_device_id, models.PortConnection.target_port == source_port),
-            and_(models.PortConnection.source_device_id == target_device_id, models.PortConnection.source_port == target_port),
-            and_(models.PortConnection.target_device_id == target_device_id, models.PortConnection.target_port == target_port)
+    port_checks = []
+    for device_id, port in ((source_device_id, source_port), (target_device_id, target_port)):
+        if device_id is not None:
+            port_checks.extend([
+                and_(models.PortConnection.source_device_id == device_id, models.PortConnection.source_port == port),
+                and_(models.PortConnection.target_device_id == device_id, models.PortConnection.target_port == port),
+            ])
+    if port_checks:
+        dup_query = select(models.PortConnection).filter(
+            models.PortConnection.id != conn_id, or_(*port_checks)
         )
-    )
-    dup_res = await db.execute(dup_query)
-    if dup_res.scalars().first():
-        raise HTTPException(status_code=400, detail="One of the selected ports is already physically cross-connected")
+        dup_res = await db.execute(dup_query)
+        if dup_res.scalars().first():
+            raise HTTPException(status_code=400, detail="One of the selected ports is already physically cross-connected")
 
     conn.source_device_id = source_device_id
     conn.source_port = source_port
