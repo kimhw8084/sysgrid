@@ -4,27 +4,27 @@ For a first work-cloud deployment from `main`, start with
 [PAAS-START.md](PAAS-START.md). It builds one app and creates the first tenant
 on an empty persistent volume.
 
+For a terminal or VS Code workspace, use the local/forwarded-port workflow
+below. The [approved production program](contracts/production-readiness-20261002.json)
+records all 51 items, preservation constraints, reviewed commits, and remaining
+acceptance. An approved item or passing scoped test does not mean the complete
+product has production acceptance.
+
 SysGrid is a multi-tenant infrastructure operations platform. This guide covers the supported development startup, disposable seeding, forwarded/remote environments, health checks, recovery, and bug reporting.
 
 ## 1. Prerequisites
 
-- Python 3.11+
-- Node.js 20+
+- Python 3.12+; Application CI qualifies Python 3.14
+- Node.js 22 LTS, at least 22.13.0
 - `curl`, `lsof`, and Bash
 - Backend virtual environment at `backend/venv`
 - Frontend dependencies at `frontend/node_modules`
 
-First-time dependency setup:
-
-```bash
-cd backend
-python3 -m venv venv
-venv/bin/pip install -r requirements.txt
-
-cd ../frontend
-npm install
-cd ..
-```
+Use a virtual environment created with a supported Python version. Install the
+backend's hash-locked `backend/requirements.lock` and the frontend's committed
+`package-lock.json` without updating dependency versions. The deployment guide
+describes the supported dependency contract; the Golden Workflow governs any
+patch application and terminal handoff.
 
 Do not store credentials or company access tokens in committed `.env` files.
 
@@ -42,17 +42,28 @@ API:      http://127.0.0.1:8000
 Health:   http://127.0.0.1:8000/api/v1/health
 ```
 
-The local workflow is intentionally disposable. Every full start:
+The local workflow preserves existing data by default. Every full start:
 
-1. stops listeners owned by the configured local ports;
-2. recreates the Local Demo config and tenant databases;
-3. seeds the selected admin user and optional domain data;
+1. refuses occupied ports without terminating their listeners;
+2. preserves an existing config database and tenant storage, initializes a
+   fresh foundation only when both are absent, and stops on partial storage;
+3. adds optional demo data only when explicitly requested for initialization;
 4. runs preflight;
 5. starts the backend;
 6. verifies health, the browser-visible `Host`, and CORS;
 7. starts Vite only after the backend contract passes.
 
-It does not touch production databases.
+An explicitly requested reset archives the old config database, its SQLite
+sidecars, and the entire tenant storage root before creating a new foundation.
+An environment flag alone cannot authorize this reset. These local archives
+preserve recovery options; they do not replace qualified production backups.
+Keep production storage separate from this development workflow.
+
+The workstation launcher defaults to resuming existing data, including when an
+older saved profile requested a fresh start. Its source update accepts only a
+clean `main` checkout and a fast-forward from `origin/main`; local commits,
+dirty or untracked files, detached heads, and diverged branches stop the update
+without a reset or clean. Review and preserve local work before updating.
 
 ## 3. VS Code forwarded ports or company development URLs
 
@@ -119,13 +130,15 @@ The effective runtime user is included in `AUTO_ADMIN_USER_IDS` for the disposab
 
 ## 5. Seed modes
 
-Seed representative domain data:
+Demo seeding is opt-in when initializing fresh local storage. Existing local
+storage is preserved without reseeding. Seed representative domain data:
 
 ```bash
 ./scripts/start-local.sh --seed-data
 ```
 
-Create only the required tenant/admin/reference foundation:
+Create only the required tenant/admin/reference foundation on fresh storage
+(the default):
 
 ```bash
 ./scripts/start-local.sh --no-seed-data

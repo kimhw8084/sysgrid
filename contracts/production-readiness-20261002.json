@@ -1,0 +1,728 @@
+{
+  "schema_version": 1,
+  "review_id": "sysgrid-production-plan-2026-10-01",
+  "approval": {
+    "revision": 90,
+    "all_items_approved": true,
+    "snapshot_sha256": "e863fa02557b945cba77a7bfa83aa814120b75c98926c10ef9ac3e30fcac5a8c",
+    "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
+  },
+  "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
+  "as_of_utc": "2026-10-02",
+  "production_accepted": false,
+  "inventory": {
+    "api_generator": "scripts/inventory-acceptance.py",
+    "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
+    "registered_api_operations": 308,
+    "static_ui_declarations": 3086,
+    "static_ui_routes": 19,
+    "static_ui_overlays": 257,
+    "static_ui_controls": 2810,
+    "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
+  },
+  "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
+  "owner_constraints": [
+    "Preserve every existing feature and all existing operator data. Addition and tuning are approved; deletion or retirement is not.",
+    "Resolve company identity from an explicitly named hosting environment variable, for example AccessKey; preserve tenant authorization and Admin/System Root separation.",
+    "Advance main through reviewed, tested, versioned slices; no force push, destructive reset, unreviewed integration or terminal-side AI authorship."
+  ],
+  "release_contract": {
+    "production_profile": "contracts/system_management_v1.json",
+    "production_modules": [
+      "home",
+      "assets",
+      "monitoring",
+      "services",
+      "network",
+      "racks",
+      "logs",
+      "settings"
+    ],
+    "preview_preservation": "All existing modules and legacy paths remain preserved; graduation requires separate acceptance.",
+    "pv1": {
+      "tasks": 10000,
+      "dependencies": 20000,
+      "home_p95_ms": 2500,
+      "schedule_preview_p95_ms": 1500,
+      "warmups": 10,
+      "measured_samples": 100,
+      "p12": {
+        "total": 136,
+        "verified": 124,
+        "failed": 0,
+        "blocked": 0,
+        "not_evaluated": 12
+      },
+      "sequence": [
+        "P12",
+        "P13",
+        "authentic P14"
+      ]
+    }
+  },
+  "acceptance_dimensions": {
+    "roles": [
+      "anonymous",
+      "tenant_read_only",
+      "tenant_editor",
+      "tenant_admin",
+      "system_root_with_capability",
+      "system_root_without_capability",
+      "control_plane_admin",
+      "foreign_tenant",
+      "revoked_user"
+    ],
+    "identity_modes": [
+      "environment",
+      "trusted_proxy",
+      "development_fixture_only"
+    ],
+    "states": [
+      "loading",
+      "empty",
+      "populated",
+      "large_dataset",
+      "stale",
+      "partial",
+      "offline",
+      "denied",
+      "conflict",
+      "failure",
+      "pending_write",
+      "recovery"
+    ],
+    "themes": [
+      "nordic-frost-v1",
+      "pure-clarity"
+    ],
+    "viewports": [
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "width": 1440,
+        "height": 900
+      }
+    ],
+    "interaction": [
+      "pointer",
+      "keyboard_only",
+      "screen_reader",
+      "zoom_200_percent",
+      "reflow_400_percent",
+      "reduced_motion",
+      "long_content",
+      "multi_tab"
+    ],
+    "rule": "Applicable dimensions require source-bound evidence or an explicit reviewed non-applicability rationale; inventory presence and prior-source evidence are not acceptance."
+  },
+  "batches": [
+    {
+      "commit": "944c8709615045ac0b9f953d3bbc11bbf8e33813",
+      "scope": "UI draft, overlay, theme and responsive repairs",
+      "archive_sha256": "f54bf82b50f3ee7e345ae0fd43821462b154c666d93313be796a1f64ece8e93c"
+    },
+    {
+      "commit": "39b3704da1bbdaa97964b4cdb24532e84eccb0cc",
+      "scope": "Maintenance validation and atomic audit",
+      "archive_sha256": "a25666016c2285886dce0c99264faf58ba63467a75c92a97063220764ff91447"
+    },
+    {
+      "commit": "8b2ec178f17e14463b82623a9b321c1fbe0ced80",
+      "scope": "Tab scope and tenant-switch consent",
+      "archive_sha256": "2dd449efe320e9d4b86cac88ebf6d71e8e4cf703bdb26565421a16164c1e9e06"
+    },
+    {
+      "commit": "6c900da5720abae7654ebbd3c5017b3c92626697",
+      "scope": "Preserving startup and clean-main fast-forward",
+      "archive_sha256": "28da6881c37bc1f67b49ed9a7cf6531a8c5d759c7d633cb78e621fa34360264b"
+    },
+    {
+      "commit": "38c82a58017df5f0710e97d8efe4b4bf266104ec",
+      "scope": "CI coverage and retained behavioral browser assertions",
+      "archive_sha256": "946dff78098316e9259fbcbe19fdf6fd67e8040b4023c34ac253f5c2a8050055"
+    },
+    {
+      "commit": "27873d89d0a9f6b6e7e9a5fa66305d64798a91e3",
+      "scope": "Explicit company environment identity",
+      "archive_sha256": "8a14f4ac6ed2b8648c5cc27e46a5aeadd46c9877e52786fec9578cecf474e305"
+    },
+    {
+      "commit": "0b41d3c70e637ab4d8ed4f0f0a9ffca7427b6514",
+      "scope": "First-tab tenant initialization and real transport headers",
+      "archive_sha256": "d3c113ca69f69d6101ce9cb8719574619aa246149633d3f2b5537c57f1623167"
+    },
+    {
+      "commit": "7e7f8d18f601f8efad125fd0af212224b53ebf93",
+      "scope": "Connection revocation and cancellation cleanup",
+      "archive_sha256": "b063cd453fda24786e8db335f8ca8cba10f78544e704d36df944587d6ba72a14"
+    }
+  ],
+  "groups": [
+    {
+      "id": "A",
+      "title": "Release baseline",
+      "subtitle": "One reviewable candidate and a complete acceptance inventory.",
+      "items": [
+        {
+          "id": "A1",
+          "title": "Review and integrate the existing UI repairs",
+          "outcome": "The reviewed, tested changes reach main, so your work-environment pull actually receives them.",
+          "approval": "yes",
+          "status": "awaiting_ci",
+          "reviewed_commits": [
+            "944c8709",
+            "38c82a58"
+          ],
+          "remaining": "PR 32 exact-head CI and eligible integration; main has not advanced."
+        },
+        {
+          "id": "A2",
+          "title": "Reconcile Git, Notion, documentation, and release status",
+          "outcome": "Current instructions, supported versions, screenshots, and readiness claims describe the same candidate.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "27873d89"
+          ],
+          "remaining": "Notion program and identity slice reconciled; startup documentation and final release claims need alignment."
+        },
+        {
+          "id": "A3",
+          "title": "Build the complete acceptance inventory",
+          "outcome": "Every route, dialog, action, API, role, data state, and supported viewport has an owner and an explicit qualification requirement.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [],
+          "remaining": "Source inventory is discovery evidence; every dynamic behavior still requires explicit qualification."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "title": "Shared UI & UX",
+      "subtitle": "Preserve Soft Carbon, Pure Clarity, and Monitoring’s approved density and interaction model.",
+      "items": [
+        {
+          "id": "B1",
+          "title": "Repair tenant-switch safety",
+          "outcome": "Cancelling a switch leaves the server tenant, browser context, and drafts unchanged. Cover multiple tabs and in-flight requests.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "scoped_implementation_verified",
+          "reviewed_commits": [
+            "8b2ec178",
+            "0b41d3c7"
+          ],
+          "remaining": "Four real browser journeys, corrected transport fixture, 33 focused unit tests. Full candidate CI remains."
+        },
+        {
+          "id": "B2",
+          "title": "Complete draft protection",
+          "outcome": "Add forms and inline edits survive tab changes, nested navigation, failures, and accidental closure; deliberate discard is predictable.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709",
+            "8b2ec178"
+          ],
+          "remaining": "Preserve drafts in remaining inline, nested and preview workflows."
+        },
+        {
+          "id": "B3",
+          "title": "Complete form and save behavior",
+          "outcome": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries."
+        },
+        {
+          "id": "B4",
+          "title": "Finish dialogs, drawers, menus, and popovers",
+          "outcome": "Correct layering, scroll ownership, focus trapping and return, Escape behavior, dismissal, and anchoring during resize or scrolling.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709"
+          ],
+          "remaining": "Remaining stateful overlays, both themes, keyboard, short viewports."
+        },
+        {
+          "id": "B5",
+          "title": "Qualify the entire visual system",
+          "outcome": "Consistent colors, contrast, typography, spacing, borders, icons, status badges, and hover, selected, and disabled states across populated screens.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709"
+          ],
+          "remaining": "Initial 60 route captures are evidence for their bound source only; material interactions remain."
+        },
+        {
+          "id": "B6",
+          "title": "Repair responsive information hierarchy",
+          "outcome": "Primary record identity and essential actions remain usable on phones, laptops, short screens, large text, and long-content datasets.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709"
+          ],
+          "remaining": "Responsive repairs need full long-content and large-text qualification."
+        },
+        {
+          "id": "B7",
+          "title": "Complete accessibility",
+          "outcome": "Keyboard-only workflows, screen-reader semantics, visible focus, adequate targets, zoom and reflow, and reduced-motion behavior.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709"
+          ],
+          "remaining": "Complete keyboard and assistive-technology acceptance."
+        },
+        {
+          "id": "B8",
+          "title": "Unify data-workspace mechanics",
+          "outcome": "Reliable filtering, sorting, selection, grouping, saved views, column preferences, bulk actions, history, and comparison where applicable.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Reliable filtering, sorting, selection, grouping, saved views, column preferences, bulk actions, history, and comparison where applicable."
+        },
+        {
+          "id": "B9",
+          "title": "Make every asynchronous state truthful",
+          "outcome": "Loading, empty, stale, partial, unavailable, denied, conflict, and failure states have distinct explanations and useful recovery actions.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Loading, empty, stale, partial, unavailable, denied, conflict, and failure states have distinct explanations and useful recovery actions."
+        },
+        {
+          "id": "B10",
+          "title": "Improve navigation and daily efficiency",
+          "outcome": "Reliable deep links, Back behavior, preserved context, tenant-scoped preferences, useful search, clear terminology, dates, units, and shortcuts.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Reliable deep links, Back behavior, preserved context, tenant-scoped preferences, useful search, clear terminology, dates, units, and shortcuts."
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "title": "Backend correctness & security",
+      "subtitle": "Prove existing foundations and repair failures at their source.",
+      "items": [
+        {
+          "id": "C1",
+          "title": "Repair Maintenance API defects",
+          "outcome": "Correct awaited deletion, validated dates and references, truthful results, and atomic mutation-plus-audit behavior.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "scoped_implementation_verified",
+          "reviewed_commits": [
+            "39b3704d"
+          ],
+          "remaining": "35 Maintenance/cross-module/action tests passed; full candidate CI remains."
+        },
+        {
+          "id": "C2",
+          "title": "Converge API contracts",
+          "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics."
+        },
+        {
+          "id": "C3",
+          "title": "Qualify authorization and tenant isolation",
+          "outcome": "A complete permission matrix across reads, mutations, search, aggregates, exports, embedded projections, and direct URLs. Admin and System Root remain distinct.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "27873d89",
+            "0b41d3c7"
+          ],
+          "remaining": "Explicit environment identity verified; complete API/role/tenant matrix and authentic host trust remain."
+        },
+        {
+          "id": "C4",
+          "title": "Prove transaction, retry, and concurrency safety",
+          "outcome": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable."
+        },
+        {
+          "id": "C5",
+          "title": "Unify archive, restore, and purge semantics",
+          "outcome": "Consistent dependency checks, authorization, impact previews, audit records, and valid recovery behavior across domains.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Consistent dependency checks, authorization, impact previews, audit records, and valid recovery behavior across domains."
+        },
+        {
+          "id": "C6",
+          "title": "Enforce data and relationship integrity",
+          "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records."
+        },
+        {
+          "id": "C7",
+          "title": "Harden input and resource boundaries",
+          "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks."
+        },
+        {
+          "id": "C8",
+          "title": "Complete credential and secret custody",
+          "outcome": "Approved provider references, privileged access, rotation and revocation, and redaction. Inspect tracked configuration and history; remediate any actual exposure found.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Approved provider references, privileged access, rotation and revocation, and redaction. Inspect tracked configuration and history; remediate any actual exposure found."
+        },
+        {
+          "id": "C9",
+          "title": "Qualify long-lived connections and background work",
+          "outcome": "Permission revocation, reconnects, cancellation, process restarts, shutdown, retries, and worker boundaries behave correctly.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "7e7f8d18"
+          ],
+          "remaining": "Revocation, inactive tenants, idle checks, broadcast failure and cancellation verified; remaining workers/reconnect/multi-process behavior unqualified."
+        },
+        {
+          "id": "C10",
+          "title": "Strengthen backend ownership and maintainability",
+          "outcome": "Domain rules have clear shared owners, documented contracts, and meaningful tests; preserve the accepted scheduling and authorization foundations.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Domain rules have clear shared owners, documented contracts, and meaningful tests; preserve the accepted scheduling and authorization foundations."
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "title": "Eight production views",
+      "subtitle": "Domain acceptance for System Management V1, beyond shared-component checks.",
+      "items": [
+        {
+          "id": "D1",
+          "title": "Home",
+          "outcome": "Accurate counts, explicit observation freshness, useful drill-downs, permission-aware search, and no unsupported operational claims.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Accurate counts, explicit observation freshness, useful drill-downs, permission-aware search, and no unsupported operational claims."
+        },
+        {
+          "id": "D2",
+          "title": "Assets",
+          "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history."
+        },
+        {
+          "id": "D3",
+          "title": "Monitoring",
+          "outcome": "Preserve golden behavior; qualify logic, schedules, ownership, recovery references, lifecycle, and the distinction between configuration and observed health.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Preserve golden behavior; qualify logic, schedules, ownership, recovery references, lifecycle, and the distinction between configuration and observed health."
+        },
+        {
+          "id": "D4",
+          "title": "Services",
+          "outcome": "Consistent hosting and asset synchronization, lifecycle, configuration, secret references, relationships, and bulk and import behavior.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Consistent hosting and asset synchronization, lifecycle, configuration, secret references, relationships, and bulk and import behavior."
+        },
+        {
+          "id": "D5",
+          "title": "Network",
+          "outcome": "Valid endpoints, ports, direction and connection semantics; consistent creation, import, and bulk validation; useful relationship navigation.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Valid endpoints, ports, direction and connection semantics; consistent creation, import, and bulk validation; useful relationship navigation."
+        },
+        {
+          "id": "D6",
+          "title": "Racks",
+          "outcome": "Transaction-safe placement and collision checks, credible capacity information, responsive planning, reliable relocation and recovery.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Transaction-safe placement and collision checks, credible capacity information, responsive planning, reliable relocation and recovery."
+        },
+        {
+          "id": "D7",
+          "title": "Audit Logs",
+          "outcome": "Correct actor and target history, date and filter semantics, stable pagination, complete-scope exports, useful record links, and protected retention.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Correct actor and target history, date and filter semantics, stable pagination, complete-scope exports, useful record links, and protected retention."
+        },
+        {
+          "id": "D8",
+          "title": "Settings / Access",
+          "outcome": "Predictable administration, privilege boundaries, safe tenant, user, and role changes, actionable diagnostics, and recovery from administrative mistakes.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Predictable administration, privilege boundaries, safe tenant, user, and role changes, actionable diagnostics, and recovery from administrative mistakes."
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "title": "Performance & deployment",
+      "subtitle": "Demonstrate speed, reliability, a safe work setup, and recoverable operations.",
+      "items": [
+        {
+          "id": "E1",
+          "title": "Frontend performance",
+          "outcome": "Measure and improve startup, typing, filtering, scrolling, detail opening, bundle loading, long tasks, and long-session memory use.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Measure and improve startup, typing, filtering, scrolling, detail opening, bundle loading, long tasks, and long-session memory use."
+        },
+        {
+          "id": "E2",
+          "title": "Backend and database capacity",
+          "outcome": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology."
+        },
+        {
+          "id": "E3",
+          "title": "Load and failure testing",
+          "outcome": "Representative concurrent users, large estates, slow networks, interrupted requests, restart recovery, and sustained-use tests meet declared budgets.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Representative concurrent users, large estates, slow networks, interrupted requests, restart recovery, and sustained-use tests meet declared budgets."
+        },
+        {
+          "id": "E4",
+          "title": "Operational observability",
+          "outcome": "Useful request and action correlation, structured redacted logs, latency, error, and saturation metrics, readiness, and actionable alerts.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Useful request and action correlation, structured redacted logs, latency, error, and saturation metrics, readiness, and actionable alerts."
+        },
+        {
+          "id": "E5",
+          "title": "Repair the work-environment startup experience",
+          "outcome": "A documented pull, configure, and start path preserves work and data, avoids automatic hard resets, uses qualified dependencies, and diagnoses forwarded-port failures.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "6c900da5"
+          ],
+          "remaining": "23 startup safety tests and launcher self-test passed; exact work-environment startup remains."
+        },
+        {
+          "id": "E6",
+          "title": "Strengthen CI and supply-chain controls",
+          "outcome": "Required checks protect the actual PR and main candidate; dependency locks, vulnerability checks, secret scanning, and risk-based regression coverage stay current.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "38c82a58"
+          ],
+          "remaining": "Required Application CI covers scoped changes; supply-chain review and latest final candidate remain."
+        },
+        {
+          "id": "E7",
+          "title": "Qualify the company runtime",
+          "outcome": "Real identity, proxy, and CORS behavior, persistent storage, process supervision, release-version consistency, and readiness work in your environment.",
+          "approval": "yes",
+          "status": "requires_company_evidence",
+          "reviewed_commits": [
+            "27873d89"
+          ],
+          "remaining": "Need authentic company hosting, identity, origins, persistent volume and supervision."
+        },
+        {
+          "id": "E8",
+          "title": "Prove backup, migration, restore, and rollback",
+          "outcome": "All tenant databases are covered; upgrades are rehearsed; recovery is executed against isolated targets and meets agreed recovery objectives.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [],
+          "remaining": "48 recovery tests pass on Python 3.14.5. Full operational rehearsal and agreed RPO/RTO remain."
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "title": "Broader SysGrid product",
+      "subtitle": "Additional scope beyond the eight-view release, graduated after its prerequisites.",
+      "items": [
+        {
+          "id": "F1",
+          "title": "Real estate discovery and synchronization",
+          "outcome": "Company-selected integrations populate canonical assets with provenance, reconciliation rules, freshness, and controlled conflict handling.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "requires_company_input",
+          "reviewed_commits": [],
+          "remaining": "Pending company-selected source/API and approved test target; never invent integration credentials or provenance."
+        },
+        {
+          "id": "F2",
+          "title": "Production operational adapters",
+          "outcome": "Real supported actions complete preview → authorize → execute → progress → verify → recover, with durable records and appropriate safeguards.",
+          "tag": "Known expansion gap",
+          "approval": "yes",
+          "status": "requires_company_input",
+          "reviewed_commits": [],
+          "remaining": "Pending company-selected action provider and supported actions; existing simulation remains clearly labeled."
+        },
+        {
+          "id": "F3",
+          "title": "Complete Maintenance and operations workspace",
+          "outcome": "Engineers can plan affected systems, schedule work, use runbooks, execute approved actions, verify results, and recover within SysGrid.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Engineers can plan affected systems, schedule work, use runbooks, execute approved actions, verify results, and recover within SysGrid."
+        },
+        {
+          "id": "F4",
+          "title": "Canonical Architecture workspace",
+          "outcome": "Productize Architecture v2 and traceability while preserving all valuable legacy information, existing features and write paths until a separately approved migration. The owner's preservation feedback overrides the original retirement language.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Productize Architecture v2, complete asset and project traceability, migrate valuable legacy information, and retire competing write authorities."
+        },
+        {
+          "id": "F5",
+          "title": "Projects / PV1 completion",
+          "outcome": "Complete Portfolio, My Day, Home, Work, Plan, Timeline, Updates, and Outcomes while preserving accepted scheduling and virtualization contracts.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Complete Portfolio, My Day, Home, Work, Plan, Timeline, Updates, and Outcomes while preserving accepted scheduling and virtualization contracts."
+        },
+        {
+          "id": "F6",
+          "title": "Knowledge and runbooks",
+          "outcome": "Useful authoring, versions, review and verification status, ownership, search, contextual links, permissions, and recovery from mistaken edits.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Useful authoring, versions, review and verification status, ownership, search, contextual links, permissions, and recovery from mistaken edits."
+        },
+        {
+          "id": "F7",
+          "title": "Monitoring-to-incident / RCA / Research / FAR workflows",
+          "outcome": "Connect observations, affected systems, investigation, corrective action, knowledge, and verified outcomes through one traceable workflow.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Connect observations, affected systems, investigation, corrective action, knowledge, and verified outcomes through one traceable workflow."
+        },
+        {
+          "id": "F8",
+          "title": "Remaining modules and management projections",
+          "outcome": "Qualify Vendors and External workflows and management reporting against canonical operational facts before promoting them to production.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Qualify Vendors and External workflows and management reporting against canonical operational facts before promoting them to production."
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "title": "Final acceptance",
+      "subtitle": "Prove the assembled product on the exact release candidate and in the company environment.",
+      "items": [
+        {
+          "id": "G1",
+          "title": "Final candidate regression",
+          "outcome": "Required backend, frontend, browser, role, concurrency, failure and recovery, and supported-browser checks pass on the release candidate.",
+          "approval": "yes",
+          "status": "pending_final_candidate",
+          "reviewed_commits": [],
+          "remaining": "Run all governed regression and browser checks on the final assembled release candidate."
+        },
+        {
+          "id": "G2",
+          "title": "Stateful visual and accessibility acceptance",
+          "outcome": "Review actual populated screens and material interactions in both themes; refresh the source-bound atlas and protect accepted behavior.",
+          "approval": "yes",
+          "status": "pending_final_candidate",
+          "reviewed_commits": [
+            "944c8709"
+          ],
+          "remaining": "Refresh stateful visual and accessibility evidence on exact final source."
+        },
+        {
+          "id": "G3",
+          "title": "Authentic company pilot",
+          "outcome": "Real engineers complete representative tasks using real identity and supported systems; measure usability, performance, errors, persistence, and recovery.",
+          "approval": "yes",
+          "status": "requires_company_evidence",
+          "reviewed_commits": [],
+          "remaining": "Authentic engineers, representative tasks, real systems and measured outcomes."
+        },
+        {
+          "id": "G4",
+          "title": "Applicable release graduation",
+          "outcome": "V1 receives its own acceptance; PV1 follows fresh P12 → P13 → authentic P14, preserving its exact arithmetic, fixtures, and performance requirements.",
+          "detail": "PV1 retains 10,000 tasks / 20,000 dependencies; Project Home p95 ≤ 2,500 ms; schedule preview p95 ≤ 1,500 ms; 10 warmups + 100 measured samples. P12: 136 total / 124 VERIFIED / 0 FAILED / 0 BLOCKED / 12 NOT_EVALUATED. Note in your feedback if you are approving only the V1 portion.",
+          "approval": "yes",
+          "status": "pending_final_candidate",
+          "reviewed_commits": [],
+          "remaining": "Separate V1 acceptance; PV1 fresh same-lineage P12 then P13 then authentic P14."
+        }
+      ]
+    }
+  ]
+}
