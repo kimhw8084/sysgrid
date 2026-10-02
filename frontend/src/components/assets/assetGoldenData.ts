@@ -410,6 +410,7 @@ export function useAssetGoldenWorkspace() {
   const [activeViewId, setActiveViewId] = useState<string | null>(stored?.activeViewId || null)
   const [newViewName, setNewViewName] = useState('')
   const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [selectionResetVersion, setSelectionResetVersion] = useState(0)
   const [reportAssetId, setReportAssetId] = useState<number | null>(null)
   const [reportFocusSection, setReportFocusSection] = useState<string | null>(null)
   const [quickLookAsset, setQuickLookAsset] = useState<any | null>(null)
@@ -744,6 +745,7 @@ export function useAssetGoldenWorkspace() {
     onExecutionSuccess: ({ action, ids, changedIds, targetLabels, previousSnapshots, executionStartContext }) => {
       setRowActionMenu(null)
       setSelectedIds([])
+      setSelectionResetVersion(version => version + 1)
       if ((action === 'delete' || action === 'restore') && changedIds.length > 0) {
         const labelsById = new Map<number, string>()
         if (targetLabels?.length === ids.length) {
@@ -974,6 +976,7 @@ export function useAssetGoldenWorkspace() {
     setSearchParams,
     setSearchTerm,
     setSelectedIds,
+    selectionResetVersion,
     setServiceDetails,
     setServiceEdit,
     setShowImportModal,

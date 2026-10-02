@@ -5,6 +5,44 @@ import fs from 'fs';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
+test('preserves asset selection on preview cancellation and clears it after a status change or scope change', async ({ page, sysApi: request }) => {
+  await resetBrowserState(page)
+  const name = `PW-SELECTION-RESET-${Date.now()}`
+  const asset = await createAsset(request, { name, system: name, type: 'Physical', status: 'Active' })
+  await page.goto('/asset')
+  await fillGridSearch(page, 'Scan asset matrix...', name)
+  const row = await getWorkspaceLogicalRowByText(page, 'assets', name)
+  await selectWorkspaceLogicalRow(row)
+  const bulk = page.getByTitle('Bulk actions', { exact: true })
+  const preview = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  const openStatusPreview = async () => {
+    await bulk.click()
+    await page.getByText('Set Status', { exact: true }).click()
+    await page.getByRole('button', { name: 'Choose status', exact: true }).click()
+    await page.getByRole('button', { name: 'Offline', exact: true }).click()
+    await page.getByRole('button', { name: 'Preview Status Change', exact: true }).click()
+    await expect(preview.getByRole('button', { name: /^Confirm / })).toBeEnabled()
+  }
+  await openStatusPreview()
+  await preview.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expectWorkspaceLogicalRowSelected(row)
+  await expect(bulk).toBeEnabled()
+  await openStatusPreview()
+  await preview.getByRole('button', { name: /^Confirm / }).click()
+  await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+  await expect(row.center!).toContainText('Offline')
+  await expect(row.center!).toHaveAttribute('aria-selected', 'false')
+  await expect(row.center!).not.toHaveClass(/ag-row-selected/)
+  await expect(bulk).toBeDisabled()
+  expect((await getDeviceFromBackend(request, asset.id)).status).toBe('Offline')
+  await selectWorkspaceLogicalRow(row)
+  await openToolbarButton(page, /^Archived/)
+  await expect(bulk).toBeDisabled()
+  await openToolbarButton(page, /^Existing/)
+  await expect((await getWorkspaceLogicalRowByText(page, 'assets', name)).center!).toHaveAttribute('aria-selected', 'false')
+  await expect(bulk).toBeDisabled()
+})
+
 async function attachEvidence(testInfo: TestInfo, name: string, body: Buffer | string, contentType: string) {
   const path = testInfo.outputPath(name)
   fs.writeFileSync(path, body)
