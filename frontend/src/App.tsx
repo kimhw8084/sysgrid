@@ -103,7 +103,7 @@ const queryClient = new QueryClient({
     }
   }),
   mutationCache: new MutationCache({
-    onError: (error: any) => {
+    onError: (error: any, _variables, _context, mutation) => {
       if (error?.silent === true) return;
       errorManager.addError({
         message: error.message || 'API Mutation Failure',
@@ -124,7 +124,10 @@ const queryClient = new QueryClient({
         type: 'backend',
         severity: 'error'
       });
-      showWorkspaceToast(error.message || 'API Mutation Failure', { type: 'error' });
+      // Form-owned validation still reaches diagnostics, but emits one useful notice.
+      if (mutation.meta?.handlesErrorToast !== true) {
+        showWorkspaceToast(error.message || 'API Mutation Failure', { type: 'error' });
+      }
     }
   })
 })

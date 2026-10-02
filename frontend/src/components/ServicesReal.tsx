@@ -2993,6 +2993,7 @@ function ServiceRecordForm({ item, devices, options, onClose, onSuccess }: any) 
   }, [item?.id])
 
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async (payload: any) => {
       const sanitized = sanitizeServicePayload(payload)
       const url = item?.id ? `/api/v1/logical-services/${item.id}` : '/api/v1/logical-services/'
@@ -3010,7 +3011,9 @@ function ServiceRecordForm({ item, devices, options, onClose, onSuccess }: any) 
     onError: (e: any) => {
       const { fieldErrors, generalError } = parseOperationalApiValidationError(e)
       setBackendFieldErrors(fieldErrors)
-      const message = generalError || e.message || 'Failed to save service record'
+      const message = generalError || (Object.keys(fieldErrors).length
+        ? 'Fix the highlighted service fields before saving.'
+        : 'Failed to save service record')
       setBackendGeneralError(message)
       showWorkspaceToast(message, { type: 'error' })
     },

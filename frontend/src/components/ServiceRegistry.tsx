@@ -324,6 +324,7 @@ export const ServiceForm = ({
   clearBackendFieldError,
   renderActions = true,
 }: any) => {
+  const controlPrefix = React.useId()
   const buildInitialFormData = useCallback((initialData: any = {}) => {
     const nextData = {
       name: "",
@@ -365,6 +366,11 @@ export const ServiceForm = ({
     () => mergeOperationalFieldErrors(backendFieldErrors || {}, validationErrors),
     [backendFieldErrors, validationErrors]
   )
+  const controlAttributes = (field: string) => ({
+    id: `${controlPrefix}-${field}`,
+    'aria-invalid': Boolean(fieldErrors[field]),
+    'aria-describedby': fieldErrors[field] ? `${controlPrefix}-${field}-error` : undefined,
+  })
   const bannerMessage = backendGeneralError || generalError || metadataError || ''
 
   const getOptions = (category: string) => Array.isArray(options) ? options.filter((entry: any) => entry.category === category) : []
@@ -482,9 +488,9 @@ export const ServiceForm = ({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2 space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Name <span className="text-rose-400">*</span></label>
-              <input value={formData.name || ''} onChange={(e) => updateField('name', e.target.value)} className={serviceFieldClass(fieldErrors.name)} placeholder="e.g. ERP DB Prod 01" />
-              {fieldErrors.name && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.name}</p>}
+              <label htmlFor={`${controlPrefix}-name`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Name <span className="text-rose-400">*</span></label>
+              <input {...controlAttributes('name')} aria-required="true" value={formData.name || ''} onChange={(e) => updateField('name', e.target.value)} className={serviceFieldClass(fieldErrors.name)} placeholder="e.g. ERP DB Prod 01" />
+              {fieldErrors.name && <p id={`${controlPrefix}-name-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.name}</p>}
             </div>
             <div className="space-y-1.5">
               <OperationalAssetSelector
@@ -510,19 +516,19 @@ export const ServiceForm = ({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Deployment Date</label>
-              <input type="date" value={formData.installation_date ? String(formData.installation_date).split('T')[0] : ''} onChange={(e) => updateField('installation_date', e.target.value)} className={serviceFieldClass(fieldErrors.installation_date)} />
-              {fieldErrors.installation_date && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.installation_date}</p>}
+              <label htmlFor={`${controlPrefix}-installation_date`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Deployment Date</label>
+              <input {...controlAttributes('installation_date')} type="date" value={formData.installation_date ? String(formData.installation_date).split('T')[0] : ''} onChange={(e) => updateField('installation_date', e.target.value)} className={serviceFieldClass(fieldErrors.installation_date)} />
+              {fieldErrors.installation_date && <p id={`${controlPrefix}-installation_date-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.installation_date}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Version</label>
-              <input value={formData.version || ''} onChange={(e) => updateField('version', e.target.value)} className={serviceFieldClass(fieldErrors.version)} placeholder="v1.0.0" />
-              {fieldErrors.version && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.version}</p>}
+              <label htmlFor={`${controlPrefix}-version`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Version</label>
+              <input {...controlAttributes('version')} value={formData.version || ''} onChange={(e) => updateField('version', e.target.value)} className={serviceFieldClass(fieldErrors.version)} placeholder="v1.0.0" />
+              {fieldErrors.version && <p id={`${controlPrefix}-version-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.version}</p>}
             </div>
             <div className="sm:col-span-2 space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Purpose</label>
-              <textarea value={formData.purpose || ''} onChange={(e) => updateField('purpose', e.target.value)} className={`${serviceFieldClass(fieldErrors.purpose)} min-h-[110px] resize-none`} placeholder="Primary transactional store..." />
-              {fieldErrors.purpose && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.purpose}</p>}
+              <label htmlFor={`${controlPrefix}-purpose`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Purpose</label>
+              <textarea {...controlAttributes('purpose')} value={formData.purpose || ''} onChange={(e) => updateField('purpose', e.target.value)} className={`${serviceFieldClass(fieldErrors.purpose)} min-h-[110px] resize-none`} placeholder="Primary transactional store..." />
+              {fieldErrors.purpose && <p id={`${controlPrefix}-purpose-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.purpose}</p>}
             </div>
           </div>
         </section>
@@ -565,24 +571,24 @@ export const ServiceForm = ({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Expiry Date</label>
-              <input type="date" value={formData.expiry_date ? String(formData.expiry_date).split('T')[0] : ''} onChange={(e) => updateField('expiry_date', e.target.value)} className={serviceFieldClass(fieldErrors.expiry_date)} />
-              {fieldErrors.expiry_date && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.expiry_date}</p>}
+              <label htmlFor={`${controlPrefix}-expiry_date`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Expiry Date</label>
+              <input {...controlAttributes('expiry_date')} type="date" value={formData.expiry_date ? String(formData.expiry_date).split('T')[0] : ''} onChange={(e) => updateField('expiry_date', e.target.value)} className={serviceFieldClass(fieldErrors.expiry_date)} />
+              {fieldErrors.expiry_date && <p id={`${controlPrefix}-expiry_date-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.expiry_date}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Manufacturer</label>
-              <input value={formData.manufacturer || ''} onChange={(e) => updateField('manufacturer', e.target.value)} className={serviceFieldClass(fieldErrors.manufacturer)} placeholder="Vendor / publisher" />
-              {fieldErrors.manufacturer && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.manufacturer}</p>}
+              <label htmlFor={`${controlPrefix}-manufacturer`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Manufacturer</label>
+              <input {...controlAttributes('manufacturer')} value={formData.manufacturer || ''} onChange={(e) => updateField('manufacturer', e.target.value)} className={serviceFieldClass(fieldErrors.manufacturer)} placeholder="Vendor / publisher" />
+              {fieldErrors.manufacturer && <p id={`${controlPrefix}-manufacturer-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.manufacturer}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Supplier</label>
-              <input value={formData.supplier || ''} onChange={(e) => updateField('supplier', e.target.value)} className={serviceFieldClass(fieldErrors.supplier)} placeholder="Reseller / supplier" />
-              {fieldErrors.supplier && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.supplier}</p>}
+              <label htmlFor={`${controlPrefix}-supplier`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Supplier</label>
+              <input {...controlAttributes('supplier')} value={formData.supplier || ''} onChange={(e) => updateField('supplier', e.target.value)} className={serviceFieldClass(fieldErrors.supplier)} placeholder="Reseller / supplier" />
+              {fieldErrors.supplier && <p id={`${controlPrefix}-supplier-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.supplier}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Cost</label>
-              <input type="number" min="0" step="0.01" value={formData.cost ?? 0} onChange={(e) => updateField('cost', e.target.value)} className={serviceFieldClass(fieldErrors.cost)} placeholder="0.00" />
-              {fieldErrors.cost && <p className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.cost}</p>}
+              <label htmlFor={`${controlPrefix}-cost`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Cost</label>
+              <input {...controlAttributes('cost')} type="number" min="0" step="0.01" value={formData.cost ?? 0} onChange={(e) => updateField('cost', e.target.value)} className={serviceFieldClass(fieldErrors.cost)} placeholder="0.00" />
+              {fieldErrors.cost && <p id={`${controlPrefix}-cost-error`} className="px-1 text-[9px] font-bold text-rose-400">{fieldErrors.cost}</p>}
             </div>
             <div className="space-y-1.5">
               <AppDropdown

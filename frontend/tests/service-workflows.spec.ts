@@ -7,6 +7,61 @@ import { expectReadableGridText } from './helpers/grid-contrast'
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`Service form labels and rejected-save recovery are accessible in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const name = `Service form ${theme} ${Date.now()}`
+    const host = await createAsset(request, { name: `Host ${name}`, system: 'Service form proof' })
+    let rejected = false
+    await page.route(/\/api\/v1\/logical-services\/?$/, async route => {
+      if (route.request().method() === 'POST' && !rejected) {
+        rejected = true
+        await route.fulfill({ status: 422, contentType: 'application/json',
+          body: JSON.stringify({ detail: { field_errors: { installation_date: 'Review the deployment date before saving.' } } }) })
+      } else await route.continue()
+    })
+    await page.goto('/services')
+    await page.getByRole('button', { name: /\+ Add Service/i }).click()
+    const dialog = page.getByRole('dialog').filter({ hasText: 'Create Service' })
+    const form = dialog.locator('#service-record-form')
+    await form.getByPlaceholder('e.g. ERP DB Prod 01').fill(name)
+    await form.getByPlaceholder('v1.0.0').fill('000007')
+    await form.getByRole('button', { name: 'Select host node' }).click()
+    await page.getByPlaceholder('Search hostname or system...').fill(host.name)
+    await page.getByRole('button', { name: new RegExp(host.name) }).click()
+    await form.locator('label').filter({ hasText: /^Deployment Date$/ }).locator('..').locator('input').fill('2026-10-02')
+    await dialog.getByRole('button', { name: 'Add Service', exact: true }).click()
+    await expect(form).toContainText('Fix the highlighted service fields before saving.')
+    await expect(form).not.toContainText('field_errors')
+    await expect(page.getByText('Fix the highlighted service fields before saving.', { exact: true })).toHaveCount(2)
+    expect(await page.getByText('Action needed', { exact: true }).count()).toBe(1)
+    expect(await page.getByText('[object Object]', { exact: true }).count()).toBe(0)
+    expect(rejected).toBe(true)
+    await expect(form.getByLabel(/^Name/)).toHaveValue(name)
+    await expect(form.getByLabel('Version', { exact: true })).toHaveValue('000007')
+    const date = form.getByLabel('Deployment Date', { exact: true })
+    await expect(date).toHaveAttribute('aria-invalid', 'true')
+    await expect(date).toHaveAccessibleDescription('Review the deployment date before saving.')
+    for (const label of ['Deployment Date', 'Version', 'Purpose', 'Expiry Date', 'Manufacturer', 'Supplier', 'Cost']) {
+      await expect(form.getByLabel(label, { exact: true })).toHaveCount(1)
+    }
+    await form.locator('label').filter({ hasText: /^Version$/ }).click()
+    await expect(form.getByLabel('Version', { exact: true })).toBeFocused()
+    await page.getByRole('button', { name: 'Dismiss notification', exact: true }).click()
+    await date.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: testInfo.outputPath(`service-form-error-${theme}.png`), animations: 'disabled' })
+    await date.fill('2026-10-03')
+    await expect(date).toHaveAttribute('aria-invalid', 'false')
+    await expect(date).not.toHaveAttribute('aria-describedby')
+    await dialog.getByRole('button', { name: 'Add Service', exact: true }).click()
+    await expect(dialog).toHaveCount(0)
+    const saved = await request.get(`${apiBase}/logical-services?device_id=${host.id}`)
+    expect(saved.ok()).toBeTruthy()
+    expect(await saved.json()).toEqual([expect.objectContaining({ name, version: '000007', installation_date: '2026-10-03T00:00:00' })])
+  })
+
   test(`Service import rejects unavailable hosts and preserves identifiers in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
     await resetBrowserState(page)
     await page.emulateMedia({ reducedMotion: 'reduce' })
