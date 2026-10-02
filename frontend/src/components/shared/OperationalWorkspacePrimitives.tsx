@@ -3,6 +3,7 @@ import { ChevronDown, Check, Info } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { OPERATIONAL_WORKSPACE_VISUALS } from './OperationalWorkspace'
 import { getWorkspaceAnchorLayer, WORKSPACE_LAYER_Z, useWorkspacePopupDismiss } from './WorkspaceOverlay'
+import { parseAppDate } from '../../utils/dateUtils'
 export { WORKSPACE_LAYER_Z } from './WorkspaceOverlay'
 
 export type WorkspaceModalSize = 'compact' | 'standard' | 'wide' | 'workspace' | 'fullscreen'
@@ -704,14 +705,15 @@ export function WorkspaceModalHeader({
   onTabChange?: (id: string) => void
 }) {
   const formatDate = (date: string | Date | undefined) => {
-    if (!date) return 'Genesis'
-    const d = typeof date === 'string' ? new Date(date) : date
+    const d = typeof date === 'string' ? parseAppDate(date) : date
+    if (!d || Number.isNaN(d.getTime())) return 'Unavailable'
     return d.toLocaleString('en-US', { 
        month: 'short', 
        day: 'numeric', 
        year: 'numeric',
        hour: '2-digit',
-       minute: '2-digit'
+       minute: '2-digit',
+       timeZoneName: 'short'
     })
   }
 

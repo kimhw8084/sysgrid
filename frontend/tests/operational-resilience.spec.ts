@@ -1,9 +1,42 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { createAsset, resetBrowserState } from './helpers/sysgrid'
+import { createAsset, createConnection, resetBrowserState } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
+for (const timezone of ['America/Chicago', 'Asia/Seoul']) {
+  test.describe(`Forensic timestamps in ${timezone}`, () => {
+    test.use({ timezoneId: timezone, locale: 'en-US' })
+    for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+      test(`shared headers preserve the API instant in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+        await resetBrowserState(page)
+        await page.setViewportSize({ width: 1440, height: 900 })
+        expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+        await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+        const source = await createAsset(request, { name: `Timestamp source ${Date.now()}`, system: 'Timestamp proof' })
+        const target = await createAsset(request, { name: `Timestamp peer ${Date.now()}`, system: 'Timestamp proof' })
+        const connection = await createConnection(request, { device_a_id: source.id, device_b_id: target.id,
+          source_port: 'timestamp-source', target_port: 'timestamp-peer', link_type: 'Data', status: 'Active' })
+        expect(connection.created_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/)
+        await page.goto(`/network?id=${connection.id}`)
+        const expected = await page.evaluate(value => {
+          const instant = new Date(`${value}Z`)
+          return {
+            header: instant.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }),
+            body: instant.toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
+          }
+        }, connection.created_at)
+        const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: /Connection Forensics/ }) })
+        const header = dialog.locator('[data-workspace-modal-header]')
+        await expect(header.getByText('Created', { exact: true }).locator('..')).toContainText(expected.header)
+        await expect(header.getByText('Last modified', { exact: true }).locator('..')).toContainText(expected.header)
+        await expect(dialog.getByText(expected.body, { exact: true }).first()).toBeVisible()
+        await header.screenshot({ path: testInfo.outputPath(`forensic-time-${timezone.replace('/', '-')}-${theme}.png`), animations: 'disabled' })
+      })
+    }
+  })
+}
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }, { width: 640, height: 360 }]) {
