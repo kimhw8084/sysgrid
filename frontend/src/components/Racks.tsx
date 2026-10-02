@@ -3830,7 +3830,7 @@ export default function Racks() {
                     <div className="max-h-[180px] overflow-y-auto custom-scrollbar bg-black/40 border border-white/5 rounded-lg p-1.5 space-y-1">
                       {availableDevices?.filter((d: any) => {
                         const term = mountSearch.toLowerCase()
-                        return d.name.toLowerCase().includes(term) || d.type.toLowerCase().includes(term) || d.system?.toLowerCase().includes(term)
+                        return (d.name || '').toLowerCase().includes(term) || (d.type || '').toLowerCase().includes(term) || d.system?.toLowerCase().includes(term)
                       }).map((d: any) => {
                         const isSelected = String(d.id) === String(isProvisioning.device_id)
                         const planLoc = isPlanInitialized ? getPlanDeviceLocation(d.id) : null

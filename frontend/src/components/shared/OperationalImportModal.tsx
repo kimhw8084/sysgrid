@@ -177,6 +177,7 @@ export function OperationalImportModal({
   useBodyModalFlag()
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const lifecycleRef = useRef(0)
   const [mode, setMode] = useState<ImportMode>('file')
   const [file, setFile] = useState<File | null>(null)
   const [pasteText, setPasteText] = useState('')
@@ -198,6 +199,11 @@ export function OperationalImportModal({
     draftRows.some((row) => isMeaningfulRow(row, Object.keys(row)))
   )
 
+  useEffect(() => {
+    lifecycleRef.current += 1
+    return () => { lifecycleRef.current += 1 }
+  }, [isOpen, tableName])
+
   const { triggerRef: validationTriggerRef, panelRef: validationPanelRef, panelStyle: validationPanelStyle } = useWorkspaceAnchoredLayer(isValidationPopoutOpen, { minWidth: 360, offset: 12 })
 
   const schemaQuery = useQuery({
@@ -217,7 +223,7 @@ export function OperationalImportModal({
   const requiredFieldNames = schema?.required_fields || []
 
   useEffect(() => {
-    if (!schema) return
+    if (!schema || !isOpen) return
     setSelectedColumns((current) => {
       if (current.length > 0) return current
       return schema.fields.filter((field) => field.supported_in_builder !== false).map((field) => field.name)
@@ -227,7 +233,7 @@ export function OperationalImportModal({
       return [createEmptyRow(schema.fields.map((field) => field.name))]
     })
     setExampleRecordId((current) => current ?? schema.example_records?.[0]?.id ?? null)
-  }, [schema])
+  }, [schema, isOpen])
 
   useEffect(() => {
     if (!preview) return
@@ -251,6 +257,7 @@ export function OperationalImportModal({
       setIsMaximized(false)
       setIsPickerOpening(false)
       setIsTemplateCollapsed(false)
+      setIsValidationPopoutOpen(false)
     }
   }, [isOpen])
 
@@ -288,7 +295,7 @@ export function OperationalImportModal({
   }, [activeColumns, draftRows])
 
   const previewMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (_lifecycle: number) => {
       if (mode === 'file') {
         if (!file) throw new Error('Select a CSV or Excel file first.')
         const formData = new FormData()
@@ -309,17 +316,19 @@ export function OperationalImportModal({
       })
       return response.json() as Promise<ImportPreviewResponse>
     },
-    onSuccess: (data) => {
+    onSuccess: (data, lifecycle) => {
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       setPreview(data)
       showWorkspaceToast(`Validated ${data.total_rows} row${data.total_rows === 1 ? '' : 's'}`)
     },
-    onError: (error: any) => {
+    onError: (error: any, lifecycle) => {
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       showWorkspaceToast(error.message || 'Preview failed', { type: 'error' })
     },
   })
 
   const executeMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (_lifecycle: number) => {
       if (!preview) throw new Error('Validate rows before importing.')
       const selectedRows = preview.results
         .filter((result) => result.status === 'VALID' && selectedPreviewRows.includes(result.row))
@@ -332,19 +341,25 @@ export function OperationalImportModal({
       })
       return response.json()
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: any, lifecycle) => {
+      // A completed write still invalidates cached data after external closure,
+      // but its receipt must not dismiss or repaint a replacement dialog.
+      if (data.status === 'success') queryClient.invalidateQueries()
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       if (data.status !== 'success') {
         showWorkspaceToast(data.errors?.join(', ') || 'Import failed', { type: 'error' })
         return
       }
       showWorkspaceToast(`Imported ${data.count} row${data.count === 1 ? '' : 's'}`)
-      queryClient.invalidateQueries()
       onClose()
     },
-    onError: (error: any) => {
+    onError: (error: any, lifecycle) => {
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       showWorkspaceToast(error.message || 'Import failed', { type: 'error' })
     },
   })
+
+  const isBusy = previewMutation.isPending || executeMutation.isPending
 
   const toggleColumn = (columnName: string) => {
     if (requiredFieldNames.includes(columnName)) return
@@ -367,6 +382,7 @@ export function OperationalImportModal({
   }
 
   const updateDraftCell = (rowIndex: number, columnName: string, value: string) => {
+    if (isBusy) return
     setDraftRows((current) => current.map((row, index) => (
       index === rowIndex ? { ...row, [columnName]: value } : row
     )))
@@ -528,18 +544,27 @@ export function OperationalImportModal({
   return (
     <WorkspaceModal
       isOpen={isOpen}
-      onClose={onClose}
-      isDirty={isDirty}
+      onClose={() => {
+        if (isBusy) {
+          showWorkspaceToast('Wait for the current import request to finish before closing.')
+          return
+        }
+        onClose()
+      }}
+      isDirty={isDirty && !isBusy}
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
       title={`${displayName} Import`}
+      status={isBusy ? <span role="status" className="text-xs font-medium text-[var(--text-secondary)]">
+        {executeMutation.isPending ? 'Importing selected rows...' : 'Validating import rows...'}
+      </span> : undefined}
       subtitle={(
-        <div className="flex items-center gap-4 mt-1 text-[10px] font-bold text-slate-400">
-          <p className="flex items-center gap-1.5 uppercase tracking-widest">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-[10px] font-bold text-slate-400">
+          <p className="flex min-w-0 flex-wrap items-center gap-1.5 uppercase tracking-widest">
             <Plus size={10} className="text-blue-500" /> Target: <span className="text-white">{displayName}</span>
           </p>
-          <p className="flex items-center gap-1.5 uppercase tracking-widest">
+          <p className="flex min-w-0 flex-wrap items-center gap-1.5 uppercase tracking-widest">
             <FileSpreadsheet size={10} className="text-blue-500" /> Identifier: <span className="text-white">{tableName}</span>
           </p>
         </div>
@@ -555,18 +580,18 @@ export function OperationalImportModal({
       footerRight={(
         <div className="flex items-center gap-3 shrink-0">
           <ToolbarButton
-            onClick={() => executeMutation.mutate()}
-            disabled={!preview || selectedImportCount === 0 || executeMutation.isPending}
+            onClick={() => executeMutation.mutate(lifecycleRef.current)}
+            disabled={!preview || selectedImportCount === 0 || isBusy}
             variant="primary"
             className="!inline-flex !flex-row !items-center !justify-center gap-2 px-8 !whitespace-nowrap"
           >
-            {executeMutation.isPending ? <RefreshCcw className="animate-spin mr-2" size={12} /> : <CheckSquare className="mr-2" size={12} />}
+            {executeMutation.isPending ? <RefreshCcw className="animate-spin motion-reduce:animate-none mr-2" size={12} /> : <CheckSquare className="mr-2" size={12} />}
             <span className="!whitespace-nowrap">{executeMutation.isPending ? 'Importing...' : `Import ${selectedImportCount || ''}`.trim()}</span>
           </ToolbarButton>
         </div>
       )}
     >
-      <div className="flex flex-col space-y-8">
+      <fieldset disabled={isBusy} aria-busy={isBusy} aria-label="Import source and preview" className="m-0 min-w-0 border-0 p-0 flex flex-col space-y-8">
         <WorkspaceValidationBanner message={schemaQuery.error ? 'Import schema failed to load. Refresh the workspace and try again.' : undefined} />
         
         <WorkspaceSplitView
@@ -636,7 +661,8 @@ export function OperationalImportModal({
                         <div className="mt-2">
                           <AppDropdown
                             value={exampleRecordId ?? ''}
-                            onChange={(value) => setExampleRecordId(value ? Number(value) : null)}
+                            onChange={(value) => { if (!isBusy) setExampleRecordId(value ? Number(value) : null) }}
+                            disabled={isBusy}
                             options={(schema?.example_records || []).map((record) => ({
                               value: record.id,
                               label: record.label,
@@ -749,6 +775,7 @@ export function OperationalImportModal({
                     <input
                       ref={fileInputRef}
                       type="file"
+                      aria-label="Import CSV or Excel file"
                       accept=".csv,.xlsx,.xls"
                       className="hidden"
                       onChange={(event) => {
@@ -797,6 +824,7 @@ export function OperationalImportModal({
                   <div className="mt-6 space-y-4">
                     <div className="relative">
                       <textarea
+                        aria-label="CSV or spreadsheet rows"
                         value={pasteText}
                         onChange={(event) => {
                           setPasteText(event.target.value)
@@ -886,6 +914,7 @@ export function OperationalImportModal({
                                   <td key={`${rowIndex}-${field.name}`} className="px-2 py-2 align-middle">
                                     {field.input_control === 'select' ? (
                                       <AppDropdown
+                                        disabled={isBusy}
                                         value={row[field.name] || ''}
                                         onChange={(value) => updateDraftCell(rowIndex, field.name, String(value))}
                                         options={(field.options || []).map((option) => ({ value: option.value, label: option.label }))}
@@ -893,6 +922,7 @@ export function OperationalImportModal({
                                       />
                                     ) : (
                                       <input
+                                        aria-label={`${field.label}, row ${rowIndex + 1}`}
                                         type={field.input_control === 'number' ? 'number' : 'text'}
                                         value={row[field.name] || ''}
                                         onChange={(event) => updateDraftCell(rowIndex, field.name, event.target.value)}
@@ -912,6 +942,7 @@ export function OperationalImportModal({
                                 <td className="px-4 py-3 align-middle text-center">
                                   <button
                                     type="button"
+                                    aria-label={`Remove row ${rowIndex + 1}`}
                                     onClick={() => removeDraftRow(rowIndex)}
                                     disabled={draftRows.length === 1}
                                     className="flex items-center justify-center w-8 h-8 mx-auto rounded-lg bg-rose-500/5 text-rose-400 transition-colors hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-30"
@@ -972,7 +1003,7 @@ export function OperationalImportModal({
                                   <Terminal size={14} className="text-blue-500" />
                                   <p className="text-[10px] font-black uppercase tracking-widest text-white">Validation Audit</p>
                                 </div>
-                                <button onClick={() => setIsValidationPopoutOpen(false)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 bg-white/5 rounded-lg">
+                                <button aria-label="Close validation report" onClick={() => setIsValidationPopoutOpen(false)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 bg-white/5 rounded-lg">
                                   <X size={12} />
                                 </button>
                               </div>
@@ -1023,11 +1054,11 @@ export function OperationalImportModal({
                     )}
                     <button
                       type="button"
-                      onClick={() => previewMutation.mutate()}
-                      disabled={previewMutation.isPending || schemaQuery.isLoading}
+                      onClick={() => previewMutation.mutate(lifecycleRef.current)}
+                      disabled={isBusy || schemaQuery.isLoading}
                       className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-6 py-2.5 text-[9px] font-black uppercase tracking-widest text-blue-300 transition-colors hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-blue-500/5"
                     >
-                      {previewMutation.isPending ? <RefreshCcw className="animate-spin" size={14} /> : <Terminal size={14} />}
+                      {previewMutation.isPending ? <RefreshCcw className="animate-spin motion-reduce:animate-none" size={14} /> : <Terminal size={14} />}
                       {previewMutation.isPending ? 'Auditing...' : 'Initiate Audit'}
                     </button>
                   </div>
@@ -1062,6 +1093,7 @@ export function OperationalImportModal({
                               <th className="px-4 py-3 text-center w-12">
                                 <input
                                   type="checkbox"
+                                  aria-label="Select all valid import rows"
                                   className="rounded-lg border-white/20 bg-slate-900 text-blue-500 focus:ring-0 cursor-pointer"
                                   checked={selectedPreviewRows.length > 0 && selectedPreviewRows.length === preview.valid_rows}
                                   onChange={(e) => {
@@ -1091,6 +1123,7 @@ export function OperationalImportModal({
                                   <td className="px-4 py-3 align-middle text-center">
                                     <input
                                       type="checkbox"
+                                      aria-label={`Select import row ${result.row}`}
                                       checked={selected}
                                       disabled={result.status !== 'VALID'}
                                       onChange={() => togglePreviewRow(result.row)}
@@ -1137,7 +1170,7 @@ export function OperationalImportModal({
             </div>
           )}
         />
-      </div>
+      </fieldset>
     </WorkspaceModal>
   )
 }

@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { createAsset, resetBrowserState } from './helpers/sysgrid'
+import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
@@ -9,6 +10,83 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) test.describe(theme, ()
     await resetBrowserState(page)
     await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
     await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+  })
+
+  for (const operation of ['preview', 'execute']) test(`pending ${operation} preserves the import draft and supports retry in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    const name = `Pending import ${operation} ${theme} ${Date.now()}`
+    await page.goto('/asset')
+    await page.getByRole('button', { name: 'Import asset rows', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Assets Import', exact: true })
+    await dialog.getByRole('button', { name: 'Paste CSV / Grid', exact: true }).click()
+    await dialog.getByPlaceholder('Paste CSV with headers, or paste spreadsheet cells directly...').fill(`name,system\n${name},Import pending proof`)
+    await dialog.getByRole('button', { name: 'Load Into Builder', exact: true }).click()
+    const nameInput = dialog.locator('tbody input:not([type="checkbox"])').first()
+    const audit = async () => {
+      const response = page.waitForResponse(response => response.url().includes('/api/v1/import/preview-rows'))
+      await dialog.getByRole('button', { name: 'Initiate Audit', exact: true }).click()
+      expect((await response).ok()).toBeTruthy()
+      await expect(dialog.getByRole('button', { name: 'Import 1', exact: true })).toBeEnabled()
+    }
+    if (operation === 'execute') await audit()
+    let release!: () => void
+    const held = new Promise<void>(resolve => { release = resolve })
+    let writes = 0
+    const path = operation === 'preview' ? '**/api/v1/import/preview-rows?*' : '**/api/v1/import/execute?*'
+    await page.route(path, async route => {
+      writes++
+      await held
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Controlled import failure' }) })
+    })
+    try {
+      await dialog.getByRole('button', { name: operation === 'preview' ? 'Initiate Audit' : 'Import 1', exact: true }).click()
+      await expect.poll(() => writes).toBe(1)
+      await expect(nameInput).toBeDisabled()
+      await expect(nameInput).toHaveAccessibleName('Name, row 1')
+      await expect(dialog.getByRole('button', { name: 'Paste CSV / Grid', exact: true })).toBeDisabled()
+      await expect(dialog.getByRole('button', { name: 'Clear All', exact: true })).toBeDisabled()
+      for (const checkbox of await dialog.getByRole('checkbox').all()) await expect(checkbox).toBeDisabled()
+      await dialog.getByTitle('Close', { exact: true }).click()
+      await page.keyboard.press('Escape')
+      await expect(page.getByRole('alertdialog')).toHaveCount(0)
+      await expect(dialog).toBeVisible()
+      await expect(dialog.getByRole('status')).toHaveText(operation === 'preview' ? 'Validating import rows...' : 'Importing selected rows...')
+      const busyButton = dialog.getByRole('button', { name: operation === 'preview' ? 'Auditing...' : 'Importing...', exact: true })
+      await expect(busyButton.locator('svg').first()).toHaveCSS('animation-name', 'none')
+      await page.setViewportSize({ width: 390, height: 844 })
+      await expect.poll(() => dialog.locator('[data-workspace-modal-header]').evaluate(header => header.scrollWidth <= header.clientWidth)).toBe(true)
+      const header = dialog.locator('[data-workspace-modal-header]')
+      const firstHeaderAction = await header.getByRole('button').first().boundingBox()
+      for (const metadata of await header.locator('p').all()) {
+        const box = await metadata.boundingBox()
+        expect(box!.x + box!.width).toBeLessThanOrEqual(firstHeaderAction!.x)
+      }
+      const bounds = await dialog.boundingBox()
+      for (const control of [dialog.getByRole('status'), dialog.getByTitle('Close', { exact: true })]) {
+        const box = await control.boundingBox()
+        expect(box).not.toBeNull()
+        expect(box!.x).toBeGreaterThanOrEqual(bounds!.x)
+        expect(box!.x + box!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width)
+      }
+      const notices = page.locator('[data-workspace-toast][data-visible="true"]')
+      if (await notices.count()) {
+        await page.locator('[data-workspace-toaster]').hover()
+        while (await notices.count()) await notices.first().getByRole('button', { name: 'Dismiss notification', exact: true }).click()
+      }
+      await expectReadableGridText(page, testInfo, 'import-request-status', '[role="dialog"] [role="status"]')
+      await page.screenshot({ path: testInfo.outputPath('import-pending-mobile.png'), animations: 'disabled' })
+      expect(writes).toBe(1)
+    } finally { release() }
+    await expect(nameInput).toBeEnabled()
+    await expect(nameInput).toHaveValue(name)
+    await page.unroute(path)
+    if (operation === 'preview') await audit()
+    const saved = page.waitForResponse(response => response.url().includes('/api/v1/import/execute'))
+    await dialog.getByRole('button', { name: 'Import 1', exact: true }).click()
+    expect(await (await saved).json()).toEqual({ status: 'success', count: 1 })
+    await expect(dialog).toHaveCount(0)
+    const stored = await (await request.get(`${apiBase}/devices`)).json()
+    expect(stored.filter((row: any) => row.name === name)).toHaveLength(1)
   })
 
   for (const mode of ['file', 'paste']) test(`${mode} import selects only valid assets and preserves identifiers in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
