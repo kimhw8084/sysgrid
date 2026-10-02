@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 import io
 import json
@@ -36,7 +36,7 @@ from .devices import _DEVICE_WRITABLE_FIELDS
 from .networks import _connection_scope
 from .logical_services import (
     SERVICE_DATE_FIELDS, _normalize_service_device_id, _service_scope,
-    normalize_service_date, sync_device_os_state,
+    normalize_service_date, normalize_service_values, sync_device_os_state,
 )
 from ..import_limits import (
     IMPORT_LIMITS, MAX_IMPORT_FILE_BYTES, MAX_IMPORT_WORKBOOK_BYTES,
@@ -224,7 +224,7 @@ async def preview_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
         for column_name, column in relevant_columns.items():
             try:
                 normalized_row[column_name] = coerce_value_for_column(column, raw_row.get(column_name))
-            except (ValueError, TypeError, json.JSONDecodeError):
+            except (ValueError, TypeError, OverflowError, json.JSONDecodeError):
                 errors.append(f"{column_name} has an invalid value")
 
             value = normalized_row.get(column_name)
@@ -302,6 +302,10 @@ async def preview_service_rows(request: Request, db: AsyncSession, rows: list[di
             # Validate the original reference: generic integer coercion truncates
             # fractions and accepts booleans before relationship authorization.
             result['normalized']['device_id'] = _normalize_service_device_id(normalize_scalar(raw_row.get('device_id')))
+            # Keep the original cost's type until domain validation: float(True)
+            # would otherwise disguise a malformed value as an ordinary cost.
+            result['normalized']['cost'] = normalize_scalar(raw_row.get('cost'))
+            normalize_service_values(result['normalized'])
             for field in SERVICE_DATE_FIELDS:
                 parsed = normalize_service_date(result['normalized'].get(field), field)
                 result['normalized'][field] = parsed.isoformat() if parsed is not None else None
@@ -1790,7 +1794,11 @@ def get_import_profile(table_name: str, request: Request) -> ImportProfile:
     if table_name == 'logical_services':
         return ImportProfile(
             key=table_name, display_name='Logical Services', model=models.LogicalService,
-            fields=IMPORT_PROFILES[table_name].fields,
+            fields=[
+                replace(entry, required=True, validation_rules=['Required. Must be non-empty text.']) if entry.name == 'name'
+                else replace(entry, validation_rules=['Optional. Must be a finite number zero or greater, or blank.']) if entry.name == 'cost'
+                else entry for entry in IMPORT_PROFILES[table_name].fields
+            ],
             preview_rows=lambda db, rows: preview_service_rows(request, db, rows),
             execute_rows=lambda db, rows, _user_id: execute_service_rows(request, db, rows),
         )

@@ -5,6 +5,8 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from datetime import datetime
+import json
+import math
 from ..database import get_db
 from ..models import models
 from .authorization import require_capability
@@ -26,6 +28,48 @@ router = APIRouter(
 IMMUTABLE_SERVICE_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 SERVICE_BULK_UPDATE_FIELDS = {"status", "service_type", "environment", "version", "device_id"}
 SERVICE_DATE_FIELDS = ("installation_date", "purchase_date", "expiry_date")
+SERVICE_TEXT_FIELDS = (
+    "name", "service_type", "status", "version", "environment", "purpose", "documentation_link",
+    "purchase_type", "license_key", "currency", "manufacturer", "supplier",
+)
+
+
+def normalize_service_values(data: dict) -> None:
+    errors = {}
+    for field in SERVICE_TEXT_FIELDS:
+        if field not in data:
+            continue
+        value = data[field]
+        if field == 'name' and (not isinstance(value, str) or not value.strip()):
+            errors[field] = 'Must be non-empty text'
+        elif value is not None and not isinstance(value, str):
+            errors[field] = 'Must be text or null'
+
+    cost = data.get('cost')
+    if cost is not None:
+        try:
+            if isinstance(cost, bool) or not isinstance(cost, (int, float, str)):
+                raise ValueError
+            # Preserve legacy numeric text while refusing boolean, overflow,
+            # non-finite and negative values before database coercion.
+            cost = float(cost)
+            if not math.isfinite(cost) or cost < 0:
+                raise ValueError
+        except (ValueError, TypeError, OverflowError):
+            errors['cost'] = 'Must be a finite number zero or greater, or null'
+
+    for field in ('config_json', 'custom_attributes', 'logic_json'):
+        if field in data:
+            try:
+                json.dumps(data[field], allow_nan=False)
+            except (ValueError, TypeError, OverflowError):
+                errors[field] = 'Must contain valid finite JSON values'
+    if errors:
+        raise HTTPException(422, {'field_errors': errors})
+    if 'cost' in data:
+        data['cost'] = cost
+    if 'status' in data:
+        data['status'] = canonicalize_service_status(data['status']) or 'Existing'
 
 
 def normalize_service_date(value, field: str):
@@ -150,13 +194,12 @@ def normalize_service_payload(data: dict) -> dict:
     clean_data = filter_valid_columns(models.LogicalService, data, exclude=IMMUTABLE_SERVICE_FIELDS)
     if "device_id" in clean_data:
         clean_data["device_id"] = _normalize_service_device_id(clean_data["device_id"])
-    if "status" in clean_data:
-        clean_data["status"] = canonicalize_service_status(clean_data.get("status")) or "Existing"
     for field in ("config_json", "custom_attributes"):
         if field in clean_data:
             clean_data[field] = normalize_json_object(clean_data[field])
     if "logic_json" in clean_data:
         clean_data["logic_json"] = normalize_json_list(clean_data["logic_json"])
+    normalize_service_values(clean_data)
     for date_field in SERVICE_DATE_FIELDS:
         if date_field in clean_data:
             clean_data[date_field] = normalize_service_date(clean_data[date_field], date_field)
@@ -436,11 +479,8 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
 
     clean_update: dict = {}
     if action == "update":
-        clean_update = {key: value for key, value in payload.items() if key in SERVICE_BULK_UPDATE_FIELDS}
-        if "status" in clean_update:
-            clean_update["status"] = canonicalize_service_status(clean_update.get("status")) or "Existing"
+        clean_update = normalize_service_payload({key: value for key, value in payload.items() if key in SERVICE_BULK_UPDATE_FIELDS})
         if "device_id" in clean_update:
-            clean_update["device_id"] = _normalize_service_device_id(clean_update["device_id"])
             if clean_update["device_id"] is not None and any(service.device_id != clean_update["device_id"] for service in affected_services):
                 await require_relationship_asset(request, db, clean_update["device_id"], active=True)
         if not clean_update:
