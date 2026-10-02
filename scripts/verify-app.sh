@@ -79,6 +79,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_network_create_audit.py
   test_network_noop_receipts.py
   test_network_custom_ip_edit.py
+  test_network_batch_history.py
   test_service_workflows.py
   test_racks_api_edges.py
   test_rack_read_queries.py

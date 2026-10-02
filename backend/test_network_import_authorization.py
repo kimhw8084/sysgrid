@@ -79,7 +79,7 @@ async def test_owned_import_resolves_names_and_ids_and_records_atomic_audit(netw
     assert all(row['source_device_id'] == c['devices']['source'] and row['target_device_id'] == c['devices']['peer']
                and row['created_by_user_id'] == 'admin_root' for row in imported)
     async with _tenant_db(setup_db, c['tenant']) as db:
-        audit = (await db.scalars(select(models.AuditLog))).one()
+        audit = (await db.scalars(select(models.AuditLog).where(models.AuditLog.action == 'BULK_IMPORT'))).one()
         assert (audit.user_id, audit.action, audit.target_table, audit.target_id) == (
             'admin_root', 'BULK_IMPORT', 'PORT_CONNECTIONS', 'MULTIPLE')
         assert audit.changes == {'count': 2}

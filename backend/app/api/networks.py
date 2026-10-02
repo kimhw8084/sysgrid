@@ -91,6 +91,26 @@ async def _get_connections_for_ids(request: Request, db: AsyncSession, ids: list
         raise HTTPException(404, 'Connection not found')
     return connections
 
+
+async def _commit_connection_batch_audit(request, db, ids, action, description, changed_fields):
+    changes = {'batch_count': len(ids)}
+    if changed_fields:
+        changes['changed_fields'] = changed_fields
+    try:
+        for conn_id in ids:
+            db.add(build_audit_log(
+                request=request, action=action, target_table='port_connections', target_id=str(conn_id),
+                description=description, changes=changes,
+            ))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Network batch conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
+
+
 def _interface_query(request: Request):
     owned_assets = select(models.Device.id).where(models.Device.tenant_id == request.state.tenant_id)
     return select(models.NetworkInterface).where(models.NetworkInterface.device_id.in_(owned_assets))
@@ -329,9 +349,9 @@ async def bulk_update_status(data: schemas.NetworkConnectionBulkStatus, request:
         .values(status=new_status)
     )
 
-    log = build_audit_log(request=request, action="BULK_UPDATE", target_table="port_connections", description=f"Bulk updated {len(ids)} links to {new_status}")
-    db.add(log)
-    await db.commit()
+    await _commit_connection_batch_audit(
+        request, db, ids, 'BULK_UPDATE', f'Bulk updated {len(ids)} links to {new_status}', ['status'],
+    )
     return {"status": "success", "count": len(ids), "changed": len(ids), "summary": f"Updated {len(ids)} links to {new_status}"}
 
 @router.post("/connections/bulk-restore")
@@ -349,9 +369,9 @@ async def bulk_restore_connections(data: schemas.NetworkConnectionBulkIds, reque
         .values(status="Active")
     )
 
-    log = build_audit_log(request=request, action="BULK_RESTORE", target_table="port_connections", description=f"Bulk restored {len(ids)} network links")
-    db.add(log)
-    await db.commit()
+    await _commit_connection_batch_audit(
+        request, db, ids, 'BULK_RESTORE', f'Bulk restored {len(ids)} network links', ['status'],
+    )
     return {"status": "success", "count": len(ids), "changed": len(ids), "summary": f"Restored {len(ids)} connections"}
 
 @router.post("/connections/bulk-delete")
@@ -370,9 +390,9 @@ async def bulk_delete_connections(data: schemas.NetworkConnectionBulkIds, reques
         deleted_ids.append(conn.id)
         conn.status = "Deleted"
 
-    log = build_audit_log(request=request, action="BULK_DELETE", target_table="port_connections", description=f"Bulk severed {len(deleted_ids)} network links")
-    db.add(log)
-    await db.commit()
+    await _commit_connection_batch_audit(
+        request, db, deleted_ids, 'BULK_DELETE', f'Bulk severed {len(deleted_ids)} network links', ['status'],
+    )
     return {"status": "success", "count": len(deleted_ids), "changed": len(deleted_ids), "deleted_ids": deleted_ids, "summary": f"Archived {len(deleted_ids)} connections"}
 
 @router.post("/connections/bulk-purge")
@@ -388,11 +408,11 @@ async def bulk_purge_connections(data: schemas.NetworkConnectionBulkIds, request
         raise HTTPException(status_code=400, detail="Only deleted connections can be purged")
 
     deleted_ids = [conn.id for conn in connections]
-    log = build_audit_log(request=request, action="BULK_PURGE", target_table="port_connections", description=f"Bulk purged {len(deleted_ids)} network links")
-    db.add(log)
     for conn in connections:
         await db.delete(conn)
-    await db.commit()
+    await _commit_connection_batch_audit(
+        request, db, deleted_ids, 'BULK_PURGE', f'Bulk purged {len(deleted_ids)} network links', [],
+    )
     return {"status": "success", "count": len(deleted_ids), "changed": len(deleted_ids), "deleted_ids": deleted_ids, "summary": f"Purged {len(deleted_ids)} connections"}
 
 @router.put("/connections/{conn_id}")

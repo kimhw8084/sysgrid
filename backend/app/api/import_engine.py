@@ -1236,9 +1236,19 @@ async def execute_network_rows(request: Request, db: AsyncSession, rows: list[di
 
     count = len(preview['results'])
     try:
+        imported = []
         for result in preview['results']:
-            db.add(models.PortConnection(**result['normalized'], created_by_user_id=get_audit_actor(request)))
+            conn = models.PortConnection(**result['normalized'], created_by_user_id=get_audit_actor(request))
+            db.add(conn)
+            imported.append((conn, result['normalized']))
         if count:
+            await db.flush()
+            for conn, normalized in imported:
+                db.add(build_audit_log(
+                    request=request, action='CREATE', target_table='port_connections', target_id=str(conn.id),
+                    description='Imported network link',
+                    changes={'changed_fields': sorted(normalized), 'batch_count': count},
+                ))
             db.add(build_audit_log(
                 request=request, action='BULK_IMPORT', target_table='PORT_CONNECTIONS', target_id='MULTIPLE',
                 description=f'Bulk imported {count} records into port_connections.', changes={'count': count},
