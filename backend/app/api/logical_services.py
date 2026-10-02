@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, or_
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from ..database import get_db
 from ..models import models
 from .authorization import require_capability
-from .utils import build_audit_log, filter_valid_columns, normalize_json_list, normalize_json_object, parse_iso_date
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor, normalize_json_list, normalize_json_object, parse_iso_date
 from .operational_bulk import (
     build_operational_bulk_summary,
     normalize_operational_bulk_ids,
@@ -307,7 +308,7 @@ async def create_service(data: dict, request: Request, db: AsyncSession = Depend
     if clean_data.get('device_id') is not None:
         await require_relationship_asset(request, db, clean_data['device_id'], active=True)
 
-    svc = models.LogicalService(**clean_data)
+    svc = models.LogicalService(**clean_data, created_by_user_id=get_audit_actor(request))
     db.add(svc)
     try:
         await db.flush() # Flush to get ID without committing
@@ -327,9 +328,12 @@ async def create_service(data: dict, request: Request, db: AsyncSession = Depend
         await db.commit()
         await db.refresh(svc)
         return svc
-    except Exception as e:
+    except IntegrityError as exc:
         await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(409, 'Service creation conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
 
 @router.put("/{service_id}")
 async def update_service(service_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
@@ -337,27 +341,29 @@ async def update_service(service_id: int, data: dict, request: Request, db: Asyn
     previous_device_id = svc.device_id
     
     clean_data = normalize_service_payload(data)
-    if 'device_id' in clean_data and clean_data['device_id'] is not None and clean_data['device_id'] != previous_device_id:
-        await require_relationship_asset(request, db, clean_data['device_id'], active=True)
-    for k, v in clean_data.items():
-        setattr(svc, k, v)
-    
-    # Sync back to device if OS
-    await sync_service_to_device(svc, db)
-    if previous_device_id != svc.device_id:
-        await sync_device_os_state(previous_device_id, db)
-        
-    log = build_audit_log(
-        request=request,
-        action="UPDATE",
-        target_table="logical_services",
-        target_id=str(service_id),
-        description=f"Updated service configuration: {svc.name}",
-        changes={"device_id": svc.device_id, "service_type": svc.service_type, "status": svc.status},
-    )
-    db.add(log)
-    await db.commit()
-    await db.refresh(svc)
+    changed = {key: value for key, value in clean_data.items() if getattr(svc, key) != value}
+    if changed:
+        if changed.get('device_id') is not None:
+            await require_relationship_asset(request, db, changed['device_id'], active=True)
+        for key, value in changed.items():
+            setattr(svc, key, value)
+
+        # Sync back to device if OS
+        await sync_service_to_device(svc, db)
+        if previous_device_id != svc.device_id:
+            await sync_device_os_state(previous_device_id, db)
+
+        db.add(build_audit_log(
+            request=request,
+            action="UPDATE",
+            target_table="logical_services",
+            target_id=str(service_id),
+            description=f"Updated service configuration: {svc.name}",
+            changes={"device_id": svc.device_id, "service_type": svc.service_type, "status": svc.status,
+                     "changed_fields": sorted(changed)},
+        ))
+        await db.commit()
+        await db.refresh(svc)
     result = await db.execute(
         select(models.LogicalService)
         .options(joinedload(models.LogicalService.secrets))
@@ -520,6 +526,8 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
 async def mount_service(service_id: int, device_id: int, request: Request, db: AsyncSession = Depends(get_db)):
     svc = await _get_owned_service(request, db, service_id)
     await require_relationship_asset(request, db, device_id, active=True)
+    if svc.device_id == device_id:
+        return {"status": "success"}
     dev_res = await db.execute(select(models.Device).filter(models.Device.id == device_id))
     dev = dev_res.scalar_one_or_none()
     
