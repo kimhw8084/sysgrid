@@ -270,7 +270,7 @@ test.describe('Assets workflows', () => {
     await primaryDetailsRow.action('More actions').click()
     await viewDetailsButtons.filter({ visible: true }).click()
     await expect(page.getByText(primary.name).first()).toBeVisible({ timeout: 20000 })
-    await expect(page.getByText('Suggested Runbooks Now')).toBeVisible()
+    await expect(page.getByText('Linked Runbooks', { exact: true })).toBeVisible()
     await expect(farRisksButton).toBeVisible()
     await expect(farRisksButton).toBeDisabled()
     await expect(auditButton).toBeVisible()
@@ -315,7 +315,7 @@ test.describe('Assets workflows', () => {
     await cell0.click()
     await expect(rows.nth(0)).toHaveClass(/ag-row-selected/)
     // Target B.2: Name/Instance click no-panel behavior proof
-    await expect(page.getByText('Suggested Runbooks Now')).not.toBeVisible()
+    await expect(page.getByText('Linked Runbooks', { exact: true })).not.toBeVisible()
 
     // Deselect the selected row through the shared toggle-selection contract.
     const multiSelectModifier = process.platform === 'darwin' ? 'Meta' : 'Control'
@@ -332,7 +332,7 @@ test.describe('Assets workflows', () => {
     // Explicit Details button click DOES open details
     await primaryCompareRow.action('More actions').click()
     await viewDetailsButtons.filter({ visible: true }).click()
-    await expect(page.getByText('Suggested Runbooks Now')).toBeVisible()
+    await expect(page.getByText('Linked Runbooks', { exact: true })).toBeVisible()
 
     // Re-goto assets to reset UI state
     await page.goto('/asset')

@@ -37,6 +37,9 @@ BACKEND_QUALIFICATION_TESTS=(
   test_dashboard_metrics.py
   test_tenant_isolation.py
   test_tenant_workflows.py
+  test_maintenance_integrity.py
+  test_cross_module_integrations.py
+  test_operational_actions.py
   test_settings_api_edges.py
   test_settings_workflows.py
   test_monitoring_query_and_bulk_edges.py
@@ -130,6 +133,7 @@ export SYSGRID_VERIFY_PROFILE="root-preview"
   echo "verify:app root-preview gate requires SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID; no identity is inferred." >&2
   exit 1
 }
+export SYSGRID_VERIFY_CONTROL_PLANE_ADMIN_USER_IDS="$SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID"
 verify_runtime_start
 (
   cd "$FRONTEND_DIR"
