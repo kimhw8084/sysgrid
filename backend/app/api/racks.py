@@ -58,7 +58,13 @@ async def get_racks(site_id: Optional[str] = None, include_deleted: bool = False
     if site_id == "missing":
         query = select(models.Rack).filter(models.Rack.room_id == None)
     elif site_id and site_id != "null" and site_id != "":
-        query = select(models.Rack).join(models.Room).filter(models.Room.site_id == int(site_id))
+        try:
+            parsed_site_id = int(site_id)
+            if not 0 <= parsed_site_id <= 9223372036854775807:
+                raise ValueError
+        except ValueError:
+            raise HTTPException(422, "site_id must be a supported non-negative integer, 'missing', or 'null'") from None
+        query = select(models.Rack).join(models.Room).filter(models.Room.site_id == parsed_site_id)
     else:
         query = select(models.Rack)
     

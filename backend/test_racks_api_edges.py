@@ -20,6 +20,19 @@ async def _ensure_admin(seeded_admin_tenant):
     )
 
 
+@pytest.mark.asyncio
+async def test_rack_site_filter_rejects_invalid_values_and_retains_legacy_sentinels(seeded_admin_tenant):
+    client = seeded_admin_tenant['client']
+    headers = {'X-User-Id': 'admin_root', 'X-Tenant-Id': str(seeded_admin_tenant['tenant_id'])}
+    for value in ('not-a-site', '1.5', '-1', '9223372036854775808'):
+        response = await client.get('/api/v1/racks', params={'site_id': value}, headers=headers)
+        assert response.status_code == 422, (value, response.text)
+    for value in ('', 'null', 'missing', '0', '9223372036854775807'):
+        response = await client.get('/api/v1/racks', params={'site_id': value}, headers=headers)
+        assert response.status_code == 200, (value, response.text)
+        assert response.json() == []
+
+
 async def _create_site(client, headers: dict, name: str, color: str = "#22c55e"):
     res = await client.post("/api/v1/sites", json={"name": name, "address": "QA", "color": color}, headers=headers)
     assert res.status_code == 200, res.text
