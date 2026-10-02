@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from alembic import command
 from alembic.config import Config
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import select, text
@@ -224,7 +224,11 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(code=1008, reason="Authenticated proxy identity is missing")
         return
 
-    user_id = get_current_user_id(websocket)
+    try:
+        user_id = get_current_user_id(websocket)
+    except HTTPException:
+        await websocket.close(code=1008, reason="Authenticated identity is missing or invalid")
+        return
     raw_tenant_id = websocket.query_params.get("tenant_id")
     try:
         tenant_id = int(raw_tenant_id or "")

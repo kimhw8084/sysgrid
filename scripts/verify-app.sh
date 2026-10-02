@@ -33,6 +33,8 @@ BACKEND_QUALIFICATION_TESTS=(
   test_migration_graph.py
   test_system_management_v1_policy.py
   test_chg13_authorization_security.py
+  test_environment_identity.py
+  test_production_startup_policy.py
   test_runtime_diagnostics.py
   test_dashboard_metrics.py
   test_tenant_isolation.py

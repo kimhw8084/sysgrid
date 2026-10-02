@@ -160,8 +160,8 @@ describe('apiClient', () => {
     expect(fetchMock.mock.calls[0][1].headers['X-Tenant-Id']).toBe('7')
   })
 
-  it('keeps explicit tenant scope with trusted-proxy identity and removes browser identity', async () => {
-    vi.stubEnv('VITE_IDENTITY_MODE', 'trusted_proxy')
+  it.each(['trusted_proxy', 'environment'])('keeps explicit tenant scope with %s identity and removes browser identity', async (identityMode) => {
+    vi.stubEnv('VITE_IDENTITY_MODE', identityMode)
     localStorage.setItem('SYSGRID_TENANT_ID', '7')
     const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)

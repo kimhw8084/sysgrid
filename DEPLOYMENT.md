@@ -73,18 +73,27 @@ signing key, or production data location. Unresolved operator placeholders fail
 the production Settings guard. Never commit a populated environment file,
 secret-manager export, token, or database dump.
 
-The authoritative key list is `PRODUCTION_REQUIRED_ENV` in
-`backend/app/core/config.py`; preflight and the publishability guard use this
+The authoritative configuration contract is `Settings` in
+`backend/app/core/config.py`, including `PRODUCTION_REQUIRED_ENV` and the
+mode-specific identity checks. Preflight and the publishability guard use this
 contract rather than maintaining separate required-key lists.
 
 The backend runtime must explicitly supply:
 
 - `ENVIRONMENT=production`, `PORT`, explicit HTTPS `BACKEND_CORS_ORIGINS`, and
   explicit `ALLOWED_HOSTS` hostnames.
-- `IDENTITY_MODE=trusted_proxy` and
-  `TRUSTED_PROXY_USER_HEADER=X-Authenticated-User`. The ingress must strip any
-  client-supplied copy, authenticate the request, then inject the trusted value.
-  Browser code must not set that proxy identity header.
+- One explicit identity mode:
+  - For a company-managed per-user workspace, use `IDENTITY_MODE=environment`
+    and `USER_ID_ENV_VAR=AccessKey`. The hosting process supplies that named
+    variable with the authorized user's identity. Missing or invalid identity
+    fails startup and requests; browser identity headers cannot override it.
+    Every request to that backend uses the same identity, so the company host
+    must restrict workspace access to that user. The value is an identity used
+    for tenant membership and audit attribution, not a bearer credential.
+  - For shared multi-user hosting, use `IDENTITY_MODE=trusted_proxy` and
+    `TRUSTED_PROXY_USER_HEADER=X-Authenticated-User`. The ingress must strip any
+    client-supplied copy, authenticate the request, then inject the trusted
+    value. Browser code must not set that proxy identity header.
 - Absolute file-backed SQLite `DATABASE_URL` and `CONFIG_DATABASE_URL` values,
   plus `TENANT_STORAGE_ROOT`. SQLite is the supported persistence contract for
   this release.
@@ -102,10 +111,12 @@ The backend runtime must explicitly supply:
 - `PV1_RELEASE_CANDIDATE_SHA` and `PV1_RELEASE_ID` for the committed candidate.
 
 The frontend build receives `VITE_API_BASE_URL` for the separately published
-backend origin and `VITE_IDENTITY_MODE=trusted_proxy`. A blank API base is valid
-only when corporate ingress intentionally supplies same-origin `/api` routing.
-Frontend configuration is public build input; it must never contain signing
-keys or other secrets.
+backend origin and `VITE_IDENTITY_MODE` matching the backend's `environment` or
+`trusted_proxy` mode. A blank API base is valid only when corporate ingress
+intentionally supplies same-origin `/api` routing. Frontend configuration is
+public build input; it must never contain the value of `AccessKey`, signing
+keys, or other secrets. Tenant roles and the separate Admin/System Root
+permissions still apply in both identity modes.
 
 Production schema changes are operator-managed by default:
 

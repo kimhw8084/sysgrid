@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     # Identity contract
     # development: browser X-User-Id fallback is accepted for local/test use.
     # trusted_proxy: only the configured proxy-authenticated header is accepted.
+    # environment: one company identity supplied by the hosting process.
     IDENTITY_MODE: str = "development"
     TRUSTED_PROXY_USER_HEADER: str = "X-Authenticated-User"
 
@@ -128,6 +129,15 @@ class Settings(BaseSettings):
         return (self.IDENTITY_MODE or "development").strip().lower()
 
     @property
+    def environment_user_id(self) -> str | None:
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", self.USER_ID_ENV_VAR):
+            return None
+        value = (os.getenv(self.USER_ID_ENV_VAR) or "").strip()
+        if not value or len(value) > 200 or any(ord(char) < 32 or ord(char) == 127 for char in value):
+            return None
+        return value
+
+    @property
     def startup_schema_management_enabled(self) -> bool:
         if not self.AUTO_MIGRATE_ON_STARTUP:
             return False
@@ -174,16 +184,24 @@ class Settings(BaseSettings):
 
         errors: list[str] = []
         for env_name in PRODUCTION_REQUIRED_ENV:
+            if env_name == "TRUSTED_PROXY_USER_HEADER" and self.identity_mode == "environment":
+                continue
             if env_name not in self.model_fields_set:
                 errors.append(f"{env_name} must be explicitly configured in production.")
         if self.is_testing:
             errors.append("TESTING mode must not be enabled in production.")
-        if self.identity_mode != "trusted_proxy":
-            errors.append("IDENTITY_MODE must be 'trusted_proxy' in production.")
-        if not self.TRUSTED_PROXY_USER_HEADER.strip():
-            errors.append("TRUSTED_PROXY_USER_HEADER must be configured in production.")
-        if self.TRUSTED_PROXY_USER_HEADER.strip().lower() == "x-user-id":
-            errors.append("TRUSTED_PROXY_USER_HEADER must not use the browser-controlled X-User-Id header.")
+        if self.identity_mode not in {"trusted_proxy", "environment"}:
+            errors.append("IDENTITY_MODE must be 'trusted_proxy' or 'environment' in production.")
+        if self.identity_mode == "trusted_proxy":
+            if not self.TRUSTED_PROXY_USER_HEADER.strip():
+                errors.append("TRUSTED_PROXY_USER_HEADER must be configured in production.")
+            if self.TRUSTED_PROXY_USER_HEADER.strip().lower() == "x-user-id":
+                errors.append("TRUSTED_PROXY_USER_HEADER must not use the browser-controlled X-User-Id header.")
+        if self.identity_mode == "environment":
+            if "USER_ID_ENV_VAR" not in self.model_fields_set:
+                errors.append("USER_ID_ENV_VAR must be explicitly configured for environment identity.")
+            if not self.environment_user_id or _UNRESOLVED_PRODUCTION_VALUE.search(self.environment_user_id):
+                errors.append("The configured environment identity must be present and valid in the server process.")
         if not re.fullmatch(r"[0-9a-f]{64}", self.PV1_RELEASE_CANDIDATE_SHA.strip().lower()):
             errors.append("PV1_RELEASE_CANDIDATE_SHA must be a valid committed candidate SHA in production.")
         if not self.PV1_RELEASE_ID.strip():
