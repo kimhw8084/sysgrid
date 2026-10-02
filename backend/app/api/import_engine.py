@@ -27,6 +27,8 @@ from .monitoring import (
 from .far import save_far_history
 from .utils import filter_valid_columns, get_current_user_id
 from .module_policy import ensure_module_access
+from .asset_import import execute_asset_rows, preview_asset_rows
+from .devices import _DEVICE_WRITABLE_FIELDS
 
 router = APIRouter(prefix="/import", tags=["Intelligence Engine"])
 MONITORING_IMPORT_SCHEMA_VERSION = "2026-06-monitoring-v1"
@@ -143,12 +145,13 @@ def rows_from_dataframe(df: pd.DataFrame) -> list[dict[str, Any]]:
     ]
 
 
-def load_dataframe_from_upload(file: UploadFile, content: bytes) -> pd.DataFrame:
+def load_dataframe_from_upload(file: UploadFile, content: bytes, *, preserve_text: bool = False) -> pd.DataFrame:
     lower_name = (file.filename or "").lower()
+    options = {"dtype": str, "keep_default_na": False} if preserve_text else {}
     if lower_name.endswith(".csv"):
-        return pd.read_csv(io.BytesIO(content))
+        return pd.read_csv(io.BytesIO(content), **options)
     if lower_name.endswith(".xlsx") or lower_name.endswith(".xls"):
-        return pd.read_excel(io.BytesIO(content))
+        return pd.read_excel(io.BytesIO(content), **options)
     raise HTTPException(status_code=400, detail="Only CSV and Excel uploads are supported")
 
 
@@ -157,6 +160,8 @@ def generic_fields_for_model(model: Any) -> list[ImportField]:
     fields: list[ImportField] = []
     for column in mapper.columns:
         if column.primary_key or column.name in GENERIC_EXCLUDE_COLUMNS:
+            continue
+        if model is models.Device and column.name not in _DEVICE_WRITABLE_FIELDS:
             continue
         hint = "[STRING]"
         try:
@@ -177,7 +182,8 @@ def generic_fields_for_model(model: Any) -> list[ImportField]:
             ImportField(
                 name=column.name,
                 label=column.name.replace("_", " ").title(),
-                required=not column.nullable and column.default is None and column.server_default is None,
+                required=(model is models.Device and column.name in {'name', 'system'}) or
+                         (not column.nullable and column.default is None and column.server_default is None),
                 template_hint=hint,
             )
         )
@@ -1828,8 +1834,12 @@ async def download_snapshot(table_name: str, request: Request, export_token: Opt
         mapper = inspect(model)
         exclude = {"id", "created_at", "updated_at", "created_by_user_id"}
         cols = [column.name for column in mapper.columns if column.name not in exclude]
+        if model is models.Device:
+            cols = [field.name for field in profile.fields]
 
         query = select(model)
+        if model is models.Device:
+            query = query.where(models.Device.tenant_id == request.state.tenant_id)
         if hasattr(model, "is_deleted"):
             query = query.where(model.is_deleted == False)
 
@@ -1869,10 +1879,13 @@ async def preview_import_file(request: Request, table_name: str = Form(...), fil
     await enforce_import_profile_access(profile, request, db)
     content = await file.read()
     try:
-        df = load_dataframe_from_upload(file, content)
+        df = load_dataframe_from_upload(file, content, preserve_text=profile.model is models.Device)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    preview = await profile.preview_rows(db, rows_from_dataframe(df))
+    rows = rows_from_dataframe(df)
+    # Asset identity and uniqueness require the request's trusted tenant.
+    preview = (await preview_asset_rows(request, db, rows) if profile.model is models.Device
+               else await profile.preview_rows(db, rows))
     return {"table_name": table_name, **preview}
 
 
@@ -1888,7 +1901,8 @@ async def preview_import_rows(
     rows = payload.get("rows")
     if not isinstance(rows, list):
         raise HTTPException(status_code=400, detail="rows must be a list")
-    preview = await profile.preview_rows(db, rows)
+    preview = (await preview_asset_rows(request, db, rows) if profile.model is models.Device
+               else await profile.preview_rows(db, rows))
     return {"table_name": table_name, **preview}
 
 
@@ -1914,4 +1928,6 @@ async def execute_import(
         raise HTTPException(status_code=400, detail="rows must be a list")
 
     user_id = get_current_user_id(request)
+    if profile.model is models.Device:
+        return await execute_asset_rows(request, db, rows)
     return await profile.execute_rows(db, rows, user_id)

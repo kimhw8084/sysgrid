@@ -124,6 +124,7 @@ from app.database import (
 from app.models.config import ConfigBase, Tenant, UserTenantAccess
 from app.main import app
 from app.core.config import settings
+from app.observability import SlidingWindowRateLimiter
 from app.models import models  # noqa: F401
 from fastapi import Request
 
@@ -156,6 +157,16 @@ def protect_user_databases():
         "Qualification tests modified a configured user database. "
         f"before={_ORIGINAL_USER_DATABASE_SNAPSHOT!r} after={after!r}"
     )
+
+@pytest.fixture(autouse=True)
+def isolate_request_rate_limit(monkeypatch):
+    # Each test provisions a new registry but reuses the application singleton.
+    # Give it an equally fresh budget; requests within a test still share the
+    # real limiter and unchanged production limits.
+    monkeypatch.setattr(app.state, "rate_limiter", SlidingWindowRateLimiter(
+        limit=settings.RATE_LIMIT_REQUESTS,
+        window_seconds=settings.RATE_LIMIT_WINDOW_SECONDS,
+    ))
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def setup_db(tmp_path_factory, monkeypatch, tmp_path):
