@@ -10,14 +10,26 @@
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
+  "verified_checkpoint": {
+    "candidate": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
+    "pr": "https://github.com/kimhw8084/sysgrid/pull/32",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36960327787",
+    "completed_at": "2026-10-02T04:10:08Z",
+    "conclusion": "success",
+    "counts": { "startup_and_recovery": 71, "subtests": 23, "backend": 188, "frontend": 773, "normal_browser": 91, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
+    "main": "d3860311f11bcb176e108391a35c348280a8de61",
+    "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+    "later_source": "bc40bdc9b58888369048b31b6b6d6471e5c3e40f has local scoped proof and still requires assembled CI."
+  },
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "registered_api_operations": 308,
-    "static_ui_declarations": 3086,
+    "source_head": "bc40bdc9b58888369048b31b6b6d6471e5c3e40f",
+    "registered_api_operations": 309,
+    "static_ui_declarations": 3134,
     "static_ui_routes": 19,
-    "static_ui_overlays": 257,
-    "static_ui_controls": 2810,
+    "static_ui_overlays": 258,
+    "static_ui_controls": 2857,
     "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
   },
   "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
@@ -165,6 +177,56 @@
       "commit": "7e7f8d18f601f8efad125fd0af212224b53ebf93",
       "scope": "Connection revocation and cancellation cleanup",
       "archive_sha256": "b063cd453fda24786e8db335f8ca8cba10f78544e704d36df944587d6ba72a14"
+    },
+    {
+      "commit": "3b8d6724e20d51cdbfbd55e3c204bca458d48a85",
+      "scope": "Approved acceptance ledger and reproducible source inventories",
+      "archive_sha256": "13b0904f2adb24448fd5712668e69507ff030ef4c435b3d8e7d84009236064a2"
+    },
+    {
+      "commit": "a54b0ab2794f621529a655dd34d6c182157b92e2",
+      "scope": "Accessible, responsive and recoverable shell dialogs",
+      "archive_sha256": "7034e21b9530d23bae4f897b2bc8c6e7f535e8701461016e5fdf6a32edb8aa38"
+    },
+    {
+      "commit": "0390df80c815191e12b978315ab60a3cc1403980",
+      "scope": "Measured rack relation query batching",
+      "archive_sha256": "d25de16bd13fe6779954465ccb0d1c62db734806fcb78b910f9d19687b84c68f"
+    },
+    {
+      "commit": "9906b2ed91de92a757f904a8c0911db79a6b2865",
+      "scope": "Toolbar wrapping before control clipping",
+      "archive_sha256": "b8506cb6909202390de0564a5b74b1941701890b54ac6bedb58086f44b4d19da"
+    },
+    {
+      "commit": "ff16b087f294109b918cb6db3b8faac08176fa86",
+      "scope": "Trusted-identity request budgets",
+      "archive_sha256": "bd38a87f38904fe373b9f907d60969b0166241dabffe29d7d4b8a3eb19bf3de9"
+    },
+    {
+      "commit": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
+      "scope": "Retain recovery and deployment lifecycle checks in CI",
+      "archive_sha256": "32a14cb45844ebb96461add0e8aa965f3209daf7014bc09bedfb51c06a814c29"
+    },
+    {
+      "commit": "e5160949f7dba4b94e4b66b4c9f70aa659dbcb49",
+      "scope": "Metadata-only credential reads and explicit privileged audited reveal",
+      "archive_sha256": "c0b9a0c2744dae150ca3a8d0325791e090ed0b48094e553e0ebe63a0bf6f6d29"
+    },
+    {
+      "commit": "8b8a8db4d9a4f3e0b867a4bb51eb19cf1a438efe",
+      "scope": "Hide bound values in database diagnostics",
+      "archive_sha256": "bb02a47f4c1d28ae5f112ac30c19b7e1d530f0efc1458fcb9f402d5e2e54b11e"
+    },
+    {
+      "commit": "82940eeb27868e412d4444ee209dd62b750ddfe2",
+      "scope": "Validate rack site filters while preserving legacy sentinels",
+      "archive_sha256": "5fd61eb79aa14982cd7d69289e34c6ed6e67d6fc2664c17d4cd0ba11d16f462e"
+    },
+    {
+      "commit": "bc40bdc9b58888369048b31b6b6d6471e5c3e40f",
+      "scope": "Maintenance simulation lifecycle UI, recovery and draft departure correction",
+      "archive_sha256": "6bb3e3410278af4ce0658c53676f5b551119cabe42648853473cb812de76cddd"
     }
   ],
   "groups": [
@@ -178,12 +240,12 @@
           "title": "Review and integrate the existing UI repairs",
           "outcome": "The reviewed, tested changes reach main, so your work-environment pull actually receives them.",
           "approval": "yes",
-          "status": "awaiting_ci",
+          "status": "awaiting_integration",
           "reviewed_commits": [
             "944c8709",
             "38c82a58"
           ],
-          "remaining": "PR 32 exact-head CI and eligible integration; main has not advanced."
+          "remaining": "PR32 exact-head CI passed at c27ea47c; main remains unchanged pending the explicit direct-candidate integration exception."
         },
         {
           "id": "A2",
@@ -194,7 +256,7 @@
           "reviewed_commits": [
             "27873d89"
           ],
-          "remaining": "Notion program and identity slice reconciled; startup documentation and final release claims need alignment."
+          "remaining": "Approval ledger and current source inventory refreshed. Notion checkpoints preserve actual direct provenance; final integrated release claims require main ancestry and field evidence."
         },
         {
           "id": "A3",
@@ -223,7 +285,7 @@
             "8b2ec178",
             "0b41d3c7"
           ],
-          "remaining": "Four real browser journeys, corrected transport fixture, 33 focused unit tests. Full candidate CI remains."
+          "remaining": "Scoped tenant fixes passed assembled PR32 CI including six root-preview journeys. Company-host trust and final release-candidate proof remain separate."
         },
         {
           "id": "B2",
@@ -236,7 +298,7 @@
             "944c8709",
             "8b2ec178"
           ],
-          "remaining": "Preserve drafts in remaining inline, nested and preview workflows."
+          "remaining": "Maintenance and shared confirmation cancellation now have a reproduced regression and repair at bc40bdc9. Preserve drafts in remaining inline, nested and preview workflows; newest source needs assembled CI."
         },
         {
           "id": "B3",
@@ -336,7 +398,7 @@
           "reviewed_commits": [
             "39b3704d"
           ],
-          "remaining": "35 Maintenance/cross-module/action tests passed; full candidate CI remains."
+          "remaining": "Maintenance validation and atomic audit passed PR32 assembled CI. Window lifecycle/authoring and broader operations workspace are tracked separately."
         },
         {
           "id": "C2",
@@ -400,9 +462,9 @@
           "title": "Complete credential and secret custody",
           "outcome": "Approved provider references, privileged access, rotation and revocation, and redaction. Inspect tracked configuration and history; remediate any actual exposure found.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Approved provider references, privileged access, rotation and revocation, and redaction. Inspect tracked configuration and history; remediate any actual exposure found."
+          "status": "in_progress",
+          "reviewed_commits": ["e5160949", "8b8a8db4"],
+          "remaining": "Ordinary asset-vault reads no longer expose values; explicit reveal is privileged, audited and no-store, UI values expire, metadata edits preserve existing values, SQL bound parameters are hidden. Legacy storage custody and rotation require the company-approved secret provider; provider selection is pending."
         },
         {
           "id": "C9",
@@ -524,9 +586,9 @@
           "title": "Backend and database capacity",
           "outcome": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology."
+          "status": "in_progress",
+          "reviewed_commits": ["0390df80"],
+          "remaining": "Rack list SELECTs reduced from 241 to 2 for 40 racks/120 placements with unchanged records and CI-passing behavior. Broader scale, indexes, contention and process topology remain unqualified."
         },
         {
           "id": "E3",
@@ -567,7 +629,7 @@
           "reviewed_commits": [
             "38c82a58"
           ],
-          "remaining": "Required Application CI covers scoped changes; supply-chain review and latest final candidate remain."
+          "remaining": "PR32 passed its current full Application CI, including retained recovery gates at c27ea47c. Later commits still require assembled CI; supply-chain and final release checks remain."
         },
         {
           "id": "E7",
@@ -587,7 +649,7 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [],
-          "remaining": "48 recovery tests pass on Python 3.14.5. Full operational rehearsal and agreed RPO/RTO remain."
+          "remaining": "Recovery/preflight checks are retained in CI: 71 combined startup/recovery tests and 23 subtests passed at c27ea47c. Authentic operational rehearsal and agreed RPO/RTO remain."
         }
       ]
     },
@@ -622,9 +684,9 @@
           "outcome": "Engineers can plan affected systems, schedule work, use runbooks, execute approved actions, verify results, and recover within SysGrid.",
           "tag": "Expanded scope",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Engineers can plan affected systems, schedule work, use runbooks, execute approved actions, verify results, and recover within SysGrid."
+          "status": "in_progress",
+          "reviewed_commits": ["bc40bdc9"],
+          "remaining": "Simulation workspace implemented and locally verified: planning, asset/window context, preview, authorization, confirmation, execution, verification, rollback, reconciliation and recovery history. Six browser scenarios, 16 backend action tests and 786 frontend tests pass. Window authoring/nondestructive cancellation, assembled CI, live providers and company evidence remain."
         },
         {
           "id": "F4",
@@ -634,7 +696,7 @@
           "approval": "yes",
           "status": "unqualified",
           "reviewed_commits": [],
-          "remaining": "Productize Architecture v2, complete asset and project traceability, migrate valuable legacy information, and retire competing write authorities."
+          "remaining": "Productize Architecture v2 and asset/project traceability while preserving existing legacy information, features and write paths. Any retirement requires separate explicit approval."
         },
         {
           "id": "F5",
