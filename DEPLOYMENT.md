@@ -118,6 +118,15 @@ public build input; it must never contain the value of `AccessKey`, signing
 keys, or other secrets. Tenant roles and the separate Admin/System Root
 permissions still apply in both identity modes.
 
+The process-local request limiter applies one shared budget to each resolved
+identity across mutations and expensive export/report reads, including across
+tenants and HTTP methods. The default is 600 requests per 60 seconds, controlled
+by `RATE_LIMIT_REQUESTS` and `RATE_LIMIT_WINDOW_SECONDS`. Requests without a valid
+identity share their transport peer's budget; arbitrary browser identity,
+tenant, and forwarding headers do not select it. A rejected request returns 429
+and `Retry-After`. For multiple workers, enforce the aggregate policy at the
+trusted gateway as well; process restart resets the in-memory fallback.
+
 Production schema changes are operator-managed by default:
 
 ```dotenv

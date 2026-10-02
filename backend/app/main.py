@@ -214,7 +214,11 @@ async def bounded_mutation_rate_limit(request: Request, call_next):
     expensive_read = method == "GET" and any(token in request.url.path for token in ("/export", "/reports/"))
     if not settings.RATE_LIMIT_ENABLED or (method not in {"POST", "PUT", "PATCH", "DELETE"} and not expensive_read):
         return await call_next(request)
-    decision = app.state.rate_limiter.check(request_rate_limit_key(request))
+    try:
+        actor_id = get_current_user_id(request)
+    except HTTPException:
+        actor_id = None
+    decision = app.state.rate_limiter.check(request_rate_limit_key(request, actor_id))
     if not decision.allowed:
         request_id = getattr(request.state, "request_id", str(uuid4()))
         return JSONResponse(
