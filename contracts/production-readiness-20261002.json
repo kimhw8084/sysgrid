@@ -11,29 +11,49 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "e488ff50485d8d1b57fa6cb1b829312138f2b3bf",
+    "candidate": "ff9e065ee8be5e1116c961bee21daf32c14ba700",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37062504171",
-    "tested_merge": "e6722e7bb8b1cb49d2d45a95a1f261c1e04008bd",
-    "completed_at": "2026-10-02T21:14:37Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37067042539",
+    "tested_merge": "746009dd790bc7ff7ac1970419e61efb97bf10a6",
+    "completed_at": "2026-10-02T21:51:17Z",
     "conclusion": "success",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 724,
+      "backend": 763,
       "frontend": 839,
-      "normal_browser": 178,
+      "normal_browser": 182,
       "normal_browser_preexisting_skips": 2,
       "desktop_browser": 35,
       "root_preview_browser": 6
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "017774255bcbe127b6e4b3dce4933df897c00024 adds truthful Network no-op receipts, preserved custom-IP edits, atomic per-record batch/import history and shared-modal reduced motion. Latest local proof is 763 canonical backend tests across 53 files, 839 frontend tests across 158 files, and 52 cross-consumer production-browser journeys. Earlier targeted browser selector failures are retained with corrected endpoint-identity proof. Fresh assembled hosted CI is required for this later source.",
-    "job_duration_seconds": 1809,
-    "backend_duration_seconds": 144.42
+    "later_source": "ac01628f4acc226754e14a2458077a19a4aa3a2f adds Services omitted-field preservation, mounted-asset authorization, atomic OS-move synchronization, scoped imports/snapshots and trusted atomic per-record import history. CSV/XLSX identifiers survive. The selected import badge now meets light-theme contrast. Latest local proof: 922 backend tests across 56 files, 839 frontend tests across 158 files, 30 distinct cross-consumer browser journeys and preceding 34 relationship-regression journeys. Test-selector/endpoint corrections and the actual contrast failure remain preserved. Fresh assembled hosted CI is required.",
+    "job_duration_seconds": 1365,
+    "backend_duration_seconds": 109.98
   },
   "ci_history": [
+    {
+      "candidate": "e488ff50485d8d1b57fa6cb1b829312138f2b3bf",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37062504171",
+      "tested_merge": "e6722e7bb8b1cb49d2d45a95a1f261c1e04008bd",
+      "completed_at": "2026-10-02T21:14:37Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 724,
+        "frontend": 839,
+        "normal_browser": 178,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1809,
+      "backend_duration_seconds": 144.42
+    },
     {
       "candidate": "2073f7ae1a865797d49232c2ac2d23f457fbd83e",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -191,7 +211,7 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "017774255bcbe127b6e4b3dce4933df897c00024",
+    "source_head": "ac01628f4acc226754e14a2458077a19a4aa3a2f",
     "registered_api_operations": 310,
     "static_ui_declarations": 3132,
     "static_ui_routes": 19,
@@ -654,6 +674,26 @@
       "commit": "017774255bcbe127b6e4b3dce4933df897c00024",
       "scope": "Shared modal and dirty confirmation respect reduced motion with keyboard and draft safety",
       "archive_sha256": "17ad85e013a6c0903d99da28d2e271fd190275b6578ffaae0ead52f203a26722"
+    },
+    {
+      "commit": "ff9e065ee8be5e1116c961bee21daf32c14ba700",
+      "scope": "Checkpoint twelve: 70 prior reviewed batches and exact e488ff50 hosted success",
+      "archive_sha256": "2cdf6c751f90ad7844312e98de251e76a3f1c8944a290c481968825b01dc3510"
+    },
+    {
+      "commit": "e08fdad13d98111cd4231b7cccd2c717773013ab",
+      "scope": "Preserve omitted Service configuration, attributes and logic during partial edits",
+      "archive_sha256": "ff3c87b394d50df383819583130189df41aa7a30fd0b626399d84707ee09fedb"
+    },
+    {
+      "commit": "91f0b9168028f09edbe7184ee00af4b79d3f5bef",
+      "scope": "Authorize Service mount relationships and atomically synchronize both hosts after OS moves",
+      "archive_sha256": "10449d980f9ad47f1932a5a1109b1ae2f129e1883d77c2034d2897a8d5af4c03"
+    },
+    {
+      "commit": "ac01628f4acc226754e14a2458077a19a4aa3a2f",
+      "scope": "Scoped and atomic Service imports, preserved identifiers, record history and readable selected-row feedback",
+      "archive_sha256": "b5b5a9d8f0bd6afd4237502924097702067710cb84049fd1e63d669540e56be0"
     }
   ],
   "groups": [
@@ -759,8 +799,20 @@
           "outcome": "Consistent colors, contrast, typography, spacing, borders, icons, status badges, and hover, selected, and disabled states across populated screens.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709", "be33d285", "259ebc52", "290e1db7", "bb6bf5d5", "70ade100", "d838deac", "4629b134", "c1a9050f", "4b567bbf"],
-          "remaining": "Opaque shared overlays passed hosted CI at 7733c705. Import source/template cards and hint colors now use theme-owned surfaces and readable text; light baseline contrast 1.3449:1 improves to at least 4.9232:1 in final samples. Both-theme rendered screenshots are reviewed. Full product visual-state and viewport coverage remain."
+          "reviewed_commits": [
+            "944c8709",
+            "be33d285",
+            "259ebc52",
+            "290e1db7",
+            "bb6bf5d5",
+            "70ade100",
+            "d838deac",
+            "4629b134",
+            "c1a9050f",
+            "4b567bbf",
+            "ac01628f"
+          ],
+          "remaining": "Selected import VALID badges now meet measured contrast in both themes (5.964:1 light, 5.348:1 dark); final screenshots and surrounding overlay journeys pass. Earlier theme repairs remain. Full state/viewport/permission visual-system qualification remains."
         },
         {
           "id": "B6",
@@ -854,9 +906,12 @@
             "5d147d7b",
             "602cdf6a",
             "5bb99964",
-            "eedcd4de"
+            "eedcd4de",
+            "e08fdad1",
+            "91f0b916",
+            "ac01628f"
           ],
-          "remaining": "Typed/scoped Network interfaces and strict scalar/import contracts passed hosted CI at e488ff50. Nullable legacy custom-IP edits now distinguish absent references from real asset IDs and retain genuine port-collision checks. Full response/OpenAPI consistency, pagination and other domains remain; Services omitted-field and relationship contracts are next."
+          "remaining": "Services partial edits preserve omitted structured fields; ordinary and import device identities reject malformed references without coercion loss. Existing JSON import compatibility remains. Asset/Network contracts and prior repairs pass hosted CI at ff9e065e. Service scalar/date contracts, full response/OpenAPI consistency, pagination and other domains remain."
         },
         {
           "id": "C3",
@@ -864,8 +919,18 @@
           "outcome": "A complete permission matrix across reads, mutations, search, aggregates, exports, embedded projections, and direct URLs. Admin and System Root remain distinct.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["27873d89", "0b41d3c7", "7323ef6d", "679f366a", "9e04102f", "18f0527f", "602cdf6a"],
-          "remaining": "Direct Network connection/import ownership passed hosted CI at 2073f7ae. Raw interface list/update now scopes parent ownership and hides foreign/orphan rows; new parent assignments require active owned assets while owned archived history remains editable. Complete API/role/tenant matrix, export coverage outside this scope and authentic host trust remain."
+          "reviewed_commits": [
+            "27873d89",
+            "0b41d3c7",
+            "7323ef6d",
+            "679f366a",
+            "9e04102f",
+            "18f0527f",
+            "602cdf6a",
+            "91f0b916",
+            "ac01628f"
+          ],
+          "remaining": "Services full/summary reads, device filters, single/bulk/mount/secret metadata, import entry points and snapshots enforce mounted-asset authority. Floating services retain tenant-database scope; new assignments require active owned hosts. Complete role matrix, cross-writer races and other domain qualification remain."
         },
         {
           "id": "C4",
@@ -885,9 +950,11 @@
             "5bb99964",
             "d8523809",
             "3ea3b70a",
-            "0d29d2bd"
+            "0d29d2bd",
+            "91f0b916",
+            "ac01628f"
           ],
-          "remaining": "Network no-op edits/archive retries no longer mutate audit; bulk counts include actual unique changes only, after full authorization. Batch/import target audit is atomic; ten injected target-audit failures roll back all members and sanitize integrity conflicts. Latest canonical backend proof is 763 tests. Optimistic edits, cross-request uniqueness, unknown outcomes and other writer transactions remain."
+          "remaining": "Services OS moves flush pending assignment before querying old/new host projections; audit failure rolls all changes back. Imports commit records, OS state and both target/batch audit together, with runtime/integrity failure controls. Cross-request conflicts, retry/unknown-outcome semantics and remaining writers remain."
         },
         {
           "id": "C5",
@@ -909,8 +976,25 @@
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "4629b134", "9e04102f", "18f0527f", "602cdf6a", "ead9b508", "5bb99964"],
-          "remaining": "Direct/import endpoint ownership passed hosted CI. Raw interfaces protect parent and server metadata; Network CSV/XLSX preserves leading-zero ports/MAC text and literal NA/N/A while parsing VLAN zero/4094 and fractional speed. Invalid scalars/row shapes and aliases that mask malformed canonical values are rejected. Legacy data, numeric precision policy, MAC/IP canonicalization, header mapping and concurrent uniqueness remain."
+          "reviewed_commits": [
+            "12b1801b",
+            "c4bbbd49",
+            "259ebc52",
+            "7323ef6d",
+            "28e0579b",
+            "679f366a",
+            "5b6520d2",
+            "adce6f8e",
+            "4629b134",
+            "9e04102f",
+            "18f0527f",
+            "602cdf6a",
+            "ead9b508",
+            "5bb99964",
+            "91f0b916",
+            "ac01628f"
+          ],
+          "remaining": "Service relationships reject unavailable/foreign/invalid hosts across ordinary and import writers while retaining owned historical and floating records. OS movement clears the old host correctly; import initializes host OS state. Cross-request referential/lifecycle races and remaining relationships remain."
         },
         {
           "id": "C7",
@@ -918,8 +1002,23 @@
           "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "bf236cad", "5d147d7b", "5bb99964"],
-          "remaining": "Earlier bounded Asset/import admission passed hosted CI. Network rejects booleans as identities/numbers, non-text definitions and non-finite JSON/speeds before mutation. Row diagnostics omit raw Pydantic input and exception values. Nested complexity, column/cell/workbook budgets, distributed limits, unsafe URL/export handling across other domains and legacy engines remain."
+          "reviewed_commits": [
+            "ff16b087",
+            "a5d268f6",
+            "12b1801b",
+            "c4bbbd49",
+            "259ebc52",
+            "7323ef6d",
+            "28e0579b",
+            "679f366a",
+            "5b6520d2",
+            "adce6f8e",
+            "bf236cad",
+            "5d147d7b",
+            "5bb99964",
+            "ac01628f"
+          ],
+          "remaining": "Services import now rejects non-object rows, non-finite JSON and malformed original device identity; bounded shared file/request/row admission remains. CSV/XLSX preserve leading-zero and NA identifiers. Remaining scalar/date schemas and resource-bound qualification remain."
         },
         {
           "id": "C8",
@@ -989,9 +1088,13 @@
           "title": "Services",
           "outcome": "Consistent hosting and asset synchronization, lifecycle, configuration, secret references, relationships, and bulk and import behavior.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Consistent hosting and asset synchronization, lifecycle, configuration, secret references, relationships, and bulk and import behavior."
+          "status": "in_progress",
+          "reviewed_commits": [
+            "e08fdad1",
+            "91f0b916",
+            "ac01628f"
+          ],
+          "remaining": "Omitted structured fields survive partial edits. Reads/writes/secret metadata/import/snapshots respect mounted-asset ownership; new mounts require active hosts. OS movement and import synchronize host state atomically with audit. File identifiers and per-record import history pass both-theme UI navigation. Scalar/date/lifecycle contracts, ordinary no-op/creator audit, wider UX/role/performance and concurrency remain."
         },
         {
           "id": "D5",
@@ -1037,9 +1140,10 @@
             "c1a9050f",
             "602cdf6a",
             "d8523809",
-            "0d29d2bd"
+            "0d29d2bd",
+            "ac01628f"
           ],
-          "remaining": "Network imports and bulk mutations now record exact per-connection audit targets, trusted actor, bounded fields and batch count. Existing import summary is retained. Both-theme UI shows import/status history and reopens the exact connection; injected audit failures roll back. Historical aggregate-only records, remaining writers, retention, roles and export/pagination coverage remain."
+          "remaining": "Services imports now join Network in discoverable per-record CREATE history with trusted actors, bounded changed-field metadata and retained batch summary. Real UI reopens exact services; injected record, host and summary audit failures roll back. Historical aggregates, ordinary Service no-op/creator semantics, remaining writers, retention, roles and complete-scope export/pagination remain."
         },
         {
           "id": "D8",
@@ -1130,9 +1234,12 @@
             "3ea3b70a",
             "eedcd4de",
             "0d29d2bd",
-            "01777425"
+            "01777425",
+            "e08fdad1",
+            "91f0b916",
+            "ac01628f"
           ],
-          "remaining": "Hosted e488ff50 succeeds: 76 startup/recovery plus 23 subtests, 724 backend, 839 frontend, 178 normal browser plus two pre-existing skips, 35 desktop and six root-preview. Job 30m09s; backend 144.42s within unchanged 45-minute deadline. Four later reviewed slices pass 763 canonical backend, 839 frontend and 52 cross-consumer browser checks locally. Four new motion controls join the V1 gate. Fresh assembled hosted proof, supply-chain and final release checks remain."
+          "remaining": "Hosted ff9e065e succeeds: 76 startup/recovery plus 23 subtests, 763 backend, 839 frontend, 182 normal browser plus two pre-existing skips, 35 desktop and six root-preview. Job 22m45s; backend 109.98s within unchanged 45-minute deadline. Later Services work passes 922 canonical backend, 839 frontend and 30 distinct import/Audit/overlay/Services browser cases, plus preceding 34 relationship journeys. Fresh assembled hosted proof, supply chain and final release checks remain."
         },
         {
           "id": "E7",
