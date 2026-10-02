@@ -5,9 +5,9 @@ from typing import List
 from ..database import get_db
 from ..models import models
 from ..schemas import schemas
-from .utils import build_audit_log, filter_valid_columns
+from .utils import build_audit_log, get_audit_actor
 from .module_policy import require_module_access
-from .asset_links import require_relationship_asset
+from .asset_links import commit_asset_link_audit, require_relationship_asset
 
 router = APIRouter(
     prefix="/networks",
@@ -90,34 +90,45 @@ async def _get_connections_for_ids(request: Request, db: AsyncSession, ids: list
         raise HTTPException(404, 'Connection not found')
     return connections
 
+def _interface_query(request: Request):
+    owned_assets = select(models.Device.id).where(models.Device.tenant_id == request.state.tenant_id)
+    return select(models.NetworkInterface).where(models.NetworkInterface.device_id.in_(owned_assets))
+
+
 @router.get("/interfaces")
-async def get_interfaces(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.NetworkInterface))
+async def get_interfaces(request: Request, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(_interface_query(request))
     interfaces = result.scalars().all()
     return [{"id": i.id, "name": i.name, "mac_address": i.mac_address, "ip_address": i.ip_address, "link_speed_gbps": i.link_speed_gbps} for i in interfaces]
 
 @router.post("/interfaces")
-async def create_interface(data: dict, db: AsyncSession = Depends(get_db)):
-    clean_data = filter_valid_columns(models.NetworkInterface, data)
-    if 'id' in clean_data and not clean_data['id']:
-        del clean_data['id']
-    db_obj = models.NetworkInterface(**clean_data)
+async def create_interface(data: schemas.NetworkInterfaceCreate, request: Request, db: AsyncSession = Depends(get_db)):
+    payload = data.model_dump(exclude_unset=True)
+    await require_relationship_asset(request, db, data.device_id, active=True)
+    db_obj = models.NetworkInterface(**payload, created_by_user_id=get_audit_actor(request))
     db.add(db_obj)
-    await db.commit()
+    await commit_asset_link_audit(request, db, db_obj, 'CREATE', {'changed_fields': sorted(payload)})
     await db.refresh(db_obj)
     return {"status": "success", "id": db_obj.id}
 
 @router.put("/interfaces/{interface_id}")
-async def update_interface(interface_id: int, data: dict, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(models.NetworkInterface).filter(models.NetworkInterface.id == interface_id))
+async def update_interface(interface_id: int, data: schemas.NetworkInterfaceUpdate, request: Request, db: AsyncSession = Depends(get_db)):
+    if not 1 <= interface_id <= 2 ** 63 - 1:
+        raise HTTPException(404, 'Interface not found')
+    res = await db.execute(_interface_query(request).where(models.NetworkInterface.id == interface_id))
     item = res.scalar_one_or_none()
-    if not item: raise HTTPException(404)
-    
-    clean = filter_valid_columns(models.NetworkInterface, data)
-    for k, v in clean.items():
-        if k != "id": setattr(item, k, v)
-    
-    await db.commit()
+    if item is None:
+        raise HTTPException(404, 'Interface not found')
+
+    payload = data.model_dump(exclude_unset=True)
+    if 'device_id' in payload and payload['device_id'] != item.device_id:
+        await require_relationship_asset(request, db, payload['device_id'], active=True)
+    changed = {key: value for key, value in payload.items() if getattr(item, key) != value}
+    if not changed:
+        return item
+    for key, value in changed.items():
+        setattr(item, key, value)
+    await commit_asset_link_audit(request, db, item, 'UPDATE', {'changed_fields': sorted(changed)})
     await db.refresh(item)
     return item
 

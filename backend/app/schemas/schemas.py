@@ -696,6 +696,31 @@ class ExternalLinkResponse(ExternalLinkBase, BaseSchema):
     device_name: Optional[str] = None
     service_name: Optional[str] = None
 
+class NetworkInterfaceUpdate(BaseModel):
+    model_config = ConfigDict(extra='ignore', strict=True)
+
+    device_id: int | None = Field(default=None, ge=1, le=2 ** 63 - 1)
+    name: str | None = None
+    mac_address: str | None = None
+    ip_address: str | None = None
+    vlan_id: int | None = Field(default=None, ge=0, le=4094)
+    link_speed_gbps: int | None = Field(default=None, ge=0, le=2 ** 63 - 1)
+
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def require_parent_id(cls, value):
+        if value is None:
+            raise ValueError('Interface parent cannot be cleared')
+        # Preserve native-select IDs without coercing booleans or fractions.
+        if isinstance(value, str) and value.isascii() and value.isdigit() and len(value) <= 19:
+            return int(value)
+        return value
+
+
+class NetworkInterfaceCreate(NetworkInterfaceUpdate):
+    device_id: int = Field(ge=1, le=2 ** 63 - 1)
+
+
 NETWORK_CONNECTION_DIRECTIONS = ("Bidirectional", "Unidirectional", "Source to Target", "Target to Source")
 NETWORK_CONNECTION_UNITS = ("Gbps", "Mbps", "Kbps")
 NETWORK_CONNECTION_STATUSES = ("Active", "Maintenance", "Down", "Planned", "Requested", "Standby", "Offline", "Deleted")
