@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getCurrentTenantId } from './api/tenantContext'
+import { captureTenantPreference, getCurrentTenantId, initializeTenantContext } from './api/tenantContext'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
@@ -71,6 +71,7 @@ const Bootstrap = () => {
   const BOOTSTRAP_MAX_ATTEMPTS = 4
   const BOOTSTRAP_RETRY_DELAY_MS = 750
   const [ready, setReady] = useState(false);
+  const [initialTenantPreference] = useState(captureTenantPreference)
   const [error, setError] = useState<string | null>(null);
   const [failedUrl, setFailedUrl] = useState<string>("");
   const [appKey, setAppKey] = useState(0);
@@ -208,6 +209,14 @@ const Bootstrap = () => {
           }
         }
         if (lastError) throw lastError
+        if (!isMounted) return
+        // Resolve the first tab scope before profile, page queries or WebSocket
+        // subscriptions can assume a tenant. This read does not mutate selection.
+        const tenantResponse = await apiFetch('/api/v1/tenants/me')
+        const tenants = await tenantResponse.json()
+        if (!Array.isArray(tenants)) throw new Error('Available tenants could not be loaded')
+        if (!isMounted) return
+        initializeTenantContext(tenants, initialTenantPreference)
         if (isMounted) {
           console.log("BOOTSTRAP: System ready, launching application layer");
           setReady(true);

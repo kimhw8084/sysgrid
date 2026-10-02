@@ -1,9 +1,36 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { createAsset, testTenantId } from './helpers/sysgrid'
+import { createAsset, testApiHeaders, testTenantId } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
+test.beforeEach(async ({ context }) => {
+  // The generic fixture pins tenant 1 at the browser transport layer. Tenant
+  // tests must observe the application's actual scope headers instead.
+  await context.setExtraHTTPHeaders({ 'X-User-Id': testApiHeaders['X-User-Id'] })
+})
+
+test('a fresh tab resolves a non-default tenant before workspace requests', async ({ page, sysApi }) => {
+  const name = `Fresh workspace ${Date.now()}`
+  const created = await sysApi.post(`${apiBase}/tenants/admin/create`, { data: { name } })
+  expect(created.status()).toBe(200)
+  const tenant = await created.json()
+  expect(tenant.id).not.toBe(1)
+  const tenantRequests: string[] = []
+  page.on('request', request => {
+    if (/\/api\/v1\/(devices|policy\/module-availability)(\?|$)/.test(request.url())) {
+      tenantRequests.push(request.headers()['x-tenant-id'])
+    }
+  })
+  await page.goto('/asset')
+  await expect(page.getByRole('button', { name: 'Switch tenant', exact: true })).toContainText(name)
+  expect(await page.evaluate(() => sessionStorage.getItem('SYSGRID_TAB_TENANT_ID'))).toBe(String(tenant.id))
+  await expect.poll(() => tenantRequests.length).toBeGreaterThan(0)
+  expect(tenantRequests.every(id => id === String(tenant.id))).toBe(true)
+  const selection = await sysApi.get(`${apiBase}/tenants/me`)
+  expect((await selection.json()).find((row: any) => row.is_selected)?.id).toBe(tenant.id)
+})
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   test(`tenant selection preserves another tab's draft and write scope in ${theme}`, async ({ page, context, sysApi }, testInfo) => {

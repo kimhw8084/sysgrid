@@ -4,6 +4,21 @@ const DEFAULT_KEY = 'SYSGRID_TENANT_ID'
 let pendingWrites = 0
 let switching = false
 
+export function captureTenantPreference() {
+  return { tab: sessionStorage.getItem(TAB_KEY), fallback: localStorage.getItem(DEFAULT_KEY) }
+}
+
+export function initializeTenantContext(
+  tenants: Array<{ id: number; is_selected?: boolean; is_online?: boolean }>,
+  preference: ReturnType<typeof captureTenantPreference>,
+): void {
+  // An established tab never changes scope implicitly, including after access
+  // revocation. Only a fresh tab resolves a default from authorized memberships.
+  const preferred = preference.tab || tenants.find(tenant => String(tenant.id) === preference.fallback)?.id
+  const selected = preferred || tenants.find(tenant => tenant.is_selected)?.id || tenants[0]?.id
+  if (selected) sessionStorage.setItem(TAB_KEY, String(selected))
+}
+
 export function getCurrentTenantId(): string {
   let tenant = sessionStorage.getItem(TAB_KEY)
   if (!tenant) {
