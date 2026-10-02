@@ -11,16 +11,16 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "71b214828a13098df69b23bdd4f201e191189dbd",
+    "candidate": "1362951eaa0ecb5100e845741845257afeed8b2a",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37031440284",
-    "tested_merge": "31c85a5c6ba43f4c3c5bd3af6386b274b351cb49",
-    "completed_at": "2026-10-02T16:40:49Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37040933835",
+    "tested_merge": "07b9a86210bc4d8b2819c758de19033d8fdc31f8",
+    "completed_at": "2026-10-02T18:12:25Z",
     "conclusion": "success",
-    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 435, "frontend": 820, "normal_browser": 148, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
+    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 464, "frontend": 822, "normal_browser": 158, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "82c2586e5021bbf91ef36aec346386e2532c95cd includes asset import integrity, shared import request lifetime/mobile header repairs, nullable-asset Rack search safety and Network search hydration. Their reviewed local proof includes 822 frontend tests and 47 passing cross-consumer browser cases; fresh assembled CI is still required."
+    "later_source": "5d147d7be16ab59a21258d2cd902bfb7cacb2da8 adds ordinary asset atomic audit, lossless quoted multiline paste/editing, truthful paste-error feedback and bounded import admission. Local proof includes 152 audit-related and 90 import/resource-related backend passes, 830 frontend tests, and source-scoped production-browser passes. Overlapping runs are not summed; fresh assembled CI is still required."
   },
   "ci_history": [
     {
@@ -97,12 +97,21 @@
       "completed_at": "2026-10-02T15:38:02Z",
       "conclusion": "success",
       "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 412, "frontend": 791, "normal_browser": 136, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+    },
+    {
+      "candidate": "71b214828a13098df69b23bdd4f201e191189dbd",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37031440284",
+      "tested_merge": "31c85a5c6ba43f4c3c5bd3af6386b274b351cb49",
+      "completed_at": "2026-10-02T16:40:49Z",
+      "conclusion": "success",
+      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 435, "frontend": 820, "normal_browser": 148, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
     }
   ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "82c2586e5021bbf91ef36aec346386e2532c95cd",
+    "source_head": "5d147d7be16ab59a21258d2cd902bfb7cacb2da8",
     "registered_api_operations": 310,
     "static_ui_declarations": 3132,
     "static_ui_routes": 19,
@@ -445,6 +454,26 @@
       "commit": "82c2586e5021bbf91ef36aec346386e2532c95cd",
       "scope": "Network search intent survives delayed preferences; all 47 cross-consumer browser checks pass",
       "archive_sha256": "afd237481bb841bd17187b2de30ce6fd5de347dc66f9ed69a80f5e3000e52668"
+    },
+    {
+      "commit": "1362951eaa0ecb5100e845741845257afeed8b2a",
+      "scope": "Seventh reviewed evidence checkpoint and source inventories",
+      "archive_sha256": "44398dae93eeef54628ab74205c26bef4166aeb9fd59909fdc5bd1d8b8c6b514"
+    },
+    {
+      "commit": "bf236cad12420910733ba5872ffb818c977f146a",
+      "scope": "Ordinary asset definition and OS synchronization atomic audit",
+      "archive_sha256": "e159450f1b4675b71be371dfaa5884db998da5975f948db85f07f028d4b01d86"
+    },
+    {
+      "commit": "4629b1343d9342e31fba6806dde5ab68b49c2a8d",
+      "scope": "Quoted multiline paste integrity, editable cells and truthful errors",
+      "archive_sha256": "ecff96f26d3dadb360b4e788710181c345e22aec44723b96729c1c52098fcba0"
+    },
+    {
+      "commit": "5d147d7be16ab59a21258d2cd902bfb7cacb2da8",
+      "scope": "Import request/file/expansion/batch limits and safe parser scheduling",
+      "archive_sha256": "da63da1c270394cad9420dfa742292d457198b88ce108ac4a30e658fd3fbf959"
     }
   ],
   "groups": [
@@ -514,9 +543,9 @@
           "status": "in_progress",
           "reviewed_commits": [
             "944c8709",
-            "8b2ec178", "ba72aa15", "9edd3e47", "70ade100", "d838deac"
+            "8b2ec178", "ba72aa15", "9edd3e47", "70ade100", "d838deac", "4629b134"
           ],
-          "remaining": "Asset inline and ordinary draft protection passed assembled CI at 71b21482. d838deac locally proves pending import closure protection, failed-draft retry and isolation from old dialog receipts. Other forms, cross-route/browser-tab/restart persistence and optimistic conflicts remain."
+          "remaining": "Asset inline and ordinary draft protection passed assembled CI at 71b21482. Later import proof covers pending closure, retry, old receipts and malformed-paste draft preservation. Other forms, cross-route/browser-tab/restart persistence and optimistic conflicts remain."
         },
         {
           "id": "B3",
@@ -524,8 +553,8 @@
           "outcome": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["259ebc52", "ba72aa15", "9edd3e47", "70ade100", "d838deac"],
-          "remaining": "Ordinary Assets validation/save behavior passed assembled CI. Shared import controls now lock during validation/execution, show distinct status, retain failures for real retry and close on success, with final local browser proof. Other forms, bulk-table feedback, uncertain outcomes and concurrency remain."
+          "reviewed_commits": ["259ebc52", "ba72aa15", "9edd3e47", "70ade100", "d838deac", "4629b134", "5d147d7b"],
+          "remaining": "Ordinary Assets validation/save behavior passed assembled CI. Import local proof covers pending locks, malformed/oversize feedback, preserved drafts, correction/retry and successful closure. Multiline values remain editable through preview and persistence. Other forms, bulk-table feedback, uncertain outcomes and concurrency remain."
         },
         {
           "id": "B4",
@@ -545,9 +574,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7", "bb6bf5d5", "70ade100", "d838deac"
+            "944c8709", "be33d285", "259ebc52", "290e1db7", "bb6bf5d5", "70ade100", "d838deac", "4629b134"
           ],
-          "remaining": "Relationship and ordinary Asset form contrast passed assembled CI. d838deac adds inspected import pending/header captures in both themes; request-status contrast is 8.788/7.578. Captures remain source-scoped; whole-surface visual states remain unqualified."
+          "remaining": "Relationship and ordinary Asset form contrast passed assembled CI. Import pending status measures 8.788/7.578 and editable multiline values 13.977/17.853 in dark/light. Paste errors now use Action needed/error tone after visual inspection exposed a green success notice. Captures remain source-scoped; whole-surface visual states remain unqualified."
         },
         {
           "id": "B6",
@@ -587,8 +616,8 @@
           "outcome": "Loading, empty, stale, partial, unavailable, denied, conflict, and failure states have distinct explanations and useful recovery actions.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ba72aa15", "9edd3e47", "70ade100", "d838deac", "82c2586e"],
-          "remaining": "Asset form states passed assembled CI. Shared imports locally prove pending/failure/retry and stale-receipt protection; Network search survives delayed preferences. Other loading/empty/stale/partial/denied/conflict states across the product remain unqualified."
+          "reviewed_commits": ["ba72aa15", "9edd3e47", "70ade100", "d838deac", "82c2586e", "4629b134", "5d147d7b"],
+          "remaining": "Asset form states passed assembled CI. Imports locally prove pending/failure/retry, old-receipt protection, truthful paste errors and rejected-batch correction; Network search survives delayed preferences. Other loading/empty/stale/partial/denied/conflict states across the product remain unqualified."
         },
         {
           "id": "B10",
@@ -624,8 +653,8 @@
           "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d", "28e0579b", "5b6520d2", "adce6f8e"],
-          "remaining": "Ordinary/bulk scalar and date validation passed assembled CI. Asset imports now reuse those rules with explicit file numeric/boolean/date conversion and preserved identifiers, with 29 local import tests. Other profiles, nested JSON, full OpenAPI schemas and pagination remain."
+          "reviewed_commits": ["12b1801b", "259ebc52", "7323ef6d", "28e0579b", "5b6520d2", "adce6f8e", "bf236cad", "5d147d7b"],
+          "remaining": "Ordinary/bulk scalar and date validation passed assembled CI. Later asset writes add atomic audit and sanitized integrity conflicts; imports share strict conversion and expose/enforce byte/batch policy. Other profiles, nested JSON, full OpenAPI schemas and pagination remain."
         },
         {
           "id": "C3",
@@ -645,8 +674,8 @@
           "outcome": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d", "adce6f8e"],
-          "remaining": "Earlier transaction repairs passed assembled CI. Asset import validation, OS synchronization and one bounded audit now share a commit; injected audit failure rolls the whole batch back. Optimistic edits, concurrent uniqueness, uncertain outcomes, other domains and concurrent hardware deletion remain."
+          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52", "7323ef6d", "adce6f8e", "bf236cad"],
+          "remaining": "Earlier transaction repairs passed assembled CI. Imports and ordinary asset writes now commit asset, OS service and audit atomically. Six ordinary create/edit failure injections prove rollback; normalized no-ops avoid mutation logs while actual service-only repairs are audited. Optimistic edits, concurrent uniqueness, uncertain outcomes, other domains and concurrent hardware deletion remain."
         },
         {
           "id": "C5",
@@ -663,8 +692,8 @@
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e"],
-          "remaining": "Ordinary/bulk asset scalar integrity passed assembled CI. Imports now assign tenant/actor/active state on the server, reject active-name conflicts, preserve file values and prevent partial batches. Snapshot isolation is verified even with foreign rows in one physical database. Cross-request uniqueness and other legacy data remain."
+          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "4629b134"],
+          "remaining": "Ordinary/bulk asset scalar integrity passed assembled CI. Imports locally preserve trusted identity, whole-batch validation, file identifiers and quoted multiline edited values through persistence. Snapshot isolation holds even with foreign rows in one physical database. Cross-request uniqueness, header mapping and other legacy data remain."
         },
         {
           "id": "C7",
@@ -672,8 +701,8 @@
           "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e"],
-          "remaining": "Trusted-actor throttling, redaction and strict asset scalars passed assembled CI. Imports locally reject malformed rows/non-finite JSON and exclude server fields. Test limiter isolation retains real per-test enforcement. Upload/request size caps, nested JSON, URLs, rich content, export injection and distributed limits remain."
+          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52", "7323ef6d", "28e0579b", "679f366a", "5b6520d2", "adce6f8e", "bf236cad", "5d147d7b"],
+          "remaining": "Trusted-actor throttling/redaction and strict asset scalars passed assembled CI. Later local proof bounds import requests to 12 MiB, files to 10 MiB, archive-declared expansion to 64 MiB/4096 entries and batches to the canonical 250 records; counts actual streamed bytes. Audit free-form values and parser exception values stay out of new public records. Nested JSON, cell/column/workbook complexity, aggregate concurrency, URLs/rich content/export injection, all legacy Excel engines and distributed limits remain."
         },
         {
           "id": "C8",
@@ -726,8 +755,8 @@
           "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7", "28e0579b", "679f366a", "ba72aa15", "9edd3e47", "5b6520d2", "70ade100", "adce6f8e", "d838deac"],
-          "remaining": "Earlier asset draft/scalar/form repairs passed assembled CI at 71b21482. Import integrity and request lifecycle now have reviewed local API/browser proof. Ordinary definition audit completeness, upload resources, CSV multiline parsing, bulk-table feedback, optimistic conflicts, roles and large datasets remain."
+          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52", "7323ef6d", "290e1db7", "28e0579b", "679f366a", "ba72aa15", "9edd3e47", "5b6520d2", "70ade100", "adce6f8e", "d838deac", "bf236cad", "4629b134", "5d147d7b"],
+          "remaining": "Earlier draft/scalar/form repairs passed assembled CI. Later reviewed stages cover ordinary create/edit audit, service synchronization rollback, quoted multiline paste/edit/readback, truthful errors and bounded import admission. Header mapping, deeper resource complexity, bulk-table feedback, optimistic conflicts, roles and large datasets remain."
         },
         {
           "id": "D3",
@@ -770,9 +799,9 @@
           "title": "Audit Logs",
           "outcome": "Correct actor and target history, date and filter semantics, stable pagination, complete-scope exports, useful record links, and protected retention.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Correct actor and target history, date and filter semantics, stable pagination, complete-scope exports, useful record links, and protected retention."
+          "status": "in_progress",
+          "reviewed_commits": ["bf236cad"],
+          "remaining": "Ordinary asset writes now produce canonical actor/target audit records atomically, with bounded changed-field metadata and no duplicate no-op record. Both-theme browser proof covers scoped create/edit history, payload inspection and exact asset return links; existing bounded-query/date tests pass. Full writer coverage, visual/mobile states, complete-scope exports and retention remain."
         },
         {
           "id": "D8",
@@ -805,8 +834,8 @@
           "outcome": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["0390df80", "679f366a"],
-          "remaining": "Rack SELECTs reduced from 241 to 2 for 40 racks/120 placements. Interface reads now use three SELECTs at 1, 40 and 600 ports, down from 602 at 600 ports. Payload pagination, broader scale, indexes, contention and process topology remain unqualified."
+          "reviewed_commits": ["0390df80", "679f366a", "5d147d7b"],
+          "remaining": "Rack SELECTs reduced from 241 to 2 for 40 racks/120 placements; interface reads use three SELECTs at 1/40/600 ports. Import file parsing now runs off the request event loop with bounded row admission. Aggregate concurrency/memory/CPU, pagination, broader scale, indexes, contention and process topology remain unqualified."
         },
         {
           "id": "E3",
@@ -845,9 +874,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "38c82a58", "0c9cabcf", "597c2dd9", "2a56682a", "adce6f8e"
+            "38c82a58", "0c9cabcf", "597c2dd9", "2a56682a", "adce6f8e", "bf236cad", "5d147d7b"
           ],
-          "remaining": "71b21482 passed 76 startup/recovery checks plus 23 subtests, 435 backend, 820 frontend, 148 normal browser checks with two existing skips, 35 desktop and six root journeys. Later import/Rack/Network repairs have 822 frontend and 47 local browser passes but need fresh assembled CI; supply-chain and final release checks remain."
+          "remaining": "1362951e passed 76 startup/recovery checks plus 23 subtests, 464 backend, 822 frontend, 158 normal browser checks with two existing skips, 35 desktop and six root journeys. New ordinary audit/paste/resource stages require fresh assembled CI. This job took 43m58s within its unchanged 45-minute deadline; backend alone took 1285.98s. Pipeline runtime margin, supply-chain and final release checks remain."
         },
         {
           "id": "E7",
