@@ -4,6 +4,7 @@ import baseConfig from './playwright.config'
 export default defineConfig({
   ...baseConfig,
   testMatch: [
+    /(^|[\\/])grid-contrast\.spec\.ts$/,
     /(^|[\\/])maintenance-workspace\.spec\.ts$/,
     /(^|[\\/])maintenance-windows\.spec\.ts$/,
     /(^|[\\/])asset-credentials\.spec\.ts$/,
