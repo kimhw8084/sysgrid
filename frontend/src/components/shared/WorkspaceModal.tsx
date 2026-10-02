@@ -1,6 +1,6 @@
 import React from 'react'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { X, Maximize2, Minimize2 } from 'lucide-react'
 import {
   WorkspaceModalHeader,
@@ -186,6 +186,7 @@ export function WorkspaceModal({
   dirtyConfirmMessage = 'You have unsaved changes. Close this window and discard them?',
   dirtyConfirmText = 'Discard Changes',
 }: WorkspaceModalProps) {
+  const reducedMotion = useReducedMotion()
   const {
     requestDiscard,
     isConfirmOpen,
@@ -305,10 +306,10 @@ export function WorkspaceModal({
         }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
+          exit={reducedMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: reducedMotion ? 0 : 0.2, ease: 'easeOut' }}
           className={`${getWorkspaceModalShellClass(isMaximized ? 'fullscreen' : size)} glass-panel flex min-w-0 flex-col overflow-hidden ${(isMaximized || size === 'fullscreen') ? '' : `${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-[var(--border-default)] shadow-[0_24px_80px_rgba(0,0,0,0.35)]`} ${className}`}
           style={{ backgroundColor: 'var(--surface-base)' }}
         >
@@ -370,9 +371,10 @@ export function WorkspaceModal({
         <AnimatePresence>
           {isConfirmOpen ? (
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={reducedMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: reducedMotion ? 1 : 0 }}
+              transition={reducedMotion ? { duration: 0 } : undefined}
               className={`absolute inset-0 ${WORKSPACE_MODAL_CONFIRM_LAYER_CLASS} flex items-center justify-center bg-[var(--overlay-scrim)] p-4 backdrop-blur-sm`}
             >
               <motion.div
@@ -382,9 +384,10 @@ export function WorkspaceModal({
                 aria-labelledby={confirmTitleId}
                 aria-describedby={confirmMessageId}
                 tabIndex={-1}
-                initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: 12 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                exit={reducedMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
+                transition={reducedMotion ? { duration: 0 } : undefined}
                 className="w-full max-w-lg rounded-xl border border-[var(--border-default)] bg-[var(--surface-base)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
               >
                 <div className="space-y-3">
