@@ -15,7 +15,7 @@ describe('StyledSelect', () => {
       />
     )
 
-    const select = screen.getByRole('combobox')
+    const select = screen.getByRole('combobox', { name: 'Status' })
     const error = screen.getByText('Status is required')
 
     expect(select).toHaveAttribute('aria-invalid', 'true')
@@ -33,7 +33,7 @@ describe('StyledSelect', () => {
       />
     )
 
-    const select = screen.getByRole('combobox')
+    const select = screen.getByRole('combobox', { name: 'Environment' })
     const hint = screen.getByText('Choose the deployment target.')
 
     expect(select).toHaveAttribute('aria-invalid', 'false')

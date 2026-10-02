@@ -949,16 +949,16 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange }:
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/5 p-6 rounded-lg border border-white/5 space-y-6">
-         <div className="grid grid-cols-11 gap-4 items-end">
-            <div className="col-span-3">
+      <div role="group" aria-label="Add asset relationship" className="bg-white/5 p-4 sm:p-6 rounded-lg border border-white/5 space-y-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-end">
+            <div className="min-w-0">
                <label className="text-[9px] font-bold text-slate-500 uppercase block mb-2 px-1">Local Asset (A)</label>
                <div className="w-full bg-blue-600/10 border border-blue-500/20 rounded-lg px-4 py-2.5 text-xs text-blue-400 font-bold uppercase truncate">
                   {currentDevice?.name || 'Local'}
                </div>
             </div>
 
-            <div className="col-span-2">
+            <div className="min-w-0">
                <StyledSelect
                   label="Role (A)"
                   value={newRel.source_role}
@@ -967,17 +967,7 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange }:
                />
             </div>
 
-            <div className="col-span-1 flex justify-center pb-2">
-               <button 
-                 onClick={swapRoles}
-                 className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-400 hover:text-white transition-all group"
-                 title="Swap Roles"
-               >
-                  <ArrowRightLeft size={16} className="group-active:rotate-180 transition-transform duration-300" />
-               </button>
-            </div>
-
-            <div className="col-span-2">
+            <div className="min-w-0">
                <StyledSelect
                   label="Role (B)"
                   value={newRel.target_role}
@@ -986,7 +976,7 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange }:
                />
             </div>
 
-            <div className="col-span-3">
+            <div className="min-w-0">
                <StyledSelect
                   value={newRel.target_device_id}
                   onChange={e => setNewRel({...newRel, target_device_id: e.target.value})}
@@ -997,18 +987,23 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange }:
             </div>
          </div>
 
-         <div className="flex items-center justify-between pt-2 border-t border-white/5">
-            <div className="flex items-center space-x-2">
+         <div className="flex flex-col gap-3 pt-3 border-t border-white/5">
+            <div className="flex flex-wrap items-center gap-2">
                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Vector Classification:</span>
-               <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">{newRel.relationship_type}</span>
+               <span className="text-[9px] font-bold text-[var(--action-ink)] uppercase tracking-widest bg-[var(--action-primary-muted)] px-2 py-0.5 rounded-lg border border-[var(--border-default)]">{newRel.relationship_type}</span>
             </div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+            <button onClick={swapRoles} title="Swap Roles" className="min-h-11 px-3 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-slate-400 hover:text-white transition-all">
+               <ArrowRightLeft size={16} aria-hidden="true" /> Swap roles
+            </button>
             <button 
               disabled={mutation.isPending}
               onClick={() => { if(!newRel.target_device_id) return toast.error("Select peer asset"); mutation.mutate(newRel) }} 
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex items-center space-x-2"
+              className="min-h-11 px-4 py-2 bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center space-x-2 disabled:opacity-50 disabled:cursor-wait"
             >
                <Plus size={14} /> <span>{mutation.isPending ? 'Establishing...' : 'Establish Vector'}</span>
             </button>
+            </div>
          </div>
       </div>
       <RelationsTable deviceId={deviceId} />
@@ -1041,8 +1036,8 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
   })
 
   return (
-    <div className="p-0">
-      <table className="w-full text-[10px]">
+    <div role="region" aria-label="Asset relationships" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
+      <table className="w-full min-w-[36rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Local Identity</th>
@@ -1063,7 +1058,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
               <tr key={r.id} className="hover:bg-white/5 transition-colors">
                 <td className="px-4 py-3">
                    {editingId === r.id ? (
-                     <select value={isSource ? editData.source_role : editData.target_role} onChange={e => isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                     <select aria-label="Local role" value={isSource ? editData.source_role : editData.target_role} onChange={e => isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                        <option>Consumer</option>
                        <option>Provider</option>
                        <option>Hypervisor</option>
@@ -1086,7 +1081,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 </td>
                 <td className="px-4 py-3 text-center">
                   {editingId === r.id ? (
-                    <select value={editData.relationship_type} onChange={e => setEditData({...editData, relationship_type: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                    <select aria-label="Relationship type" value={editData.relationship_type} onChange={e => setEditData({...editData, relationship_type: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                       <option>Depends On</option>
                       <option>Hosts</option>
                       <option>Backs Up</option>
@@ -1106,7 +1101,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 </td>
                 <td className="px-4 py-3">
                     {editingId === r.id ? (
-                      <select value={!isSource ? editData.source_role : editData.target_role} onChange={e => !isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                      <select aria-label="Peer role" value={!isSource ? editData.source_role : editData.target_role} onChange={e => !isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                         <option>Consumer</option>
                         <option>Provider</option>
                         <option>Hypervisor</option>
@@ -1130,13 +1125,13 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 <td className="px-4 py-3 text-center">
                   {editingId === r.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                      <button onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all"><Check size={14}/></button>
-                      <button onClick={() => setEditingId(null)} className="p-1.5 hover:bg-slate-500/20 text-slate-500 rounded-lg transition-all"><X size={14}/></button>
+                      <button aria-label="Save relationship" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all disabled:opacity-50"><Check size={14}/></button>
+                      <button aria-label="Cancel relationship edit" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-slate-500/20 text-slate-500 rounded-lg transition-all disabled:opacity-50"><X size={14}/></button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center space-x-1">
-                      <button onClick={() => { setEditingId(r.id); setEditData({...r}) }} className="p-1.5 hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                      <button onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Relationship', message: 'Remove this relationship?', onConfirm: () => delMutation.mutate(r.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                      <button aria-label="Edit relationship" onClick={() => { setEditingId(r.id); setEditData({...r}) }} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
+                      <button aria-label="Remove relationship" disabled={delMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Relationship', message: 'Remove this relationship?', onConfirm: () => delMutation.mutate(r.id) })} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                   )}
                 </td>
