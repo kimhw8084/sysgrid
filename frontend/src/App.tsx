@@ -18,6 +18,7 @@ const AuditLogs = lazy(() => import('./components/AuditLogs'))
 const ServicesReal = lazy(() => import('./components/ServicesReal'))
 const SettingsPage = lazy(() => import('./components/Settings'))
 const MonitoringGrid = lazy(() => import('./components/MonitoringGrid'))
+const Maintenance = lazy(() => import('./components/Maintenance'))
 const Research = lazy(() => import('./components/Research'))
 const NetworkReal = lazy(() => import('./components/NetworkReal'))
 const VendorsReal = lazy(() => import('./components/VendorsReal'))
@@ -45,6 +46,11 @@ function ArchitectureRoute() {
   const location = useLocation()
   const legacy = new URLSearchParams(location.search).get('legacy') === 'true'
   return legacy ? <DataFlowDesigner /> : <ArchitectureWorkspace />
+}
+
+function MonitoringRoute() {
+  const location = useLocation()
+  return new URLSearchParams(location.search).get('workspace') === 'maintenance' ? <Maintenance /> : <MonitoringGrid />
 }
 
 import { QueryCache, MutationCache } from "@tanstack/react-query"
@@ -486,7 +492,7 @@ function MainLayout() {
               <Route path="/architecture" element={<ModulePolicyGate moduleId="architecture"><ArchitectureRoute /></ModulePolicyGate>} />
               <Route path="/research" element={<ModulePolicyGate moduleId="research"><Research /></ModulePolicyGate>} />
               <Route path="/far" element={<ModulePolicyGate moduleId="far"><FAR /></ModulePolicyGate>} />
-              <Route path="/monitoring" element={<ModulePolicyGate moduleId="monitoring"><MonitoringGrid /></ModulePolicyGate>} />
+              <Route path="/monitoring" element={<ModulePolicyGate moduleId="monitoring"><MonitoringRoute /></ModulePolicyGate>} />
               <Route path="/vendors" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
               <Route path="/vendors-real" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
               <Route path="/knowledge" element={<ModulePolicyGate moduleId="knowledge"><Knowledge /></ModulePolicyGate>} />

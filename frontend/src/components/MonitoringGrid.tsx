@@ -1821,6 +1821,7 @@ export default function MonitoringGrid() {
         subtitle: "Centralized monitoring configuration and operational status",
         actions: (
           <>
+            <ToolbarButton onClick={() => navigate('/monitoring?workspace=maintenance')}><Terminal size={14} aria-hidden="true" />Maintenance</ToolbarButton>
             <HeaderScopeSwitch
               label="Registry Scope"
               summary={`${lifecycleCounts.existing} existing · ${lifecycleCounts.archived} archived`}

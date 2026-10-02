@@ -576,6 +576,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                           </div>
                         ))}
                         {!maintenanceCount && !(recentAuditLogs?.length > 0) && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No recent care events</p>}
+                        <ModulePolicyButton moduleId="monitoring" onClick={() => navigate(`/monitoring?workspace=maintenance&device_id=${device.id}`)} className="min-h-10 text-xs font-semibold text-[var(--action-ink)] underline">Open maintenance history</ModulePolicyButton>
                     </div>
                     <button 
                       onClick={() => navigate(`/logs?target_table=devices&target_id=${device.id}`)}

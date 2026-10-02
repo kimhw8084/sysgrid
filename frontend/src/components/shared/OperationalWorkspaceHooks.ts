@@ -522,7 +522,6 @@ export function useOperationalDirtyGuard({
   const confirmDiscard = useCallback(() => {
     const action = pendingActionRef.current || onDiscard
     pendingActionRef.current = null
-    blockedLocationRef.current = null
     setIsConfirmOpen(false)
     action()
   }, [onDiscard])
@@ -532,7 +531,6 @@ export function useOperationalDirtyGuard({
       blocker.reset()
     }
     pendingActionRef.current = null
-    blockedLocationRef.current = null
     setIsConfirmOpen(false)
   }, [blocker])
 
@@ -543,7 +541,10 @@ export function useOperationalDirtyGuard({
     }
 
     const nextLocationKey = `${blocker.location.pathname}${blocker.location.search}${blocker.location.hash}`
-    if (blockedLocationRef.current === nextLocationKey && isConfirmOpen) return
+    // Router reset/proceed settles in a separate render. Keep the handled
+    // location until the blocker is unblocked, otherwise dismissing the dialog
+    // can immediately reopen it against the previous blocked navigation.
+    if (blockedLocationRef.current === nextLocationKey) return
 
     blockedLocationRef.current = nextLocationKey
     pendingActionRef.current = () => blocker.proceed()
