@@ -14,7 +14,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
     const name = `Service import ${theme} ${Date.now()}`
     const host = await createAsset(request, { name: `Host ${name}`, system: 'Service import proof' })
-    const csv = `name,service_type,status,version,device_id,license_key,purpose\n${name},OS,Existing,000007,${host.id},0000123,NA\nUnavailable host,OS,Existing,1,900000000,,`
+    const csv = `name,service_type,status,version,device_id,license_key,purpose,installation_date,purchase_date,expiry_date\n${name},OS,Existing,000007,${host.id},0000123,NA,2026-10-02,2026-09-30,2027-10-02\nUnavailable host,OS,Existing,1,900000000,,,,,`
     await page.goto('/services')
     await page.getByRole('button', { name: 'Import service rows', exact: true }).click()
     const dialog = page.getByRole('dialog', { name: 'Services Import', exact: true })
@@ -48,7 +48,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     const readback = await request.get(`${apiBase}/logical-services?device_id=${host.id}`)
     expect(readback.ok()).toBeTruthy()
     const imported = await readback.json()
-    expect(imported).toEqual([expect.objectContaining({ name, device_id: host.id, version: '000007', license_key: '0000123', purpose: 'NA' })])
+    expect(imported).toEqual([expect.objectContaining({ name, device_id: host.id, version: '000007', license_key: '0000123', purpose: 'NA',
+      installation_date: '2026-10-02T00:00:00', purchase_date: '2026-09-30T00:00:00', expiry_date: '2027-10-02T00:00:00' })])
     const assets = await request.get(`${apiBase}/devices`)
     expect(assets.ok()).toBeTruthy()
     expect((await assets.json()).find((asset: { id: number }) => asset.id === host.id))
@@ -62,6 +63,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     const detail = page.getByRole('dialog').filter({ has: page.getByRole('heading', { level: 2, name, exact: true }) })
     await expect(detail).toBeVisible()
     await expect(detail.locator('dt').filter({ hasText: /^Version$/ }).locator('..').locator('dd')).toHaveText('000007')
+    await expect(detail.locator('dt').filter({ hasText: /^Deployment Date$/ }).locator('..').locator('dd')).toHaveText('2026-10-02')
+    await expect(detail.locator('dt').filter({ hasText: /^Expiry Date$/ }).locator('..').locator('dd')).toHaveText('2027-10-02')
   })
 }
 

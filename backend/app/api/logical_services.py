@@ -4,10 +4,11 @@ from sqlalchemy import select, update, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
+from datetime import datetime
 from ..database import get_db
 from ..models import models
 from .authorization import require_capability
-from .utils import build_audit_log, filter_valid_columns, get_audit_actor, normalize_json_list, normalize_json_object, parse_iso_date
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor, normalize_json_list, normalize_json_object
 from .operational_bulk import (
     build_operational_bulk_summary,
     normalize_operational_bulk_ids,
@@ -24,6 +25,20 @@ router = APIRouter(
 )
 IMMUTABLE_SERVICE_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 SERVICE_BULK_UPDATE_FIELDS = {"status", "service_type", "environment", "version", "device_id"}
+SERVICE_DATE_FIELDS = ("installation_date", "purchase_date", "expiry_date")
+
+
+def normalize_service_date(value, field: str):
+    if value is None or value == '':
+        return None
+    if isinstance(value, str):
+        try:
+            # Like Asset dates, these are operator-entered calendar/wall dates.
+            # Preserve the entered day/time when normalizing an ISO offset.
+            return datetime.fromisoformat(value.replace('Z', '+00:00')).replace(tzinfo=None)
+        except ValueError:
+            pass
+    raise HTTPException(422, {'field_errors': {field: 'Must be a valid ISO date or datetime, or null'}})
 
 
 def _service_scope(request: Request):
@@ -142,9 +157,9 @@ def normalize_service_payload(data: dict) -> dict:
             clean_data[field] = normalize_json_object(clean_data[field])
     if "logic_json" in clean_data:
         clean_data["logic_json"] = normalize_json_list(clean_data["logic_json"])
-    for date_field in ["purchase_date", "expiry_date", "installation_date"]:
+    for date_field in SERVICE_DATE_FIELDS:
         if date_field in clean_data:
-            clean_data[date_field] = parse_iso_date(clean_data.get(date_field))
+            clean_data[date_field] = normalize_service_date(clean_data[date_field], date_field)
     return clean_data
 
 

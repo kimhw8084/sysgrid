@@ -34,7 +34,10 @@ from .module_policy import ensure_module_access
 from .asset_import import execute_asset_rows, preview_asset_rows
 from .devices import _DEVICE_WRITABLE_FIELDS
 from .networks import _connection_scope
-from .logical_services import _normalize_service_device_id, _service_scope, sync_device_os_state
+from .logical_services import (
+    SERVICE_DATE_FIELDS, _normalize_service_device_id, _service_scope,
+    normalize_service_date, sync_device_os_state,
+)
 from ..import_limits import (
     IMPORT_LIMITS, MAX_IMPORT_FILE_BYTES, MAX_IMPORT_WORKBOOK_BYTES,
     MAX_IMPORT_WORKBOOK_ENTRIES, require_import_row_limit,
@@ -299,9 +302,15 @@ async def preview_service_rows(request: Request, db: AsyncSession, rows: list[di
             # Validate the original reference: generic integer coercion truncates
             # fractions and accepts booleans before relationship authorization.
             result['normalized']['device_id'] = _normalize_service_device_id(normalize_scalar(raw_row.get('device_id')))
+            for field in SERVICE_DATE_FIELDS:
+                parsed = normalize_service_date(result['normalized'].get(field), field)
+                result['normalized'][field] = parsed.isoformat() if parsed is not None else None
             json.dumps(result['normalized'], allow_nan=False)
         except HTTPException as exc:
-            result['errors'].append(str(exc.detail))
+            if isinstance(exc.detail, dict) and 'field_errors' in exc.detail:
+                result['errors'].extend(f'{field}: {message}' for field, message in exc.detail['field_errors'].items())
+            else:
+                result['errors'].append(str(exc.detail))
         except (ValueError, TypeError):
             result['errors'].append('Service import values must be valid finite JSON')
 
@@ -334,7 +343,10 @@ async def execute_service_rows(request: Request, db: AsyncSession, rows: list[di
     try:
         imported = []
         for result in preview['results']:
-            service = models.LogicalService(**result['normalized'], created_by_user_id=get_audit_actor(request))
+            values = dict(result['normalized'])
+            for field in SERVICE_DATE_FIELDS:
+                values[field] = normalize_service_date(values.get(field), field)
+            service = models.LogicalService(**values, created_by_user_id=get_audit_actor(request))
             db.add(service)
             imported.append((service, result['normalized']))
         if count:
