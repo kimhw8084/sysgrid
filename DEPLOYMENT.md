@@ -127,6 +127,16 @@ tenant, and forwarding headers do not select it. A rejected request returns 429
 and `Retry-After`. For multiple workers, enforce the aggregate policy at the
 trusted gateway as well; process restart resets the in-memory fallback.
 
+Asset credential lists and mutation responses contain metadata only. Revealing
+an existing value requires an explicit request with tenant write access, asset
+write access, the `secrets` manage capability and a committed audit record; the response
+is not cacheable. The UI holds a revealed value only until it is hidden, loses
+focus, changes asset, or reaches 30 seconds. Metadata-only editing preserves
+the stored value. Existing credential records and legacy UI paths remain
+available to authorized operators. This boundary does not migrate legacy
+payload storage into an approved secret provider; provider custody and key
+rotation remain required before production credential acceptance.
+
 Production schema changes are operator-managed by default:
 
 ```dotenv

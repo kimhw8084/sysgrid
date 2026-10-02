@@ -4,8 +4,9 @@ from sqlalchemy import select, delete, update, or_
 from typing import List, Optional
 from ..database import get_db
 from ..models import models
-from .utils import build_audit_log, filter_valid_columns, normalize_json_object
 from .module_policy import require_module_access
+from .authorization import require_capability, resolve_current_operator
+from .secret_vault import can_manage_vault, commit_vault_audit, require_vault_device, serialize_secret_vault_entry
 
 router = APIRouter(
     prefix="/security",
@@ -15,49 +16,29 @@ router = APIRouter(
 
 # --- Secret Vault ---
 
-def serialize_secret_vault_entry(secret: models.SecretVault):
-    return {
-        "id": secret.id,
-        "device_id": secret.device_id,
-        "secret_type": secret.secret_type,
-        "username": secret.username,
-        "notes": secret.notes,
-        "has_payload": bool(secret.encrypted_payload),
-        "created_at": secret.created_at.isoformat() if secret.created_at else None,
-        "updated_at": secret.updated_at.isoformat() if secret.updated_at else None,
-    }
-
-
 @router.get("/vault")
-async def get_secrets(db: AsyncSession = Depends(get_db)):
+async def get_secrets(request: Request, db: AsyncSession = Depends(get_db)):
+    can_manage = can_manage_vault(request, await resolve_current_operator(request, db))
+    # get_db binds this query to the authorized tenant database. Preserve
+    # existing unassigned vault metadata as well as device-linked records.
     result = await db.execute(select(models.SecretVault))
-    return [serialize_secret_vault_entry(secret) for secret in result.scalars().all()]
+    return [serialize_secret_vault_entry(secret, can_manage=can_manage) for secret in result.scalars()]
 
 @router.post("/vault")
-async def add_secret(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
-    clean_data = filter_valid_columns(models.SecretVault, data)
+async def add_secret(data: dict, request: Request, db: AsyncSession = Depends(get_db), _secret_admin=Depends(require_capability('secrets', 3))):
+    if data.get('device_id') is not None:
+        await require_vault_device(request, db, data['device_id'])
+    clean_data = {key: data[key] for key in ('device_id', 'secret_type', 'username', 'encrypted_payload', 'notes') if key in data}
     encrypted_payload = clean_data.get("encrypted_payload")
     if encrypted_payload is None and "payload" in data:
         encrypted_payload = str(data.get("payload") or "")
     clean_data["encrypted_payload"] = encrypted_payload
     db_obj = models.SecretVault(**clean_data)
     db.add(db_obj)
-    db.add(build_audit_log(
-        request=request,
-        action="CREATE",
-        target_table="secret_vault",
-        target_id=None,
-        description=f"Created vault secret for device {db_obj.device_id}",
-        changes=normalize_json_object({
-            "device_id": db_obj.device_id,
-            "secret_type": db_obj.secret_type,
-            "username": db_obj.username,
-            "has_payload": bool(db_obj.encrypted_payload),
-        }),
-    ))
-    await db.commit()
+    await db.flush()
+    await commit_vault_audit(request, db, db_obj, 'CREATE')
     await db.refresh(db_obj)
-    return serialize_secret_vault_entry(db_obj)
+    return serialize_secret_vault_entry(db_obj, can_manage=True)
 
 # --- Firewall Rules ---
 

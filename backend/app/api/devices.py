@@ -14,6 +14,9 @@ from .operational_bulk import (
     require_executable_operational_bulk,
 )
 from .module_policy import require_module_access
+from .authorization import require_capability, resolve_current_operator
+from .secret_vault import can_manage_vault, commit_vault_audit, require_vault_device, scoped_vault_query, serialize_secret_vault_entry
+from fastapi.responses import JSONResponse
 
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
 
@@ -984,15 +987,35 @@ async def add_hardware(request: Request, device_id: int, data: dict, db: AsyncSe
 
 @router.get("/{device_id}/secrets")
 async def get_secrets(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(models.SecretVault).filter(models.SecretVault.device_id == device_id))
-    return res.scalars().all()
+    await require_vault_device(request, db, device_id)
+    can_manage = can_manage_vault(request, await resolve_current_operator(request, db))
+    res = await db.execute(scoped_vault_query(request).where(models.SecretVault.device_id == device_id))
+    return [serialize_secret_vault_entry(secret, can_manage=can_manage) for secret in res.scalars()]
 
 @router.post("/{device_id}/secrets")
-async def add_secret(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db)):
+async def add_secret(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db), _secret_admin=Depends(require_capability('secrets', 3))):
+    await require_vault_device(request, db, device_id)
     if not data or not data.get("secret_type"): raise HTTPException(400, "Secret type required")
-    clean = filter_valid_columns(models.SecretVault, data)
+    clean = {key: data[key] for key in ('secret_type', 'username', 'encrypted_payload', 'notes') if key in data}
     sec = models.SecretVault(device_id=device_id, **clean)
-    db.add(sec); await db.commit(); return sec
+    db.add(sec)
+    await db.flush()
+    await commit_vault_audit(request, db, sec, 'CREATE')
+    await db.refresh(sec)
+    return serialize_secret_vault_entry(sec, can_manage=True)
+
+
+@router.post('/{device_id}/secrets/{secret_id}/reveal')
+async def reveal_secret(request: Request, device_id: int, secret_id: int, db: AsyncSession = Depends(get_db), _secret_admin=Depends(require_capability('secrets', 3))):
+    secret = await db.scalar(scoped_vault_query(request).where(
+        models.SecretVault.device_id == device_id,
+        models.SecretVault.id == secret_id,
+    ))
+    if secret is None:
+        raise HTTPException(404, 'Credential not found')
+    value = secret.encrypted_payload or ''
+    await commit_vault_audit(request, db, secret, 'REVEAL')
+    return JSONResponse({'value': value}, headers={'Cache-Control': 'no-store', 'Pragma': 'no-cache'})
 
 @router.get("/relationships/all")
 async def get_all_relationships(request: Request, db: AsyncSession = Depends(get_db)):
@@ -1045,6 +1068,14 @@ async def delete_device(request: Request, device_id: int, db: AsyncSession = Dep
 async def delete_resource(request: Request, resource: str, id: int, db: AsyncSession = Depends(get_db)):
     model_map = {"hardware": models.HardwareComponent, "software": models.DeviceSoftware, "secrets": models.SecretVault, "relationships": models.DeviceRelationship}
     if resource not in model_map: raise HTTPException(400)
+    if resource == 'secrets':
+        await require_capability('secrets', 3)(request=request, db=db)
+        secret = await db.scalar(scoped_vault_query(request).where(models.SecretVault.id == id))
+        if secret is None:
+            raise HTTPException(404, 'Credential not found')
+        await db.delete(secret)
+        await commit_vault_audit(request, db, secret, 'DELETE')
+        return {'status': 'success'}
     await db.execute(delete(model_map[resource]).where(model_map[resource].id == id))
     await db.commit(); return {"status": "success"}
 
@@ -1052,6 +1083,18 @@ async def delete_resource(request: Request, resource: str, id: int, db: AsyncSes
 async def update_resource(request: Request, resource: str, id: int, data: dict, db: AsyncSession = Depends(get_db)):
     model_map = {"hardware": models.HardwareComponent, "software": models.DeviceSoftware, "secrets": models.SecretVault, "relationships": models.DeviceRelationship}
     if resource not in model_map: raise HTTPException(400)
+
+    if resource == 'secrets':
+        await require_capability('secrets', 3)(request=request, db=db)
+        secret = await db.scalar(scoped_vault_query(request).where(models.SecretVault.id == id))
+        if secret is None:
+            raise HTTPException(404, 'Credential not found')
+        for key in ('secret_type', 'username', 'encrypted_payload', 'notes'):
+            if key in data:
+                setattr(secret, key, data[key])
+        await commit_vault_audit(request, db, secret, 'UPDATE')
+        await db.refresh(secret)
+        return serialize_secret_vault_entry(secret, can_manage=True)
     
     res = await db.execute(select(model_map[resource]).filter(model_map[resource].id == id))
     item = res.scalar_one_or_none()
