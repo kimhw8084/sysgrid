@@ -9,7 +9,8 @@ import {
 
 export function usePersistentJsonState<T>(
   storageKey: string,
-  fallback: T | (() => T)
+  fallback: T | (() => T),
+  normalizeStoredValue?: (value: unknown) => T
 ) {
   const [value, setValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
@@ -20,7 +21,8 @@ export function usePersistentJsonState<T>(
       if (raw == null) {
         return typeof fallback === 'function' ? (fallback as () => T)() : fallback
       }
-      return JSON.parse(raw) as T
+      const stored: unknown = JSON.parse(raw)
+      return normalizeStoredValue ? normalizeStoredValue(stored) : stored as T
     } catch {
       return typeof fallback === 'function' ? (fallback as () => T)() : fallback
     }

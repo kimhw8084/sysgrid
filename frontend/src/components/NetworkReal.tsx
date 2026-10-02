@@ -629,12 +629,22 @@ export default function NetworkReal() {
     [userSettings]
   )
   const localWorkspaceState = useMemo(() => readNetworkWorkspaceStateFromLocalStorage(), [])
+  // Capture actual stored fields before mount effects persist their defaults.
+  // Normalized fallback values must not override preferences from another browser.
+  const localUiStateKeys = useMemo(() => {
+    const stored = readJsonStorage<unknown>(NETWORK_UI_STATE_KEY, null)
+    return stored && typeof stored === 'object' && !Array.isArray(stored) ? Object.keys(stored) : []
+  }, [])
+  const hasStoredSavedViews = useMemo(
+    () => Array.isArray(readJsonStorage<unknown>(NETWORK_VIEW_STORAGE_KEY, null)),
+    []
+  )
   const hasStoredFavoriteIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(NETWORK_FAVORITES_STORAGE_KEY) !== null,
+    () => Array.isArray(readJsonStorage<unknown>(NETWORK_FAVORITES_STORAGE_KEY, null)),
     []
   )
   const hasStoredWatchIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(NETWORK_WATCH_STORAGE_KEY) !== null,
+    () => Array.isArray(readJsonStorage<unknown>(NETWORK_WATCH_STORAGE_KEY, null)),
     []
   )
   const initialWorkspaceState = useMemo(() => {
@@ -642,16 +652,16 @@ export default function NetworkReal() {
     if (!localWorkspaceState) return remoteWorkspaceState
     return {
       ...remoteWorkspaceState,
-      savedViews: localWorkspaceState.savedViews?.length ? localWorkspaceState.savedViews : remoteWorkspaceState.savedViews,
+      savedViews: hasStoredSavedViews ? localWorkspaceState.savedViews : remoteWorkspaceState.savedViews,
       activeViewId: localWorkspaceState.activeViewId ?? remoteWorkspaceState.activeViewId,
       favoriteIds: hasStoredFavoriteIds ? (localWorkspaceState.favoriteIds ?? []) : remoteWorkspaceState.favoriteIds,
       watchIds: hasStoredWatchIds ? (localWorkspaceState.watchIds ?? []) : remoteWorkspaceState.watchIds,
       uiState: {
         ...remoteWorkspaceState.uiState,
-        ...localWorkspaceState.uiState,
+        ...Object.fromEntries(Object.entries(localWorkspaceState.uiState).filter(([key]) => localUiStateKeys.includes(key))),
       },
     }
-  }, [hasStoredFavoriteIds, hasStoredWatchIds, localWorkspaceState, remoteWorkspaceState])
+  }, [hasStoredFavoriteIds, hasStoredWatchIds, hasStoredSavedViews, localUiStateKeys, localWorkspaceState, remoteWorkspaceState])
   const persistedUiState = initialWorkspaceState?.uiState ?? null
   
   // --- STYLE LABORATORY STATE ---
@@ -715,14 +725,14 @@ export default function NetworkReal() {
   const [gridSortModel, setGridSortModel] = useState<any[]>([{ colId: 'favorite', sort: 'desc' }])
   const [savedViews, setSavedViews] = usePersistentJsonState<any[]>(NETWORK_VIEW_STORAGE_KEY, () => {
     return initialWorkspaceState?.savedViews ?? normalizeNetworkSavedViews([])
-  })
+  }, normalizeNetworkSavedViews)
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_network_session_init',
     null,
     () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(NETWORK_ACTIVE_VIEW_KEY))
   )
-  const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(NETWORK_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
-  const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(NETWORK_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
+  const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(NETWORK_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [], normalizeNetworkIdList)
+  const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(NETWORK_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [], normalizeNetworkIdList)
   const [searchTerm, setSearchTermState] = useState(persistedUiState?.searchTerm ?? '')
   const searchChangedRef = useRef(false)
   const setSearchTerm = useCallback((value: string) => {
