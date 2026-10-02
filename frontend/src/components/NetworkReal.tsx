@@ -460,7 +460,9 @@ const normalizeNetworkConnection = (connection: any) => {
   const linkType = connection?.link_type || connection?.connection_type || 'Data'
   const direction = connection?.direction || 'Bidirectional'
   const unit = connection?.unit || 'Gbps'
-  const speed = connection?.speed_gbps != null ? `${connection.speed_gbps} ${unit}` : 'Unknown'
+  const speed = connection?.speed && connection.speed !== 'Unknown'
+    ? connection.speed
+    : connection?.speed_gbps != null ? `${connection.speed_gbps} ${unit}` : 'Unknown'
   const requestLink = connection?.request_link || ''
   const endpoints = [
     {
@@ -932,7 +934,7 @@ export default function NetworkReal() {
   const handleRowId = useCallback((params: any) => String(params.data.id), [])
   const openNetworkDetail = useCallback((item: any, replace: boolean = false) => {
     if (!item?.id) return
-    setDetailItem(item)
+    setDetailItem(normalizeNetworkConnection(item))
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('id', String(item.id))
     navigate({ search: `?${nextParams.toString()}` }, { replace })
@@ -1557,7 +1559,7 @@ export default function NetworkReal() {
       return
     }
     setActiveTab(target.is_deleted ? 'deleted' : 'active')
-    setDetailItem(target)
+    setDetailItem(normalizeNetworkConnection(target))
   }, [allItems, idParam, navigate, searchParams])
 
   useEffect(() => {

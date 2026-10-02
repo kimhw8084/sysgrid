@@ -199,7 +199,7 @@ def _module_scoped_truth(
     module_id: str,
 ) -> HomeTruth:
     target_module, target_path = _module_target(policy, module_id)
-    available = target_module is not None
+    available = target_module is not None and value is not None
     return _truth(
         value=value if available else None,
         kind=kind,
@@ -207,7 +207,7 @@ def _module_scoped_truth(
         as_of=as_of,
         available=available,
         freshness="not_applicable" if available else "unavailable",
-        unavailable_reason=None if available else "MODULE_UNAVAILABLE",
+        unavailable_reason=None if available else "MODULE_UNAVAILABLE" if target_module is None else "SOURCE_UNAVAILABLE",
         module_id=target_module,
         path=target_path,
     )
@@ -671,13 +671,15 @@ async def global_search(q: str, request: Request, db: AsyncSession = Depends(get
                     source_device.name.label("source_name"),
                     target_device.name.label("target_name"),
                 )
-                .join(source_device, models.PortConnection.source_device_id == source_device.id)
-                .join(target_device, models.PortConnection.target_device_id == target_device.id)
+                .outerjoin(source_device, models.PortConnection.source_device_id == source_device.id)
+                .outerjoin(target_device, models.PortConnection.target_device_id == target_device.id)
                 .where(
                     _home_connection_scope(request),
                     or_(
                         models.PortConnection.source_port.ilike(search_term),
                         models.PortConnection.target_port.ilike(search_term),
+                        models.PortConnection.source_ip.ilike(search_term),
+                        models.PortConnection.target_ip.ilike(search_term),
                         models.PortConnection.link_type.ilike(search_term),
                         models.PortConnection.purpose.ilike(search_term),
                         source_device.name.ilike(search_term),
@@ -693,7 +695,7 @@ async def global_search(q: str, request: Request, db: AsyncSession = Depends(get
                 module_id="network",
                 item_id=connection.id,
                 item_type="network",
-                title=f"{source_name} -> {target_name}",
+                title=f"{source_name or connection.source_ip or 'Unknown'} -> {target_name or connection.target_ip or 'Unknown'}",
                 subtitle=f"{connection.source_port} -> {connection.target_port}",
                 tag=connection.link_type or "Link",
             )

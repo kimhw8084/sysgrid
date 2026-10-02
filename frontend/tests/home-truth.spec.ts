@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { createAsset, createMonitoring, createService, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState } from './helpers/sysgrid'
+import { createAsset, createConnection, createMonitoring, createService, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const headers = {
@@ -105,6 +105,44 @@ test.describe('CHG-49 Home truth projection', () => {
 })
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`Home and global search open connections by endpoint IP in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const ip = theme === 'pure-clarity' ? '192.0.2.72' : '192.0.2.71'
+    const peerIp = theme === 'pure-clarity' ? '198.51.100.72' : '198.51.100.71'
+    const source = await createAsset(request, { name: `Home IP source ${theme} ${Date.now()}`, system: 'Home search proof' })
+    const target = await createAsset(request, { name: `Home IP target ${theme} ${Date.now()}`, system: 'Home search proof' })
+    const connection = await createConnection(request, { device_a_id: source.id, device_b_id: target.id,
+      source_ip: ip, target_ip: peerIp, source_port: 'home-custom-source', target_port: 'home-custom-peer',
+      link_type: 'Data', status: 'Active', purpose: `Home custom search ${theme}` })
+    const response = await request.get(`${apiBase}/dashboard/search`, { params: { q: ip } })
+    expect(response.ok()).toBeTruthy()
+    expect((await response.json()).results).toEqual([expect.objectContaining({ id: connection.id, type: 'network', title: `${source.name} -> ${target.name}` })])
+    await page.goto('/')
+    const homeSearch = page.getByRole('textbox', { name: 'Search released Home records', exact: true })
+    await homeSearch.fill(ip)
+    await homeSearch.press('Enter')
+    await expect(page).toHaveURL(new RegExp(`/network\\?id=${connection.id}(?:&|$)`))
+    const details = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: /Connection Forensics/ }) })
+    await expect(details).toContainText(ip)
+    await expect(details).toContainText(peerIp)
+    await expect(details).toContainText(`Connection ID: ${connection.id}`)
+    await expect(details).toContainText('home-custom-peer')
+    expect(await page.getByText('Action needed', { exact: true }).count()).toBe(0)
+    await page.screenshot({ path: testInfo.outputPath(`network-ip-detail-${theme}.png`), animations: 'disabled' })
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Search released and authorized records', exact: true }).click()
+    await page.getByPlaceholder('Search released and authorized records...').fill(peerIp)
+    const result = page.getByRole('link').filter({ hasText: `${source.name} -> ${target.name}` })
+    await expect(result).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath(`network-ip-search-${theme}.png`), animations: 'disabled' })
+    await result.click()
+    await expect(page).toHaveURL(new RegExp(`/network\\?id=${connection.id}(?:&|$)`))
+    await expect(details).toContainText('home-custom-source')
+  })
+
   test(`Home preserves every unknown inventory count and drills through in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
     await resetBrowserState(page)
     await page.setViewportSize({ width: 1440, height: 900 })

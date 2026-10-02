@@ -6,7 +6,7 @@ import pytest_asyncio
 
 from app.core.config import settings
 from app.models import models
-from test_chg13_authorization_security import _tenant_db
+from test_chg13_authorization_security import _grant_access, _seed_operator, _tenant_db
 from test_service_relationship_authority import service_scope
 
 
@@ -27,6 +27,7 @@ async def home_scope(service_scope, setup_db):
         ]:
             row = models.PortConnection(source_device_id=c['devices'].get(source), target_device_id=c['devices'].get(target),
                 source_port=f'HomeAuthority-{label}', target_port='peer', link_type='Ethernet',
+                source_ip='192.0.2.10', target_ip='198.51.100.20',
                 purpose=f'HomeAuthority {label}', status=state)
             db.add(row); await db.flush(); connections[label] = row.id
         active, archived = models.Rack(name='Active Home rack'), models.Rack(name='Archived Home rack', is_deleted=True)
@@ -82,7 +83,45 @@ async def test_home_network_search_preserves_owned_history_and_excludes_deleted(
     response = await c['client'].get('/api/v1/dashboard/search', params={'q': 'HomeAuthority'}, headers=c['headers'])
     assert response.status_code == 200, response.text
     ids = {row['id'] for row in response.json()['results'] if row['type'] == 'network'}
-    assert ids == {c['connections']['owned'], c['connections']['owned-history']}
+    assert ids == {c['connections'][key] for key in ['owned', 'owned-history', 'custom-peer', 'custom-only']}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('root', [False, True])
+@pytest.mark.parametrize('query', ['192.0.2.10', '198.51.100.20'])
+async def test_home_network_search_includes_custom_endpoints_without_leaking_hidden_records(home_scope, monkeypatch, root, query):
+    c = home_scope
+    monkeypatch.setattr(settings, 'SYSTEM_ROOT_USER_IDS', 'admin_root' if root else '')
+    response = await c['client'].get('/api/v1/dashboard/search', params={'q': query}, headers=c['headers'])
+    assert response.status_code == 200, response.text
+    rows = {row['id']: row for row in response.json()['results'] if row['type'] == 'network'}
+    assert set(rows) == {c['connections'][key] for key in ['owned', 'owned-history', 'custom-peer', 'custom-only']}
+    assert rows[c['connections']['custom-peer']]['title'] == 'Authorized service host -> 198.51.100.20'
+    assert rows[c['connections']['custom-only']]['title'] == '192.0.2.10 -> 198.51.100.20'
+    assert all(row['path'] == '/network' and row['module_id'] == 'network' for row in rows.values())
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('root', [False, True])
+@pytest.mark.parametrize('assets,racks', [(False, False), (True, False), (False, True), (True, True)])
+async def test_home_racked_asset_truth_requires_both_source_capabilities(home_scope, setup_db, monkeypatch, root, assets, racks):
+    c = home_scope
+    user = 'home-capability-reader'
+    monkeypatch.setattr(settings, 'SYSTEM_ROOT_USER_IDS', user if root else '')
+    await _grant_access(setup_db, tenant_id=c['tenant'], user_id=user, role='VIEWER')
+    await _seed_operator(setup_db, c['tenant'], user, role_permissions={'assets': int(assets), 'racks': int(racks)})
+    response = await c['client'].get('/api/v1/dashboard/metrics', headers={**c['headers'], 'X-User-Id': user})
+    assert response.status_code == 200, response.text
+    overview = response.json()['rack_overview']
+    truth = overview['truth']['total_racked_assets']
+    available = assets and racks
+    assert truth['available'] is available
+    assert overview['total_racked_assets'] == truth['value'] == (1 if available else None)
+    assert truth['freshness'] == ('not_applicable' if available else 'unavailable')
+    assert truth['unavailable_reason'] == (None if available else 'SOURCE_UNAVAILABLE' if racks else 'MODULE_UNAVAILABLE')
+    assert truth['path'] == ('/racks' if racks else None)
+    assert overview['truth']['total_racks']['available'] is racks
+    assert response.json()['asset_overview']['truth']['available'] is assets
 
 
 @pytest.mark.asyncio
