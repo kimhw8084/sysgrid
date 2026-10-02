@@ -1,4 +1,5 @@
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
@@ -985,15 +986,7 @@ export default function ServicesReal() {
     currentDefinition: buildCurrentViewConfig(),
   })
 
-  useEffect(() => {
-    if (!collaborativeViews.dirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [collaborativeViews.dirty])
+  usePageLeaveGuard(collaborativeViews.dirty)
 
   const allowViewSwitch = async (nextViewId: string | null) => {
     if (!collaborativeViews.dirty || nextViewId === activeViewId) return true

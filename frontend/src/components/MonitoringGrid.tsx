@@ -1,4 +1,6 @@
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
+import { getCurrentTenantId } from '../api/tenantContext'
 import { BkmListModal, BkmDetailModal, MonitoringForm } from './monitoring/Modals'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail, classifyDataStatus, normalizeOperationalListResponse } from './shared/OperationalDataStatus'
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
@@ -551,7 +553,7 @@ export default function MonitoringGrid() {
                 endpoint: '/api/v1/monitoring?include_deleted=true',
                 rawBodyExcerpt: err.rawBody,
                 userId: localStorage.getItem('SYSGRID_USER_ID') || 'admin_root',
-                tenantId: localStorage.getItem('SYSGRID_TENANT_ID') || '1'
+                tenantId: getCurrentTenantId()
             }
         };
     }
@@ -584,15 +586,7 @@ export default function MonitoringGrid() {
 
 
 
-  useEffect(() => {
-    if (!isWorkspaceDirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [isWorkspaceDirty])
+  usePageLeaveGuard(isWorkspaceDirty)
 
   useEffect(() => {
     if (!isFormOpen) setIsFormDirty(false)
@@ -1032,15 +1026,7 @@ export default function MonitoringGrid() {
     currentDefinition: buildCurrentViewConfig(),
   })
 
-  useEffect(() => {
-    if (!collaborativeViews.dirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [collaborativeViews.dirty])
+  usePageLeaveGuard(collaborativeViews.dirty)
 
   const allowViewSwitch = async (nextViewId: string | null) => {
     if (!collaborativeViews.dirty || nextViewId === activeViewId) return true

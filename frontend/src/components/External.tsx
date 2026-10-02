@@ -1,4 +1,5 @@
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
@@ -1588,15 +1589,7 @@ export default function External() {
   }>({ isOpen: false, title: '', message: '' })
 
 
-  useEffect(() => {
-    if (!isWorkspaceDirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [isWorkspaceDirty])
+  usePageLeaveGuard(isWorkspaceDirty)
 
   const { triggerRef: displayMenuButtonRef, panelRef: displayMenuPanelRef, panelStyle: displayMenuStyle } = useWorkspaceAnchoredLayer(showDisplayMenu, { minWidth: 320 })
   const { triggerRef: viewsMenuButtonRef, panelRef: viewsMenuPanelRef, panelStyle: viewsMenuStyle } = useWorkspaceAnchoredLayer(showViewsMenu, { minWidth: 420 })
@@ -2050,15 +2043,7 @@ export default function External() {
     currentDefinition: currentWorkspaceConfig,
   })
 
-  useEffect(() => {
-    if (!collaborativeViews.dirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [collaborativeViews.dirty])
+  usePageLeaveGuard(collaborativeViews.dirty)
 
   const allowViewSwitch = async (nextViewId: string | null) => {
     if (!collaborativeViews.dirty || nextViewId === activeViewId) return true

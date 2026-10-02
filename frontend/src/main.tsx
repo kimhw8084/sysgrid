@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { getCurrentTenantId } from './api/tenantContext'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
@@ -217,7 +218,7 @@ const Bootstrap = () => {
         const baseUrl = getApiBaseUrl() || window.location.origin;
         if (shouldUseWebSocketSync(baseUrl)) {
           const wsProtocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
-          const tenantId = localStorage.getItem('SYSGRID_TENANT_ID') || '1';
+          const tenantId = getCurrentTenantId();
           const wsUrl = baseUrl.replace(/^https?/, wsProtocol) + `/api/v1/ws/sync?tenant_id=${encodeURIComponent(tenantId)}`;
           
           console.log("BOOTSTRAP: Initializing WebSocket sync at " + wsUrl);

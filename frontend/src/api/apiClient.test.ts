@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient, apiFetch, getApiBaseUrl, getConfig, setApiOverride, subscribeToLatency } from './apiClient'
 import { makeJsonResponse } from '../test/response'
+import { beginTenantSwitch, getCurrentTenantId } from './tenantContext'
 
 function makeJsonErrorResponse(status: number, statusText: string, body: unknown) {
   return makeJsonResponse(body, {
@@ -12,6 +13,8 @@ function makeJsonErrorResponse(status: number, statusText: string, body: unknown
 describe('apiClient', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
+    vi.unstubAllEnvs()
     vi.restoreAllMocks()
   })
 
@@ -136,6 +139,48 @@ describe('apiClient', () => {
     const [, options] = fetchMock.mock.calls[0]
     expect(options.credentials).toBe('same-origin')
     expect(options.headers['X-User-Id']).toBe('admin_root')
+  })
+
+  it('does not send identity to an origin that merely starts with the API origin', async () => {
+    localStorage.setItem('SYSGRID_OVERRIDE_API_URL', 'https://api.example.com')
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    await apiFetch('https://api.example.com.attacker.invalid/collect')
+    expect(fetchMock.mock.calls[0][1].headers['X-User-Id']).toBeUndefined()
+    expect(fetchMock.mock.calls[0][1].headers['X-Tenant-Id']).toBeUndefined()
+  })
+
+  it('pins requests in this tab when another tab changes the tenant default', async () => {
+    localStorage.setItem('SYSGRID_TENANT_ID', '7')
+    expect(getCurrentTenantId()).toBe('7')
+    localStorage.setItem('SYSGRID_TENANT_ID', '99')
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    await apiClient.post('/api/v1/devices', { name: 'Current tab edit' })
+    expect(fetchMock.mock.calls[0][1].headers['X-Tenant-Id']).toBe('7')
+  })
+
+  it('keeps explicit tenant scope with trusted-proxy identity and removes browser identity', async () => {
+    vi.stubEnv('VITE_IDENTITY_MODE', 'trusted_proxy')
+    localStorage.setItem('SYSGRID_TENANT_ID', '7')
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    await apiFetch('/api/v1/devices', { headers: new Headers({ 'X-User-Id': 'spoofed', 'X-Tenant-Id': '99' }) })
+    expect(fetchMock.mock.calls[0][1].headers['X-Tenant-Id']).toBe('7')
+    expect(new Headers(fetchMock.mock.calls[0][1].headers).get('X-User-Id')).toBeNull()
+  })
+
+  it('cannot switch during an in-flight write and rejects new writes during a switch', async () => {
+    let resolve!: (value: Response) => void
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(done => { resolve = done })))
+    const writing = apiClient.post('/api/v1/devices', { name: 'Pending edit' })
+    expect(() => beginTenantSwitch()).toThrow('current save')
+    resolve(makeJsonResponse({ ok: true }))
+    await writing
+    const finish = beginTenantSwitch()
+    try {
+      await expect(apiClient.post('/api/v1/devices', { name: 'Late edit' })).rejects.toThrow('not sent')
+    } finally { finish() }
   })
 
   it('emits latency updates and unsubscribes cleanly', async () => {

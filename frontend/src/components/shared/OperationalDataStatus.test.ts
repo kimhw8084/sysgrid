@@ -1,8 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { buildOperationalDiagnosticDetail } from './OperationalDataStatus'
 
 describe('buildOperationalDiagnosticDetail', () => {
+  beforeEach(() => { localStorage.clear(); sessionStorage.clear() })
+  afterEach(() => vi.unstubAllGlobals())
   it('preserves available apiFetch error fields', () => {
     expect(buildOperationalDiagnosticDetail({
       endpoint: '/api/v1/intelligence/links',

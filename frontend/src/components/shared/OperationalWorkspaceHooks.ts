@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useSearchParams } from 'react-router-dom'
+import { usePageLeaveGuard } from './workspaceDeparture'
 import {
   applyOperationalColumnState,
   getOperationalColumnLayoutSnapshot,
@@ -549,15 +550,7 @@ export function useOperationalDirtyGuard({
     setIsConfirmOpen(true)
   }, [blocker, isConfirmOpen])
 
-  useEffect(() => {
-    if (!effectiveDirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [effectiveDirty])
+  usePageLeaveGuard(effectiveDirty)
 
   useEffect(() => {
     if (!effectiveDirty) return
