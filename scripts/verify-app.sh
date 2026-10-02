@@ -25,7 +25,12 @@ verify_runtime_resolve_python
 
 (
   cd "$ROOT_DIR"
-  "$PYTHON_BIN" -m pytest -q scripts/tests/test_safe_startup.py scripts/tests/test_runtime_origin_config.py
+  "$PYTHON_BIN" -m pytest -q \
+    scripts/tests/test_safe_startup.py \
+    scripts/tests/test_runtime_origin_config.py \
+    scripts/tests/test_production_data_guard.py \
+    scripts/tests/test_production_lifecycle.py \
+    scripts/tests/test_production_preflight.py
   bash scripts/workstation-up.sh --self-test
 )
 
