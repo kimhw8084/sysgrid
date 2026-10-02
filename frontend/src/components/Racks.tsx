@@ -1329,11 +1329,11 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
        <div className="p-6 space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar">
           <div className="grid grid-cols-2 gap-3">
              <div className="p-3 bg-black/40 rounded-lg border border-white/5">
-                <p className="text-[7px] font-black text-slate-500 uppercase mb-1">Total Vector Paths</p>
+                <p className="text-[7px] font-black text-slate-500 uppercase mb-1">Recorded Connections</p>
                 <p className="text-xl font-black text-white leading-none">{deviceConns.length}</p>
              </div>
              <div className="p-3 bg-black/40 rounded-lg border border-white/5">
-                <p className="text-[7px] font-black text-slate-500 uppercase mb-1">Downstream Systems</p>
+                <p className="text-[7px] font-black text-slate-500 uppercase mb-1">Connected Systems</p>
                 <p className="text-xl font-black text-blue-400 leading-none">{Object.keys(distribution.system).length}</p>
              </div>
           </div>
@@ -1391,7 +1391,7 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
        <div className="px-6 py-4 bg-black/40 border-t border-white/10 flex items-center gap-3">
           <AlertTriangle size={14} className="text-amber-500 shrink-0" />
           <p className="text-[8px] font-bold text-slate-400 leading-tight">
-             Total system isolation of <span className="text-white">{(deviceConns.length * 2.4).toFixed(0)} services</span> estimated upon hardware failure.
+             Service impact is unknown. Recorded network links do not establish service dependencies or failure propagation.
           </p>
        </div>
     </motion.div>, document.body
@@ -2503,12 +2503,12 @@ export default function Racks() {
   }, [isAddingRack, isEditingRack?.id])
   const closeSiteEditor = async () => {
     if (JSON.stringify(isEditingSite || newSite) !== editorBaseline.current.site
-      && !await confirmEditorClose({ title: 'Discard site changes?', message: 'Your site changes have not been saved.', confirmText: 'Discard changes', variant: 'warning' })) return
+      && !await confirmEditorClose({ title: 'Discard site changes?', message: 'Your site changes have not been saved.', confirmText: 'Discard changes', cancelText: 'Keep editing', variant: 'warning' })) return
     setIsAddingSite(false); setIsEditingSite(null)
   }
   const closeRackEditor = async () => {
     if (JSON.stringify(isEditingRack || newRack) !== editorBaseline.current.rack
-      && !await confirmEditorClose({ title: 'Discard rack changes?', message: 'Your rack changes have not been saved.', confirmText: 'Discard changes', variant: 'warning' })) return
+      && !await confirmEditorClose({ title: 'Discard rack changes?', message: 'Your rack changes have not been saved.', confirmText: 'Discard changes', cancelText: 'Keep editing', variant: 'warning' })) return
     setIsAddingRack(false); setIsEditingRack(null)
   }
   const [isProvisioning, setIsProvisioning] = useState<any>(null)
@@ -3967,6 +3967,8 @@ export default function Racks() {
                         onClick={() => isEditingSite ? setIsEditingSite({ ...isEditingSite, color: c }) : setNewSite({ ...newSite, color: c })}
                         className={`w-8 h-8 rounded-lg border-2 transition-all ${ (isEditingSite ? isEditingSite.color : newSite.color) === c ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100' }`}
                         style={{ backgroundColor: c }}
+                        aria-label={`Site color ${c}`}
+                        aria-pressed={(isEditingSite ? isEditingSite.color : newSite.color) === c}
                       />
                     ))}
                   </div>
@@ -3980,9 +3982,9 @@ export default function Racks() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={closeSiteEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
-                <button onClick={() => siteMutation.mutate(isEditingSite || newSite)}
-                  className="flex-1 py-3.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
-                  {isEditingSite ? 'Update Site' : 'Create Site'}
+                <button onClick={() => siteMutation.mutate(isEditingSite || newSite)} disabled={siteMutation.isPending}
+                  className="flex-1 py-3.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-wait">
+                  {siteMutation.isPending ? 'Saving Site...' : isEditingSite ? 'Update Site' : 'Create Site'}
                 </button>
               </div>
             </motion.div>
@@ -4115,12 +4117,13 @@ export default function Racks() {
               <div className="flex gap-3 pt-4 border-t border-white/5">
                 <button onClick={closeRackEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
                 <button
+                  disabled={rackMutation.isPending}
                   onClick={() => {
                     if (!isEditingRack && !newRack.site_id) return toast.error('Site is required')
                     rackMutation.mutate(isEditingRack || newRack)
                   }}
-                  className="flex-1 py-3.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
-                  {isEditingRack ? 'Update Config' : 'Deploy Rack'}
+                  className="flex-1 py-3.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-wait">
+                  {rackMutation.isPending ? 'Saving Rack...' : isEditingRack ? 'Update Config' : 'Deploy Rack'}
                 </button>
               </div>
             </motion.div>

@@ -308,7 +308,7 @@ export function WorkspaceEmptyState({
   return (
     <div
       className={join(
-        `flex flex-col items-center justify-center ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-dashed border-white/10 bg-black/10 text-center`,
+        `flex flex-col items-center justify-center ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-dashed border-[var(--border-default)] bg-[var(--surface-elevated)] text-center`,
         compact ? 'px-4 py-8 space-y-2' : 'px-6 py-12 space-y-4'
       )}
     >
@@ -318,8 +318,8 @@ export function WorkspaceEmptyState({
         <div className="text-slate-700/40"><Info size={20} /></div>
       ) : null}
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold text-slate-300">{title}</p>
-        {description && <p className="max-w-md text-[10px] font-semibold leading-relaxed text-slate-500">{description}</p>}
+        <p className="text-[11px] font-semibold text-[var(--text-primary)]">{title}</p>
+        {description && <p className="max-w-md text-[10px] font-semibold leading-relaxed text-[var(--text-secondary)]">{description}</p>}
       </div>
       {action}
     </div>

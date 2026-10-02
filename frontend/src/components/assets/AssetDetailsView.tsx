@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { ArrowRightLeft, Check, X, Edit2, Trash2, Box, Zap, Clock, Globe, Info, Search, Plus, Terminal, Activity, AlertTriangle, RefreshCw, Book, Settings, Eye, EyeOff } from 'lucide-react'
 import { ConfirmationModal } from '../shared/ConfirmationModal'
 import { apiFetch } from '../../api/apiClient'
@@ -21,6 +21,11 @@ const getAssetConsoleUrl = (asset: any) => {
 }
 
 const MonitoringTab = ({ deviceId }: { deviceId: number }) => <MiniMonitoringTable deviceId={deviceId} />
+
+const emptyHardwareDraft = () => ({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 })
+const emptyCredentialDraft = () => ({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' })
+const emptyRelationshipDraft = () => ({ target_device_id: '', relationship_type: 'Depends On', source_role: 'Consumer', target_role: 'Provider' })
+type DraftProps<T> = { draft: T; setDraft: React.Dispatch<React.SetStateAction<T>>; onPendingChange: (pending: boolean) => void }
 
 const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { device: any, connections: any[], onEditLink: (l: any) => void, onViewLink: (l: any) => void }) => {
   const [hoveredPort, setHoveredPort] = useState<any | null>(null)
@@ -287,9 +292,19 @@ const SecurityTab = ({ device }: { device: any }) => (
   </div>
 )
 
-export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEditService, onEditLink, onViewLink }: { device: any, options: any, onViewServiceDetails: (s:any)=>void, onEditService: (s:any)=>void, onEditLink: (l:any)=>void, onViewLink: (l:any)=>void }) => {
+export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEditService, onEditLink, onViewLink, onDraftDirtyChange, onDraftPendingChange }: { device: any, options: any, onViewServiceDetails: (s:any)=>void, onEditService: (s:any)=>void, onEditLink: (l:any)=>void, onViewLink: (l:any)=>void, onDraftDirtyChange?: (dirty: boolean) => void, onDraftPendingChange?: (pending: boolean) => void }) => {
     const navigate = useNavigate()
     const [tab, setTab] = useState('hardware')
+    const [hardwareDraft, setHardwareDraft] = useState(emptyHardwareDraft)
+    const [credentialDraft, setCredentialDraft] = useState(emptyCredentialDraft)
+    const [relationshipDraft, setRelationshipDraft] = useState(emptyRelationshipDraft)
+    const [hardwarePending, setHardwarePending] = useState(false)
+    const [credentialPending, setCredentialPending] = useState(false)
+    const [relationshipPending, setRelationshipPending] = useState(false)
+    const draftDirty = JSON.stringify(hardwareDraft) !== JSON.stringify(emptyHardwareDraft()) || JSON.stringify(credentialDraft) !== JSON.stringify(emptyCredentialDraft()) || JSON.stringify(relationshipDraft) !== JSON.stringify(emptyRelationshipDraft())
+    const draftPending = hardwarePending || credentialPending || relationshipPending
+    useEffect(() => { onDraftDirtyChange?.(draftDirty) }, [draftDirty, onDraftDirtyChange])
+    useEffect(() => { onDraftPendingChange?.(draftPending) }, [draftPending, onDraftPendingChange])
     const queryClient = useQueryClient()
 
     // --- FETCH RELATED CONTEXT ---
@@ -324,16 +339,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     })
 
     const primaryMonitoringId = Array.isArray(monitoringItems) && monitoringItems[0]?.id ? monitoringItems[0].id : null
-    const { data: suggestedKnowledge } = useQuery({
-      queryKey: ['asset-knowledge-suggestions', device.id, primaryMonitoringId],
-      queryFn: async () => {
-        const params = new URLSearchParams()
-        params.append('device_id', String(device.id))
-        params.append('embedded_consumer', 'assets')
-        return (await apiFetch(`/api/v1/knowledge?${params.toString()}`)).json()
-      },
-      enabled: !!device.id
-    })
+    const suggestedKnowledge = relatedKnowledge
 
     const { data: maintenanceWindows } = useQuery({
       queryKey: ['asset-maintenance', device.id],
@@ -368,11 +374,11 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     })
 
     return (
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col xl:flex-row gap-6 items-start">
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 space-y-6">
+            <div className="w-full min-w-0 flex-1 space-y-6">
                 <div className="rounded-lg border border-blue-500/20 bg-gradient-to-r from-blue-600/10 to-transparent p-5">
-                    <div className="flex items-start justify-between gap-6">
+                    <div className="flex flex-wrap items-start justify-between gap-6">
                         <div className="flex items-center space-x-6">
                            <div className="bg-blue-600 p-2.5 rounded-lg text-white shadow-xl shadow-blue-500/20 ring-4 ring-blue-500/10 shrink-0">
                               <Box size={32} />
@@ -388,11 +394,11 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                                </div>
                                <div className="flex flex-col">
                                   <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Network IP</span>
-                                  <span className="text-lg font-mono text-blue-400 font-bold">{device.primary_ip || '---.---.---.---'}</span>
+                                  <span className="text-sm font-mono text-blue-400 font-bold">{device.primary_ip || 'Not configured'}</span>
                                </div>
                                <div className="flex flex-col">
                                   <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Management IP</span>
-                                  <span className="text-lg font-mono text-indigo-400 font-bold">{device.management_ip || '---.---.---.---'}</span>
+                                  <span className="text-sm font-mono text-[var(--text-secondary)] font-bold">{device.management_ip || 'Not configured'}</span>
                                </div>
                            </div>
                         </div>
@@ -413,8 +419,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                     <div className="mt-4 rounded-lg border border-amber-500/15 bg-amber-500/[0.05] p-4">
                         <div className="flex items-center justify-between gap-4">
                             <div>
-                                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-amber-300">Suggested Runbooks Now</p>
-                                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Procedures matched to this asset and active monitoring context.</p>
+                                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-amber-300">Linked Runbooks</p>
+                                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Procedures linked to this asset.</p>
                             </div>
                             <ModulePolicyButton
                               moduleId="knowledge"
@@ -433,16 +439,16 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                                 </p>
                               </ModulePolicyButton>
                             ))}
-                            {!suggestedKnowledge?.length && <p className="col-span-2 text-[10px] font-bold uppercase text-slate-600 italic">No suggested runbooks identified</p>}
+                            {!suggestedKnowledge?.length && <p className="col-span-2 text-[10px] font-bold uppercase text-slate-600 italic">No linked runbooks identified</p>}
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex space-x-1 bg-black/40 p-1 rounded-lg w-fit">
+                        <div className="flex flex-wrap gap-1 bg-black/40 p-1 rounded-lg w-fit" role="group" aria-label="Asset detail sections">
                             {['hardware', 'secrets', 'relations', 'services', 'network', 'security', 'monitoring', 'metadata'].map(t => (
-                                <button key={t} onClick={() => setTab(t)} className={`px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${tab === t ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
+                                <button key={t} aria-pressed={tab === t} disabled={draftPending} onClick={() => setTab(t)} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all disabled:cursor-wait ${tab === t ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
                                     {t}
                                 </button>
                             ))}
@@ -450,8 +456,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                     </div>
 
                     <div className="glass-panel border-white/5 rounded-lg overflow-hidden min-h-[400px]">
-                        {tab === 'hardware' && <HWTab deviceId={device.id} />}
-                        {tab === 'secrets' && <SecretsTab deviceId={device.id} />}
+                        {tab === 'hardware' && <HWTab deviceId={device.id} draft={hardwareDraft} setDraft={setHardwareDraft} onPendingChange={setHardwarePending} />}
+                        {tab === 'secrets' && <SecretsTab deviceId={device.id} draft={credentialDraft} setDraft={setCredentialDraft} onPendingChange={setCredentialPending} />}
                         {tab === 'monitoring' && <MonitoringTab deviceId={device.id} />}
                         {tab === 'services' && (
                             <AssetServicesTable
@@ -461,7 +467,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                             />
                         )}
                         {tab === 'network' && <NetworkingTab device={device} onEditLink={onEditLink} onViewLink={onViewLink} />}
-                        {tab === 'relations' && <RelationshipsTab deviceId={device.id} />}
+                        {tab === 'relations' && <RelationshipsTab deviceId={device.id} draft={relationshipDraft} setDraft={setRelationshipDraft} onPendingChange={setRelationshipPending} />}
                         {tab === 'security' && <SecurityTab device={device} />}
                         {tab === 'metadata' && (
                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 p-2 h-full flex flex-col">
@@ -473,7 +479,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
             </div>
 
             {/* SIDEBAR JUMP & META COLUMN */}
-            <div className="w-80 shrink-0 space-y-6 sticky top-0">
+            <div className="w-full xl:w-80 shrink-0 space-y-6 xl:sticky xl:top-0">
                 {/* PRIMARY JUMP ACTIONS */}
                 <div className="glass-panel p-5 rounded-lg border-white/5 bg-white/5 space-y-3">
                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-500 mb-2">Jump Actions</p>
@@ -582,9 +588,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     )
 }
 
-const HWTab = ({ deviceId }: { deviceId: number }) => {
+const HWTab = ({ deviceId, draft: newComp, setDraft: setNewComp, onPendingChange }: { deviceId: number } & DraftProps<ReturnType<typeof emptyHardwareDraft>>) => {
   const queryClient = useQueryClient()
-  const [newComp, setNewComp] = useState({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 })
 
   const mutation = useMutation({
     mutationFn: async (d: any) => {
@@ -592,12 +597,14 @@ const HWTab = ({ deviceId }: { deviceId: number }) => {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] }); setNewComp({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 }) }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] }); setNewComp({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 }) },
   })
+
+  useEffect(() => { onPendingChange(mutation.isPending) }, [mutation.isPending, onPendingChange])
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-6 gap-2 bg-white/5 p-3 rounded-lg border border-white/5">
+      <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-2 bg-white/5 p-3 rounded-lg border border-white/5">
          <select value={newComp.category} onChange={e => setNewComp({...newComp, category: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] outline-none">
             <option>CPU</option><option>Memory</option><option>Card</option><option>Disk</option><option>NIC</option><option>PSU</option>
          </select>
@@ -605,7 +612,7 @@ const HWTab = ({ deviceId }: { deviceId: number }) => {
          <input value={newComp.manufacturer} onChange={e => setNewComp({...newComp, manufacturer: e.target.value})} placeholder="Manufacturer" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
          <input value={newComp.specs} onChange={e => setNewComp({...newComp, specs: e.target.value})} placeholder="Specifications" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
          <input type="number" value={newComp.count} onChange={e => setNewComp({...newComp, count: parseInt(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
-         <button onClick={() => { if(!newComp.name) return toast.error("Name required"); mutation.mutate(newComp) }} className="bg-blue-600 text-white rounded-lg text-[9px] font-bold uppercase">Add</button>
+         <button disabled={mutation.isPending} onClick={() => { if(!newComp.name) return toast.error("Name required"); mutation.mutate(newComp) }} className="bg-blue-600 text-white rounded-lg text-[9px] font-bold uppercase disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
       </div>
       <HWTable deviceId={deviceId} />
     </div>
@@ -719,9 +726,8 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
   )
 }
 
-const SecretsTab = ({ deviceId }: { deviceId: number }) => {
+const SecretsTab = ({ deviceId, draft: newSec, setDraft: setNewSec, onPendingChange }: { deviceId: number } & DraftProps<ReturnType<typeof emptyCredentialDraft>>) => {
   const queryClient = useQueryClient()
-  const [newSec, setNewSec] = useState({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' })
 
   const mutation = useMutation({
     mutationFn: async (d: any) => {
@@ -729,8 +735,10 @@ const SecretsTab = ({ deviceId }: { deviceId: number }) => {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setNewSec({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' }); toast.success('Credential added') }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setNewSec({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' }); toast.success('Credential added') },
   })
+
+  useEffect(() => { onPendingChange(mutation.isPending) }, [mutation.isPending, onPendingChange])
 
   const secOptions = [
     { value: 'Root Password', label: 'Root Password' },
@@ -742,7 +750,7 @@ const SecretsTab = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-5 gap-2 bg-white/5 p-3 rounded-lg border border-white/5 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-5 gap-2 bg-white/5 p-3 rounded-lg border border-white/5 items-end">
          <div className="col-span-1">
            <StyledSelect
               value={newSec.secret_type}
@@ -763,7 +771,7 @@ const SecretsTab = ({ deviceId }: { deviceId: number }) => {
             <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1 px-1">Notes</label>
             <input value={newSec.notes} onChange={e => setNewSec({...newSec, notes: e.target.value})} placeholder="Purpose / Note" className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-2.5 text-xs outline-none focus:border-blue-500" />
          </div>
-         <button onClick={() => { if(!newSec.username || !newSec.encrypted_payload) return toast.error("Identity/Value required"); mutation.mutate(newSec) }} className="h-[38px] bg-emerald-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Add</button>
+         <button disabled={mutation.isPending} onClick={() => { if(!newSec.username || !newSec.encrypted_payload) return toast.error("Identity/Value required"); mutation.mutate(newSec) }} className="h-[38px] bg-emerald-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
       </div>
       <SecretsTable deviceId={deviceId} />
     </div>
@@ -881,7 +889,7 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
   )
 }
 
-export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
+export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange }: { deviceId: number } & Partial<DraftProps<ReturnType<typeof emptyRelationshipDraft>>>) => {
   const queryClient = useQueryClient()
   const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
   
@@ -895,12 +903,9 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
 
   const currentDevice = useMemo(() => devices?.find((d: any) => d.id === deviceId), [devices, deviceId]);
 
-  const [newRel, setNewRel] = useState({ 
-    target_device_id: '', 
-    relationship_type: 'Depends On', 
-    source_role: 'Consumer', 
-    target_role: 'Provider' 
-  })
+  const [localDraft, setLocalDraft] = useState(emptyRelationshipDraft)
+  const newRel = draft || localDraft
+  const setNewRel = setDraft || setLocalDraft
 
   const mutation = useMutation({
     mutationFn: async (d: any) => {
@@ -914,8 +919,11 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
     onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] });
         toast.success('Relationship added')
+        setNewRel(emptyRelationshipDraft())
     }
   })
+
+  useEffect(() => { onPendingChange?.(mutation.isPending) }, [mutation.isPending, onPendingChange])
 
   const syncRoles = (role: string, isSource: boolean) => {
     const pair = types.find(t => t.s === role || t.t === role);
@@ -1000,10 +1008,11 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">{newRel.relationship_type}</span>
             </div>
             <button 
+              disabled={mutation.isPending}
               onClick={() => { if(!newRel.target_device_id) return toast.error("Select peer asset"); mutation.mutate(newRel) }} 
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex items-center space-x-2"
             >
-               <Plus size={14} /> <span>Establish Vector</span>
+               <Plus size={14} /> <span>{mutation.isPending ? 'Establishing...' : 'Establish Vector'}</span>
             </button>
          </div>
       </div>

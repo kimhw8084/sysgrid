@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { useWorkspacePopupDismiss } from "./WorkspaceOverlay"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
+import { useNavigate } from 'react-router-dom'
 import { Database, ChevronDown, Check, Plus, Server } from "lucide-react"
 import { apiFetch } from "../../api/apiClient"
 import toast from "react-hot-toast"
@@ -13,7 +14,7 @@ import {
 
 export function TenantSelector({ compact = false }: { compact?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
-  const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 256 })
   const getTenantLabel = (tenant: any) => {
     if (tenant?.name?.trim()) return tenant.name
@@ -23,11 +24,11 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
     return parts[parts.length - 1] || `Tenant #${tenant?.id ?? "unknown"}`
   }
 
-  const { data: tenants, isLoading } = useQuery({
+  const { data: tenants, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['my-tenants'],
     queryFn: async () => {
       const res = await apiFetch("/api/v1/tenants/me")
-      if (!res.ok) return []
+      if (!res.ok) throw new Error('Failed to load available tenants')
       return res.json()
     }
   })
@@ -44,7 +45,6 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
     onSuccess: (_data, tenantId) => {
       localStorage.setItem('SYSGRID_TENANT_ID', String(tenantId))
       toast.success("Database switched successfully")
-      queryClient.invalidateQueries()
       // Reload the page to ensure all components refresh with new data context
       window.location.reload()
     },
@@ -54,6 +54,7 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
   })
 
   const activeTenant = tenants?.find((t: any) => t.is_selected)
+  const tenantLabel = selectMutation.isPending ? 'Switching tenant...' : isLoading ? 'Loading...' : isError ? 'Tenant unavailable' : activeTenant ? getTenantLabel(activeTenant) : 'No tenant selected'
 
   useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
 
@@ -64,6 +65,8 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
           triggerRef.current = node
         }}
         onClick={() => setIsOpen(!isOpen)}
+        disabled={selectMutation.isPending}
+        aria-busy={selectMutation.isPending || isLoading}
         className={`flex min-h-10 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 hover:bg-[var(--surface-hover)] ${compact ? 'w-full min-w-0' : ''}`}
         aria-label="Switch tenant"
         aria-expanded={isOpen}
@@ -74,8 +77,8 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
         </div>
         <div className={`flex flex-col items-start ${compact ? 'min-w-0 flex-1' : 'min-w-[120px]'}`}>
            <span className="text-[10px] font-medium text-[var(--text-muted)]">Current tenant</span>
-           <span className={`${compact ? 'max-w-full' : 'max-w-[150px]'} truncate text-sm font-medium text-[var(--text-primary)]`} title={activeTenant ? getTenantLabel(activeTenant) : 'Default tenant'}>
-             {isLoading ? 'Loading...' : (activeTenant ? getTenantLabel(activeTenant) : 'Default tenant')}
+           <span className={`${compact ? 'max-w-full' : 'max-w-[150px]'} truncate text-sm font-medium text-[var(--text-primary)]`} title={tenantLabel}>
+             {tenantLabel}
            </span>
         </div>
         <ChevronDown size={14} aria-hidden="true" className={`shrink-0 text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -96,7 +99,7 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
               </div>
               
               <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-2 space-y-1">
-                {tenants?.map((tenant: any) => (
+                {!isError && tenants?.map((tenant: any) => (
                   <button
                     key={tenant.id}
                     type="button"
@@ -110,7 +113,7 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
                       }
                       setIsOpen(false)
                     }}
-                    disabled={!tenant.is_online}
+                    disabled={!tenant.is_online || selectMutation.isPending}
                     role="menuitem"
                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${tenant.is_selected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : tenant.is_online ? 'hover:bg-white/5 text-slate-400 hover:text-white' : 'opacity-40 cursor-not-allowed'}`}
                   >
@@ -131,9 +134,19 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
                   </button>
                 ))}
 
-                {(!tenants || tenants.length === 0) && !isLoading && (
+                {isError && (
+                  <div className="p-4 text-center space-y-3" role="status">
+                    <p className="text-xs text-[var(--state-danger)]">Available tenants could not be loaded.</p>
+                    <button type="button" role="menuitem" disabled={isFetching} onClick={() => void refetch()}
+                      className="rounded-md border border-[var(--border-default)] px-3 py-2 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-50">
+                      {isFetching ? 'Retrying...' : 'Retry tenant list'}
+                    </button>
+                  </div>
+                )}
+                {isLoading && <p className="p-4 text-xs text-[var(--text-muted)]" role="status">Loading available tenants...</p>}
+                {(!tenants || tenants.length === 0) && !isLoading && !isError && (
                    <div className="p-4 text-center">
-                      <p className="text-[10px] font-semibold text-[var(--text-muted)]">No other tenants available</p>
+                      <p className="text-[10px] font-semibold text-[var(--text-muted)]">No accessible tenants available</p>
                    </div>
                 )}
               </div>
@@ -143,7 +156,7 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
                     onClick={() => {
                         setIsOpen(false);
                         // Navigate to settings tab for multi-tenancy if admin
-                        window.location.href = '/settings?tab=tenants';
+                        navigate('/settings?tab=tenants');
                     }}
                     className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-white/5 text-[9px] font-black uppercase text-slate-500 hover:text-white hover:bg-white/5 transition-all"
                  >
