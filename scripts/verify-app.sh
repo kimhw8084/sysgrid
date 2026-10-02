@@ -45,6 +45,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_firewall_integrity.py
   test_asset_write_boundary.py
   test_hardware_integrity.py
+  test_asset_link_integrity.py
   test_database_parameter_privacy.py
   test_validation_privacy.py
   tests/test_error_utils.py

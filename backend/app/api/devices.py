@@ -17,6 +17,7 @@ from .module_policy import require_module_access
 from .authorization import require_capability, resolve_current_operator
 from .secret_vault import can_manage_vault, commit_vault_audit, require_vault_device, scoped_vault_query, serialize_secret_vault_entry
 from .asset_hardware import HardwarePayload, commit_hardware_audit, hardware_update_payload, require_hardware_parent, scoped_hardware_query
+from .asset_links import RelationshipCreate, asset_link_update_payload, commit_asset_link_audit, get_asset_link, require_relationship_asset, scoped_relationship_query
 from fastapi.responses import JSONResponse
 
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
@@ -1042,13 +1043,14 @@ async def reveal_secret(request: Request, device_id: int, secret_id: int, db: As
 
 @router.get("/relationships/all")
 async def get_all_relationships(request: Request, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(models.DeviceRelationship))
+    res = await db.execute(scoped_relationship_query(request))
     return res.scalars().all()
 
 @router.get("/{device_id}/relationships")
 async def get_relationships(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
     from sqlalchemy import or_
-    res = await db.execute(select(models.DeviceRelationship).filter(
+    await require_relationship_asset(request, db, device_id)
+    res = await db.execute(scoped_relationship_query(request).filter(
         or_(
             models.DeviceRelationship.source_device_id == device_id,
             models.DeviceRelationship.target_device_id == device_id
@@ -1057,13 +1059,16 @@ async def get_relationships(request: Request, device_id: int, db: AsyncSession =
     return res.scalars().all()
 
 @router.post("/{device_id}/relationships")
-async def add_relationship(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db)):
-    target_id = data.get("target_device_id")
-    if not target_id: raise HTTPException(400, "Target device ID required")
-    if int(target_id) == device_id: raise HTTPException(400, "Cannot link server to itself")
-    clean = filter_valid_columns(models.DeviceRelationship, data)
-    rel = models.DeviceRelationship(source_device_id=device_id, **clean)
-    db.add(rel); await db.commit(); return rel
+async def add_relationship(request: Request, device_id: int, data: RelationshipCreate, db: AsyncSession = Depends(get_db)):
+    await require_relationship_asset(request, db, device_id, active=True)
+    await require_relationship_asset(request, db, data.target_device_id, active=True)
+    if data.target_device_id == device_id: raise HTTPException(400, "Cannot link server to itself")
+    clean = data.model_dump(exclude_unset=True)
+    rel = models.DeviceRelationship(source_device_id=device_id, created_by_user_id=get_audit_actor(request), **clean)
+    db.add(rel)
+    await commit_asset_link_audit(request, db, rel, 'CREATE', {'source_device_id': device_id, **clean})
+    await db.refresh(rel)
+    return rel
 
 @router.delete("/{device_id}")
 async def delete_device(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
@@ -1106,8 +1111,16 @@ async def delete_resource(request: Request, resource: str, id: int, db: AsyncSes
         await db.delete(secret)
         await commit_vault_audit(request, db, secret, 'DELETE')
         return {'status': 'success'}
-    await db.execute(delete(model_map[resource]).where(model_map[resource].id == id))
-    await db.commit(); return {"status": "success"}
+    item = await get_asset_link(request, db, resource, id)
+    removed = await db.scalar(delete(model_map[resource]).where(model_map[resource].id == id).returning(
+        model_map[resource].id,
+    ).execution_options(synchronize_session=False))
+    if removed is None:
+        raise HTTPException(404, 'Asset definition not found')
+    ownership = ({'device_id': item.device_id} if resource == 'software' else
+                 {'source_device_id': item.source_device_id, 'target_device_id': item.target_device_id})
+    await commit_asset_link_audit(request, db, item, 'DELETE', ownership)
+    return {'status': 'success'}
 
 @router.put("/{resource}/{id}")
 async def update_resource(request: Request, resource: str, id: int, data: dict, db: AsyncSession = Depends(get_db)):
@@ -1139,12 +1152,13 @@ async def update_resource(request: Request, resource: str, id: int, data: dict, 
         await db.refresh(secret)
         return serialize_secret_vault_entry(secret, can_manage=True)
     
-    res = await db.execute(select(model_map[resource]).filter(model_map[resource].id == id))
-    item = res.scalar_one_or_none()
-    if not item: raise HTTPException(404)
-    
-    clean = filter_valid_columns(model_map[resource], data)
-    for k, v in clean.items():
-        if k != "id": setattr(item, k, v)
-    
-    await db.commit(); return item
+    item = await get_asset_link(request, db, resource, id)
+    clean = asset_link_update_payload(resource, data)
+    changes = {key: {'before': getattr(item, key), 'after': value}
+               for key, value in clean.items() if getattr(item, key) != value}
+    for key, change in changes.items():
+        setattr(item, key, change['after'])
+    if changes:
+        await commit_asset_link_audit(request, db, item, 'UPDATE', changes)
+    await db.refresh(item)
+    return item

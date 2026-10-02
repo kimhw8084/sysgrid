@@ -60,6 +60,40 @@ for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] 
   })
 }
 
+test('relationship creation and inline role edits preserve both asset endpoints', async ({ page, sysApi: request }) => {
+  await resetBrowserState(page)
+  const owner = await createAsset(request, { name: `Relationship owner ${Date.now()}`, system: 'Relationship proof' })
+  const peer = await createAsset(request, { name: `Relationship peer ${Date.now()}`, system: 'Relationship proof' })
+  await page.goto(`/asset?id=${owner.id}`)
+  const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: owner.name, exact: true }) })
+  await dialog.getByRole('button', { name: 'relations', exact: true }).click()
+  const peerSelect = dialog.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'Select Peer...', exact: true }) })
+  await peerSelect.selectOption(String(peer.id))
+  await dialog.getByRole('button', { name: 'Establish Vector', exact: true }).click()
+  const row = dialog.getByRole('row').filter({ hasText: peer.name })
+  await expect(row).toContainText('Consumer')
+  await expect(row).toContainText('Provider')
+  // Existing legacy action buttons have no accessible names; their order is
+  // Edit/Remove and Save/Cancel. Accessibility is tracked separately.
+  await row.getByRole('button').nth(0).click()
+  const editor = dialog.getByRole('row').filter({ has: page.getByRole('combobox') })
+  await editor.getByRole('combobox').nth(0).selectOption('Hypervisor')
+  await editor.getByRole('combobox').nth(1).selectOption('Hosts')
+  await editor.getByRole('combobox').nth(2).selectOption('Guest')
+  await editor.getByRole('button').nth(0).click()
+  await expect(row).toContainText('Hypervisor')
+  await expect(row).toContainText('Guest')
+  const response = await request.get(`${apiBase}/devices/${owner.id}/relationships`)
+  expect(response.ok()).toBeTruthy()
+  const [stored] = await response.json()
+  expect(stored).toMatchObject({ source_device_id: owner.id, target_device_id: peer.id, relationship_type: 'Hosts', source_role: 'Hypervisor', target_role: 'Guest' })
+  await row.getByRole('button').nth(1).click()
+  await page.getByRole('dialog', { name: 'Delete Relationship', exact: true }).getByRole('button', { name: 'Confirm Action', exact: true }).click()
+  await expect(row).toHaveCount(0)
+  const remaining = await request.get(`${apiBase}/devices/${owner.id}/relationships`)
+  expect(await remaining.json()).toEqual([])
+})
+
 test('preserves asset selection on preview cancellation and clears it after a status change or scope change', async ({ page, sysApi: request }) => {
   await resetBrowserState(page)
   const name = `PW-SELECTION-RESET-${Date.now()}`
