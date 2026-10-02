@@ -20,9 +20,20 @@
     "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 464, "frontend": 822, "normal_browser": 158, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "5d147d7be16ab59a21258d2cd902bfb7cacb2da8 adds ordinary asset atomic audit, lossless quoted multiline paste/editing, truthful paste-error feedback and bounded import admission. Local proof includes 152 audit-related and 90 import/resource-related backend passes, 830 frontend tests, and source-scoped production-browser passes. Overlapping runs are not summed; fresh assembled CI is still required."
+    "later_source": "d9a5a8682d7df8ebc65300c1c19820d944f24c99 adds isolated migrated test templates, correct Network preference restoration, accessible Audit payloads, opaque shared reading surfaces and a semantic import test selector. Local proof includes 498 backend, 836 frontend, 61 cross-consumer production-browser and eight desktop saved-theme passes. The preceding hosted candidate fa0f5fac failed one stale import selector after 163 normal browser passes; desktop/root profiles did not run. Overlapping results are not summed; fresh assembled CI remains required."
   },
   "ci_history": [
+    {
+      "candidate": "fa0f5facf169cefb2e950357935509ef5258b1c3",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37047353435",
+      "tested_merge": "d28f75e30c2442ae3797e2d07ecea7a9aeaf4ff1",
+      "completed_at": "2026-10-02T19:00:54Z",
+      "conclusion": "failure",
+      "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 489, "frontend": 830, "normal_browser_passed": 163, "normal_browser_failed": 1, "normal_browser_preexisting_skips": 2 },
+      "failure": "Assets end-to-end import selected tbody tr input after the multiline editor became a labeled textarea. Hosted DOM and screenshot show the correct imported value. The same selector failed locally; desktop/root profiles did not run.",
+      "recovery": "d9a5a868 selects the exact Name, row 1 textbox within the import dialog, preserving value assertion, full workflow, timeout and retries. All 61 local import/Assets/Audit/Monitoring/Network/overlay/Rack/Services cases pass. Fresh assembled hosted proof remains required."
+    },
     {
       "candidate": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/32",
@@ -111,7 +122,7 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "5d147d7be16ab59a21258d2cd902bfb7cacb2da8",
+    "source_head": "d9a5a8682d7df8ebc65300c1c19820d944f24c99",
     "registered_api_operations": 310,
     "static_ui_declarations": 3132,
     "static_ui_routes": 19,
@@ -474,6 +485,36 @@
       "commit": "5d147d7be16ab59a21258d2cd902bfb7cacb2da8",
       "scope": "Import request/file/expansion/batch limits and safe parser scheduling",
       "archive_sha256": "da63da1c270394cad9420dfa742292d457198b88ce108ac4a30e658fd3fbf959"
+    },
+    {
+      "commit": "fa0f5facf169cefb2e950357935509ef5258b1c3",
+      "scope": "Eighth reviewed checkpoint and bounded-import source inventories",
+      "archive_sha256": "0ca186e2492f395ce97f8dc2655128a27a83012ad37a6f1cb50b3eb7106c3cfc"
+    },
+    {
+      "commit": "b772c8bc9e9393ce9ec3280f3096bec284f794a4",
+      "scope": "Profiled backend fixture capacity with independent per-test databases and fresh migration parity",
+      "archive_sha256": "703c8be86f8e1a9a83b3eb91a188f6d81ba453be8487c44606c9c3d98c316d48"
+    },
+    {
+      "commit": "1255794d5f87acab10d72b907becc4d7ec725cf7",
+      "scope": "Network preference restoration respects actual local fields and normalizes malformed stored collections",
+      "archive_sha256": "8115fbb5ba1fcf2b6cd866af40fabc64930d78900e52f14d5da8b864c92fdf73"
+    },
+    {
+      "commit": "755bc2dbbe87b3e80e8e8170ef38a9224ce9c258",
+      "scope": "Audit payload keyboard scrolling, accessible close target and persistent short-screen dismissal",
+      "archive_sha256": "e97193b14251277cf7f98259793fe56a6141ba9a8d0992fc25f13577ecc3e633"
+    },
+    {
+      "commit": "c1a9050f2cf312dd0ea6f3bde653226bb7dd3fe9",
+      "scope": "Opaque shared menus, notification and Audit payload surfaces in both themes",
+      "archive_sha256": "1dc292c7a98c7bbcc5e84e415e0acfa015ba3206dcf896c6793e53e019c1857f"
+    },
+    {
+      "commit": "d9a5a8682d7df8ebc65300c1c19820d944f24c99",
+      "scope": "Semantic import editor selector repairs proven hosted failure without weakening the workflow",
+      "archive_sha256": "d89552ddb8b4979c3d44698a6039a38f8ee287712f14ac97a3e012fdde621764"
     }
   ],
   "groups": [
@@ -562,10 +603,8 @@
           "outcome": "Correct layering, scroll ownership, focus trapping and return, Escape behavior, dismissal, and anchoring during resize or scrolling.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7"
-          ],
-          "remaining": "Diagnostic overlays and hardware/relationship table scroll ownership have scoped proof; editing rightmost columns no longer displaces surrounding forms. Remaining overlays, keyboard and viewport states require qualification."
+          "reviewed_commits": ["944c8709","be33d285","259ebc52","290e1db7","755bc2db","c1a9050f"],
+          "remaining": "Audit payload now supports native keyboard scrolling, 40px close targets and visible dismissal after short-screen scrolling; shared overlays use opaque reading surfaces. Existing focus return, Escape and viewport assertions pass. Other overlays, anchoring and viewport states still require qualification."
         },
         {
           "id": "B5",
@@ -573,10 +612,8 @@
           "outcome": "Consistent colors, contrast, typography, spacing, borders, icons, status badges, and hover, selected, and disabled states across populated screens.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7", "bb6bf5d5", "70ade100", "d838deac", "4629b134"
-          ],
-          "remaining": "Relationship and ordinary Asset form contrast passed assembled CI. Import pending status measures 8.788/7.578 and editable multiline values 13.977/17.853 in dark/light. Paste errors now use Action needed/error tone after visual inspection exposed a green success notice. Captures remain source-scoped; whole-surface visual states remain unqualified."
+          "reviewed_commits": ["944c8709","be33d285","259ebc52","290e1db7","bb6bf5d5","70ade100","d838deac","4629b134","c1a9050f"],
+          "remaining": "Shared Views/Display/notification surfaces and Audit payload are opaque in both themes; baseline light surfaces were 90%/80% opaque. Real populated screenshots and sampled contrast pass. Earlier form/import contrast remains scoped evidence. Complete product visual-state coverage is still open."
         },
         {
           "id": "B6",
@@ -585,10 +622,8 @@
           "tag": "Known repair",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7", "70ade100", "d838deac"
-          ],
-          "remaining": "Existing diagnostic and Asset mobile repairs have rendered proof. d838deac prevents import subtitle text overlapping mobile header actions and verifies request status/control containment at 390x844. Full import information hierarchy, long-content, short-height and large-text qualification remain."
+          "reviewed_commits": ["944c8709","be33d285","259ebc52","290e1db7","70ade100","d838deac","755bc2db"],
+          "remaining": "Audit payload at 390x844 and 740x360 now keeps dismissal visible during keyboard scrolling. Existing dialog containment was already correct. Earlier Asset and import header repairs remain reviewed; other long-content, short-height and large-text states need qualification."
         },
         {
           "id": "B7",
@@ -596,10 +631,8 @@
           "outcome": "Keyboard-only workflows, screen-reader semantics, visible focus, adequate targets, zoom and reflow, and reduced-motion behavior.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": [
-            "944c8709", "be33d285", "259ebc52", "290e1db7", "70ade100", "d838deac"
-          ],
-          "remaining": "Ordinary Asset native labels and associated errors passed assembled CI. Shared import native fields/selection/actions gain names, busy status is announced, and reduced-motion pending indicators are locally verified. Remaining custom-dropdown names, complete keyboard/zoom and assistive-technology acceptance remain."
+          "reviewed_commits": ["944c8709","be33d285","259ebc52","290e1db7","70ade100","d838deac","755bc2db"],
+          "remaining": "Audit JSON is a labeled keyboard-focusable scrolling region; close is 40x40, remains visible after scrolling, returns focus and respects reduced motion. Existing shared form semantics remain. Full keyboard, zoom/reflow and assistive-technology acceptance is still required."
         },
         {
           "id": "B8",
@@ -607,8 +640,8 @@
           "outcome": "Reliable filtering, sorting, selection, grouping, saved views, column preferences, bulk actions, history, and comparison where applicable.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["82c2586e"],
-          "remaining": "Network search now retains and persists newer typed input when initial preferences arrive late, proven in both themes. Other preference fields/modules, saved-view precedence, grouping and bulk mechanics still require complete qualification."
+          "reviewed_commits": ["82c2586e","1255794d"],
+          "remaining": "Network restores remote search, display and views when browser storage is empty/partial; actual local fields and explicitly empty favorites retain precedence. Malformed local collections no longer crash the route. Delayed typing remains protected. Other modules/fields, user/tenant namespaces and cross-device conflicts remain."
         },
         {
           "id": "B9",
@@ -782,8 +815,8 @@
           "outcome": "Valid endpoints, ports, direction and connection semantics; consistent creation, import, and bulk validation; useful relationship navigation.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["679f366a", "82c2586e"],
-          "remaining": "Assets interface projection is scoped and tenant-aware. Network search hydration is now qualified against delayed preferences in both themes and existing workflows pass locally. Network endpoint creation/import/bulk contracts and broader semantics remain unqualified."
+          "reviewed_commits": ["679f366a","82c2586e","1255794d"],
+          "remaining": "Assets interface projection is tenant-aware; Network search and preference restoration now have both-theme browser proof, including malformed storage and server readback. Direct Network endpoint creation, read/mutation scoping, import/bulk contracts and broader semantics remain unqualified."
         },
         {
           "id": "D6",
@@ -800,8 +833,8 @@
           "outcome": "Correct actor and target history, date and filter semantics, stable pagination, complete-scope exports, useful record links, and protected retention.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["bf236cad"],
-          "remaining": "Ordinary asset writes now produce canonical actor/target audit records atomically, with bounded changed-field metadata and no duplicate no-op record. Both-theme browser proof covers scoped create/edit history, payload inspection and exact asset return links; existing bounded-query/date tests pass. Full writer coverage, visual/mobile states, complete-scope exports and retention remain."
+          "reviewed_commits": ["bf236cad","755bc2db","c1a9050f"],
+          "remaining": "Ordinary Asset writes have atomic actor/target audit; Audit payload keyboard scrolling, close targets, short-screen dismissal, reduced motion, focus return and opaque surfaces pass both-theme browser checks. Full writer coverage, pagination/export scope, roles and retention remain."
         },
         {
           "id": "D8",
@@ -873,10 +906,8 @@
           "outcome": "Required checks protect the actual PR and main candidate; dependency locks, vulnerability checks, secret scanning, and risk-based regression coverage stay current.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": [
-            "38c82a58", "0c9cabcf", "597c2dd9", "2a56682a", "adce6f8e", "bf236cad", "5d147d7b"
-          ],
-          "remaining": "1362951e passed 76 startup/recovery checks plus 23 subtests, 464 backend, 822 frontend, 158 normal browser checks with two existing skips, 35 desktop and six root journeys. New ordinary audit/paste/resource stages require fresh assembled CI. This job took 43m58s within its unchanged 45-minute deadline; backend alone took 1285.98s. Pipeline runtime margin, supply-chain and final release checks remain."
+          "reviewed_commits": ["38c82a58","0c9cabcf","597c2dd9","2a56682a","adce6f8e","bf236cad","5d147d7b","b772c8bc","d9a5a868"],
+          "remaining": "Hosted fa0f5fac passed 489 backend and 830 frontend tests but failed one stale import selector after 163 normal browser passes; later profiles did not run. The semantic selector repair passes all 61 cross-consumer browser checks locally. Profiling the same 25 backend tests reduced local runtime from29.87s to5.26s by migrating once and cloning independent databases; all498 canonical backend tests and836 frontend tests pass locally. Fresh hosted timing/proof, supply-chain controls and final release checks remain."
         },
         {
           "id": "E7",
