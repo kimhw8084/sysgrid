@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, delete, update, or_, and_, func
 from typing import List
 from ..database import get_db
@@ -291,12 +292,24 @@ async def create_connection(data: schemas.NetworkConnectionCreate, request: Requ
         cable_type=cable_type_value,
         status=status_value,
         farm=farm_value,
-        request_link=payload.get('request_link')
+        request_link=payload.get('request_link'),
+        created_by_user_id=get_audit_actor(request),
     )
-    db.add(conn)
-    log = build_audit_log(request=request, action="CREATE", target_table="port_connections", description=f"Established link between dev {source_device_id} and {target_device_id}")
-    db.add(log)
-    await db.commit()
+    try:
+        db.add(conn)
+        await db.flush()
+        db.add(build_audit_log(
+            request=request, action='CREATE', target_table='port_connections', target_id=str(conn.id),
+            description=f'Established link between dev {source_device_id} and {target_device_id}',
+            changes={'changed_fields': sorted(payload)},
+        ))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Network connection conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
     await db.refresh(conn)
     return conn
 
