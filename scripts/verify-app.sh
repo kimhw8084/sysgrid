@@ -23,14 +23,32 @@ reset_generated_evidence() {
 reset_generated_evidence
 verify_runtime_resolve_python
 
+(
+  cd "$ROOT_DIR"
+  "$PYTHON_BIN" -m pytest -q \
+    scripts/tests/test_safe_startup.py \
+    scripts/tests/test_runtime_origin_config.py \
+    scripts/tests/test_production_data_guard.py \
+    scripts/tests/test_production_lifecycle.py \
+    scripts/tests/test_production_preflight.py
+  bash scripts/workstation-up.sh --self-test
+)
+
 BACKEND_QUALIFICATION_TESTS=(
   test_migration_graph.py
   test_system_management_v1_policy.py
   test_chg13_authorization_security.py
+  test_environment_identity.py
+  test_rate_limit_identity.py
+  test_sync_authorization.py
+  test_production_startup_policy.py
   test_runtime_diagnostics.py
   test_dashboard_metrics.py
   test_tenant_isolation.py
   test_tenant_workflows.py
+  test_maintenance_integrity.py
+  test_cross_module_integrations.py
+  test_operational_actions.py
   test_settings_api_edges.py
   test_settings_workflows.py
   test_monitoring_query_and_bulk_edges.py
@@ -39,6 +57,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_network_workflows.py
   test_service_workflows.py
   test_racks_api_edges.py
+  test_rack_read_queries.py
   test_racks_workflows.py
   test_workspace_views.py
   test_workspace_team_views.py
@@ -124,6 +143,7 @@ export SYSGRID_VERIFY_PROFILE="root-preview"
   echo "verify:app root-preview gate requires SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID; no identity is inferred." >&2
   exit 1
 }
+export SYSGRID_VERIFY_CONTROL_PLANE_ADMIN_USER_IDS="$SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID"
 verify_runtime_start
 (
   cd "$FRONTEND_DIR"

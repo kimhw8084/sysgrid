@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import { useWorkspacePrompt } from './shared/useWorkspacePrompt'
@@ -3007,16 +3008,7 @@ export default function Projects() {
     return JSON.stringify(draftProject) !== JSON.stringify(selectedProject)
   }, [isGlobalEditing, draftProject, selectedProject])
 
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault()
-        e.returnValue = ''
-      }
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [isDirty])
+  usePageLeaveGuard(isDirty)
 
   const mutation = useMutation({
     mutationFn: async ({ data, silent }: { data: any, silent?: boolean }) => {

@@ -6,7 +6,7 @@ const join = (...parts: Array<string | false | null | undefined>) => parts.filte
 
 export const GOLDEN_PAGE_HEADER_CLASS = 'flex flex-wrap items-start justify-between gap-6'
 export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'
-export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-1 lg:flex-wrap'
+export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-auto lg:flex-wrap'
 export const GOLDEN_TOOLBAR_RIGHT_CLASS = 'flex min-w-max flex-nowrap items-center justify-end gap-3 lg:flex-wrap'
 const TOOLBAR_CONTROL_HEIGHT = 'h-10'
 
@@ -76,7 +76,7 @@ export const PageToolbar = ({
     )}
     data-golden-page-toolbar="true"
   >
-    {left ? <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center gap-3 lg:w-auto lg:min-w-0 lg:flex-1' : GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
+    {left ? <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center gap-3 lg:w-auto lg:min-w-0 lg:flex-auto' : GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
     {right && <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center justify-start gap-3 lg:w-auto lg:justify-end' : GOLDEN_TOOLBAR_RIGHT_CLASS} data-golden-toolbar-right="true">{right}</div>}
   </section>
 )

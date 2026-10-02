@@ -713,7 +713,7 @@ export default function FAR() {
       minWidth: 200,
       filter: 'agTextColumnFilter',
       tooltipField: 'title',
-      valueClassName: 'operational-grid-text font-bold uppercase text-white',
+      valueClassName: 'operational-grid-text font-bold uppercase text-[var(--text-primary)]',
       alignment: 'left',
       hide: hiddenColumns.includes('title'),
     }),

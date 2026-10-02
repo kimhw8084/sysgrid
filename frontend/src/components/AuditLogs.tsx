@@ -193,7 +193,10 @@ export default function AuditLogs() {
     },
     {
         headerName: 'ACTIONS',
-        width: 150,
+        colId: 'audit-actions',
+        width: 88,
+        minWidth: 88,
+        maxWidth: 88,
         pinned: 'right' as const,
         cellRenderer: (params: any) => {
           const target = resolveOperationalObjectReference(params.data?.target_table, params.data?.target_id)
@@ -420,6 +423,11 @@ export default function AuditLogs() {
           ref={gridRef}
           rowData={logs}
           columnDefs={columnDefs}
+          processUnpinnedColumns={({ api, columns }) => {
+            // Keep record actions reachable when pinned columns exceed a narrow viewport.
+            const leftColumns = api.getColumns()?.filter(column => column.getPinned() === 'left') || []
+            return leftColumns.length ? leftColumns : columns
+          }}
           defaultColDef={{ 
               resizable: true, 
               filter: true, 

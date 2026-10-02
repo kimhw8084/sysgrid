@@ -350,7 +350,10 @@ async def test_embedded_target_resolution_is_tenant_scoped_and_fails_closed():
 
 
 @pytest.mark.anyio
-async def test_websocket_broadcast_does_not_cross_tenant_connections():
+async def test_websocket_broadcast_does_not_cross_tenant_connections(monkeypatch):
+    async def authorized(scopes):
+        return scopes
+    monkeypatch.setattr("app.main.authorized_sync_scopes", authorized)
     class FakeWebSocket:
         def __init__(self):
             self.messages = []

@@ -398,3 +398,37 @@
   background-color: var(--projects-surface-shell);
   border-color: var(--projects-border-subtle);
 }
+
+/* The approved Soft Carbon identities share the application palette. */
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='dark']) [data-workspace='projects'] {
+  --projects-surface-base: var(--surface-base);
+  --projects-surface-shell: var(--sidebar-bg);
+  --projects-surface-work: var(--panel-item-bg);
+  --projects-surface-raised: var(--surface-hover);
+  --projects-surface-elevated: var(--input-bg);
+  --projects-border-subtle: var(--border-subtle);
+  --projects-border-strong: var(--border-default);
+  --projects-text-primary: var(--text-primary);
+  --projects-text-secondary: var(--text-secondary);
+  --projects-text-muted: var(--text-muted);
+  --projects-text-soft: var(--text-secondary);
+  --projects-text-disabled: var(--text-muted);
+  --projects-focus: var(--focus-ring);
+}
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='dark']) body:has([data-workspace='projects']) [role='dialog'] :is(.text-slate-700, .text-slate-600) {
+  color: var(--text-muted);
+}
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='dark']) body:has([data-workspace='projects']) [role='dialog'] .text-slate-500 {
+  color: var(--text-secondary);
+}
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='dark']) body:has([data-workspace='projects']) [role='dialog'] :is(input, textarea, select) {
+  background-color: var(--input-bg);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='dark']) body:has([data-workspace='projects']) [role='dialog'] :is(input, textarea)::placeholder {
+  color: var(--text-muted);
+}
+:is(html[data-theme='nordic-frost-v1'], html[data-theme='dark']) body:has([data-workspace='projects']) [role='dialog'] :is(button, input, textarea, select, a):focus-visible {
+  outline-color: var(--focus-ring);
+}

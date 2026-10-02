@@ -1,19 +1,27 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { createPortal } from "react-dom"
 import { useWorkspacePopupDismiss } from "./WorkspaceOverlay"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useIsMutating, useQueryClient } from "@tanstack/react-query"
+import { useNavigate } from 'react-router-dom'
 import { Database, ChevronDown, Check, Plus, Server } from "lucide-react"
 import { apiFetch } from "../../api/apiClient"
 import toast from "react-hot-toast"
+import { beginTenantSwitch, getCurrentTenantId, selectCurrentTenant } from '../../api/tenantContext'
+import { approveWorkspaceDeparture, hasUnsavedWorkspaceChanges } from './workspaceDeparture'
+import { useWorkspaceConfirmation } from './useWorkspaceConfirmation'
+import { WorkspaceModal } from './WorkspaceModal'
 import {
   getWorkspaceFloatingPanelClass,
-  useEscapeDismiss,
   useWorkspaceAnchoredLayer,
 } from "./OperationalWorkspacePrimitives"
 
 export function TenantSelector({ compact = false }: { compact?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const pendingMutations = useIsMutating()
+  const { confirm, confirmation } = useWorkspaceConfirmation()
+  const [confirming, setConfirming] = useState(false)
   const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 256 })
   const getTenantLabel = (tenant: any) => {
     if (tenant?.name?.trim()) return tenant.name
@@ -23,37 +31,69 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
     return parts[parts.length - 1] || `Tenant #${tenant?.id ?? "unknown"}`
   }
 
-  const { data: tenants, isLoading } = useQuery({
+  const { data: tenants, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['my-tenants'],
     queryFn: async () => {
       const res = await apiFetch("/api/v1/tenants/me")
-      if (!res.ok) return []
+      if (!res.ok) throw new Error('Failed to load available tenants')
       return res.json()
     }
   })
 
   const selectMutation = useMutation({
     mutationFn: async (tenantId: number) => {
-      const res = await apiFetch("/api/v1/tenants/select", {
-        method: "POST",
-        body: JSON.stringify({ tenant_id: tenantId })
-      })
-      if (!res.ok) throw new Error("Failed to switch database")
-      return res.json()
+      const finishSwitch = beginTenantSwitch()
+      try {
+        const res = await apiFetch("/api/v1/tenants/select", {
+          method: "POST",
+          body: JSON.stringify({ tenant_id: tenantId })
+        })
+        const result = await res.json()
+        if (!res.ok || result.tenant_id !== tenantId) throw new Error("Could not confirm the tenant switch")
+        await queryClient.cancelQueries()
+        selectCurrentTenant(tenantId)
+        return result
+      } finally {
+        finishSwitch()
+      }
     },
-    onSuccess: (_data, tenantId) => {
-      localStorage.setItem('SYSGRID_TENANT_ID', String(tenantId))
-      toast.success("Database switched successfully")
-      queryClient.invalidateQueries()
-      // Reload the page to ensure all components refresh with new data context
+    onSuccess: () => {
+      // Consent happens before the server request, never in a later unload dialog.
+      approveWorkspaceDeparture()
       window.location.reload()
-    },
-    onError: (err: any) => {
-      toast.error(err.message)
     }
   })
 
-  const activeTenant = tenants?.find((t: any) => t.is_selected)
+  const isSelected = (tenant: any) => String(tenant.id) === getCurrentTenantId()
+  const activeTenant = tenants?.find(isSelected)
+  const requestSwitch = async (tenant: any) => {
+    if (confirming || selectMutation.isPending) return
+    if (isSelected(tenant)) { setIsOpen(false); return }
+    if (queryClient.isMutating()) {
+      toast('Wait for the current save to finish before switching tenants.')
+      return
+    }
+    setConfirming(true)
+    setIsOpen(false)
+    try {
+      const accepted = await confirm({
+        title: 'Switch tenant?',
+        message: hasUnsavedWorkspaceChanges()
+          ? `Switch to ${getTenantLabel(tenant)} and discard unsaved changes in this tab? Other tabs keep their current tenant.`
+          : `Switch this tab to ${getTenantLabel(tenant)}? Other tabs keep their current tenant.`,
+        confirmText: 'Switch tenant', cancelText: 'Stay here', variant: 'warning',
+      })
+      if (!accepted) return
+      if (queryClient.isMutating()) {
+        toast('Wait for the current save to finish before switching tenants.')
+        return
+      }
+      selectMutation.mutate(tenant.id)
+    } finally {
+      setConfirming(false)
+    }
+  }
+  const tenantLabel = selectMutation.isPending ? 'Switching tenant...' : isLoading ? 'Loading...' : isError ? 'Tenant unavailable' : activeTenant ? getTenantLabel(activeTenant) : 'No tenant selected'
 
   useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
 
@@ -64,6 +104,8 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
           triggerRef.current = node
         }}
         onClick={() => setIsOpen(!isOpen)}
+        disabled={selectMutation.isPending || confirming || pendingMutations > 0}
+        aria-busy={selectMutation.isPending || isLoading}
         className={`flex min-h-10 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 hover:bg-[var(--surface-hover)] ${compact ? 'w-full min-w-0' : ''}`}
         aria-label="Switch tenant"
         aria-expanded={isOpen}
@@ -74,8 +116,8 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
         </div>
         <div className={`flex flex-col items-start ${compact ? 'min-w-0 flex-1' : 'min-w-[120px]'}`}>
            <span className="text-[10px] font-medium text-[var(--text-muted)]">Current tenant</span>
-           <span className={`${compact ? 'max-w-full' : 'max-w-[150px]'} truncate text-sm font-medium text-[var(--text-primary)]`} title={activeTenant ? getTenantLabel(activeTenant) : 'Default tenant'}>
-             {isLoading ? 'Loading...' : (activeTenant ? getTenantLabel(activeTenant) : 'Default tenant')}
+           <span className={`${compact ? 'max-w-full' : 'max-w-[150px]'} truncate text-sm font-medium text-[var(--text-primary)]`} title={tenantLabel}>
+             {tenantLabel}
            </span>
         </div>
         <ChevronDown size={14} aria-hidden="true" className={`shrink-0 text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -91,61 +133,63 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
               onMouseDown={(e) => e.stopPropagation()}
               className={`${getWorkspaceFloatingPanelClass('menu')} overflow-hidden backdrop-blur-xl`}
             >
-              <div className="p-4 border-b border-white/5 bg-white/2">
+              <div className="p-4 border-b border-[var(--border-subtle)] bg-[var(--surface-elevated)]">
                  <h4 className="text-sm font-semibold text-[var(--text-primary)]">Switch tenant</h4>
               </div>
               
               <div className="max-h-[300px] overflow-y-auto custom-scrollbar p-2 space-y-1">
-                {tenants?.map((tenant: any) => (
+                {!isError && tenants?.map((tenant: any) => (
                   <button
                     key={tenant.id}
                     type="button"
-                    onClick={() => {
-                      if (tenant.is_selected) {
-                        toast("This database is already active", { icon: "ℹ️" })
-                      } else if (!tenant.is_online) {
-                        toast.error("This database is offline and cannot be activated")
-                      } else {
-                        selectMutation.mutate(tenant.id)
-                      }
-                      setIsOpen(false)
-                    }}
-                    disabled={!tenant.is_online}
+                    onClick={() => void requestSwitch(tenant)}
+                    disabled={!tenant.is_online || selectMutation.isPending}
                     role="menuitem"
-                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${tenant.is_selected ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : tenant.is_online ? 'hover:bg-white/5 text-slate-400 hover:text-white' : 'opacity-40 cursor-not-allowed'}`}
+                    className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${isSelected(tenant) ? 'bg-[var(--action-primary)] text-white' : tenant.is_online ? 'hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' : 'text-[var(--text-muted)] opacity-50 cursor-not-allowed'}`}
                   >
                     <div className="flex items-center gap-3">
                        <div className="relative">
-                          <Server size={14} className={tenant.is_selected ? 'text-white' : 'text-slate-500'} />
-                          <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border-2 border-[#0f172a] ${tenant.is_online ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                          <Server size={14} />
+                          <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border-2 border-[var(--surface-elevated)] ${tenant.is_online ? 'bg-[var(--state-success)]' : 'bg-[var(--state-danger)]'}`} />
                        </div>
                        <div className="flex flex-col items-start">
-                    <span className="text-[11px] font-black tracking-[0.04em]">{getTenantLabel(tenant)}</span>
+                    <span className="text-sm font-medium">{getTenantLabel(tenant)}</span>
                           <div className="flex items-center gap-2">
-                             <span className="text-[8px] font-bold uppercase opacity-60">{tenant.role}</span>
-                             {!tenant.is_online && <span className="text-[7px] font-black text-rose-500 uppercase">Offline</span>}
+                             <span className="text-xs">{tenant.role}</span>
+                             {!tenant.is_online && <span className="text-xs text-[var(--state-danger)]">Offline</span>}
                           </div>
                        </div>
                     </div>
-                    {tenant.is_selected && <Check size={14} />}
+                    {isSelected(tenant) && <Check size={14} />}
                   </button>
                 ))}
 
-                {(!tenants || tenants.length === 0) && !isLoading && (
+                {isError && (
+                  <div className="p-4 text-center space-y-3" role="status">
+                    <p className="text-xs text-[var(--state-danger)]">Available tenants could not be loaded.</p>
+                    <button type="button" role="menuitem" disabled={isFetching} onClick={() => void refetch()}
+                      className="rounded-md border border-[var(--border-default)] px-3 py-2 text-xs text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-50">
+                      {isFetching ? 'Retrying...' : 'Retry tenant list'}
+                    </button>
+                  </div>
+                )}
+                {isLoading && <p className="p-4 text-xs text-[var(--text-muted)]" role="status">Loading available tenants...</p>}
+                {(!tenants || tenants.length === 0) && !isLoading && !isError && (
                    <div className="p-4 text-center">
-                      <p className="text-[10px] font-semibold text-[var(--text-muted)]">No other tenants available</p>
+                      <p className="text-[10px] font-semibold text-[var(--text-muted)]">No accessible tenants available</p>
                    </div>
                 )}
               </div>
 
-              <div className="p-3 bg-black/20 border-t border-white/5">
+              <div className="p-3 bg-[var(--surface-elevated)] border-t border-[var(--border-subtle)]">
                  <button 
                     onClick={() => {
                         setIsOpen(false);
                         // Navigate to settings tab for multi-tenancy if admin
-                        window.location.href = '/settings?tab=tenants';
+                        navigate('/settings?tab=tenants');
                     }}
-                    className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-white/5 text-[9px] font-black uppercase text-slate-500 hover:text-white hover:bg-white/5 transition-all"
+                    role="menuitem"
+                    className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-[var(--border-subtle)] text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
                  >
                     <Plus size={12} /> Manage tenants
                  </button>
@@ -153,6 +197,11 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
             </div>,
           document.body
         )}
+      {confirmation}
+      <WorkspaceModal isOpen={selectMutation.isPending} onClose={() => {}} title="Switching tenant"
+        hideCloseButton hideFooterClose size="standard">
+        <p role="status" className="p-5 text-sm text-[var(--text-secondary)]">Finishing the tenant switch…</p>
+      </WorkspaceModal>
     </div>
   )
 }

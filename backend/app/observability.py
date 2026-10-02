@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
+from hashlib import sha256
 from time import monotonic
 from typing import Deque
 
@@ -56,11 +57,17 @@ class SlidingWindowRateLimiter:
 
 
 def request_rate_limit_key(request, actor_id: str | None = None) -> str:
-    """Build a non-sensitive throttle key from trusted routing context."""
-    tenant = request.headers.get("X-Tenant-Id", "unknown")
-    actor = actor_id or request.headers.get("X-Authenticated-User") or request.headers.get("X-User-Id") or "anonymous"
-    path = request.url.path.split("/", 4)[:4]
-    return ":".join((str(tenant)[:80], str(actor)[:200], request.method.upper(), "/".join(path)))
+    """One budget per resolved principal, or transport peer when unauthenticated.
+
+    The caller must resolve identity through the authentication contract. Do
+    not let arbitrary headers, tenant hints, paths or verbs mint new budgets.
+    Hash the identifier so the in-memory key does not retain its plaintext.
+    """
+    if actor_id:
+        namespace, identity = "actor", actor_id
+    else:
+        namespace, identity = "peer", request.client.host if request.client else "unknown"
+    return f"{namespace}:{sha256(identity.encode('utf-8')).hexdigest()}"
 
 
 def safe_request_metric(*, request_id: str, method: str, path: str, status_code: int, duration_ms: float, workspace: str | None = None, command_id_present: bool = False, outcome: str | None = None, projection_lag_ms: float | None = None, schedule_calculation_version: str | None = None, schedule_calculation_duration_ms: float | None = None, schedule_cache_status: str | None = None, upload_scan_state: str | None = None, job_delivery_status: str | None = None) -> dict[str, object]:

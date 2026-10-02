@@ -18,9 +18,19 @@ export async function expectReadableGridText(page: Page, testInfo: TestInfo, nam
     return cells.flatMap(cell => {
       const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT)
       const result = []
+      const contents: Array<{ element: Element; text: string }> = []
       for (let node = walker.nextNode(); node; node = walker.nextNode()) {
         const element = node.parentElement!
         const text = node.textContent?.trim()
+        if (text) contents.push({ element, text })
+      }
+      const controls = cell.matches('input, textarea, select') ? [cell] : Array.from(cell.querySelectorAll('input, textarea, select'))
+      for (const control of controls) {
+        if ((control as HTMLInputElement).value && !control.matches('[type="hidden"], [type="color"], [type="checkbox"], [type="radio"]')) {
+          contents.push({ element: control, text: control.getAttribute('aria-label') || control.getAttribute('placeholder') || 'Form control value' })
+        }
+      }
+      for (const { element, text } of contents) {
         if (!text || element.closest('[disabled], [aria-disabled="true"], [aria-hidden="true"]')) continue
         const bounds = element.getBoundingClientRect()
         const style = getComputedStyle(element)

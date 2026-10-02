@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, AliasChoices, field_validator, model_validator
 from typing import List, Optional, Any, Dict, Literal
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 from ipaddress import ip_address
 from math import isfinite
@@ -128,7 +128,40 @@ class MaintenanceWindowBase(BaseModel):
     coordinator: Optional[str] = None
     status: str = "Scheduled"
 
-class MaintenanceWindowCreate(MaintenanceWindowBase): pass
+class MaintenanceWindowCreate(MaintenanceWindowBase):
+    device_id: int = Field(gt=0, strict=True)
+    title: str = Field(min_length=1, max_length=500)
+    start_time: datetime
+    end_time: datetime
+    ticket_number: Optional[str] = Field(default=None, max_length=500)
+    coordinator: Optional[str] = Field(default=None, max_length=500)
+    status: str = Field(default="Scheduled", min_length=1, max_length=100)
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    @field_validator("start_time", "end_time", mode="before")
+    @classmethod
+    def require_datetime_value(cls, value):
+        if not isinstance(value, (str, datetime)):
+            raise ValueError("Use an ISO 8601 date and time")
+        return value
+
+    @model_validator(mode="after")
+    def validate_time_range(self):
+        start_aware = self.start_time.utcoffset() is not None
+        end_aware = self.end_time.utcoffset() is not None
+        if start_aware != end_aware:
+            raise ValueError("Start and end must use the same timezone convention")
+        # Existing datetime-local clients supply UTC-naive values. Preserve that
+        # contract, and normalize explicit offsets before storing in SQLite's
+        # existing timezone-naive columns (which otherwise discard the offset).
+        if start_aware:
+            self.start_time = self.start_time.astimezone(timezone.utc).replace(tzinfo=None)
+            self.end_time = self.end_time.astimezone(timezone.utc).replace(tzinfo=None)
+        if self.end_time <= self.start_time:
+            raise ValueError("End time must be after start time")
+        return self
+
 class MaintenanceWindowResponse(MaintenanceWindowBase, BaseSchema): pass
 
 class MonitoringOwnerBase(BaseModel):

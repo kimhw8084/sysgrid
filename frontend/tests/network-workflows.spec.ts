@@ -887,22 +887,24 @@ test.describe('Network workflows', () => {
     // Make an edit to make it dirty
     await bulkModal.locator('input[type="number"]').first().fill('50')
 
-    const confirmDialog = page.locator('.absolute.inset-0').filter({ hasText: 'Discard Bulk Edits?' })
+    const confirmDialog = page.getByRole('alertdialog', { name: 'Discard Bulk Edits?', exact: true })
 
     // Route A: Backdrop/Overlay Click dirty safety trigger
     await bulkModal.click({ position: { x: 5, y: 5 } })
     await expect(confirmDialog).toBeVisible({ timeout: 5000 })
-    // Click Close inside safety popup to return to editing
-    await confirmDialog.getByRole('button', { name: 'Close', exact: true }).click()
+    // Explicit cancellation returns to the same draft.
+    await confirmDialog.getByRole('button', { name: 'Keep editing', exact: true }).click()
     await expect(confirmDialog).not.toBeVisible()
     await expect(bulkModal).toBeVisible()
+    await expect(bulkModal.locator('input[type="number"]').first()).toHaveValue('50')
 
     // Route B: Escape Key dirty safety trigger
     await page.keyboard.press('Escape')
     await expect(confirmDialog).toBeVisible({ timeout: 5000 })
-    await confirmDialog.getByRole('button', { name: 'Close', exact: true }).click()
+    await confirmDialog.getByRole('button', { name: 'Keep editing', exact: true }).click()
     await expect(confirmDialog).not.toBeVisible()
     await expect(bulkModal).toBeVisible()
+    await expect(bulkModal.locator('input[type="number"]').first()).toHaveValue('50')
 
     // Route C: Canonical Close button dirty safety trigger
     await closeButtons.click()
