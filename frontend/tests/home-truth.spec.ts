@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { createAsset, createMonitoring, createService, resetBrowserState } from './helpers/sysgrid'
+import { createAsset, createMonitoring, createService, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const headers = {
@@ -103,3 +103,45 @@ test.describe('CHG-49 Home truth projection', () => {
     await expect(page).toHaveURL(new RegExp(`/asset\\?id=${asset.id}`))
   })
 })
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`Home preserves every unknown inventory count and drills through in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const before = await request.get(`${apiBase}/dashboard/metrics`)
+    expect(before.ok()).toBeTruthy()
+    const baseline = await before.json()
+    const stamp = Date.now()
+    let name = ''
+    let assetId = 0
+    for (const [typeIndex, type] of [null, '', 'Unknown'].entries()) {
+      for (const [statusIndex, status] of [null, '', 'Unknown'].entries()) {
+        name = `Home count ${theme} ${stamp} ${typeIndex}-${statusIndex}`
+        assetId = (await createAsset(request, { name, system: 'Home count proof', type, status })).id
+      }
+    }
+    const response = await request.get(`${apiBase}/dashboard/metrics`)
+    expect(response.ok()).toBeTruthy()
+    const metrics = await response.json()
+    const overview = metrics.asset_overview
+    expect(overview.total).toBe(baseline.asset_overview.total + 9)
+    expect(overview.breakdown.Unknown.Unknown).toBe((baseline.asset_overview.breakdown.Unknown?.Unknown || 0) + 9)
+    const count = Object.values(overview.breakdown as Record<string, Record<string, number>>)
+      .reduce((sum, states) => sum + Object.values(states).reduce((subtotal, value) => subtotal + value, 0), 0)
+    expect(count).toBe(overview.total)
+    expect(metrics.observed_health.history.available).toBe(false)
+    await page.goto('/')
+    const card = page.getByRole('link', { name: 'Open Infrastructure assets', exact: true })
+    await expect(card.getByRole('heading', { level: 2 })).toHaveText(String(overview.total))
+    await expect(card.locator(`[title="Unknown: ${overview.breakdown.Unknown.Unknown}"]`)).toBeVisible()
+    await card.screenshot({ path: testInfo.outputPath(`home-count-${theme}.png`), animations: 'disabled' })
+    await card.click()
+    await expect(page).toHaveURL(/\/asset(?:\?|$)/)
+    await fillGridSearch(page, 'Scan asset matrix...', name)
+    await expect(page.locator('.ag-center-cols-container .ag-row')).toHaveCount(1)
+    const row = await getWorkspaceLogicalRowByText(page, 'assets', name)
+    expect(row.rowKey).toBe(String(assetId))
+  })
+}

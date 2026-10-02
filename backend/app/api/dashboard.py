@@ -3,13 +3,15 @@ from typing import Any, Dict, List, Literal
 
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
-from sqlalchemy import desc, func, or_, select
+from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
 from ..database import get_db
 from ..models import models
 from .module_policy import build_effective_policy
+from .logical_services import _service_scope
+from .networks import _connection_scope
 
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -116,8 +118,18 @@ async def _grouped_counts(
     for value, state, count in rows:
         dimension_value = value or "Unknown"
         status_value = state or "Unknown"
-        result.setdefault(dimension_value, {})[status_value] = int(count)
+        states = result.setdefault(dimension_value, {})
+        # NULL, empty text and the literal Unknown share one display bucket.
+        # Their SQL groups must accumulate instead of overwriting one another.
+        states[status_value] = states.get(status_value, 0) + int(count)
     return result
+
+
+def _home_connection_scope(request: Request):
+    return and_(
+        _connection_scope(request),
+        or_(models.PortConnection.status != 'Deleted', models.PortConnection.status.is_(None)),
+    )
 
 
 def _module_target(policy: dict[str, Any], module_id: str) -> tuple[str | None, str | None]:
@@ -207,9 +219,9 @@ async def get_metrics(request: Request, db: AsyncSession = Depends(get_db)):
     as_of = datetime.now(timezone.utc)
     visible = lambda module_id: bool(policy["modules"].get(module_id, {}).get("available"))
 
-    assets_filter = models.Device.is_deleted.is_(False)
-    services_filter = models.LogicalService.is_deleted.is_(False)
-    network_filter = True
+    assets_filter = and_(models.Device.is_deleted.is_(False), models.Device.tenant_id == request.state.tenant_id)
+    services_filter = and_(models.LogicalService.is_deleted.is_(False), _service_scope(request))
+    network_filter = _home_connection_scope(request)
     monitoring_filter = models.MonitoringItem.is_deleted.is_(False)
     racks_filter = models.Rack.is_deleted.is_(False)
 
@@ -262,7 +274,7 @@ async def get_metrics(request: Request, db: AsyncSession = Depends(get_db)):
         select(func.count(func.distinct(models.DeviceLocation.device_id)))
         .join(models.Device, models.Device.id == models.DeviceLocation.device_id)
         .join(models.Rack, models.Rack.id == models.DeviceLocation.rack_id)
-        .where(models.Device.is_deleted.is_(False), racks_filter)
+        .where(assets_filter, racks_filter)
     )
     racked_assets = int((await db.execute(racked_assets_query)).scalar() or 0) if visible("assets") and visible("racks") else None
     sites = (
@@ -421,7 +433,7 @@ async def get_metrics(request: Request, db: AsyncSession = Depends(get_db)):
             truth=_module_scoped_truth(
                 value=network_total if visible("network") else None,
                 kind="inventory",
-                source="port_connections table",
+                source="port_connections table (non-deleted rows)",
                 as_of=as_of,
                 policy=policy,
                 module_id="network",
@@ -493,6 +505,7 @@ async def global_search(q: str, request: Request, db: AsyncSession = Depends(get
                 select(models.Device)
                 .where(
                     models.Device.is_deleted.is_(False),
+                    models.Device.tenant_id == request.state.tenant_id,
                     (models.Device.name.ilike(search_term))
                     | (models.Device.system.ilike(search_term))
                     | (models.Device.asset_tag.ilike(search_term))
@@ -572,6 +585,7 @@ async def global_search(q: str, request: Request, db: AsyncSession = Depends(get
                 select(models.LogicalService)
                 .where(
                     models.LogicalService.is_deleted.is_(False),
+                    _service_scope(request),
                     (models.LogicalService.name.ilike(search_term))
                     | (models.LogicalService.service_type.ilike(search_term))
                     | (models.LogicalService.environment.ilike(search_term))
@@ -660,6 +674,7 @@ async def global_search(q: str, request: Request, db: AsyncSession = Depends(get
                 .join(source_device, models.PortConnection.source_device_id == source_device.id)
                 .join(target_device, models.PortConnection.target_device_id == target_device.id)
                 .where(
+                    _home_connection_scope(request),
                     or_(
                         models.PortConnection.source_port.ilike(search_term),
                         models.PortConnection.target_port.ilike(search_term),

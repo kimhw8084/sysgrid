@@ -60,6 +60,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_production_startup_policy.py
   test_runtime_diagnostics.py
   test_dashboard_metrics.py
+  test_home_projection_integrity.py
   test_tenant_isolation.py
   test_tenant_workflows.py
   test_maintenance_integrity.py
