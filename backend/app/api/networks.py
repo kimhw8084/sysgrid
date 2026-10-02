@@ -316,10 +316,12 @@ async def create_connection(data: schemas.NetworkConnectionCreate, request: Requ
 @router.post("/connections/bulk-status")
 async def bulk_update_status(data: schemas.NetworkConnectionBulkStatus, request: Request, db: AsyncSession = Depends(get_db)):
     connections = await _get_connections_for_ids(request, db, data.ids)
-    ids = [conn.id for conn in connections]
     new_status = data.status
     if new_status not in NETWORK_STATUS_VALUES:
         raise HTTPException(status_code=400, detail=f"Invalid status '{new_status}'")
+    ids = [conn.id for conn in connections if conn.status != new_status]
+    if not ids:
+        return {"status": "success", "count": 0, "changed": 0, "summary": "No connection status changed"}
 
     await db.execute(
         update(models.PortConnection)
@@ -359,8 +361,9 @@ async def bulk_delete_connections(data: schemas.NetworkConnectionBulkIds, reques
         raise HTTPException(status_code=400, detail="IDs required")
 
     connections = await _get_connections_for_ids(request, db, ids)
+    connections = [conn for conn in connections if conn.status != 'Deleted']
     if not connections:
-        return {"status": "success", "count": 0, "changed": 0, "summary": "No connections archived"}
+        return {"status": "success", "count": 0, "changed": 0, "deleted_ids": [], "summary": "No connections archived"}
 
     deleted_ids = []
     for conn in connections:
@@ -408,6 +411,10 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
     ):
         if field_name in payload and payload[field_name] is None:
             raise HTTPException(status_code=400, detail=f"{label} is required")
+
+    changed = {key: value for key, value in payload.items() if getattr(conn, key) != value}
+    if not changed:
+        return conn
 
     source_device_id = payload.get('source_device_id', conn.source_device_id)
     source_port = payload.get('source_port', conn.source_port)
@@ -471,7 +478,7 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
     if 'farm' in payload: conn.farm = payload['farm']
     if 'request_link' in payload: conn.request_link = payload['request_link']
 
-    log = build_audit_log(request=request, action="UPDATE", target_table="port_connections", target_id=str(conn_id), description="Modified network link")
+    log = build_audit_log(request=request, action="UPDATE", target_table="port_connections", target_id=str(conn_id), description="Modified network link", changes={"changed_fields": sorted(changed)})
     db.add(log)
     await db.commit()
     await db.refresh(conn)
@@ -482,6 +489,8 @@ async def delete_connection(conn_id: int, request: Request, db: AsyncSession = D
     conn = await _get_connection_by_id(request, db, conn_id)
     if not conn:
         raise HTTPException(status_code=404, detail="Connection not found")
+    if conn.status == 'Deleted':
+        return {"status": "success", "id": conn.id}
 
     conn.status = "Deleted"
     log = build_audit_log(request=request, action="DELETE", target_table="port_connections", target_id=str(conn_id), description="Severed network link")
