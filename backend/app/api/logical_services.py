@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, or_
 from sqlalchemy.orm import joinedload
 from typing import List, Optional
 from ..database import get_db
@@ -14,6 +14,7 @@ from .operational_bulk import (
     require_executable_operational_bulk,
 )
 from .module_policy import require_module_access
+from .asset_links import require_relationship_asset
 
 router = APIRouter(
     prefix="/logical-services",
@@ -22,6 +23,37 @@ router = APIRouter(
 )
 IMMUTABLE_SERVICE_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
 SERVICE_BULK_UPDATE_FIELDS = {"status", "service_type", "environment", "version", "device_id"}
+
+
+def _service_scope(request: Request):
+    owned_devices = select(models.Device.id).where(models.Device.tenant_id == request.state.tenant_id)
+    return or_(models.LogicalService.device_id.is_(None), models.LogicalService.device_id.in_(owned_devices))
+
+
+async def _get_owned_service(request: Request, db: AsyncSession, service_id: int):
+    if not 1 <= service_id <= 2 ** 63 - 1:
+        raise HTTPException(404, 'Service not found')
+    service = await db.scalar(select(models.LogicalService).where(
+        models.LogicalService.id == service_id, _service_scope(request),
+    ))
+    if service is None:
+        raise HTTPException(404, 'Service not found')
+    return service
+
+
+def _normalize_service_device_id(value):
+    if value is None:
+        return None
+    if isinstance(value, str) and value.strip().isascii() and value.strip().isdigit():
+        try:
+            value = int(value.strip())
+        except ValueError:
+            raise HTTPException(400, 'Device ID must be a positive integer or null')
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise HTTPException(400, 'Device ID must be a positive integer or null')
+    if not 1 <= value <= 2 ** 63 - 1:
+        raise HTTPException(404, 'Asset not found')
+    return value
 
 
 def canonicalize_service_status(value: str | None) -> str | None:
@@ -100,6 +132,8 @@ def summarize_service(service: models.LogicalService, device_name: str):
 
 def normalize_service_payload(data: dict) -> dict:
     clean_data = filter_valid_columns(models.LogicalService, data, exclude=IMMUTABLE_SERVICE_FIELDS)
+    if "device_id" in clean_data:
+        clean_data["device_id"] = _normalize_service_device_id(clean_data["device_id"])
     if "status" in clean_data:
         clean_data["status"] = canonicalize_service_status(clean_data.get("status")) or "Existing"
     for field in ("config_json", "custom_attributes"):
@@ -140,6 +174,7 @@ async def sync_device_os_state(device_id: Optional[int], db: AsyncSession):
 
 @router.get("")
 async def get_services(
+    request: Request,
     device_id: Optional[int] = None,
     include_deleted: bool = False,
     projection: str = "full",
@@ -147,8 +182,9 @@ async def get_services(
     db: AsyncSession = Depends(get_db),
 ):
     from sqlalchemy.orm import selectinload
-    query = select(models.LogicalService).options(selectinload(models.LogicalService.secrets))
-    if device_id:
+    query = select(models.LogicalService).where(_service_scope(request)).options(selectinload(models.LogicalService.secrets))
+    if device_id is not None:
+        await require_relationship_asset(request, db, device_id)
         query = query.filter(models.LogicalService.device_id == device_id)
     if not include_deleted:
         query = query.filter(models.LogicalService.is_deleted == False)
@@ -180,11 +216,12 @@ async def get_services(
 
 @router.get("/summary")
 async def get_services_summary(
+    request: Request,
     device_id: Optional[int] = None,
     include_deleted: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
-    return await get_services(device_id=device_id, include_deleted=include_deleted, projection="summary", db=db)
+    return await get_services(request=request, device_id=device_id, include_deleted=include_deleted, projection="summary", db=db)
 
 @router.post("/{service_id}/secrets")
 async def add_service_secret(
@@ -203,9 +240,7 @@ async def add_service_secret(
             ),
         )
 
-    svc_res = await db.execute(select(models.LogicalService).filter(models.LogicalService.id == service_id))
-    svc = svc_res.scalar_one_or_none()
-    if not svc: raise HTTPException(404, "Service not found")
+    svc = await _get_owned_service(request, db, service_id)
     
     secret = models.ServiceSecret(
         service_id=service_id,
@@ -233,6 +268,9 @@ async def delete_service_secret(
     _secret_admin: models.Operator = Depends(require_capability("secrets", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    await _get_owned_service(request, db, service_id)
+    if not 1 <= secret_id <= 2 ** 63 - 1:
+        raise HTTPException(404, 'Secret not found')
     res = await db.execute(select(models.ServiceSecret).filter(
         models.ServiceSecret.id == secret_id,
         models.ServiceSecret.service_id == service_id
@@ -253,6 +291,9 @@ async def delete_service_secret(
     return {"status": "success"}
 
 async def sync_service_to_device(service, db: AsyncSession):
+    # Production sessions disable autoflush. Synchronization must query the
+    # new service assignment/type within this transaction, not its old row.
+    await db.flush()
     if service.service_type == "OS" or service.device_id:
         await sync_device_os_state(service.device_id, db)
 
@@ -263,6 +304,8 @@ async def create_service(data: dict, request: Request, db: AsyncSession = Depend
     if not name: raise HTTPException(400, "Service name required")
 
     clean_data = normalize_service_payload(data)
+    if clean_data.get('device_id') is not None:
+        await require_relationship_asset(request, db, clean_data['device_id'], active=True)
 
     svc = models.LogicalService(**clean_data)
     db.add(svc)
@@ -290,12 +333,12 @@ async def create_service(data: dict, request: Request, db: AsyncSession = Depend
 
 @router.put("/{service_id}")
 async def update_service(service_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.LogicalService).filter(models.LogicalService.id == service_id))
-    svc = result.scalar_one_or_none()
-    if not svc: raise HTTPException(404)
+    svc = await _get_owned_service(request, db, service_id)
     previous_device_id = svc.device_id
     
     clean_data = normalize_service_payload(data)
+    if 'device_id' in clean_data and clean_data['device_id'] is not None and clean_data['device_id'] != previous_device_id:
+        await require_relationship_asset(request, db, clean_data['device_id'], active=True)
     for k, v in clean_data.items():
         setattr(svc, k, v)
     
@@ -328,15 +371,16 @@ async def update_service(service_id: int, data: dict, request: Request, db: Asyn
 
 @router.delete("/{service_id}")
 async def delete_service(service_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+    await _get_owned_service(request, db, service_id)
     result = await db.execute(
         update(models.LogicalService)
-        .where(models.LogicalService.id == service_id, models.LogicalService.is_deleted.is_not(True))
+        .where(models.LogicalService.id == service_id, _service_scope(request), models.LogicalService.is_deleted.is_not(True))
         .values(is_deleted=True)
         .returning(models.LogicalService.name, models.LogicalService.device_id)
     )
     archived = result.first()
     if archived is None:
-        exists = await db.scalar(select(models.LogicalService.id).where(models.LogicalService.id == service_id))
+        exists = await db.scalar(select(models.LogicalService.id).where(models.LogicalService.id == service_id, _service_scope(request)))
         if exists is None: raise HTTPException(404)
         return {"status": "no_op"}
 
@@ -365,7 +409,7 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
     if action not in {"delete", "restore", "update"}:
         raise HTTPException(status_code=400, detail=f"Unsupported bulk action: {action}")
 
-    services_res = await db.execute(select(models.LogicalService).filter(models.LogicalService.id.in_(ids)))
+    services_res = await db.execute(select(models.LogicalService).where(models.LogicalService.id.in_(ids), _service_scope(request)))
     affected_services = services_res.scalars().all()
     services_by_id = {service.id: service for service in affected_services}
 
@@ -374,6 +418,10 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
         clean_update = {key: value for key, value in payload.items() if key in SERVICE_BULK_UPDATE_FIELDS}
         if "status" in clean_update:
             clean_update["status"] = canonicalize_service_status(clean_update.get("status")) or "Existing"
+        if "device_id" in clean_update:
+            clean_update["device_id"] = _normalize_service_device_id(clean_update["device_id"])
+            if clean_update["device_id"] is not None and any(service.device_id != clean_update["device_id"] for service in affected_services):
+                await require_relationship_asset(request, db, clean_update["device_id"], active=True)
         if not clean_update:
             raise HTTPException(status_code=400, detail="Bulk update requires a supported field")
 
@@ -470,8 +518,8 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
 
 @router.post("/{service_id}/mount/{device_id}")
 async def mount_service(service_id: int, device_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    svc_res = await db.execute(select(models.LogicalService).filter(models.LogicalService.id == service_id))
-    svc = svc_res.scalar_one_or_none()
+    svc = await _get_owned_service(request, db, service_id)
+    await require_relationship_asset(request, db, device_id, active=True)
     dev_res = await db.execute(select(models.Device).filter(models.Device.id == device_id))
     dev = dev_res.scalar_one_or_none()
     
