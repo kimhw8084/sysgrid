@@ -1,8 +1,61 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { createAsset, resetBrowserState } from './helpers/sysgrid'
+import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }, { width: 640, height: 360 }]) {
+    test(`error console keeps diagnostics and controls reachable in ${theme} at ${viewport.width}x${viewport.height}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize(viewport)
+      await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+      await page.goto('/racks')
+      await expect(page.getByRole('heading', { name: 'Racks', exact: true })).toBeVisible()
+      const message = `Long diagnostic ${'source_'.repeat(20)}`
+      await page.evaluate(value => window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', {
+        promise: Promise.resolve(), reason: { message: value, stack: `Error: ${value}\n    at syntheticDiagnostic (test:1:1)` },
+      })), message)
+      if (viewport.width < 1024) await page.getByText('App tools', { exact: true }).click()
+      const trigger = page.getByRole('button', { name: /^Open error console/ })
+      await trigger.click()
+      const dialog = page.getByRole('dialog', { name: 'Error console', exact: true })
+      await expect(dialog).toBeVisible()
+      await expect(dialog.locator(':scope > :first-child')).toHaveCSS('opacity', '1')
+      const assertReachable = async (button: ReturnType<typeof page.getByRole>) => {
+        await button.scrollIntoViewIfNeeded()
+        const rect = await button.boundingBox()
+        expect.soft(rect).not.toBeNull()
+        expect.soft(rect!.x).toBeGreaterThanOrEqual(0)
+        expect.soft(rect!.x + rect!.width).toBeLessThanOrEqual(viewport.width)
+        expect.soft(rect!.y).toBeGreaterThanOrEqual(0)
+        expect.soft(rect!.y + rect!.height).toBeLessThanOrEqual(viewport.height)
+      }
+      await assertReachable(dialog.getByRole('button', { name: 'Close error console', exact: true }))
+      await page.screenshot({ path: testInfo.outputPath('console-list.png'), animations: 'disabled' })
+      const entry = dialog.getByRole('button', { name: `Inspect error: ${message}`, exact: true })
+      await entry.focus()
+      await page.keyboard.press('Enter')
+      await expect(dialog.getByRole('heading', { name: message, exact: true })).toBeVisible()
+      await page.screenshot({ path: testInfo.outputPath('console-detail-top.png'), animations: 'disabled' })
+      for (const name of ['Acknowledge error', 'Copy Bug Report', 'Copy technical details']) {
+        await assertReachable(dialog.getByRole('button', { name, exact: true }))
+      }
+      await page.screenshot({ path: testInfo.outputPath('console-detail.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, 'error-console', '[role="dialog"]')
+      if (viewport.width < 1024) {
+        await dialog.getByRole('button', { name: 'Back to error list', exact: true }).click()
+        await expect(entry).toBeFocused()
+      }
+      await page.keyboard.press('Escape')
+      await expect(dialog).not.toBeVisible()
+      await expect(trigger).toBeFocused()
+      await expect(page).toHaveURL(/\/racks$/)
+    })
+  }
+}
 
 test('service save preserves the draft on failure and commits once after a stalled retry', async ({ page, sysApi: request }) => {
   await resetBrowserState(page)
