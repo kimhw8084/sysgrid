@@ -11,29 +11,60 @@
   "as_of_utc": "2026-10-02",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
-    "pr": "https://github.com/kimhw8084/sysgrid/pull/32",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36960327787",
-    "completed_at": "2026-10-02T04:10:08Z",
+    "candidate": "597c2dd94602e5635e2e705d8bdab74c4ea6efad",
+    "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37007525305",
+    "tested_merge": "227e8610cf5ae4098f11ca7128c139eadcfc1a4b",
+    "completed_at": "2026-10-02T13:05:00Z",
     "conclusion": "success",
-    "counts": { "startup_and_recovery": 71, "subtests": 23, "backend": 188, "frontend": 773, "normal_browser": 91, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
+    "counts": { "startup_and_recovery": 76, "subtests": 23, "backend": 225, "frontend": 791, "normal_browser": 112, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "c4fe60fc0e65870c8578b435208dc028761251db adds reviewed window lifecycle, diagnostic privacy and selection-race repairs. PR33 requires fresh assembled CI."
+    "later_source": "259ebc5289b567097067bf03e413a8a41676df10 includes reviewed firewall, asset write-boundary and hardware/mobile repairs after this successful run. These later changes require fresh assembled CI."
   },
-  "subsequent_ci": {
+  "ci_history": [
+    {
+      "candidate": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/32",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36960327787",
+      "tested_merge": "8db45e39c78df92c3e2947509d3d5d948df16cd0",
+      "completed_at": "2026-10-02T04:10:08Z",
+      "conclusion": "success",
+      "counts": { "startup_and_recovery": 71, "subtests": 23, "backend": 188, "frontend": 773, "normal_browser": 91, "normal_browser_preexisting_skips": 2, "desktop_browser": 35, "root_preview_browser": 6 }
+    },
+    {
     "candidate": "0f0ec2fa2d0fe5dbf31a26f309fad093304cab9f",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
     "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36964933511",
     "conclusion": "failure",
     "counts": { "startup_and_recovery": 71, "subtests": 23, "backend": 206, "frontend": 786, "normal_browser_passed": 98, "normal_browser_failed": 1, "normal_browser_preexisting_skips": 2 },
     "failure": "Assets multi-selection disappeared before the overlapping-purge scenario. Later desktop/root browser profiles did not run.",
-    "recovery": "c4fe60fc reproduces and repairs stale React selection overwriting a newer grid selection. 789 frontend checks and eight Assets browser scenarios pass locally; a new assembled run is required."
-  },
+    "recovery": "c4fe60fc reproduces and repairs stale React selection overwriting a newer grid selection. Local proof and the later successful assembled run on 597c2dd9 cover this repair."
+    },
+    {
+      "candidate": "7c91ef720e845212915302f18e96755fabfa222d",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36968683132",
+      "conclusion": "failure",
+      "counts": { "backend": 225, "frontend": 789, "normal_browser": 106, "normal_browser_preexisting_skips": 2, "desktop_browser_passed": 34, "desktop_browser_failed": 1 },
+      "failure": "Pure Clarity 1920 visual journey reached the 60-second deadline at its final font assertion after visual assertions. Root profile did not run.",
+      "recovery": "0c9cabcf serves a freshly built, hashed production frontend for browser qualification. Existing assertions, timeouts and zero retries are preserved; 597c2dd9 subsequently passed all three hosted browser profiles."
+    },
+    {
+      "candidate": "0c9cabcf3ea150e4c86166cc31ed92ef7935738a",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37006716089",
+      "tested_merge": "505528a2ea4d89837f7720bf41a266fa51a269d8",
+      "conclusion": "failure",
+      "counts": { "startup_and_recovery_passed": 75, "startup_and_recovery_failed": 1, "subtests": 23 },
+      "failure": "Linux ps truncated the owned runtime command in the newly included process-identity check; later gates did not run.",
+      "recovery": "597c2dd9 reads full ps arguments and includes observed command text in failures while preserving the exact process assertion. The subsequent hosted run passed 76 startup/recovery checks and every later gate."
+    }
+  ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "c4fe60fc0e65870c8578b435208dc028761251db",
+    "source_head": "259ebc5289b567097067bf03e413a8a41676df10",
     "registered_api_operations": 310,
     "static_ui_declarations": 3150,
     "static_ui_routes": 19,
@@ -256,6 +287,41 @@
       "commit": "c4fe60fc0e65870c8578b435208dc028761251db",
       "scope": "Preserve native Assets selection across row refreshes and explicit reset behavior",
       "archive_sha256": "3e92f7813b03dfa243417ba6c6fbe2bd8ebac5349bec4a62b8f9f718e6ee5b9d"
+    },
+    {
+      "commit": "7c91ef720e845212915302f18e96755fabfa222d",
+      "scope": "Second evidence ledger and source inventory checkpoint",
+      "archive_sha256": "a02662aca67e5db1d623a18b834f42747e601d71b031032bee2f6a8ed599f0cc"
+    },
+    {
+      "commit": "be33d28584c17b8d24dd306f1a01ad7a10d48426",
+      "scope": "Readable error diagnostics, mobile dialogs and reachable App tools",
+      "archive_sha256": "cb68f7f82acc12d1ea44a36eb1a5b5e82d92e66b2d24a1eb4413ec431829cbbc"
+    },
+    {
+      "commit": "0c9cabcf3ea150e4c86166cc31ed92ef7935738a",
+      "scope": "Fresh production frontend builds for owned browser qualification",
+      "archive_sha256": "5a0e2ca18a9bf6bf6eac05e17ca6d3ca7560b37af1fd0f65c3dfe7b76702caca"
+    },
+    {
+      "commit": "597c2dd94602e5635e2e705d8bdab74c4ea6efad",
+      "scope": "Portable full-command runtime identity proof",
+      "archive_sha256": "50a5f1160e84980acbd7bb857ee015d83a8532b760f61368f82bd9be0e58acfc"
+    },
+    {
+      "commit": "12b1801b431be9cc0b3de8ddc2e69e42dfb8cc13",
+      "scope": "Typed firewall definitions, authorized references and atomic audit",
+      "archive_sha256": "c9501e8be305a2057ebfc63f9e7166f1ed0c8fe5f93fb971138a45bcd73161f9"
+    },
+    {
+      "commit": "c4bbbd49174d3cfa9dff940f6dbedfdf03767e70",
+      "scope": "Server-owned asset identity and protected lifecycle boundaries",
+      "archive_sha256": "23eea0fcb07c815d54b05b9d0dabbd1c4eddde2a242e83b9c55123c01a6bcaf3"
+    },
+    {
+      "commit": "259ebc5289b567097067bf03e413a8a41676df10",
+      "scope": "Hardware parent and quantity validation, atomic audit and mobile editing",
+      "archive_sha256": "0418c185b05a14f1c80af9f21cbdb61912e2cdbd264cdb2f29d696add2b9af79"
     }
   ],
   "groups": [
@@ -334,9 +400,9 @@
           "title": "Complete form and save behavior",
           "outcome": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries."
+          "status": "in_progress",
+          "reviewed_commits": ["259ebc52"],
+          "remaining": "Hardware quantities preserve fractional/blank drafts, reject invalid submission before HTTP and reuse one validation notice that clears after correction. Remaining forms, field-level errors, concurrency and retry states need qualification."
         },
         {
           "id": "B4",
@@ -345,9 +411,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709"
+            "944c8709", "be33d285", "259ebc52"
           ],
-          "remaining": "Remaining stateful overlays, both themes, keyboard, short viewports."
+          "remaining": "be33d285 repairs error-console mobile/short layout, focus/filter state and App tools stacking; 259ebc52 confines hardware table scrolling so editing cannot displace the enclosing form. Remaining overlays, keyboard and viewport states require qualification."
         },
         {
           "id": "B5",
@@ -356,9 +422,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709"
+            "944c8709", "be33d285", "259ebc52"
           ],
-          "remaining": "Initial 60 route captures are evidence for their bound source only; material interactions remain."
+          "remaining": "Initial 60 route captures, be33d285 diagnostic contrast proof and 259ebc52 hardware screenshots/contrast are scoped to their source. Whole-surface visual states remain unqualified."
         },
         {
           "id": "B6",
@@ -368,9 +434,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709"
+            "944c8709", "be33d285", "259ebc52"
           ],
-          "remaining": "Responsive repairs need full long-content and large-text qualification."
+          "remaining": "be33d285 verifies diagnostic long-content/short/mobile layouts. 259ebc52 reproduces and repairs mobile hardware form clipping after table editing. Full long-content and large-text qualification remains."
         },
         {
           "id": "B7",
@@ -379,9 +445,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "944c8709"
+            "944c8709", "be33d285", "259ebc52"
           ],
-          "remaining": "Complete keyboard and assistive-technology acceptance."
+          "remaining": "be33d285 adds diagnostic semantics/focus handling; 259ebc52 names hardware actions and adds a keyboard-focusable table scroll region. Complete keyboard, target-size, zoom and assistive-technology acceptance remains."
         },
         {
           "id": "B8",
@@ -434,9 +500,9 @@
           "title": "Converge API contracts",
           "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics."
+          "status": "in_progress",
+          "reviewed_commits": ["12b1801b", "259ebc52"],
+          "remaining": "Firewall and hardware have typed writable definitions with omitted-field preservation, protected identities and safe validation errors. Remaining request/response schemas, pagination and other resource contracts are unqualified."
         },
         {
           "id": "C3",
@@ -456,35 +522,35 @@
           "outcome": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["8c85f832"],
-          "remaining": "Maintenance keyed creation, concurrent retry, atomic audit, cancellation/execution serialization and stale preview behavior are locally verified, including lost-response and late-completion browser scenarios. Other mutation domains and assembled CI remain."
+          "reviewed_commits": ["8c85f832", "12b1801b", "259ebc52"],
+          "remaining": "Maintenance lifecycle/retry proof passed assembled CI at 597c2dd9. Firewall reference-race rollback, single-transition archive audit and hardware mutation/audit rollback have local proof. Their assembled CI, optimistic edits, other domains and concurrent hardware deletion remain."
         },
         {
           "id": "C5",
           "title": "Unify archive, restore, and purge semantics",
           "outcome": "Consistent dependency checks, authorization, impact previews, audit records, and valid recovery behavior across domains.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Consistent dependency checks, authorization, impact previews, audit records, and valid recovery behavior across domains."
+          "status": "in_progress",
+          "reviewed_commits": ["12b1801b", "c4bbbd49"],
+          "remaining": "Ordinary asset edits cannot bypass audited archive/restore, and firewall archive audit is atomic and single-transition. Cross-domain lifecycle parity and full recovery/authorization matrices remain."
         },
         {
           "id": "C6",
           "title": "Enforce data and relationship integrity",
           "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records."
+          "status": "in_progress",
+          "reviewed_commits": ["12b1801b", "c4bbbd49", "259ebc52"],
+          "remaining": "Asset server identity/lifecycle fields, firewall reference scope and hardware parent/quantity integrity have local proof. Legacy unknown hardware counts remain stored and visible without breaking inventory. Software/relationship boundaries, uniqueness concurrency and other legacy data remain."
         },
         {
           "id": "C7",
           "title": "Harden input and resource boundaries",
           "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
           "approval": "yes",
-          "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks."
+          "status": "in_progress",
+          "reviewed_commits": ["ff16b087", "a5d268f6", "12b1801b", "c4bbbd49", "259ebc52"],
+          "remaining": "Trusted-actor throttling and diagnostic redaction passed assembled CI. New firewall/asset/hardware malformed-input and identity protections have local proof. Remaining URLs, uploads, rich content, exports, request sizes, scalar/date schemas and distributed rate limits remain."
         },
         {
           "id": "C8",
@@ -537,8 +603,8 @@
           "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc"],
-          "remaining": "Hardware/credential drafts and explicit reveal have scoped proof. The selection refresh race is reproduced and repaired; all eight Assets browser scenarios pass locally. Full relationship, editing/import, role and large-dataset qualification remains."
+          "reviewed_commits": ["944c8709", "e5160949", "c4fe60fc", "c4bbbd49", "259ebc52"],
+          "remaining": "Credential and selection repairs passed assembled CI. Asset write boundaries and hardware quantity/parent/audit/mobile editing have local proof: 80 related backend checks and ten Assets browser scenarios. Full relationship/software, editing/import, role and large-dataset qualification remains."
         },
         {
           "id": "D3",
@@ -656,9 +722,9 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "38c82a58"
+            "38c82a58", "0c9cabcf", "597c2dd9"
           ],
-          "remaining": "PR32 passed full Application CI at c27ea47c. PR33 failed one Assets selection assertion at 0f0ec2fa; its backend/frontend gates passed. The repair is reviewed with local proof; fresh assembled CI, supply-chain and final release checks remain."
+          "remaining": "PR33 passed Application CI on 597c2dd9: 76 startup/recovery plus 23 subtests, 225 backend, 791 frontend, 112 normal browser with two existing skips, 35 desktop and six root-preview journeys. Browser profiles serve fresh hashed production bundles. Later firewall/asset/hardware source requires fresh assembled CI; supply-chain and final release checks remain."
         },
         {
           "id": "E7",
@@ -678,7 +744,7 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [],
-          "remaining": "Recovery/preflight checks are retained in CI: 71 combined startup/recovery tests and 23 subtests passed at c27ea47c. Authentic operational rehearsal and agreed RPO/RTO remain."
+          "remaining": "Recovery/preflight checks are retained in CI: 76 combined startup/recovery tests and 23 subtests passed at 597c2dd9. Authentic operational rehearsal and agreed RPO/RTO remain."
         }
       ]
     },
@@ -715,7 +781,7 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": ["bc40bdc9", "8c85f832"],
-          "remaining": "Simulation workspace plus window authoring/idempotent save/nondestructive cancellation are locally verified. Window lifecycle proof includes 45 backend and ten browser scenarios; cancellation preserves history and blocks stale execution. Assembled CI, real provider adapters, runbook integration and authentic company evidence remain."
+          "remaining": "Simulation workspace plus window authoring/idempotent save/nondestructive cancellation passed assembled CI at 597c2dd9. Cancellation preserves history and blocks stale execution. Real provider adapters, runbook integration and authentic company evidence remain."
         },
         {
           "id": "F4",
