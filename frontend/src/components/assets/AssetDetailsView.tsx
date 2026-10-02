@@ -30,6 +30,31 @@ const hardwareQuantityToastId = (deviceId: number) => `hardware-quantity-${devic
 const emptyCredentialDraft = () => ({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' })
 const emptyRelationshipDraft = () => ({ target_device_id: '', relationship_type: 'Depends On', source_role: 'Consumer', target_role: 'Provider' })
 type DraftProps<T> = { draft: T; setDraft: React.Dispatch<React.SetStateAction<T>>; onPendingChange: (pending: boolean) => void }
+type InlineAssetDraft = { original: any; values: any } | null
+type InlineDraftProps = { inlineDraft?: {
+  draft: InlineAssetDraft
+  setDraft: React.Dispatch<React.SetStateAction<InlineAssetDraft>>
+  onPendingChange: (pending: boolean) => void
+} }
+const isInlineDraftDirty = (draft: InlineAssetDraft) => draft !== null && JSON.stringify(draft.original) !== JSON.stringify(draft.values)
+
+function useAssetInlineDraft(controller?: InlineDraftProps['inlineDraft']) {
+  const [localDraft, setLocalDraft] = useState<InlineAssetDraft>(null)
+  const draft = controller ? controller.draft : localDraft
+  const setDraft = controller?.setDraft || setLocalDraft
+  return {
+    editingId: draft?.values.id ?? null,
+    editData: draft?.values ?? null,
+    beginEdit: (values: any) => setDraft({ original: values, values }),
+    setEditData: (values: any) => setDraft(current => current ? { ...current, values } : null),
+    cancelEdit: () => setDraft(null),
+  }
+}
+
+function useInlinePending(pending: boolean, onPendingChange?: (pending: boolean) => void) {
+  useEffect(() => { onPendingChange?.(pending) }, [pending, onPendingChange])
+  useEffect(() => () => { onPendingChange?.(false) }, [onPendingChange])
+}
 
 const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { device: any, connections: any[], onEditLink: (l: any) => void, onViewLink: (l: any) => void }) => {
   const [hoveredPort, setHoveredPort] = useState<any | null>(null)
@@ -305,8 +330,14 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     const [hardwarePending, setHardwarePending] = useState(false)
     const [credentialPending, setCredentialPending] = useState(false)
     const [relationshipPending, setRelationshipPending] = useState(false)
-    const draftDirty = JSON.stringify(hardwareDraft) !== JSON.stringify(emptyHardwareDraft()) || JSON.stringify(credentialDraft) !== JSON.stringify(emptyCredentialDraft()) || JSON.stringify(relationshipDraft) !== JSON.stringify(emptyRelationshipDraft())
-    const draftPending = hardwarePending || credentialPending || relationshipPending
+    const [hardwareEditDraft, setHardwareEditDraft] = useState<InlineAssetDraft>(null)
+    const [credentialEditDraft, setCredentialEditDraft] = useState<InlineAssetDraft>(null)
+    const [relationshipEditDraft, setRelationshipEditDraft] = useState<InlineAssetDraft>(null)
+    const [hardwareEditPending, setHardwareEditPending] = useState(false)
+    const [credentialEditPending, setCredentialEditPending] = useState(false)
+    const [relationshipEditPending, setRelationshipEditPending] = useState(false)
+    const draftDirty = JSON.stringify(hardwareDraft) !== JSON.stringify(emptyHardwareDraft()) || JSON.stringify(credentialDraft) !== JSON.stringify(emptyCredentialDraft()) || JSON.stringify(relationshipDraft) !== JSON.stringify(emptyRelationshipDraft()) || [hardwareEditDraft, credentialEditDraft, relationshipEditDraft].some(isInlineDraftDirty)
+    const draftPending = hardwarePending || credentialPending || relationshipPending || hardwareEditPending || credentialEditPending || relationshipEditPending
     useEffect(() => { onDraftDirtyChange?.(draftDirty) }, [draftDirty, onDraftDirtyChange])
     useEffect(() => { onDraftPendingChange?.(draftPending) }, [draftPending, onDraftPendingChange])
     const queryClient = useQueryClient()
@@ -460,8 +491,10 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                     </div>
 
                     <div className="glass-panel border-white/5 rounded-lg overflow-hidden min-h-[400px]">
-                        {tab === 'hardware' && <HWTab deviceId={device.id} draft={hardwareDraft} setDraft={setHardwareDraft} onPendingChange={setHardwarePending} />}
-                        {tab === 'secrets' && <SecretsTab deviceId={device.id} draft={credentialDraft} setDraft={setCredentialDraft} onPendingChange={setCredentialPending} />}
+                        {tab === 'hardware' && <HWTab deviceId={device.id} draft={hardwareDraft} setDraft={setHardwareDraft} onPendingChange={setHardwarePending}
+                          inlineDraft={{ draft: hardwareEditDraft, setDraft: setHardwareEditDraft, onPendingChange: setHardwareEditPending }} />}
+                        {tab === 'secrets' && <SecretsTab deviceId={device.id} draft={credentialDraft} setDraft={setCredentialDraft} onPendingChange={setCredentialPending}
+                          inlineDraft={{ draft: credentialEditDraft, setDraft: setCredentialEditDraft, onPendingChange: setCredentialEditPending }} />}
                         {tab === 'monitoring' && <MonitoringTab deviceId={device.id} />}
                         {tab === 'services' && (
                             <AssetServicesTable
@@ -471,7 +504,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                             />
                         )}
                         {tab === 'network' && <NetworkingTab device={device} onEditLink={onEditLink} onViewLink={onViewLink} />}
-                        {tab === 'relations' && <RelationshipsTab deviceId={device.id} draft={relationshipDraft} setDraft={setRelationshipDraft} onPendingChange={setRelationshipPending} />}
+                        {tab === 'relations' && <RelationshipsTab deviceId={device.id} draft={relationshipDraft} setDraft={setRelationshipDraft} onPendingChange={setRelationshipPending}
+                          inlineDraft={{ draft: relationshipEditDraft, setDraft: setRelationshipEditDraft, onPendingChange: setRelationshipEditPending }} />}
                         {tab === 'security' && <SecurityTab device={device} />}
                         {tab === 'metadata' && (
                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 p-2 h-full flex flex-col">
@@ -593,7 +627,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     )
 }
 
-const HWTab = ({ deviceId, draft: newComp, setDraft: setNewComp, onPendingChange }: { deviceId: number } & DraftProps<ReturnType<typeof emptyHardwareDraft>>) => {
+const HWTab = ({ deviceId, draft: newComp, setDraft: setNewComp, onPendingChange, inlineDraft }: { deviceId: number } & DraftProps<ReturnType<typeof emptyHardwareDraft>> & InlineDraftProps) => {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
@@ -619,16 +653,15 @@ const HWTab = ({ deviceId, draft: newComp, setDraft: setNewComp, onPendingChange
          <input type="number" aria-label="New component quantity" min={0} step={1} value={Number.isNaN(newComp.count) ? '' : newComp.count} onChange={e => setNewComp({...newComp, count: e.target.value === '' ? Number.NaN : Number(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
          <button disabled={mutation.isPending} onClick={() => { if(!newComp.name.trim()) return toast.error("Name required"); if (!validHardwareQuantity(newComp.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); mutation.mutate(newComp) }} className="bg-blue-600 text-white rounded-lg text-[9px] font-bold uppercase disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
       </div>
-      <HWTable deviceId={deviceId} />
+      <HWTable deviceId={deviceId} inlineDraft={inlineDraft} />
     </div>
   )
 }
 
-export const HWTable = ({ deviceId }: { deviceId: number }) => {
+export const HWTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: hardware } = useQuery({ queryKey: ['device-hw', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/hardware`)).json()) })
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editData, setEditData] = useState<any>(null)
+  const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
   
   const delMutation = useMutation({
@@ -644,7 +677,7 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
     }),
     onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] })
-        setEditingId(null)
+        cancelEdit()
         toast.success('Component Updated')
     },
     onError: (e: any) => toast.error(e.message || 'Failed to update component')
@@ -658,6 +691,8 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
     { value: 'NIC', label: 'NIC' },
     { value: 'PSU', label: 'PSU' }
   ]
+
+  useInlinePending(updateMutation.isPending || delMutation.isPending, inlineDraft?.onPendingChange)
 
   return (
     <div role="region" aria-label="Hardware components" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
@@ -706,11 +741,11 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
                 {editingId === h.id ? (
                     <div className="flex items-center justify-center space-x-1">
                         <button aria-label="Save hardware component" disabled={updateMutation.isPending} onClick={() => { if (!validHardwareQuantity(editData.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); updateMutation.mutate(editData) }} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
-                        <button aria-label="Cancel hardware edit" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
+                        <button aria-label="Cancel hardware edit" disabled={updateMutation.isPending} onClick={cancelEdit} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button aria-label="Edit hardware component" disabled={updateMutation.isPending} onClick={() => { setEditingId(h.id); setEditData({...h}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                        <button aria-label="Edit hardware component" title={editingId !== null ? 'Save or cancel the current edit first' : undefined} disabled={editingId !== null || delMutation.isPending} onClick={() => beginEdit({...h})} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
                         <button aria-label="Remove hardware component" disabled={delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Purge Component', message: 'Purge this hardware component?', onConfirm: () => delMutation.mutate(h.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                 )}
@@ -732,7 +767,7 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
   )
 }
 
-const SecretsTab = ({ deviceId, draft: newSec, setDraft: setNewSec, onPendingChange }: { deviceId: number } & DraftProps<ReturnType<typeof emptyCredentialDraft>>) => {
+const SecretsTab = ({ deviceId, draft: newSec, setDraft: setNewSec, onPendingChange, inlineDraft }: { deviceId: number } & DraftProps<ReturnType<typeof emptyCredentialDraft>> & InlineDraftProps) => {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
@@ -779,16 +814,15 @@ const SecretsTab = ({ deviceId, draft: newSec, setDraft: setNewSec, onPendingCha
          </div>
          <button disabled={mutation.isPending} onClick={() => { if(!newSec.username || !newSec.encrypted_payload) return toast.error("Identity/Value required"); mutation.mutate(newSec) }} className="h-[38px] bg-emerald-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
       </div>
-      <SecretsTable deviceId={deviceId} />
+      <SecretsTable deviceId={deviceId} inlineDraft={inlineDraft} />
     </div>
   )
 }
 
-export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
+export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: secrets } = useQuery({ queryKey: ['device-secrets', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/secrets`)).json()) })
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editData, setEditData] = useState<any>(null)
+  const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
 
   const delMutation = useMutation({
@@ -801,7 +835,7 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
     mutationFn: async (data: any) => apiFetch(`/api/v1/devices/secrets/${data.id}`, {
         method: 'PUT', body: JSON.stringify(credentialUpdatePayload(data))
     }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setEditingId(null); toast.success('Credential updated') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); cancelEdit(); toast.success('Credential updated') },
     onError: (e: any) => toast.error(e.message || 'Failed to update credential')
   })
 
@@ -812,6 +846,8 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
     { value: 'SSH Key', label: 'SSH Key' },
     { value: 'ILO/IDRAC', label: 'ILO/IDRAC' }
   ]
+
+  useInlinePending(updateMutation.isPending || delMutation.isPending, inlineDraft?.onPendingChange)
 
   return (
     <div className="p-0">
@@ -860,11 +896,11 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
                 {editingId === s.id ? (
                     <div className="flex items-center justify-center space-x-1">
                         <button aria-label="Save credential" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
-                        <button aria-label="Cancel credential editing" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
+                        <button aria-label="Cancel credential editing" disabled={updateMutation.isPending} onClick={cancelEdit} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button aria-label="Edit credential" disabled={!s.can_manage || updateMutation.isPending} onClick={() => { setEditingId(s.id); setEditData({...s, encrypted_payload: ''}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                        <button aria-label="Edit credential" title={editingId !== null ? 'Save or cancel the current edit first' : undefined} disabled={!s.can_manage || editingId !== null || delMutation.isPending} onClick={() => beginEdit({...s, encrypted_payload: ''})} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
                         <button aria-label="Delete credential" disabled={!s.can_manage || delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Credential', message: 'Remove this credential?', onConfirm: () => delMutation.mutate(s.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                 )}
@@ -886,7 +922,7 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
   )
 }
 
-export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange }: { deviceId: number } & Partial<DraftProps<ReturnType<typeof emptyRelationshipDraft>>>) => {
+export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange, inlineDraft }: { deviceId: number } & Partial<DraftProps<ReturnType<typeof emptyRelationshipDraft>>> & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
   
@@ -1008,18 +1044,17 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange }:
             </div>
          </div>
       </div>
-      <RelationsTable deviceId={deviceId} />
+      <RelationsTable deviceId={deviceId} inlineDraft={inlineDraft} />
     </div>
   )
 }
 
-const RelationsTable = ({ deviceId }: { deviceId: number }) => {
+const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: relationships } = useQuery({ queryKey: ['device-rel', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/relationships`)).json()) })
   const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editData, setEditData] = useState<any>(null)
+  const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
 
   const currentDevice = useMemo(() => devices?.find((d: any) => d.id === deviceId), [devices, deviceId]);
 
@@ -1033,9 +1068,11 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
     mutationFn: async (data: any) => apiFetch(`/api/v1/devices/relationships/${data.id}`, {
         method: 'PUT', body: JSON.stringify(data)
     }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); setEditingId(null); toast.success('Relationship updated') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); cancelEdit(); toast.success('Relationship updated') },
     onError: (e: any) => toast.error(e.message || 'Failed to update relationship')
   })
+
+  useInlinePending(updateMutation.isPending || delMutation.isPending, inlineDraft?.onPendingChange)
 
   return (
     <div role="region" aria-label="Asset relationships" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
@@ -1128,11 +1165,11 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                   {editingId === r.id ? (
                     <div className="flex items-center justify-center space-x-1">
                       <button aria-label="Save relationship" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all disabled:opacity-50">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
-                      <button aria-label="Cancel relationship edit" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-slate-500/20 text-slate-500 rounded-lg transition-all disabled:opacity-50"><X size={14}/></button>
+                      <button aria-label="Cancel relationship edit" disabled={updateMutation.isPending} onClick={cancelEdit} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-slate-500/20 text-slate-500 rounded-lg transition-all disabled:opacity-50"><X size={14}/></button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center space-x-1">
-                      <button aria-label="Edit relationship" disabled={updateMutation.isPending} onClick={() => { setEditingId(r.id); setEditData({...r}) }} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                      <button aria-label="Edit relationship" title={editingId !== null ? 'Save or cancel the current edit first' : undefined} disabled={editingId !== null || delMutation.isPending} onClick={() => beginEdit({...r})} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
                       <button aria-label="Remove relationship" disabled={delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Relationship', message: 'Remove this relationship?', onConfirm: () => delMutation.mutate(r.id) })} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                   )}

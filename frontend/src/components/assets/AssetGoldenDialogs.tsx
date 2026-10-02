@@ -19,7 +19,7 @@ function AssetDetailsDialog({ detailAsset, onCloseDetails, options, setServiceDe
   return <WorkspaceModal isOpen onClose={() => {
     if (draftPending) { toast('Wait for the current save to finish.'); return }
     onCloseDetails()
-  }} size="workspace" title={detailAsset.name} subtitle={`${detailAsset.system} · ${detailAsset.type}`} isDirty={draftDirty}
+  }} size="workspace" title={detailAsset.name} subtitle={`${detailAsset.system} · ${detailAsset.type}`} isDirty={draftDirty && !draftPending}
     dirtyConfirmMessage="Discard the unsaved hardware, credential, or relationship drafts for this asset?"
     footerLeft={draftPending ? <span role="status">Saving asset changes...</span> : undefined}>
     <div className="pt-6"><AssetDetailsView device={detailAsset} options={options} onViewServiceDetails={setServiceDetails} onEditService={setServiceEdit}
