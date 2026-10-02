@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_, update, func
+from sqlalchemy.orm import joinedload, selectinload
 from ..database import get_db
 from ..models import models
 from typing import List, Optional
@@ -64,20 +65,21 @@ async def get_racks(site_id: Optional[str] = None, include_deleted: bool = False
     if not include_deleted:
         query = query.filter(models.Rack.is_deleted == False)
     
-    query = query.order_by(models.Rack.order_index.asc())
+    query = query.order_by(models.Rack.order_index.asc()).options(
+        joinedload(models.Rack.room).joinedload(models.Room.site),
+        selectinload(models.Rack.device_locations).joinedload(models.DeviceLocation.device),
+    )
     
     result = await db.execute(query)
     racks = result.scalars().all()
     
     final_result = []
     for rack in racks:
-        loc_result = await db.execute(select(models.DeviceLocation).filter(models.DeviceLocation.rack_id == rack.id))
-        locs = loc_result.scalars().all()
+        locs = rack.device_locations
         
         device_locations_list = []
         for loc in locs:
-            dev_res = await db.execute(select(models.Device).filter(models.Device.id == loc.device_id))
-            d = dev_res.scalar_one_or_none()
+            d = loc.device
             if d:
                 device_locations_list.append({
                     "id": loc.id,
@@ -110,12 +112,10 @@ async def get_racks(site_id: Optional[str] = None, include_deleted: bool = False
         
         room = None
         if rack.room_id:
-            room_res = await db.execute(select(models.Room).filter(models.Room.id == rack.room_id))
-            room = room_res.scalar_one_or_none()
+            room = rack.room
             if room:
                 site_id = room.site_id
-                site_res = await db.execute(select(models.Site).filter(models.Site.id == room.site_id))
-                site = site_res.scalar_one_or_none()
+                site = room.site
                 if site:
                     site_name = site.name
                     site_color = site.color
