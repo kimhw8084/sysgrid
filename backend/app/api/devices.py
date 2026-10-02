@@ -6,7 +6,7 @@ from typing import Optional
 from ..database import get_db
 from ..models import models
 from ..database_base import Base
-from .utils import build_audit_log, filter_valid_columns, get_audit_actor, parse_iso_date
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor
 from .operational_bulk import (
     build_operational_bulk_summary,
     normalize_operational_bulk_ids,
@@ -22,6 +22,7 @@ from fastapi.responses import JSONResponse
 
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
 _DEVICE_SERVER_FIELDS = {'id', 'tenant_id', 'created_at', 'updated_at', 'created_by_user_id', 'is_deleted'}
+_DEVICE_DATE_FIELDS = {'purchase_date', 'install_date', 'warranty_end', 'eol_date'}
 _DEVICE_WRITABLE_FIELDS = {
     'name', 'system', 'environment', 'status', 'type', 'size_u',
     'manufacturer', 'model', 'serial_number', 'asset_tag', 'part_number',
@@ -43,6 +44,19 @@ def _device_write_data(data: dict, *, creating: bool = False) -> dict:
             raise HTTPException(400, f'Field {field} must be non-empty text')
     if clean.get('system') is not None and not isinstance(clean['system'], str):
         raise HTTPException(400, 'Field system must be text or null')
+    for field in _DEVICE_DATE_FIELDS & clean.keys():
+        value = clean[field]
+        if value is None or value == '':
+            clean[field] = None
+            continue
+        if not isinstance(value, str):
+            raise HTTPException(422, f'Field {field} must be a valid ISO date or null')
+        try:
+            # The asset editor uses calendar dates. Preserve the existing
+            # timezone-naive wall-date storage instead of shifting their day.
+            clean[field] = datetime.fromisoformat(value).replace(tzinfo=None)
+        except ValueError as exc:
+            raise HTTPException(422, f'Field {field} must be a valid ISO date or null') from exc
     return clean
 
 
@@ -696,9 +710,6 @@ async def create_device(request: Request, data: dict, db: AsyncSession = Depends
     if dup_res.scalars().first():
         raise HTTPException(409, "DUPLICATE_HOSTNAME")
 
-    for date_f in ["purchase_date", "install_date", "warranty_end", "eol_date"]:
-        if date_f in clean_data: clean_data[date_f] = parse_iso_date(clean_data[date_f])
-    
     db_device = models.Device(**clean_data, tenant_id=tenant_id, created_by_user_id=get_audit_actor(request))
     db.add(db_device)
     await db.flush() # Flush to get ID
@@ -734,10 +745,7 @@ async def update_device(request: Request, device_id: int, data: dict, db: AsyncS
             raise HTTPException(409, "DUPLICATE_HOSTNAME")
 
     for k, v in clean_data.items():
-        if k in ["purchase_date", "install_date", "warranty_end", "eol_date"]:
-            # Ensure we only pass datetime objects or None to SQLAlchemy for DateTime columns
-            setattr(db_device, k, parse_iso_date(v))
-        elif k == "metadata_json" and isinstance(v, str):
+        if k == "metadata_json" and isinstance(v, str):
             try:
                 import json
                 setattr(db_device, k, json.loads(v))
