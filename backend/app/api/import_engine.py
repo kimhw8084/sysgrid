@@ -9,6 +9,7 @@ import zipfile
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 import pandas as pd
+from pydantic import ValidationError
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
@@ -1007,7 +1008,9 @@ def _normalize_network_import_text(value: Any) -> Optional[str]:
     normalized = normalize_scalar(value)
     if normalized is None:
         return None
-    cleaned = str(normalized).strip()
+    if not isinstance(normalized, str):
+        raise ValueError('Network text fields must be strings')
+    cleaned = normalized.strip()
     return cleaned or None
 
 
@@ -1039,6 +1042,8 @@ async def _resolve_network_device_id(request: Request, db: AsyncSession, value: 
     normalized = normalize_scalar(value)
     if normalized is None:
         return None
+    if type(normalized) not in (int, float, str):
+        raise ValueError('Network device references must be IDs or names')
     try:
         device_id = _parse_int_like(normalized)
     except ValueError:
@@ -1121,19 +1126,28 @@ async def _validate_network_import_identity(db: AsyncSession, payload: dict[str,
 
 
 async def build_network_import_row(request: Request, db: AsyncSession, raw_row: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(raw_row, dict):
+        raise HTTPException(422, 'Each Network row must be an object')
     row = {key: normalize_scalar(value) for key, value in raw_row.items()}
+    # Choose the first populated alias without dropping false/zero values before
+    # validation. A malformed canonical field must not silently become absent.
+    def first_value(*keys):
+        return next((row[key] for key in keys if row.get(key) is not None), None)
+
+    if isinstance(row.get('speed_gbps'), bool):
+        raise ValueError('Network speed cannot be a boolean')
     payload: dict[str, Any] = {
-        "source_device_id": await _resolve_network_device_id(request, db, row.get("source_device_id") or row.get("source_device_name") or row.get("src_node"), "Source Device"),
-        "source_port": _normalize_network_import_text(row.get("source_port") or row.get("src_port")),
-        "source_ip": _normalize_network_import_text(row.get("source_ip") or row.get("src_ip")),
+        "source_device_id": await _resolve_network_device_id(request, db, first_value("source_device_id", "source_device_name", "src_node"), "Source Device"),
+        "source_port": _normalize_network_import_text(first_value("source_port", "src_port")),
+        "source_ip": _normalize_network_import_text(first_value("source_ip", "src_ip")),
         "source_mac": _normalize_network_import_text(row.get("source_mac")),
         "source_vlan": _parse_int_like(row.get("source_vlan")),
-        "target_device_id": await _resolve_network_device_id(request, db, row.get("target_device_id") or row.get("target_device_name") or row.get("peer_node") or row.get("dst_node"), "Peer Device"),
-        "target_port": _normalize_network_import_text(row.get("target_port") or row.get("peer_port") or row.get("dst_port")),
-        "target_ip": _normalize_network_import_text(row.get("target_ip") or row.get("peer_ip") or row.get("dst_ip")),
+        "target_device_id": await _resolve_network_device_id(request, db, first_value("target_device_id", "target_device_name", "peer_node", "dst_node"), "Peer Device"),
+        "target_port": _normalize_network_import_text(first_value("target_port", "peer_port", "dst_port")),
+        "target_ip": _normalize_network_import_text(first_value("target_ip", "peer_ip", "dst_ip")),
         "target_mac": _normalize_network_import_text(row.get("target_mac")),
         "target_vlan": _parse_int_like(row.get("target_vlan")),
-        "link_type": _normalize_network_import_text(row.get("link_type") or row.get("type")),
+        "link_type": _normalize_network_import_text(first_value("link_type", "type")),
         "purpose": _normalize_network_import_text(row.get("purpose")),
         "speed_gbps": float(row["speed_gbps"]) if row.get("speed_gbps") is not None else None,
         "unit": _normalize_network_import_text(row.get("unit")) or "Gbps",
@@ -1157,6 +1171,10 @@ async def build_network_import_row(request: Request, db: AsyncSession, raw_row: 
 
 
 async def preview_network_rows(request: Request, db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    try:
+        json.dumps(rows, allow_nan=False)
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(422, 'Network import values must be valid finite JSON') from exc
     results = []
     seen_fingerprints: set[tuple[Any, ...]] = set()
     seen_ports: set[tuple[int, str]] = set()
@@ -1185,8 +1203,11 @@ async def preview_network_rows(request: Request, db: AsyncSession, rows: list[di
                 errors.extend(str(entry) for entry in detail)
             else:
                 errors.append(str(detail))
-        except (ValueError, TypeError, json.JSONDecodeError) as exc:
-            errors.append(str(exc))
+        except ValidationError as exc:
+            errors.extend(f"{'.'.join(str(part) for part in entry['loc']) or 'Network row'}: {entry['msg']}"
+                          for entry in exc.errors(include_input=False, include_context=False, include_url=False))
+        except (ValueError, TypeError, OverflowError):
+            errors.append('Network row contains an invalid field value; check text, IDs, VLANs and speed')
 
         results.append({
             "row": index + 1,

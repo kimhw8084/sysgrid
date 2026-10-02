@@ -75,6 +75,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_network_endpoint_authorization.py
   test_network_import_authorization.py
   test_network_interface_integrity.py
+  test_network_scalar_integrity.py
   test_service_workflows.py
   test_racks_api_edges.py
   test_rack_read_queries.py

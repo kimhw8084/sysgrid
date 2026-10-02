@@ -738,13 +738,20 @@ class NetworkConnectionBase(BaseModel):
     target_vlan: Optional[int] = Field(default=None, ge=0, le=4094)
     link_type: Optional[str] = None
     purpose: Optional[str] = None
-    speed_gbps: Optional[float] = Field(default=None, gt=0)
+    speed_gbps: Optional[float] = Field(default=None, gt=0, allow_inf_nan=False)
     unit: Literal["Gbps", "Mbps", "Kbps"] = "Gbps"
     direction: Literal["Bidirectional", "Unidirectional", "Source to Target", "Target to Source"] = "Bidirectional"
     cable_type: Optional[str] = None
     status: Literal["Active", "Maintenance", "Down", "Planned", "Requested", "Standby", "Offline", "Deleted"] = "Active"
     farm: Optional[str] = None
     request_link: Optional[str] = None
+
+    @field_validator('source_device_id', 'target_device_id', 'source_vlan', 'target_vlan', 'speed_gbps', mode='before')
+    @classmethod
+    def reject_boolean_numbers(cls, value):
+        if isinstance(value, bool):
+            raise ValueError('Network numeric fields cannot be booleans')
+        return value
 
     @field_validator(
         "source_port",
@@ -761,7 +768,9 @@ class NetworkConnectionBase(BaseModel):
     def validate_and_trim_text(cls, value):
         if value is None:
             return None
-        cleaned = str(value).strip()
+        if not isinstance(value, str):
+            raise ValueError('Network text fields must be strings')
+        cleaned = value.strip()
         return cleaned or None
 
     @field_validator("source_ip", "target_ip", mode="before")
@@ -769,7 +778,9 @@ class NetworkConnectionBase(BaseModel):
     def validate_ip_address(cls, value):
         if value is None:
             return None
-        cleaned = str(value).strip()
+        if not isinstance(value, str):
+            raise ValueError('IP address must be text')
+        cleaned = value.strip()
         if not cleaned:
             return None
         try:
@@ -783,7 +794,9 @@ class NetworkConnectionBase(BaseModel):
     def validate_request_link(cls, value):
         if value is None:
             return None
-        cleaned = str(value).strip()
+        if not isinstance(value, str):
+            raise ValueError('Request link must be text')
+        cleaned = value.strip()
         if not cleaned:
             return None
         if any(token in cleaned.lower() for token in ["<script", "javascript:", "data:text/html", "vbscript:"]):
@@ -819,6 +832,13 @@ class NetworkConnectionUpdate(NetworkConnectionBase):
 
 class NetworkConnectionBulkIds(BaseModel):
     ids: List[int] = Field(default_factory=list, min_length=1)
+
+    @field_validator('ids', mode='before')
+    @classmethod
+    def reject_boolean_ids(cls, value):
+        if isinstance(value, list) and any(isinstance(item, bool) for item in value):
+            raise ValueError('Connection IDs cannot be booleans')
+        return value
 
 
 class NetworkConnectionBulkStatus(NetworkConnectionBulkIds):
