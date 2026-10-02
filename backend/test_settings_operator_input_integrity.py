@@ -129,3 +129,41 @@ async def test_settings_reader_cannot_reach_privilege_mutations(operator_scope, 
         response = await write_operator(c, operation, {'is_admin': 'false'})
     assert response.status_code == 403, response.text
     assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['patch', 'bulk'])
+@pytest.mark.parametrize('assignment', ['omitted', 'same', 'clear', 'new'])
+async def test_grouped_operator_edits_load_and_preserve_team_authority(operator_scope, setup_db, operation, assignment):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Existing team')
+        db.add(team)
+        await db.flush()
+        for op_id in c['ids']:
+            row = await db.get(models.Operator, op_id)
+            row.team_id, row.team, row.teams = team.id, team.name, [team.name]
+        await db.commit()
+        team_id = team.id
+    payload = {'custom_permissions': {'racks': 2}, 'is_admin': False}
+    if assignment == 'same':
+        payload['team_id'] = team_id
+    elif assignment == 'clear':
+        payload['team_id'] = None
+    elif assignment == 'new':
+        payload['team'] = 'Replacement team'
+    response = await write_operator(c, operation, payload)
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.get(models.Operator, c['ids'][0])
+        assert row.is_admin is False and row.custom_permissions == {'racks': 2}
+        if assignment == 'clear':
+            assert row.team_id is None and row.team is None
+        elif assignment == 'new':
+            assert row.team_id != team_id and row.team == 'Replacement team'
+        else:
+            assert row.team_id == team_id and row.team == 'Existing team'
+        versions = (await db.scalars(select(models.UserPoolVersion))).all()
+        assert len(versions) == 1 and versions[0].created_by == 'admin_root'
+        saved = next(record for record in versions[0].snapshot_data if record['external_id'] == 'input-target')
+        assert saved['team_id'] == row.team_id and saved['custom_permissions'] == {'racks': 2}

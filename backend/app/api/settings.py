@@ -643,7 +643,7 @@ async def apply_operator_patch(
     if "role_id" in data:
         await resolve_role_assignment(db, data.get("role_id"))
 
-    team = op.team_rel
+    team = await db.get(models.Team, op.team_id) if op.team_id is not None else None
     if "team_id" in data or "team" in data:
         team = await resolve_team_assignment(
             db,

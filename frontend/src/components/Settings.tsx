@@ -116,19 +116,19 @@ const SettingField = ({ label, description, children, icon: Icon, onHistory, isE
   )
 }
 
-const ToggleSwitch = ({ checked, onChange, disabled, activeColor = 'bg-blue-600' }: any) => (
+const ToggleSwitch = ({ checked, onChange, disabled, label, activeColor = 'bg-blue-600' }: any) => (
     <label className={`relative inline-flex items-center cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-        <input type="checkbox" className="sr-only peer" checked={checked} onChange={onChange} disabled={disabled} />
-        <div className={`relative w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${checked ? activeColor : ''}`}></div>
+        <input type="checkbox" aria-label={label} className="sr-only peer" checked={checked} onChange={onChange} disabled={disabled} />
+        <div className={`relative w-11 h-6 bg-slate-700 peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--focus-ring)] peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[var(--surface-base)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${checked ? activeColor : ''}`}></div>
     </label>
 )
 
-const ViewPermissionIcon = ({ level, onClick, isGlobalAdmin }: any) => {
+const ViewPermissionIcon = ({ level, onClick, isGlobalAdmin, label: accessibleLabel }: any) => {
     const colors = [
-        "bg-slate-800 text-slate-500 border-slate-700/50",
-        "bg-blue-500/10 text-blue-400 border-blue-500/20",
-        "bg-amber-500/10 text-amber-400 border-amber-500/20",
-        "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+        "bg-[var(--surface-hover)] text-[var(--text-secondary)] border-[var(--grid-border)]",
+        "bg-[var(--state-info-surface)] text-[var(--state-info)] border-[var(--state-info-border)]",
+        "bg-[var(--state-warning-surface)] text-[var(--text-primary)] border-[var(--state-warning-border)]",
+        "bg-[var(--state-success-surface)] text-[var(--state-success)] border-[var(--state-success-border)]"
     ];
     
     let numericLevel = 0;
@@ -145,8 +145,11 @@ const ViewPermissionIcon = ({ level, onClick, isGlobalAdmin }: any) => {
 
     return (
         <button 
+            type="button"
+            aria-label={`${accessibleLabel}: ${label}`}
+            disabled={isGlobalAdmin}
             onClick={onClick}
-            className={`px-2 py-1 rounded-lg border text-[9px] font-black tracking-widest transition-all hover:brightness-125 w-14 text-center ${colorClass}`}
+            className={`px-2 py-1 min-h-9 rounded-lg border text-[10px] font-semibold tracking-wide transition-colors hover:bg-[var(--surface-hover)] w-16 text-center disabled:cursor-default ${colorClass}`}
             title={label}
         >
             {label}
@@ -2060,6 +2063,7 @@ export default function SettingsPage() {
                                         {typeof value === 'boolean' ? (
                                             <div className="flex items-center gap-4 py-1">
                                                 <ToggleSwitch 
+                                                    label={key.replace(/_/g, ' ')}
                                                     checked={!!value} disabled={!editableFields[key]}
                                                     onChange={(e: any) => setLocalEnv({...localEnv, [key]: e.target.checked})}
                                                     activeColor="bg-emerald-600"
@@ -2102,21 +2106,23 @@ export default function SettingsPage() {
           {topTab === 'permissions' && settingsManage && (
             <motion.div key="permissions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2" data-settings-tab-content="permissions">
                {/* Identity Sync Pipeline - Collapsed by default */}
-               <div className="rounded-lg border border-white/5 bg-black/20 overflow-hidden">
+               <div className="rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] overflow-hidden">
                   <button 
+                    type="button"
+                    aria-expanded={showPoolLogic}
                     onClick={() => setShowPoolLogic(!showPoolLogic)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors group"
+                    className="w-full flex items-center justify-between p-4 hover:bg-[var(--surface-hover)] transition-colors group"
                   >
                     <div className="flex items-center space-x-3">
-                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${showPoolLogic ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'bg-slate-800 text-slate-500 border border-white/5'}`}>
+                       <div className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center border border-[var(--grid-border)] bg-[var(--surface-hover)] text-[var(--text-secondary)]">
                           <SettingsIcon size={18} className={showPoolLogic ? 'animate-pulse' : ''} />
                        </div>
                        <div className="text-left">
-                          <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                          <h3 className="text-xs font-semibold text-[var(--text-primary)] flex flex-wrap items-center gap-2">
                              Identity Sync Pipeline
-                             <div className="px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20 text-[7px] font-black tracking-normal">PYTHON-DRIVEN</div>
+                             <span className="px-1.5 py-0.5 bg-[var(--surface-hover)] text-[var(--text-secondary)] rounded-lg border border-[var(--grid-border)] text-[10px] font-medium">PYTHON-DRIVEN</span>
                           </h3>
-                          <p className="text-[9px] font-bold text-slate-500 mt-0.5">Automated synchronization of operators, departments, and teams from LDAP/AD providers</p>
+                          <p className="text-xs text-[var(--text-secondary)] mt-1">Automated synchronization of operators, departments, and teams from LDAP/AD providers</p>
                        </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -2222,12 +2228,13 @@ export default function SettingsPage() {
                        className="max-w-xl"
                      />
                      <ToolbarGroup>
-                       <div className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3">
-                         <span className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-500">Sort</span>
+                       <div className="flex h-9 items-center gap-2 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-3">
+                         <span className="text-xs font-semibold text-[var(--text-secondary)]">Sort</span>
                          <select
+                           aria-label="Sort operators"
                            value={operatorSort}
                            onChange={(e) => setOperatorSort(e.target.value as any)}
-                           className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-300 outline-none"
+                           className="bg-[var(--panel-item-bg)] text-xs font-semibold text-[var(--text-primary)]"
                          >
                            <option value="name">Identity</option>
                            <option value="team">Primary Team</option>
@@ -2439,23 +2446,23 @@ export default function SettingsPage() {
                  )}
                </AnimatePresence>
 
-               <div className="rounded-lg border border-[var(--glass-border)] bg-black/20 shadow-2xl overflow-hidden backdrop-blur-sm">
+               <div className="rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] overflow-hidden">
                   <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-white/5">
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 sticky left-0 bg-[#0c121e] z-20 min-w-[84px] uppercase tracking-widest">Select</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 sticky left-[84px] bg-[#0c121e] z-10 min-w-[280px] uppercase tracking-widest">Identity</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 min-w-[140px] uppercase tracking-widest">Department</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 min-w-[140px] uppercase tracking-widest">Team</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 min-w-[200px] uppercase tracking-widest">Group(s)</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 text-center uppercase tracking-widest">Admin Status</th>
+                        <tr className="bg-[var(--grid-header-bg)] text-[var(--text-secondary)]">
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] md:sticky md:left-0 bg-[var(--grid-header-bg)] z-20 min-w-[84px]">Select</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] md:sticky md:left-[84px] bg-[var(--grid-header-bg)] z-10 min-w-[280px]">Identity</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] min-w-[140px]">Department</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] min-w-[140px]">Team</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] min-w-[200px]">Group(s)</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] text-center">Admin Status</th>
                           {allViews.map(view => (
-                            <th key={view} className="p-2 text-[8px] font-bold text-slate-600 border-b border-white/5 text-center min-w-[60px] hover:text-blue-400 transition-colors uppercase tracking-tighter">
+                            <th key={view} className="p-2 text-xs font-semibold border-b border-[var(--grid-border)] text-center min-w-[76px] capitalize">
                               {view}
                             </th>
                           ))}
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 text-center uppercase tracking-widest">Action</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2466,11 +2473,12 @@ export default function SettingsPage() {
                           const isSelected = selectedOperatorIds.includes(op.id)
 
                           return (
-                          <tr key={op.id} className={`transition-colors border-b border-white/5 last:border-0 group ${isSelected ? 'bg-blue-500/[0.08]' : op.username === userProfile?.username ? 'bg-blue-600/[0.03]' : 'hover:bg-white/5'}`}>
-                            <td className="p-4 sticky left-0 bg-[#0c121e]/95 backdrop-blur-sm z-20 border-r border-white/5 align-middle">
+                          <tr key={op.id} className={`transition-colors border-b border-[var(--grid-border)] last:border-0 group ${isSelected ? 'bg-[var(--surface-hover)]' : 'hover:bg-[var(--surface-hover)]'}`}>
+                            <td className="p-4 md:sticky md:left-0 bg-[var(--panel-item-bg)] z-20 border-r border-[var(--grid-border)] align-middle">
                               <div className="flex items-center justify-center min-h-[40px]">
                                 <input
                                   type="checkbox"
+                                  aria-label={`Select ${op.username}`}
                                   readOnly
                                   checked={isSelected}
                                   onClick={(event) => {
@@ -2481,29 +2489,30 @@ export default function SettingsPage() {
                                 />
                               </div>
                             </td>
-                            <td className="p-4 sticky left-[84px] bg-[#0c121e]/95 backdrop-blur-sm z-10 border-r border-white/5 align-middle">
+                            <td className="p-4 md:sticky md:left-[84px] bg-[var(--panel-item-bg)] z-10 border-r border-[var(--grid-border)] align-middle">
                               <button
                                 type="button"
+                                aria-pressed={isSelected}
                                 onClick={(event) => handleOperatorSelection(op.id, event)}
                                 className="flex w-full items-center gap-3 text-left"
                               >
-                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-[11px] shadow-lg transition-all ${op.is_admin ? 'bg-blue-600 text-white shadow-blue-500/20' : 'bg-slate-800 text-slate-400 border border-white/5'}`}>
+                                <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center font-semibold text-xs bg-[var(--surface-hover)] text-[var(--text-secondary)] border border-[var(--grid-border)]">
                                   {op.username?.slice(0,2).toUpperCase()}
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                  <p className="text-[11px] font-bold text-white leading-none truncate flex items-center gap-1.5">
+                                  <p className="text-xs font-semibold text-[var(--text-primary)] leading-normal truncate flex items-center gap-1.5">
                                     {op.full_name}
                                     {op.username === userProfile?.username && <span className="text-[7px] bg-blue-500 text-white px-1.5 py-0.5 rounded-lg font-black uppercase tracking-normal">You</span>}
                                   </p>
-                                  <p className="text-[8px] font-bold text-slate-500 mt-1 tracking-tighter truncate opacity-60">{op.username}</p>
+                                  <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{op.username}</p>
                                 </div>
                               </button>
                             </td>
                             <td className="p-4 align-middle">
-                              <span className="text-[10px] font-bold text-slate-300">{op.department || '—'}</span>
+                              <span className="text-xs text-[var(--text-primary)]">{op.department || '—'}</span>
                             </td>
                             <td className="p-4 align-middle">
-                              <span className="text-[10px] font-bold text-slate-300">{op.team || '—'}</span>
+                              <span className="text-xs text-[var(--text-primary)]">{op.team || '—'}</span>
                             </td>
                             <td className="p-4 align-middle">
                                <WorkspaceTooltip focusable className="inline-block" content={<>
@@ -2519,6 +2528,7 @@ export default function SettingsPage() {
                             <td className="p-4 text-center align-middle">
                               <div className="flex items-center justify-center min-h-[40px]" onClick={(e) => e.stopPropagation()}>
                                 <ToggleSwitch 
+                                  label={`Admin access for ${op.username}`}
                                   checked={op.is_admin} 
                                   onChange={async (e: any) => {
                                     const checked = e.target.checked
@@ -2533,6 +2543,7 @@ export default function SettingsPage() {
                               <td key={view} className="p-1 text-center border-x border-white/[0.02] align-middle">
                                 <div className="flex items-center justify-center min-h-[40px]" onClick={(e) => e.stopPropagation()}>
                                   <ViewPermissionIcon 
+                                    label={`${view} permission for ${op.username}`}
                                     level={op.is_admin ? 3 : getPermLevel(op, view)}
                                     onClick={() => !op.is_admin && togglePermission(op, view)}
                                     isGlobalAdmin={op.is_admin}
@@ -2564,7 +2575,7 @@ export default function SettingsPage() {
                         )})}
                         {filteredOperators.length === 0 && (
                           <tr>
-                            <td colSpan={allViews.length + 6} className="p-8 text-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                            <td colSpan={allViews.length + 7} className="p-8 text-center text-xs text-[var(--text-secondary)]">
                               No operators match the current filter
                             </td>
                           </tr>
