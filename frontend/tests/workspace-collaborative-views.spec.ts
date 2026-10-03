@@ -47,6 +47,26 @@ for (const workspace of workspaces.filter(item => item.key !== 'external')) {
         const saved = await request.get(`${apiBase}/workspaces/${workspace.key}/views`)
         expect(saved.ok()).toBeTruthy()
         expect((await saved.json()).views.some((view: any) => view.name === viewName && String(view.id) === new URL(page.url()).searchParams.get('view'))).toBeTruthy()
+        const panel = page.locator('[data-workspace-panel-key="views-menu"]')
+        const typography = await panel.evaluate(element => {
+          const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+          const samples = []
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const parent = node.parentElement!
+            if (node.textContent?.trim() && parent.getBoundingClientRect().width) {
+              samples.push({ text: node.textContent.trim(), pixels: parseFloat(getComputedStyle(parent).fontSize) })
+            }
+          }
+          return samples
+        })
+        expect(typography.filter(sample => sample.pixels < 12)).toEqual([])
+        const targets = await panel.getByRole('button').evaluateAll(buttons => buttons.map(button => {
+          const bounds = button.getBoundingClientRect()
+          return { label: button.getAttribute('aria-label') || button.textContent?.trim() || button.getAttribute('title'), width: bounds.width, height: bounds.height }
+        }))
+        expect(targets.filter(target => target.width < 44 || target.height < 44 || !target.label)).toEqual([])
+        await expectReadableGridText(page, testInfo, 'saved-view-panel', '[data-workspace-panel-key="views-menu"]')
+        await testInfo.attach('saved-view-panel-metrics', { body: JSON.stringify({ typography, targets }), contentType: 'application/json' })
         const copy = page.getByRole('button', { name: /^Copy(ing)? link/ })
         await copy.scrollIntoViewIfNeeded()
         await expect(copy).toBeInViewport({ ratio: 1 })
@@ -81,6 +101,33 @@ for (const workspace of workspaces.filter(item => item.key !== 'external')) {
         await expectReadableGridText(page, testInfo, 'view-copy-success', '[data-workspace-toast="success"]')
         await page.screenshot({ path: testInfo.outputPath('view-copy-success.png'), animations: 'disabled' })
         expect(errors).toEqual([])
+        const renamed = `Reviewed ${workspace.key} ${width}`
+        await page.getByTitle(`Rename ${viewName}`).click()
+        const rename = page.getByLabel('Rename personal view', { exact: true })
+        await expect(rename).toBeFocused()
+        await rename.fill(renamed)
+        expect(await rename.evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(width < 768 ? 16 : 12)
+        await expectReadableGridText(page, testInfo, 'saved-view-rename', '[data-workspace-panel-key="views-menu"]')
+        await page.screenshot({ path: testInfo.outputPath('saved-view-rename.png'), animations: 'disabled' })
+        await rename.press('Enter')
+        await expect(rename).toHaveCount(0)
+        const persisted = await request.get(`${apiBase}/workspaces/${workspace.key}/views`)
+        expect(persisted.ok()).toBeTruthy()
+        expect((await persisted.json()).views.some((view: any) => view.name === renamed && String(view.id) === new URL(page.url()).searchParams.get('view'))).toBeTruthy()
+        const remove = page.getByTitle(`Delete ${renamed}`)
+        await remove.scrollIntoViewIfNeeded()
+        await expect(remove).toBeInViewport({ ratio: 1 })
+        await remove.click()
+        const confirmDelete = page.getByTitle(`Confirm delete ${renamed}`)
+        await expect(confirmDelete).toBeVisible()
+        await expectReadableGridText(page, testInfo, 'saved-view-delete-review', '[data-workspace-panel-key="views-menu"]')
+        await page.screenshot({ path: testInfo.outputPath('saved-view-delete-review.png'), animations: 'disabled' })
+        await confirmDelete.click()
+        await expect(page.getByTitle(`Delete ${renamed}`)).toHaveCount(0)
+        const removed = await request.get(`${apiBase}/workspaces/${workspace.key}/views`)
+        expect(removed.ok()).toBeTruthy()
+        expect((await removed.json()).views.some((view: any) => view.name === renamed)).toBe(false)
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(2)
         await testInfo.attach('view-copy-facts', { body: JSON.stringify({ workspace: workspace.key, bounds, writes: 2, deniedThenRetried: true, pageErrors: errors }), contentType: 'application/json' })
       })
     }
