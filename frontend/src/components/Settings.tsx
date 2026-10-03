@@ -629,6 +629,11 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                          <div className="space-y-1.5">
                                            <div className="text-xs font-semibold text-[var(--text-primary)]">{current?.full_name || current?.username || 'Unknown identity'}</div>
                                            <div className="text-xs font-semibold text-[var(--text-secondary)]">{current?.username || 'No username'}</div>
+                                           {row.fieldChanges?.username && (
+                                             <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                               USERNAME: {row.fieldChanges.username.old || 'Empty'} {'->'} {row.fieldChanges.username.new || 'Empty'}
+                                             </div>
+                                           )}
                                              {row.fieldChanges?.full_name && (
                                                <div className="text-xs font-semibold text-[var(--text-primary)] bg-[var(--state-warning-surface)] px-1.5 py-0.5 rounded border border-[var(--state-warning-border)] mt-1">
                                                 NAME: {row.fieldChanges.full_name.old || 'Empty'} {'->'} {row.fieldChanges.full_name.new || 'Empty'}
@@ -644,6 +649,11 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                                 ROLE: {row.fieldChanges.role_name.old || 'Unassigned'} {'->'} {row.fieldChanges.role_name.new || 'Unassigned'}
                                                </div>
                                              )}
+                                           {row.fieldChanges?.registration_status && (
+                                             <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                               STATUS: {row.fieldChanges.registration_status.old || 'Empty'} {'->'} {row.fieldChanges.registration_status.new || 'Empty'}
+                                             </div>
+                                           )}
                                          </div>
                                       </td>
                                       <td className="p-4 align-top">

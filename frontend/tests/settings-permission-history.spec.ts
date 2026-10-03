@@ -9,14 +9,14 @@ async function prepareHistory(request: any) {
   const username = `pw-permission-history-${Date.now()}`
   const original = { external_id: username, username, full_name: 'Original history identity',
     department: 'Original department', email: 'history@example.com', is_admin: false,
-    custom_permissions: { assets: 1, settings: 1 }, team: 'Original history team' }
+    custom_permissions: { assets: 1, settings: 1 }, team: 'Original history team', registration_status: 'Verified' }
   const created = await request.post(`${apiBase}/settings/operators`, { data: original })
   expect(created.ok()).toBeTruthy()
   const operator = await created.json()
   const previous = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
   expect((await request.patch(`${apiBase}/settings/operators/${operator.id}`, { data: {
     full_name: 'Updated history identity', department: 'Updated department', email: 'updated@example.com',
-    is_admin: true, team: 'Updated history team',
+    is_admin: true, team: 'Updated history team', username: `${username}-updated`, registration_status: 'Pending',
   } })).ok()).toBeTruthy()
   const current = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
   expect(current).toHaveLength(previous.length + 1)
@@ -61,6 +61,13 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(history.getByRole('button', { name: `Select revision ${data.latestNumber}`, exact: true })).toHaveAttribute('aria-pressed', 'true')
       await expect(history.getByText('Comparison Mode', { exact: true })).toBeVisible()
       const row = history.getByRole('row').filter({ hasText: 'Updated history identity' })
+      expect.soft(await row.textContent(), 'show the old and new username').toContain(`USERNAME: ${data.original.username} -> ${data.original.username}-updated`)
+      expect.soft(await row.textContent(), 'show the old and new registration status').toContain('STATUS: Verified -> Pending')
+      const identityCell = row.getByRole('cell').nth(1)
+      await identityCell.scrollIntoViewIfNeeded()
+      await expect(identityCell).toBeInViewport({ ratio: 0.9 })
+      await page.screenshot({ path: testInfo.outputPath('permission-history-identity.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, 'permission history identity', '[data-workspace-history]')
       const collapsedHeight = await row.evaluate(element => element.getBoundingClientRect().height)
       await testInfo.attach('permission-history-collapsed-height', { body: JSON.stringify({ collapsedHeight }), contentType: 'application/json' })
       expect.soft(collapsedHeight, 'collapsed history rows must remain easy to scan').toBeLessThanOrEqual(320)
