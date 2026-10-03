@@ -1,5 +1,8 @@
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import React, { useState, useEffect } from "react"
+import { useBlocker } from 'react-router-dom'
+import { beginScopedWrite } from '../api/tenantContext'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import { WorkspaceTooltip } from './shared/WorkspaceTooltip'
 import { createPortal } from "react-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -819,7 +822,13 @@ export default function SettingsPage() {
     return parts[parts.length - 1] || dbUrl
   }, [])
   const permissionSelectionAnchorRef = React.useRef<number | null>(null)
-  const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any }>>({})
+  const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any, finishWrite: () => void }>>({})
+  const [pendingPermissionWrites, setPendingPermissionWrites] = useState(0)
+  const permissionBlocker = useBlocker(pendingPermissionWrites > 0)
+  usePageLeaveGuard(pendingPermissionWrites > 0)
+  useEffect(() => {
+    if (permissionBlocker.state === 'blocked') permissionBlocker.reset()
+  }, [permissionBlocker])
   const {
     triggerRef: permissionBulkTriggerRef,
     panelRef: permissionBulkPanelRef,
@@ -828,7 +837,10 @@ export default function SettingsPage() {
 
   useEffect(() => {
     return () => {
-      Object.values(permissionCommitBufferRef.current).forEach((entry) => clearTimeout(entry.timeoutId))
+      Object.values(permissionCommitBufferRef.current).forEach((entry) => {
+        clearTimeout(entry.timeoutId)
+        entry.finishWrite()
+      })
       permissionCommitBufferRef.current = {}
     }
   }, [])
@@ -1257,26 +1269,37 @@ export default function SettingsPage() {
 
   const queuePermissionCommit = (op: any, payload: any) => {
     const existing = permissionCommitBufferRef.current[op.id]
+    let finishWrite: () => void
+    try {
+      finishWrite = existing?.finishWrite || beginScopedWrite(false)
+    } catch (error) {
+      showWorkspaceToast(error instanceof Error ? error.message : 'Permission changes could not be queued.', { type: 'error' })
+      return
+    }
     if (existing) clearTimeout(existing.timeoutId)
+    else setPendingPermissionWrites(count => count + 1)
 
     applyOptimisticOperatorPatch(op.id, payload)
 
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(async () => {
       const queued = permissionCommitBufferRef.current[op.id]
       if (!queued) return
       delete permissionCommitBufferRef.current[op.id]
-      operatorMutation.mutate(queued.payload, {
-        onError: () => {
-          queryClient.invalidateQueries({ queryKey: ['operators'] })
-          queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
-          if (queued.payload.username === userProfile?.username) {
-            queryClient.invalidateQueries({ queryKey: ['user-profile'] })
-          }
+      try {
+        await operatorMutation.mutateAsync(queued.payload)
+      } catch {
+        await queryClient.invalidateQueries({ queryKey: ['operators'] })
+        await queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+        if (queued.payload.username === userProfile?.username) {
+          await queryClient.invalidateQueries({ queryKey: ['user-profile'] })
         }
-      })
+      } finally {
+        queued.finishWrite()
+        setPendingPermissionWrites(count => count - 1)
+      }
     }, PERMISSION_COMMIT_DEBOUNCE_MS)
 
-    permissionCommitBufferRef.current[op.id] = { timeoutId, payload }
+    permissionCommitBufferRef.current[op.id] = { timeoutId, payload, finishWrite }
   }
 
   const deleteOperatorMutation = useMutation({
@@ -1694,6 +1717,11 @@ export default function SettingsPage() {
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto px-0 sm:px-4 overflow-x-hidden overflow-y-auto relative sm:overflow-hidden" data-settings-workspace="true">
       {confirmation}
+      {pendingPermissionWrites > 0 && (
+        <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          Saving permission changes. Stay on this page until the save finishes.
+        </p>
+      )}
       <AnimatePresence>
         {isDisconnected && (
           <motion.div 
