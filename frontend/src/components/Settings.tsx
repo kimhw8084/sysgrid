@@ -320,31 +320,68 @@ const getPermissionLevelTone = (level: any, isGlobalAdmin = false) => {
 
 const getOperatorPermissionLevel = (operator: any, view: string) => {
   if (!operator) return 0
-  if (operator.is_admin) return 3
+  if (operator.is_admin === true) return 3
   return normalizePermissionLevel(operator.custom_permissions?.[view] ?? 0)
 }
 
+const formatHistoryValue = (value: unknown): string => {
+  if (value === undefined) return 'Not recorded'
+  if (value === null) return 'Not set'
+  if (value === '') return 'Empty text'
+  if (typeof value === 'string') {
+    return value.trim() !== value || /[\r\n\t]/.test(value) || ['Not recorded', 'Not set', 'Empty text'].includes(value)
+      ? JSON.stringify(value) : value
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  return `Invalid recorded value: ${JSON.stringify(value)}`
+}
+
+const getRecordedAdminLabel = (value: unknown) =>
+  value === true ? 'Admin' : value === false || value === undefined ? 'Standard' : 'Unknown'
+
 const toSortedStringList = (value: any) =>
   Array.isArray(value)
-    ? value.map((entry) => String(entry)).filter(Boolean).sort((a, b) => a.localeCompare(b))
-    : []
+    ? value.map((entry) => typeof entry === 'string' ? entry : formatHistoryValue(entry)).sort((a, b) => a.localeCompare(b))
+    : value == null ? [] : [formatHistoryValue(value)]
 
-const getOperatorSnapshotKey = (operator: any) =>
-  String(operator?.external_id ?? operator?.id ?? operator?.username ?? '')
+const HISTORY_TEXT_FIELDS = ['full_name', 'username', 'role_name', 'department', 'team', 'email', 'registration_status', 'team_source']
 
 const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) => {
-  const newerRows = Array.isArray(newer?.snapshot_data) ? newer.snapshot_data : []
-  const olderRows = Array.isArray(older?.snapshot_data) ? older.snapshot_data : []
-  const newerMap = new Map(newerRows.map((operator: any) => [getOperatorSnapshotKey(operator), operator]))
-  const olderMap = new Map(olderRows.map((operator: any) => [getOperatorSnapshotKey(operator), operator]))
-  const keys = Array.from(new Set([...newerMap.keys(), ...olderMap.keys()])).filter(Boolean)
-
-  const isEquivalent = (a: any, b: any) => {
-    if (!a && !b) return true
-    const valA = String(a || '').trim()
-    const valB = String(b || '').trim()
-    return valA === valB
+  let partial = false
+  const ambiguousKeys = new Set<string>()
+  const readSnapshot = (version: any) => {
+    const entries = new Map<string, any>()
+    if (!version) return entries
+    if (!Array.isArray(version.snapshot_data)) return null
+    for (const operator of version.snapshot_data) {
+      if (!operator || typeof operator !== 'object' || Array.isArray(operator)) {
+        partial = true
+        continue
+      }
+      const rawKey = operator.external_id ?? operator.id ?? operator.username
+      if (!(typeof rawKey === 'string' && rawKey.trim()) && !(Number.isInteger(rawKey) && rawKey > 0)) {
+        partial = true
+        continue
+      }
+      const key = String(rawKey)
+      if (entries.has(key)) {
+        ambiguousKeys.add(key)
+        partial = true
+      }
+      if (HISTORY_TEXT_FIELDS.some(field => operator[field] != null && typeof operator[field] !== 'string')
+        || ['team_id', 'role_id'].some(field => operator[field] != null && !(Number.isInteger(operator[field]) && operator[field] > 0))
+        || (operator.teams != null && (!Array.isArray(operator.teams) || operator.teams.some((group: unknown) => typeof group !== 'string')))
+        || (operator.is_admin !== undefined && typeof operator.is_admin !== 'boolean')) partial = true
+      entries.set(key, operator)
+    }
+    return entries
   }
+  const newerMap = readSnapshot(newer)
+  const olderMap = readSnapshot(older)
+  if (!newerMap || !olderMap) return { rows: [], partial: true }
+  const keys = Array.from(new Set([...newerMap.keys(), ...olderMap.keys()])).filter(key => !ambiguousKeys.has(key))
+
+  const isEquivalent = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
   const rows = keys.map((key) => {
     const before = olderMap.get(key) || null
@@ -385,17 +422,9 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
       .filter((entry) => entry.old !== entry.new)
 
     const fieldChanges: Record<string, { old: any, new: any }> = {}
-    const fieldsToTrack = [
-      { key: 'full_name', label: 'Full Name' },
-      { key: 'username', label: 'Username' },
-      { key: 'role_name', label: 'Role' },
-      { key: 'department', label: 'Department' },
-      { key: 'team', label: 'Primary Team' },
-      { key: 'email', label: 'Email' },
-      { key: 'registration_status', label: 'Registration Status' }
-    ]
+    const fieldsToTrack = [...HISTORY_TEXT_FIELDS, 'role_id', 'team_id', 'is_admin']
 
-    fieldsToTrack.forEach(({ key }) => {
+    fieldsToTrack.forEach((key) => {
       if (!isEquivalent(before?.[key], after?.[key])) {
         fieldChanges[key] = { old: before?.[key], new: after?.[key] }
       }
@@ -408,10 +437,6 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
     const afterTeams = JSON.stringify(toSortedStringList(afterAny?.teams))
     if (beforeTeams !== afterTeams) {
       fieldChanges['groups'] = { old: toSortedStringList(beforeAny?.teams), new: toSortedStringList(afterAny?.teams) }
-    }
-
-    if (Boolean(beforeAny?.is_admin) !== Boolean(afterAny?.is_admin)) {
-      fieldChanges['is_admin'] = { old: Boolean(beforeAny?.is_admin), new: Boolean(afterAny?.is_admin) }
     }
 
     if (Object.keys(fieldChanges).length === 0 && permissionChanges.length === 0) {
@@ -429,13 +454,14 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
   }).filter(Boolean) as Array<any>
 
   const order = { changed: 0, added: 1, deleted: 2 } as const
-  return rows.sort((a, b) => {
+  rows.sort((a, b) => {
     const rankDiff = order[a.changeKind] - order[b.changeKind]
     if (rankDiff !== 0) return rankDiff
-    const nameA = (a.after?.full_name || a.before?.full_name || '').toLowerCase()
-    const nameB = (b.after?.full_name || b.before?.full_name || '').toLowerCase()
+    const nameA = formatHistoryValue(a.after?.full_name ?? a.before?.full_name ?? '').toLowerCase()
+    const nameB = formatHistoryValue(b.after?.full_name ?? b.before?.full_name ?? '').toLowerCase()
     return nameA.localeCompare(nameB)
   })
+  return { rows, partial }
 }
 
 function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, restoreError, onRestore }: {
@@ -474,7 +500,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
     ? indexedVersions?.[Math.max(...selectedIndices)] 
     : (selectedIndices[0] + 1 < indexedVersions.length ? indexedVersions[selectedIndices[0] + 1] : null)
 
-  const historyRows = React.useMemo(
+  const { rows: historyRows, partial: partialComparison } = React.useMemo(
     () => buildPermissionHistoryRows(newer, older, allViews),
     [allViews, newer, older]
   )
@@ -503,6 +529,9 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
         {restorePhase === 'review' ? 'Review the identity restore. Finish or cancel confirmation before leaving.' : 'Restoring identity revision. Stay on this page until the restore finishes.'}
       </p>}
       {restoreError && <p role="alert" className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-4 text-sm text-[var(--text-primary)]">{restoreError}</p>}
+      {partialComparison && <p role="alert" className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-4 text-sm text-[var(--text-primary)]">
+        Comparison is partial. Some historical records are invalid, missing an identity key or duplicated. Ambiguous identities are excluded; invalid field values are shown as recorded. Original history is preserved.
+      </p>}
       <WorkspaceHistoryShell
           header={null}
           sidebar={
@@ -625,81 +654,96 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                            {row.changeKind}
                                          </span>
                                       </td>
-                                      <td className="p-4 align-top">
+                                      <td className="p-4 align-top whitespace-pre-wrap [overflow-wrap:anywhere]">
                                          <div className="space-y-1.5">
-                                           <div className="text-xs font-semibold text-[var(--text-primary)]">{current?.full_name || current?.username || 'Unknown identity'}</div>
-                                           <div className="text-xs font-semibold text-[var(--text-secondary)]">{current?.username || 'No username'}</div>
+                                           <div className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(current?.full_name ?? current?.username)}</div>
+                                           <div className="text-xs font-semibold text-[var(--text-secondary)]">{formatHistoryValue(current?.username)}</div>
                                            {row.fieldChanges?.username && (
                                              <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
-                                               USERNAME: {row.fieldChanges.username.old || 'Empty'} {'->'} {row.fieldChanges.username.new || 'Empty'}
+                                               USERNAME: {formatHistoryValue(row.fieldChanges.username.old)} {'->'} {formatHistoryValue(row.fieldChanges.username.new)}
                                              </div>
                                            )}
                                              {row.fieldChanges?.full_name && (
                                                <div className="text-xs font-semibold text-[var(--text-primary)] bg-[var(--state-warning-surface)] px-1.5 py-0.5 rounded border border-[var(--state-warning-border)] mt-1">
-                                                NAME: {row.fieldChanges.full_name.old || 'Empty'} {'->'} {row.fieldChanges.full_name.new || 'Empty'}
+                                                NAME: {formatHistoryValue(row.fieldChanges.full_name.old)} {'->'} {formatHistoryValue(row.fieldChanges.full_name.new)}
                                                </div>
                                              )}
                                            {row.fieldChanges?.email && (
                                                <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
-                                                EMAIL: {row.fieldChanges.email.old || 'Empty'} {'->'} {row.fieldChanges.email.new || 'Empty'}
+                                                EMAIL: {formatHistoryValue(row.fieldChanges.email.old)} {'->'} {formatHistoryValue(row.fieldChanges.email.new)}
                                                </div>
                                              )}
                                              {row.fieldChanges?.role_name && (
                                                <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
-                                                ROLE: {row.fieldChanges.role_name.old || 'Unassigned'} {'->'} {row.fieldChanges.role_name.new || 'Unassigned'}
+                                                ROLE: {formatHistoryValue(row.fieldChanges.role_name.old)} {'->'} {formatHistoryValue(row.fieldChanges.role_name.new)}
                                                </div>
                                              )}
                                            {row.fieldChanges?.registration_status && (
                                              <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
-                                               STATUS: {row.fieldChanges.registration_status.old || 'Empty'} {'->'} {row.fieldChanges.registration_status.new || 'Empty'}
+                                               STATUS: {formatHistoryValue(row.fieldChanges.registration_status.old)} {'->'} {formatHistoryValue(row.fieldChanges.registration_status.new)}
+                                             </div>
+                                           )}
+                                           {row.fieldChanges?.role_id && (
+                                             <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                               ROLE ID: {formatHistoryValue(row.fieldChanges.role_id.old)} {'→'} {formatHistoryValue(row.fieldChanges.role_id.new)}
                                              </div>
                                            )}
                                          </div>
                                       </td>
-                                      <td className="p-4 align-top">
+                                      <td className="p-4 align-top whitespace-pre-wrap [overflow-wrap:anywhere]">
                                          {row.fieldChanges?.department ? (
                                            <div className="space-y-1">
-                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{row.fieldChanges.department.old || '—'}</div>
-                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{row.fieldChanges.department.new || '—'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{formatHistoryValue(row.fieldChanges.department.old)}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(row.fieldChanges.department.new)}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{current?.department || '—'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(current?.department)}</span>
                                          )}
                                       </td>
-                                      <td className="p-4 align-top">
+                                      <td className="p-4 align-top whitespace-pre-wrap [overflow-wrap:anywhere]">
                                          {row.fieldChanges?.team ? (
                                            <div className="space-y-1">
-                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{row.fieldChanges.team.old || 'Unassigned'}</div>
-                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{row.fieldChanges.team.new || 'Unassigned'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{formatHistoryValue(row.fieldChanges.team.old)}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(row.fieldChanges.team.new)}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{current?.team || 'Unassigned'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(current?.team)}</span>
+                                         )}
+                                         {row.fieldChanges?.team_id && (
+                                           <div className="mt-1 text-xs font-semibold text-[var(--text-primary)]">
+                                             TEAM ID: {formatHistoryValue(row.fieldChanges.team_id.old)} {'→'} {formatHistoryValue(row.fieldChanges.team_id.new)}
+                                           </div>
+                                         )}
+                                         {row.fieldChanges?.team_source && (
+                                           <div className="mt-1 text-xs font-semibold text-[var(--text-primary)]">
+                                             SOURCE: {formatHistoryValue(row.fieldChanges.team_source.old)} {'→'} {formatHistoryValue(row.fieldChanges.team_source.new)}
+                                           </div>
                                          )}
                                       </td>
                                       <td className="p-4 align-top">
                                          {row.fieldChanges?.groups ? (
                                            <div className="space-y-1">
-                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{(row.fieldChanges.groups.old || []).join(', ') || 'No groups'}</div>
-                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{(row.fieldChanges.groups.new || []).join(', ') || 'No groups'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{(row.fieldChanges.groups.old || []).map(formatHistoryValue).join(', ') || 'No groups'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{(row.fieldChanges.groups.new || []).map(formatHistoryValue).join(', ') || 'No groups'}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{(toSortedStringList(current?.teams)).join(', ') || 'No groups'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{(toSortedStringList(current?.teams)).map(formatHistoryValue).join(', ') || 'No groups'}</span>
                                          )}
                                       </td>
                                       <td className="p-4 align-top text-center">
                                          {row.fieldChanges?.is_admin ? (
                                            <div className="flex flex-col items-center gap-1">
-                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.old ? 3 : 0, row.fieldChanges.is_admin.old)}`}>
-                                               {row.fieldChanges.is_admin.old ? 'Admin' : 'Standard'}
+                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.old === true ? 3 : 0, row.fieldChanges.is_admin.old === true)}`}>
+                                               {getRecordedAdminLabel(row.fieldChanges.is_admin.old)}
                                              </span>
                                              <ChevronDown size={8} className="text-[var(--text-secondary)]" />
-                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.new ? 3 : 0, row.fieldChanges.is_admin.new)}`}>
-                                               {row.fieldChanges.is_admin.new ? 'Admin' : 'Standard'}
+                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.new === true ? 3 : 0, row.fieldChanges.is_admin.new === true)}`}>
+                                               {getRecordedAdminLabel(row.fieldChanges.is_admin.new)}
                                              </span>
                                            </div>
                                          ) : (
-                                           <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(Boolean(current?.is_admin) ? 3 : 0, Boolean(current?.is_admin))}`}>
-                                             {Boolean(current?.is_admin) ? 'Admin' : 'Standard'}
+                                           <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(current?.is_admin === true ? 3 : 0, current?.is_admin === true)}`}>
+                                             {getRecordedAdminLabel(current?.is_admin)}
                                            </span>
                                          )}
                                       </td>
@@ -714,12 +758,12 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                                <div data-permission-change key={`${row.key}-${change.view}`} className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-2.5 py-2">
                                                  <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)]">{change.view}</div>
                                                  <div className="mt-1 flex items-center gap-1.5">
-                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.old, Boolean(row.before?.is_admin))}`}>
-                                                     {getPermissionLevelLabel(change.old, Boolean(row.before?.is_admin))}
+                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.old, row.before?.is_admin === true)}`}>
+                                                     {getPermissionLevelLabel(change.old, row.before?.is_admin === true)}
                                                    </span>
                                                    <ChevronRight size={12} className="text-[var(--text-secondary)]" />
-                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.new, Boolean(row.after?.is_admin))}`}>
-                                                     {getPermissionLevelLabel(change.new, Boolean(row.after?.is_admin))}
+                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.new, row.after?.is_admin === true)}`}>
+                                                     {getPermissionLevelLabel(change.new, row.after?.is_admin === true)}
                                                    </span>
                                                  </div>
                                                </div>

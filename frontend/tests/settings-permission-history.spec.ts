@@ -3,6 +3,92 @@ import { test } from './helpers/sysgrid-test'
 import { resetBrowserState } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const width of [1440, 390]) {
+    for (const legacy of [false, true]) {
+      test(`permission history preserves ${legacy ? 'malformed legacy evidence safely' : 'exact recorded field changes'} in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+        await resetBrowserState(page)
+        await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 })
+        expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+        await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+        const original = { external_id: 'history-record-fixture', username: 'history-record-fixture',
+          full_name: ' Analyst ', email: null, department: 'Operations', team: 'Platform',
+          team_id: 11, team_source: 'manual', teams: [''], role_id: 21, role_name: 'Operator',
+          registration_status: 'Verified', is_admin: false, custom_permissions: {} }
+        const changed = { ...original, full_name: 'Analyst', email: '', team_id: 12, team_source: 'synced', role_id: 22, teams: ['Empty text'] }
+        const versions = [
+          { id: 902, created_at: '2026-10-02T12:00:00Z', created_by: 'History fixture', is_active: true,
+            snapshot_data: legacy ? [
+              { ...changed, full_name: { legacy: 'unreadable name' }, email: ['invalid email'], department: { label: 'invalid department' }, team: ['invalid team'], is_admin: 'false' },
+              { ...changed, external_id: 'healthy-record', username: 'healthy-record', full_name: 'Healthy identity' },
+              { ...changed, external_id: 'duplicate-record', full_name: 'Ambiguous duplicate one' },
+              { ...changed, external_id: 'duplicate-record', full_name: 'Ambiguous duplicate two' },
+            ] : [changed] },
+          { id: 901, created_at: '2026-10-01T12:00:00Z', created_by: 'History fixture', is_active: false,
+            snapshot_data: legacy ? [null, 42, { full_name: 'Missing identity key' }, original] : [original] },
+        ]
+        const errors: string[] = []
+        page.on('pageerror', error => errors.push(error.message))
+        let restoreWrites = 0
+        page.on('request', req => { if (req.url().includes('/user-pool/restore/') && req.method() === 'POST') restoreWrites++ })
+        await page.route('**/api/v1/settings/user-pool/versions', route => route.fulfill({ json: versions }))
+        await page.goto('/settings?tab=permissions')
+        const trigger = page.getByRole('button', { name: 'Revision History', exact: true })
+        await trigger.click()
+        const history = page.getByRole('dialog', { name: 'Permission Registry History', exact: true })
+        await expect(history).toBeVisible()
+        await expect(history.locator(':scope > .glass-panel')).toHaveCSS('opacity', '1')
+        if (legacy) {
+          await expect(history.getByRole('alert')).toContainText('Comparison is partial')
+          await expect(history.getByText('Healthy identity', { exact: true })).toBeVisible()
+          await expect(history).toContainText('Invalid recorded value')
+          await expect(history).not.toContainText('Ambiguous duplicate')
+          const adminCell = history.getByRole('row').filter({ hasText: 'history-record-fixture' }).getByRole('cell').nth(5)
+          await expect(adminCell).toContainText('Unknown')
+          await expect(adminCell).not.toContainText('Admin')
+        } else {
+          const row = history.getByRole('row').filter({ hasText: 'history-record-fixture' })
+          await expect(row).toHaveCount(1)
+          await expect(row).toContainText('NAME: " Analyst " -> Analyst', { useInnerText: false })
+          await expect(row).toContainText('EMAIL: Not set -> Empty text')
+          await expect(row).toContainText('ROLE ID: 21 → 22')
+          await expect(row).toContainText('TEAM ID: 11 → 12')
+          await expect(row).toContainText('SOURCE: manual → synced')
+          await expect(row.getByRole('cell').nth(4).locator('.line-through')).toHaveCount(1)
+          await expect(row.getByRole('cell').nth(4)).toContainText('"Empty text"')
+        }
+        const region = history.getByRole('region', { name: 'Identity changes', exact: true })
+        for (const index of [1, 2, 3]) {
+          const cell = region.getByRole('row').nth(1).getByRole('cell').nth(index)
+          await cell.scrollIntoViewIfNeeded()
+          await expect(cell).toBeInViewport({ ratio: 0.9 })
+          await page.screenshot({ path: testInfo.outputPath(`history-records-cell-${index}.png`), animations: 'disabled' })
+          await expectReadableGridText(page, testInfo, `history records cell ${index}`, '[data-workspace-history]')
+        }
+        expect(errors).toEqual([])
+        expect(restoreWrites).toBe(0)
+        await history.getByRole('button', { name: 'Dismiss', exact: true }).click()
+        await expect(history).not.toBeVisible()
+        await expect(trigger).toBeFocused()
+        await testInfo.attach('history-records-fixture', { body: JSON.stringify({ versions, errors, restoreWrites, responseOnly: true }), contentType: 'application/json' })
+        if (legacy) {
+          await page.unroute('**/api/v1/settings/user-pool/versions')
+          await page.route('**/api/v1/settings/user-pool/versions', route => route.fulfill({ json: [
+            { ...versions[0], snapshot_data: { invalid: 'legacy snapshot container' } }, versions[1],
+          ] }))
+          await page.reload()
+          await trigger.click()
+          await expect(history.getByRole('alert')).toContainText('Comparison is partial')
+          await expect(history.getByRole('row')).toHaveCount(0)
+          expect(errors).toEqual([])
+          expect(restoreWrites).toBe(0)
+        }
+      })
+    }
+  }
+}
+
+
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 async function prepareHistory(request: any) {
