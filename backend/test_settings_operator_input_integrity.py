@@ -1,4 +1,5 @@
 """Administrative inputs preserve privilege intent and atomic user-pool writes."""
+import asyncio
 import pytest
 import pytest_asyncio
 from sqlalchemy import select
@@ -413,6 +414,139 @@ async def test_restore_preserves_supported_group_and_permission_records(operator
         assert peer.teams == (['Operators', '연구'] if intent == 'legacy' else [])
         assert peer.custom_permissions == ({'assets': 1, 'settings': 3, 'services': 1, 'network': 2} if intent == 'legacy' else {})
         assert len((await db.scalars(select(models.UserPoolVersion))).all()) == 2
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('grant', ['admin', 'custom', 'role'])
+async def test_restore_rechecks_revoked_authority_inside_write_transaction(operator_scope, setup_db, grant):
+    import inspect
+    from fastapi import Depends, Request
+    from app.api import authorization, settings as settings_api
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        role = models.Role(name='Concurrent restore role', permissions={'settings': 3} if grant == 'role' else {})
+        db.add(role)
+        await db.flush()
+        manager = await db.scalar(select(models.Operator).where(models.Operator.username == 'admin_root'))
+        assert manager is not None
+        manager.is_admin = grant == 'admin'
+        manager.role_id = role.id
+        manager.custom_permissions = {'settings': 3} if grant == 'custom' else {}
+        await db.commit()
+        manager_id, role_id = manager.id, role.id
+    version_id, _, _ = await field_restore_fixture(c, setup_db)
+    resolved, release = asyncio.Event(), asyncio.Event()
+    dependency = inspect.signature(settings_api.restore_user_pool).parameters['_settings_access'].default.dependency
+
+    async def hold_accepted_authority(request: Request, db=Depends(get_db)):
+        result = await dependency(request=request, db=db)
+        assert authorization.has_capability(result, 'settings', 3)
+        resolved.set()
+        await release.wait()
+        return result
+
+    app.dependency_overrides[dependency] = hold_accepted_authority
+    task = asyncio.create_task(c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}',
+        headers=c['headers']))
+    try:
+        await asyncio.wait_for(resolved.wait(), 5)
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            manager = await db.get(models.Operator, manager_id)
+            manager.is_admin, manager.custom_permissions = False, {}
+            (await db.get(models.Role, role_id)).permissions = {}
+            await db.commit()
+        before = await snapshot(c, setup_db)
+    finally:
+        release.set()
+        try:
+            response = await asyncio.wait_for(task, 10)
+        finally:
+            app.dependency_overrides.pop(dependency)
+    assert response.status_code == 403, response.text
+    assert response.json()['detail'] == "Insufficient capability 'settings' at level 3."
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+async def test_restore_busy_conflict_preserves_state_and_allows_explicit_retry(operator_scope, setup_db):
+    c = operator_scope
+    version_id, _, _ = await field_restore_fixture(c, setup_db)
+    before = await snapshot(c, setup_db)
+    async with _tenant_db(setup_db, c['tenant']) as writer:
+        target = await writer.get(models.Operator, c['ids'][0])
+        target.full_name = 'Uncommitted competing restore write'
+        await writer.flush()
+        response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+        assert response.status_code == 409, response.text
+        assert 'busy' in response.json()['detail']
+        await writer.rollback()
+    assert await snapshot(c, setup_db) == before
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        assert (await db.get(models.Operator, c['ids'][0])).full_name == 'Earlier staged field restore'
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 2 and versions[-1].is_active
+        assert versions[-1].diff_summary['source_version_id'] == version_id
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['same_update', 'different_updates', 'same_creation'])
+async def test_concurrent_restores_preserve_each_complete_revision(operator_scope, setup_db, monkeypatch, operation):
+    from app.api import authorization
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    sources = []
+    target_id = 'restore-created' if operation == 'same_creation' else 'input-target'
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        for index in range(2):
+            records = await build_user_pool_snapshot(db)
+            if operation == 'same_creation':
+                records.append({'external_id': target_id, 'username': target_id, 'full_name': 'Recreated identity',
+                                'email': None, 'department': None})
+            else:
+                target = next(row for row in records if row['external_id'] == target_id)
+                target['full_name'] = 'First historical name' if index == 0 or operation == 'same_update' else 'Second historical name'
+            version = models.UserPoolVersion(version_label=f'concurrent-restore-{index}', snapshot_data=records,
+                                            diff_summary={}, created_by='admin_root', is_active=False)
+            db.add(version)
+            await db.flush()
+            sources.append((version.id, next(row['full_name'] for row in records if row['external_id'] == target_id)))
+        await db.commit()
+    ready = asyncio.Event()
+    sessions = set()
+    original = authorization.resolve_current_operator
+
+    async def synchronized_authorization(request, db):
+        result = await original(request, db)
+        if db not in sessions:
+            sessions.add(db)
+            if len(sessions) == 2:
+                ready.set()
+            await asyncio.wait_for(ready.wait(), 5)
+        return result
+
+    monkeypatch.setattr(authorization, 'resolve_current_operator', synchronized_authorization)
+    responses = await asyncio.wait_for(asyncio.gather(*[
+        c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+        for version_id, _ in sources
+    ], return_exceptions=True), 10)
+    assert not any(isinstance(response, BaseException) for response in responses), [repr(response) for response in responses]
+    assert [response.status_code for response in responses] == [200, 200], [response.text for response in responses]
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 4 and sum(version.is_active for version in versions) == 1 and versions[-1].is_active
+        restored = versions[2:]
+        assert {version.diff_summary['source_version_id'] for version in restored} == {source[0] for source in sources}
+        for version in restored:
+            saved = next(row for row in version.snapshot_data if row['external_id'] == target_id)
+            assert saved['full_name'] == dict(sources)[version.diff_summary['source_version_id']]
+        operators = (await db.scalars(select(models.Operator).where(models.Operator.external_id == target_id))).all()
+        assert len(operators) == 1
+        saved = next(row for row in restored[-1].snapshot_data if row['external_id'] == target_id)
+        assert operators[0].full_name == saved['full_name']
 
 
 async def write_operator(c, operation, payload):

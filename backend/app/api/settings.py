@@ -1725,6 +1725,24 @@ async def get_user_pool_versions(
     res = await db.execute(select(models.UserPoolVersion).order_by(models.UserPoolVersion.created_at.desc(), models.UserPoolVersion.id.desc()))
     return res.scalars().all()
 
+async def begin_identity_transaction(db: AsyncSession, request: Request, *, preview: bool = False) -> None:
+    if db.get_bind().dialect.name != "sqlite":
+        return
+    # Discard authorization's cached read state before acquiring a consistent
+    # snapshot. Apply/restore must own the writer before reading current data.
+    await db.rollback()
+    try:
+        await db.execute(text("BEGIN" if preview else "BEGIN IMMEDIATE"))
+    except OperationalError as exc:
+        await db.rollback()
+        code = getattr(exc.orig, "sqlite_errorcode", None)
+        if code is not None and (code & 0xFF) in {SQLITE_BUSY, SQLITE_LOCKED}:
+            raise HTTPException(409, "Identity data is busy. Wait for the current change, then review and try again.") from exc
+        raise
+    # Another writer may have revoked this actor while acquisition waited.
+    await require_capability("settings", 3)(request=request, db=db)
+
+
 @router.post("/user-pool/refresh")
 async def refresh_user_pool(
     data: dict,
@@ -1788,22 +1806,7 @@ async def refresh_user_pool(
             "registration_status": normalize_string(raw_record.get("registration_status")),
         })
 
-    if db.get_bind().dialect.name == "sqlite":
-        # Authorization has only read so far. Discard its cached state, then
-        # acquire the writer before checking the reviewed snapshot. SQLite's
-        # legacy SELECT behavior otherwise leaves a check/apply race open.
-        # A preview uses one read snapshot without taking the writer lock.
-        await db.rollback()
-        try:
-            await db.execute(text("BEGIN" if preview else "BEGIN IMMEDIATE"))
-        except OperationalError as exc:
-            await db.rollback()
-            code = getattr(exc.orig, "sqlite_errorcode", None)
-            if code is not None and (code & 0xFF) in {SQLITE_BUSY, SQLITE_LOCKED}:
-                raise HTTPException(409, "Identity data is busy. Wait for the current change, then preview again.") from exc
-            raise
-        # Another writer may have revoked this actor while acquisition waited.
-        await require_capability("settings", 3)(request=request, db=db)
+    await begin_identity_transaction(db, request, preview=preview)
 
     diff_summary = {
         "added": 0,
@@ -2026,6 +2029,7 @@ async def restore_user_pool(
     db: AsyncSession = Depends(get_db),
 ):
     user_id = get_current_user_id(request)
+    await begin_identity_transaction(db, request)
     res = await db.execute(select(models.UserPoolVersion).filter(models.UserPoolVersion.id == version_id))
     version = res.scalar_one_or_none()
     if not version: raise HTTPException(404, "Version not found")
