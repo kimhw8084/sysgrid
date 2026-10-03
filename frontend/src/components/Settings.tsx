@@ -1231,7 +1231,7 @@ export default function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['operators'] })
       queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
       // If updating current user, refresh their profile to reflect permission changes immediately
-      if (variables.username === userProfile?.username) {
+      if (variables.username === userProfile?.username || (variables.id != null && variables.id === userProfile?.id)) {
         queryClient.invalidateQueries({ queryKey: ['user-profile'] })
       }
       showWorkspaceToast("Security profile synchronized")
@@ -1286,7 +1286,10 @@ export default function SettingsPage() {
       if (!queued) return
       delete permissionCommitBufferRef.current[op.id]
       try {
-        await operatorMutation.mutateAsync(queued.payload)
+        await operatorMutation.mutateAsync({
+          id: queued.payload.id,
+          custom_permissions: queued.payload.custom_permissions,
+        })
       } catch {
         await queryClient.invalidateQueries({ queryKey: ['operators'] })
         await queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })

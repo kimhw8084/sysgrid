@@ -5,6 +5,74 @@ import { resetBrowserState } from './helpers/sysgrid'
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`permission saves refresh the current user's profile in ${theme}`, async ({ page, sysApi: request }) => {
+    await resetBrowserState(page)
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const profileResponse = await request.get(`${apiBase}/settings/user/profile`)
+    expect(profileResponse.ok()).toBeTruthy()
+    const profile = await profileResponse.json()
+    const operatorsResponse = await request.get(`${apiBase}/settings/operators`)
+    expect(operatorsResponse.ok()).toBeTruthy()
+    const operator = (await operatorsResponse.json()).find((item: any) => item.id === profile.id)
+    expect(operator).toBeTruthy()
+    const original = { is_admin: operator.is_admin, custom_permissions: operator.custom_permissions }
+    try {
+      expect((await request.patch(`${apiBase}/settings/operators/${operator.id}`, { data: {
+        is_admin: false, custom_permissions: { ...operator.custom_permissions, settings: 3, racks: 0 },
+      } })).ok()).toBeTruthy()
+      await page.goto('/settings?tab=permissions')
+      await page.getByPlaceholder('Search identity, department, or team...').fill(operator.username)
+      const saved = page.waitForResponse(response => response.url().endsWith(`/settings/operators/${operator.id}`) && response.request().method() === 'PATCH')
+      const refreshed = page.waitForResponse(response => response.url().endsWith('/settings/user/profile') && response.request().method() === 'GET')
+      await page.getByRole('button', { name: `racks permission for ${operator.username}: NONE`, exact: true }).click()
+      expect((await saved).ok()).toBeTruthy()
+      const result = await refreshed
+      expect(result.ok()).toBeTruthy()
+      expect((await result.json()).permissions.racks).toBe(1)
+    } finally {
+      expect((await request.patch(`${apiBase}/settings/operators/${operator.id}`, { data: original })).ok()).toBeTruthy()
+    }
+  })
+
+  test(`queued permission edits preserve independent user details in ${theme}`, async ({ page, sysApi: request }) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const username = `pw-intent-${Date.now()}`
+    const created = await request.post(`${apiBase}/settings/operators`, { data: {
+      external_id: username, username, full_name: 'Original user name', department: 'Original department',
+      is_admin: false, custom_permissions: { racks: 0, assets: 1 },
+    } })
+    expect(created.ok()).toBeTruthy()
+    const operator = await created.json()
+    const now = Date.now()
+    await page.clock.install({ time: now })
+    await page.goto('/settings?tab=permissions')
+    await page.getByPlaceholder('Search identity, department, or team...').fill(username)
+    const permission = page.getByRole('button', { name: `racks permission for ${username}: NONE`, exact: true })
+    await expect(permission).toBeVisible()
+    await page.clock.pauseAt(now + 60_000)
+    try {
+      await permission.click()
+      const independentlyChanged = { full_name: 'Updated independently', department: 'New department', is_admin: true }
+      const changed = await request.patch(`${apiBase}/settings/operators/${operator.id}`, { data: independentlyChanged })
+      expect(changed.ok()).toBeTruthy()
+      const saved = page.waitForResponse(response => response.url().endsWith(`/settings/operators/${operator.id}`) && response.request().method() === 'PATCH')
+      await page.clock.runFor(900)
+      const result = await saved
+      expect(result.ok()).toBeTruthy()
+      const persisted = await request.get(`${apiBase}/settings/operators`)
+      expect(persisted.ok()).toBeTruthy()
+      const row = (await persisted.json()).find((item: any) => item.id === operator.id)
+      expect(row).toMatchObject({ ...independentlyChanged, custom_permissions: { racks: 1, assets: 1 } })
+      expect(result.request().postDataJSON()).toEqual({ id: operator.id, custom_permissions: { racks: 1, assets: 1 } })
+    } finally {
+      await page.clock.resume()
+    }
+  })
+
   for (const fail of [false, true]) {
     test(`queued permissions protect departure and ${fail ? 'recover from failure' : 'persist'} in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
       await resetBrowserState(page)
