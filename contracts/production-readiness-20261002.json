@@ -8,32 +8,52 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-02",
+  "as_of_utc": "2026-10-03T00:38:30Z",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "f4d6e8a679f99a6a49eeea5585311c87d18fd9b1",
+    "candidate": "a432dac189865b50c99c3e49b1d8a4bac36bd479",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37075150782",
-    "tested_merge": "4f0ab2fd80b7c10b3061a5e81c6ffbbde9a874ff",
-    "completed_at": "2026-10-02T23:29:44Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37079629919",
+    "tested_merge": "3d88c9c57765b993a5152f43c500b27f4120bd1d",
+    "completed_at": "2026-10-03T00:25:51Z",
     "conclusion": "success",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 1147,
-      "frontend": 846,
-      "normal_browser": 188,
+      "backend": 1240,
+      "frontend": 868,
+      "normal_browser": 200,
       "normal_browser_preexisting_skips": 2,
       "desktop_browser": 35,
       "root_preview_browser": 6
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "fd47a42749cef79f8e29a13123a9628b2e17b757 adds robust HTTP error messages, Home IP search/source availability, normalized Network deep-link values, shared UTC-aware forensic timestamps, strict operator privilege/bulk-ID inputs, and readable, accessible Settings permission editing with explicit async team loading. Latest local: 1240 canonical backend tests across 61 files, 868 frontend tests across 159 files, 24 Settings browser cases. Preceding slices independently pass 30 HTTP/Service/Monitoring, 22 Home/Network and 35 shared timestamp/overlay cases; overlapping counts are not summed. Final contrast samples exceed 4.9:1. Negative controls, grouped-edit failures and low-contrast WRITE state are preserved and repaired without changing retries/timeouts. Fresh assembled hosted CI is required.",
-    "job_duration_seconds": 1969,
-    "backend_duration_seconds": 216.73
+    "later_source": "df94778db9e52725e224596667630433c66dd5e1 adds queued-permission departure protection, field-specific permission/admin writes, preservation of omitted team synchronization ownership, and readable accessible responsive expanded sync tools. Latest local: 1280 canonical backend tests across 61 files, 868 frontend tests across 159 files and 40 Settings browser cases. Forty new backend ownership cases and sixteen later browser cases join canonical discovery; counts from overlapping intermediate suites are not summed. New sync/current-user contrast samples reach minimum 5.98:1. Negative controls, initial animation-state captures and settled baseline failures are retained. Fresh assembled hosted CI is required.",
+    "job_duration_seconds": 1975,
+    "backend_duration_seconds": 227.47
   },
   "ci_history": [
+    {
+      "candidate": "f4d6e8a679f99a6a49eeea5585311c87d18fd9b1",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37075150782",
+      "tested_merge": "4f0ab2fd80b7c10b3061a5e81c6ffbbde9a874ff",
+      "completed_at": "2026-10-02T23:29:44Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1147,
+        "frontend": 846,
+        "normal_browser": 188,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1969,
+      "backend_duration_seconds": 216.73
+    },
     {
       "candidate": "f014798e0f3826fa44f9a24b11391aacb7312b22",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -333,7 +353,7 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "fd47a42749cef79f8e29a13123a9628b2e17b757",
+    "source_head": "df94778db9e52725e224596667630433c66dd5e1",
     "registered_api_operations": 310,
     "static_ui_declarations": 3132,
     "static_ui_routes": 19,
@@ -876,6 +896,31 @@
       "commit": "fd47a42749cef79f8e29a13123a9628b2e17b757",
       "scope": "Make Settings permission controls readable and accessible; repair grouped-operator permission saves",
       "archive_sha256": "a96da2713d78d902fc506e570fd6bafeae7bb4564bf3e436985557e067b781a1"
+    },
+    {
+      "commit": "a432dac189865b50c99c3e49b1d8a4bac36bd479",
+      "scope": "Reconcile operational truth, timestamp and Settings qualification checkpoint 15",
+      "archive_sha256": "f4fc87db2e4e6e2a1205a76aa71086090038800665ebc2d3644f80929d75aff3"
+    },
+    {
+      "commit": "ac419e4e081b960f7a6d7800e7b1ecf35e41f6e7",
+      "scope": "Protect queued permission saves from departure and recover failed optimistic edits",
+      "archive_sha256": "80df46ff0412fc277560587363c467eadc8f4990e96a19b9c77f8b699348facd"
+    },
+    {
+      "commit": "92e3d0d7597ea6d3db9712c686458f0963fc2f0a",
+      "scope": "Preserve unrelated operator fields during queued permission saves and refresh the current profile",
+      "archive_sha256": "e9a8f9a99aafbf54937e18cc2447f8af65807e87b81883134058ca374f5a1fbe"
+    },
+    {
+      "commit": "38a09f739a770fb771a46090c62e381d1ebc9142",
+      "scope": "Preserve admin-toggle field intent and omitted team synchronization ownership",
+      "archive_sha256": "d13d8b2468155428819b5c034e2c3ccd6dcd71ebcf67a31689e39a3dac93eb4c"
+    },
+    {
+      "commit": "df94778db9e52725e224596667630433c66dd5e1",
+      "scope": "Make expanded identity sync readable, accessible and reachable in both themes",
+      "archive_sha256": "073353b2ff870f2eb3c7449b4000c57ae9098de29eccde31c4557fc98f005944"
     }
   ],
   "groups": [
@@ -951,9 +996,10 @@
             "9edd3e47",
             "70ade100",
             "d838deac",
-            "4629b134"
+            "4629b134",
+            "ac419e4e"
           ],
-          "remaining": "Asset inline and ordinary draft protection passed assembled CI at 71b21482. Later import proof covers pending closure, retry, old receipts and malformed-paste draft preservation. Other forms, cross-route/browser-tab/restart persistence and optimistic conflicts remain."
+          "remaining": "Queued permission edits now guard route departure, unload and tenant scope from the first click through the response, with coalescing and failed-save refresh/retry. Earlier Asset draft/import protection remains verified. Rendered tenant-switch/Back races, other forms, cross-browser-tab/restart persistence and optimistic conflicts remain."
         },
         {
           "id": "B3",
@@ -974,9 +1020,12 @@
             "a307320c",
             "062dd490",
             "07d8d2e5",
-            "fcd095ed"
+            "fcd095ed",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73"
           ],
-          "remaining": "HTTP errors now retain status/metadata and produce bounded human-readable messages for null, primitive and structured failures; Service error-console readback remains useful. Operator privilege inputs reject malformed booleans without side effects. Other forms, conflicts, uncertain outcomes and cross-request concurrency remain."
+          "remaining": "Permission and admin controls now send only intended fields, preserving independent user/admin/permission changes and refreshing the current profile. Partial backend writes preserve omitted team synchronization ownership. Earlier bounded HTTP error and strict boolean repairs remain. Permission-map conflicts, uncertain outcomes, other forms and cross-request concurrency remain."
         },
         {
           "id": "B4",
@@ -1014,9 +1063,10 @@
             "c1a9050f",
             "4b567bbf",
             "ac01628f",
-            "fd47a427"
+            "fd47a427",
+            "df94778d"
           ],
-          "remaining": "Settings permission overview/table now uses established theme tokens and readable typography; light-mode dark sticky cells and faint labels are repaired. Permission-state/hover samples pass at minimum 4.976:1 in both themes. Expanded sync, bulk flyouts, remaining views and full visual-state coverage remain."
+          "remaining": "Settings permission table and expanded sync editor/schema use established theme tokens and readable typography. New sync/current-user badge samples reach minimum 5.98:1; settled desktop/mobile screenshots pass in both themes. Sync preview, bulk flyouts, remaining views and full visual-state coverage remain."
         },
         {
           "id": "B6",
@@ -1033,9 +1083,10 @@
             "70ade100",
             "d838deac",
             "755bc2db",
-            "fd47a427"
+            "fd47a427",
+            "df94778d"
           ],
-          "remaining": "Settings identity columns remain sticky on desktop and scroll on narrow screens so permission buttons remain reachable. Real saves and no page overflow pass at 1440 and 390 widths in both themes. Wider responsive/zoom/data-density coverage remains."
+          "remaining": "Settings identity columns scroll on narrow screens, and expanded sync tools wrap/stack so editor actions and schema fields remain reachable at 390px. Both themes pass at 1440px and 390px without page overflow. Zoom, short-screen, broader breakpoints and large-data hierarchy remain."
         },
         {
           "id": "B7",
@@ -1054,9 +1105,10 @@
             "4b567bbf",
             "01777425",
             "1089cb11",
-            "fd47a427"
+            "fd47a427",
+            "df94778d"
           ],
-          "remaining": "Settings Sort, row selection, admin toggles and permission buttons have explicit accessible names; switches expose focus and admin-inherited permission buttons are disabled. Earlier Service label/error associations and keyboard proof remain. Full assistive-technology, zoom/reflow and remaining controls remain."
+          "remaining": "Settings controls and the sync editor have accessible names; the editor exposes a described read-only/editable mode and focus outline. Switch, inherited-permission and earlier Service label/error keyboard proof remain. Full assistive-technology, zoom/reflow, remaining controls and complete accessibility remain."
         },
         {
           "id": "B8",
@@ -1089,9 +1141,11 @@
             "1089cb11",
             "07d8d2e5",
             "3badc66a",
-            "9c1ee626"
+            "9c1ee626",
+            "ac419e4e",
+            "df94778d"
           ],
-          "remaining": "apiFetch preserves HTTP error metadata and bounded useful messages for null/primitive/structured failures; Home truth envelopes require an available source and actual value while retaining valid zero. Shared forensic dates show unavailable honestly. Other loading/stale/partial/denied/conflict and unknown outcomes remain."
+          "remaining": "Queued permission saves show pending status before dispatch and preserve departure protection until settlement; failed optimistic values refresh from the server. Sync editor copy truthfully describes read-only mode. Earlier HTTP, source-availability and timestamp fixes remain. Other loading/stale/partial/denied/conflict and unknown outcomes remain."
         },
         {
           "id": "B10",
@@ -1199,9 +1253,12 @@
             "ac01628f",
             "c2453f26",
             "fcd095ed",
-            "fd47a427"
+            "fd47a427",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73"
           ],
-          "remaining": "Invalid late operator batch items leave Operators, Teams, TeamAudit and UserPoolVersion unchanged. Grouped single/bulk edits explicitly await team loading and preserve accurate snapshots. Cross-request conflicts, debounced edit departure, idempotency, retries/unknown outcomes and remaining writers remain."
+          "remaining": "Permission/admin field-specific requests no longer overwrite independently changed top-level values. Queued writes block departure and recover controlled failures. Invalid late batch items remain atomic and grouped updates preserve snapshots. Permission-map conflicts, other cross-request concurrency, idempotency, unknown outcomes and remaining writers remain."
         },
         {
           "id": "C5",
@@ -1245,9 +1302,10 @@
             "b18a299c",
             "3badc66a",
             "fcd095ed",
-            "fd47a427"
+            "fd47a427",
+            "38a09f73"
           ],
-          "remaining": "Home IP search includes retained legacy null-endpoint records without exposing foreign/deleted rows; normalized detail preserves saved endpoints. Operator IDs cannot alias booleans; grouped permission edits preserve/change/clear primary teams consistently with history. Upsert omissions, role/team scalar schemas, uniqueness and concurrent relationships remain."
+          "remaining": "Partial operator updates preserve exact omitted team_source, including synced/manual/manual_override/null; explicit same/clear/new/source edits retain authority semantics and revision values. Earlier Home/Network ownership, operator ID and team relation repairs remain. Upsert omissions, role/team scalar schemas, uniqueness and concurrent relationships remain."
         },
         {
           "id": "C7",
@@ -1447,9 +1505,13 @@
           "status": "in_progress",
           "reviewed_commits": [
             "fcd095ed",
-            "fd47a427"
+            "fd47a427",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73",
+            "df94778d"
           ],
-          "remaining": "Strict privilege booleans and bounded bulk IDs reject atomically; grouped user edits preserve primary-team authority and history. Both-theme keyboard admin toggle, bulk revoke, reload, readable named permission controls and mobile horizontal actions pass. Debounced departure, expanded sync/bulk styles, upsert omissions, role/team schemas, history/restore policy and concurrency remain."
+          "remaining": "Strict privilege/ID validation, grouped saves, queued departure/recovery, permission/admin field intent and omitted sync ownership are verified. Forty Settings browser cases cover both-theme keyboard/persistence/profile refresh, readable table/expanded sync and mobile reachability. Bulk/preview/history-detail styles, upsert omissions, role/team schemas, restore/sync execution, draft persistence and permission-map concurrency remain."
         }
       ]
     },
@@ -1545,9 +1607,13 @@
             "062dd490",
             "b18a299c",
             "fcd095ed",
-            "fd47a427"
+            "fd47a427",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73",
+            "df94778d"
           ],
-          "remaining": "Hosted f4d6e8a succeeds on merge 4f0ab2fd: 76 startup/recovery plus 23 subtests, 1147 backend, 846 frontend, 188 normal browser plus two existing skips, 35 desktop and six root-preview. Job 32m49s; backend 216.73s within unchanged 45-minute deadline. Later local proof reaches 1240 backend, 868 frontend and 24 Settings browser cases; new regressions join canonical discovery. Fresh assembled CI, supply chain and final release checks remain."
+          "remaining": "Hosted a432dac1 succeeds on merge 3d88c9c5: 76 startup/recovery plus 23 subtests, 1240 backend, 868 frontend, 200 normal browser plus two existing skips, 35 desktop and six root-preview. Job 32m55s; backend 227.47s within unchanged 45-minute deadline. Later local proof reaches 1280 backend and 40 Settings browser checks; new regressions join canonical discovery. Fresh assembled CI, supply chain and final release checks remain."
         },
         {
           "id": "E7",
