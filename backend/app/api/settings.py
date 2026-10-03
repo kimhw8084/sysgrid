@@ -1807,6 +1807,8 @@ async def refresh_user_pool(
         if not op:
             item_status = "new"
             diff_summary["added"] += 1
+            if u.get("team"):
+                diff_summary["team_updates"].append({"external_id": ext_id, "team": u["team"], "mode": "created"})
             preview_items.append({
                 "id": ext_id,
                 "username": u["username"],
@@ -1838,14 +1840,25 @@ async def refresh_user_pool(
                     team_source="synced" if team else "manual"
                 ))
                 if team:
-                    diff_summary["team_updates"].append({"external_id": ext_id, "team": team.name, "mode": "created"})
                     await record_team_audit(db, team.id, "member_added_via_sync", user_id, {"external_id": ext_id, "username": u["username"]})
         else:
+            incoming_team = u.get("team")
+            preserve_local_team = bool(op.team and (
+                (op.team_source == "manual_override" and op.team != incoming_team)
+                or (not incoming_team and op.team_source != "synced")
+            ))
+            effective_team = op.team if preserve_local_team else incoming_team
+            if preserve_local_team:
+                diff_summary["team_conflicts"].append({
+                    "external_id": op.external_id,
+                    "local_team": op.team,
+                    "synced_team": incoming_team,
+                })
             core_fields = ["username", "full_name", "email", "department", "registration_status", "team"]
             has_changes = False
             for f in core_fields:
                 old_val = getattr(op, f)
-                new_val = u.get(f)
+                new_val = effective_team if f == "team" else u.get(f)
                 if str(old_val) != str(new_val):
                     item_changes[f] = {"old": old_val, "new": new_val}
                     has_changes = True
@@ -1853,6 +1866,11 @@ async def refresh_user_pool(
             if has_changes:
                 item_status = "changed"
                 diff_summary["changed"] += 1
+            if "team" in item_changes:
+                diff_summary["team_updates"].append({
+                    "external_id": ext_id, "team": effective_team,
+                    "mode": "updated" if effective_team else "cleared",
+                })
             
             preview_items.append({
                 "id": ext_id,
@@ -1860,7 +1878,7 @@ async def refresh_user_pool(
                 "full_name": u["full_name"],
                 "email": u["email"],
                 "department": u["department"],
-                "team": u.get("team"),
+                "team": effective_team,
                 "status": item_status,
                 "changes": item_changes
             })
@@ -1874,27 +1892,19 @@ async def refresh_user_pool(
                 
                 team = await resolve_team_assignment(
                     db,
-                    team_name=u.get("team"),
+                    team_name=effective_team,
                     source="synced",
-                    create_missing=bool(u.get("team"))
-                ) if u.get("team") else None
+                    create_missing=True,
+                ) if effective_team and not preserve_local_team else None
                 
                 if team:
-                    if op.team_source == "manual_override" and op.team and op.team != team.name:
-                        diff_summary["team_conflicts"].append({
-                            "external_id": op.external_id,
-                            "local_team": op.team,
-                            "synced_team": team.name
-                        })
-                    else:
-                        if op.team_id != team.id:
-                            if op.team_id:
-                                await record_team_audit(db, op.team_id, "member_removed_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
-                            await record_team_audit(db, team.id, "member_added_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
-                            diff_summary["team_updates"].append({"external_id": op.external_id, "team": team.name, "mode": "updated"})
-                        op.team = team.name
-                        op.team_id = team.id
-                        op.team_source = "synced"
+                    if op.team_id != team.id:
+                        if op.team_id:
+                            await record_team_audit(db, op.team_id, "member_removed_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
+                        await record_team_audit(db, team.id, "member_added_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
+                    op.team = team.name
+                    op.team_id = team.id
+                    op.team_source = "synced"
                 elif op.team_source == "synced":
                     if op.team_id:
                         await record_team_audit(db, op.team_id, "member_removed_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
@@ -1947,10 +1957,10 @@ async def refresh_user_pool(
             version_label=version_label,
         )
         await db.commit()
-        return {"status": "success", "version": version_label, "changes": True}
+        return {"status": "success", "version": version_label, "changes": True, "summary": diff_summary}
     
     await db.commit()
-    return {"status": "success", "version": None, "changes": False}
+    return {"status": "success", "version": None, "changes": False, "summary": diff_summary}
 
 @router.post("/user-pool/restore/{version_id}")
 async def restore_user_pool(

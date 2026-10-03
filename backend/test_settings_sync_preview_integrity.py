@@ -71,3 +71,64 @@ async def test_settings_reader_cannot_preview_or_apply_identity_replacement(oper
         response = await c['client'].post('/api/v1/settings/user-pool/refresh', headers={**c['headers'], 'X-User-Id': 'sync-reader'}, json={**payload, 'preview': preview})
         assert response.status_code == 403, response.text
         assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(('source', 'incoming_team', 'change_profile'), [
+    ('manual_override', 'Remote team', False),
+    ('manual_override', None, False),
+    ('manual_override', 'Remote team', True),
+    ('manual', None, False),
+    ('synced', 'Remote team', False),
+    ('synced', None, False),
+])
+async def test_sync_preview_matches_applied_team_authority(operator_scope, setup_db, source, incoming_team, change_profile):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Local team')
+        db.add(team)
+        await db.flush()
+        row = await db.get(models.Operator, c['ids'][0])
+        row.team_id, row.team, row.team_source = team.id, team.name, source
+        registration_status = row.registration_status
+        await db.commit()
+        team_id = team.id
+    payload = {'records': [{
+        'external_id': 'input-target', 'username': 'input-target',
+        'full_name': 'Updated name' if change_profile else 'Original name', 'team': incoming_team,
+        'registration_status': registration_status,
+    }], 'source': 'controlled-test-source'}
+    before = await snapshot(c, setup_db)
+    preview = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': True})
+    assert preview.status_code == 200, preview.text
+    assert await snapshot(c, setup_db) == before
+    applied = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': False})
+    assert applied.status_code == 200, applied.text
+    blocked = source != 'synced'
+    expected_changes = 1 if change_profile or not blocked else 0
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.get(models.Operator, c['ids'][0])
+        assert row.team == ('Local team' if blocked else incoming_team)
+        if blocked:
+            assert row.team_id == team_id and row.team_source == source
+            assert (await db.scalars(select(models.Team).where(models.Team.name == 'Remote team'))).all() == []
+            assert (await db.scalars(select(models.TeamAudit))).all() == []
+        versions = (await db.scalars(select(models.UserPoolVersion))).all()
+        assert len(versions) == expected_changes
+        if versions:
+            assert versions[0].diff_summary == preview.json()['summary']
+    result = preview.json()
+    assert result['summary']['changed'] == expected_changes
+    assert result['summary']['added'] == result['summary']['removed'] == 0
+    assert result['summary']['team_conflicts'] == ([{
+        'external_id': 'input-target', 'local_team': 'Local team', 'synced_team': incoming_team,
+    }] if blocked else [])
+    item = result['preview'][0]
+    assert item['team'] == ('Local team' if blocked else incoming_team)
+    assert item['status'] == ('changed' if expected_changes else 'unchanged')
+    assert ('team' in item['changes']) is not blocked
+    assert ('full_name' in item['changes']) is change_profile
+    assert applied.json()['changes'] is bool(expected_changes)
+    assert applied.json()['summary'] == result['summary']
+    if not expected_changes:
+        assert await snapshot(c, setup_db) == before
