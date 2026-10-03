@@ -9,7 +9,7 @@ import {
   type WorkspaceViewApiRecord,
 } from './CollaborativeWorkspaceViews'
 
-vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }))
+vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn(), remove: vi.fn() } }))
 
 type Config = {
   groupBy: string
@@ -117,7 +117,7 @@ describe('useCollaborativeWorkspaceViews', () => {
       expect(write).toHaveBeenCalledTimes(1)
       await act(async () => { resolve(); await pending })
       expect(result.current.collaborative.copyingLink).toBe(false)
-      expect(toast.success).toHaveBeenCalledWith('View link copied', { id: expect.any(String) })
+      expect(toast.success).toHaveBeenCalledWith('View link copied', { id: result.current.collaborative.successNoticeId })
       expect(toast.error).not.toHaveBeenCalled()
       expect(new URL(write.mock.calls[0][0]).searchParams.get('view')).toBe('9')
       expect(location.hash).toBe('#details')
@@ -133,7 +133,11 @@ describe('useCollaborativeWorkspaceViews', () => {
       expect(new URL(location.href).searchParams.get('view')).toBe('9')
       expect(result.current.collaborative.copyingLink).toBe(false)
       await act(async () => { await result.current.collaborative.copyViewLink('9') })
-      expect(toast.success).toHaveBeenCalledWith('View link copied', vi.mocked(toast.error).mock.calls[0][1])
+      const errorId = vi.mocked(toast.error).mock.calls[0][1]!.id
+      expect(errorId).not.toBe(result.current.collaborative.successNoticeId)
+      expect(toast.remove).toHaveBeenCalledWith(errorId)
+      expect(toast.remove).toHaveBeenCalledTimes(1)
+      expect(toast.success).toHaveBeenCalledWith('View link copied', { id: result.current.collaborative.successNoticeId })
     })
 
     it('reports unavailable clipboard and preserves the system-view URL', async () => {

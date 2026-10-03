@@ -2108,7 +2108,7 @@ export default function External() {
       collaborativeViews.setViewLink(result.view.id)
       setNewViewName('')
     }
-    showWorkspaceToast(result.persisted ? 'External personal view saved' : 'External view saved locally; server unavailable', { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? 'External personal view saved' : 'External view saved locally; server unavailable', { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const saveCurrentToView = async (viewId: string) => {
@@ -2124,7 +2124,7 @@ export default function External() {
       return
     }
     if (result.view) setActiveViewId(result.view.id)
-    showWorkspaceToast(result.persisted ? 'External personal view updated' : 'External view updated locally; server unavailable', { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? 'External personal view updated' : 'External view updated locally; server unavailable', { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const renameView = async (viewId: string, name: string): Promise<boolean> => {
@@ -2139,7 +2139,7 @@ export default function External() {
       showWorkspaceToast(result.error || 'Unable to rename this view', { type: 'error' })
       return false
     }
-    showWorkspaceToast(`Renamed view to ${name}`)
+    showWorkspaceToast(`Renamed view to ${name}`, { id: collaborativeViews.successNoticeId })
     return true
   }
 
@@ -2160,7 +2160,7 @@ export default function External() {
       collaborativeViews.setViewLink(null)
     }
     dismissOverlays()
-    showWorkspaceToast(result.persisted ? 'External personal view removed' : 'External local fallback removed')
+    showWorkspaceToast(result.persisted ? 'External personal view removed' : 'External local fallback removed', { id: collaborativeViews.successNoticeId })
   }
 
   const applySavedView = async (viewId: string) => {

@@ -1085,7 +1085,7 @@ export default function MonitoringGrid() {
       return
     }
     if (result.view) setActiveViewId(result.view.id)
-    showWorkspaceToast(result.persisted ? `Saved ${view.name}` : `Saved ${view.name} locally; server unavailable`, { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? `Saved ${view.name}` : `Saved ${view.name} locally; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const createViewFromCurrent = async () => {
@@ -1105,7 +1105,7 @@ export default function MonitoringGrid() {
       setNewViewName('')
       if (typeof window !== 'undefined') window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, result.view.id)
     }
-    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `Saved ${trimmed} locally; server unavailable`, { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `Saved ${trimmed} locally; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const applySystemDefault = async () => {
@@ -1132,7 +1132,7 @@ export default function MonitoringGrid() {
          applyOrder: true
        })
     }
-    showWorkspaceToast('Restored system default view')
+    showWorkspaceToast('Restored system default view', { id: collaborativeViews.successNoticeId })
   }
 
   const renameView = async (viewId: string, name: string): Promise<boolean> => {
@@ -1147,7 +1147,7 @@ export default function MonitoringGrid() {
       showWorkspaceToast(result.error || 'Unable to rename this view', { type: 'error' })
       return false
     }
-    showWorkspaceToast(`Renamed view to ${name}`)
+    showWorkspaceToast(`Renamed view to ${name}`, { id: collaborativeViews.successNoticeId })
     return true
   }
 
@@ -1168,7 +1168,7 @@ export default function MonitoringGrid() {
       collaborativeViews.setViewLink(null)
       if (typeof window !== 'undefined') window.localStorage.removeItem(MONITORING_ACTIVE_VIEW_KEY)
     }
-    showWorkspaceToast(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`)
+    showWorkspaceToast(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`, { id: collaborativeViews.successNoticeId })
   }
 
   const dismissWorkspaceMenus = useCallback(() => {

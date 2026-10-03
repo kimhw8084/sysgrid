@@ -243,6 +243,8 @@ export function useCollaborativeWorkspaceViews<
   const copyInFlight = useRef(false)
   const [copyingLink, setCopyingLink] = useState(false)
   const copyNoticeId = useId()
+  // Only successes share a slot. Errors and undo actions retain their own notices.
+  const successNoticeId = useId()
   const activeViewIdRef = useRef(activeViewId)
   const [baseStatus, setBaseStatus] = useState<Exclude<CollaborativeViewSyncStatus, 'unsaved' | 'conflict'>>('loading')
   const [conflict, setConflict] = useState<WorkspaceViewConflict<TConfig> | null>(null)
@@ -503,7 +505,8 @@ export function useCollaborativeWorkspaceViews<
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable')
       await navigator.clipboard.writeText(link)
-      toast.success('View link copied', { id: copyNoticeId })
+      toast.remove(copyNoticeId)
+      toast.success('View link copied', { id: successNoticeId })
     } catch {
       toast.error('Could not copy the view link. Copy the URL from your address bar.', { id: copyNoticeId })
     } finally {
@@ -511,7 +514,7 @@ export function useCollaborativeWorkspaceViews<
       setCopyingLink(false)
     }
     return link
-  }, [copyNoticeId, setViewLink])
+  }, [copyNoticeId, successNoticeId, setViewLink])
 
   const activeView = useMemo(() => (
     activeViewId ? currentViews.find((view) => view.id === activeViewId) || null : null
@@ -531,6 +534,7 @@ export function useCollaborativeWorkspaceViews<
   return {
     status,
     copyingLink,
+    successNoticeId,
     conflict,
     lastError,
     dirty,

@@ -484,7 +484,7 @@ export function useFARGoldenWorkspaceControls({
     lastRequestedViewRef.current = linkedViewId
     collaborativeViews.setViewLink(linkedViewId)
     setNewViewName('')
-    toast.success(result.persisted ? `Saved ${result.view.name}` : `Saved local fallback ${result.view.name}`)
+    toast.success(result.persisted ? `Saved ${result.view.name}` : `Saved local fallback ${result.view.name}`, { id: collaborativeViews.successNoticeId })
   }, [collaborativeViews, durableCurrentDefinition, newViewName, setActiveViewId])
 
   const overwriteView = useCallback(async (id: string) => {
@@ -496,7 +496,7 @@ export function useFARGoldenWorkspaceControls({
       toast.error(result.error || 'Unable to update FAR view')
       return
     }
-    toast.success(result.persisted ? `Updated ${result.view.name}` : `Updated local fallback ${result.view.name}`)
+    toast.success(result.persisted ? `Updated ${result.view.name}` : `Updated local fallback ${result.view.name}`, { id: collaborativeViews.successNoticeId })
   }, [collaborativeViews, durableCurrentDefinition, normalizedViews])
 
   const renameView = useCallback(async (id: string, name: string) => {
@@ -507,7 +507,7 @@ export function useFARGoldenWorkspaceControls({
       toast.error(result.error || 'Unable to rename FAR view')
       return false
     }
-    toast.success(`Renamed view to ${result.view.name}`)
+    toast.success(`Renamed view to ${result.view.name}`, { id: collaborativeViews.successNoticeId })
     return true
   }, [collaborativeViews, normalizedViews])
 
@@ -521,7 +521,7 @@ export function useFARGoldenWorkspaceControls({
       lastRequestedViewRef.current = null
       collaborativeViews.setViewLink(null)
     }
-    toast.success(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`)
+    toast.success(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`, { id: collaborativeViews.successNoticeId })
   }, [activeViewId, collaborativeViews, normalizedViews, setActiveViewId])
 
   const handleGridReady = useCallback((params: any) => {

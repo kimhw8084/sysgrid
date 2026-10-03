@@ -9,6 +9,31 @@ const advance = (ms: number) => act(() => { vi.advanceTimersByTime(ms) })
 const visible = () => document.querySelectorAll('[data-workspace-toast][data-visible="true"]')
 
 describe('unified notifications', () => {
+  it('replaces contextual successes without removing errors or recovery actions and restarts expiry', () => {
+    render(<WorkspaceToaster />)
+    act(() => {
+      toast.error('Unrelated save failed')
+      showWorkspaceToast('Archived record', { onRevert: vi.fn() })
+      showWorkspaceToast('Saved personal view', { id: 'saved-view-success' })
+    })
+    advance(3000)
+    act(() => toast.success('View link copied', { id: 'saved-view-success' }))
+    expect(screen.queryByText('Saved personal view')).not.toBeInTheDocument()
+    expect(visible()).toHaveLength(3)
+    expect(screen.getByText('Unrelated save failed')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Revert' })).toBeInTheDocument()
+    advance(2000)
+    act(() => showWorkspaceToast('Renamed view', { id: 'saved-view-success' }))
+    expect(screen.queryByText('View link copied')).not.toBeInTheDocument()
+    expect(visible()).toHaveLength(3)
+    advance(3000)
+    expect(document.querySelector('[data-workspace-toast="success"][data-visible="true"]')).toBeTruthy()
+    expect(screen.getByText('Renamed view').closest('[data-workspace-toast]')).toHaveAttribute('data-visible', 'true')
+    advance(1100)
+    expect(screen.getByText('Renamed view').closest('[data-workspace-toast]')).toHaveAttribute('data-visible', 'false')
+    expect(screen.getByRole('button', { name: 'Revert' })).toBeInTheDocument()
+  })
+
   it('continues delivering and dismissing messages after earlier cards unmount', () => {
     render(<WorkspaceToaster />)
     act(() => { toast.success('First notice'); showWorkspaceToast('Second notice', { onRevert: vi.fn() }) })
