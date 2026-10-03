@@ -38,6 +38,198 @@ async def snapshot(c, setup_db):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('groups', [
+    ['Target', 'Other'], ['Other', 'Target'], ['Other', 'Target', 'Third'], ['Target', 'Other', 'Target'],
+])
+@pytest.mark.parametrize('operation', ['rename', 'delete'])
+async def test_team_group_references_include_every_array_position(operator_scope, setup_db, groups, operation):
+    from app.api.settings import create_user_pool_version
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Target')
+        db.add(team)
+        await db.flush()
+        for index, op_id in enumerate(c['ids']):
+            row = await db.get(models.Operator, op_id)
+            row.teams = groups
+            if operation == 'rename' and index == 0:
+                row.team_id, row.team, row.team_source = team.id, team.name, 'manual'
+        await create_user_pool_version(db, created_by='admin_root', diff_summary={})
+        await db.commit()
+        team_id = team.id
+    before = await snapshot(c, setup_db)
+    endpoint = f'/api/v1/settings/teams/{team_id}'
+    if operation == 'delete':
+        response = await c['client'].delete(endpoint, headers=c['headers'])
+        assert response.status_code == 400, response.text
+        assert 'operator groups' in response.json()['detail']
+        assert await snapshot(c, setup_db) == before
+        # Removing the actual references permits a later explicit deletion.
+        for op_id in c['ids']:
+            repaired = await c['client'].patch(f'/api/v1/settings/operators/{op_id}', headers=c['headers'], json={'teams': ['Other']})
+            assert repaired.status_code == 200, repaired.text
+        removed = await c['client'].delete(endpoint, headers=c['headers'])
+        assert removed.status_code == 200, removed.text
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            assert await db.get(models.Team, team_id) is None
+            for op_id in c['ids']:
+                assert (await db.get(models.Operator, op_id)).teams == ['Other']
+        return
+    response = await c['client'].patch(endpoint, headers=c['headers'], json={'name': 'Renamed'})
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        expected = sorted({'Renamed' if value == 'Target' else value for value in groups}, key=str.lower)
+        for index, op_id in enumerate(c['ids']):
+            row = await db.get(models.Operator, op_id)
+            assert row.teams == expected
+            assert row.team == ('Renamed' if index == 0 else None)
+            assert row.custom_permissions == {'settings': 1}
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 2 and not versions[0].is_active and versions[1].is_active
+        assert versions[0].snapshot_data == before[models.UserPoolVersion.__tablename__][0]['snapshot_data']
+        assert all(record['teams'] == expected for record in versions[1].snapshot_data if record['id'] in c['ids'])
+        audits = (await db.scalars(select(models.TeamAudit))).all()
+        assert len(audits) == 1 and audits[0].action == 'team_updated'
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('name,unrelated', [('Ops_%', 'OpsXY'), ('Ops_', 'OpsX'), ('Ops%', 'OpsLong'), ('팀_%', '팀AB')])
+async def test_team_group_references_use_literal_names_not_sql_wildcards(operator_scope, setup_db, name, unrelated):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name=name)
+        db.add(team)
+        row = await db.get(models.Operator, c['ids'][0])
+        row.teams = [unrelated]
+        await db.commit()
+        team_id = team.id
+    before = await snapshot(c, setup_db)
+    response = await c['client'].delete(f'/api/v1/settings/teams/{team_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    after = await snapshot(c, setup_db)
+    assert after[models.Operator.__tablename__] == before[models.Operator.__tablename__]
+    assert not any(row['id'] == team_id for row in after[models.Team.__tablename__])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('groups', ['Target', {'Target': True}, [1], False])
+@pytest.mark.parametrize('operation', ['rename', 'delete'])
+async def test_team_group_references_reject_uncertain_stored_memberships_atomically(operator_scope, setup_db, groups, operation):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Target')
+        db.add(team)
+        await db.flush()
+        first = await db.get(models.Operator, c['ids'][0])
+        first.team_id, first.team, first.teams = team.id, team.name, ['Target', 'Other']
+        if operation == 'delete':
+            first.team_id, first.team, first.teams = None, None, []
+        peer = await db.get(models.Operator, c['ids'][1])
+        peer.teams = groups
+        await db.commit()
+        team_id = team.id
+    before = await snapshot(c, setup_db)
+    endpoint = f'/api/v1/settings/teams/{team_id}'
+    response = await (c['client'].patch(endpoint, headers=c['headers'], json={'name': 'Renamed'})
+                      if operation == 'rename' else c['client'].delete(endpoint, headers=c['headers']))
+    assert response.status_code == 422, response.text
+    assert f'operators[{c["ids"][1]}].teams' in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('groups', [['Secondary'], ['Secondary', 'Third'], [' Primary ', 'Secondary'], None, []])
+async def test_restore_keeps_primary_team_in_group_memberships_without_rewriting_history(operator_scope, setup_db, groups):
+    c = operator_scope
+    version_id, _, original = await field_restore_fixture(c, setup_db, payload={'team': 'Primary', 'teams': groups})
+    endpoint = f'/api/v1/settings/user-pool/restore/{version_id}'
+    before = await snapshot(c, setup_db)
+    preview = await c['client'].post(endpoint, headers=c['headers'], json={'preview': True})
+    assert preview.status_code == 200, preview.text
+    assert preview.json()['summary'] == {'added': 0, 'removed': 0, 'changed': 2}
+    assert await snapshot(c, setup_db) == before
+    response = await c['client'].post(endpoint, headers=c['headers'], json={'expected_fingerprint': preview.json()['fingerprint']})
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        peer = await db.get(models.Operator, c['ids'][1])
+        expected = sorted({'Primary', *(name.strip() for name in (groups or []))}, key=str.lower)
+        assert peer.team == 'Primary' and peer.team_id is not None and peer.teams == expected
+        assert (await db.get(models.Team, peer.team_id)).name == 'Primary'
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 2 and versions[0].snapshot_data == original
+        saved = next(record for record in versions[1].snapshot_data if record['id'] == peer.id)
+        assert saved['teams'] == expected and saved['team'] == 'Primary'
+        assert versions[1].diff_summary['changed'] == 2
+
+
+@pytest.mark.asyncio
+async def test_team_group_reference_rename_rolls_back_if_revision_cannot_be_recorded(operator_scope, setup_db, monkeypatch):
+    from fastapi import HTTPException
+    from app.api import settings as settings_api
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Target')
+        db.add(team)
+        await db.flush()
+        row = await db.get(models.Operator, c['ids'][0])
+        row.team_id, row.team, row.teams = team.id, team.name, ['Target', 'Other']
+        await db.commit()
+        team_id = team.id
+    before = await snapshot(c, setup_db)
+    async def unavailable(*args, **kwargs):
+        raise HTTPException(503, 'Controlled revision failure')
+    monkeypatch.setattr(settings_api, 'create_user_pool_version', unavailable)
+    response = await c['client'].patch(f'/api/v1/settings/teams/{team_id}', headers=c['headers'], json={'name': 'Renamed'})
+    assert response.status_code == 503, response.text
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'patch', 'bulk', 'upsert'])
+@pytest.mark.parametrize('groups', ['Team', False, 42, {}, [1], [None], [{}], [['Nested']]])
+async def test_operator_group_inputs_reject_malformed_containers_without_mutation(operator_scope, setup_db, operation, groups):
+    c = operator_scope
+    before = await snapshot(c, setup_db)
+    response = await write_operator(c, operation, {'teams': groups, 'full_name': 'Must roll back'})
+    assert response.status_code == 422, response.text
+    assert 'teams' in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['patch', 'bulk', 'upsert'])
+@pytest.mark.parametrize('groups', ['Target', {'Target': True}, [1], False, True, 42, [' Untouched ', 'Group', 'Group'], None, []])
+async def test_operator_group_omission_preserves_stored_evidence_during_other_edits(operator_scope, setup_db, operation, groups):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.get(models.Operator, c['ids'][0])
+        row.teams = groups
+        await db.commit()
+    response = await write_operator(c, operation, {'full_name': 'Explicitly edited name'})
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.get(models.Operator, c['ids'][0])
+        assert type(row.teams) is type(groups) and row.teams == groups
+        assert row.full_name == 'Explicitly edited name' and row.custom_permissions == {'settings': 1}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'patch', 'bulk', 'upsert'])
+@pytest.mark.parametrize('groups', [None, [], [' Other ', 'Other', '연구', '']])
+async def test_operator_group_inputs_preserve_supported_clear_and_normalized_intent(operator_scope, setup_db, operation, groups):
+    c = operator_scope
+    response = await write_operator(c, operation, {'teams': groups})
+    assert response.status_code == 200, response.text
+    target = response.json()['id'] if operation == 'create' else c['ids'][0]
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.get(models.Operator, target)
+        assert row.teams == (['Other', '연구'] if groups else [])
+        assert row.team_id is None and row.team is None
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('endpoint', ['operators', 'roles', 'user-pool/versions', 'user/profile'])
 @pytest.mark.parametrize('value,label', [(float('nan'), 'NaN'), (float('inf'), 'Infinity'), (-float('inf'), '-Infinity')])
 async def test_identity_reads_preserve_nonfinite_evidence_without_writes(operator_scope, setup_db, endpoint, value, label):

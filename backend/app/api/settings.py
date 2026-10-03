@@ -197,7 +197,7 @@ def canonical_operator_state(operator: models.Operator) -> dict:
         "team": normalize_string(operator.team),
         "team_id": operator.team_id,
         "team_source": normalize_string(operator.team_source) or "manual",
-        "teams": normalize_string_list(operator.teams or []),
+        "teams": deepcopy(operator.teams),
         "is_admin": bool(operator.is_admin),
         "custom_permissions": normalize_permission_map(operator.custom_permissions or {}),
         "registration_status": normalize_string(operator.registration_status),
@@ -208,6 +208,17 @@ def canonical_operator_state(operator: models.Operator) -> dict:
 def validate_operator_admin_flag(payload: dict) -> None:
     if "is_admin" in payload and not isinstance(payload["is_admin"], bool):
         raise HTTPException(422, {"field_errors": {"is_admin": "Must be a boolean"}})
+
+
+def validated_operator_groups(value, *, field: str = "teams") -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list) or any(not isinstance(group, str) for group in value):
+        raise HTTPException(422, {
+            "message": f"Invalid group memberships in {field}. Use a list of team names before changing teams.",
+            "field_errors": {field: "Must be a list of strings or null"},
+        })
+    return value
 
 
 def validate_operator_permissions(payload: dict, *, field: str = "custom_permissions") -> None:
@@ -255,12 +266,13 @@ def apply_operator_canonicalization(
     if "custom_permissions" in payload:
         operator.custom_permissions = normalize_permission_map(payload.get("custom_permissions"))
 
-    provided_groups = payload.get("teams") if "teams" in payload else operator.teams
-    normalized_groups = normalize_string_list(provided_groups or [])
-    if team and team.name not in normalized_groups:
-        normalized_groups.append(team.name)
-        normalized_groups = sorted(set(normalized_groups), key=lambda value: value.lower())
-    operator.teams = normalized_groups
+    if {"teams", "team", "team_id"}.intersection(payload):
+        provided_groups = payload.get("teams") if "teams" in payload else operator.teams
+        normalized_groups = normalize_string_list(validated_operator_groups(provided_groups))
+        if team and team.name not in normalized_groups:
+            normalized_groups.append(team.name)
+            normalized_groups = sorted(set(normalized_groups), key=lambda value: value.lower())
+        operator.teams = normalized_groups
 
     operator.team_id = team.id if team else None
     operator.team = team.name if team else None
@@ -605,10 +617,15 @@ async def resolve_team_assignment(
 async def rename_operator_group_memberships(db: AsyncSession, old_name: str, new_name: str) -> None:
     if old_name == new_name:
         return
-    result = await db.execute(select(models.Operator).filter(models.Operator.teams.contains([old_name])))
+    # Generic JSON.contains uses string matching on supported SQLite, which
+    # misses multi-member arrays and treats SQL wildcard characters specially.
+    result = await db.execute(select(models.Operator))
     operators = result.scalars().all()
     for operator in operators:
-        memberships = [new_name if entry == old_name else entry for entry in (operator.teams or [])]
+        groups = validated_operator_groups(operator.teams, field=f"operators[{operator.id}].teams")
+        if old_name not in groups:
+            continue
+        memberships = [new_name if entry == old_name else entry for entry in groups]
         operator.teams = normalize_string_list(memberships)
 
 
@@ -626,13 +643,13 @@ async def rename_monitoring_team_references(db: AsyncSession, old_name: str, new
 
 
 async def team_references_exist(db: AsyncSession, *, team_id: int | None, team_name: str) -> dict[str, bool]:
+    operator_groups = (await db.execute(select(models.Operator.id, models.Operator.teams))).all()
     monitoring_team_values = (
         await db.execute(select(models.MonitoringItem.owner_team).filter(models.MonitoringItem.owner_team.is_not(None)))
     ).scalars().all()
     return {
-        "operator_groups": bool((await db.execute(
-            select(models.Operator.id).filter(models.Operator.teams.contains([team_name]))
-        )).scalars().first()),
+        "operator_groups": any(team_name in validated_operator_groups(groups, field=f"operators[{operator_id}].teams")
+                               for operator_id, groups in operator_groups),
         "monitoring_items": any(team_name in split_team_name_values(owner_team) for owner_team in monitoring_team_values),
         "external_entities": bool((await db.execute(
             select(models.ExternalEntity.id).filter(
@@ -688,6 +705,7 @@ async def apply_operator_patch(
     default_team_source: str = "manual_override",
 ) -> dict:
     validate_operator_admin_flag(data)
+    validated_operator_groups(data.get("teams"))
     validate_operator_permissions(data)
     previous_state = canonical_operator_state(op)
     next_external_id = normalize_string(data.get("external_id")) if "external_id" in data else op.external_id
@@ -1538,6 +1556,7 @@ async def create_operator(
 ):
     from sqlalchemy.exc import IntegrityError
     validate_operator_admin_flag(data)
+    validated_operator_groups(data.get("teams"))
     validate_operator_permissions(data)
     external_id = normalize_string(data.get("external_id"))
     username = normalize_string(data.get("username"))
@@ -2191,7 +2210,7 @@ async def restore_user_pool(
         op.team = team.name if team else None
         op.team_id = team.id if team else None
         op.team_source = u.get("team_source", "synced")
-        op.teams = normalize_string_list(u.get("teams") or ([team.name] if team else []))
+        op.teams = normalize_string_list([*(u.get("teams") or []), *([team.name] if team else [])])
         op.role_id = role.id if role else None
         op.is_admin = u.get("is_admin", False)
         op.custom_permissions = normalize_permission_map(u.get("custom_permissions", {}))
