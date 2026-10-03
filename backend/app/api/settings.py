@@ -658,7 +658,10 @@ async def apply_operator_patch(
         patch_payload["external_id"] = next_external_id
     if "username" in data:
         patch_payload["username"] = next_username
+    previous_team_source = op.team_source
     apply_operator_canonicalization(op, team=team, payload=patch_payload, default_source="manual_override")
+    if not {"team", "team_id", "team_source"}.intersection(data):
+        op.team_source = previous_team_source
     if "external_id" in patch_payload:
         op.external_id = next_external_id
     if "username" in patch_payload:

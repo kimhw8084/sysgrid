@@ -2564,7 +2564,7 @@ export default function SettingsPage() {
                                   onChange={async (e: any) => {
                                     const checked = e.target.checked
                                     if (op.username === userProfile?.username && !checked && !await confirmWorkspaceAction({ title: 'Remove your admin access', message: 'Disabling your own Admin status will lock you out of this console.', confirmText: 'Remove admin access', variant: 'danger' })) return
-                                    operatorMutation.mutate({ ...op, is_admin: checked });
+                                    operatorMutation.mutate({ id: op.id, is_admin: checked });
                                   }} 
                                   activeColor="bg-emerald-600"
                                 />

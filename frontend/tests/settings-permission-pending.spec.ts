@@ -44,6 +44,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     const created = await request.post(`${apiBase}/settings/operators`, { data: {
       external_id: username, username, full_name: 'Original user name', department: 'Original department',
       is_admin: false, custom_permissions: { racks: 0, assets: 1 },
+      team: 'Directory managed team', team_source: 'synced',
     } })
     expect(created.ok()).toBeTruthy()
     const operator = await created.json()
@@ -66,7 +67,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       const persisted = await request.get(`${apiBase}/settings/operators`)
       expect(persisted.ok()).toBeTruthy()
       const row = (await persisted.json()).find((item: any) => item.id === operator.id)
-      expect(row).toMatchObject({ ...independentlyChanged, custom_permissions: { racks: 1, assets: 1 } })
+      expect(row).toMatchObject({
+        ...independentlyChanged, custom_permissions: { racks: 1, assets: 1 },
+        team: 'Directory managed team', team_source: 'synced',
+      })
       expect(result.request().postDataJSON()).toEqual({ id: operator.id, custom_permissions: { racks: 1, assets: 1 } })
     } finally {
       await page.clock.resume()

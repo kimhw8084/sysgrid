@@ -167,3 +167,53 @@ async def test_grouped_operator_edits_load_and_preserve_team_authority(operator_
         assert len(versions) == 1 and versions[0].created_by == 'admin_root'
         saved = next(record for record in versions[0].snapshot_data if record['external_id'] == 'input-target')
         assert saved['team_id'] == row.team_id and saved['custom_permissions'] == {'racks': 2}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['patch', 'bulk'])
+@pytest.mark.parametrize('source', ['synced', 'manual', 'manual_override', None])
+@pytest.mark.parametrize('payload', [{}, {'is_admin': False}, {'custom_permissions': {'racks': 2}}, {'full_name': 'Updated name'}])
+async def test_partial_operator_updates_preserve_omitted_team_source(operator_scope, setup_db, operation, source, payload):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Directory owned team')
+        db.add(team)
+        await db.flush()
+        row = await db.get(models.Operator, c['ids'][0])
+        row.team_id, row.team, row.teams, row.team_source = team.id, team.name, [team.name], source
+        await db.commit()
+        team_id = team.id
+    response = await write_operator(c, operation, payload)
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.get(models.Operator, c['ids'][0])
+        assert row.team_source == source
+        assert row.team_id == team_id and row.team == 'Directory owned team' and row.teams == ['Directory owned team']
+        versions = (await db.scalars(select(models.UserPoolVersion))).all()
+        for version in versions:
+            saved = next(record for record in version.snapshot_data if record['external_id'] == 'input-target')
+            assert saved['team_source'] == source
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['patch', 'bulk'])
+@pytest.mark.parametrize('assignment', ['same', 'clear', 'new', 'explicit-source'])
+async def test_explicit_operator_team_changes_retain_source_authority(operator_scope, setup_db, operation, assignment):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Directory owned team')
+        db.add(team)
+        await db.flush()
+        row = await db.get(models.Operator, c['ids'][0])
+        row.team_id, row.team, row.teams, row.team_source = team.id, team.name, [team.name], 'synced'
+        await db.commit()
+        team_id = team.id
+    payload = {
+        'same': {'team_id': team_id}, 'clear': {'team_id': None}, 'new': {'team': 'Manual team'},
+        'explicit-source': {'team_source': 'manual'},
+    }[assignment]
+    response = await write_operator(c, operation, payload)
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.get(models.Operator, c['ids'][0])
+        assert row.team_source == ('manual' if assignment in ['clear', 'explicit-source'] else 'manual_override')
