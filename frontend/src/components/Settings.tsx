@@ -695,9 +695,13 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                       </td>
                                       <td className="p-4 align-top">
                                          {row.permissionChanges.length > 0 ? (
-                                           <div className="flex flex-wrap gap-2">
+                                           <details>
+                                             <summary className="min-h-10 cursor-pointer rounded-md px-2 py-2 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
+                                               {row.permissionChanges.length} permission {row.permissionChanges.length === 1 ? 'change' : 'changes'}
+                                             </summary>
+                                           <div className="mt-2 flex flex-wrap gap-2">
                                              {row.permissionChanges.map((change: any) => (
-                                               <div key={`${row.key}-${change.view}`} className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-2.5 py-2">
+                                               <div data-permission-change key={`${row.key}-${change.view}`} className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-2.5 py-2">
                                                  <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)]">{change.view}</div>
                                                  <div className="mt-1 flex items-center gap-1.5">
                                                    <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.old, Boolean(row.before?.is_admin))}`}>
@@ -711,6 +715,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                                </div>
                                              ))}
                                            </div>
+                                           </details>
                                          ) : (
                                            <span className="text-xs font-semibold text-[var(--text-secondary)] italic">No permission delta</span>
                                          )}

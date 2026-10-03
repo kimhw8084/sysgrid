@@ -42,7 +42,7 @@ for (const file of files) {
       const events = Object.keys(attributes).filter(name => /^on[A-Z]/.test(name))
       const route = routeTags.has(tag)
       const overlay = !iconTags.has(tag) && (/Modal|Dialog|Drawer|Popover|Menu|Sheet/.test(tag) || /dialog|menu/.test(attributes.role || ''))
-      const control = /^(button|input|select|textarea|a)$/.test(tag) || /Button|Link$/.test(tag) || events.length > 0
+      const control = /^(button|input|select|textarea|a|summary)$/.test(tag) || /Button|Link$/.test(tag) || events.length > 0
       if (route || overlay || control) {
         let owner = node.parent
         while (owner && !((ts.isFunctionDeclaration(owner) || ts.isVariableDeclaration(owner)) && owner.name)) owner = owner.parent
