@@ -217,6 +217,121 @@ async def test_restore_preserves_valid_admin_intent_and_legacy_default(operator_
         assert saved['is_admin'] is (intent == 'grant')
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('kind,value', [
+    *[('snapshot', value) for value in [None, {}, '', False, 0, 1, 'users', {'unexpected': 'record'}]],
+    *[('record', value) for value in [None, False, 0, 'identity', [], ['identity']]],
+    *[('identity', value) for value in [None, True, False, 0, -1, 1.5, {}, [], '', '   ']],
+])
+async def test_restore_rejects_invalid_snapshot_identity_shape_without_state_change(operator_scope, setup_db, kind, value):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        records = await build_user_pool_snapshot(db)
+        records.sort(key=lambda item: 0 if item['external_id'] == 'input-target' else 1)
+        records[0].update(full_name='Earlier staged restore', team='Rejected snapshot team')
+        if kind == 'snapshot':
+            records = value
+        elif kind == 'record':
+            records.append(value)
+        else:
+            peer = next(item for item in records if item['external_id'] == 'input-peer')
+            peer['external_id'] = value
+            peer['username'] = 'snapshot-shape-peer'
+            peer.pop('id')
+        version = models.UserPoolVersion(version_label='invalid-shape-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 422, response.text
+    fields = response.json()['detail']['field_errors']
+    assert len(fields) == 1 and next(iter(fields)).startswith('snapshot_data')
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('legacy_alias', [False, True])
+async def test_restore_rejects_duplicate_external_identity_without_overwriting_or_deleting(operator_scope, setup_db, legacy_alias):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        target = await db.get(models.Operator, c['ids'][0])
+        target.external_id = '101'
+        await db.commit()
+        records = await build_user_pool_snapshot(db)
+        records.sort(key=lambda item: 0 if item['external_id'] == '101' else 1)
+        records[0].update(full_name='Earlier duplicate change', team='Rejected duplicate team')
+        peer = next(item for item in records if item['external_id'] == 'input-peer')
+        peer['username'] = 'snapshot-duplicate-peer'
+        if legacy_alias:
+            peer.pop('external_id')
+            peer['id'] = 101
+        else:
+            peer['external_id'] = '101'
+        version = models.UserPoolVersion(version_label='duplicate-identity-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 409, response.text
+    assert response.json()['detail'] == "Snapshot contains duplicate external identity '101'"
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('legacy_id', [101, '101'])
+async def test_restore_preserves_supported_legacy_identity_ids(operator_scope, setup_db, legacy_id):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        target = await db.get(models.Operator, c['ids'][0])
+        target.external_id = '101'
+        await db.commit()
+        records = await build_user_pool_snapshot(db)
+        record = next(item for item in records if item['external_id'] == '101')
+        record.pop('external_id')
+        record.update(id=legacy_id, full_name='Restored legacy identity')
+        version = models.UserPoolVersion(version_label='legacy-identity-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        target = await db.get(models.Operator, c['ids'][0])
+        assert target.external_id == '101' and target.full_name == 'Restored legacy identity'
+        assert len((await db.scalars(select(models.Operator))).all()) == len(records)
+        assert len((await db.scalars(select(models.UserPoolVersion))).all()) == 2
+
+
+@pytest.mark.asyncio
+async def test_empty_historical_list_preserves_current_user_and_records_actual_result(operator_scope, setup_db):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        version = models.UserPoolVersion(version_label='empty-historical-list', snapshot_data=[],
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        remaining = (await db.scalars(select(models.Operator))).all()
+        assert [op.username for op in remaining] == ['admin_root']
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 2 and versions[-1].is_active
+        assert [row['username'] for row in versions[-1].snapshot_data] == ['admin_root']
+
+
 async def write_operator(c, operation, payload):
     base = '/api/v1/settings/operators'
     if operation in ['create', 'upsert']:

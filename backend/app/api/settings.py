@@ -2029,6 +2029,8 @@ async def restore_user_pool(
     res = await db.execute(select(models.UserPoolVersion).filter(models.UserPoolVersion.id == version_id))
     version = res.scalar_one_or_none()
     if not version: raise HTTPException(404, "Version not found")
+    if not isinstance(version.snapshot_data, list):
+        raise HTTPException(422, {"field_errors": {"snapshot_data": "Must be a list of identity records"}})
     
     # Identify all current operators to handle deletions
     res_current = await db.execute(select(models.Operator))
@@ -2038,9 +2040,16 @@ async def restore_user_pool(
     snapshot_usernames: set[str] = set()
     
     # Sync version data back to operators
-    for u in version.snapshot_data:
+    for index, u in enumerate(version.snapshot_data):
+        if not isinstance(u, dict):
+            raise HTTPException(422, {"field_errors": {f"snapshot_data[{index}]": "Must be an identity object"}})
         validate_operator_admin_flag(u)
-        ext_id = str(u.get("external_id") or u.get("id"))
+        raw_id = u.get("external_id") or u.get("id")
+        if not ((isinstance(raw_id, str) and raw_id.strip()) or (type(raw_id) is int and raw_id > 0)):
+            raise HTTPException(422, {"field_errors": {f"snapshot_data[{index}].external_id": "Must be a non-empty string or positive legacy identity ID"}})
+        ext_id = str(raw_id).strip()
+        if ext_id in snapshot_external_ids:
+            raise HTTPException(409, f"Snapshot contains duplicate external identity '{ext_id}'")
         snapshot_external_ids.add(ext_id)
         username = normalize_string(u.get("username"))
         if not username:
