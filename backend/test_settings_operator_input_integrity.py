@@ -38,6 +38,36 @@ async def snapshot(c, setup_db):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('value', [float('nan'), float('inf'), -float('inf')], ids=['nan', 'infinity', 'negative-infinity'])
+async def test_authorized_repair_of_nonfinite_stored_overrides_preserves_other_state(operator_scope, setup_db, value):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        target = await db.get(models.Operator, c['ids'][0])
+        target.custom_permissions = {'assets': value}
+        target.is_admin = False
+        await db.commit()
+    before = await snapshot(c, setup_db)
+    response = await c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}", headers=c['headers'],
+        json={'custom_permissions': {'assets': 2}})
+    assert response.status_code == 200, response.text
+    after = await snapshot(c, setup_db)
+    assert after[models.Team.__tablename__] == before[models.Team.__tablename__]
+    assert after[models.TeamAudit.__tablename__] == before[models.TeamAudit.__tablename__]
+    for row in after[models.Operator.__tablename__]:
+        previous = next(item for item in before[models.Operator.__tablename__] if item['id'] == row['id'])
+        if row['id'] == c['ids'][0]:
+            assert row['custom_permissions'] == {'assets': 2} and row['is_admin'] is False
+            assert {k: v for k, v in row.items() if k not in {'custom_permissions', 'updated_at'}} == {
+                k: v for k, v in previous.items() if k not in {'custom_permissions', 'updated_at'}}
+        else:
+            assert row == previous
+    versions = after[models.UserPoolVersion.__tablename__]
+    assert len(versions) == 1
+    saved = next(row for row in versions[0]['snapshot_data'] if row['external_id'] == 'input-target')
+    assert saved['custom_permissions'] == {'assets': 2} and saved['is_admin'] is False
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('operation', ['create', 'upsert', 'patch', 'bulk', 'restore'])
 @pytest.mark.parametrize('permissions', [
     [], 'read', False, 7,

@@ -7,6 +7,7 @@ remaining the compatibility grant used by the existing Admin role.
 
 from __future__ import annotations
 
+from math import isfinite
 from typing import Any
 
 from fastapi import Depends, HTTPException, Request, status
@@ -36,7 +37,7 @@ def normalize_permission_level(value: Any) -> int:
     if isinstance(value, bool):
         level = 1 if value else 0
     elif isinstance(value, (int, float)):
-        level = int(value)
+        level = int(value) if not isinstance(value, float) or isfinite(value) else 0
     elif isinstance(value, str):
         level = PERMISSION_LEVELS.get(value.strip().lower(), 0)
     else:

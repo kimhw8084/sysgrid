@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+from math import isfinite
 from sqlite3 import SQLITE_BUSY, SQLITE_LOCKED
 from copy import deepcopy
 from urllib.parse import urlparse
@@ -124,7 +125,7 @@ def normalize_permission_map(raw_permissions: dict | None) -> dict:
         if isinstance(value, bool):
             normalized_value = 1 if value else 0
         elif isinstance(value, (int, float)):
-            normalized_value = int(value)
+            normalized_value = int(value) if not isinstance(value, float) or isfinite(value) else 0
         elif isinstance(value, str):
             lookup = value.strip().lower()
             normalized_value = {
