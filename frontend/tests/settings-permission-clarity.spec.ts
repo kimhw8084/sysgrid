@@ -7,6 +7,51 @@ const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   for (const width of [1440, 390]) {
+    test(`invalid permission wire evidence remains Unknown in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 })
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+      const operatorsResponse = await request.get(`${apiBase}/settings/operators`)
+      expect(operatorsResponse.ok()).toBeTruthy()
+      const operators = await operatorsResponse.json()
+      const fixtures = ['custom', 'role'].map((source, index) => ({
+        id: 91001 + index, external_id: `nonfinite-${source}`, username: `nonfinite-${source}`,
+        full_name: `Invalid ${source} grant`, is_admin: false, role_id: 91000, teams: [],
+        custom_permissions: source === 'custom' ? { assets: { invalid_number: 'NaN' } } : {},
+        role: { id: 91000, name: 'Recorded role', permissions: source === 'role' ? { assets: { invalid_number: 'Infinity' } } : { assets: 2 } },
+      }))
+      await page.route('**/api/v1/settings/operators', route => route.fulfill({ json: [...operators, ...fixtures] }))
+      const errors: string[] = []
+      let writes = 0
+      page.on('pageerror', error => errors.push(error.message))
+      page.on('request', req => { if (/\/settings\/operators\/9100[12]$/.test(req.url()) && req.method() === 'PATCH') writes++ })
+      await page.goto('/settings?tab=permissions')
+      for (const fixture of fixtures) {
+        await page.getByPlaceholder('Search identity, department, or team...').fill(fixture.username)
+        const row = page.locator('[data-settings-tab-content="permissions"]').getByRole('row').filter({ hasText: fixture.username })
+        const unknown = row.getByRole('button', { name: `assets permission for ${fixture.username}: UNKNOWN`, exact: true })
+        await expect(unknown).toBeDisabled()
+        await expect(unknown).toHaveAccessibleDescription('Review permission data')
+        await unknown.scrollIntoViewIfNeeded()
+        await expect(unknown).toBeInViewport({ ratio: 0.9 })
+        await unknown.evaluate((button: HTMLButtonElement) => button.click())
+        expect(await row.getByRole('button', { name: `assets permission for ${fixture.username}: NONE`, exact: true }).count()).toBe(0)
+        await page.screenshot({ path: testInfo.outputPath(`${fixture.username}.png`), animations: 'disabled' })
+        await expectReadableGridText(page, testInfo, fixture.username, '[data-settings-tab-content="permissions"] table')
+      }
+      expect(writes).toBe(0)
+      expect(errors).toEqual([])
+      const unchanged = await request.get(`${apiBase}/settings/operators`)
+      expect(unchanged.ok()).toBeTruthy()
+      expect(await unchanged.json()).toEqual(operators)
+      await testInfo.attach('nonfinite-wire-facts', { body: JSON.stringify({ fixtures, writes, errors, responseOnly: true }), contentType: 'application/json' })
+    })
+  }
+}
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const width of [1440, 390]) {
     test(`live permissions respect global grants in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
       await resetBrowserState(page)
       await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 })

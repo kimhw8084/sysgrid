@@ -38,6 +38,86 @@ async def snapshot(c, setup_db):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('endpoint', ['operators', 'roles', 'user-pool/versions', 'user/profile'])
+@pytest.mark.parametrize('value,label', [(float('nan'), 'NaN'), (float('inf'), 'Infinity'), (-float('inf'), '-Infinity')])
+async def test_identity_reads_preserve_nonfinite_evidence_without_writes(operator_scope, setup_db, endpoint, value, label):
+    import json
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        role = models.Role(name='Legacy grant evidence', permissions={'assets': value, 'network': 2.9, 'racks': ' Read '})
+        db.add(role)
+        await db.flush()
+        target = await db.get(models.Operator, c['ids'][0])
+        target.role_id, target.is_admin = role.id, False
+        target.custom_permissions = {'assets': value, 'racks': 0, 'nested': {'entry': [value]}}
+        db.add(models.UserPoolVersion(version_label='legacy-nonfinite', created_by='fixture', is_active=True,
+            snapshot_data=[{'external_id': target.external_id, 'is_admin': False, 'role_id': role.id,
+                'role_permissions': role.permissions, 'custom_permissions': target.custom_permissions},
+                {'external_id': 'legacy-missing', 'is_admin': False, 'role_id': role.id}], diff_summary={}))
+        await db.commit()
+        role_id = role.id
+    await _grant_access(setup_db, tenant_id=c['tenant'], user_id='input-target', role='ADMIN')
+    before = json.dumps(await snapshot(c, setup_db), sort_keys=True, default=str)
+    headers = {**c['headers'], 'X-User-Id': 'input-target'} if endpoint == 'user/profile' else c['headers']
+    response = await c['client'].get(f'/api/v1/settings/{endpoint}', headers=headers)
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    json.dumps(payload, allow_nan=False)
+    invalid = {'invalid_number': label}
+    if endpoint == 'operators':
+        row = next(row for row in payload if row['id'] == c['ids'][0])
+        assert row['custom_permissions'] == {'assets': invalid, 'racks': 0, 'nested': {'entry': [invalid]}}
+        assert row['role']['permissions'] == {'assets': invalid, 'network': 2.9, 'racks': ' Read '}
+    elif endpoint == 'roles':
+        row = next(row for row in payload if row['id'] == role_id)
+        assert row['permissions'] == {'assets': invalid, 'network': 2.9, 'racks': ' Read '}
+    elif endpoint == 'user-pool/versions':
+        rows = next(row for row in payload if row['version_label'] == 'legacy-nonfinite')['snapshot_data']
+        assert rows[0]['custom_permissions'] == {'assets': invalid, 'racks': 0, 'nested': {'entry': [invalid]}}
+        assert rows[0]['role_permissions']['assets'] == invalid
+        assert 'role_permissions' not in rows[1] and 'custom_permissions' not in rows[1]
+    else:
+        assert payload['permissions'] == {'assets': 0, 'network': 2, 'racks': 0, 'nested': 0}
+        assert payload['is_admin'] is False and payload['access_mode'] == 'assigned'
+    assert json.dumps(await snapshot(c, setup_db), sort_keys=True, default=str) == before
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        assert json.dumps((await db.get(models.Role, role_id)).permissions, sort_keys=True) == json.dumps(
+            {'assets': value, 'network': 2.9, 'racks': ' Read '}, sort_keys=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('malformed', [None, [], ['assets'], 'read', False, 7])
+@pytest.mark.parametrize('field', ['role', 'custom'])
+async def test_profile_uses_authorization_merge_with_malformed_permission_containers(operator_scope, setup_db, field, malformed):
+    from app.api.authorization import merge_operator_permissions
+    from sqlalchemy.orm import selectinload
+    import json
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        role = models.Role(name='Legacy container', permissions=malformed if field == 'role' else {'assets': ' Read ', 'racks': 3})
+        db.add(role)
+        await db.flush()
+        target = await db.get(models.Operator, c['ids'][0])
+        target.role_id, target.is_admin = role.id, False
+        target.custom_permissions = malformed if field == 'custom' else {'assets': 'WRITE', ' racks ': False}
+        await db.commit()
+    await _grant_access(setup_db, tenant_id=c['tenant'], user_id='input-target', role='ADMIN')
+    before = json.dumps(await snapshot(c, setup_db), sort_keys=True, default=str)
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        target = await db.scalar(select(models.Operator).options(selectinload(models.Operator.role)).where(models.Operator.id == c['ids'][0]))
+        expected = merge_operator_permissions(target)
+    response = await c['client'].get('/api/v1/settings/user/profile', headers={**c['headers'], 'X-User-Id': 'input-target'})
+    assert response.status_code == 200, response.text
+    assert response.json()['permissions'] == expected == ({'assets': 2, 'racks': 0} if field == 'role' else {'assets': 1, 'racks': 3})
+    denied = await c['client'].post('/api/v1/settings/options', headers={**c['headers'], 'X-User-Id': 'input-target'},
+        json={'category': 'Read safety fixture', 'value': 'Must not write'})
+    assert denied.status_code == 403, denied.text
+    assert json.dumps(await snapshot(c, setup_db), sort_keys=True, default=str) == before
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('peer_permissions', [{'settings': 2}, {'settings': 1, 'assets': 0}])
 async def test_permission_compare_and_swap_rejects_stale_maps_then_allows_reviewed_retry(operator_scope, setup_db, peer_permissions):
     c = operator_scope

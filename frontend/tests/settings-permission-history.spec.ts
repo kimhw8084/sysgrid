@@ -113,6 +113,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         identity('System restriction', { role_permissions: { 'system.tenants': 1 } }),
         identity('Malformed grants', { custom_permissions: [] }),
         identity('Ambiguous grants', { role_permissions: { assets: 1, ' assets ': 3 } }),
+        identity('Non-finite grant', { custom_permissions: { assets: { invalid_number: 'NaN' } } }),
       ]
       const after = [
         identity('Role only', { role_permissions: { assets: 'MANAGE' } }),
@@ -125,6 +126,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         identity('System restriction', { role_permissions: { 'system.tenants': 3 } }),
         identity('Malformed grants'),
         identity('Ambiguous grants'),
+        identity('Non-finite grant', { custom_permissions: { assets: 1 } }),
       ]
       const versions = [after, before].map((snapshot_data, index) => ({
         id: 952 - index, created_at: `2026-10-0${2 - index}T12:00:00Z`,
@@ -145,6 +147,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         ['Override removed', 'assets', 'None', 'Write'], ['Newly recorded', 'assets', 'Unknown', 'Write'],
         ['Extra capability', 'diagnostics', 'Read', 'Full'],
         ['Ambiguous grants', 'assets', 'Unknown', 'None'],
+        ['Non-finite grant', 'assets', 'Unknown', 'Read'],
       ]) {
         const item = row(name)
         await expect(item).toHaveCount(1)
@@ -169,6 +172,13 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(source).toContainText('Custom overrides')
       await expect(source).toContainText('"assets": 1')
       await expect(source).toContainText('"assets": 2')
+      const nonfiniteSource = row('Non-finite grant').locator('[data-permission-source-change]')
+      await nonfiniteSource.locator('summary').click()
+      await expect(nonfiniteSource).toContainText('"invalid_number": "NaN"')
+      await expect(nonfiniteSource).toContainText('"assets": 1')
+      await nonfiniteSource.scrollIntoViewIfNeeded()
+      await page.screenshot({ path: testInfo.outputPath('history-nonfinite-source.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, 'history invalid grant source', '[data-workspace-history]')
       await expect(row('System restriction').locator('[data-permission-change]')).toHaveCount(0)
       await expect(row('Legacy role')).toContainText('Permission comparison unavailable')
       await expect(history.getByRole('alert')).toContainText('Historical permission data is incomplete')

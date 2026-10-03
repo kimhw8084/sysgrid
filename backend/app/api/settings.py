@@ -6,6 +6,7 @@ from sqlite3 import SQLITE_BUSY, SQLITE_LOCKED
 from copy import deepcopy
 from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy import select, delete, update, or_, text
 from sqlalchemy.exc import OperationalError
@@ -20,13 +21,24 @@ from ..runtime_diagnostics import (
     infer_sanitized_environment_mode,
 )
 from .utils import filter_valid_columns, get_current_user_id, normalize_json_list, normalize_json_object
-from .authorization import PERMISSION_LEVELS, require_capability
+from .authorization import PERMISSION_LEVELS, merge_operator_permissions, require_capability
 from .module_policy import is_system_root_user_id, require_diagnostics_access
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 LOCKED_MONITORING_OPTION_CATEGORIES = {"MonitoringSeverity", "MonitoringOwnerRole", "MonitoringPlatform", "MonitoringCategory", "NotificationMethod"}
 RELATIONAL_OPTION_CATEGORIES = {"MonitoringTeam"}
 SAFE_DIAGNOSTIC_ENV_KEYS = {"PORT", "ENVIRONMENT", "LOG_LEVEL", "API_V1_STR", "VITE_UI_DEBUG_LOGGING"}
+
+
+def identity_read_response(value):
+    """Project legacy non-JSON numbers as explicit invalid evidence, without writes.
+
+    A structured marker stays Unknown in recorded-grant views; null, a numeric
+    denial or a string could incorrectly imply a known permission value.
+    """
+    return jsonable_encoder(value, custom_encoder={float: lambda number: number if isfinite(number) else {
+        "invalid_number": "NaN" if number != number else "Infinity" if number > 0 else "-Infinity",
+    }})
 
 
 def parse_env_file_to_map(path: str | None) -> dict[str, str]:
@@ -821,10 +833,8 @@ async def get_user_profile(request: Request, db: AsyncSession = Depends(get_db))
             "access_mode": "public_readonly" if is_public_readonly else "viewer",
         }
     
-    # Merge permissions: role permissions + custom overrides
-    permissions = (operator.role.permissions if operator.role else {}).copy()
-    if operator.custom_permissions:
-        permissions.update(operator.custom_permissions)
+    # The profile advertises the same bounded grants used by authorization.
+    permissions = merge_operator_permissions(operator)
 
     return {
         "id": operator.id,
@@ -1344,7 +1354,7 @@ async def get_env_history(
 async def get_operators(db: AsyncSession = Depends(get_db)):
     from sqlalchemy.orm import selectinload
     res = await db.execute(select(models.Operator).options(selectinload(models.Operator.role), selectinload(models.Operator.team_rel)))
-    return res.scalars().all()
+    return identity_read_response(res.scalars().all())
 
 @router.get("/teams")
 async def get_teams(db: AsyncSession = Depends(get_db)):
@@ -1757,7 +1767,7 @@ async def bulk_delete_operators(
 @router.get("/roles")
 async def get_roles(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(models.Role))
-    return res.scalars().all()
+    return identity_read_response(res.scalars().all())
 
 @router.get("/user-pool/versions")
 async def get_user_pool_versions(
@@ -1765,7 +1775,7 @@ async def get_user_pool_versions(
     db: AsyncSession = Depends(get_db),
 ):
     res = await db.execute(select(models.UserPoolVersion).order_by(models.UserPoolVersion.created_at.desc(), models.UserPoolVersion.id.desc()))
-    return res.scalars().all()
+    return identity_read_response(res.scalars().all())
 
 async def begin_identity_transaction(db: AsyncSession, request: Request, *, preview: bool = False) -> None:
     if db.get_bind().dialect.name != "sqlite":
