@@ -1,4 +1,5 @@
 import { recordApiTiming } from '../observability/pv1Performance'
+import { beginScopedWrite, getCurrentTenantId } from './tenantContext'
 
 function normalizeApiBaseUrl(url: string | null | undefined): string {
   const trimmed = (url || '').trim()
@@ -176,22 +177,14 @@ function getIdentityMode(): string {
   return String(import.meta.env.VITE_IDENTITY_MODE || 'development').trim().toLowerCase()
 }
 
-function shouldAttachUserIdHeader(url: string): boolean {
-  // In production the reverse proxy owns identity and must strip any client-supplied
-  // identity header before injecting TRUSTED_PROXY_USER_HEADER.
-  if (getIdentityMode() === 'trusted_proxy') return false
-
+function isConfiguredApiTarget(url: string): boolean {
   const baseUrl = getApiBaseUrl()
-  if (!url.startsWith('http')) return true
-  if (baseUrl && url.startsWith(baseUrl)) return true
-
   try {
     const targetUrl = new URL(url, window.location.origin)
     if (targetUrl.origin === window.location.origin) return true
-    const isLocal = targetUrl.hostname === 'localhost' || targetUrl.hostname === '127.0.0.1'
-    return isLocal
+    return !!baseUrl && targetUrl.origin === new URL(baseUrl, window.location.origin).origin
   } catch {
-    return true
+    return false
   }
 }
 
@@ -204,18 +197,28 @@ function resolveCredentialsMode(url: string): RequestCredentials {
   }
 }
 
-function getCurrentTenantId(): string {
-  return (
-    localStorage.getItem('SYSGRID_TENANT_ID') ||
-    '1'
-  )
-}
-
 export function getRequestScopeKey(): string {
   return `${getCurrentUserId()}::${getCurrentTenantId()}`
 }
 
 let lastRequestScopeKey = ''
+
+function apiErrorMessage(data: unknown, status: number): string {
+  const payload = data && typeof data === 'object' && !Array.isArray(data)
+    ? data as Record<string, unknown> : {}
+  const detail = payload.detail
+  const nested = detail && typeof detail === 'object' && !Array.isArray(detail)
+    ? detail as Record<string, unknown> : {}
+  for (const candidate of [detail, nested.message, payload.message, data]) {
+    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim().slice(0, 500)
+  }
+  // Keep field names, rejected input and structured diagnostics in error.data;
+  // never stringify them into a toast or error-history title.
+  if (Array.isArray(detail) || nested.field_errors || payload.field_errors) {
+    return 'Request validation failed. Review the submitted values and try again.'
+  }
+  return `API error: ${status}`
+}
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const requestScopeKey = getRequestScopeKey()
@@ -263,12 +266,15 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     ? normalizedEndpoint 
     : `${baseUrl.replace(/\/$/, '')}/${normalizedEndpoint.replace(/^\//, '')}`;
   
-  const headers: Record<string, string> = { ...options.headers } as any;
+  const headers: Record<string, string> = Object.fromEntries(new Headers(options.headers).entries());
   const method = String(options.method || 'GET').toUpperCase()
   
-  // Only attach explicit browser user identity on same-origin requests.
-  if (shouldAttachUserIdHeader(url)) {
-    headers['X-User-Id'] = getCurrentUserId();
+  // Tenant selection is a server-authorized scope, separate from authentication.
+  // Even trusted-proxy clients need an explicit tab-bound tenant header.
+  if (isConfiguredApiTarget(url)) {
+    delete headers['x-user-id']
+    delete headers['x-tenant-id']
+    if (getIdentityMode() === 'development') headers['X-User-Id'] = getCurrentUserId();
     headers['X-Tenant-Id'] = getCurrentTenantId();
   }
 
@@ -288,12 +294,15 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     throw offlineError
   }
 
-  if (!isBodylessReadRequest && !(options.body instanceof FormData) && !headers['Content-Type']) {
+  if (!isBodylessReadRequest && !(options.body instanceof FormData) && !headers['content-type']) {
     headers['Content-Type'] = 'application/json';
   }
 
   const startTime = Date.now();
   let response: Response
+  const finishWrite = isWriteMethod(method) && isConfiguredApiTarget(url)
+    ? beginScopedWrite(new URL(url, window.location.origin).pathname === '/api/v1/tenants/select')
+    : () => {}
   try {
     response = await fetch(url, {
       cache: 'no-store',
@@ -312,6 +321,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
       finalUrl: url,
       method,
     })
+  } finally {
+    finishWrite()
   }
   const elapsed = Date.now() - startTime
   notifyLatency(elapsed);
@@ -326,7 +337,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   })
 
   if (!response.ok) {
-    let errorData: any = {};
+    let errorData: unknown = {};
     let rawBody = '';
     try {
       rawBody = await response.clone().text();
@@ -335,7 +346,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
       errorData = { detail: `API Error ${response.status}: ${response.statusText}`, raw: rawBody };
     }
     
-    const errorMessage = errorData.detail || errorData.message || `API error: ${response.status}`;
+    const errorMessage = apiErrorMessage(errorData, response.status);
     const error = decorateApiError(new Error(errorMessage), {
       status: response.status,
       statusText: response.statusText,

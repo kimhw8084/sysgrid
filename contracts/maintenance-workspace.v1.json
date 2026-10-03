@@ -1,0 +1,48 @@
+{
+  "schema_version": "sysgrid.maintenance-workspace.v1",
+  "authority": "https://app.notion.com/p/3dcc564c8d04818a989be1b9e7c4c7c8",
+  "approved_item": "F3",
+  "route": "/monitoring?workspace=maintenance",
+  "module_owner": "monitoring",
+  "adapter": "simulation.recording.v1",
+  "production_capable": false,
+  "product_task": "Prepare an asset maintenance plan, review authoritative preconditions, confirm intent and record execution, verification and recovery evidence.",
+  "construction": {
+    "archetype": "hybrid",
+    "shell": "OperationalWorkspaceShell",
+    "controls": "ToolbarButton and labeled native form controls",
+    "confirmation": "ConfirmationModal using WorkspaceDialogFrame without a second draft blocker",
+    "draft_owner": "useOperationalDirtyGuard",
+    "appearance": "Existing semantic surface, text, border and state tokens; responsive single-column cards with two-column fields on larger screens",
+    "asset_selection": "Explicit checkboxes; 100-row summary pages; filter applies only to the disclosed loaded set; maximum 250 targets",
+    "history": "Newest 100 matching actions with an explicit expansion to the API limit of 500; asset and status filtering; action deep links"
+  },
+  "safety_contract": [
+    "Every workspace and execution confirmation identifies simulation; recorded progress comes from server attempts.",
+    "Monitoring module write policy and the server-authenticated tenant role gate planning. Actor-bound operations also match the authenticated actor from capabilities.",
+    "The API remains authoritative for actor, tenant, target revisions, preview expiry, risk facts and lifecycle transitions.",
+    "An uncertain create retries the exact same serialized request and idempotency key. Form edits are disabled until the outcome is recovered.",
+    "A failed lifecycle request requires a fresh server read before another write; no automatic write retry occurs.",
+    "Rollback retains its attempt identity after an uncertain request; canceling confirmation never captures a stale rollback reason.",
+    "Draft departure can be canceled without reopening the same blocked navigation. Explicit discard permits leaving; late save completion cannot reopen the departed action.",
+    "Write-permission loss makes the retained plan read only. Credentials must not be entered into context, references or notes.",
+    "Window authoring requires Assets write permission. Explicit UTC inputs are saved as UTC; history displays local time. Windows record scheduling intent and do not trigger actions or enforce an execution time.",
+    "The additive e39a28b5d0f2 migration preserves all legacy rows, nullable dates and unknown statuses. New optional creation keys are actor-scoped, hashed and unique within the tenant database.",
+    "Cancellation requires a reason and atomically records actor, time and audit evidence. Repeated cancellation returns the original record. The UI never deletes windows.",
+    "The database serializes cancellation, linking, deletion and forward execution against the window. Cancellation rejects active or unresolved attempts; canceled or changed window facts invalidate the preview. Verification and recovery remain available.",
+    "Legacy deletion remains available for unlinked windows. A window with action history returns 409 and directs the operator to cancellation; it cannot silently remove the action's scheduling lineage."
+  ],
+  "qualification": {
+    "backend": "45 maintenance integrity, window lifecycle, orchestration and migration graph tests passed on Python 3.14.5; includes concurrent creation, cancellation versus execution, atomic audit failure and preserved legacy migration",
+    "frontend": "786 unit tests passed; TypeScript, form/shell contracts and Vite production build passed on Node 22.23.2",
+    "browser": "10 Maintenance workflows passed on disposable migrated databases: 9 combined lifecycle/window scenarios plus 1 late-window-response test; dark desktop and light mobile, cancellation, stale window, failed recovery, exact-request retry and draft departure",
+    "related_browser": "4 Racks, Assets and Network dialog/draft regressions passed for the preceding shared-dialog implementation",
+    "interrupted_attempt_boundary": "Rendered component test proves reconciliation uses the durable attempt id without execution replay; existing backend interruption/concurrency tests prove the service behavior",
+    "review": "Direct author review with immutable patch replay and hash-verified evidence packaging; not a Fabric or independent external audit"
+  },
+  "remaining": [
+    "CI and reviewed main integration of this exact candidate",
+    "Company-approved live adapter and real target evidence",
+    "Full production-volume performance, native assistive-technology and authentic operator pilot qualification"
+  ]
+}

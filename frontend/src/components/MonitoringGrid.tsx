@@ -1,4 +1,6 @@
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
+import { getCurrentTenantId } from '../api/tenantContext'
 import { BkmListModal, BkmDetailModal, MonitoringForm } from './monitoring/Modals'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail, classifyDataStatus, normalizeOperationalListResponse } from './shared/OperationalDataStatus'
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
@@ -551,7 +553,7 @@ export default function MonitoringGrid() {
                 endpoint: '/api/v1/monitoring?include_deleted=true',
                 rawBodyExcerpt: err.rawBody,
                 userId: localStorage.getItem('SYSGRID_USER_ID') || 'admin_root',
-                tenantId: localStorage.getItem('SYSGRID_TENANT_ID') || '1'
+                tenantId: getCurrentTenantId()
             }
         };
     }
@@ -584,15 +586,7 @@ export default function MonitoringGrid() {
 
 
 
-  useEffect(() => {
-    if (!isWorkspaceDirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [isWorkspaceDirty])
+  usePageLeaveGuard(isWorkspaceDirty)
 
   useEffect(() => {
     if (!isFormOpen) setIsFormDirty(false)
@@ -1032,15 +1026,7 @@ export default function MonitoringGrid() {
     currentDefinition: buildCurrentViewConfig(),
   })
 
-  useEffect(() => {
-    if (!collaborativeViews.dirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [collaborativeViews.dirty])
+  usePageLeaveGuard(collaborativeViews.dirty)
 
   const allowViewSwitch = async (nextViewId: string | null) => {
     if (!collaborativeViews.dirty || nextViewId === activeViewId) return true
@@ -1099,7 +1085,7 @@ export default function MonitoringGrid() {
       return
     }
     if (result.view) setActiveViewId(result.view.id)
-    showWorkspaceToast(result.persisted ? `Saved ${view.name}` : `Saved ${view.name} locally; server unavailable`, { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? `Saved ${view.name}` : `Saved ${view.name} locally; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const createViewFromCurrent = async () => {
@@ -1119,7 +1105,7 @@ export default function MonitoringGrid() {
       setNewViewName('')
       if (typeof window !== 'undefined') window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, result.view.id)
     }
-    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `Saved ${trimmed} locally; server unavailable`, { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `Saved ${trimmed} locally; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const applySystemDefault = async () => {
@@ -1146,7 +1132,7 @@ export default function MonitoringGrid() {
          applyOrder: true
        })
     }
-    showWorkspaceToast('Restored system default view')
+    showWorkspaceToast('Restored system default view', { id: collaborativeViews.successNoticeId })
   }
 
   const renameView = async (viewId: string, name: string): Promise<boolean> => {
@@ -1161,7 +1147,7 @@ export default function MonitoringGrid() {
       showWorkspaceToast(result.error || 'Unable to rename this view', { type: 'error' })
       return false
     }
-    showWorkspaceToast(`Renamed view to ${name}`)
+    showWorkspaceToast(`Renamed view to ${name}`, { id: collaborativeViews.successNoticeId })
     return true
   }
 
@@ -1182,7 +1168,7 @@ export default function MonitoringGrid() {
       collaborativeViews.setViewLink(null)
       if (typeof window !== 'undefined') window.localStorage.removeItem(MONITORING_ACTIVE_VIEW_KEY)
     }
-    showWorkspaceToast(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`)
+    showWorkspaceToast(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`, { id: collaborativeViews.successNoticeId })
   }
 
   const dismissWorkspaceMenus = useCallback(() => {
@@ -1835,6 +1821,7 @@ export default function MonitoringGrid() {
         subtitle: "Centralized monitoring configuration and operational status",
         actions: (
           <>
+            <ToolbarButton onClick={() => navigate('/monitoring?workspace=maintenance')}><Terminal size={14} aria-hidden="true" />Maintenance</ToolbarButton>
             <HeaderScopeSwitch
               label="Registry Scope"
               summary={`${lifecycleCounts.existing} existing · ${lifecycleCounts.archived} archived`}
@@ -2073,8 +2060,9 @@ export default function MonitoringGrid() {
             syncStatus={collaborativeViews.status}
             syncMessage={collaborativeViews.lastError || (collaborativeViews.status === 'offline' ? 'Personal views are available locally and will migrate when the API returns.' : undefined)}
             onCopyViewLink={(viewId) => {
-              void collaborativeViews.copyViewLink(viewId).then(() => showWorkspaceToast('View link copied'))
+              void collaborativeViews.copyViewLink(viewId)
             }}
+            isCopyingViewLink={collaborativeViews.copyingLink}
             conflictMessage={collaborativeViews.conflict?.message}
             onReloadConflict={collaborativeViews.reloadConflict}
             onSaveConflictCopy={() => { void collaborativeViews.saveConflictCopy() }}

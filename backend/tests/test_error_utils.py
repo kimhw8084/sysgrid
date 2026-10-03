@@ -38,7 +38,7 @@ class ValueValidatedPayload(BaseModel):
         return self
 
 
-def test_standardize_validation_errors_serializes_value_error_context():
+def test_standardize_validation_errors_keeps_category_without_exception_context():
     app = FastAPI()
     standardize_validation_errors(app)
 
@@ -52,4 +52,7 @@ def test_standardize_validation_errors_serializes_value_error_context():
     assert response.status_code == 422
     data = response.json()
     assert data["message"] == "Validation Failed"
-    assert data["detail"][0]["ctx"]["error"] == "Name is required"
+    assert data["detail"][0]["type"] == "value_error"
+    assert data["detail"][0]["loc"] == ["body"]
+    assert "ctx" not in data["detail"][0]
+    assert "input" not in data["detail"][0]

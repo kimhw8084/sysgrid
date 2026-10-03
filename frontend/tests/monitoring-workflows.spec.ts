@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { MonitoringView } from './pom/MonitoringView'
+import { expectReadableGridText } from './helpers/grid-contrast'
 import {
   clickResilientButton,
   createAsset,
@@ -20,6 +21,45 @@ import {
 } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`shared Monitoring bulk controls remain readable and persist status in ${theme}`, async ({ page, request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { headers: testApiHeaders, data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const title = `PW-BULK-CLARITY-${Date.now()}`
+    const asset = await createAsset(request, { name: `${title}-host`, type: 'Physical', system: 'Bulk clarity' })
+    const monitor = await createMonitoring(request, { device_id: asset.id, title, category: 'Hardware', status: 'Existing', platform: 'Prometheus', severity: 'Warning' })
+    await page.goto('/monitoring')
+    await fillGridSearch(page, 'Scan matrix...', title, 'monitoring')
+    await selectGridCheckboxRows(page, [0])
+    await page.getByRole('button', { name: 'Bulk actions', exact: true }).click()
+    const panel = page.locator('.bulk-menu-container')
+    await expect(panel).toBeVisible()
+    await panel.getByRole('button', { name: 'Set Status', exact: true }).click()
+    await panel.getByRole('button', { name: 'Choose status', exact: true }).click()
+    const dropdown = page.locator('[data-workspace-panel="true"]').filter({ has: page.getByPlaceholder('Search options...') }).last()
+    await dropdown.getByRole('button', { name: 'Planned', exact: true }).click()
+    await expect(panel.getByRole('button', { name: 'Planned', exact: true })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('monitoring-bulk-desktop.png'), animations: 'disabled' })
+    await expectReadableGridText(page, testInfo, 'monitoring bulk desktop', '.bulk-menu-container')
+    await page.setViewportSize({ width: 390, height: 844 })
+    const apply = panel.getByRole('button', { name: 'Apply Status', exact: true })
+    await apply.scrollIntoViewIfNeeded()
+    await expect(apply).toBeInViewport({ ratio: 1 })
+    await page.screenshot({ path: testInfo.outputPath('monitoring-bulk-mobile.png'), animations: 'disabled' })
+    await expectReadableGridText(page, testInfo, 'monitoring bulk mobile', '.bulk-menu-container')
+    const saved = page.waitForResponse(response => response.url().endsWith('/monitoring/bulk-action') && response.request().method() === 'POST')
+    await apply.click()
+    expect((await saved).ok()).toBeTruthy()
+    await expect(panel).not.toBeVisible()
+    const rows = await (await request.get(`${apiBase}/monitoring`, { headers: testApiHeaders })).json()
+    const persisted = rows.find((row: { id: number }) => row.id === monitor.id)
+    expect(persisted.status).toBe('Planned')
+    expect(persisted.severity).toBe('Warning')
+  })
+}
 
 async function getColumnWidth(page: any, colId: string) {
   return page.evaluate((targetColId: string) => {

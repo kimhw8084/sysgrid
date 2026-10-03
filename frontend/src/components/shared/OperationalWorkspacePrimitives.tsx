@@ -3,6 +3,7 @@ import { ChevronDown, Check, Info } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { OPERATIONAL_WORKSPACE_VISUALS } from './OperationalWorkspace'
 import { getWorkspaceAnchorLayer, WORKSPACE_LAYER_Z, useWorkspacePopupDismiss } from './WorkspaceOverlay'
+import { parseAppDate } from '../../utils/dateUtils'
 export { WORKSPACE_LAYER_Z } from './WorkspaceOverlay'
 
 export type WorkspaceModalSize = 'compact' | 'standard' | 'wide' | 'workspace' | 'fullscreen'
@@ -87,21 +88,23 @@ export function getWorkspaceModalShellClass(size: WorkspaceModalSize) {
 export function WorkspaceFieldLabel({
   label,
   required = false,
+  htmlFor,
 }: {
   label: string
   required?: boolean
+  htmlFor?: string
 }) {
   return (
-    <label className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldLabelText}`}>
+    <label htmlFor={htmlFor} className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldLabelText}`}>
       {label}
       {required && <span className="ml-1 text-rose-400">*</span>}
     </label>
   )
 }
 
-export function WorkspaceFieldError({ message }: { message?: string }) {
+export function WorkspaceFieldError({ message, id }: { message?: string; id?: string }) {
   if (!message) return null
-  return <p className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldErrorText}`}>{message}</p>
+  return <p id={id} className={`px-1 ${OPERATIONAL_WORKSPACE_VISUALS.fieldErrorText}`}>{message}</p>
 }
 
 export function WorkspacePanelTitle({ children }: { children: React.ReactNode }) {
@@ -308,7 +311,7 @@ export function WorkspaceEmptyState({
   return (
     <div
       className={join(
-        `flex flex-col items-center justify-center ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-dashed border-white/10 bg-black/10 text-center`,
+        `flex flex-col items-center justify-center ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-dashed border-[var(--border-default)] bg-[var(--surface-elevated)] text-center`,
         compact ? 'px-4 py-8 space-y-2' : 'px-6 py-12 space-y-4'
       )}
     >
@@ -318,8 +321,8 @@ export function WorkspaceEmptyState({
         <div className="text-slate-700/40"><Info size={20} /></div>
       ) : null}
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold text-slate-300">{title}</p>
-        {description && <p className="max-w-md text-[10px] font-semibold leading-relaxed text-slate-500">{description}</p>}
+        <p className="text-[11px] font-semibold text-[var(--text-primary)]">{title}</p>
+        {description && <p className="max-w-md text-[10px] font-semibold leading-relaxed text-[var(--text-secondary)]">{description}</p>}
       </div>
       {action}
     </div>
@@ -681,6 +684,7 @@ export function WorkspaceValidationBanner({ message }: { message?: string }) {
 export function WorkspaceModalHeader({
   icon,
   title,
+  headingLabel,
   subtitle,
   status,
   forensicLineage,
@@ -692,6 +696,7 @@ export function WorkspaceModalHeader({
 }: {
   icon: React.ReactNode
   title: React.ReactNode
+  headingLabel?: string
   subtitle: React.ReactNode
   status?: React.ReactNode
   forensicLineage?: { createdAt?: string | Date; updatedAt?: string | Date }
@@ -702,14 +707,15 @@ export function WorkspaceModalHeader({
   onTabChange?: (id: string) => void
 }) {
   const formatDate = (date: string | Date | undefined) => {
-    if (!date) return 'Genesis'
-    const d = typeof date === 'string' ? new Date(date) : date
+    const d = typeof date === 'string' ? parseAppDate(date) : date
+    if (!d || Number.isNaN(d.getTime())) return 'Unavailable'
     return d.toLocaleString('en-US', { 
        month: 'short', 
        day: 'numeric', 
        year: 'numeric',
        hour: '2-digit',
-       minute: '2-digit'
+       minute: '2-digit',
+       timeZoneName: 'short'
     })
   }
 
@@ -723,7 +729,7 @@ export function WorkspaceModalHeader({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-4">
                <div className="min-w-0 flex-1">
-                  <h2 className="min-w-0 break-words text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] [&>div]:min-w-0 [&>div]:flex-wrap">{title}</h2>
+                  <h2 aria-label={headingLabel} className="min-w-0 break-words text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] [&>div]:min-w-0 [&>div]:flex-wrap">{title}</h2>
                   <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2 [&>div]:min-w-0 [&>div]:flex-wrap">
                     <span className="min-w-0 break-words text-xs leading-relaxed text-[var(--text-secondary)]">{subtitle}</span>
                     {status && (

@@ -1,6 +1,7 @@
 import React from 'react'
 import { AlertTriangle, Check, Trash2, HelpCircle } from 'lucide-react'
-import { WorkspaceModal } from './WorkspaceModal'
+import { WorkspaceDialogFrame } from './WorkspaceDialogFrame'
+import { ToolbarButton } from './LayoutPrimitives'
 
 interface ConfirmationModalProps {
   isOpen: boolean
@@ -23,57 +24,28 @@ export const ConfirmationModal = ({
   cancelText = 'Close',
   variant = 'info'
 }: ConfirmationModalProps) => {
+  if (!isOpen) return null
   const getVariantIcon = () => {
     switch (variant) {
-      case 'danger': return <Trash2 size={24} className="text-rose-500" />
-      case 'warning': return <AlertTriangle size={24} className="text-amber-500" />
-      case 'success': return <Check size={24} className="text-emerald-500" />
-      default: return <HelpCircle size={24} className="text-blue-500" />
+      case 'danger': return <Trash2 size={24} className="text-[var(--state-danger)]" aria-hidden="true" />
+      case 'warning': return <AlertTriangle size={24} className="text-[var(--state-warning)]" aria-hidden="true" />
+      case 'success': return <Check size={24} className="text-[var(--state-success)]" aria-hidden="true" />
+      default: return <HelpCircle size={24} className="text-[var(--action-ink)]" aria-hidden="true" />
     }
   }
 
-  const getVariantColor = () => {
-    switch (variant) {
-      case 'danger': return 'bg-rose-700 hover:bg-rose-800 shadow-rose-500/20'
-      case 'warning': return 'bg-amber-800 hover:bg-amber-900 shadow-amber-500/20'
-      case 'success': return 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-500/20'
-      default: return 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)]'
-    }
-  }
-
+  // A confirmation owns no draft. Registering WorkspaceModal's second route
+  // blocker here can replace the dirty form's blocker while its question is open.
   return (
-    <WorkspaceModal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="compact"
-      title={title}
-      icon={getVariantIcon()}
-      hideCloseButton={true}
-      hideFooterClose={true}
-      footerRight={(
-        <>
-          <button 
-            type="button"
-            onClick={onClose} 
-            className="rounded-lg border border-white/10 bg-black/20 px-4 py-2 text-[10px] font-black uppercase text-slate-500 transition-all hover:text-white"
-          >
-            {cancelText}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className={`rounded-lg px-6 py-2 ${getVariantColor()} text-[10px] font-black uppercase text-white shadow-lg transition-all active:scale-95`}
-          >
-            {confirmText}
-          </button>
-        </>
-      )}
-    >
-      <div className="py-4">
-        <p className="text-[11px] font-bold leading-relaxed text-slate-400">
-          {message}
-        </p>
+    <WorkspaceDialogFrame title={title} onClose={onClose}>
+      <div className="max-h-[82vh] w-full max-w-lg space-y-5 overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-5 shadow-2xl sm:p-6">
+        <div className="flex items-center gap-3">{getVariantIcon()}<h2 className="text-base font-semibold text-[var(--text-primary)]">{title}</h2></div>
+        <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{message}</p>
+        <div className="flex flex-wrap justify-end gap-3">
+          <ToolbarButton onClick={onClose}>{cancelText}</ToolbarButton>
+          <ToolbarButton onClick={onConfirm} variant={variant === 'danger' ? 'danger' : 'primary'}>{confirmText}</ToolbarButton>
+        </div>
       </div>
-    </WorkspaceModal>
+    </WorkspaceDialogFrame>
   )
 }

@@ -10,10 +10,10 @@ from uuid import uuid4
 
 from alembic import command
 from alembic.config import Config
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, text
+from sqlalchemy import select, text, tuple_
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -25,9 +25,10 @@ from .api import (
 )
 from .api.error_utils import standardize_validation_errors
 from .api.import_engine import ROUND_TRIP_EXPOSE_HEADER_NAMES, ROUND_TRIP_EXPOSE_HEADERS
+from .import_limits import ImportRequestLimitMiddleware
 from .core.config import settings
 from .database import ConfigSessionLocal, config_engine, default_engine
-from .models.config import UserTenantAccess
+from .models.config import Tenant, UserTenantAccess
 from .api.utils import get_current_user_id
 from .runtime_diagnostics import build_readiness_payload
 from .observability import SlidingWindowRateLimiter, request_rate_limit_key, safe_request_metric
@@ -84,6 +85,16 @@ async def lifespan(app: FastAPI):
     yield
 
 
+async def authorized_sync_scopes(scopes: set[tuple[str, int]]) -> set[tuple[str, int]]:
+    async with ConfigSessionLocal() as config_db:
+        result = await config_db.execute(
+            select(UserTenantAccess.user_id, UserTenantAccess.tenant_id)
+            .join(Tenant, Tenant.id == UserTenantAccess.tenant_id)
+            .where(Tenant.is_active.is_(True), tuple_(UserTenantAccess.user_id, UserTenantAccess.tenant_id).in_(scopes))
+        )
+        return {(row[0], row[1]) for row in result.all()}
+
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[dict[str, object]] = []
@@ -99,11 +110,25 @@ class ConnectionManager:
         ]
 
     async def broadcast(self, message: str, *, tenant_id: int | None = None):
-        for connection in list(self.active_connections):
-            if tenant_id is not None and connection.get("tenant_id") != tenant_id:
-                continue
+        connections = [connection for connection in list(self.active_connections)
+                       if tenant_id is None or connection["tenant_id"] == tenant_id]
+        if not connections:
+            return
+        try:
+            authorized = await authorized_sync_scopes({(c["user_id"], c["tenant_id"]) for c in connections})
+        except Exception:
+            # A committed settings mutation remains committed. Drop uncertain
+            # subscriptions without turning notification failure into a false save failure.
+            logger.warning("WebSocket authorization unavailable; closing subscriptions")
+            authorized = None
+        for connection in connections:
             websocket = connection["websocket"]
             try:
+                if authorized is None or (connection["user_id"], connection["tenant_id"]) not in authorized:
+                    await websocket.close(code=1011 if authorized is None else 1008,
+                                          reason="Tenant authorization is unavailable" if authorized is None else "Tenant access revoked")
+                    self.disconnect(websocket)
+                    continue
                 await websocket.send_text(message)
             except Exception:
                 self.disconnect(websocket)
@@ -122,6 +147,7 @@ EXPOSED_DOWNLOAD_HEADERS = list(ROUND_TRIP_EXPOSE_HEADER_NAMES)
 origins = settings.cors_origins
 allow_creds = False if "*" in origins else True
 
+app.add_middleware(ImportRequestLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -190,7 +216,11 @@ async def bounded_mutation_rate_limit(request: Request, call_next):
     expensive_read = method == "GET" and any(token in request.url.path for token in ("/export", "/reports/"))
     if not settings.RATE_LIMIT_ENABLED or (method not in {"POST", "PUT", "PATCH", "DELETE"} and not expensive_read):
         return await call_next(request)
-    decision = app.state.rate_limiter.check(request_rate_limit_key(request))
+    try:
+        actor_id = get_current_user_id(request)
+    except HTTPException:
+        actor_id = None
+    decision = app.state.rate_limiter.check(request_rate_limit_key(request, actor_id))
     if not decision.allowed:
         request_id = getattr(request.state, "request_id", str(uuid4()))
         return JSONResponse(
@@ -224,7 +254,11 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(code=1008, reason="Authenticated proxy identity is missing")
         return
 
-    user_id = get_current_user_id(websocket)
+    try:
+        user_id = get_current_user_id(websocket)
+    except HTTPException:
+        await websocket.close(code=1008, reason="Authenticated identity is missing or invalid")
+        return
     raw_tenant_id = websocket.query_params.get("tenant_id")
     try:
         tenant_id = int(raw_tenant_id or "")
@@ -232,26 +266,36 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(code=1008, reason="Tenant scope is required")
         return
 
-    async with ConfigSessionLocal() as config_db:
-        access = await config_db.execute(
-            select(UserTenantAccess).where(
-                UserTenantAccess.user_id == user_id,
-                UserTenantAccess.tenant_id == tenant_id,
-            )
-        )
-        if not access.scalar_one_or_none():
-            await websocket.close(code=1008, reason="Tenant scope is not authorized")
-            return
+    scope = {(user_id, tenant_id)}
+    try:
+        authorized = await authorized_sync_scopes(scope)
+    except Exception:
+        await websocket.close(code=1011, reason="Tenant authorization is unavailable")
+        return
+    if (user_id, tenant_id) not in authorized:
+        await websocket.close(code=1008, reason="Tenant scope is not authorized")
+        return
 
     await manager.connect(websocket, user_id=user_id, tenant_id=tenant_id)
     try:
+        next_access_check = perf_counter() + 30
         while True:
-            await websocket.receive_text()
+            try:
+                await asyncio.wait_for(websocket.receive_text(), timeout=max(0, next_access_check - perf_counter()))
+            except asyncio.TimeoutError:
+                pass
+            if perf_counter() >= next_access_check:
+                if (user_id, tenant_id) not in await authorized_sync_scopes(scope):
+                    await websocket.close(code=1008, reason="Tenant access revoked")
+                    return
+                next_access_check = perf_counter() + 30
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        pass
     except Exception:
-        manager.disconnect(websocket)
         logger.exception("WebSocket sync connection failed")
+        await websocket.close(code=1011, reason="Tenant authorization is unavailable")
+    finally:
+        manager.disconnect(websocket)
 
 
 @app.exception_handler(Exception)

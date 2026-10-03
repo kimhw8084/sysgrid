@@ -1,0 +1,32 @@
+{
+  "schema_version": "sysgrid.error-diagnostics-privacy.v1",
+  "approved_items": ["C7", "C8", "E4"],
+  "problem": "Rejected input, custom validator messages and arbitrary dictionary keys were echoed by 422 responses. The browser error store persisted raw responses, messages, URLs, stacks and data in localStorage.",
+  "validation_response": {
+    "status": 422,
+    "message": "Validation Failed",
+    "detail_fields": ["type", "loc", "msg"],
+    "locations": "Only declared route/schema field names and numeric positions; dynamic dictionary keys and extra field names become [entry].",
+    "messages": "Fixed public guidance selected by the built-in validation category; custom exception text, interpolation, input and context are omitted.",
+    "limits": {"errors": 50, "location_segments": 16},
+    "cache_control": "no-store"
+  },
+  "browser_history": {
+    "persisted": ["id", "timestamp", "type", "severity", "acknowledged", "status", "method", "UUID requestId", "generated summary"],
+    "transient": ["original message", "response body", "data", "stack", "URLs", "view", "free-form diagnostics"],
+    "migration": "Loading existing history rewrites it to metadata while preserving event identity, timestamp and acknowledgement. Malformed records fail closed without logging their contents.",
+    "user_notice": "Saved history contains metadata only. Detailed diagnostics are available until this page is reloaded."
+  },
+  "qualification": {
+    "negative_control": "Five backend privacy checks and two browser-store unit checks fail on the preceding implementation with synthetic sentinel values.",
+    "backend": "52 validation, Maintenance, operational-action, settings and network tests passed.",
+    "frontend": "788 tests passed; typecheck and Vite build passed.",
+    "browser": "4 resilience scenarios passed, including transient diagnostics, metadata persistence, acknowledgement and legacy migration.",
+    "provenance": "Direct authorship and review, immutable patch replay, manifest-verified evidence archive."
+  },
+  "remaining": [
+    "Assembled CI and reviewed main integration",
+    "Provider-backed credential custody and rotation",
+    "Separate qualification of free-form live support-report exports, reverse-proxy responses and unexpected exception logs"
+  ]
+}

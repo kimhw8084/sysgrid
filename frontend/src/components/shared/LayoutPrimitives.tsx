@@ -6,7 +6,7 @@ const join = (...parts: Array<string | false | null | undefined>) => parts.filte
 
 export const GOLDEN_PAGE_HEADER_CLASS = 'flex flex-wrap items-start justify-between gap-6'
 export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'
-export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-1 lg:flex-wrap'
+export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-auto lg:flex-wrap'
 export const GOLDEN_TOOLBAR_RIGHT_CLASS = 'flex min-w-max flex-nowrap items-center justify-end gap-3 lg:flex-wrap'
 const TOOLBAR_CONTROL_HEIGHT = 'h-10'
 
@@ -17,7 +17,7 @@ export const ShellHeader = ({
   left: ReactNode
   right?: ReactNode
 }) => (
-  <header className="shrink-0 border-b border-[var(--border-default)] bg-[var(--bg-header)] px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8" data-sg-shell-header="true">
+  <header className="relative z-10 shrink-0 border-b border-[var(--border-default)] bg-[var(--bg-header)] px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8" data-sg-shell-header="true">
     <div className="flex min-h-[40px] flex-wrap items-center justify-between gap-3">
       <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:min-w-[24rem] md:flex-1">{left}</div>
       {right && <div className="flex w-full min-w-0 max-w-full flex-wrap items-center justify-end gap-2 sm:gap-3 md:w-auto">{right}</div>}
@@ -76,7 +76,7 @@ export const PageToolbar = ({
     )}
     data-golden-page-toolbar="true"
   >
-    {left ? <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center gap-3 lg:w-auto lg:min-w-0 lg:flex-1' : GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
+    {left ? <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center gap-3 lg:w-auto lg:min-w-0 lg:flex-auto' : GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
     {right && <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center justify-start gap-3 lg:w-auto lg:justify-end' : GOLDEN_TOOLBAR_RIGHT_CLASS} data-golden-toolbar-right="true">{right}</div>}
   </section>
 )
@@ -128,6 +128,9 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
   className?: string
   title?: string
   ariaLabel?: string
+  ariaExpanded?: boolean
+  ariaControls?: string
+  ariaHasPopup?: React.AriaAttributes['aria-haspopup']
 }>(({
   children,
   onClick,
@@ -136,7 +139,10 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
   variant = 'secondary',
   className = '',
   title,
-  ariaLabel
+  ariaLabel,
+  ariaExpanded,
+  ariaControls,
+  ariaHasPopup
 }, ref) => {
   const variantClass =
     variant === 'primary'
@@ -163,7 +169,10 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
       disabled={disabled}
       title={title}
       aria-label={ariaLabel || title}
-      aria-pressed={active || undefined}
+      aria-expanded={ariaExpanded}
+      aria-controls={ariaControls}
+      aria-haspopup={ariaHasPopup}
+      aria-pressed={ariaExpanded === undefined ? active || undefined : undefined}
       className={join(
         `${TOOLBAR_CONTROL_HEIGHT} inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors disabled:cursor-not-allowed disabled:opacity-40`,
         variantClass,

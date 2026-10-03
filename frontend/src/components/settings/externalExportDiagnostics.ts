@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from '../../api/apiClient'
+import { getCurrentTenantId } from '../../api/tenantContext'
 
 export type DiagnosticVerdict = 'PASS' | 'PARTIAL' | 'FAIL'
 export type DiagnosticState = 'idle' | 'running' | 'completed'
@@ -183,7 +184,7 @@ function buildRequestPlan(
   const customIdentityHeadersSent = shouldAttachIdentityHeaders(url, runtime.frontendOrigin, runtime.apiBase)
   if (customIdentityHeadersSent) {
     headers.set('X-User-Id', runtime.userId || localStorage.getItem('SYSGRID_USER_ID') || 'admin_root')
-    headers.set('X-Tenant-Id', runtime.tenantId || localStorage.getItem('SYSGRID_TENANT_ID') || '1')
+    headers.set('X-Tenant-Id', runtime.tenantId || getCurrentTenantId())
   }
   const contentTypeHeaderSent = headers.get('Content-Type') || headers.get('content-type')
   const crossOrigin = isCrossOriginTarget(url, runtime.frontendOrigin)
@@ -249,7 +250,7 @@ async function requestRuntimeResource(
   const headers = new Headers(options.headers || {})
   if (requestPlan.customIdentityHeadersSent) {
     headers.set('X-User-Id', runtime.userId || localStorage.getItem('SYSGRID_USER_ID') || 'admin_root')
-    headers.set('X-Tenant-Id', runtime.tenantId || localStorage.getItem('SYSGRID_TENANT_ID') || '1')
+    headers.set('X-Tenant-Id', runtime.tenantId || getCurrentTenantId())
   }
 
   try {

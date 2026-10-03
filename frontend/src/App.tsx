@@ -6,7 +6,7 @@ import React, { lazy, Suspense, useState, useEffect, useRef, Component, ErrorInf
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
 import { Routes, Route, Link, useLocation, useNavigate, Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { Terminal, X, ChevronRight, Info, Star, RefreshCcw, Grid3X3, Globe, Search } from "lucide-react"
+import { Grid3X3, Globe, Search, Star } from "lucide-react"
 import { toast } from "react-hot-toast"
 import { apiFetch, getConfig, getRequestScopeKey } from "./api/apiClient"
 import { errorManager, useErrors } from "./stores/errorStore"
@@ -18,6 +18,7 @@ const AuditLogs = lazy(() => import('./components/AuditLogs'))
 const ServicesReal = lazy(() => import('./components/ServicesReal'))
 const SettingsPage = lazy(() => import('./components/Settings'))
 const MonitoringGrid = lazy(() => import('./components/MonitoringGrid'))
+const Maintenance = lazy(() => import('./components/Maintenance'))
 const Research = lazy(() => import('./components/Research'))
 const NetworkReal = lazy(() => import('./components/NetworkReal'))
 const VendorsReal = lazy(() => import('./components/VendorsReal'))
@@ -47,10 +48,15 @@ function ArchitectureRoute() {
   return legacy ? <DataFlowDesigner /> : <ArchitectureWorkspace />
 }
 
+function MonitoringRoute() {
+  const location = useLocation()
+  return new URLSearchParams(location.search).get('workspace') === 'maintenance' ? <Maintenance /> : <MonitoringGrid />
+}
+
 import { QueryCache, MutationCache } from "@tanstack/react-query"
 
 import { showWorkspaceToast, WorkspaceToaster } from "./components/shared/WorkspaceToast"
-import { useWorkspaceDialogLayer, WorkspacePortal } from "./components/shared/WorkspaceOverlay"
+import { PatchNotesModal, LinuxEnvModal } from './components/shared/ShellDialogs'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,7 +103,7 @@ const queryClient = new QueryClient({
     }
   }),
   mutationCache: new MutationCache({
-    onError: (error: any) => {
+    onError: (error: any, _variables, _context, mutation) => {
       if (error?.silent === true) return;
       errorManager.addError({
         message: error.message || 'API Mutation Failure',
@@ -118,7 +124,10 @@ const queryClient = new QueryClient({
         type: 'backend',
         severity: 'error'
       });
-      showWorkspaceToast(error.message || 'API Mutation Failure', { type: 'error' });
+      // Form-owned validation still reaches diagnostics, but emits one useful notice.
+      if (mutation.meta?.handlesErrorToast !== true) {
+        showWorkspaceToast(error.message || 'API Mutation Failure', { type: 'error' });
+      }
     }
   })
 })
@@ -160,124 +169,6 @@ const LegacyAssetRedirect = () => {
   return <Navigate to={`/asset${location.search || ''}`} replace />
 }
 
-function useModalFocus() {
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    const previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0)
-
-    return () => {
-      window.clearTimeout(focusTimer)
-      previousFocusedElement?.focus()
-    }
-  }, [])
-
-  return closeButtonRef
-}
-
-const PatchNotesModal = ({ onClose }: any) => {
-  const dialogProps = useWorkspaceDialogLayer(true, onClose)
-  const [expandedIndex, setExpandedIndex] = useState(0)
-  const closeButtonRef = useModalFocus()
-  return (
-    <WorkspacePortal><div {...dialogProps} className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="patch-notes-title">
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-10 rounded-lg border-blue-500/30">
-         <div className="flex items-center justify-between border-b border-white/10 pb-6">
-            <div className="flex items-center space-x-4">
-               <Star size={24} className="text-blue-400 animate-pulse" />
-               <h2 id="patch-notes-title" className="text-2xl font-black uppercase text-white">Registry Updates</h2>
-            </div>
-            <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close patch notes" className="text-slate-500 hover:text-white transition-colors"><X size={24} aria-hidden="true" /></button>
-         </div>
-         <div className="flex-1 overflow-y-auto custom-scrollbar mt-6 space-y-4">
-            {PATCH_HISTORY.map((patch, idx) => (
-              <div key={patch.version} className={`border border-white/5 rounded-lg overflow-hidden ${expandedIndex === idx ? "bg-white/5 border-blue-500/20" : "hover:bg-white/5"}`}>
-                 <button onClick={() => setExpandedIndex(expandedIndex === idx ? -1 : idx)} className="w-full px-6 py-4 flex items-center justify-between text-left">
-                    <div>
-                       <span className={`text-[10px] font-black uppercase tracking-widest ${expandedIndex === idx ? "text-blue-400" : "text-slate-500"}`}>{patch.version}</span>
-                       <p className="text-[8px] font-bold text-slate-600 uppercase mt-0.5">{patch.date}</p>
-                    </div>
-                    <ChevronRight size={16} className={`text-slate-500 transition-transform ${expandedIndex === idx ? "rotate-90" : ""}`} />
-                 </button>
-                 <AnimatePresence>
-                    {expandedIndex === idx && (
-                      <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
-                         <div className="px-6 pb-6 pt-2 space-y-3">
-                            {patch.changes.map((change, cIdx) => (
-                              <div key={cIdx} className="flex space-x-3 text-[11px] font-bold uppercase tracking-tight">
-                                 <span className={`text-[8px] px-1.5 py-0.5 rounded-lg h-fit ${change.type === 'New' ? 'bg-emerald-500/20 text-emerald-400' : change.type === 'Fixed' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}`}>{change.type}</span>
-                                 <span className="text-slate-300 leading-tight">{change.text}</span>
-                              </div>
-                            ))}
-                         </div>
-                      </motion.div>
-                    )}
-                 </AnimatePresence>
-              </div>
-            ))}
-         </div>
-         <button type="button" onClick={onClose} className="w-full mt-8 py-4 bg-blue-600 text-white rounded-lg font-black uppercase shadow-lg shadow-blue-500/20">Close patch notes</button>
-      </motion.div>
-    </div></WorkspacePortal>
-  )
-}
-
-const LinuxEnvModal = ({ onClose }: any) => {
-  const dialogProps = useWorkspaceDialogLayer(true, onClose)
-  const closeButtonRef = useModalFocus()
-  const { data: envVars, isLoading } = useQuery({
-    queryKey: ['linux-env-vars'],
-    queryFn: async () => {
-      const res = await apiFetch("/api/v1/settings/user/env-vars");
-      return res.json();
-    }
-  });
-
-  return (
-    <WorkspacePortal><div {...dialogProps} className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-md p-10" role="dialog" aria-modal="true" aria-labelledby="environment-details-title">
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-[700px] max-h-[80vh] flex flex-col p-10 rounded-lg border border-blue-500/30 overflow-hidden shadow-2xl">
-         <div className="flex items-center justify-between border-b border-white/5 pb-6">
-            <div className="flex items-center space-x-4">
-               <div className="p-3 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/20"><Terminal size={24} /></div>
-               <div>
-                  <h2 id="environment-details-title" className="text-2xl font-black uppercase text-white tracking-tighter leading-none">Environment details</h2>
-                  <p className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] mt-2">Current operating system parameters</p>
-               </div>
-            </div>
-            <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close environment details" className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg"><X size={24} aria-hidden="true" /></button>
-         </div>
-
-         <div className="flex-1 overflow-y-auto custom-scrollbar mt-6 space-y-4 pr-2">
-            {isLoading ? (
-               <div className="flex flex-col items-center justify-center py-20 text-blue-400 space-y-4">
-                  <RefreshCcw size={32} className="animate-spin" />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Loading environment values...</p>
-               </div>
-            ) : envVars ? (
-               <div className="grid grid-cols-1 gap-2">
-                  {Object.entries(envVars).map(([key, value]: [string, any]) => (
-                     <div key={key} className="flex items-center justify-between p-3 bg-white/[0.03] border border-white/5 rounded-lg hover:border-blue-500/20 transition-all group">
-                        <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider group-hover:text-blue-400 transition-colors">{key}</span>
-                        <span className="text-[10px] font-mono text-slate-300 font-bold truncate max-w-[400px] bg-black/40 px-3 py-1 rounded-lg border border-white/5" title={String(value)}>{String(value)}</span>
-                     </div>
-                  ))}
-               </div>
-            ) : null}
-         </div>
-         
-         <div className="mt-8 p-4 bg-amber-500/5 border border-amber-500/10 rounded-lg flex items-start gap-4">
-            <Info size={18} className="text-amber-500 shrink-0" />
-            <p className="text-[9px] font-bold text-amber-500/80 uppercase leading-relaxed tracking-tight">
-               These variables are extracted directly from the underlying Linux OS execution context. They impact how the SysGrid Engine interacts with system binaries and file-system hooks.
-            </p>
-         </div>
-
-         <button onClick={onClose} className="w-full mt-8 py-4 bg-blue-600 text-white rounded-lg font-black uppercase shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Close Diagnostic View</button>
-      </motion.div>
-    </div></WorkspacePortal>
-  )
-}
 
 function MainLayout() {
   const location = useLocation(); 
@@ -565,7 +456,7 @@ function MainLayout() {
         <ShellHeader
           left={
             <><ProjectsNavigationButton nav={projectNavigation} />{<>
-              <ToolbarButton onClick={() => setShowPatchNotes(true)} className="hidden md:inline-flex">Patch Notes</ToolbarButton>
+              <ToolbarButton onClick={() => setShowPatchNotes(true)} aria-label="Patch Notes" title="Patch Notes"><Star size={16} aria-hidden="true" className="md:hidden" /><span className="hidden md:inline">Patch Notes</span></ToolbarButton>
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="group flex min-w-0 max-w-full flex-1 items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-3 py-2 text-[var(--text-secondary)] transition-colors hover:border-[var(--action-primary)] hover:text-[var(--text-primary)] md:min-w-[320px]" data-sg-app-search="true" aria-label="Search released and authorized records"
@@ -604,7 +495,7 @@ function MainLayout() {
               <Route path="/architecture" element={<ModulePolicyGate moduleId="architecture"><ArchitectureRoute /></ModulePolicyGate>} />
               <Route path="/research" element={<ModulePolicyGate moduleId="research"><Research /></ModulePolicyGate>} />
               <Route path="/far" element={<ModulePolicyGate moduleId="far"><FAR /></ModulePolicyGate>} />
-              <Route path="/monitoring" element={<ModulePolicyGate moduleId="monitoring"><MonitoringGrid /></ModulePolicyGate>} />
+              <Route path="/monitoring" element={<ModulePolicyGate moduleId="monitoring"><MonitoringRoute /></ModulePolicyGate>} />
               <Route path="/vendors" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
               <Route path="/vendors-real" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
               <Route path="/knowledge" element={<ModulePolicyGate moduleId="knowledge"><Knowledge /></ModulePolicyGate>} />
@@ -618,7 +509,7 @@ function MainLayout() {
         <ShellFooter version={APP_VERSION} />
       </main>
       <AnimatePresence>
-        {showPatchNotes && <PatchNotesModal onClose={() => setShowPatchNotes(false)} />}
+        {showPatchNotes && <PatchNotesModal history={PATCH_HISTORY} onClose={() => setShowPatchNotes(false)} />}
         {showLinuxEnv && <LinuxEnvModal onClose={() => setShowLinuxEnv(false)} />}
         {isSearchOpen && <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
         <ErrorConsole />

@@ -11,6 +11,7 @@ import { AppDropdown } from './AppDropdown'
 import { WorkspaceModal } from './WorkspaceModal'
 import { ToolbarButton } from './LayoutPrimitives'
 import { downloadOperationalImportFile } from './OperationalImportExport'
+import { parseDelimitedText } from './OperationalImportText'
 import {
   WorkspaceEmptyState,
   WorkspaceFieldLabel,
@@ -52,6 +53,7 @@ interface ImportSchemaResponse {
   fields: ImportFieldMeta[]
   required_fields: string[]
   example_records: Array<{ id: number; label: string }>
+  limits?: { max_file_bytes: number; max_rows: number }
 }
 
 interface ImportPreviewRow {
@@ -88,54 +90,6 @@ const SOURCE_MODES: Array<{ id: ImportMode; label: string; icon: React.ReactNode
 
 function normalizeHeader(value: string) {
   return value.trim().toLowerCase().replace(/[\s_-]+/g, '')
-}
-
-function parseDelimitedLine(line: string, delimiter: string) {
-  const values: string[] = []
-  let current = ''
-  let inQuotes = false
-
-  for (let index = 0; index < line.length; index += 1) {
-    const char = line[index]
-    const next = line[index + 1]
-
-    if (char === '"') {
-      if (inQuotes && next === '"') {
-        current += '"'
-        index += 1
-      } else {
-        inQuotes = !inQuotes
-      }
-      continue
-    }
-
-    if (char === delimiter && !inQuotes) {
-      values.push(current)
-      current = ''
-      continue
-    }
-
-    current += char
-  }
-
-  values.push(current)
-  return values.map((value) => value.replace(/\r/g, '').trim())
-}
-
-function parseDelimitedText(text: string) {
-  const lines = text
-    .replace(/\r\n/g, '\n')
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter((line) => line.trim().length > 0)
-
-  if (lines.length === 0) return { delimiter: ',', rows: [] as string[][] }
-
-  const delimiter = lines[0].includes('\t') ? '\t' : ','
-  return {
-    delimiter,
-    rows: lines.map((line) => parseDelimitedLine(line, delimiter)),
-  }
 }
 
 function valueToCell(value: any) {
@@ -177,6 +131,7 @@ export function OperationalImportModal({
   useBodyModalFlag()
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const lifecycleRef = useRef(0)
   const [mode, setMode] = useState<ImportMode>('file')
   const [file, setFile] = useState<File | null>(null)
   const [pasteText, setPasteText] = useState('')
@@ -198,6 +153,11 @@ export function OperationalImportModal({
     draftRows.some((row) => isMeaningfulRow(row, Object.keys(row)))
   )
 
+  useEffect(() => {
+    lifecycleRef.current += 1
+    return () => { lifecycleRef.current += 1 }
+  }, [isOpen, tableName])
+
   const { triggerRef: validationTriggerRef, panelRef: validationPanelRef, panelStyle: validationPanelStyle } = useWorkspaceAnchoredLayer(isValidationPopoutOpen, { minWidth: 360, offset: 12 })
 
   const schemaQuery = useQuery({
@@ -217,7 +177,7 @@ export function OperationalImportModal({
   const requiredFieldNames = schema?.required_fields || []
 
   useEffect(() => {
-    if (!schema) return
+    if (!schema || !isOpen) return
     setSelectedColumns((current) => {
       if (current.length > 0) return current
       return schema.fields.filter((field) => field.supported_in_builder !== false).map((field) => field.name)
@@ -227,7 +187,7 @@ export function OperationalImportModal({
       return [createEmptyRow(schema.fields.map((field) => field.name))]
     })
     setExampleRecordId((current) => current ?? schema.example_records?.[0]?.id ?? null)
-  }, [schema])
+  }, [schema, isOpen])
 
   useEffect(() => {
     if (!preview) return
@@ -251,6 +211,7 @@ export function OperationalImportModal({
       setIsMaximized(false)
       setIsPickerOpening(false)
       setIsTemplateCollapsed(false)
+      setIsValidationPopoutOpen(false)
     }
   }, [isOpen])
 
@@ -288,7 +249,7 @@ export function OperationalImportModal({
   }, [activeColumns, draftRows])
 
   const previewMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (_lifecycle: number) => {
       if (mode === 'file') {
         if (!file) throw new Error('Select a CSV or Excel file first.')
         const formData = new FormData()
@@ -309,17 +270,23 @@ export function OperationalImportModal({
       })
       return response.json() as Promise<ImportPreviewResponse>
     },
-    onSuccess: (data) => {
+    onSuccess: (data, lifecycle) => {
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       setPreview(data)
-      showWorkspaceToast(`Validated ${data.total_rows} row${data.total_rows === 1 ? '' : 's'}`)
+      const ready = `${data.valid_rows} row${data.valid_rows === 1 ? '' : 's'} ready to import`
+      const correction = data.invalid_rows > 0
+        ? `; ${data.invalid_rows} row${data.invalid_rows === 1 ? ' needs' : 's need'} correction`
+        : ''
+      showWorkspaceToast(`${ready}${correction}.`, { type: data.invalid_rows > 0 ? 'error' : 'info' })
     },
-    onError: (error: any) => {
+    onError: (error: any, lifecycle) => {
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       showWorkspaceToast(error.message || 'Preview failed', { type: 'error' })
     },
   })
 
   const executeMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (_lifecycle: number) => {
       if (!preview) throw new Error('Validate rows before importing.')
       const selectedRows = preview.results
         .filter((result) => result.status === 'VALID' && selectedPreviewRows.includes(result.row))
@@ -332,19 +299,25 @@ export function OperationalImportModal({
       })
       return response.json()
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: any, lifecycle) => {
+      // A completed write still invalidates cached data after external closure,
+      // but its receipt must not dismiss or repaint a replacement dialog.
+      if (data.status === 'success') queryClient.invalidateQueries()
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       if (data.status !== 'success') {
         showWorkspaceToast(data.errors?.join(', ') || 'Import failed', { type: 'error' })
         return
       }
       showWorkspaceToast(`Imported ${data.count} row${data.count === 1 ? '' : 's'}`)
-      queryClient.invalidateQueries()
       onClose()
     },
-    onError: (error: any) => {
+    onError: (error: any, lifecycle) => {
+      if (!isOpen || lifecycle !== lifecycleRef.current) return
       showWorkspaceToast(error.message || 'Import failed', { type: 'error' })
     },
   })
+
+  const isBusy = previewMutation.isPending || executeMutation.isPending
 
   const toggleColumn = (columnName: string) => {
     if (requiredFieldNames.includes(columnName)) return
@@ -367,6 +340,7 @@ export function OperationalImportModal({
   }
 
   const updateDraftCell = (rowIndex: number, columnName: string, value: string) => {
+    if (isBusy) return
     setDraftRows((current) => current.map((row, index) => (
       index === rowIndex ? { ...row, [columnName]: value } : row
     )))
@@ -398,6 +372,10 @@ export function OperationalImportModal({
     }
 
     const parsed = parseDelimitedText(pasteText)
+    if (parsed.error) {
+      showWorkspaceToast(parsed.error, { type: 'error' })
+      return
+    }
     if (parsed.rows.length === 0) {
       showWorkspaceToast('No rows were found in the pasted data.')
       return
@@ -457,7 +435,11 @@ export function OperationalImportModal({
   const handleCellPaste = (rowIndex: number, columnIndex: number, text: string) => {
     if (!schema) return
     const parsed = parseDelimitedText(text)
-    if (parsed.rows.length <= 1 && parsed.rows[0]?.length <= 1) return
+    if (parsed.error) {
+      showWorkspaceToast(parsed.error, { type: 'error' })
+      return
+    }
+    if (parsed.rows.length === 0) return
 
     const allColumnNames = activeColumns.map((field) => field.name)
     setDraftRows((current) => {
@@ -528,18 +510,27 @@ export function OperationalImportModal({
   return (
     <WorkspaceModal
       isOpen={isOpen}
-      onClose={onClose}
-      isDirty={isDirty}
+      onClose={() => {
+        if (isBusy) {
+          showWorkspaceToast('Wait for the current import request to finish before closing.')
+          return
+        }
+        onClose()
+      }}
+      isDirty={isDirty && !isBusy}
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
       title={`${displayName} Import`}
+      status={isBusy ? <span role="status" className="text-xs font-medium text-[var(--text-secondary)]">
+        {executeMutation.isPending ? 'Importing selected rows...' : 'Validating import rows...'}
+      </span> : undefined}
       subtitle={(
-        <div className="flex items-center gap-4 mt-1 text-[10px] font-bold text-slate-400">
-          <p className="flex items-center gap-1.5 uppercase tracking-widest">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-[10px] font-bold text-slate-400">
+          <p className="flex min-w-0 flex-wrap items-center gap-1.5 uppercase tracking-widest">
             <Plus size={10} className="text-blue-500" /> Target: <span className="text-white">{displayName}</span>
           </p>
-          <p className="flex items-center gap-1.5 uppercase tracking-widest">
+          <p className="flex min-w-0 flex-wrap items-center gap-1.5 uppercase tracking-widest">
             <FileSpreadsheet size={10} className="text-blue-500" /> Identifier: <span className="text-white">{tableName}</span>
           </p>
         </div>
@@ -555,18 +546,18 @@ export function OperationalImportModal({
       footerRight={(
         <div className="flex items-center gap-3 shrink-0">
           <ToolbarButton
-            onClick={() => executeMutation.mutate()}
-            disabled={!preview || selectedImportCount === 0 || executeMutation.isPending}
+            onClick={() => executeMutation.mutate(lifecycleRef.current)}
+            disabled={!preview || selectedImportCount === 0 || isBusy}
             variant="primary"
             className="!inline-flex !flex-row !items-center !justify-center gap-2 px-8 !whitespace-nowrap"
           >
-            {executeMutation.isPending ? <RefreshCcw className="animate-spin mr-2" size={12} /> : <CheckSquare className="mr-2" size={12} />}
+            {executeMutation.isPending ? <RefreshCcw className="animate-spin motion-reduce:animate-none mr-2" size={12} /> : <CheckSquare className="mr-2" size={12} />}
             <span className="!whitespace-nowrap">{executeMutation.isPending ? 'Importing...' : `Import ${selectedImportCount || ''}`.trim()}</span>
           </ToolbarButton>
         </div>
       )}
     >
-      <div className="flex flex-col space-y-8">
+      <fieldset disabled={isBusy} aria-busy={isBusy} aria-label="Import source and preview" className="m-0 min-w-0 border-0 p-0 flex flex-col space-y-8">
         <WorkspaceValidationBanner message={schemaQuery.error ? 'Import schema failed to load. Refresh the workspace and try again.' : undefined} />
         
         <WorkspaceSplitView
@@ -588,7 +579,7 @@ export function OperationalImportModal({
                         {unsupportedFields.length} column{unsupportedFields.length === 1 ? '' : 's'} stay visible but are intentionally disabled in the builder because they require the richer add/edit workspace.
                       </div>
                     )}
-                    <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                    <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
                       <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Download Mode</p>
                       <div className="mt-3 flex gap-2">
                         {[
@@ -604,7 +595,7 @@ export function OperationalImportModal({
                             className={`flex-1 rounded-lg border px-2 py-2 text-center transition-all ${
                               templateMode === option.id
                                 ? 'border-blue-500/30 bg-blue-500/10 text-blue-300'
-                                : 'border-white/10 bg-slate-950/60 text-slate-400 hover:text-slate-200'
+                                : 'border-[var(--border-default)] bg-[var(--panel-item-bg)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
                             }`}
                           >
                             <p className="text-[9px] font-black uppercase tracking-widest">{option.label}</p>
@@ -617,14 +608,14 @@ export function OperationalImportModal({
                       <button
                         type="button"
                         onClick={selectAllOptionalColumns}
-                        className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] font-black uppercase text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+                        className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-3 py-2 text-[10px] font-black uppercase text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         Select All
                       </button>
                       <button
                         type="button"
                         onClick={unselectAllOptionalColumns}
-                        className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] font-black uppercase text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-3 py-2 text-[10px] font-black uppercase text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         Unselect All
                       </button>
@@ -636,7 +627,8 @@ export function OperationalImportModal({
                         <div className="mt-2">
                           <AppDropdown
                             value={exampleRecordId ?? ''}
-                            onChange={(value) => setExampleRecordId(value ? Number(value) : null)}
+                            onChange={(value) => { if (!isBusy) setExampleRecordId(value ? Number(value) : null) }}
+                            disabled={isBusy}
                             options={(schema?.example_records || []).map((record) => ({
                               value: record.id,
                               label: record.label,
@@ -695,12 +687,12 @@ export function OperationalImportModal({
                                   : field.unsupported_reason}
                               </p>
                               {fieldOptions.length > 0 && (
-                                <p className="mt-1 text-[8px] font-semibold uppercase tracking-widest text-blue-300/80">
+                                <p className="mt-1 text-[9px] font-medium leading-relaxed text-[var(--state-info)]">
                                   Allowed values: {getChoicePreview(fieldOptions)}
                                 </p>
                               )}
                               {fieldValidationRules.length > 0 && (
-                                <p className="mt-1 text-[8px] font-semibold uppercase tracking-widest text-amber-300/80">
+                                <p className="mt-1 text-[9px] font-medium leading-relaxed text-[var(--state-warning)]">
                                   {fieldValidationRules.join(' ')}
                                 </p>
                               )}
@@ -749,6 +741,7 @@ export function OperationalImportModal({
                     <input
                       ref={fileInputRef}
                       type="file"
+                      aria-label="Import CSV or Excel file"
                       accept=".csv,.xlsx,.xls"
                       className="hidden"
                       onChange={(event) => {
@@ -765,27 +758,30 @@ export function OperationalImportModal({
                           // Update state after the dialog begins opening to avoid blocking the main thread
                           setTimeout(() => setIsPickerOpening(true), 0)
                         }}
-                        className="flex min-h-[220px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-white/10 bg-black/20 text-slate-400 transition-all hover:border-blue-500/30 hover:bg-blue-500/5 group"
+                        className="flex min-h-[220px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-[var(--border-default)] bg-[var(--panel-item-bg)] text-[var(--text-secondary)] transition-colors hover:border-[var(--state-info)] hover:bg-[var(--state-info-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group"
                       >
                         <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/10 group-hover:scale-105 transition-transform text-blue-500">
                           <FileUp size={36} />
                         </div>
                         <div className="text-center px-4">
-                          <p className="text-[11px] font-black uppercase tracking-widest text-white">{file?.name || (isPickerOpening ? 'Opening...' : 'Browse Vector Source')}</p>
-                          <p className="mt-2 text-[9px] font-semibold text-slate-500 uppercase tracking-widest">Choose a CSV or Excel file from disk. Max 10MB.</p>
+                          <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)]">{file?.name || (isPickerOpening ? 'Opening...' : 'Choose CSV or Excel file')}</p>
+                          <p className="mt-2 text-[9px] font-semibold text-slate-500 uppercase tracking-widest">
+                            Choose a CSV or Excel file from disk. Max {schema?.limits ? schema.limits.max_file_bytes / (1024 * 1024) : 10} MiB.
+                            {schema?.limits && ` Up to ${schema.limits.max_rows} rows per import.`}
+                          </p>
                         </div>
                       </button>
                       <button
                         type="button"
                         onPaste={handlePastedFile}
                         onClick={() => setMode('file')}
-                        className="flex min-h-[220px] w-full flex-col items-center justify-center gap-4 rounded-lg border border-white/10 bg-slate-950/60 px-5 text-center text-slate-400 transition-all hover:border-blue-500/30 hover:bg-blue-500/5 focus:border-blue-500/40 focus:outline-none group"
+                        className="flex min-h-[220px] w-full flex-col items-center justify-center gap-4 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-5 text-center text-[var(--text-secondary)] transition-colors hover:border-[var(--state-info)] hover:bg-[var(--state-info-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group"
                       >
                         <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/10 group-hover:scale-105 transition-transform text-emerald-500">
                           <Clipboard size={36} />
                         </div>
                         <div>
-                          <p className="text-[11px] font-black uppercase tracking-widest text-white">Paste File From Clipboard</p>
+                          <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)]">Paste File From Clipboard</p>
                           <p className="mt-2 text-[9px] font-semibold text-slate-500 uppercase tracking-widest leading-relaxed">Click here, then press <span className="text-slate-300 font-bold border-b border-dashed border-slate-500">Ctrl+V</span> or <span className="text-slate-300 font-bold border-b border-dashed border-slate-500">Cmd+V</span> if your OS clipboard contains a real file.</p>
                         </div>
                       </button>
@@ -797,6 +793,7 @@ export function OperationalImportModal({
                   <div className="mt-6 space-y-4">
                     <div className="relative">
                       <textarea
+                        aria-label="CSV or spreadsheet rows"
                         value={pasteText}
                         onChange={(event) => {
                           setPasteText(event.target.value)
@@ -882,36 +879,43 @@ export function OperationalImportModal({
                             {draftRows.map((row, rowIndex) => (
                               <tr key={`draft-row-${rowIndex}`} className="hover:bg-white/[0.02] transition-colors">
                                 <td className="px-4 py-3 align-middle text-center text-[10px] font-mono font-bold text-slate-500">#{rowIndex + 1}</td>
-                                {activeColumns.map((field, columnIndex) => (
+                                {activeColumns.map((field, columnIndex) => {
+                                  const CellControl = field.input_control === 'number' ? 'input' : 'textarea'
+                                  return (
                                   <td key={`${rowIndex}-${field.name}`} className="px-2 py-2 align-middle">
                                     {field.input_control === 'select' ? (
                                       <AppDropdown
+                                        disabled={isBusy}
                                         value={row[field.name] || ''}
                                         onChange={(value) => updateDraftCell(rowIndex, field.name, String(value))}
                                         options={(field.options || []).map((option) => ({ value: option.value, label: option.label }))}
                                         placeholder={field.required ? `Select ${field.label}` : `Optional`}
                                       />
                                     ) : (
-                                      <input
-                                        type={field.input_control === 'number' ? 'number' : 'text'}
+                                      <CellControl
+                                        aria-label={`${field.label}, row ${rowIndex + 1}`}
+                                        type={field.input_control === 'number' ? 'number' : undefined}
+                                        rows={row[field.name]?.includes('\n') ? 3 : 1}
                                         value={row[field.name] || ''}
                                         onChange={(event) => updateDraftCell(rowIndex, field.name, event.target.value)}
                                         onPaste={(event) => {
                                           const text = event.clipboardData.getData('text')
-                                          if (text.includes('\n') || text.includes('\t')) {
+                                          if (text.includes('\n') || text.includes('\t') || text.includes('\r')) {
                                             event.preventDefault()
                                             handleCellPaste(rowIndex, columnIndex, text)
                                           }
                                         }}
                                         placeholder={field.template_hint}
-                                        className="w-full rounded-lg border border-white/5 bg-black/20 px-3 py-2.5 text-[10px] font-semibold text-slate-200 outline-none transition-all focus:border-blue-500/40 focus:bg-black/40 placeholder:text-slate-600"
+                                        className="w-full resize-y rounded-lg border border-white/5 bg-black/20 px-3 py-2.5 text-[10px] font-semibold text-slate-200 outline-none transition-all focus:border-blue-500/40 focus:bg-black/40 placeholder:text-slate-600"
                                       />
                                     )}
                                   </td>
-                                ))}
+                                  )
+                                })}
                                 <td className="px-4 py-3 align-middle text-center">
                                   <button
                                     type="button"
+                                    aria-label={`Remove row ${rowIndex + 1}`}
                                     onClick={() => removeDraftRow(rowIndex)}
                                     disabled={draftRows.length === 1}
                                     className="flex items-center justify-center w-8 h-8 mx-auto rounded-lg bg-rose-500/5 text-rose-400 transition-colors hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-30"
@@ -972,7 +976,7 @@ export function OperationalImportModal({
                                   <Terminal size={14} className="text-blue-500" />
                                   <p className="text-[10px] font-black uppercase tracking-widest text-white">Validation Audit</p>
                                 </div>
-                                <button onClick={() => setIsValidationPopoutOpen(false)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 bg-white/5 rounded-lg">
+                                <button aria-label="Close validation report" onClick={() => setIsValidationPopoutOpen(false)} className="text-slate-500 hover:text-rose-400 transition-colors p-1 bg-white/5 rounded-lg">
                                   <X size={12} />
                                 </button>
                               </div>
@@ -1023,11 +1027,11 @@ export function OperationalImportModal({
                     )}
                     <button
                       type="button"
-                      onClick={() => previewMutation.mutate()}
-                      disabled={previewMutation.isPending || schemaQuery.isLoading}
+                      onClick={() => previewMutation.mutate(lifecycleRef.current)}
+                      disabled={isBusy || schemaQuery.isLoading}
                       className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-6 py-2.5 text-[9px] font-black uppercase tracking-widest text-blue-300 transition-colors hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-blue-500/5"
                     >
-                      {previewMutation.isPending ? <RefreshCcw className="animate-spin" size={14} /> : <Terminal size={14} />}
+                      {previewMutation.isPending ? <RefreshCcw className="animate-spin motion-reduce:animate-none" size={14} /> : <Terminal size={14} />}
                       {previewMutation.isPending ? 'Auditing...' : 'Initiate Audit'}
                     </button>
                   </div>
@@ -1048,7 +1052,7 @@ export function OperationalImportModal({
                   <div className="mt-6 space-y-4">
                     <div className="flex items-center justify-between px-1">
                       <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2">
-                        <CheckSquare size={14} /> Normalized Vector Stream
+                        <CheckSquare size={14} /> Import preview
                       </span>
                       <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                         Ready to import: {selectedImportCount}
@@ -1062,6 +1066,7 @@ export function OperationalImportModal({
                               <th className="px-4 py-3 text-center w-12">
                                 <input
                                   type="checkbox"
+                                  aria-label="Select all valid import rows"
                                   className="rounded-lg border-white/20 bg-slate-900 text-blue-500 focus:ring-0 cursor-pointer"
                                   checked={selectedPreviewRows.length > 0 && selectedPreviewRows.length === preview.valid_rows}
                                   onChange={(e) => {
@@ -1091,6 +1096,7 @@ export function OperationalImportModal({
                                   <td className="px-4 py-3 align-middle text-center">
                                     <input
                                       type="checkbox"
+                                      aria-label={`Select import row ${result.row}`}
                                       checked={selected}
                                       disabled={result.status !== 'VALID'}
                                       onChange={() => togglePreviewRow(result.row)}
@@ -1137,7 +1143,7 @@ export function OperationalImportModal({
             </div>
           )}
         />
-      </div>
+      </fieldset>
     </WorkspaceModal>
   )
 }

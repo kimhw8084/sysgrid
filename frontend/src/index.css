@@ -45,7 +45,7 @@
   --surface-base: var(--bg-primary);
   --overlay-scrim: rgb(0 0 0 / 55%);
   --surface-elevated: var(--glass-bg);
-  --surface-overlay: var(--bg-header);
+  --surface-overlay: var(--panel-item-bg);
   --surface-hover: color-mix(in srgb, var(--text-primary) 8%, var(--surface-elevated));
   --border-subtle: color-mix(in srgb, var(--glass-border) 70%, transparent);
   --border-default: var(--glass-border);
@@ -55,7 +55,7 @@
   --action-primary-muted: var(--accent-glow);
   --action-ink: #60a5fa;
   --text-disabled: var(--text-muted);
-  --state-success: #15803d;
+  --state-success: #166534;
   --state-success-surface: rgba(21, 128, 61, 0.12);
   --state-success-border: rgba(21, 128, 61, 0.35);
   --state-warning: #a16207;
@@ -326,6 +326,10 @@
   overflow-y: auto;
   min-height: 0;
 }
+
+.workspace-dialog-frame > .glass-panel {
+  background-color: var(--panel-item-bg);
+}
 @keyframes workspace-notice-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .workspace-toast { animation: none; } }
 
@@ -443,6 +447,9 @@
   --ag-border-color: var(--grid-border);
   --ag-foreground-color: var(--text-primary);
   --ag-header-foreground-color: var(--accent-primary);
+  --ag-odd-row-background-color: color-mix(in srgb, var(--text-primary) 2%, var(--grid-bg));
+  --ag-row-hover-color: color-mix(in srgb, var(--accent-primary) 6%, var(--grid-bg));
+  --ag-selected-row-background-color: color-mix(in srgb, var(--accent-primary) 12%, var(--grid-bg));
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header {
@@ -585,6 +592,13 @@
   background: color-mix(in srgb, var(--text-primary) 5%, var(--grid-bg)) !important;
 }
 :is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-row-selected {
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--grid-bg)) !important;
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-row-hover {
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--grid-bg)) !important;
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) :is(.operational-grid-shell, .monitoring-grid-shell) .ag-row-selected {
   background: color-mix(in srgb, var(--accent-primary) 12%, var(--grid-bg)) !important;
 }
 

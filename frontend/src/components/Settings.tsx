@@ -1,5 +1,8 @@
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import React, { useState, useEffect } from "react"
+import { useBlocker } from 'react-router-dom'
+import { beginScopedWrite } from '../api/tenantContext'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import { WorkspaceTooltip } from './shared/WorkspaceTooltip'
 import { createPortal } from "react-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -12,7 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from 'react-hot-toast'
 import { showWorkspaceToast } from './shared/WorkspaceToast'
-import { apiFetch, setApiOverride, getApiBaseUrl } from "../api/apiClient"
+import { apiFetch, setApiOverride, getApiBaseUrl, getRequestScopeKey } from "../api/apiClient"
 import { formatAppDate, parseAppDate } from "../utils/dateUtils"
 import { 
   PageHeader, 
@@ -23,6 +26,7 @@ import {
   ToolbarIconButton
 } from "./shared/LayoutPrimitives"
 import { WorkspaceEmptyState, WorkspaceFloatingPanel, WorkspaceSelectField, useWorkspaceAnchoredLayer } from "./shared/OperationalWorkspacePrimitives"
+import { useWorkspacePopupDismiss } from "./shared/WorkspaceOverlay"
 import { WorkspaceFlyoutActionCard, WorkspaceFlyoutDropdownEditor } from "./shared/WorkspaceFlyout"
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { WorkspaceHistoryShell } from "./shared/WorkspaceModalShells"
@@ -35,8 +39,18 @@ import {
   type SettingsTab,
 } from "./settings/settingsPrivilegePolicy"
 import { normalizeTheme } from './shared/theme'
+import { formatRecordedPermissions, hasCompleteHistoryPermissions, historyPermissionViews, normalizeHistoryPermissionLevel, recordedPermissionLevel, recordedPermissionState } from './settings/historyPermissions'
 
 const PERMISSION_COMMIT_DEBOUNCE_MS = 900
+
+type IdentitySyncRequest = {
+  records: Record<string, unknown>[]
+  source: string
+  preview: boolean
+  expected_fingerprint?: string
+  draft: string
+  scope: string
+}
 
 const SettingField = ({ label, description, children, icon: Icon, onHistory, isEditable, onEdit, isPending, absPath, isModified, paramName }: any) => {
   return (
@@ -116,41 +130,46 @@ const SettingField = ({ label, description, children, icon: Icon, onHistory, isE
   )
 }
 
-const ToggleSwitch = ({ checked, onChange, disabled, activeColor = 'bg-blue-600' }: any) => (
+const ToggleSwitch = ({ checked, onChange, disabled, label, activeColor = 'bg-blue-600' }: any) => (
     <label className={`relative inline-flex items-center cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-        <input type="checkbox" className="sr-only peer" checked={checked} onChange={onChange} disabled={disabled} />
-        <div className={`relative w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${checked ? activeColor : ''}`}></div>
+        <input type="checkbox" aria-label={label} className="sr-only peer" checked={checked} onChange={onChange} disabled={disabled} />
+        <div className={`relative w-11 h-6 bg-slate-700 peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--focus-ring)] peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[var(--surface-base)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${checked ? activeColor : ''}`}></div>
     </label>
 )
 
-const ViewPermissionIcon = ({ level, onClick, isGlobalAdmin }: any) => {
+const ViewPermissionIcon = ({ level, globalLevel, onClick, isGlobalAdmin, disabled, saving, label: accessibleLabel }: any) => {
+    const descriptionId = React.useId()
     const colors = [
-        "bg-slate-800 text-slate-500 border-slate-700/50",
-        "bg-blue-500/10 text-blue-400 border-blue-500/20",
-        "bg-amber-500/10 text-amber-400 border-amber-500/20",
-        "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+        "bg-[var(--surface-hover)] text-[var(--text-secondary)] border-[var(--grid-border)]",
+        "bg-[var(--state-info-surface)] text-[var(--text-primary)] border-[var(--state-info-border)]",
+        "bg-[var(--state-warning-surface)] text-[var(--text-primary)] border-[var(--state-warning-border)]",
+        "bg-[var(--state-success-surface)] text-[var(--text-primary)] border-[var(--state-success-border)]"
     ];
     
-    let numericLevel = 0;
-    if (typeof level === 'number') numericLevel = level;
-    else if (level === 'read') numericLevel = 1;
-    else if (level === 'add') numericLevel = 2;
-    else if (level === 'edit' || level === 'manage') numericLevel = 3;
-    
-    numericLevel = Math.min(3, Math.max(0, Math.floor(numericLevel || 0)));
+    const numericLevel = normalizeHistoryPermissionLevel(level);
     const colorClass = colors[numericLevel];
     
     const labels = ["NONE", "READ", "WRITE", isGlobalAdmin ? "ADMIN" : "FULL"];
-    const label = labels[numericLevel];
+    const label = level === null ? 'UNKNOWN' : labels[numericLevel];
+    const globalLabel = ['None', 'Read', 'Write', 'Full'][globalLevel ?? 0];
+    const description = level === null ? 'Review permission data' : !isGlobalAdmin && globalLevel > 0 ? `Global: ${globalLabel}` : null;
 
     return (
+      <div className="flex flex-col items-center gap-1">
         <button 
+            type="button"
+            aria-label={`${accessibleLabel}: ${label}`}
+            aria-describedby={description ? descriptionId : undefined}
+            disabled={disabled || isGlobalAdmin || globalLevel === 3 || level === null}
+            aria-busy={saving || undefined}
             onClick={onClick}
-            className={`px-2 py-1 rounded-lg border text-[9px] font-black tracking-widest transition-all hover:brightness-125 w-14 text-center ${colorClass}`}
-            title={label}
+            className={`px-2 py-1 min-h-9 rounded-lg border text-xs font-semibold tracking-wide transition-colors hover:bg-[var(--surface-hover)] min-w-16 text-center disabled:cursor-default ${colorClass}`}
+            title={level === null ? 'Permission data is incomplete or invalid. Review grants before editing.' : !isGlobalAdmin && globalLevel > 0 ? `Global grants provide at least ${globalLabel} access. Per-module changes cannot reduce that grant.` : label}
         >
             {label}
         </button>
+        {description && <span id={descriptionId} className="text-xs text-[var(--text-secondary)]">{description}</span>}
+      </div>
     )
 }
 
@@ -279,15 +298,10 @@ import { SettingsStandards } from "./SettingsStandards"
 
 const PERMISSION_LEVEL_LABELS = ["None", "Read", "Write", "Full"] as const
 
-const normalizePermissionLevel = (level: any) => {
-  if (typeof level === 'number') return Math.min(3, Math.max(0, Math.floor(level)))
-  if (level === 'read') return 1
-  if (level === 'add' || level === 'write') return 2
-  if (level === 'edit' || level === 'manage' || level === 'full' || level === 'admin') return 3
-  return 0
-}
+const normalizePermissionLevel = normalizeHistoryPermissionLevel
 
 const getPermissionLevelLabel = (level: any, isGlobalAdmin = false) => {
+  if (level === null) return 'Unknown'
   const normalized = normalizePermissionLevel(level)
   if (isGlobalAdmin && normalized === 3) return 'Admin'
   return PERMISSION_LEVEL_LABELS[normalized]
@@ -295,44 +309,83 @@ const getPermissionLevelLabel = (level: any, isGlobalAdmin = false) => {
 
 const getPermissionLevelTone = (level: any, isGlobalAdmin = false) => {
   const normalized = normalizePermissionLevel(level)
-  if (isGlobalAdmin && normalized === 3) return 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300'
-  if (normalized === 3) return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
-  if (normalized === 2) return 'border-amber-500/20 bg-amber-500/10 text-amber-300'
-  if (normalized === 1) return 'border-blue-500/20 bg-blue-500/10 text-blue-300'
-  return 'border-white/10 bg-black/20 text-slate-500'
+  if (isGlobalAdmin && normalized === 3) return 'border-[var(--state-info-border)] bg-[var(--state-info-surface)] text-[var(--text-primary)]'
+  if (normalized === 3) return 'border-[var(--state-success-border)] bg-[var(--state-success-surface)] text-[var(--text-primary)]'
+  if (normalized === 2) return 'border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] text-[var(--text-primary)]'
+  if (normalized === 1) return 'border-[var(--state-info-border)] bg-[var(--state-info-surface)] text-[var(--text-primary)]'
+  return 'border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-secondary)]'
 }
 
-const getOperatorPermissionLevel = (operator: any, view: string) => {
-  if (!operator) return 0
-  if (operator.is_admin) return 3
-  return normalizePermissionLevel(operator.custom_permissions?.[view] ?? 0)
+const getOperatorPermissionLevel = recordedPermissionLevel
+
+const formatHistoryValue = (value: unknown): string => {
+  if (value === undefined) return 'Not recorded'
+  if (value === null) return 'Not set'
+  if (value === '') return 'Empty text'
+  if (typeof value === 'string') {
+    return value.trim() !== value || /[\r\n\t]/.test(value) || ['Not recorded', 'Not set', 'Empty text'].includes(value)
+      ? JSON.stringify(value) : value
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  return `Invalid recorded value: ${JSON.stringify(value)}`
 }
+
+const getRecordedAdminLabel = (value: unknown) =>
+  value === true ? 'Admin' : value === false || value === undefined ? 'Standard' : 'Unknown'
 
 const toSortedStringList = (value: any) =>
   Array.isArray(value)
-    ? value.map((entry) => String(entry)).filter(Boolean).sort((a, b) => a.localeCompare(b))
-    : []
+    ? value.map((entry) => typeof entry === 'string' ? entry : formatHistoryValue(entry)).sort((a, b) => a.localeCompare(b))
+    : value == null ? [] : [formatHistoryValue(value)]
 
-const getOperatorSnapshotKey = (operator: any) =>
-  String(operator?.external_id ?? operator?.id ?? operator?.username ?? '')
+const HISTORY_TEXT_FIELDS = ['full_name', 'username', 'role_name', 'department', 'team', 'email', 'registration_status', 'team_source']
 
 const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) => {
-  const newerRows = Array.isArray(newer?.snapshot_data) ? newer.snapshot_data : []
-  const olderRows = Array.isArray(older?.snapshot_data) ? older.snapshot_data : []
-  const newerMap = new Map(newerRows.map((operator: any) => [getOperatorSnapshotKey(operator), operator]))
-  const olderMap = new Map(olderRows.map((operator: any) => [getOperatorSnapshotKey(operator), operator]))
-  const keys = Array.from(new Set([...newerMap.keys(), ...olderMap.keys()])).filter(Boolean)
-
-  const isEquivalent = (a: any, b: any) => {
-    if (!a && !b) return true
-    const valA = String(a || '').trim()
-    const valB = String(b || '').trim()
-    return valA === valB
+  let partial = false
+  let permissionsIncomplete = false
+  const ambiguousKeys = new Set<string>()
+  const readSnapshot = (version: any) => {
+    const entries = new Map<string, any>()
+    if (!version) return entries
+    if (!Array.isArray(version.snapshot_data)) return null
+    for (const operator of version.snapshot_data) {
+      if (!operator || typeof operator !== 'object' || Array.isArray(operator)) {
+        partial = true
+        continue
+      }
+      const rawKey = operator.external_id ?? operator.id ?? operator.username
+      if (!(typeof rawKey === 'string' && rawKey.trim()) && !(Number.isInteger(rawKey) && rawKey > 0)) {
+        partial = true
+        continue
+      }
+      const key = String(rawKey)
+      if (entries.has(key)) {
+        ambiguousKeys.add(key)
+        partial = true
+      }
+      if (HISTORY_TEXT_FIELDS.some(field => operator[field] != null && typeof operator[field] !== 'string')
+        || ['team_id', 'role_id'].some(field => operator[field] != null && !(Number.isInteger(operator[field]) && operator[field] > 0))
+        || (operator.teams != null && (!Array.isArray(operator.teams) || operator.teams.some((group: unknown) => typeof group !== 'string')))
+        || (operator.is_admin !== undefined && typeof operator.is_admin !== 'boolean')) partial = true
+      if (!hasCompleteHistoryPermissions(operator)) permissionsIncomplete = true
+      entries.set(key, operator)
+    }
+    return entries
   }
+  const newerMap = readSnapshot(newer)
+  const olderMap = readSnapshot(older)
+  if (!newerMap || !olderMap) return { rows: [], partial: true, permissionsIncomplete }
+  const keys = Array.from(new Set([...newerMap.keys(), ...olderMap.keys()])).filter(key => !ambiguousKeys.has(key))
+
+  const isEquivalent = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
   const rows = keys.map((key) => {
     const before = olderMap.get(key) || null
     const after = newerMap.get(key) || null
+    const permissionViews = historyPermissionViews(allViews, before, after)
+    const permissionSources = ['custom_permissions', 'role_permissions'].filter(field =>
+      formatRecordedPermissions(before?.[field]) !== formatRecordedPermissions(after?.[field]))
+    const permissionsUnknown = [before, after].some(operator => operator && !hasCompleteHistoryPermissions(operator))
 
     if (!before && after) {
       return {
@@ -341,7 +394,9 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
         before,
         after,
         fieldChanges: {},
-        permissionChanges: allViews
+        permissionSources,
+        permissionsUnknown,
+        permissionChanges: permissionViews
           .map((view) => ({ view, old: 0, new: getOperatorPermissionLevel(after, view) }))
           .filter((entry) => entry.new !== entry.old),
       }
@@ -354,13 +409,15 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
         before,
         after,
         fieldChanges: {},
-        permissionChanges: allViews
+        permissionSources,
+        permissionsUnknown,
+        permissionChanges: permissionViews
           .map((view) => ({ view, old: getOperatorPermissionLevel(before, view), new: 0 }))
           .filter((entry) => entry.new !== entry.old),
       }
     }
 
-    const permissionChanges = allViews
+    const permissionChanges = permissionViews
       .map((view) => ({
         view,
         old: getOperatorPermissionLevel(before, view),
@@ -369,17 +426,9 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
       .filter((entry) => entry.old !== entry.new)
 
     const fieldChanges: Record<string, { old: any, new: any }> = {}
-    const fieldsToTrack = [
-      { key: 'full_name', label: 'Full Name' },
-      { key: 'username', label: 'Username' },
-      { key: 'role_name', label: 'Role' },
-      { key: 'department', label: 'Department' },
-      { key: 'team', label: 'Primary Team' },
-      { key: 'email', label: 'Email' },
-      { key: 'registration_status', label: 'Registration Status' }
-    ]
+    const fieldsToTrack = [...HISTORY_TEXT_FIELDS, 'role_id', 'team_id', 'is_admin']
 
-    fieldsToTrack.forEach(({ key }) => {
+    fieldsToTrack.forEach((key) => {
       if (!isEquivalent(before?.[key], after?.[key])) {
         fieldChanges[key] = { old: before?.[key], new: after?.[key] }
       }
@@ -394,11 +443,7 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
       fieldChanges['groups'] = { old: toSortedStringList(beforeAny?.teams), new: toSortedStringList(afterAny?.teams) }
     }
 
-    if (Boolean(beforeAny?.is_admin) !== Boolean(afterAny?.is_admin)) {
-      fieldChanges['is_admin'] = { old: Boolean(beforeAny?.is_admin), new: Boolean(afterAny?.is_admin) }
-    }
-
-    if (Object.keys(fieldChanges).length === 0 && permissionChanges.length === 0) {
+    if (Object.keys(fieldChanges).length === 0 && permissionChanges.length === 0 && permissionSources.length === 0) {
       return null
     }
 
@@ -409,23 +454,33 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
       after,
       fieldChanges,
       permissionChanges,
+      permissionSources,
+      permissionsUnknown,
     }
   }).filter(Boolean) as Array<any>
 
   const order = { changed: 0, added: 1, deleted: 2 } as const
-  return rows.sort((a, b) => {
+  rows.sort((a, b) => {
     const rankDiff = order[a.changeKind] - order[b.changeKind]
     if (rankDiff !== 0) return rankDiff
-    const nameA = (a.after?.full_name || a.before?.full_name || '').toLowerCase()
-    const nameB = (b.after?.full_name || b.before?.full_name || '').toLowerCase()
+    const nameA = formatHistoryValue(a.after?.full_name ?? a.before?.full_name ?? '').toLowerCase()
+    const nameB = formatHistoryValue(b.after?.full_name ?? b.before?.full_name ?? '').toLowerCase()
     return nameA.localeCompare(nameB)
   })
+  return { rows, partial, permissionsIncomplete }
 }
 
-function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any[], allViews: string[], onClose: () => void }) {
+function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, restoreError, onRestore }: {
+  versions: any[]
+  allViews: string[]
+  onClose: () => void
+  restorePhase: 'previewing' | 'review' | 'saving' | null
+  restoreError: string
+  onRestore: (version: any) => Promise<boolean>
+}) {
   const [isMaximized, setIsMaximized] = useState(false)
   const [selectedIndices, setSelectedIndices] = useState<number[]>([0])
-  const queryClient = useQueryClient()
+  const restoreBusy = restorePhase !== null
 
   const toggleSelection = (idx: number) => {
     if (selectedIndices.includes(idx)) {
@@ -443,8 +498,7 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
 
   const indexedVersions = (versions || []).map((v, i) => ({
     ...v,
-    v_num: versions.length - i,
-    label: formatAppDate(v.created_at)
+    v_num: versions.length - i
   }))
 
   const newer = indexedVersions?.[Math.min(...selectedIndices)]
@@ -452,7 +506,7 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
     ? indexedVersions?.[Math.max(...selectedIndices)] 
     : (selectedIndices[0] + 1 < indexedVersions.length ? indexedVersions[selectedIndices[0] + 1] : null)
 
-  const historyRows = React.useMemo(
+  const { rows: historyRows, partial: partialComparison, permissionsIncomplete } = React.useMemo(
     () => buildPermissionHistoryRows(newer, older, allViews),
     [allViews, newer, older]
   )
@@ -463,129 +517,118 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
   return (
     <WorkspaceModal
       isOpen={true}
-      onClose={onClose}
+      onClose={() => { if (!restoreBusy) onClose() }}
+      hideCloseButton={restoreBusy}
+      hideFooterClose={restoreBusy}
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
       title="Permission Registry History"
-      subtitle="Complete temporal lineage of operator access and identity synchronization"
+      subtitle="Compare recorded tenant grants. Restore uses current role definitions and module policy."
       icon={<HistoryIcon size={20} />}
       footerRight={
-        <ToolbarButton onClick={onClose}>Dismiss</ToolbarButton>
+        <ToolbarButton disabled={restoreBusy} onClick={onClose}>Dismiss</ToolbarButton>
       }
     >
+      <div data-permission-history className="[&_[data-workspace-history-content]]:border-[var(--border-default)] [&_[data-workspace-history-content]]:bg-[var(--surface-elevated)]">
+      {restoreBusy && <p role="status" className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 text-sm text-[var(--text-primary)]">
+        {restorePhase === 'previewing' ? 'Checking the identity restore against current data…' : restorePhase === 'review' ? 'Review the identity restore. Finish or cancel confirmation before leaving.' : 'Restoring identity revision. Stay on this page until the restore finishes.'}
+      </p>}
+      {restoreError && <p role="alert" className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-4 text-sm text-[var(--text-primary)]">{restoreError}</p>}
+      {(partialComparison || permissionsIncomplete) && <div role="alert" className="space-y-2 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-4 text-sm text-[var(--text-primary)]">
+        {partialComparison && <p>Comparison is partial. Some historical records are invalid, missing an identity key or duplicated. Ambiguous identities are excluded; invalid field values are shown as recorded. Original history is preserved.</p>}
+        {permissionsIncomplete && <p>Historical permission data is incomplete. Missing role definitions or invalid grants are Unknown, not None. Recorded overrides remain available; current roles are never substituted into history.</p>}
+      </div>}
       <WorkspaceHistoryShell
           header={null}
           sidebar={
-           <div className="flex h-full flex-col min-h-0">
+            <div className="flex h-full min-h-0 flex-col">
               <div className="mb-4 flex items-center justify-between px-1">
-                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Revision Timeline</h3>
-                 <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-lg border border-blue-500/20">{indexedVersions.length} states</span>
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Revision Timeline</h3>
+                <span className="text-xs text-[var(--text-secondary)]">{indexedVersions.length} states</span>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+              <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
                 {indexedVersions.map((h: any, idx: number) => {
-                  const isSelected = selectedIndices.includes(idx);
-                  const isNewest = idx === Math.min(...selectedIndices);
+                  const isSelected = selectedIndices.includes(idx)
+                  const isNewest = idx === Math.min(...selectedIndices)
                   return (
-                    <button 
-                      key={h.id}
-                      onClick={() => toggleSelection(idx)}
-                      className={`w-full p-4 rounded-lg border text-left transition-all relative group overflow-hidden ${
-                        isSelected 
-                          ? isNewest ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/5' : 'bg-slate-800 border-slate-600' 
-                          : 'bg-white/5 border-white/5 hover:border-white/10'
-                      }`}
-                    >
-                      {isSelected && (
-                        <div className={`absolute top-0 right-0 px-2 py-0.5 text-[8px] font-black uppercase rounded-lg ${isNewest ? 'bg-blue-400 text-blue-950' : 'bg-slate-500 text-slate-200'}`}>
-                           {isNewest ? 'Primary' : 'Ref'}
+                    <div key={h.id} className={`w-full overflow-hidden rounded-lg border ${isSelected
+                      ? 'bg-[var(--action-primary-muted)] border-[var(--accent-primary)]'
+                      : 'bg-[var(--surface-base)] border-[var(--border-default)]'}`}>
+                      <button type="button" disabled={restoreBusy} onClick={() => toggleSelection(idx)}
+                        aria-label={`Select revision ${h.v_num}`} aria-pressed={isSelected}
+                        className="w-full p-4 text-left hover:bg-[var(--surface-hover)] disabled:cursor-wait">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-[var(--text-primary)]">v{h.v_num}</span>
+                          <span className="text-xs text-[var(--text-secondary)]">{h.is_active ? 'Active' : 'Archived'}</span>
+                        </div>
+                        {isSelected && <p className="mb-2 text-xs font-semibold text-[var(--action-ink)]">{isNewest ? 'Primary comparison' : 'Reference comparison'}</p>}
+                        <p className="break-words text-xs leading-5 text-[var(--text-primary)]">Recorded by {h.created_by || 'System'}</p>
+                        <time dateTime={h.created_at} className="mt-2 block text-xs leading-5 text-[var(--text-secondary)]">{formatAppDate(h.created_at, { timeZoneName: 'short' })}</time>
+                      </button>
+                      {!h.is_active && (
+                        <div className="border-t border-[var(--border-subtle)] px-3 py-1">
+                          <button type="button" disabled={restoreBusy} aria-label={`Restore identity revision ${h.v_num}`}
+                            onClick={async () => { if (await onRestore(h)) setSelectedIndices([0]) }}
+                            className="min-h-10 rounded-md px-2 py-1 text-xs font-semibold text-[var(--action-ink)] hover:bg-[var(--surface-hover)] disabled:cursor-wait">
+                            Restore revision
+                          </button>
                         </div>
                       )}
-                      <div className="flex items-center justify-between mb-2">
-                         <span className={`text-[11px] font-black tracking-tighter ${isSelected ? 'text-white' : 'text-blue-400'}`}>v{h.v_num}</span>
-                         <span className={`text-[9px] font-bold ${isSelected ? 'text-white/60' : 'text-slate-500'}`}>
-                            {h.is_active ? 'Active' : 'Archived'}
-                         </span>
-                      </div>
-                      <p className={`text-[10px] font-bold leading-tight line-clamp-2 ${isSelected ? 'text-white/90' : 'text-slate-300'}`}>
-                         By: {h.created_by || 'System'}
-                      </p>
-                      <div className="mt-2 flex items-center space-x-2 justify-between">
-                         <div className="flex items-center space-x-2">
-                           <Clock size={10} className={isSelected ? 'text-white/40' : 'text-slate-600'} />
-                           <span className={`text-[8px] font-semibold ${isSelected ? 'text-white/40' : 'text-slate-600'}`}>
-                              {h.label}
-                           </span>
-                         </div>
-                         {!h.is_active && (
-                           <button 
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               toast.promise(apiFetch(`/api/v1/settings/user-pool/restore/${h.id}`, { method: 'POST' }), {
-                                   loading: 'Restoring state...',
-                                   success: () => { queryClient.invalidateQueries({ queryKey: ['operators'] }); queryClient.invalidateQueries({ queryKey: ['teams'] }); queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] }); return "Restored successfully"; },
-                                   error: "Restore failed"
-                               })
-                             }}
-                             className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${isSelected ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/40' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
-                           >
-                             Restore
-                           </button>
-                         )}
-                      </div>
-                    </button>
+                    </div>
                   )
                 })}
               </div>
-           </div>
+            </div>
           }
           content={
            <>
-              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md sticky top-0 z-10">
-                 <div className="flex items-center space-x-4">
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border-default)] bg-[var(--surface-elevated)] p-4 sm:p-5">
+                 <div className="flex min-w-0 flex-wrap items-center gap-3">
                     <div className="flex items-center space-x-2">
-                       <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-[12px] font-black">v{newer?.v_num}</div>
+                       <div className="w-8 h-8 rounded-lg bg-[var(--action-primary-muted)] border border-[var(--border-default)] flex items-center justify-center text-[var(--action-ink)] text-[12px] font-semibold">v{newer?.v_num}</div>
                        {older && (
                          <>
-                           <div className="w-4 h-px bg-slate-700" />
-                           <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center text-slate-500 text-[12px] font-black">v{older.v_num}</div>
+                           <div className="w-4 h-px bg-[var(--border-default)]" />
+                           <div className="w-8 h-8 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)] text-[12px] font-semibold">v{older.v_num}</div>
                          </>
                        )}
                     </div>
                     <div>
-                       <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest">
+                       <h3 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-widest">
                           {selectedIndices.length > 1 ? 'Comparison Mode' : 'Latest Revision Delta'}
                        </h3>
-                       <p className="text-[9px] font-bold text-slate-600">
+                       <p className="text-xs font-semibold text-[var(--text-secondary)]">
                           {historyRows.length} identity rows changed {selectedIndices.length > 1 ? 'between the selected versions' : 'in this revision'}
                        </p>
                     </div>
                  </div>
-                 <div className="flex items-center gap-4">
+                 <div className="flex flex-wrap items-center gap-3">
                    {selectedIndices.length > 1 && (
                      <button 
+                       disabled={restoreBusy}
                        onClick={() => setSelectedIndices([0])}
-                       className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-[9px] font-black text-rose-400 uppercase tracking-widest hover:bg-rose-500/20 transition-all"
+                       className="flex items-center gap-2 px-3 py-1.5 bg-[var(--state-danger-surface)] border border-[var(--state-danger-border)] rounded-lg text-xs font-semibold text-[var(--text-primary)] uppercase tracking-widest hover:bg-[var(--state-danger-surface-strong)] transition-all"
                      >
                        <X size={12} />
                        Exit Comparison
                      </button>
                    )}
                    <div className="flex flex-wrap items-center gap-2">
-                     <span className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-300">{addedCount} added</span>
-                     <span className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-amber-300">{changedCount} changed</span>
-                     <span className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-rose-300">{deletedCount} deleted</span>
+                     <span className="rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]">{addedCount} added</span>
+                     <span className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]">{changedCount} changed</span>
+                     <span className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]">{deletedCount} deleted</span>
                    </div>
                  </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+              <div className="min-w-0 flex-1 p-3 sm:p-5">
                  {historyRows.length > 0 ? (
                     <div className="space-y-6">
-                       <div className="overflow-hidden rounded-lg border border-white/5 bg-black/20">
+                       <div role="region" aria-label="Identity changes" tabIndex={0} className="max-w-full overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] custom-scrollbar">
                           <table className="w-full text-left border-collapse">
                              <thead>
-                                <tr className="bg-white/5 text-[9px] font-black uppercase text-slate-500 tracking-widest">
+                                <tr className="bg-[var(--grid-header-bg)] text-xs font-semibold uppercase text-[var(--text-secondary)] tracking-widest">
                                    <th className="p-4 min-w-[120px]">Change</th>
                                    <th className="p-4 min-w-[240px]">Identity</th>
                                    <th className="p-4 min-w-[140px]">Department</th>
@@ -595,118 +638,161 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
                                    <th className="p-4 min-w-[260px]">Permission Delta</th>
                                 </tr>
                              </thead>
-                             <tbody className="divide-y divide-white/5">
+                             <tbody className="divide-y divide-[var(--border-default)]">
                                 {historyRows.map((row: any) => {
                                    const current = row.after || row.before
                                    const rowTone =
                                      row.changeKind === 'added'
-                                       ? 'bg-emerald-500/[0.04]'
+                                       ? 'bg-[var(--state-success-surface)]'
                                        : row.changeKind === 'deleted'
-                                         ? 'bg-rose-500/[0.04]'
-                                         : 'bg-amber-500/[0.03]'
+                                         ? 'bg-[var(--state-danger-surface)]'
+                                         : 'bg-[var(--state-warning-surface)]'
 
                                    return (
-                                   <tr key={row.key} className={`${rowTone} hover:bg-white/[0.02] transition-colors align-top`}>
+                                   <tr key={row.key} className={`${rowTone} hover:bg-[var(--surface-hover)] transition-colors align-top`}>
                                       <td className="p-4 align-top">
-                                         <span className={`inline-flex rounded-lg border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${
+                                         <span className={`inline-flex rounded-lg border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${
                                            row.changeKind === 'added'
-                                             ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
+                                             ? 'border-[var(--state-success-border)] bg-[var(--state-success-surface)] text-[var(--text-primary)]'
                                              : row.changeKind === 'deleted'
-                                               ? 'border-rose-500/20 bg-rose-500/10 text-rose-300'
-                                               : 'border-amber-500/20 bg-amber-500/10 text-amber-300'
+                                               ? 'border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] text-[var(--text-primary)]'
+                                               : 'border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] text-[var(--text-primary)]'
                                          }`}>
                                            {row.changeKind}
                                          </span>
                                       </td>
-                                      <td className="p-4 align-top">
+                                      <td className="p-4 align-top whitespace-pre-wrap [overflow-wrap:anywhere]">
                                          <div className="space-y-1.5">
-                                           <div className="text-[11px] font-bold text-white">{current?.full_name || current?.username || 'Unknown identity'}</div>
-                                           <div className="text-[9px] font-semibold text-slate-500">{current?.username || 'No username'}</div>
+                                           <div className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(current?.full_name ?? current?.username)}</div>
+                                           <div className="text-xs font-semibold text-[var(--text-secondary)]">{formatHistoryValue(current?.username)}</div>
+                                           {row.fieldChanges?.username && (
+                                             <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                               USERNAME: {formatHistoryValue(row.fieldChanges.username.old)} {'->'} {formatHistoryValue(row.fieldChanges.username.new)}
+                                             </div>
+                                           )}
                                              {row.fieldChanges?.full_name && (
-                                               <div className="text-[8px] font-semibold text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 mt-1">
-                                                NAME: {row.fieldChanges.full_name.old || 'Empty'} {'->'} {row.fieldChanges.full_name.new || 'Empty'}
+                                               <div className="text-xs font-semibold text-[var(--text-primary)] bg-[var(--state-warning-surface)] px-1.5 py-0.5 rounded border border-[var(--state-warning-border)] mt-1">
+                                                NAME: {formatHistoryValue(row.fieldChanges.full_name.old)} {'->'} {formatHistoryValue(row.fieldChanges.full_name.new)}
                                                </div>
                                              )}
                                            {row.fieldChanges?.email && (
-                                               <div className="text-[8px] font-semibold text-amber-300 mt-1">
-                                                EMAIL: {row.fieldChanges.email.old || 'Empty'} {'->'} {row.fieldChanges.email.new || 'Empty'}
+                                               <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                                EMAIL: {formatHistoryValue(row.fieldChanges.email.old)} {'->'} {formatHistoryValue(row.fieldChanges.email.new)}
                                                </div>
                                              )}
                                              {row.fieldChanges?.role_name && (
-                                               <div className="text-[8px] font-semibold text-amber-300 mt-1">
-                                                ROLE: {row.fieldChanges.role_name.old || 'Unassigned'} {'->'} {row.fieldChanges.role_name.new || 'Unassigned'}
+                                               <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                                ROLE: {formatHistoryValue(row.fieldChanges.role_name.old)} {'->'} {formatHistoryValue(row.fieldChanges.role_name.new)}
                                                </div>
                                              )}
+                                           {row.fieldChanges?.registration_status && (
+                                             <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                               STATUS: {formatHistoryValue(row.fieldChanges.registration_status.old)} {'->'} {formatHistoryValue(row.fieldChanges.registration_status.new)}
+                                             </div>
+                                           )}
+                                           {row.fieldChanges?.role_id && (
+                                             <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
+                                               ROLE ID: {formatHistoryValue(row.fieldChanges.role_id.old)} {'→'} {formatHistoryValue(row.fieldChanges.role_id.new)}
+                                             </div>
+                                           )}
                                          </div>
                                       </td>
-                                      <td className="p-4 align-top">
+                                      <td className="p-4 align-top whitespace-pre-wrap [overflow-wrap:anywhere]">
                                          {row.fieldChanges?.department ? (
                                            <div className="space-y-1">
-                                             <div className="text-[9px] font-semibold text-slate-500 line-through">{row.fieldChanges.department.old || '—'}</div>
-                                             <div className="text-[10px] font-bold text-amber-300">{row.fieldChanges.department.new || '—'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{formatHistoryValue(row.fieldChanges.department.old)}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(row.fieldChanges.department.new)}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-[10px] font-bold text-slate-300">{current?.department || '—'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(current?.department)}</span>
                                          )}
                                       </td>
-                                      <td className="p-4 align-top">
+                                      <td className="p-4 align-top whitespace-pre-wrap [overflow-wrap:anywhere]">
                                          {row.fieldChanges?.team ? (
                                            <div className="space-y-1">
-                                             <div className="text-[9px] font-semibold text-slate-500 line-through">{row.fieldChanges.team.old || 'Unassigned'}</div>
-                                             <div className="text-[10px] font-bold text-amber-300">{row.fieldChanges.team.new || 'Unassigned'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{formatHistoryValue(row.fieldChanges.team.old)}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(row.fieldChanges.team.new)}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-[10px] font-bold text-slate-300">{current?.team || 'Unassigned'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{formatHistoryValue(current?.team)}</span>
+                                         )}
+                                         {row.fieldChanges?.team_id && (
+                                           <div className="mt-1 text-xs font-semibold text-[var(--text-primary)]">
+                                             TEAM ID: {formatHistoryValue(row.fieldChanges.team_id.old)} {'→'} {formatHistoryValue(row.fieldChanges.team_id.new)}
+                                           </div>
+                                         )}
+                                         {row.fieldChanges?.team_source && (
+                                           <div className="mt-1 text-xs font-semibold text-[var(--text-primary)]">
+                                             SOURCE: {formatHistoryValue(row.fieldChanges.team_source.old)} {'→'} {formatHistoryValue(row.fieldChanges.team_source.new)}
+                                           </div>
                                          )}
                                       </td>
                                       <td className="p-4 align-top">
                                          {row.fieldChanges?.groups ? (
                                            <div className="space-y-1">
-                                             <div className="text-[9px] font-semibold text-slate-500 line-through">{(row.fieldChanges.groups.old || []).join(', ') || 'No groups'}</div>
-                                             <div className="text-[10px] font-bold text-amber-300">{(row.fieldChanges.groups.new || []).join(', ') || 'No groups'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{(row.fieldChanges.groups.old || []).map(formatHistoryValue).join(', ') || 'No groups'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{(row.fieldChanges.groups.new || []).map(formatHistoryValue).join(', ') || 'No groups'}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-[10px] font-bold text-slate-300">{(toSortedStringList(current?.teams)).join(', ') || 'No groups'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{(toSortedStringList(current?.teams)).map(formatHistoryValue).join(', ') || 'No groups'}</span>
                                          )}
                                       </td>
                                       <td className="p-4 align-top text-center">
                                          {row.fieldChanges?.is_admin ? (
                                            <div className="flex flex-col items-center gap-1">
-                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.old ? 3 : 0, row.fieldChanges.is_admin.old)}`}>
-                                               {row.fieldChanges.is_admin.old ? 'Admin' : 'Standard'}
+                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.old === true ? 3 : 0, row.fieldChanges.is_admin.old === true)}`}>
+                                               {getRecordedAdminLabel(row.fieldChanges.is_admin.old)}
                                              </span>
-                                             <ChevronDown size={8} className="text-slate-700" />
-                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.new ? 3 : 0, row.fieldChanges.is_admin.new)}`}>
-                                               {row.fieldChanges.is_admin.new ? 'Admin' : 'Standard'}
+                                             <ChevronDown size={8} className="text-[var(--text-secondary)]" />
+                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.new === true ? 3 : 0, row.fieldChanges.is_admin.new === true)}`}>
+                                               {getRecordedAdminLabel(row.fieldChanges.is_admin.new)}
                                              </span>
                                            </div>
                                          ) : (
-                                           <span className={`inline-flex rounded-lg border px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${getPermissionLevelTone(Boolean(current?.is_admin) ? 3 : 0, Boolean(current?.is_admin))}`}>
-                                             {Boolean(current?.is_admin) ? 'Admin' : 'Standard'}
+                                           <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(current?.is_admin === true ? 3 : 0, current?.is_admin === true)}`}>
+                                             {getRecordedAdminLabel(current?.is_admin)}
                                            </span>
                                          )}
                                       </td>
                                       <td className="p-4 align-top">
                                          {row.permissionChanges.length > 0 ? (
-                                           <div className="flex flex-wrap gap-2">
+                                           <details>
+                                             <summary className="min-h-10 cursor-pointer rounded-md px-2 py-2 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
+                                               {row.permissionChanges.length} permission {row.permissionChanges.some((change: any) => change.old === null || change.new === null) ? 'comparisons' : row.permissionChanges.length === 1 ? 'change' : 'changes'}
+                                             </summary>
+                                           <div className="mt-2 flex flex-wrap gap-2">
                                              {row.permissionChanges.map((change: any) => (
-                                               <div key={`${row.key}-${change.view}`} className="rounded-lg border border-white/10 bg-black/20 px-2.5 py-2">
-                                                 <div className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-500">{change.view}</div>
+                                               <div data-permission-change key={`${row.key}-${change.view}`} className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-2.5 py-2">
+                                                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)]">{change.view}</div>
                                                  <div className="mt-1 flex items-center gap-1.5">
-                                                   <span className={`rounded-lg border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] ${getPermissionLevelTone(change.old, Boolean(row.before?.is_admin))}`}>
-                                                     {getPermissionLevelLabel(change.old, Boolean(row.before?.is_admin))}
+                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.old, row.before?.is_admin === true)}`}>
+                                                     {getPermissionLevelLabel(change.old, row.before?.is_admin === true)}
                                                    </span>
-                                                   <ChevronRight size={12} className="text-slate-600" />
-                                                   <span className={`rounded-lg border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] ${getPermissionLevelTone(change.new, Boolean(row.after?.is_admin))}`}>
-                                                     {getPermissionLevelLabel(change.new, Boolean(row.after?.is_admin))}
+                                                   <ChevronRight size={12} className="text-[var(--text-secondary)]" />
+                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.new, row.after?.is_admin === true)}`}>
+                                                     {getPermissionLevelLabel(change.new, row.after?.is_admin === true)}
                                                    </span>
                                                  </div>
                                                </div>
                                              ))}
                                            </div>
+                                           </details>
                                          ) : (
-                                           <span className="text-[9px] font-bold text-slate-600 italic">No permission delta</span>
+                                           <span className="text-xs font-semibold text-[var(--text-secondary)] italic">{row.permissionsUnknown ? 'Permission comparison unavailable' : 'No permission delta'}</span>
                                          )}
+                                         {row.permissionSources.map((field: string) => (
+                                           <details data-permission-source-change key={field} className="mt-2 max-w-sm text-xs text-[var(--text-primary)]">
+                                             <summary className="min-h-10 cursor-pointer rounded-md px-2 py-2 font-semibold hover:bg-[var(--surface-hover)]">
+                                               {field === 'custom_permissions' ? 'Custom overrides' : 'Recorded role grants'} changed
+                                             </summary>
+                                             <dl className="space-y-2 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                                               <dt className="font-semibold text-[var(--text-secondary)]">Before</dt>
+                                               <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">{formatRecordedPermissions(row.before?.[field])}</dd>
+                                               <dt className="font-semibold text-[var(--text-secondary)]">After</dt>
+                                               <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">{formatRecordedPermissions(row.after?.[field])}</dd>
+                                             </dl>
+                                           </details>
+                                         ))}
                                       </td>
                                    </tr>
                                 )})}
@@ -721,6 +807,7 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
            </>
           }
       />
+      </div>
     </WorkspaceModal>
   )
 }
@@ -816,7 +903,17 @@ export default function SettingsPage() {
     return parts[parts.length - 1] || dbUrl
   }, [])
   const permissionSelectionAnchorRef = React.useRef<number | null>(null)
-  const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any }>>({})
+  const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any, expectedPermissions: any, committing: boolean, finishWrite: () => void }>>({})
+  const [pendingPermissionWrites, setPendingPermissionWrites] = useState(0)
+  const [savingPermissionIds, setSavingPermissionIds] = useState<Set<number>>(new Set())
+  const operatorNoticeId = React.useId()
+  const [bulkPhase, setBulkPhase] = useState<'confirming' | 'saving' | null>(null)
+  const bulkBusyRef = React.useRef(false)
+  const bulkBusy = bulkPhase !== null
+  const [bulkError, setBulkError] = useState('')
+  const [restorePhase, setRestorePhase] = useState<'previewing' | 'review' | 'saving' | null>(null)
+  const restoreBusyRef = React.useRef(false)
+  const [restoreError, setRestoreError] = useState('')
   const {
     triggerRef: permissionBulkTriggerRef,
     panelRef: permissionBulkPanelRef,
@@ -825,7 +922,10 @@ export default function SettingsPage() {
 
   useEffect(() => {
     return () => {
-      Object.values(permissionCommitBufferRef.current).forEach((entry) => clearTimeout(entry.timeoutId))
+      Object.values(permissionCommitBufferRef.current).forEach((entry) => {
+        clearTimeout(entry.timeoutId)
+        entry.finishWrite()
+      })
       permissionCommitBufferRef.current = {}
     }
   }, [])
@@ -987,9 +1087,13 @@ export default function SettingsPage() {
       Object.entries(localEnv || {}).filter(([key]) => !key.startsWith('_'))
     )
 
-  const [userPoolScript, setUserPoolScript] = useState(`# Provide real identity-source records to the backend refresh endpoint.
-# Expected record fields:
-# external_id, username, full_name, email, department, team, registration_status`)
+  const [recordsDraft, setRecordsDraft] = useState('[]')
+  const [appliedRecordsDraft, setAppliedRecordsDraft] = useState('[]')
+  const [syncError, setSyncError] = useState('')
+  const [syncBusy, setSyncBusy] = useState(false)
+  const syncBusyRef = React.useRef(false)
+  const [reviewedRemovals, setReviewedRemovals] = useState(false)
+  const syncDraftDirty = recordsDraft !== appliedRecordsDraft
 
   useEffect(() => {
     if (envSettings) {
@@ -1028,28 +1132,154 @@ export default function SettingsPage() {
   const [isSyncPreviewOpen, setIsSyncPreviewOpen] = useState(false)
 
   const poolMutation = useMutation({
-    mutationFn: async ({ script, preview = false }: { script: string, preview?: boolean }) => {
+    retry: false,
+    networkMode: 'always',
+    mutationFn: async ({ records, source, preview, expected_fingerprint }: IdentitySyncRequest) => {
       const res = await apiFetch("/api/v1/settings/user-pool/refresh", {
         method: "POST",
-        body: JSON.stringify({ script, preview })
+        body: JSON.stringify({ records, source, preview, ...(expected_fingerprint ? { expected_fingerprint } : {}) })
       })
-      if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       if (variables.preview) {
-        setSyncPreviewData(data);
+        if (!/^[0-9a-f]{64}$/.test(data?.fingerprint || '')) throw new Error('The preview could not be verified. Preview again before applying.')
+        setSyncPreviewData({ ...data, request: variables });
+        setReviewedRemovals(false);
         setIsSyncPreviewOpen(true);
       } else {
-        queryClient.invalidateQueries({ queryKey: ['operators'] })
-        queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+        await Promise.all(['operators', 'user-pool-versions', 'teams', 'team-audit', 'user-profile'].map(key =>
+          queryClient.invalidateQueries({ queryKey: [key] })))
+        setAppliedRecordsDraft(variables.draft);
         setIsSyncEditable(false);
         setIsSyncPreviewOpen(false);
         setSyncPreviewData(null);
-        showWorkspaceToast("User Pool synchronized via Python logic")
+        showWorkspaceToast(data.changes ? "Identity records synchronized" : "Identity records already match; no changes applied")
       }
-    }
+    },
+    onError: (error: Error) => {
+      setSyncError(`${error.message} Preview again before applying.`)
+      setIsSyncPreviewOpen(false)
+      setSyncPreviewData(null)
+      setShowPoolLogic(true)
+    },
   })
+
+  const runIdentitySync = (preview: boolean) => {
+    if (syncBusyRef.current) return
+    let input: IdentitySyncRequest
+    if (preview) {
+      try {
+        const records = JSON.parse(recordsDraft)
+        if (!Array.isArray(records) || !records.length || records.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new Error('Invalid records')
+        input = { records, source: 'settings_identity_import', preview: true, draft: recordsDraft, scope: getRequestScopeKey() }
+      } catch {
+        setSyncError('Enter a non-empty JSON array of identity records, then preview again.')
+        return
+      }
+    } else {
+      if (!syncPreviewData || !isSyncPreviewOpen || (syncPreviewData.summary.removed > 0 && !reviewedRemovals)) return
+      const reviewed = syncPreviewData.request as IdentitySyncRequest
+      if (reviewed.draft !== recordsDraft || reviewed.scope !== getRequestScopeKey()) {
+        setSyncError('The draft or active identity scope changed. Preview again before applying.')
+        setSyncPreviewData(null)
+        setIsSyncPreviewOpen(false)
+        return
+      }
+      input = { ...reviewed, preview: false, expected_fingerprint: syncPreviewData.fingerprint }
+    }
+    let finishWrite: () => void
+    try { finishWrite = beginScopedWrite(false) } catch (error) {
+      setSyncError((error as Error).message)
+      return
+    }
+    syncBusyRef.current = true
+    setSyncBusy(true)
+    setSyncError('')
+    void poolMutation.mutateAsync(input).catch(() => {}).finally(() => {
+      finishWrite()
+      syncBusyRef.current = false
+      setSyncBusy(false)
+    })
+  }
+
+  const restoreMutation = useMutation({
+    meta: { handlesErrorToast: true },
+    retry: false,
+    mutationFn: async ({ versionId, fingerprint }: { versionId: number; fingerprint: string }) => {
+      const response = await apiFetch(`/api/v1/settings/user-pool/restore/${versionId}`, {
+        method: 'POST', body: JSON.stringify({ expected_fingerprint: fingerprint }),
+      })
+      return response.json()
+    },
+    onSuccess: async () => {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
+    },
+  })
+
+  const runIdentityRestore = async (version: any): Promise<boolean> => {
+    if (restoreBusyRef.current || pendingPermissionWrites > 0 || syncBusy || bulkBusy) return false
+    let finishWrite: () => void
+    try { finishWrite = beginScopedWrite(false) } catch (error) {
+      setRestoreError((error as Error).message)
+      return false
+    }
+    restoreBusyRef.current = true
+    setRestorePhase('previewing')
+    setRestoreError('')
+    try {
+      const response = await apiFetch(`/api/v1/settings/user-pool/restore/${version.id}`, {
+        method: 'POST', body: JSON.stringify({ preview: true }),
+      })
+      const preview = await response.json()
+      if (!/^[0-9a-f]{64}$/.test(preview?.fingerprint || '') || !preview?.summary ||
+          !['added', 'removed', 'changed'].every(key => Number.isSafeInteger(preview.summary[key]) && preview.summary[key] >= 0)) {
+        throw new Error('The restore preview could not be verified. Preview again before restoring.')
+      }
+      setRestorePhase('review')
+      if (!await confirmWorkspaceAction({
+        title: 'Restore identity revision?',
+        message: `Restore v${version.v_num}? Preview: ${preview.summary.added} identities added, ${preview.summary.removed} removed, ${preview.summary.changed} changed. This applies the entire identity and permission snapshot. Identities added later may be removed. Role assignments and custom overrides are restored; current role definitions and module policy still apply, so effective access may differ from this revision. A new revision will record the result.`,
+        confirmText: 'Restore identities', cancelText: 'Keep current identities', variant: 'danger',
+      })) return false
+      setRestorePhase('saving')
+      await restoreMutation.mutateAsync({ versionId: version.id, fingerprint: preview.fingerprint })
+      showWorkspaceToast('Identity revision restored')
+      return true
+    } catch (error) {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
+      setRestoreError(`${(error as Error).message} Review the current identities before trying again.`)
+      return false
+    } finally {
+      finishWrite()
+      restoreBusyRef.current = false
+      setRestorePhase(null)
+    }
+  }
+
+  const settingsWritePending = pendingPermissionWrites > 0 || syncBusy || bulkBusy || restorePhase !== null
+  const settingsBlocker = useBlocker(settingsWritePending || syncDraftDirty)
+  const departurePromptPending = React.useRef(false)
+  usePageLeaveGuard(settingsWritePending || syncDraftDirty)
+  useEffect(() => {
+    if (settingsBlocker.state !== 'blocked') return
+    if (settingsWritePending) {
+      settingsBlocker.reset()
+    } else if (!departurePromptPending.current) {
+      departurePromptPending.current = true
+      void confirmWorkspaceAction({
+        title: 'Discard identity records draft?',
+        message: 'The identity records draft has not been applied. Leaving this page will discard it.',
+        confirmText: 'Discard draft', cancelText: 'Keep editing', variant: 'warning',
+      }).then(accepted => {
+        departurePromptPending.current = false
+        if (accepted) settingsBlocker.proceed()
+        else settingsBlocker.reset()
+      })
+    }
+  }, [settingsBlocker, settingsWritePending, confirmWorkspaceAction])
 
   const { data: operators } = useQuery({
     queryKey: ['operators'],
@@ -1202,6 +1432,7 @@ export default function SettingsPage() {
   });
 
   const operatorMutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async (op: any) => {
       const isUpdate = !!op.id;
       const url = isUpdate ? `/api/v1/settings/operators/${op.id}` : "/api/v1/settings/operators";
@@ -1212,15 +1443,23 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['operators'] })
-      queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+    onSuccess: async (data, variables) => {
+      const refreshes = [
+        queryClient.invalidateQueries({ queryKey: ['operators'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] }),
+      ]
       // If updating current user, refresh their profile to reflect permission changes immediately
-      if (variables.username === userProfile?.username) {
-        queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+      if (variables.username === userProfile?.username || (variables.id != null && variables.id === userProfile?.id)) {
+        refreshes.push(queryClient.invalidateQueries({ queryKey: ['user-profile'] }))
       }
-      showWorkspaceToast("Security profile synchronized")
-    }
+      await Promise.all(refreshes)
+      toast.success("Security profile synchronized", { id: `${operatorNoticeId}-${variables.id ?? 'new'}` })
+    },
+    onError: (error: Error, variables) => {
+      toast.error(error.message || 'Security profile could not be saved.', {
+        id: `${operatorNoticeId}-${variables.id ?? 'new'}`,
+      })
+    },
   })
 
   const applyOptimisticOperatorPatch = (operatorId: number, patch: any) => {
@@ -1254,26 +1493,50 @@ export default function SettingsPage() {
 
   const queuePermissionCommit = (op: any, payload: any) => {
     const existing = permissionCommitBufferRef.current[op.id]
+    if (existing?.committing) return
+    const expectedPermissions = existing ? existing.expectedPermissions : op.custom_permissions ?? null
+    let finishWrite: () => void
+    try {
+      finishWrite = existing?.finishWrite || beginScopedWrite(false)
+    } catch (error) {
+      showWorkspaceToast(error instanceof Error ? error.message : 'Permission changes could not be queued.', { type: 'error' })
+      return
+    }
     if (existing) clearTimeout(existing.timeoutId)
+    else setPendingPermissionWrites(count => count + 1)
 
     applyOptimisticOperatorPatch(op.id, payload)
 
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(async () => {
       const queued = permissionCommitBufferRef.current[op.id]
       if (!queued) return
-      delete permissionCommitBufferRef.current[op.id]
-      operatorMutation.mutate(queued.payload, {
-        onError: () => {
-          queryClient.invalidateQueries({ queryKey: ['operators'] })
-          queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
-          if (queued.payload.username === userProfile?.username) {
-            queryClient.invalidateQueries({ queryKey: ['user-profile'] })
-          }
+      queued.committing = true
+      setSavingPermissionIds(ids => new Set(ids).add(op.id))
+      try {
+        await operatorMutation.mutateAsync({
+          id: queued.payload.id,
+          custom_permissions: queued.payload.custom_permissions,
+          expected_custom_permissions: queued.expectedPermissions,
+        })
+      } catch {
+        await queryClient.invalidateQueries({ queryKey: ['operators'] })
+        await queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+        if (queued.payload.username === userProfile?.username) {
+          await queryClient.invalidateQueries({ queryKey: ['user-profile'] })
         }
-      })
+      } finally {
+        delete permissionCommitBufferRef.current[op.id]
+        setSavingPermissionIds(ids => {
+          const next = new Set(ids)
+          next.delete(op.id)
+          return next
+        })
+        queued.finishWrite()
+        setPendingPermissionWrites(count => count - 1)
+      }
     }, PERMISSION_COMMIT_DEBOUNCE_MS)
 
-    permissionCommitBufferRef.current[op.id] = { timeoutId, payload }
+    permissionCommitBufferRef.current[op.id] = { timeoutId, payload, expectedPermissions, committing: false, finishWrite }
   }
 
   const deleteOperatorMutation = useMutation({
@@ -1288,6 +1551,7 @@ export default function SettingsPage() {
   })
 
   const bulkOperatorPatchMutation = useMutation({
+    retry: false,
     mutationFn: async ({ updates }: { updates: Array<{ id: number, payload: any }> }) => {
       const res = await apiFetch(`/api/v1/settings/operators/bulk-update`, {
         method: "POST",
@@ -1296,17 +1560,16 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['operators'] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
-      queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
-      if (selectedTeamId) queryClient.invalidateQueries({ queryKey: ['team-audit', selectedTeamId] })
+    onSuccess: async () => {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
       setSelectedOperatorIds([])
       showWorkspaceToast("Identity updates applied")
     }
   })
 
   const bulkOperatorDeleteMutation = useMutation({
+    retry: false,
     mutationFn: async (ids: number[]) => {
       const res = await apiFetch(`/api/v1/settings/operators/bulk-delete`, {
         method: "POST",
@@ -1314,10 +1577,9 @@ export default function SettingsPage() {
       })
       if (!res.ok) throw new Error(await res.text())
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['operators'] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
-      queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+    onSuccess: async () => {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
       setSelectedOperatorIds([])
       showWorkspaceToast("Selected identities removed")
     }
@@ -1432,22 +1694,16 @@ export default function SettingsPage() {
     }
   }, [selectedTeam?.id])
 
-  useEffect(() => {
-    if (!showPermissionBulkMenu) return
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        permissionBulkTriggerRef.current?.contains(target as HTMLElement) ||
-        permissionBulkPanelRef.current?.contains(target) ||
-        (target instanceof HTMLElement && target.closest('[data-workspace-panel]'))
-      ) return
+  useWorkspacePopupDismiss(
+    showPermissionBulkMenu,
+    permissionBulkTriggerRef,
+    permissionBulkPanelRef,
+    () => {
       setShowPermissionBulkMenu(false)
       setExpandedPermissionBulkSection(null)
       setPermissionBulkDeleteConfirm(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [permissionBulkPanelRef, permissionBulkTriggerRef, showPermissionBulkMenu])
+    },
+  )
 
   useEffect(() => {
     if (selectedOperatorIds.length > 0) return
@@ -1471,6 +1727,7 @@ export default function SettingsPage() {
   }
 
   const handleOperatorSelection = (id: number, event?: { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean }) => {
+    if (bulkBusyRef.current) return
     const visibleIds = filteredOperators.map((op: any) => op.id)
     const anchorId = permissionSelectionAnchorRef.current ?? id
     const isRangeSelection = Boolean(event?.shiftKey)
@@ -1500,9 +1757,32 @@ export default function SettingsPage() {
     setPermissionBulkDeleteConfirm(false)
   }
 
+  const runBulkOperatorWrite = async (write: () => Promise<unknown>, phase: 'confirming' | 'saving' = 'saving') => {
+    if (bulkBusyRef.current) return
+    let finishWrite: () => void
+    try { finishWrite = beginScopedWrite(false) } catch (error) {
+      setBulkError((error as Error).message)
+      return
+    }
+    bulkBusyRef.current = true
+    setBulkPhase(phase)
+    setBulkError('')
+    try {
+      await write()
+    } catch (error) {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
+      setBulkError(`${(error as Error).message} Review the current identities before trying again.`)
+    } finally {
+      finishWrite()
+      bulkBusyRef.current = false
+      setBulkPhase(null)
+    }
+  }
+
   const assignSelectedOperatorsToFocusedGroup = () => {
     if (!bulkGroupTarget || selectedOperators.length === 0) return
-    bulkOperatorPatchMutation.mutate({
+    void runBulkOperatorWrite(() => bulkOperatorPatchMutation.mutateAsync({
       updates: selectedOperators.map((op: any) => ({
         id: op.id,
         payload: {
@@ -1510,12 +1790,12 @@ export default function SettingsPage() {
           team_source: 'manual_override'
         }
       }))
-    })
+    }))
   }
 
   const removeSelectedOperatorsFromFocusedGroup = () => {
     if (!bulkGroupTarget || selectedOperators.length === 0) return
-    bulkOperatorPatchMutation.mutate({
+    void runBulkOperatorWrite(() => bulkOperatorPatchMutation.mutateAsync({
       updates: selectedOperators.map((op: any) => ({
         id: op.id,
         payload: {
@@ -1523,20 +1803,20 @@ export default function SettingsPage() {
           team_source: 'manual_override'
         }
       }))
-    })
+    }))
   }
 
   const bulkSetAdminState = (isAdmin: boolean) => {
     if (selectedOperators.length === 0) return
-    bulkOperatorPatchMutation.mutate({
+    void runBulkOperatorWrite(() => bulkOperatorPatchMutation.mutateAsync({
       updates: selectedOperators.map((op: any) => ({
         id: op.id,
         payload: { is_admin: isAdmin }
       }))
-    })
+    }))
   }
 
-  const bulkDeleteSelectedOperators = async () => {
+  const bulkDeleteSelectedOperators = () => {
     const deletableIds = selectedOperators
       .filter((op: any) => op.username !== userProfile?.username)
       .map((op: any) => op.id)
@@ -1544,8 +1824,11 @@ export default function SettingsPage() {
       showWorkspaceToast("Protected identities cannot be removed", { type: 'error' })
       return
     }
-    if (!await confirmWorkspaceAction({ title: 'Delete identities', message: `Delete ${deletableIds.length} selected identities? Their access will be removed.`, confirmText: 'Delete identities', variant: 'danger' })) return
-    bulkOperatorDeleteMutation.mutate(deletableIds)
+    void runBulkOperatorWrite(async () => {
+      if (!await confirmWorkspaceAction({ title: 'Delete identities', message: `Delete ${deletableIds.length} selected identities? Their access will be removed.`, confirmText: 'Delete identities', variant: 'danger' })) return
+      setBulkPhase('saving')
+      await bulkOperatorDeleteMutation.mutateAsync(deletableIds)
+    }, 'confirming')
   }
 
   const toggleTeamFilter = (teamName: string) => {
@@ -1652,17 +1935,15 @@ export default function SettingsPage() {
     }
   }, [teams, selectedTeamId])
 
-  const getPermLevel = (op: any, view: string) => {
-    const perms = { ...(op.role?.permissions || {}), ...(op.custom_permissions || {}) };
-    const val = perms?.[view] ?? perms?.['all'] ?? 0;
-    if (typeof val === 'number') return val;
-    if (val === 'read') return 1;
-    if (val === 'add') return 2;
-    if (val === 'edit' || val === 'manage') return 3;
-    return 0;
-  }
+  const getPermState = (op: any, view: string) => recordedPermissionState({
+    is_admin: op.is_admin,
+    role_id: op.role_id ?? null,
+    role_permissions: op.role?.permissions ?? {},
+    custom_permissions: op.custom_permissions,
+  }, view)
 
   const togglePermission = async (op: any, view: string) => {
+    if (permissionCommitBufferRef.current[op.id]?.committing || bulkBusy || syncBusy || restorePhase !== null) return
     const queuedPayload = permissionCommitBufferRef.current[op.id]?.payload
     const workingOperator = queuedPayload
       ? {
@@ -1673,15 +1954,15 @@ export default function SettingsPage() {
       : op
 
     // Admin Lock-out Protection
+    const { level: current, global: minimum } = getPermState(workingOperator, view)
+    if (current === null || minimum === null || minimum === 3) return
     if (workingOperator.username === userProfile?.username && view === 'settings') {
-        const current = getPermLevel(workingOperator, view);
         if (current === 3 && !await confirmWorkspaceAction({ title: 'Change your Settings access', message: 'Reducing your own Settings permission may lock you out of this console.', confirmText: 'Change access', variant: 'warning' })) {
             return;
         }
     }
 
-    const current = getPermLevel(workingOperator, view);
-    const next = (current + 1) % 4;
+    const next = current === 3 ? minimum : current + 1;
     
     // Always persist as numeric for simplicity in this update
     const newPerms = { ...(workingOperator.custom_permissions || {}), [view]: next };
@@ -1691,6 +1972,26 @@ export default function SettingsPage() {
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto px-0 sm:px-4 overflow-x-hidden overflow-y-auto relative sm:overflow-hidden" data-settings-workspace="true">
       {confirmation}
+      {pendingPermissionWrites > 0 && (
+        <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          Saving permission changes. Stay on this page until the save finishes.
+        </p>
+      )}
+      {syncBusy && (
+        <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          {poolMutation.variables?.preview ? 'Preparing synchronization preview' : 'Applying identity records'}. Stay on this page until the request finishes.
+        </p>
+      )}
+      {bulkBusy && (
+        <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          {bulkPhase === 'confirming' ? 'Review the identity deletion. Finish or cancel confirmation before leaving.' : 'Saving bulk identity changes. Stay on this page until the save finishes.'}
+        </p>
+      )}
+      {bulkError && (
+        <p role="alert" className="shrink-0 rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] px-4 py-3 text-sm text-[var(--state-danger)]">
+          {bulkError}
+        </p>
+      )}
       <AnimatePresence>
         {isDisconnected && (
           <motion.div 
@@ -2060,6 +2361,7 @@ export default function SettingsPage() {
                                         {typeof value === 'boolean' ? (
                                             <div className="flex items-center gap-4 py-1">
                                                 <ToggleSwitch 
+                                                    label={key.replace(/_/g, ' ')}
                                                     checked={!!value} disabled={!editableFields[key]}
                                                     onChange={(e: any) => setLocalEnv({...localEnv, [key]: e.target.checked})}
                                                     activeColor="bg-emerald-600"
@@ -2102,21 +2404,23 @@ export default function SettingsPage() {
           {topTab === 'permissions' && settingsManage && (
             <motion.div key="permissions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 pt-2" data-settings-tab-content="permissions">
                {/* Identity Sync Pipeline - Collapsed by default */}
-               <div className="rounded-lg border border-white/5 bg-black/20 overflow-hidden">
+               <div className="rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] overflow-hidden">
                   <button 
+                    type="button"
+                    aria-expanded={showPoolLogic}
                     onClick={() => setShowPoolLogic(!showPoolLogic)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors group"
+                    className="w-full flex items-center justify-between p-4 hover:bg-[var(--surface-hover)] transition-colors group"
                   >
                     <div className="flex items-center space-x-3">
-                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${showPoolLogic ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'bg-slate-800 text-slate-500 border border-white/5'}`}>
+                       <div className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center border border-[var(--grid-border)] bg-[var(--surface-hover)] text-[var(--text-secondary)]">
                           <SettingsIcon size={18} className={showPoolLogic ? 'animate-pulse' : ''} />
                        </div>
                        <div className="text-left">
-                          <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                          <h3 className="text-xs font-semibold text-[var(--text-primary)] flex flex-wrap items-center gap-2">
                              Identity Sync Pipeline
-                             <div className="px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20 text-[7px] font-black tracking-normal">PYTHON-DRIVEN</div>
+                             <span className="px-1.5 py-0.5 bg-[var(--surface-hover)] text-[var(--text-secondary)] rounded-lg border border-[var(--grid-border)] text-[10px] font-medium">RECORD IMPORT</span>
                           </h3>
-                          <p className="text-[9px] font-bold text-slate-500 mt-0.5">Automated synchronization of operators, departments, and teams from LDAP/AD providers</p>
+                          <p className="text-xs text-[var(--text-secondary)] mt-1">Preview and apply a complete identity snapshot from your company source</p>
                        </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -2131,74 +2435,85 @@ export default function SettingsPage() {
                          initial={{ height: 0, opacity: 0 }} 
                          animate={{ height: "auto", opacity: 1 }} 
                          exit={{ height: 0, opacity: 0 }}
-                         className="overflow-hidden border-t border-white/5"
+                         className="overflow-hidden border-t border-[var(--border-default)]"
                        >
-                          <div className="p-6 bg-slate-900/40 space-y-6">
-                             <div className="flex items-stretch justify-between gap-6">
-                                <div className="flex-1 flex flex-col space-y-4">
-                                   <div className="flex items-center justify-between">
+                          <div className="p-4 sm:p-6 bg-[var(--panel-item-bg)] space-y-6">
+                             <div className="flex flex-col xl:flex-row items-stretch justify-between gap-6">
+                                <div className="min-w-0 flex-1 flex flex-col space-y-4">
+                                   <div className="flex flex-wrap items-center justify-between gap-3">
                                       <div className="flex items-center gap-3">
-                                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                         <div className="w-8 h-8 shrink-0 rounded-lg bg-[var(--surface-hover)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
                                             <Terminal size={14} />
                                          </div>
-                                         <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Synchronization Logic</h4>
+                                         <h4 className="text-xs font-semibold text-[var(--text-primary)]">Identity Records</h4>
                                       </div>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex flex-wrap items-center gap-2">
                                          <ToolbarButton 
                                             onClick={() => setIsSyncEditable(!isSyncEditable)}
+                                            disabled={syncBusy}
                                             variant={isSyncEditable ? "danger" : "secondary"}
-                                            className="h-8"
+                                            className="min-h-9"
                                          >
-                                            <div className="flex items-center gap-2">{isSyncEditable ? <Lock size={12} /> : <EditIcon size={12} />} {isSyncEditable ? "Lock Logic" : "Modify Logic"}</div>
+                                            <div className="flex items-center gap-2">{isSyncEditable ? <Lock size={12} /> : <EditIcon size={12} />} {isSyncEditable ? "Lock Records" : "Edit Records"}</div>
                                          </ToolbarButton>
                                          <ToolbarButton 
-                                            onClick={() => poolMutation.mutate({ script: userPoolScript, preview: true })}
+                                            onClick={() => runIdentitySync(true)}
+                                            disabled={syncBusy}
                                             variant="primary"
-                                            className="h-8"
+                                            className="min-h-9"
                                          >
-                                            <div className="flex items-center gap-2"><RefreshCcw size={12} className={poolMutation.isPending ? 'animate-spin' : ''} /> Dry Run Preview</div>
+                                            <div className="flex items-center gap-2"><RefreshCcw size={12} className={syncBusy ? 'animate-spin' : ''} /> Dry Run Preview</div>
                                          </ToolbarButton>
                                       </div>
                                    </div>
-                                   <div className="relative group flex-1">
+                                   <div className="flex-1 space-y-2">
                                       <textarea 
-                                        readOnly={!isSyncEditable}
-                                        value={userPoolScript} 
-                                        onChange={e => setUserPoolScript(e.target.value)}
-                                        className={`w-full h-full min-h-[300px] bg-black/60 border ${isSyncEditable ? 'border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.05)]' : 'border-white/5'} rounded-lg p-6 font-mono text-[11px] text-emerald-400 outline-none transition-all custom-scrollbar leading-relaxed`}
+                                        aria-label="Identity records (JSON)"
+                                        aria-describedby="sync-records-mode sync-records-scope"
+                                        readOnly={!isSyncEditable || syncBusy}
+                                        spellCheck={false}
+                                        value={recordsDraft}
+                                        onChange={e => {
+                                          setRecordsDraft(e.target.value)
+                                          setSyncError('')
+                                          setSyncPreviewData(null)
+                                          setIsSyncPreviewOpen(false)
+                                          setReviewedRemovals(false)
+                                        }}
+                                        className={`w-full min-h-[300px] bg-[var(--surface-base)] border ${isSyncEditable ? 'border-[var(--accent-primary)]' : 'border-[var(--border-default)]'} rounded-lg p-4 font-mono text-xs text-[var(--text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)] custom-scrollbar leading-relaxed`}
                                       />
-                                      {!isSyncEditable && (
-                                         <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                            <div className="bg-slate-900/90 border border-white/10 rounded-lg px-4 py-2 flex items-center gap-2 shadow-2xl">
-                                               <Lock size={12} className="text-slate-500" />
-                                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Logic Encrypted/Locked</span>
-                                            </div>
-                                         </div>
-                                      )}
+                                      <p id="sync-records-mode" className="text-xs text-[var(--text-secondary)]">
+                                        {syncBusy ? 'Request in progress. Draft locked.' : isSyncEditable ? 'Editing enabled. Choose Lock Records to make the editor read-only.' : 'Read-only. Choose Edit Records to edit.'}
+                                      </p>
+                                      <p id="sync-records-scope" className="text-xs text-[var(--text-secondary)]">
+                                        Paste a complete JSON array from your identity source. Missing source-managed users may be removed; omitted optional fields may be cleared. Review every change before applying. This draft stays on this page until applied or discarded.
+                                      </p>
+                                      {syncError && <p role="alert" className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-3 text-xs text-[var(--text-primary)]">{syncError}</p>}
                                    </div>
                                 </div>
 
-                                <div className="w-80 flex flex-col space-y-4">
-                                   <div className="bg-white/5 border border-white/5 rounded-lg p-4 flex-1">
-                                      <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
-                                         <Activity size={12} className="text-blue-400" />
-                                         <p className="text-[10px] font-black uppercase text-white tracking-widest">Schema Requirements</p>
+                                <div className="w-full xl:w-80 xl:shrink-0 flex flex-col space-y-4">
+                                   <div className="bg-[var(--surface-hover)] border border-[var(--border-default)] rounded-lg p-4 flex-1">
+                                      <div className="flex items-center gap-2 mb-3 border-b border-[var(--border-default)] pb-2">
+                                         <Activity size={12} className="text-[var(--text-secondary)]" />
+                                         <p className="text-xs font-semibold text-[var(--text-primary)]">Schema Requirements</p>
                                       </div>
-                                      <p className="text-[9px] text-slate-400 font-bold leading-relaxed mb-4">
-                                         Pipeline output must be a sequence of dictionaries containing exactly these mapped keys:
+                                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-4">
+                                         Each record requires an external identity key, username, and full name. Optional values are authoritative when this snapshot is applied.
                                       </p>
                                       <div className="grid grid-cols-1 gap-2">
                                          {[
-                                            { key: 'id', desc: 'Unique LDAP/External Key' },
-                                            { key: 'username', desc: 'System Identity ID' },
-                                            { key: 'full_name', desc: 'Natural Case Display Name' },
-                                            { key: 'email', desc: 'Verified Contact Address' },
-                                            { key: 'department', desc: 'LDAP Department Mapping' },
-                                            { key: 'team', desc: 'LDAP Team Mapping' }
+                                            { key: 'external_id', desc: 'Required; id is also accepted' },
+                                            { key: 'username', desc: 'Required unique username' },
+                                            { key: 'full_name', desc: 'Required display name' },
+                                            { key: 'email', desc: 'Optional contact address' },
+                                            { key: 'department', desc: 'Optional department' },
+                                            { key: 'team', desc: 'Optional primary team' },
+                                            { key: 'registration_status', desc: 'Optional registration status' }
                                          ].map(f => (
-                                            <div key={f.key} className="flex items-center justify-between p-2 bg-black/20 rounded-lg border border-white/5">
-                                               <code className="text-[9px] font-black text-blue-400">.{f.key}</code>
-                                               <span className="text-[8px] font-bold text-slate-500 uppercase">{f.desc}</span>
+                                            <div key={f.key} className="flex flex-wrap items-center justify-between gap-2 p-2 bg-[var(--panel-item-bg)] rounded-lg border border-[var(--border-default)]">
+                                               <code className="text-xs font-semibold text-[var(--text-primary)]">.{f.key}</code>
+                                               <span className="text-xs text-[var(--text-secondary)]">{f.desc}</span>
                                             </div>
                                          ))}
                                       </div>
@@ -2222,12 +2537,13 @@ export default function SettingsPage() {
                        className="max-w-xl"
                      />
                      <ToolbarGroup>
-                       <div className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3">
-                         <span className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-500">Sort</span>
+                       <div className="flex h-9 items-center gap-2 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-3">
+                         <span className="text-xs font-semibold text-[var(--text-secondary)]">Sort</span>
                          <select
+                           aria-label="Sort operators"
                            value={operatorSort}
                            onChange={(e) => setOperatorSort(e.target.value as any)}
-                           className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-300 outline-none"
+                           className="bg-[var(--panel-item-bg)] text-xs font-semibold text-[var(--text-primary)]"
                          >
                            <option value="name">Identity</option>
                            <option value="team">Primary Team</option>
@@ -2239,7 +2555,7 @@ export default function SettingsPage() {
                  }
                  right={
                    <ToolbarGroup>
-                     <ToolbarButton onClick={() => setShowPermissionHistory(true)}>
+                     <ToolbarButton disabled={settingsWritePending} onClick={() => setShowPermissionHistory(true)}>
                        <span className="flex items-center gap-2">
                          <HistoryIcon size={14} />
                          Revision History
@@ -2249,6 +2565,9 @@ export default function SettingsPage() {
                        onClick={togglePermissionBulkMenu}
                        disabled={selectedOperatorIds.length === 0}
                        active={showPermissionBulkMenu}
+                       ariaExpanded={showPermissionBulkMenu}
+                       ariaControls="settings-permission-bulk-actions"
+                       ariaHasPopup="dialog"
                        ref={permissionBulkTriggerRef as any}
                      >
                        <span className="flex items-center gap-2">
@@ -2262,21 +2581,28 @@ export default function SettingsPage() {
 
                {typeof document !== 'undefined' && createPortal(
                  <AnimatePresence>
-                   {showPermissionBulkMenu && !!permissionBulkPanelStyle.top && (
+                   {showPermissionBulkMenu && (
                      <motion.div
                        initial={{ opacity: 0, y: 10 }}
                        animate={{ opacity: 1, y: 0 }}
                        exit={{ opacity: 0, y: 10 }}
+                       onAnimationComplete={(definition) => {
+                         if (typeof definition === 'object' && 'opacity' in definition && definition.opacity === 1
+                           && document.activeElement === permissionBulkTriggerRef.current) {
+                           permissionBulkPanelRef.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus()
+                         }
+                       }}
                        style={permissionBulkPanelStyle}
                        data-workspace-panel="true"
                      >
-                       <div ref={permissionBulkPanelRef}>
+                       <div ref={permissionBulkPanelRef} id="settings-permission-bulk-actions" role="dialog" aria-label="Bulk identity actions">
                          <WorkspaceFloatingPanel kind="context" className="max-h-[560px] overflow-y-auto custom-scrollbar p-3">
-                           <div className="mb-3 rounded-lg border border-slate-800 bg-slate-950 px-4 py-3">
-                             <p className="text-[10px] font-semibold text-slate-400">Bulk actions</p>
-                             <p className="pt-1 text-[12px] font-semibold text-slate-100">{selectedOperatorIds.length} identities selected</p>
+                           <div className="mb-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3">
+                             <p className="text-xs font-semibold text-[var(--text-secondary)]">Bulk actions</p>
+                             <p className="pt-1 text-xs font-semibold text-[var(--text-primary)]">{selectedOperatorIds.length} {selectedOperatorIds.length === 1 ? 'identity' : 'identities'} selected</p>
                            </div>
 
+                           <fieldset disabled={bulkBusy} className="min-w-0 border-0 p-0 m-0">
                            <div className="space-y-2">
                              <WorkspaceFlyoutActionCard
                                title="Assign Group"
@@ -2313,31 +2639,31 @@ export default function SettingsPage() {
                              )}
                            </div>
 
-                           <div className="mx-1 my-3 h-px bg-slate-800" />
+                           <div className="mx-1 my-3 h-px bg-[var(--border-default)]" />
                            <div className="grid gap-2">
                              <button
                                onClick={() => bulkSetAdminState(true)}
                                disabled={bulkOperatorPatchMutation.isPending}
-                               className="w-full rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-left transition-all hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-950 disabled:text-slate-600"
+                               className="w-full min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--action-primary-muted)] px-4 py-3 text-left text-[var(--action-ink)] transition-colors hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:bg-[var(--input-bg)] disabled:text-[var(--text-disabled)]"
                              >
-                               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-300">Set Admin</p>
+                               <p className="text-xs font-semibold">Set Admin</p>
                              </button>
                              <button
                                onClick={() => bulkSetAdminState(false)}
                                disabled={bulkOperatorPatchMutation.isPending}
-                               className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 text-left transition-all hover:bg-white/5 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-950 disabled:text-slate-600"
+                               className="w-full min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] px-4 py-3 text-left text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--text-disabled)]"
                              >
-                               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-300">Unset Admin</p>
+                               <p className="text-xs font-semibold">Unset Admin</p>
                              </button>
                              <button
                                onClick={() => setSelectedOperatorIds([])}
-                               className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 text-left transition-all hover:bg-white/5"
+                               className="w-full min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] px-4 py-3 text-left text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                              >
-                               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-300">Clear Selection</p>
+                               <p className="text-xs font-semibold">Clear Selection</p>
                              </button>
                            </div>
 
-                           <div className="mx-1 my-3 h-px bg-slate-800" />
+                           <div className="mx-1 my-3 h-px bg-[var(--border-default)]" />
                            <button
                              onClick={() => {
                                if (!permissionBulkDeleteConfirm) {
@@ -2348,16 +2674,17 @@ export default function SettingsPage() {
                              }}
                              onMouseLeave={() => setPermissionBulkDeleteConfirm(false)}
                              disabled={bulkOperatorDeleteMutation.isPending}
-                             className={`w-full rounded-lg border px-4 py-3 text-left transition-all ${
+                             className={`w-full min-h-10 rounded-lg border border-[var(--state-danger-border)] px-4 py-3 text-left text-[var(--state-danger)] transition-colors disabled:cursor-not-allowed ${
                                permissionBulkDeleteConfirm
-                                 ? 'border-rose-500 bg-rose-600 animate-pulse'
-                                 : 'border-rose-900/70 bg-rose-950/70 hover:bg-rose-950'
+                                 ? 'bg-[var(--state-danger-surface-strong)]'
+                                 : 'bg-[var(--state-danger-surface)] hover:bg-[var(--state-danger-surface-strong)]'
                              }`}
                            >
-                             <p className={`text-[10px] font-semibold ${permissionBulkDeleteConfirm ? 'text-white' : 'text-rose-300'}`}>
+                             <p className="text-xs font-semibold">
                                {permissionBulkDeleteConfirm ? 'Confirm Identity Deletion?' : 'Delete Selection'}
                              </p>
                            </button>
+                           </fieldset>
                          </WorkspaceFloatingPanel>
                        </div>
                      </motion.div>
@@ -2369,93 +2696,114 @@ export default function SettingsPage() {
                <AnimatePresence>
                  {isSyncPreviewOpen && syncPreviewData && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-6">
-                        <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/5 shadow-2xl overflow-hidden">
-                            <div className="p-4 border-b border-indigo-500/20 bg-indigo-500/10 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2 bg-indigo-600/20 text-indigo-400 rounded-lg"><RefreshCcw size={16} /></div>
-                                    <div>
-                                        <h3 className="text-[12px] font-black text-white tracking-widest">Sync Preview: {syncPreviewData.version_label}</h3>
-                                        <div className="flex items-center gap-3 mt-0.5">
-                                            <span className="text-[8px] font-black uppercase text-emerald-500">+{syncPreviewData.summary.added} New</span>
-                                            <span className="text-[8px] font-black uppercase text-amber-500">~{syncPreviewData.summary.changed} Changed</span>
+                        <section aria-label="Synchronization preview" data-sync-preview className="rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] text-[var(--text-primary)] overflow-hidden">
+                            <div className="p-4 border-b border-[var(--grid-border)] space-y-3">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                    <div className="space-y-2">
+                                        <h3 className="text-sm font-semibold">Sync Preview</h3>
+                                        <div className="flex flex-wrap items-center gap-3 text-xs">
+                                            <span>{syncPreviewData.summary.added} new</span>
+                                            <span>{syncPreviewData.summary.changed} changed</span>
+                                            <span className="text-[var(--state-danger)]">{syncPreviewData.summary.removed} removed</span>
                                         </div>
                                     </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        <ToolbarButton
+                                            onClick={() => { setIsSyncPreviewOpen(false); setSyncPreviewData(null); setReviewedRemovals(false) }}
+                                            disabled={syncBusy}
+                                            className="min-h-9"
+                                        >
+                                            Abort
+                                        </ToolbarButton>
+                                        <ToolbarButton
+                                            onClick={() => runIdentitySync(false)}
+                                            disabled={syncBusy || (syncPreviewData.summary.removed > 0 && !reviewedRemovals)}
+                                            variant="primary"
+                                            className="min-h-9"
+                                        >
+                                            Confirm &amp; Execute Sync
+                                        </ToolbarButton>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <ToolbarButton 
-                                        onClick={() => setIsSyncPreviewOpen(false)}
-                                        className="h-8"
-                                    >
-                                        Abort
-                                    </ToolbarButton>
-                                    <ToolbarButton 
-                                        onClick={() => poolMutation.mutate({ script: userPoolScript, preview: false })}
-                                        variant="primary"
-                                        className="h-8 shadow-lg shadow-indigo-500/20"
-                                    >
-                                        Confirm & Execute Sync
-                                    </ToolbarButton>
-                                </div>
+                                <p className="text-xs text-[var(--text-secondary)]">
+                                    Review the values below. Local team overrides are preserved. Changes to the draft or saved identity data require a fresh preview.
+                                </p>
+                                {syncPreviewData.summary.team_conflicts.length > 0 && (
+                                    <div className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-3 text-xs space-y-2">
+                                        <p className="font-semibold">Preserved local team assignments</p>
+                                        <ul className="space-y-1 [overflow-wrap:anywhere]">
+                                            {syncPreviewData.summary.team_conflicts.map((conflict: any) => (
+                                                <li key={conflict.external_id}>{conflict.external_id}: keep {conflict.local_team}; source requested {conflict.synced_team || 'no team'}.</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {syncPreviewData.summary.removed > 0 && (
+                                    <label className="flex items-start gap-3 rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-3 text-xs">
+                                        <input type="checkbox" aria-label="I reviewed the removals" checked={reviewedRemovals} disabled={syncBusy}
+                                            onChange={event => setReviewedRemovals(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent-primary)]" />
+                                        <span>I reviewed the removals. Applying this complete snapshot will remove {syncPreviewData.summary.removed} source-managed {syncPreviewData.summary.removed === 1 ? 'identity' : 'identities'} listed below.</span>
+                                    </label>
+                                )}
                             </div>
                             <div className="max-h-[400px] overflow-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse text-[10px]">
+                                <table aria-label="Identity changes" className="w-full min-w-[680px] text-left border-collapse text-xs">
                                     <thead>
-                                        <tr className="bg-black/40">
-                                            <th className="p-3 font-bold uppercase text-slate-500 tracking-widest border-b border-white/5">Identity</th>
-                                            <th className="p-3 font-bold uppercase text-slate-500 tracking-widest border-b border-white/5">Username</th>
-                                            <th className="p-3 font-bold uppercase text-slate-500 tracking-widest border-b border-white/5 text-center">Status</th>
+                                        <tr className="bg-[var(--grid-header-bg)] text-[var(--text-secondary)]">
+                                            {['Identity', 'Username', 'Status', 'Changes'].map(label => <th key={label} scope="col" className="p-3 font-semibold border-b border-[var(--grid-border)]">{label}</th>)}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {syncPreviewData.preview.map((item: any, i: number) => (
-                                            <tr key={i} className={`hover:bg-white/5 border-b border-white/5 transition-colors ${item.status === 'new' ? 'bg-emerald-500/5' : item.status === 'changed' ? 'bg-amber-500/5' : ''}`}>
+                                        {[...syncPreviewData.preview].sort((a: any, b: any) => {
+                                            const order: Record<string, number> = { removed: 0, changed: 1, new: 2, unchanged: 3 }
+                                            return order[a.status] - order[b.status]
+                                        }).map((item: any) => (
+                                            <tr key={item.id} className="border-b border-[var(--grid-border)] hover:bg-[var(--surface-hover)]">
+                                                <td className="p-3 [overflow-wrap:anywhere]">{item.full_name}</td>
+                                                <td className="p-3 font-mono [overflow-wrap:anywhere]">{item.username}</td>
                                                 <td className="p-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[9px] ${item.status === 'new' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
-                                                            {item.username?.slice(0,2).toUpperCase()}
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-white">{item.full_name}</span>
-                                                        </div>
-                                                    </div>
+                                                    <span className="rounded-lg border border-[var(--grid-border)] bg-[var(--surface-hover)] px-2 py-1 capitalize">{item.status}</span>
                                                 </td>
-                                                <td className="p-3 font-mono text-blue-400">{item.username}</td>
-                                                <td className="p-3 text-center">
-                                                    <span className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest ${
-                                                        item.status === 'new' ? 'bg-emerald-500 text-white' : 
-                                                        item.status === 'changed' ? 'bg-amber-500 text-black' : 
-                                                        'bg-slate-700 text-slate-400'
-                                                    }`}>
-                                                        {item.status}
-                                                    </span>
+                                                <td className="p-3 [overflow-wrap:anywhere]">
+                                                    {Object.entries(item.changes).length ? Object.entries(item.changes).map(([field, change]: [string, any]) => (
+                                                        <p key={field}>{field.replaceAll('_', ' ')}: {String(change.old ?? 'None')} → {String(change.new ?? 'None')}</p>
+                                                    )) : item.status === 'removed' ? 'Absent from the source snapshot' : item.status === 'new' ? (
+                                                        <div className="space-y-1">
+                                                            <p>Create identity: {item.id}</p>
+                                                            {['email', 'department', 'team', 'registration_status'].map(field => <p key={field}>{field.replaceAll('_', ' ')}: {item[field] ?? 'None'}</p>)}
+                                                        </div>
+                                                    ) : 'No changes'}
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </section>
                     </motion.div>
                  )}
                </AnimatePresence>
 
-               <div className="rounded-lg border border-[var(--glass-border)] bg-black/20 shadow-2xl overflow-hidden backdrop-blur-sm">
+               <div className="rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] overflow-hidden">
+                  <p data-permission-grant-help className="border-b border-[var(--border-default)] px-4 py-3 text-xs text-[var(--text-secondary)]">
+                    Levels show tenant grants; module policy may further restrict access. Global grants set the minimum level for every module.
+                  </p>
                   <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-white/5">
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 sticky left-0 bg-[#0c121e] z-20 min-w-[84px] uppercase tracking-widest">Select</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 sticky left-[84px] bg-[#0c121e] z-10 min-w-[280px] uppercase tracking-widest">Identity</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 min-w-[140px] uppercase tracking-widest">Department</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 min-w-[140px] uppercase tracking-widest">Team</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 min-w-[200px] uppercase tracking-widest">Group(s)</th>
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 text-center uppercase tracking-widest">Admin Status</th>
+                        <tr className="bg-[var(--grid-header-bg)] text-[var(--text-secondary)]">
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] md:sticky md:left-0 bg-[var(--grid-header-bg)] z-20 min-w-[84px]">Select</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] md:sticky md:left-[84px] bg-[var(--grid-header-bg)] z-10 min-w-[280px]">Identity</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] min-w-[140px]">Department</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] min-w-[140px]">Team</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] min-w-[200px]">Group(s)</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] text-center">Admin Status</th>
                           {allViews.map(view => (
-                            <th key={view} className="p-2 text-[8px] font-bold text-slate-600 border-b border-white/5 text-center min-w-[60px] hover:text-blue-400 transition-colors uppercase tracking-tighter">
+                            <th key={view} className="p-2 text-xs font-semibold border-b border-[var(--grid-border)] text-center min-w-[76px] capitalize">
                               {view}
                             </th>
                           ))}
-                          <th className="p-4 text-[10px] font-bold text-slate-500 border-b border-white/5 text-center uppercase tracking-widest">Action</th>
+                          <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2466,11 +2814,13 @@ export default function SettingsPage() {
                           const isSelected = selectedOperatorIds.includes(op.id)
 
                           return (
-                          <tr key={op.id} className={`transition-colors border-b border-white/5 last:border-0 group ${isSelected ? 'bg-blue-500/[0.08]' : op.username === userProfile?.username ? 'bg-blue-600/[0.03]' : 'hover:bg-white/5'}`}>
-                            <td className="p-4 sticky left-0 bg-[#0c121e]/95 backdrop-blur-sm z-20 border-r border-white/5 align-middle">
+                          <tr key={op.id} className={`transition-colors border-b border-[var(--grid-border)] last:border-0 group ${isSelected ? 'bg-[var(--surface-hover)]' : 'hover:bg-[var(--surface-hover)]'}`}>
+                            <td className="p-4 md:sticky md:left-0 bg-[var(--panel-item-bg)] z-20 border-r border-[var(--grid-border)] align-middle">
                               <div className="flex items-center justify-center min-h-[40px]">
                                 <input
                                   type="checkbox"
+                                  aria-label={`Select ${op.username}`}
+                                  disabled={bulkBusy}
                                   readOnly
                                   checked={isSelected}
                                   onClick={(event) => {
@@ -2481,32 +2831,34 @@ export default function SettingsPage() {
                                 />
                               </div>
                             </td>
-                            <td className="p-4 sticky left-[84px] bg-[#0c121e]/95 backdrop-blur-sm z-10 border-r border-white/5 align-middle">
+                            <td className="p-4 md:sticky md:left-[84px] bg-[var(--panel-item-bg)] z-10 border-r border-[var(--grid-border)] align-middle">
                               <button
                                 type="button"
+                                aria-pressed={isSelected}
+                                disabled={bulkBusy}
                                 onClick={(event) => handleOperatorSelection(op.id, event)}
                                 className="flex w-full items-center gap-3 text-left"
                               >
-                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-[11px] shadow-lg transition-all ${op.is_admin ? 'bg-blue-600 text-white shadow-blue-500/20' : 'bg-slate-800 text-slate-400 border border-white/5'}`}>
+                                <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center font-semibold text-xs bg-[var(--surface-hover)] text-[var(--text-secondary)] border border-[var(--grid-border)]">
                                   {op.username?.slice(0,2).toUpperCase()}
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                  <p className="text-[11px] font-bold text-white leading-none truncate flex items-center gap-1.5">
+                                  <p className="text-xs font-semibold text-[var(--text-primary)] leading-normal truncate flex items-center gap-1.5">
                                     {op.full_name}
-                                    {op.username === userProfile?.username && <span className="text-[7px] bg-blue-500 text-white px-1.5 py-0.5 rounded-lg font-black uppercase tracking-normal">You</span>}
+                                    {op.username === userProfile?.username && <span className="text-[10px] bg-[var(--surface-hover)] text-[var(--text-primary)] px-1.5 py-0.5 rounded-lg font-semibold">You</span>}
                                   </p>
-                                  <p className="text-[8px] font-bold text-slate-500 mt-1 tracking-tighter truncate opacity-60">{op.username}</p>
+                                  <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{op.username}</p>
                                 </div>
                               </button>
                             </td>
                             <td className="p-4 align-middle">
-                              <span className="text-[10px] font-bold text-slate-300">{op.department || '—'}</span>
+                              <span className="text-xs text-[var(--text-primary)]">{op.department || '—'}</span>
                             </td>
                             <td className="p-4 align-middle">
-                              <span className="text-[10px] font-bold text-slate-300">{op.team || '—'}</span>
+                              <span className="text-xs text-[var(--text-primary)]">{op.team || '—'}</span>
                             </td>
                             <td className="p-4 align-middle">
-                               <WorkspaceTooltip focusable className="inline-block" content={<>
+                               <WorkspaceTooltip focusable className="relative inline-block" content={<>
                                  <p className="font-semibold">Active Membership</p>
                                  {assignedGroups.length ? assignedGroups.map((g: any) => <p key={g.id} className="mt-1">{g.name}</p>) : <p className="mt-1">No assigned groups</p>}
                                </>}>
@@ -2519,27 +2871,36 @@ export default function SettingsPage() {
                             <td className="p-4 text-center align-middle">
                               <div className="flex items-center justify-center min-h-[40px]" onClick={(e) => e.stopPropagation()}>
                                 <ToggleSwitch 
+                                  label={`Admin access for ${op.username}`}
+                                  disabled={pendingPermissionWrites > 0 || bulkBusy || syncBusy || restorePhase !== null}
                                   checked={op.is_admin} 
                                   onChange={async (e: any) => {
                                     const checked = e.target.checked
                                     if (op.username === userProfile?.username && !checked && !await confirmWorkspaceAction({ title: 'Remove your admin access', message: 'Disabling your own Admin status will lock you out of this console.', confirmText: 'Remove admin access', variant: 'danger' })) return
-                                    operatorMutation.mutate({ ...op, is_admin: checked });
+                                    operatorMutation.mutate({ id: op.id, is_admin: checked });
                                   }} 
                                   activeColor="bg-emerald-600"
                                 />
                               </div>
                             </td>
-                            {allViews.map(view => (
+                            {allViews.map(view => {
+                              const permission = getPermState(op, view)
+                              return (
                               <td key={view} className="p-1 text-center border-x border-white/[0.02] align-middle">
                                 <div className="flex items-center justify-center min-h-[40px]" onClick={(e) => e.stopPropagation()}>
                                   <ViewPermissionIcon 
-                                    level={op.is_admin ? 3 : getPermLevel(op, view)}
+                                    label={`${view} permission for ${op.username}`}
+                                    level={permission.level}
+                                    globalLevel={permission.global}
+                                    disabled={savingPermissionIds.has(op.id) || bulkBusy || syncBusy || restorePhase !== null}
+                                    saving={savingPermissionIds.has(op.id)}
                                     onClick={() => !op.is_admin && togglePermission(op, view)}
                                     isGlobalAdmin={op.is_admin}
                                   />
                                 </div>
                               </td>
-                            ))}
+                              )
+                            })}
                             <td className="p-4 text-center align-middle">
                               {op.username !== userProfile?.username ? (
                                 <SameButtonConfirm 
@@ -2564,7 +2925,7 @@ export default function SettingsPage() {
                         )})}
                         {filteredOperators.length === 0 && (
                           <tr>
-                            <td colSpan={allViews.length + 6} className="p-8 text-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                            <td colSpan={allViews.length + 7} className="p-8 text-center text-xs text-[var(--text-secondary)]">
                               No operators match the current filter
                             </td>
                           </tr>
@@ -3194,7 +3555,8 @@ export default function SettingsPage() {
 
       {/* Permission Registry History */}
       {settingsManage && showPermissionHistory && (
-         <PermissionHistoryModal versions={poolVersions || []} allViews={allViews} onClose={() => setShowPermissionHistory(false)} />
+         <PermissionHistoryModal versions={poolVersions || []} allViews={allViews} onClose={() => setShowPermissionHistory(false)}
+           restorePhase={restorePhase} restoreError={restoreError} onRestore={runIdentityRestore} />
       )}
 
       {/* Snapshot and script inspection share the same nested-dialog contract. */}
@@ -3228,8 +3590,11 @@ export default function SettingsPage() {
       {settingsManage && viewVersionScript && (
         <WorkspaceModal isOpen onClose={() => setViewVersionScript(null)} size="wide"
           title="Historical Logic" subtitle="Verification of previous pipeline instructions"
-          footerRight={<ToolbarButton variant="primary" onClick={() => {
-            setUserPoolScript(viewVersionScript); setViewVersionScript(null); setShowPoolLogic(true); showWorkspaceToast("Script restored to editor")
+          footerRight={<ToolbarButton variant="primary" disabled={syncBusy} onClick={async () => {
+            if (syncDraftDirty && !await confirmWorkspaceAction({ title: 'Replace identity records draft?', message: 'The current draft has not been applied. Replace it with this historical content?', confirmText: 'Replace draft', variant: 'warning' })) return
+            setRecordsDraft(viewVersionScript); setSyncPreviewData(null); setIsSyncPreviewOpen(false); setReviewedRemovals(false);
+            setIsSyncEditable(true); setViewVersionScript(null); setShowPoolLogic(true);
+            setSyncError('Historical content copied. The editor requires a JSON array of identity records before previewing.');
           }}>Restore to Editor</ToolbarButton>}>
           <pre className="max-h-[65vh] overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] p-6 font-mono text-xs leading-relaxed text-[var(--text-primary)]">{viewVersionScript}</pre>
         </WorkspaceModal>

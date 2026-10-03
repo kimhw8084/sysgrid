@@ -11,7 +11,7 @@ interface WorkspaceToastProps {
   onRevert?: RevertAction
   type?: ToastTone
 }
-type WorkspaceToastOptions = { onRevert?: RevertAction; type?: ToastTone }
+type WorkspaceToastOptions = { onRevert?: RevertAction; type?: ToastTone; id?: string }
 
 const toastTitles = { success: 'Completed', error: 'Action needed', loading: 'In progress', info: 'Notice' }
 const toastIcons = { success: Check, error: AlertTriangle, loading: LoaderCircle, info: Info }
@@ -116,7 +116,7 @@ export function WorkspaceToaster() {
 export const showWorkspaceToast = (message: string, options?: WorkspaceToastOptions) => (
   toast.custom((t) => <WorkspaceToast t={t} message={message} onRevert={options?.onRevert} type={options?.type} />, {
     duration: options?.type === 'loading' ? Infinity : options?.onRevert ? 10000 : options?.type === 'error' ? 6000 : 4000,
-    position: 'top-right', id: message,
+    position: 'top-right', id: options?.id ?? message,
   })
 )
 export const dismissWorkspaceToasts = () => toast.dismiss()

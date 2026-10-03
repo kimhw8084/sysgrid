@@ -1,4 +1,5 @@
 import React from 'react'
+import { getCurrentTenantId } from '../../api/tenantContext'
 import { AlertCircle, X, Copy } from 'lucide-react'
 import { WorkspaceModal } from './WorkspaceModal'
 
@@ -57,7 +58,7 @@ export function buildOperationalDiagnosticDetail({
     tenantId?: string
 }): OperationalDiagnosticDetail {
     const safeUserId = userId || (typeof localStorage !== 'undefined' ? localStorage.getItem('SYSGRID_USER_ID') || 'admin_root' : 'admin_root')
-    const safeTenantId = tenantId || (typeof localStorage !== 'undefined' ? localStorage.getItem('SYSGRID_TENANT_ID') || '1' : '1')
+    const safeTenantId = tenantId || (typeof localStorage !== 'undefined' ? getCurrentTenantId() : '1')
 
     return {
         endpoint,

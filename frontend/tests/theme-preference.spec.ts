@@ -35,7 +35,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       const preference = await request.patch(`${process.env.PW_API_BASE}/settings/user/settings`, { data: { theme } })
       expect(preference.ok()).toBeTruthy()
       await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
-      const suffix = `${theme}-${surface}`
+      const suffix = `${theme}-${surface}-${Date.now()}`
       const host = await createAsset(request, { name: `Theme host ${suffix}`, system: `Theme ${suffix}`, type: 'Physical', status: 'Active', serial_number: suffix })
       let route = '/asset'
       let heading: string | undefined

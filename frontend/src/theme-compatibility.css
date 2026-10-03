@@ -640,6 +640,9 @@
 :is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [data-workspace-panel], .workspace-tooltip) :is(h1,h2,h3,h4,p,span,pre).text-white {
   color: var(--text-primary);
 }
+:is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [role='alertdialog'], [data-workspace-panel]) :is(input,textarea,select).text-white {
+  color: var(--text-primary);
+}
 :is([data-theme='pure-clarity'], [data-theme='light']) :is([role='dialog'], [data-workspace-panel], .workspace-tooltip) :is([class*='bg-black/'], [class*='bg-white/']):not(.fixed):not(button) {
   background-color: var(--input-bg);
 }
@@ -654,10 +657,48 @@
   --projects-accent: var(--action-ink);
   --projects-border: var(--border-default);
   --pv1-floating: var(--surface-overlay);
+  --pv1-page: var(--surface-base);
   --pv1-surface-1: var(--surface-elevated);
   --pv1-surface-2: var(--surface-hover);
   --pv1-text-primary: var(--text-primary);
+  --pv1-text-secondary: var(--text-secondary);
+  --pv1-text-muted: var(--text-muted);
+  --pv1-accent: var(--action-ink);
   --pv1-border: var(--border-default);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) [data-pv1-architecture-workspace] input[aria-label='New Architecture model name'] {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+:is([data-theme='pure-clarity'], [data-theme='light']) [data-pv1-architecture-workspace] input[aria-label='New Architecture model name']::placeholder {
+  color: var(--text-muted);
+}
+
+:is([data-pv1-architecture-workspace], [data-pv1-architecture-host]) {
+  --pv1-page: var(--surface-base);
+  --pv1-surface-0: var(--input-bg);
+  --pv1-surface-1: var(--surface-elevated);
+  --pv1-surface-2: var(--surface-hover);
+  --pv1-text-primary: var(--text-primary);
+  --pv1-text-secondary: var(--text-secondary);
+  --pv1-text-muted: var(--text-muted);
+  --pv1-border: var(--border-default);
+  --pv1-accent: var(--action-ink);
+}
+[data-pv1-architecture-host] > form { flex-wrap: wrap; }
+[data-pv1-architecture-host] > form > input { flex: 1 1 14rem !important; }
+[data-pv1-architecture-host] > div > label { min-width: 0; max-width: 100%; }
+[data-pv1-architecture-host] :is(input, select) {
+  min-width: 0;
+  max-width: 100%;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+[data-pv1-architecture-engine] [role='tab'][aria-selected='true'] {
+  background-color: var(--action-primary) !important;
+  color: white !important;
 }
 
 /* Selected controls and decorative accents in overlays use the approved neutral palette. */

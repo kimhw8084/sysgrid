@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { AssetDetailsView } from './AssetDetailsView'
@@ -11,6 +12,20 @@ import { ToolbarButton } from '../shared/LayoutPrimitives'
 import { ConfigRegistryModal } from '../ConfigRegistry'
 import { ServiceDetailsView, ServiceForm } from '../ServiceRegistry'
 import { apiFetch } from '../../api/apiClient'
+
+function AssetDetailsDialog({ detailAsset, onCloseDetails, options, setServiceDetails, setServiceEdit, onCloseLinkEdit, onCloseLinkDetails }: any) {
+  const [draftDirty, setDraftDirty] = useState(false)
+  const [draftPending, setDraftPending] = useState(false)
+  return <WorkspaceModal isOpen onClose={() => {
+    if (draftPending) { toast('Wait for the current save to finish.'); return }
+    onCloseDetails()
+  }} size="workspace" title={detailAsset.name} subtitle={`${detailAsset.system} · ${detailAsset.type}`} isDirty={draftDirty && !draftPending}
+    dirtyConfirmMessage="Discard the unsaved hardware, credential, or relationship drafts for this asset?"
+    footerLeft={draftPending ? <span role="status">Saving asset changes...</span> : undefined}>
+    <div className="pt-6"><AssetDetailsView device={detailAsset} options={options} onViewServiceDetails={setServiceDetails} onEditService={setServiceEdit}
+      onEditLink={onCloseLinkEdit} onViewLink={onCloseLinkDetails} onDraftDirtyChange={setDraftDirty} onDraftPendingChange={setDraftPending} /></div>
+  </WorkspaceModal>
+}
 
 function AssetServiceDialogs({
   activeDetails,
@@ -119,27 +134,11 @@ export function AssetGoldenDialogs({
       ) : null}
 
       {detailAsset ? (
-        <WorkspaceModal
-          isOpen={true}
-          onClose={onCloseDetails}
-          size="workspace"
-          title={detailAsset.name}
-          subtitle={`${detailAsset.system} · ${detailAsset.type}`}
-        >
-          <div className="pt-6">
-            <AssetDetailsView
-              device={detailAsset}
-              options={options}
-              onViewServiceDetails={setServiceDetails}
-              onEditService={setServiceEdit}
-              onEditLink={onCloseLinkEdit}
-              onViewLink={onCloseLinkDetails}
-            />
-          </div>
-        </WorkspaceModal>
+        <AssetDetailsDialog key={detailAsset.id} detailAsset={detailAsset} onCloseDetails={onCloseDetails} options={options}
+          setServiceDetails={setServiceDetails} setServiceEdit={setServiceEdit} onCloseLinkEdit={onCloseLinkEdit} onCloseLinkDetails={onCloseLinkDetails} />
       ) : null}
 
-      {editingAsset ? <AssetRecordFormModal item={editingAsset} onClose={onCloseEdit} onSuccess={onRefresh} /> : null}
+      {editingAsset ? <AssetRecordFormModal item={editingAsset} onClose={onCloseEdit} onSuccess={() => { onCloseEdit(); onRefresh() }} /> : null}
       {editingLink ? (
         <NetworkConnectionForm
           item={editingLink}

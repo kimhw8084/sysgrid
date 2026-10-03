@@ -391,6 +391,7 @@ export function OperationalSavedViewsPanel<TView extends {
   syncStatus,
   syncMessage,
   onCopyViewLink,
+  isCopyingViewLink = false,
   conflictMessage,
   onReloadConflict,
   onSaveConflictCopy,
@@ -416,6 +417,7 @@ export function OperationalSavedViewsPanel<TView extends {
   syncStatus?: 'loading' | 'synced' | 'saving' | 'unsaved' | 'offline' | 'conflict'
   syncMessage?: string
   onCopyViewLink?: (id: string | null) => void
+  isCopyingViewLink?: boolean
   conflictMessage?: string
   onReloadConflict?: () => void
   onSaveConflictCopy?: () => void
@@ -469,12 +471,12 @@ export function OperationalSavedViewsPanel<TView extends {
   const collaborativeEnabled = syncStatus !== undefined
   const resolvedSyncStatus = syncStatus ?? 'synced'
   const statusMeta = {
-    loading: { label: 'Loading', className: 'border-slate-500/20 bg-slate-500/10 text-slate-300', icon: <RefreshCcw size={11} className="animate-spin" /> },
-    synced: { label: 'Synced', className: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300', icon: <Check size={11} /> },
-    saving: { label: 'Saving', className: 'border-blue-500/20 bg-blue-500/10 text-blue-300', icon: <RefreshCcw size={11} className="animate-spin" /> },
-    unsaved: { label: 'Unsaved', className: 'border-amber-500/20 bg-amber-500/10 text-amber-300', icon: <AlertTriangle size={11} /> },
-    offline: { label: 'Offline fallback', className: 'border-orange-500/20 bg-orange-500/10 text-orange-300', icon: <CloudOff size={11} /> },
-    conflict: { label: 'Conflict', className: 'border-rose-500/20 bg-rose-500/10 text-rose-300', icon: <AlertTriangle size={11} /> },
+    loading: { label: 'Loading', className: 'border-[var(--border-default)] bg-[var(--surface-hover)] text-[var(--text-primary)]', icon: <RefreshCcw size={14} className="animate-spin" /> },
+    synced: { label: 'Synced', className: 'border-[var(--state-success-border)] bg-[var(--state-success-surface)] text-[var(--text-primary)]', icon: <Check size={14} /> },
+    saving: { label: 'Saving', className: 'border-[var(--state-info-border)] bg-[var(--state-info-surface)] text-[var(--text-primary)]', icon: <RefreshCcw size={14} className="animate-spin" /> },
+    unsaved: { label: 'Unsaved', className: 'border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] text-[var(--text-primary)]', icon: <AlertTriangle size={14} /> },
+    offline: { label: 'Offline fallback', className: 'border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] text-[var(--text-primary)]', icon: <CloudOff size={14} /> },
+    conflict: { label: 'Conflict', className: 'border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] text-[var(--text-primary)]', icon: <AlertTriangle size={14} /> },
   }[resolvedSyncStatus]
 
   return (
@@ -487,25 +489,26 @@ export function OperationalSavedViewsPanel<TView extends {
       interactionLocked={renamingViewId !== null}
     >
       <WorkspaceFloatingPanel kind="menu" className={collaborativeEnabled ? 'w-[min(440px,calc(100vw-24px))] max-w-full p-4' : 'p-4'}>
-        <div className="space-y-4">
+        <section aria-label="Saved views" className="space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-[10px] font-semibold text-slate-400">Saved views</p>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Saved views</h2>
                 {collaborativeEnabled ? (
-                  <span className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[9px] font-semibold ${statusMeta.className}`} data-testid="workspace-view-sync-status">
+                  <span className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold ${statusMeta.className}`} data-testid="workspace-view-sync-status">
                     {statusMeta.icon}
                     {statusMeta.label}
                   </span>
                 ) : null}
               </div>
-              <p className="pt-1 text-[11px] text-slate-400">{collaborativeEnabled ? `Load, save, and share complete ${entityLabel} layouts.` : `Load, save, and overwrite full ${entityLabel} layouts.`}</p>
-              {syncMessage ? <p className="pt-1 text-[10px] text-slate-500">{syncMessage}</p> : null}
+              <p className="pt-1 text-xs text-[var(--text-secondary)]">{collaborativeEnabled ? `Load, save, and share complete ${entityLabel} layouts.` : `Load, save, and overwrite full ${entityLabel} layouts.`}</p>
+              {syncMessage ? <p className="pt-1 text-xs text-[var(--text-secondary)]">{syncMessage}</p> : null}
             </div>
             <button
+              type="button"
               onClick={onClose}
               disabled={renamePendingViewId !== null}
-              className="shrink-0 text-slate-500 hover:text-white disabled:cursor-wait disabled:opacity-40"
+              className="min-h-11 min-w-11 inline-flex items-center justify-center shrink-0 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:cursor-wait disabled:opacity-40"
               aria-label="Close saved views"
             >
               <X size={14} />
@@ -513,42 +516,44 @@ export function OperationalSavedViewsPanel<TView extends {
           </div>
 
           {collaborativeEnabled && resolvedSyncStatus === 'conflict' ? (
-            <div className="rounded-lg border border-rose-500/20 bg-rose-500/8 p-3" role="alert">
-              <p className="text-[10px] font-semibold text-rose-300">{conflictMessage || 'This view changed on the server.'}</p>
-              <p className="pt-1 text-[10px] text-slate-400">Reload the server copy or preserve your current layout as a personal copy.</p>
+            <div className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-3" role="alert">
+              <p className="text-xs font-semibold text-[var(--text-primary)]">{conflictMessage || 'This view changed on the server.'}</p>
+              <p className="pt-1 text-xs text-[var(--text-secondary)]">Reload the server copy or preserve your current layout as a personal copy.</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" onClick={onReloadConflict} className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-[10px] font-semibold text-rose-200 hover:bg-rose-500/20">
+                <button type="button" onClick={onReloadConflict} className="min-h-11 min-w-11 rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--state-danger-surface-strong)]">
                   Reload server copy
                 </button>
-                <button type="button" onClick={onSaveConflictCopy} className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-semibold text-slate-200 hover:bg-white/[0.08]">
+                <button type="button" onClick={onSaveConflictCopy} className="min-h-11 min-w-11 rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--action-primary-muted)]">
                   Save personal copy
                 </button>
               </div>
             </div>
           ) : null}
 
-          <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-            <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
+            <div className="mb-3 flex flex-col gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold text-slate-400">Current view</p>
-                <p className="truncate pt-1 text-[11px] font-semibold text-slate-100">{currentViewName}</p>
+                <p className="text-xs font-semibold text-[var(--text-secondary)]">Current view</p>
+                <p className="break-words pt-1 text-xs font-semibold text-[var(--text-primary)]">{currentViewName}</p>
               </div>
-              <div className="flex shrink-0 flex-wrap justify-end gap-2">
+              <div className="flex flex-wrap gap-2">
                 {collaborativeEnabled && onCopyViewLink ? (
                   <button
                     type="button"
                     onClick={() => onCopyViewLink(activeViewId)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-semibold text-slate-200 transition-all hover:bg-white/[0.08]"
+                    disabled={isCopyingViewLink}
+                    aria-busy={isCopyingViewLink}
+                    className="min-h-11 min-w-11 inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--action-primary-muted)] disabled:cursor-wait"
                   >
-                    <Copy size={11} />
-                    Copy link
+                    <Copy size={14} aria-hidden="true" />
+                    {isCopyingViewLink ? 'Copying link…' : 'Copy link'}
                   </button>
                 ) : null}
                 {activeViewId ? (
                   <button
                     type="button"
                     onClick={() => onOverwriteView(activeViewId)}
-                    className="rounded-lg border border-blue-500/20 bg-blue-600/15 px-3 py-2 text-[10px] font-semibold text-blue-200 transition-all hover:bg-blue-600/25"
+                    className="min-h-11 min-w-11 rounded-lg border border-[var(--state-info-border)] bg-[var(--state-info-surface)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
                   >
                     {collaborativeEnabled ? 'Save current' : 'Overwrite Current'}
                   </button>
@@ -560,34 +565,37 @@ export function OperationalSavedViewsPanel<TView extends {
                 value={newViewName}
                 onChange={(event) => onNewViewNameChange(event.target.value)}
                 placeholder={collaborativeEnabled ? 'Save as new personal view...' : 'Save as new view...'}
-                className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-[11px] font-semibold text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/40"
+                aria-label="New saved view name"
+                className="min-h-11 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] px-3 py-2 text-base sm:text-xs font-semibold text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--text-secondary)] focus:border-[var(--focus-ring)]"
               />
               <button
                 type="button"
                 onClick={onCreateView}
                 disabled={collaborativeEnabled && (resolvedSyncStatus === 'saving' || resolvedSyncStatus === 'loading')}
-                className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-semibold text-slate-200 transition-all hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50"
+                className="min-h-11 min-w-11 rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--action-primary-muted)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {collaborativeEnabled ? 'Save personal view' : 'Save New'}
               </button>
             </div>
           </div>
 
-          <div className={collaborativeEnabled ? 'max-h-[min(430px,55vh)] space-y-2 overflow-y-auto rounded-lg border border-white/5 bg-black/20 p-3 custom-scrollbar' : 'space-y-2 rounded-lg border border-white/5 bg-black/20 p-3'}>
+          <div className={collaborativeEnabled ? 'max-h-[min(430px,55vh)] space-y-2 overflow-y-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3 custom-scrollbar' : 'space-y-2 rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3'}>
             <button
+              type="button"
               onClick={onApplySystemDefault}
-              className={`w-full rounded-lg border px-3 py-2 text-left transition-all ${
+              aria-pressed={activeViewId === null}
+              className={`min-h-11 min-w-11 w-full rounded-lg border px-3 py-2 text-left transition-all ${
                 activeViewId === null
-                  ? 'border-emerald-500/30 bg-emerald-500/12'
-                  : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.06]'
+                  ? 'border-[var(--state-success-border)] bg-[var(--state-success-surface)]'
+                  : 'border-[var(--border-default)] bg-[var(--surface-hover)] hover:bg-[var(--action-primary-muted)]'
               }`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className={`text-[10px] font-semibold ${activeViewId === null ? 'text-emerald-300' : 'text-slate-200'}`}>System default</p>
-                  <p className="pt-1 text-[10px] text-slate-500">{collaborativeEnabled ? 'Standard layout with no personal override' : 'Standard table layout with no active view'}</p>
+                  <p className="text-xs font-semibold text-[var(--text-primary)]">System default</p>
+                  <p className="pt-1 text-xs text-[var(--text-secondary)]">{collaborativeEnabled ? 'Standard layout with no personal override' : 'Standard table layout with no active view'}</p>
                 </div>
-                <span className="text-[9px] font-semibold text-slate-500">Core</span>
+                <span className="text-xs font-semibold text-[var(--text-secondary)]">Core</span>
               </div>
             </button>
 
@@ -601,10 +609,10 @@ export function OperationalSavedViewsPanel<TView extends {
                 ? (isDefaultView || view.source === 'system' ? 'Core' : isLocal ? 'Local fallback' : view.scope === 'team' ? 'Team' : 'Personal')
                 : (isDefaultView ? 'Default' : 'Custom')
               return (
-                <div key={view.id} className="flex items-stretch gap-2">
+                <div key={view.id} className="flex min-w-0 flex-col gap-2">
                   {isRenaming ? (
-                    <div className="min-w-0 flex-1 rounded-lg border border-blue-500/30 bg-blue-500/8 p-2">
-                      <label className="text-[9px] font-semibold text-slate-400" htmlFor={`rename-workspace-view-${view.id}`}>Rename personal view</label>
+                    <div className="min-w-0 flex-1 rounded-lg border border-[var(--state-info-border)] bg-[var(--state-info-surface)] p-2">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]" htmlFor={`rename-workspace-view-${view.id}`}>Rename personal view</label>
                       <div className="mt-1.5 flex gap-2">
                         <input
                           ref={renameInputRef}
@@ -626,71 +634,78 @@ export function OperationalSavedViewsPanel<TView extends {
                               void submitRename(view)
                             }
                           }}
-                          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[10px] font-semibold text-white outline-none focus:border-blue-500/40 disabled:cursor-wait disabled:opacity-70"
+                          className="min-h-11 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] px-2.5 py-2 text-base sm:text-xs font-semibold text-[var(--text-primary)] outline-none focus:border-[var(--focus-ring)] disabled:cursor-wait disabled:opacity-70"
                         />
                         <button
                           type="button"
                           disabled={!renameCanSubmit || isRenamePending}
                           onClick={() => { void submitRename(view) }}
-                          className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-2 text-emerald-300 disabled:cursor-wait disabled:opacity-40"
+                          className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] p-2 text-[var(--text-primary)] disabled:cursor-wait disabled:opacity-40"
                           aria-label={`Confirm rename ${view.name}`}
                           aria-busy={isRenamePending}
                         >
-                          {isRenamePending ? <RefreshCcw size={12} className="animate-spin" /> : <Check size={12} />}
+                          {isRenamePending ? <RefreshCcw size={16} className="animate-spin" /> : <Check size={16} />}
                         </button>
                         <button
                           type="button"
                           disabled={isRenamePending}
                           onClick={clearRenameEditor}
-                          className="rounded-lg border border-white/10 bg-white/[0.04] p-2 text-slate-400 hover:text-white disabled:cursor-wait disabled:opacity-40"
+                          className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:cursor-wait disabled:opacity-40"
                           aria-label={`Cancel rename ${view.name}`}
                         >
-                          <X size={12} />
+                          <X size={16} />
                         </button>
                       </div>
                     </div>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => onApplyView(view.id)}
-                      className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-all ${
+                      aria-pressed={activeViewId === view.id}
+                      className={`min-h-11 min-w-11 flex-1 rounded-lg border px-3 py-2 text-left transition-all ${
                         activeViewId === view.id
-                          ? 'border-blue-500/30 bg-blue-500/12'
-                          : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.06]'
+                          ? 'border-[var(--state-info-border)] bg-[var(--state-info-surface)]'
+                          : 'border-[var(--border-default)] bg-[var(--surface-hover)] hover:bg-[var(--action-primary-muted)]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className={`truncate text-[10px] font-semibold ${activeViewId === view.id ? 'text-blue-300' : 'text-slate-200'}`}>{view.name}</p>
-                          <p className="truncate pt-1 text-[10px] text-slate-500">{describeView(view)}</p>
+                          <p className="break-words text-xs font-semibold text-[var(--text-primary)]">{view.name}</p>
+                          <p className="break-words pt-1 text-xs text-[var(--text-secondary)]">{describeView(view)}</p>
                         </div>
-                        <span className="shrink-0 text-[9px] font-semibold text-slate-500">{scopeLabel}</span>
+                        <span className="shrink-0 text-xs font-semibold text-[var(--text-secondary)]">{scopeLabel}</span>
                       </div>
                     </button>
                   )}
                   {!isRenaming ? (
-                    <div className="flex shrink-0 flex-col gap-1">
+                    <div className="flex shrink-0 flex-wrap justify-end gap-2">
                       <button
+                        type="button"
                         onClick={() => onOverwriteView(view.id)}
                         title={collaborativeEnabled ? `Save current layout to ${view.name}` : `Overwrite ${view.name}`}
-                        className="rounded-lg border border-white/8 bg-white/[0.03] p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-white"
+                        aria-label={collaborativeEnabled ? `Save current layout to ${view.name}` : `Overwrite ${view.name}`}
+                        className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] p-1.5 text-[var(--text-secondary)] transition-all hover:bg-[var(--action-primary-muted)] hover:text-[var(--text-primary)]"
                       >
-                        <Save size={12} />
+                        <Save size={16} />
                       </button>
                       {!isDefaultView && onRenameView ? (
                         <button
+                          type="button"
                           onClick={() => {
                             renameDraftRef.current = view.name
                             setRenameCanSubmit(Boolean(view.name.trim()))
                             setRenamingViewId(view.id)
                           }}
                           title={`Rename ${view.name}`}
-                          className="rounded-lg border border-white/8 bg-white/[0.03] p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-white"
+                          aria-label={`Rename ${view.name}`}
+                          className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] p-1.5 text-[var(--text-secondary)] transition-all hover:bg-[var(--action-primary-muted)] hover:text-[var(--text-primary)]"
                         >
-                          <Pencil size={12} />
+                          <Pencil size={16} />
                         </button>
                       ) : null}
                       {!isDefaultView ? (
                         <button
+                          type="button"
                           onClick={() => {
                             if (isConfirming) {
                               onDeleteView(view.id)
@@ -700,13 +715,15 @@ export function OperationalSavedViewsPanel<TView extends {
                             }
                           }}
                           title={isConfirming ? `Confirm delete ${view.name}` : `Delete ${view.name}`}
-                          className={`rounded-lg border p-1.5 transition-all ${
+                          aria-label={isConfirming ? `Confirm delete ${view.name}` : `Delete ${view.name}`}
+                          className={`min-h-11 min-w-11 inline-flex items-center justify-center gap-2 rounded-lg border p-1.5 text-xs font-semibold transition-all ${
                             isConfirming
-                              ? 'border-rose-500 bg-rose-500 text-white'
-                              : 'border-rose-500/20 bg-rose-500/5 text-rose-500 hover:bg-rose-500/20'
+                              ? 'border-[var(--state-danger-border)] bg-[var(--state-danger-surface-strong)] text-[var(--text-primary)]'
+                              : 'border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] text-[var(--text-primary)] hover:bg-[var(--state-danger-surface-strong)]'
                           }`}
                         >
-                          <Trash2 size={12} />
+                          <Trash2 size={16} />
+                          {isConfirming ? 'Confirm delete' : null}
                         </button>
                       ) : null}
                     </div>
@@ -715,7 +732,7 @@ export function OperationalSavedViewsPanel<TView extends {
               )
             })}
           </div>
-        </div>
+        </section>
       </WorkspaceFloatingPanel>
     </OperationalAnchoredPanel>
   )

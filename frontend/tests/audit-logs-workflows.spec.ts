@@ -1,7 +1,8 @@
 import { expect } from '@playwright/test';
 import { AuditLogsView } from './pom/AuditLogsView';
-import { createConnection, resetBrowserState, seedOperationalScenario, seedRackScenario } from './helpers/sysgrid';
+import { createAsset, createConnection, resetBrowserState, seedOperationalScenario, seedRackScenario } from './helpers/sysgrid';
 import { test } from './helpers/sysgrid-test';
+import { expectReadableGridText } from './helpers/grid-contrast';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1';
 
@@ -18,6 +19,84 @@ test.describe('Audit Logs Workflows', () => {
     // Check Golden Template Primitives
     await expect(page.locator('h1').first()).toBeVisible();
   });
+
+  for (const theme of ['nordic-frost-v1', 'pure-clarity']) test(`ordinary asset writes expose scoped audit history in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy();
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme);
+    const device = await createAsset(request, { name: `Audit write ${theme} ${Date.now()}`, system: 'Audit browser proof' });
+    const saved = await request.put(`${apiBase}/devices/${device.id}`, {
+      data: { owner: 'private-owner-proof', os_name: 'Linux', os_version: '2' },
+    });
+    expect(saved.ok()).toBeTruthy();
+    const noop = await request.put(`${apiBase}/devices/${device.id}`, {
+      data: { owner: 'private-owner-proof', os_name: 'Linux', os_version: '2' },
+    });
+    expect(noop.ok()).toBeTruthy();
+    await page.goto(`/logs?target_table=devices&target_id=${device.id}`);
+    await expect(page.getByText(`Scoped: devices // ${device.id}`)).toBeVisible();
+    const rows = page.locator('.ag-center-cols-container .ag-row');
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0)).toContainText('Updated asset');
+    await expect(rows.nth(1)).toContainText('Created asset');
+    await page.getByRole('button', { name: 'View change payload', exact: true }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'Audit Change Payload', exact: true });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('pre')).toContainText('"changed_fields"');
+    await expect(dialog.locator('pre')).toContainText('"owner"');
+    await expect(dialog.locator('pre')).toContainText('"os_service_changed": true');
+    await expect(dialog).not.toContainText('private-owner-proof');
+    await page.screenshot({ path: testInfo.outputPath('asset-audit-payload.png'), animations: 'disabled' });
+    await dialog.getByRole('button', { name: 'Close audit payload', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await page.getByRole('button', { name: 'Open target record', exact: true }).first().click();
+    await expect(page).toHaveURL(new RegExp(`/asset\\?id=${device.id}(?:&|$)`));
+    await expect(page.getByText(device.name, { exact: true }).first()).toBeVisible();
+  });
+
+  for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const viewport of [{ width: 390, height: 844 }, { width: 740, height: 360 }]) {
+    test(`audit payload remains readable and keyboard accessible at ${viewport.width}x${viewport.height} in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy();
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme);
+      const device = await createAsset(request, {
+        name: `Payload viewport ${theme} ${Date.now()}`, system: 'Payload proof', type: 'Physical', model: 'R650',
+        owner: 'Operations', asset_tag: 'payload-proof', serial_number: 'proof-serial', manufacturer: 'Vendor',
+        os_name: 'Linux', os_version: '1', environment: 'Test',
+      });
+      await page.goto(`/logs?target_table=devices&target_id=${device.id}`);
+      const trigger = page.getByRole('button', { name: 'View change payload', exact: true }).first();
+      await trigger.click();
+      const dialog = page.getByRole('dialog', { name: 'Audit Change Payload', exact: true });
+      const panel = dialog.locator(':scope > div').first();
+      await expect(dialog).toBeVisible();
+      await expect.poll(() => panel.evaluate(element => Number(getComputedStyle(element).opacity))).toBe(1);
+      const geometry = await panel.evaluate(element => {
+        const box = element.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom, left: box.left, right: box.right, width: innerWidth, height: innerHeight };
+      });
+      await testInfo.attach('audit-payload-geometry', { body: JSON.stringify(geometry), contentType: 'application/json' });
+      expect.soft(geometry.top).toBeGreaterThanOrEqual(15);
+      expect.soft(geometry.bottom).toBeLessThanOrEqual(viewport.height - 15);
+      expect.soft(geometry.left).toBeGreaterThanOrEqual(15);
+      expect.soft(geometry.right).toBeLessThanOrEqual(viewport.width - 15);
+      const close = dialog.getByRole('button', { name: 'Close audit payload', exact: true });
+      const closeBox = await close.boundingBox();
+      expect.soft(closeBox?.width).toBeGreaterThanOrEqual(40);
+      expect.soft(closeBox?.height).toBeGreaterThanOrEqual(40);
+      await expectReadableGridText(page, testInfo, 'audit-payload', '[role="dialog"][aria-label="Audit Change Payload"] :is(h3, p, pre)');
+      await close.focus();
+      await page.keyboard.press('Tab');
+      await expect(dialog.locator('pre')).toBeFocused();
+      await page.keyboard.press('End');
+      await expect.poll(() => dialog.locator('pre').evaluate(element => element.scrollTop + element.clientHeight >= element.scrollHeight - 1)).toBe(true);
+      await expect(close).toBeInViewport({ ratio: 1 });
+      await page.screenshot({ path: testInfo.outputPath(`audit-payload-${viewport.width}-${theme}.png`), animations: 'disabled' });
+      await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+    });
+  }
 
   test('target scope changes refetch the new target and export names loaded-page semantics', async ({ page }) => {
     const auditRequests: URL[] = [];

@@ -460,7 +460,9 @@ const normalizeNetworkConnection = (connection: any) => {
   const linkType = connection?.link_type || connection?.connection_type || 'Data'
   const direction = connection?.direction || 'Bidirectional'
   const unit = connection?.unit || 'Gbps'
-  const speed = connection?.speed_gbps != null ? `${connection.speed_gbps} ${unit}` : 'Unknown'
+  const speed = connection?.speed && connection.speed !== 'Unknown'
+    ? connection.speed
+    : connection?.speed_gbps != null ? `${connection.speed_gbps} ${unit}` : 'Unknown'
   const requestLink = connection?.request_link || ''
   const endpoints = [
     {
@@ -629,12 +631,22 @@ export default function NetworkReal() {
     [userSettings]
   )
   const localWorkspaceState = useMemo(() => readNetworkWorkspaceStateFromLocalStorage(), [])
+  // Capture actual stored fields before mount effects persist their defaults.
+  // Normalized fallback values must not override preferences from another browser.
+  const localUiStateKeys = useMemo(() => {
+    const stored = readJsonStorage<unknown>(NETWORK_UI_STATE_KEY, null)
+    return stored && typeof stored === 'object' && !Array.isArray(stored) ? Object.keys(stored) : []
+  }, [])
+  const hasStoredSavedViews = useMemo(
+    () => Array.isArray(readJsonStorage<unknown>(NETWORK_VIEW_STORAGE_KEY, null)),
+    []
+  )
   const hasStoredFavoriteIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(NETWORK_FAVORITES_STORAGE_KEY) !== null,
+    () => Array.isArray(readJsonStorage<unknown>(NETWORK_FAVORITES_STORAGE_KEY, null)),
     []
   )
   const hasStoredWatchIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(NETWORK_WATCH_STORAGE_KEY) !== null,
+    () => Array.isArray(readJsonStorage<unknown>(NETWORK_WATCH_STORAGE_KEY, null)),
     []
   )
   const initialWorkspaceState = useMemo(() => {
@@ -642,16 +654,16 @@ export default function NetworkReal() {
     if (!localWorkspaceState) return remoteWorkspaceState
     return {
       ...remoteWorkspaceState,
-      savedViews: localWorkspaceState.savedViews?.length ? localWorkspaceState.savedViews : remoteWorkspaceState.savedViews,
+      savedViews: hasStoredSavedViews ? localWorkspaceState.savedViews : remoteWorkspaceState.savedViews,
       activeViewId: localWorkspaceState.activeViewId ?? remoteWorkspaceState.activeViewId,
       favoriteIds: hasStoredFavoriteIds ? (localWorkspaceState.favoriteIds ?? []) : remoteWorkspaceState.favoriteIds,
       watchIds: hasStoredWatchIds ? (localWorkspaceState.watchIds ?? []) : remoteWorkspaceState.watchIds,
       uiState: {
         ...remoteWorkspaceState.uiState,
-        ...localWorkspaceState.uiState,
+        ...Object.fromEntries(Object.entries(localWorkspaceState.uiState).filter(([key]) => localUiStateKeys.includes(key))),
       },
     }
-  }, [hasStoredFavoriteIds, hasStoredWatchIds, localWorkspaceState, remoteWorkspaceState])
+  }, [hasStoredFavoriteIds, hasStoredWatchIds, hasStoredSavedViews, localUiStateKeys, localWorkspaceState, remoteWorkspaceState])
   const persistedUiState = initialWorkspaceState?.uiState ?? null
   
   // --- STYLE LABORATORY STATE ---
@@ -715,15 +727,20 @@ export default function NetworkReal() {
   const [gridSortModel, setGridSortModel] = useState<any[]>([{ colId: 'favorite', sort: 'desc' }])
   const [savedViews, setSavedViews] = usePersistentJsonState<any[]>(NETWORK_VIEW_STORAGE_KEY, () => {
     return initialWorkspaceState?.savedViews ?? normalizeNetworkSavedViews([])
-  })
+  }, normalizeNetworkSavedViews)
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_network_session_init',
     null,
     () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(NETWORK_ACTIVE_VIEW_KEY))
   )
-  const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(NETWORK_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
-  const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(NETWORK_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
-  const [searchTerm, setSearchTerm] = useState(persistedUiState?.searchTerm ?? '')
+  const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(NETWORK_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [], normalizeNetworkIdList)
+  const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(NETWORK_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [], normalizeNetworkIdList)
+  const [searchTerm, setSearchTermState] = useState(persistedUiState?.searchTerm ?? '')
+  const searchChangedRef = useRef(false)
+  const setSearchTerm = useCallback((value: string) => {
+    searchChangedRef.current = true
+    setSearchTermState(value)
+  }, [])
   const [groupBy, setGroupBy] = useState<string>(persistedUiState?.groupBy ?? 'raw')
   const [bulkDraft, setBulkDraft] = useState({ status: '', link_type: '', direction: '' })
   const [expandedBulkSection, setExpandedBulkSection] = useState<'status' | 'link_type' | 'direction' | null>(null)
@@ -856,7 +873,8 @@ export default function NetworkReal() {
       setQuickFilters(payload?.uiState.quickFilters ?? normalizeNetworkQuickFilters(null))
       setGroupBy(payload?.uiState.groupBy ?? 'raw')
       setColumnLayoutState(payload?.uiState.columnLayoutState ?? [])
-      setSearchTerm(payload?.uiState.searchTerm ?? '')
+      // Preferences loaded after a toolbar edit are older than that intent.
+      if (!searchChangedRef.current) setSearchTermState(payload?.uiState.searchTerm ?? '')
       return
     }
 
@@ -916,7 +934,7 @@ export default function NetworkReal() {
   const handleRowId = useCallback((params: any) => String(params.data.id), [])
   const openNetworkDetail = useCallback((item: any, replace: boolean = false) => {
     if (!item?.id) return
-    setDetailItem(item)
+    setDetailItem(normalizeNetworkConnection(item))
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('id', String(item.id))
     navigate({ search: `?${nextParams.toString()}` }, { replace })
@@ -1541,7 +1559,7 @@ export default function NetworkReal() {
       return
     }
     setActiveTab(target.is_deleted ? 'deleted' : 'active')
-    setDetailItem(target)
+    setDetailItem(normalizeNetworkConnection(target))
   }, [allItems, idParam, navigate, searchParams])
 
   useEffect(() => {
@@ -3250,21 +3268,6 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
   const [interventionDoc, setInterventionDoc] = useState<any>(null)
   const detailTitle = getNetworkConnectionTitle(item)
 
-  const { data: suggestedKnowledge } = useQuery({
-    queryKey: ['network-knowledge-suggestions', item.id, item.source_device_id],
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      if (item.source_device_id) params.append('device_id', String(item.source_device_id))
-      params.append('embedded_consumer', 'network')
-      const response = await apiFetch(`/api/v1/knowledge?${params.toString()}`)
-      const linked = await response.json()
-      if (Array.isArray(linked) && linked.length > 0) return linked
-      if (!item.source_device_id) return linked
-      const fallback = await apiFetch(`/api/v1/knowledge?device_id=${item.source_device_id}&embedded_consumer=network`)
-      return fallback.json()
-    }
-  })
-
   return (
     <>
     <WorkspaceModal
@@ -3274,10 +3277,9 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
       title={
-        <div className="flex items-center gap-3">
-          <span className="sr-only">Connection Forensics</span>
-          <span className="text-slate-400 font-normal">Connection Forensics:</span>
-          <span>{detailTitle}</span>
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
+          <span>Connection Forensics:</span>
+          <span className="min-w-0 break-words [overflow-wrap:anywhere]">{detailTitle}</span>
           <WorkspaceShareHeader id={String(item.id)} title={detailTitle} />
         </div>
       }
@@ -3285,11 +3287,11 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
       icon={<Monitor size={20} />}
       forensicLineage={{ createdAt: item.created_at, updatedAt: item.updated_at }}
       status={
-        <div className="flex items-center gap-2">
-          <StatusPill value={item.status} />
-          <StatusPill value={item.severity} />
-          <div className="h-3 w-px bg-white/10 mx-1" />
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusPill value={item.status} fontSize={12} />
+          <StatusPill value={item.severity} fontSize={12} />
+          <div className="h-3 w-px bg-[var(--border-default)] mx-1" />
+          <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest">
             {item.farm || 'No farm'} · {item.type || item.link_type || 'No type'} · {item.speed || (item.speed_gbps != null ? `${item.speed_gbps} ${item.unit || 'Gbps'}` : 'No speed')}
           </span>
         </div>
@@ -3321,117 +3323,117 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
     >
       <WorkspaceDossierShell
         body={
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6 [overflow-wrap:anywhere]">
             <section className="grid gap-4 xl:grid-cols-2">
-              <article className="rounded-lg border border-blue-500/20 bg-blue-500/[0.06] p-5 shadow-inner">
-                <div className="flex items-start justify-between gap-3">
+              <article className="min-w-0 rounded-lg border border-[var(--state-info-border)] bg-[var(--state-info-surface)] p-5 shadow-inner">
+                <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-blue-400">Source endpoint</p>
-                    <h4 className="mt-2 truncate text-sm font-black text-slate-100">{item.src_node || item.server_a || 'Unknown'}</h4>
-                    <p className="mt-1 text-[10px] font-semibold text-slate-500">{item.src_rack_slot || 'No rack slot'}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-primary)]">Source endpoint</p>
+                    <h4 className="mt-2 break-words text-sm font-semibold text-[var(--text-primary)]">{item.src_node || item.server_a || 'Unknown'}</h4>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">{item.src_rack_slot || 'No rack slot'}</p>
                   </div>
                   <button
                     type="button"
                     disabled={!item.source_device_id}
                     onClick={() => item.source_device_id && onOpenAsset?.(item.source_device_id)}
-                    className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.18em] text-blue-300 transition-all hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-30"
+                    className="min-h-10 shrink-0 rounded-lg border border-[var(--state-info-border)] bg-[var(--state-info-surface)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     Open asset
                   </button>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Port</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.src_port || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Port</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.src_port || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">IP</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.src_ip || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">IP</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.src_ip || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">MAC</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.source_mac || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">MAC</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.source_mac || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">VLAN</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.source_vlan ?? 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">VLAN</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.source_vlan ?? 'N/A'}</p>
                   </div>
                 </div>
               </article>
 
-              <article className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] p-5 shadow-inner">
-                <div className="flex items-start justify-between gap-3">
+              <article className="min-w-0 rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] p-5 shadow-inner">
+                <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-400">Peer endpoint</p>
-                    <h4 className="mt-2 truncate text-sm font-black text-slate-100">{item.peer_node || item.server_b || 'Unknown'}</h4>
-                    <p className="mt-1 text-[10px] font-semibold text-slate-500">{item.peer_rack_slot || 'No rack slot'}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-primary)]">Peer endpoint</p>
+                    <h4 className="mt-2 break-words text-sm font-semibold text-[var(--text-primary)]">{item.peer_node || item.server_b || 'Unknown'}</h4>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-secondary)]">{item.peer_rack_slot || 'No rack slot'}</p>
                   </div>
                   <button
                     type="button"
                     disabled={!item.target_device_id}
                     onClick={() => item.target_device_id && onOpenAsset?.(item.target_device_id)}
-                    className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300 transition-all hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-30"
+                    className="min-h-10 shrink-0 rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     Open asset
                   </button>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Port</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.peer_port || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Port</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.peer_port || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">IP</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.peer_ip || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">IP</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.peer_ip || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">MAC</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.target_mac || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">MAC</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.target_mac || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">VLAN</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.target_vlan ?? 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">VLAN</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.target_vlan ?? 'N/A'}</p>
                   </div>
                 </div>
               </article>
             </section>
 
             <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">
-              <div className="rounded-lg border border-white/5 bg-white/[0.03] p-5 shadow-inner">
+              <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5 shadow-inner">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-2 text-blue-400">
+                  <div className="rounded-lg border border-[var(--state-info-border)] bg-[var(--state-info-surface)] p-2 text-[var(--text-primary)]">
                     <Info size={14} />
                   </div>
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-500">Purpose and routing</p>
-                    <p className="mt-1 text-[12px] font-bold text-slate-300">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Purpose and routing</p>
+                    <p className="mt-1 text-[12px] font-semibold text-[var(--text-primary)]">
                       {item.purpose || 'No purpose defined.'}
                     </p>
                   </div>
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Connection type</p>
-                    <p className="mt-1 text-[11px] font-bold text-blue-300">{item.type || item.link_type || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Connection type</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.type || item.link_type || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Direction</p>
-                    <p className="mt-1 text-[11px] font-bold text-emerald-300">{item.direction || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Direction</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.direction || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Farm</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.farm || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Farm</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.farm || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Cable</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.cable_type || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Cable</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.cable_type || 'N/A'}</p>
                   </div>
                 </div>
                 {item.request_link && (
                   <button
                     type="button"
                     onClick={() => window.open(item.request_link, '_blank')}
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-600/10 px-3 py-2 text-[9px] font-black uppercase tracking-[0.18em] text-blue-300 transition-all hover:bg-blue-600/20"
+                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[var(--state-info-border)] bg-[var(--state-info-surface)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
                   >
                     <ExternalLink size={13} />
                     Open request link
@@ -3439,34 +3441,34 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
                 )}
               </div>
 
-              <div className="rounded-lg border border-white/5 bg-[#0f172a] p-5 shadow-inner">
+              <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-5 shadow-inner">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/80 p-2 text-slate-300">
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-2 text-[var(--text-primary)]">
                     <Layers size={14} />
                   </div>
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-500">Capacity and audit</p>
-                    <p className="mt-1 text-[12px] font-bold text-slate-300">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Capacity and audit</p>
+                    <p className="mt-1 text-[12px] font-semibold text-[var(--text-primary)]">
                       {item.speed || (item.speed_gbps != null ? `${item.speed_gbps} ${item.unit || 'Gbps'}` : 'N/A')}
                     </p>
                   </div>
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Created</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{formatAppDate(item.created_at)}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Created</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{formatAppDate(item.created_at)}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Updated</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{formatAppDate(item.updated_at)}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Updated</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{formatAppDate(item.updated_at)}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Status</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.status || 'N/A'}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Status</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.status || 'N/A'}</p>
                   </div>
-                  <div className="rounded-lg border border-white/5 bg-black/20 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Link speed</p>
-                    <p className="mt-1 text-[11px] font-bold text-slate-200">{item.speed || (item.speed_gbps != null ? `${item.speed_gbps} ${item.unit || 'Gbps'}` : 'N/A')}</p>
+                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Link speed</p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--text-primary)]">{item.speed || (item.speed_gbps != null ? `${item.speed_gbps} ${item.unit || 'Gbps'}` : 'N/A')}</p>
                   </div>
                 </div>
               </div>
