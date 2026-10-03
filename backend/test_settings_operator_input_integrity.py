@@ -38,6 +38,85 @@ async def snapshot(c, setup_db):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'upsert', 'patch', 'bulk', 'restore'])
+@pytest.mark.parametrize('permissions', [
+    [], 'read', False, 7,
+    {'assets': []}, {'assets': {}}, {'assets': None}, {'assets': 'typo'}, {'assets': '3'},
+    {'assets': -1}, {'assets': 4}, {'assets': 1.5},
+    {' ': 1}, {'assets': 1, ' assets ': 3},
+])
+async def test_permission_inputs_reject_ambiguous_values_without_partial_writes(operator_scope, setup_db, operation, permissions):
+    c = operator_scope
+    payload = {'custom_permissions': permissions, 'is_admin': False, 'team': 'Rejected permission team'}
+    version_id, index = None, None
+    if operation == 'restore':
+        version_id, index, _ = await field_restore_fixture(c, setup_db, payload=payload)
+    before = await snapshot(c, setup_db)
+    response = (await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+                if operation == 'restore' else await write_operator(c, operation, payload))
+    assert response.status_code == 422, response.text
+    field = f'snapshot_data[{index}].custom_permissions' if operation == 'restore' else 'custom_permissions'
+    assert field in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['patch', 'restore'])
+@pytest.mark.parametrize('value', [float('nan'), float('inf'), -float('inf')], ids=['nan', 'infinity', 'negative-infinity'])
+async def test_nonfinite_permission_inputs_fail_with_validation_not_server_errors(operator_scope, setup_db, operation, value):
+    import json
+
+    c = operator_scope
+    payload = {'custom_permissions': {'assets': value}, 'is_admin': False, 'team': 'Rejected nonfinite team'}
+    if operation == 'restore':
+        version_id, _, _ = await field_restore_fixture(c, setup_db, payload=payload)
+    before = await snapshot(c, setup_db)
+    if operation == 'restore':
+        response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    else:
+        response = await c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}",
+            headers={**c['headers'], 'Content-Type': 'application/json'}, content=json.dumps(payload))
+    assert response.status_code == 422, response.text
+    assert 'custom_permissions' in str(response.json()['detail']['field_errors'])
+    # JSON's nonfinite legacy values need a canonical representation for immutable-state comparison.
+    assert json.dumps(await snapshot(c, setup_db), default=str, sort_keys=True) == json.dumps(before, default=str, sort_keys=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'upsert', 'patch', 'bulk', 'restore'])
+@pytest.mark.parametrize('intent', ['omitted', 'null', 'empty', 'vocabulary'])
+async def test_permission_inputs_preserve_supported_vocabulary_and_clear_intent(operator_scope, setup_db, operation, intent):
+    c = operator_scope
+    payload = {'full_name': 'Accepted permission input', 'is_admin': False}
+    expected = {'settings': 1} if intent == 'omitted' and operation not in ['create', 'restore'] else {}
+    if intent != 'omitted':
+        payload['custom_permissions'] = None if intent == 'null' else {} if intent == 'empty' else {
+            'all': ' None ', ' custom.capability ': 'read', 'assets': ' WRITE ',
+            'settings': 'FULL', 'services': True, 'network': 2.0, 'racks': False,
+        }
+        if intent == 'vocabulary':
+            expected = {'all': 0, 'custom.capability': 1, 'assets': 2, 'settings': 3, 'services': 1, 'network': 2, 'racks': 0}
+    if operation == 'restore':
+        version_id, _, original = await field_restore_fixture(c, setup_db, payload=payload,
+            omitted=('custom_permissions',) if intent == 'omitted' else ())
+        response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    else:
+        response = await write_operator(c, operation, payload)
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        name = 'input-peer' if operation == 'restore' else 'input-new' if operation == 'create' else 'input-target'
+        row = await db.scalar(select(models.Operator).where(models.Operator.external_id == name))
+        assert row.custom_permissions == expected and row.is_admin is False
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == (2 if operation == 'restore' else 1)
+        saved = next(record for record in versions[-1].snapshot_data if record['external_id'] == name)
+        assert saved['custom_permissions'] == expected
+        if operation == 'restore':
+            assert versions[0].snapshot_data == original
+
+
+
+@pytest.mark.asyncio
 async def test_history_captures_role_grants_without_rewriting_previous_snapshots(operator_scope, setup_db):
     from app.api.settings import build_user_pool_snapshot, create_user_pool_version
 

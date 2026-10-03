@@ -19,7 +19,7 @@ from ..runtime_diagnostics import (
     infer_sanitized_environment_mode,
 )
 from .utils import filter_valid_columns, get_current_user_id, normalize_json_list, normalize_json_object
-from .authorization import require_capability
+from .authorization import PERMISSION_LEVELS, require_capability
 from .module_policy import is_system_root_user_id, require_diagnostics_access
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
@@ -195,6 +195,33 @@ def canonical_operator_state(operator: models.Operator) -> dict:
 def validate_operator_admin_flag(payload: dict) -> None:
     if "is_admin" in payload and not isinstance(payload["is_admin"], bool):
         raise HTTPException(422, {"field_errors": {"is_admin": "Must be a boolean"}})
+
+
+def validate_operator_permissions(payload: dict, *, field: str = "custom_permissions") -> None:
+    permissions = payload.get("custom_permissions")
+    if permissions is None:
+        return
+
+    def reject(message: str) -> None:
+        raise HTTPException(422, {"field_errors": {field: message}})
+
+    if not isinstance(permissions, dict):
+        reject("Must be an object or null")
+    keys: set[str] = set()
+    for key, value in permissions.items():
+        if not isinstance(key, str) or not key.strip():
+            reject("Permission keys must be non-empty strings")
+        normalized_key = key.strip()
+        if normalized_key in keys:
+            reject("Permission keys must be unique after trimming whitespace")
+        keys.add(normalized_key)
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, (int, float)) and value in (0, 1, 2, 3):
+            continue
+        if isinstance(value, str) and value.strip().lower() in PERMISSION_LEVELS:
+            continue
+        reject("Permission levels must be booleans, whole numbers from 0 to 3, or supported names")
 
 
 def apply_operator_canonicalization(
@@ -648,6 +675,7 @@ async def apply_operator_patch(
     default_team_source: str = "manual_override",
 ) -> dict:
     validate_operator_admin_flag(data)
+    validate_operator_permissions(data)
     previous_state = canonical_operator_state(op)
     next_external_id = normalize_string(data.get("external_id")) if "external_id" in data else op.external_id
     next_username = normalize_string(data.get("username")) if "username" in data else op.username
@@ -1499,6 +1527,7 @@ async def create_operator(
 ):
     from sqlalchemy.exc import IntegrityError
     validate_operator_admin_flag(data)
+    validate_operator_permissions(data)
     external_id = normalize_string(data.get("external_id"))
     username = normalize_string(data.get("username"))
     if not external_id:
@@ -2065,6 +2094,7 @@ async def restore_user_pool(
             field_errors[f"snapshot_data[{index}].custom_permissions"] = "Must be an object or null"
         if field_errors:
             raise HTTPException(422, {"field_errors": field_errors})
+        validate_operator_permissions(u, field=f"snapshot_data[{index}].custom_permissions")
         validate_operator_admin_flag(u)
         raw_id = u.get("external_id") or u.get("id")
         if not ((isinstance(raw_id, str) and raw_id.strip()) or (type(raw_id) is int and raw_id > 0)):
