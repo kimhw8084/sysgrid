@@ -15,7 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from 'react-hot-toast'
 import { showWorkspaceToast } from './shared/WorkspaceToast'
-import { apiFetch, setApiOverride, getApiBaseUrl } from "../api/apiClient"
+import { apiFetch, setApiOverride, getApiBaseUrl, getRequestScopeKey } from "../api/apiClient"
 import { formatAppDate, parseAppDate } from "../utils/dateUtils"
 import { 
   PageHeader, 
@@ -40,6 +40,15 @@ import {
 import { normalizeTheme } from './shared/theme'
 
 const PERMISSION_COMMIT_DEBOUNCE_MS = 900
+
+type IdentitySyncRequest = {
+  records: Record<string, unknown>[]
+  source: string
+  preview: boolean
+  expected_fingerprint?: string
+  draft: string
+  scope: string
+}
 
 const SettingField = ({ label, description, children, icon: Icon, onHistory, isEditable, onEdit, isPending, absPath, isModified, paramName }: any) => {
   return (
@@ -824,11 +833,6 @@ export default function SettingsPage() {
   const permissionSelectionAnchorRef = React.useRef<number | null>(null)
   const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any, finishWrite: () => void }>>({})
   const [pendingPermissionWrites, setPendingPermissionWrites] = useState(0)
-  const permissionBlocker = useBlocker(pendingPermissionWrites > 0)
-  usePageLeaveGuard(pendingPermissionWrites > 0)
-  useEffect(() => {
-    if (permissionBlocker.state === 'blocked') permissionBlocker.reset()
-  }, [permissionBlocker])
   const {
     triggerRef: permissionBulkTriggerRef,
     panelRef: permissionBulkPanelRef,
@@ -1002,9 +1006,13 @@ export default function SettingsPage() {
       Object.entries(localEnv || {}).filter(([key]) => !key.startsWith('_'))
     )
 
-  const [userPoolScript, setUserPoolScript] = useState(`# Provide real identity-source records to the backend refresh endpoint.
-# Expected record fields:
-# external_id, username, full_name, email, department, team, registration_status`)
+  const [recordsDraft, setRecordsDraft] = useState('[]')
+  const [appliedRecordsDraft, setAppliedRecordsDraft] = useState('[]')
+  const [syncError, setSyncError] = useState('')
+  const [syncBusy, setSyncBusy] = useState(false)
+  const syncBusyRef = React.useRef(false)
+  const [reviewedRemovals, setReviewedRemovals] = useState(false)
+  const syncDraftDirty = recordsDraft !== appliedRecordsDraft
 
   useEffect(() => {
     if (envSettings) {
@@ -1043,28 +1051,98 @@ export default function SettingsPage() {
   const [isSyncPreviewOpen, setIsSyncPreviewOpen] = useState(false)
 
   const poolMutation = useMutation({
-    mutationFn: async ({ script, preview = false }: { script: string, preview?: boolean }) => {
+    retry: false,
+    networkMode: 'always',
+    mutationFn: async ({ records, source, preview, expected_fingerprint }: IdentitySyncRequest) => {
       const res = await apiFetch("/api/v1/settings/user-pool/refresh", {
         method: "POST",
-        body: JSON.stringify({ script, preview })
+        body: JSON.stringify({ records, source, preview, ...(expected_fingerprint ? { expected_fingerprint } : {}) })
       })
-      if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       if (variables.preview) {
-        setSyncPreviewData(data);
+        if (!/^[0-9a-f]{64}$/.test(data?.fingerprint || '')) throw new Error('The preview could not be verified. Preview again before applying.')
+        setSyncPreviewData({ ...data, request: variables });
+        setReviewedRemovals(false);
         setIsSyncPreviewOpen(true);
       } else {
-        queryClient.invalidateQueries({ queryKey: ['operators'] })
-        queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+        await Promise.all(['operators', 'user-pool-versions', 'teams', 'team-audit', 'user-profile'].map(key =>
+          queryClient.invalidateQueries({ queryKey: [key] })))
+        setAppliedRecordsDraft(variables.draft);
         setIsSyncEditable(false);
         setIsSyncPreviewOpen(false);
         setSyncPreviewData(null);
-        showWorkspaceToast("User Pool synchronized via Python logic")
+        showWorkspaceToast(data.changes ? "Identity records synchronized" : "Identity records already match; no changes applied")
       }
-    }
+    },
+    onError: (error: Error) => {
+      setSyncError(`${error.message} Preview again before applying.`)
+      setIsSyncPreviewOpen(false)
+      setSyncPreviewData(null)
+      setShowPoolLogic(true)
+    },
   })
+
+  const runIdentitySync = (preview: boolean) => {
+    if (syncBusyRef.current) return
+    let input: IdentitySyncRequest
+    if (preview) {
+      try {
+        const records = JSON.parse(recordsDraft)
+        if (!Array.isArray(records) || !records.length || records.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new Error('Invalid records')
+        input = { records, source: 'settings_identity_import', preview: true, draft: recordsDraft, scope: getRequestScopeKey() }
+      } catch {
+        setSyncError('Enter a non-empty JSON array of identity records, then preview again.')
+        return
+      }
+    } else {
+      if (!syncPreviewData || !isSyncPreviewOpen || (syncPreviewData.summary.removed > 0 && !reviewedRemovals)) return
+      const reviewed = syncPreviewData.request as IdentitySyncRequest
+      if (reviewed.draft !== recordsDraft || reviewed.scope !== getRequestScopeKey()) {
+        setSyncError('The draft or active identity scope changed. Preview again before applying.')
+        setSyncPreviewData(null)
+        setIsSyncPreviewOpen(false)
+        return
+      }
+      input = { ...reviewed, preview: false, expected_fingerprint: syncPreviewData.fingerprint }
+    }
+    let finishWrite: () => void
+    try { finishWrite = beginScopedWrite(false) } catch (error) {
+      setSyncError((error as Error).message)
+      return
+    }
+    syncBusyRef.current = true
+    setSyncBusy(true)
+    setSyncError('')
+    void poolMutation.mutateAsync(input).catch(() => {}).finally(() => {
+      finishWrite()
+      syncBusyRef.current = false
+      setSyncBusy(false)
+    })
+  }
+
+  const settingsWritePending = pendingPermissionWrites > 0 || syncBusy
+  const settingsBlocker = useBlocker(settingsWritePending || syncDraftDirty)
+  const departurePromptPending = React.useRef(false)
+  usePageLeaveGuard(settingsWritePending || syncDraftDirty)
+  useEffect(() => {
+    if (settingsBlocker.state !== 'blocked') return
+    if (settingsWritePending) {
+      settingsBlocker.reset()
+    } else if (!departurePromptPending.current) {
+      departurePromptPending.current = true
+      void confirmWorkspaceAction({
+        title: 'Discard identity records draft?',
+        message: 'The identity records draft has not been applied. Leaving this page will discard it.',
+        confirmText: 'Discard draft', cancelText: 'Keep editing', variant: 'warning',
+      }).then(accepted => {
+        departurePromptPending.current = false
+        if (accepted) settingsBlocker.proceed()
+        else settingsBlocker.reset()
+      })
+    }
+  }, [settingsBlocker, settingsWritePending, confirmWorkspaceAction])
 
   const { data: operators } = useQuery({
     queryKey: ['operators'],
@@ -1725,6 +1803,11 @@ export default function SettingsPage() {
           Saving permission changes. Stay on this page until the save finishes.
         </p>
       )}
+      {syncBusy && (
+        <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          {poolMutation.variables?.preview ? 'Preparing synchronization preview' : 'Applying identity records'}. Stay on this page until the request finishes.
+        </p>
+      )}
       <AnimatePresence>
         {isDisconnected && (
           <motion.div 
@@ -1835,7 +1918,7 @@ export default function SettingsPage() {
         }}
       />
 
-      <div className="min-w-0 flex-none overflow-visible pr-2 pb-4 sm:min-h-0 sm:flex-1 sm:overflow-y-auto sm:custom-scrollbar sm:pb-20" data-settings-content-scroll="true">
+      <div className="min-w-0 flex-none overflow-x-clip pr-2 pb-4 sm:min-h-0 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:custom-scrollbar sm:pb-20" data-settings-content-scroll="true">
         <AnimatePresence mode="wait">
           {topTab === 'metadata' && settingsManage && (
              <motion.div key="metadata" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="min-w-0 space-y-4 pt-2" data-settings-tab-content="metadata">
@@ -2151,9 +2234,9 @@ export default function SettingsPage() {
                        <div className="text-left">
                           <h3 className="text-xs font-semibold text-[var(--text-primary)] flex flex-wrap items-center gap-2">
                              Identity Sync Pipeline
-                             <span className="px-1.5 py-0.5 bg-[var(--surface-hover)] text-[var(--text-secondary)] rounded-lg border border-[var(--grid-border)] text-[10px] font-medium">PYTHON-DRIVEN</span>
+                             <span className="px-1.5 py-0.5 bg-[var(--surface-hover)] text-[var(--text-secondary)] rounded-lg border border-[var(--grid-border)] text-[10px] font-medium">RECORD IMPORT</span>
                           </h3>
-                          <p className="text-xs text-[var(--text-secondary)] mt-1">Automated synchronization of operators, departments, and teams from LDAP/AD providers</p>
+                          <p className="text-xs text-[var(--text-secondary)] mt-1">Preview and apply a complete identity snapshot from your company source</p>
                        </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -2178,37 +2261,50 @@ export default function SettingsPage() {
                                          <div className="w-8 h-8 shrink-0 rounded-lg bg-[var(--surface-hover)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
                                             <Terminal size={14} />
                                          </div>
-                                         <h4 className="text-xs font-semibold text-[var(--text-primary)]">Synchronization Logic</h4>
+                                         <h4 className="text-xs font-semibold text-[var(--text-primary)]">Identity Records</h4>
                                       </div>
                                       <div className="flex flex-wrap items-center gap-2">
                                          <ToolbarButton 
                                             onClick={() => setIsSyncEditable(!isSyncEditable)}
+                                            disabled={syncBusy}
                                             variant={isSyncEditable ? "danger" : "secondary"}
                                             className="min-h-9"
                                          >
-                                            <div className="flex items-center gap-2">{isSyncEditable ? <Lock size={12} /> : <EditIcon size={12} />} {isSyncEditable ? "Lock Logic" : "Modify Logic"}</div>
+                                            <div className="flex items-center gap-2">{isSyncEditable ? <Lock size={12} /> : <EditIcon size={12} />} {isSyncEditable ? "Lock Records" : "Edit Records"}</div>
                                          </ToolbarButton>
                                          <ToolbarButton 
-                                            onClick={() => poolMutation.mutate({ script: userPoolScript, preview: true })}
+                                            onClick={() => runIdentitySync(true)}
+                                            disabled={syncBusy}
                                             variant="primary"
                                             className="min-h-9"
                                          >
-                                            <div className="flex items-center gap-2"><RefreshCcw size={12} className={poolMutation.isPending ? 'animate-spin' : ''} /> Dry Run Preview</div>
+                                            <div className="flex items-center gap-2"><RefreshCcw size={12} className={syncBusy ? 'animate-spin' : ''} /> Dry Run Preview</div>
                                          </ToolbarButton>
                                       </div>
                                    </div>
                                    <div className="flex-1 space-y-2">
                                       <textarea 
-                                        aria-label="Synchronization logic"
-                                        aria-describedby="sync-logic-mode"
-                                        readOnly={!isSyncEditable}
-                                        value={userPoolScript} 
-                                        onChange={e => setUserPoolScript(e.target.value)}
+                                        aria-label="Identity records (JSON)"
+                                        aria-describedby="sync-records-mode sync-records-scope"
+                                        readOnly={!isSyncEditable || syncBusy}
+                                        spellCheck={false}
+                                        value={recordsDraft}
+                                        onChange={e => {
+                                          setRecordsDraft(e.target.value)
+                                          setSyncError('')
+                                          setSyncPreviewData(null)
+                                          setIsSyncPreviewOpen(false)
+                                          setReviewedRemovals(false)
+                                        }}
                                         className={`w-full min-h-[300px] bg-[var(--surface-base)] border ${isSyncEditable ? 'border-[var(--accent-primary)]' : 'border-[var(--border-default)]'} rounded-lg p-4 font-mono text-xs text-[var(--text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)] custom-scrollbar leading-relaxed`}
                                       />
-                                      <p id="sync-logic-mode" className="text-xs text-[var(--text-secondary)]">
-                                        {isSyncEditable ? 'Editing enabled. Choose Lock Logic to make the editor read-only.' : 'Read-only. Choose Modify Logic to edit.'}
+                                      <p id="sync-records-mode" className="text-xs text-[var(--text-secondary)]">
+                                        {syncBusy ? 'Request in progress. Draft locked.' : isSyncEditable ? 'Editing enabled. Choose Lock Records to make the editor read-only.' : 'Read-only. Choose Edit Records to edit.'}
                                       </p>
+                                      <p id="sync-records-scope" className="text-xs text-[var(--text-secondary)]">
+                                        Paste a complete JSON array from your identity source. Missing source-managed users may be removed; omitted optional fields may be cleared. Review every change before applying. This draft stays on this page until applied or discarded.
+                                      </p>
+                                      {syncError && <p role="alert" className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-3 text-xs text-[var(--text-primary)]">{syncError}</p>}
                                    </div>
                                 </div>
 
@@ -2219,16 +2315,17 @@ export default function SettingsPage() {
                                          <p className="text-xs font-semibold text-[var(--text-primary)]">Schema Requirements</p>
                                       </div>
                                       <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-4">
-                                         Pipeline output must be a sequence of dictionaries containing exactly these mapped keys:
+                                         Each record requires an external identity key, username, and full name. Optional values are authoritative when this snapshot is applied.
                                       </p>
                                       <div className="grid grid-cols-1 gap-2">
                                          {[
-                                            { key: 'id', desc: 'Unique LDAP/External Key' },
-                                            { key: 'username', desc: 'System Identity ID' },
-                                            { key: 'full_name', desc: 'Natural Case Display Name' },
-                                            { key: 'email', desc: 'Verified Contact Address' },
-                                            { key: 'department', desc: 'LDAP Department Mapping' },
-                                            { key: 'team', desc: 'LDAP Team Mapping' }
+                                            { key: 'external_id', desc: 'Required; id is also accepted' },
+                                            { key: 'username', desc: 'Required unique username' },
+                                            { key: 'full_name', desc: 'Required display name' },
+                                            { key: 'email', desc: 'Optional contact address' },
+                                            { key: 'department', desc: 'Optional department' },
+                                            { key: 'team', desc: 'Optional primary team' },
+                                            { key: 'registration_status', desc: 'Optional registration status' }
                                          ].map(f => (
                                             <div key={f.key} className="flex flex-wrap items-center justify-between gap-2 p-2 bg-[var(--panel-item-bg)] rounded-lg border border-[var(--border-default)]">
                                                <code className="text-xs font-semibold text-[var(--text-primary)]">.{f.key}</code>
@@ -2404,72 +2501,90 @@ export default function SettingsPage() {
                <AnimatePresence>
                  {isSyncPreviewOpen && syncPreviewData && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-6">
-                        <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/5 shadow-2xl overflow-hidden">
-                            <div className="p-4 border-b border-indigo-500/20 bg-indigo-500/10 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2 bg-indigo-600/20 text-indigo-400 rounded-lg"><RefreshCcw size={16} /></div>
-                                    <div>
-                                        <h3 className="text-[12px] font-black text-white tracking-widest">Sync Preview: {syncPreviewData.version_label}</h3>
-                                        <div className="flex items-center gap-3 mt-0.5">
-                                            <span className="text-[8px] font-black uppercase text-emerald-500">+{syncPreviewData.summary.added} New</span>
-                                            <span className="text-[8px] font-black uppercase text-amber-500">~{syncPreviewData.summary.changed} Changed</span>
+                        <section aria-label="Synchronization preview" data-sync-preview className="rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] text-[var(--text-primary)] overflow-hidden">
+                            <div className="p-4 border-b border-[var(--grid-border)] space-y-3">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                    <div className="space-y-2">
+                                        <h3 className="text-sm font-semibold">Sync Preview</h3>
+                                        <div className="flex flex-wrap items-center gap-3 text-xs">
+                                            <span>{syncPreviewData.summary.added} new</span>
+                                            <span>{syncPreviewData.summary.changed} changed</span>
+                                            <span className="text-[var(--state-danger)]">{syncPreviewData.summary.removed} removed</span>
                                         </div>
                                     </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        <ToolbarButton
+                                            onClick={() => { setIsSyncPreviewOpen(false); setSyncPreviewData(null); setReviewedRemovals(false) }}
+                                            disabled={syncBusy}
+                                            className="min-h-9"
+                                        >
+                                            Abort
+                                        </ToolbarButton>
+                                        <ToolbarButton
+                                            onClick={() => runIdentitySync(false)}
+                                            disabled={syncBusy || (syncPreviewData.summary.removed > 0 && !reviewedRemovals)}
+                                            variant="primary"
+                                            className="min-h-9"
+                                        >
+                                            Confirm &amp; Execute Sync
+                                        </ToolbarButton>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <ToolbarButton 
-                                        onClick={() => setIsSyncPreviewOpen(false)}
-                                        className="h-8"
-                                    >
-                                        Abort
-                                    </ToolbarButton>
-                                    <ToolbarButton 
-                                        onClick={() => poolMutation.mutate({ script: userPoolScript, preview: false })}
-                                        variant="primary"
-                                        className="h-8 shadow-lg shadow-indigo-500/20"
-                                    >
-                                        Confirm & Execute Sync
-                                    </ToolbarButton>
-                                </div>
+                                <p className="text-xs text-[var(--text-secondary)]">
+                                    Review the values below. Local team overrides are preserved. Changes to the draft or saved identity data require a fresh preview.
+                                </p>
+                                {syncPreviewData.summary.team_conflicts.length > 0 && (
+                                    <div className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-3 text-xs space-y-2">
+                                        <p className="font-semibold">Preserved local team assignments</p>
+                                        <ul className="space-y-1 [overflow-wrap:anywhere]">
+                                            {syncPreviewData.summary.team_conflicts.map((conflict: any) => (
+                                                <li key={conflict.external_id}>{conflict.external_id}: keep {conflict.local_team}; source requested {conflict.synced_team || 'no team'}.</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {syncPreviewData.summary.removed > 0 && (
+                                    <label className="flex items-start gap-3 rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-3 text-xs">
+                                        <input type="checkbox" aria-label="I reviewed the removals" checked={reviewedRemovals} disabled={syncBusy}
+                                            onChange={event => setReviewedRemovals(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent-primary)]" />
+                                        <span>I reviewed the removals. Applying this complete snapshot will remove {syncPreviewData.summary.removed} source-managed {syncPreviewData.summary.removed === 1 ? 'identity' : 'identities'} listed below.</span>
+                                    </label>
+                                )}
                             </div>
                             <div className="max-h-[400px] overflow-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse text-[10px]">
+                                <table aria-label="Identity changes" className="w-full min-w-[680px] text-left border-collapse text-xs">
                                     <thead>
-                                        <tr className="bg-black/40">
-                                            <th className="p-3 font-bold uppercase text-slate-500 tracking-widest border-b border-white/5">Identity</th>
-                                            <th className="p-3 font-bold uppercase text-slate-500 tracking-widest border-b border-white/5">Username</th>
-                                            <th className="p-3 font-bold uppercase text-slate-500 tracking-widest border-b border-white/5 text-center">Status</th>
+                                        <tr className="bg-[var(--grid-header-bg)] text-[var(--text-secondary)]">
+                                            {['Identity', 'Username', 'Status', 'Changes'].map(label => <th key={label} scope="col" className="p-3 font-semibold border-b border-[var(--grid-border)]">{label}</th>)}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {syncPreviewData.preview.map((item: any, i: number) => (
-                                            <tr key={i} className={`hover:bg-white/5 border-b border-white/5 transition-colors ${item.status === 'new' ? 'bg-emerald-500/5' : item.status === 'changed' ? 'bg-amber-500/5' : ''}`}>
+                                        {[...syncPreviewData.preview].sort((a: any, b: any) => {
+                                            const order: Record<string, number> = { removed: 0, changed: 1, new: 2, unchanged: 3 }
+                                            return order[a.status] - order[b.status]
+                                        }).map((item: any) => (
+                                            <tr key={item.id} className="border-b border-[var(--grid-border)] hover:bg-[var(--surface-hover)]">
+                                                <td className="p-3 [overflow-wrap:anywhere]">{item.full_name}</td>
+                                                <td className="p-3 font-mono [overflow-wrap:anywhere]">{item.username}</td>
                                                 <td className="p-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[9px] ${item.status === 'new' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
-                                                            {item.username?.slice(0,2).toUpperCase()}
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-white">{item.full_name}</span>
-                                                        </div>
-                                                    </div>
+                                                    <span className="rounded-lg border border-[var(--grid-border)] bg-[var(--surface-hover)] px-2 py-1 capitalize">{item.status}</span>
                                                 </td>
-                                                <td className="p-3 font-mono text-blue-400">{item.username}</td>
-                                                <td className="p-3 text-center">
-                                                    <span className={`px-2 py-0.5 rounded-lg text-[7px] font-black uppercase tracking-widest ${
-                                                        item.status === 'new' ? 'bg-emerald-500 text-white' : 
-                                                        item.status === 'changed' ? 'bg-amber-500 text-black' : 
-                                                        'bg-slate-700 text-slate-400'
-                                                    }`}>
-                                                        {item.status}
-                                                    </span>
+                                                <td className="p-3 [overflow-wrap:anywhere]">
+                                                    {Object.entries(item.changes).length ? Object.entries(item.changes).map(([field, change]: [string, any]) => (
+                                                        <p key={field}>{field.replaceAll('_', ' ')}: {String(change.old ?? 'None')} → {String(change.new ?? 'None')}</p>
+                                                    )) : item.status === 'removed' ? 'Absent from the source snapshot' : item.status === 'new' ? (
+                                                        <div className="space-y-1">
+                                                            <p>Create identity: {item.id}</p>
+                                                            {['email', 'department', 'team', 'registration_status'].map(field => <p key={field}>{field.replaceAll('_', ' ')}: {item[field] ?? 'None'}</p>)}
+                                                        </div>
+                                                    ) : 'No changes'}
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </section>
                     </motion.div>
                  )}
                </AnimatePresence>
@@ -3267,8 +3382,11 @@ export default function SettingsPage() {
       {settingsManage && viewVersionScript && (
         <WorkspaceModal isOpen onClose={() => setViewVersionScript(null)} size="wide"
           title="Historical Logic" subtitle="Verification of previous pipeline instructions"
-          footerRight={<ToolbarButton variant="primary" onClick={() => {
-            setUserPoolScript(viewVersionScript); setViewVersionScript(null); setShowPoolLogic(true); showWorkspaceToast("Script restored to editor")
+          footerRight={<ToolbarButton variant="primary" disabled={syncBusy} onClick={async () => {
+            if (syncDraftDirty && !await confirmWorkspaceAction({ title: 'Replace identity records draft?', message: 'The current draft has not been applied. Replace it with this historical content?', confirmText: 'Replace draft', variant: 'warning' })) return
+            setRecordsDraft(viewVersionScript); setSyncPreviewData(null); setIsSyncPreviewOpen(false); setReviewedRemovals(false);
+            setIsSyncEditable(true); setViewVersionScript(null); setShowPoolLogic(true);
+            setSyncError('Historical content copied. The editor requires a JSON array of identity records before previewing.');
           }}>Restore to Editor</ToolbarButton>}>
           <pre className="max-h-[65vh] overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] p-6 font-mono text-xs leading-relaxed text-[var(--text-primary)]">{viewVersionScript}</pre>
         </WorkspaceModal>

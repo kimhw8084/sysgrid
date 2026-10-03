@@ -1840,6 +1840,7 @@ async def refresh_user_pool(
                 "email": u["email"],
                 "department": u["department"],
                 "team": u.get("team"),
+                "registration_status": u["registration_status"],
                 "status": "new",
                 "changes": {}
             })
