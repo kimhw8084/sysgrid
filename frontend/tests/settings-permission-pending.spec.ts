@@ -142,13 +142,36 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       if (fail) {
         await expect(permission('NONE')).toBeVisible()
         await expect(page.getByText('Controlled permission save failure', { exact: true })).toBeVisible()
-        const saved = page.waitForResponse(response => response.url().endsWith(`/settings/operators/${operator.id}`) && response.request().method() === 'PATCH')
-        await permission('NONE').click()
-        expect((await saved).ok()).toBeTruthy()
+        // A successful PATCH still owns the departure guard until its refreshes finish.
+        let releaseRefresh!: () => void
+        const heldRefresh = new Promise<void>(resolve => { releaseRefresh = resolve })
+        let refreshing = false
+        const refreshPath = '**/api/v1/settings/user-pool/versions'
+        await page.route(refreshPath, async route => {
+          refreshing = true
+          await heldRefresh
+          await route.continue()
+        })
+        try {
+          const saved = page.waitForResponse(response => response.url().endsWith(`/settings/operators/${operator.id}`) && response.request().method() === 'PATCH')
+          await permission('NONE').click()
+          expect((await saved).ok()).toBeTruthy()
+          await expect.poll(() => refreshing).toBe(true)
+          await expect(permission('READ')).toBeDisabled()
+          await home.click()
+          expect(new URL(page.url()).pathname).toBe('/settings')
+          await expect(page.getByRole('status').filter({ hasText: 'Saving permission changes' })).toBeVisible()
+          await page.screenshot({ path: testInfo.outputPath('permission-refresh-pending.png'), animations: 'disabled' })
+        } finally { releaseRefresh() }
+        await expect(permission('READ')).toBeEnabled()
+        await page.unroute(refreshPath)
+        await testInfo.attach('permission-refresh-facts', { body: JSON.stringify({ heldRefresh: refreshing, blockedDuringRefresh: true, enabledAfterRefresh: true }), contentType: 'application/json' })
       }
       const operators = await request.get(`${apiBase}/settings/operators`)
       expect(operators.ok()).toBeTruthy()
       expect((await operators.json()).find((row: any) => row.id === operator.id).custom_permissions.racks).toBe(fail ? 1 : 2)
+      await expect(page.getByRole('status').filter({ hasText: 'Saving permission changes' })).toHaveCount(0)
+      await expect(permission(fail ? 'READ' : 'WRITE')).toBeEnabled()
       await home.click()
       await expect(page).toHaveURL(/\/$/)
     })
