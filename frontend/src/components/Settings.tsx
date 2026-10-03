@@ -2168,60 +2168,57 @@ export default function SettingsPage() {
                          initial={{ height: 0, opacity: 0 }} 
                          animate={{ height: "auto", opacity: 1 }} 
                          exit={{ height: 0, opacity: 0 }}
-                         className="overflow-hidden border-t border-white/5"
+                         className="overflow-hidden border-t border-[var(--border-default)]"
                        >
-                          <div className="p-6 bg-slate-900/40 space-y-6">
-                             <div className="flex items-stretch justify-between gap-6">
-                                <div className="flex-1 flex flex-col space-y-4">
-                                   <div className="flex items-center justify-between">
+                          <div className="p-4 sm:p-6 bg-[var(--panel-item-bg)] space-y-6">
+                             <div className="flex flex-col xl:flex-row items-stretch justify-between gap-6">
+                                <div className="min-w-0 flex-1 flex flex-col space-y-4">
+                                   <div className="flex flex-wrap items-center justify-between gap-3">
                                       <div className="flex items-center gap-3">
-                                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                         <div className="w-8 h-8 shrink-0 rounded-lg bg-[var(--surface-hover)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)]">
                                             <Terminal size={14} />
                                          </div>
-                                         <h4 className="text-[10px] font-black text-white uppercase tracking-widest">Synchronization Logic</h4>
+                                         <h4 className="text-xs font-semibold text-[var(--text-primary)]">Synchronization Logic</h4>
                                       </div>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex flex-wrap items-center gap-2">
                                          <ToolbarButton 
                                             onClick={() => setIsSyncEditable(!isSyncEditable)}
                                             variant={isSyncEditable ? "danger" : "secondary"}
-                                            className="h-8"
+                                            className="min-h-9"
                                          >
                                             <div className="flex items-center gap-2">{isSyncEditable ? <Lock size={12} /> : <EditIcon size={12} />} {isSyncEditable ? "Lock Logic" : "Modify Logic"}</div>
                                          </ToolbarButton>
                                          <ToolbarButton 
                                             onClick={() => poolMutation.mutate({ script: userPoolScript, preview: true })}
                                             variant="primary"
-                                            className="h-8"
+                                            className="min-h-9"
                                          >
                                             <div className="flex items-center gap-2"><RefreshCcw size={12} className={poolMutation.isPending ? 'animate-spin' : ''} /> Dry Run Preview</div>
                                          </ToolbarButton>
                                       </div>
                                    </div>
-                                   <div className="relative group flex-1">
+                                   <div className="flex-1 space-y-2">
                                       <textarea 
+                                        aria-label="Synchronization logic"
+                                        aria-describedby="sync-logic-mode"
                                         readOnly={!isSyncEditable}
                                         value={userPoolScript} 
                                         onChange={e => setUserPoolScript(e.target.value)}
-                                        className={`w-full h-full min-h-[300px] bg-black/60 border ${isSyncEditable ? 'border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.05)]' : 'border-white/5'} rounded-lg p-6 font-mono text-[11px] text-emerald-400 outline-none transition-all custom-scrollbar leading-relaxed`}
+                                        className={`w-full min-h-[300px] bg-[var(--surface-base)] border ${isSyncEditable ? 'border-[var(--accent-primary)]' : 'border-[var(--border-default)]'} rounded-lg p-4 font-mono text-xs text-[var(--text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)] custom-scrollbar leading-relaxed`}
                                       />
-                                      {!isSyncEditable && (
-                                         <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                            <div className="bg-slate-900/90 border border-white/10 rounded-lg px-4 py-2 flex items-center gap-2 shadow-2xl">
-                                               <Lock size={12} className="text-slate-500" />
-                                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Logic Encrypted/Locked</span>
-                                            </div>
-                                         </div>
-                                      )}
+                                      <p id="sync-logic-mode" className="text-xs text-[var(--text-secondary)]">
+                                        {isSyncEditable ? 'Editing enabled. Choose Lock Logic to make the editor read-only.' : 'Read-only. Choose Modify Logic to edit.'}
+                                      </p>
                                    </div>
                                 </div>
 
-                                <div className="w-80 flex flex-col space-y-4">
-                                   <div className="bg-white/5 border border-white/5 rounded-lg p-4 flex-1">
-                                      <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
-                                         <Activity size={12} className="text-blue-400" />
-                                         <p className="text-[10px] font-black uppercase text-white tracking-widest">Schema Requirements</p>
+                                <div className="w-full xl:w-80 xl:shrink-0 flex flex-col space-y-4">
+                                   <div className="bg-[var(--surface-hover)] border border-[var(--border-default)] rounded-lg p-4 flex-1">
+                                      <div className="flex items-center gap-2 mb-3 border-b border-[var(--border-default)] pb-2">
+                                         <Activity size={12} className="text-[var(--text-secondary)]" />
+                                         <p className="text-xs font-semibold text-[var(--text-primary)]">Schema Requirements</p>
                                       </div>
-                                      <p className="text-[9px] text-slate-400 font-bold leading-relaxed mb-4">
+                                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-4">
                                          Pipeline output must be a sequence of dictionaries containing exactly these mapped keys:
                                       </p>
                                       <div className="grid grid-cols-1 gap-2">
@@ -2233,9 +2230,9 @@ export default function SettingsPage() {
                                             { key: 'department', desc: 'LDAP Department Mapping' },
                                             { key: 'team', desc: 'LDAP Team Mapping' }
                                          ].map(f => (
-                                            <div key={f.key} className="flex items-center justify-between p-2 bg-black/20 rounded-lg border border-white/5">
-                                               <code className="text-[9px] font-black text-blue-400">.{f.key}</code>
-                                               <span className="text-[8px] font-bold text-slate-500 uppercase">{f.desc}</span>
+                                            <div key={f.key} className="flex flex-wrap items-center justify-between gap-2 p-2 bg-[var(--panel-item-bg)] rounded-lg border border-[var(--border-default)]">
+                                               <code className="text-xs font-semibold text-[var(--text-primary)]">.{f.key}</code>
+                                               <span className="text-xs text-[var(--text-secondary)]">{f.desc}</span>
                                             </div>
                                          ))}
                                       </div>
@@ -2533,7 +2530,7 @@ export default function SettingsPage() {
                                 <div className="flex flex-col min-w-0">
                                   <p className="text-xs font-semibold text-[var(--text-primary)] leading-normal truncate flex items-center gap-1.5">
                                     {op.full_name}
-                                    {op.username === userProfile?.username && <span className="text-[7px] bg-blue-500 text-white px-1.5 py-0.5 rounded-lg font-black uppercase tracking-normal">You</span>}
+                                    {op.username === userProfile?.username && <span className="text-[10px] bg-[var(--surface-hover)] text-[var(--text-primary)] px-1.5 py-0.5 rounded-lg font-semibold">You</span>}
                                   </p>
                                   <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{op.username}</p>
                                 </div>

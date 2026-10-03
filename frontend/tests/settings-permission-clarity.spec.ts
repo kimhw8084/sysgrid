@@ -7,6 +7,43 @@ const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   for (const width of [1440, 390]) {
+    test(`expanded identity sync stays readable and reachable in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize({ width, height: width === 1440 ? 900 : 844 })
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+      await page.goto('/settings?tab=permissions')
+      await expect(page.getByText('You', { exact: true })).toBeVisible()
+      await page.getByText('You', { exact: true }).scrollIntoViewIfNeeded()
+      await expectReadableGridText(page, testInfo, 'current user badge', '[data-settings-tab-content="permissions"] table')
+      const toggle = page.getByRole('button', { name: /Identity Sync Pipeline/ })
+      await toggle.click()
+      await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+      await expect(page.locator('textarea')).toBeVisible()
+      await expect.poll(() => page.locator('textarea').evaluate(editor => {
+        const panel = editor.closest('[data-settings-tab-content="permissions"]')!.firstElementChild!
+        return editor.getBoundingClientRect().bottom <= panel.getBoundingClientRect().bottom
+      })).toBe(true)
+      await page.getByRole('button', { name: 'Modify Logic', exact: true }).scrollIntoViewIfNeeded()
+      await page.screenshot({ path: testInfo.outputPath('sync-editor.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, 'expanded sync editor', '[data-settings-tab-content="permissions"]')
+      const editor = page.getByRole('textbox', { name: 'Synchronization logic', exact: true })
+      await expect(editor).toHaveAttribute('readonly', '')
+      await expect(page.getByText('Read-only. Choose Modify Logic to edit.', { exact: true })).toBeVisible()
+      await page.getByRole('button', { name: 'Modify Logic', exact: true }).click()
+      await expect(editor).toBeEditable()
+      await page.getByRole('button', { name: 'Lock Logic', exact: true }).click()
+      await expect(editor).toHaveAttribute('readonly', '')
+      const schema = page.getByText('Schema Requirements', { exact: true })
+      await schema.scrollIntoViewIfNeeded()
+      await expect(schema).toBeInViewport({ ratio: 1 })
+      await page.getByText('LDAP Team Mapping', { exact: true }).scrollIntoViewIfNeeded()
+      await expect(page.getByText('LDAP Team Mapping', { exact: true })).toBeInViewport({ ratio: 1 })
+      await page.screenshot({ path: testInfo.outputPath('sync-schema.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, 'expanded sync schema', '[data-settings-tab-content="permissions"]')
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(2)
+    })
+
     test(`permissions remain readable and operable in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
       await resetBrowserState(page)
       await page.setViewportSize({ width, height: width === 1440 ? 900 : 844 })
