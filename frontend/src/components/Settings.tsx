@@ -311,11 +311,11 @@ const getPermissionLevelLabel = (level: any, isGlobalAdmin = false) => {
 
 const getPermissionLevelTone = (level: any, isGlobalAdmin = false) => {
   const normalized = normalizePermissionLevel(level)
-  if (isGlobalAdmin && normalized === 3) return 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300'
-  if (normalized === 3) return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
-  if (normalized === 2) return 'border-amber-500/20 bg-amber-500/10 text-amber-300'
-  if (normalized === 1) return 'border-blue-500/20 bg-blue-500/10 text-blue-300'
-  return 'border-white/10 bg-black/20 text-slate-500'
+  if (isGlobalAdmin && normalized === 3) return 'border-[var(--state-info-border)] bg-[var(--state-info-surface)] text-[var(--text-primary)]'
+  if (normalized === 3) return 'border-[var(--state-success-border)] bg-[var(--state-success-surface)] text-[var(--text-primary)]'
+  if (normalized === 2) return 'border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] text-[var(--text-primary)]'
+  if (normalized === 1) return 'border-[var(--state-info-border)] bg-[var(--state-info-surface)] text-[var(--text-primary)]'
+  return 'border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-secondary)]'
 }
 
 const getOperatorPermissionLevel = (operator: any, view: string) => {
@@ -438,10 +438,17 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
   })
 }
 
-function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any[], allViews: string[], onClose: () => void }) {
+function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, restoreError, onRestore }: {
+  versions: any[]
+  allViews: string[]
+  onClose: () => void
+  restorePhase: 'review' | 'saving' | null
+  restoreError: string
+  onRestore: (version: any) => Promise<boolean>
+}) {
   const [isMaximized, setIsMaximized] = useState(false)
   const [selectedIndices, setSelectedIndices] = useState<number[]>([0])
-  const queryClient = useQueryClient()
+  const restoreBusy = restorePhase !== null
 
   const toggleSelection = (idx: number) => {
     if (selectedIndices.includes(idx)) {
@@ -459,8 +466,7 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
 
   const indexedVersions = (versions || []).map((v, i) => ({
     ...v,
-    v_num: versions.length - i,
-    label: formatAppDate(v.created_at)
+    v_num: versions.length - i
   }))
 
   const newer = indexedVersions?.[Math.min(...selectedIndices)]
@@ -479,129 +485,114 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
   return (
     <WorkspaceModal
       isOpen={true}
-      onClose={onClose}
+      onClose={() => { if (!restoreBusy) onClose() }}
+      hideCloseButton={restoreBusy}
+      hideFooterClose={restoreBusy}
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
       title="Permission Registry History"
-      subtitle="Complete temporal lineage of operator access and identity synchronization"
+      subtitle="Compare identity and permission changes. Restoring applies an entire revision."
       icon={<HistoryIcon size={20} />}
       footerRight={
-        <ToolbarButton onClick={onClose}>Dismiss</ToolbarButton>
+        <ToolbarButton disabled={restoreBusy} onClick={onClose}>Dismiss</ToolbarButton>
       }
     >
+      <div data-permission-history className="[&_[data-workspace-history-content]]:border-[var(--border-default)] [&_[data-workspace-history-content]]:bg-[var(--surface-elevated)]">
+      {restoreBusy && <p role="status" className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 text-sm text-[var(--text-primary)]">
+        {restorePhase === 'review' ? 'Review the identity restore. Finish or cancel confirmation before leaving.' : 'Restoring identity revision. Stay on this page until the restore finishes.'}
+      </p>}
+      {restoreError && <p role="alert" className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-4 text-sm text-[var(--text-primary)]">{restoreError}</p>}
       <WorkspaceHistoryShell
           header={null}
           sidebar={
-           <div className="flex h-full flex-col min-h-0">
+            <div className="flex h-full min-h-0 flex-col">
               <div className="mb-4 flex items-center justify-between px-1">
-                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Revision Timeline</h3>
-                 <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-lg border border-blue-500/20">{indexedVersions.length} states</span>
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Revision Timeline</h3>
+                <span className="text-xs text-[var(--text-secondary)]">{indexedVersions.length} states</span>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+              <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
                 {indexedVersions.map((h: any, idx: number) => {
-                  const isSelected = selectedIndices.includes(idx);
-                  const isNewest = idx === Math.min(...selectedIndices);
+                  const isSelected = selectedIndices.includes(idx)
+                  const isNewest = idx === Math.min(...selectedIndices)
                   return (
-                    <button 
-                      key={h.id}
-                      onClick={() => toggleSelection(idx)}
-                      className={`w-full p-4 rounded-lg border text-left transition-all relative group overflow-hidden ${
-                        isSelected 
-                          ? isNewest ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/5' : 'bg-slate-800 border-slate-600' 
-                          : 'bg-white/5 border-white/5 hover:border-white/10'
-                      }`}
-                    >
-                      {isSelected && (
-                        <div className={`absolute top-0 right-0 px-2 py-0.5 text-[8px] font-black uppercase rounded-lg ${isNewest ? 'bg-blue-400 text-blue-950' : 'bg-slate-500 text-slate-200'}`}>
-                           {isNewest ? 'Primary' : 'Ref'}
+                    <div key={h.id} className={`w-full overflow-hidden rounded-lg border ${isSelected
+                      ? 'bg-[var(--action-primary-muted)] border-[var(--accent-primary)]'
+                      : 'bg-[var(--surface-base)] border-[var(--border-default)]'}`}>
+                      <button type="button" disabled={restoreBusy} onClick={() => toggleSelection(idx)}
+                        aria-label={`Select revision ${h.v_num}`} aria-pressed={isSelected}
+                        className="w-full p-4 text-left hover:bg-[var(--surface-hover)] disabled:cursor-wait">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-[var(--text-primary)]">v{h.v_num}</span>
+                          <span className="text-xs text-[var(--text-secondary)]">{h.is_active ? 'Active' : 'Archived'}</span>
+                        </div>
+                        {isSelected && <p className="mb-2 text-xs font-semibold text-[var(--action-ink)]">{isNewest ? 'Primary comparison' : 'Reference comparison'}</p>}
+                        <p className="break-words text-xs leading-5 text-[var(--text-primary)]">Recorded by {h.created_by || 'System'}</p>
+                        <time dateTime={h.created_at} className="mt-2 block text-xs leading-5 text-[var(--text-secondary)]">{formatAppDate(h.created_at, { timeZoneName: 'short' })}</time>
+                      </button>
+                      {!h.is_active && (
+                        <div className="border-t border-[var(--border-subtle)] px-3 py-1">
+                          <button type="button" disabled={restoreBusy} aria-label={`Restore identity revision ${h.v_num}`}
+                            onClick={async () => { if (await onRestore(h)) setSelectedIndices([0]) }}
+                            className="min-h-10 rounded-md px-2 py-1 text-xs font-semibold text-[var(--action-ink)] hover:bg-[var(--surface-hover)] disabled:cursor-wait">
+                            Restore revision
+                          </button>
                         </div>
                       )}
-                      <div className="flex items-center justify-between mb-2">
-                         <span className={`text-[11px] font-black tracking-tighter ${isSelected ? 'text-white' : 'text-blue-400'}`}>v{h.v_num}</span>
-                         <span className={`text-[9px] font-bold ${isSelected ? 'text-white/60' : 'text-slate-500'}`}>
-                            {h.is_active ? 'Active' : 'Archived'}
-                         </span>
-                      </div>
-                      <p className={`text-[10px] font-bold leading-tight line-clamp-2 ${isSelected ? 'text-white/90' : 'text-slate-300'}`}>
-                         By: {h.created_by || 'System'}
-                      </p>
-                      <div className="mt-2 flex items-center space-x-2 justify-between">
-                         <div className="flex items-center space-x-2">
-                           <Clock size={10} className={isSelected ? 'text-white/40' : 'text-slate-600'} />
-                           <span className={`text-[8px] font-semibold ${isSelected ? 'text-white/40' : 'text-slate-600'}`}>
-                              {h.label}
-                           </span>
-                         </div>
-                         {!h.is_active && (
-                           <button 
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               toast.promise(apiFetch(`/api/v1/settings/user-pool/restore/${h.id}`, { method: 'POST' }), {
-                                   loading: 'Restoring state...',
-                                   success: () => { queryClient.invalidateQueries({ queryKey: ['operators'] }); queryClient.invalidateQueries({ queryKey: ['teams'] }); queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] }); return "Restored successfully"; },
-                                   error: "Restore failed"
-                               })
-                             }}
-                             className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${isSelected ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/40' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
-                           >
-                             Restore
-                           </button>
-                         )}
-                      </div>
-                    </button>
+                    </div>
                   )
                 })}
               </div>
-           </div>
+            </div>
           }
           content={
            <>
-              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md sticky top-0 z-10">
-                 <div className="flex items-center space-x-4">
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border-default)] bg-[var(--surface-elevated)] p-4 sm:p-5">
+                 <div className="flex min-w-0 flex-wrap items-center gap-3">
                     <div className="flex items-center space-x-2">
-                       <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-[12px] font-black">v{newer?.v_num}</div>
+                       <div className="w-8 h-8 rounded-lg bg-[var(--action-primary-muted)] border border-[var(--border-default)] flex items-center justify-center text-[var(--action-ink)] text-[12px] font-semibold">v{newer?.v_num}</div>
                        {older && (
                          <>
-                           <div className="w-4 h-px bg-slate-700" />
-                           <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center text-slate-500 text-[12px] font-black">v{older.v_num}</div>
+                           <div className="w-4 h-px bg-[var(--border-default)]" />
+                           <div className="w-8 h-8 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)] text-[12px] font-semibold">v{older.v_num}</div>
                          </>
                        )}
                     </div>
                     <div>
-                       <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest">
+                       <h3 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-widest">
                           {selectedIndices.length > 1 ? 'Comparison Mode' : 'Latest Revision Delta'}
                        </h3>
-                       <p className="text-[9px] font-bold text-slate-600">
+                       <p className="text-xs font-semibold text-[var(--text-secondary)]">
                           {historyRows.length} identity rows changed {selectedIndices.length > 1 ? 'between the selected versions' : 'in this revision'}
                        </p>
                     </div>
                  </div>
-                 <div className="flex items-center gap-4">
+                 <div className="flex flex-wrap items-center gap-3">
                    {selectedIndices.length > 1 && (
                      <button 
+                       disabled={restoreBusy}
                        onClick={() => setSelectedIndices([0])}
-                       className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-[9px] font-black text-rose-400 uppercase tracking-widest hover:bg-rose-500/20 transition-all"
+                       className="flex items-center gap-2 px-3 py-1.5 bg-[var(--state-danger-surface)] border border-[var(--state-danger-border)] rounded-lg text-xs font-semibold text-[var(--text-primary)] uppercase tracking-widest hover:bg-[var(--state-danger-surface-strong)] transition-all"
                      >
                        <X size={12} />
                        Exit Comparison
                      </button>
                    )}
                    <div className="flex flex-wrap items-center gap-2">
-                     <span className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-300">{addedCount} added</span>
-                     <span className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-amber-300">{changedCount} changed</span>
-                     <span className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-rose-300">{deletedCount} deleted</span>
+                     <span className="rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]">{addedCount} added</span>
+                     <span className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]">{changedCount} changed</span>
+                     <span className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]">{deletedCount} deleted</span>
                    </div>
                  </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+              <div className="min-w-0 flex-1 p-3 sm:p-5">
                  {historyRows.length > 0 ? (
                     <div className="space-y-6">
-                       <div className="overflow-hidden rounded-lg border border-white/5 bg-black/20">
+                       <div role="region" aria-label="Identity changes" tabIndex={0} className="max-w-full overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] custom-scrollbar">
                           <table className="w-full text-left border-collapse">
                              <thead>
-                                <tr className="bg-white/5 text-[9px] font-black uppercase text-slate-500 tracking-widest">
+                                <tr className="bg-[var(--grid-header-bg)] text-xs font-semibold uppercase text-[var(--text-secondary)] tracking-widest">
                                    <th className="p-4 min-w-[120px]">Change</th>
                                    <th className="p-4 min-w-[240px]">Identity</th>
                                    <th className="p-4 min-w-[140px]">Department</th>
@@ -611,45 +602,45 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
                                    <th className="p-4 min-w-[260px]">Permission Delta</th>
                                 </tr>
                              </thead>
-                             <tbody className="divide-y divide-white/5">
+                             <tbody className="divide-y divide-[var(--border-default)]">
                                 {historyRows.map((row: any) => {
                                    const current = row.after || row.before
                                    const rowTone =
                                      row.changeKind === 'added'
-                                       ? 'bg-emerald-500/[0.04]'
+                                       ? 'bg-[var(--state-success-surface)]'
                                        : row.changeKind === 'deleted'
-                                         ? 'bg-rose-500/[0.04]'
-                                         : 'bg-amber-500/[0.03]'
+                                         ? 'bg-[var(--state-danger-surface)]'
+                                         : 'bg-[var(--state-warning-surface)]'
 
                                    return (
-                                   <tr key={row.key} className={`${rowTone} hover:bg-white/[0.02] transition-colors align-top`}>
+                                   <tr key={row.key} className={`${rowTone} hover:bg-[var(--surface-hover)] transition-colors align-top`}>
                                       <td className="p-4 align-top">
-                                         <span className={`inline-flex rounded-lg border px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${
+                                         <span className={`inline-flex rounded-lg border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${
                                            row.changeKind === 'added'
-                                             ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
+                                             ? 'border-[var(--state-success-border)] bg-[var(--state-success-surface)] text-[var(--text-primary)]'
                                              : row.changeKind === 'deleted'
-                                               ? 'border-rose-500/20 bg-rose-500/10 text-rose-300'
-                                               : 'border-amber-500/20 bg-amber-500/10 text-amber-300'
+                                               ? 'border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] text-[var(--text-primary)]'
+                                               : 'border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] text-[var(--text-primary)]'
                                          }`}>
                                            {row.changeKind}
                                          </span>
                                       </td>
                                       <td className="p-4 align-top">
                                          <div className="space-y-1.5">
-                                           <div className="text-[11px] font-bold text-white">{current?.full_name || current?.username || 'Unknown identity'}</div>
-                                           <div className="text-[9px] font-semibold text-slate-500">{current?.username || 'No username'}</div>
+                                           <div className="text-xs font-semibold text-[var(--text-primary)]">{current?.full_name || current?.username || 'Unknown identity'}</div>
+                                           <div className="text-xs font-semibold text-[var(--text-secondary)]">{current?.username || 'No username'}</div>
                                              {row.fieldChanges?.full_name && (
-                                               <div className="text-[8px] font-semibold text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 mt-1">
+                                               <div className="text-xs font-semibold text-[var(--text-primary)] bg-[var(--state-warning-surface)] px-1.5 py-0.5 rounded border border-[var(--state-warning-border)] mt-1">
                                                 NAME: {row.fieldChanges.full_name.old || 'Empty'} {'->'} {row.fieldChanges.full_name.new || 'Empty'}
                                                </div>
                                              )}
                                            {row.fieldChanges?.email && (
-                                               <div className="text-[8px] font-semibold text-amber-300 mt-1">
+                                               <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
                                                 EMAIL: {row.fieldChanges.email.old || 'Empty'} {'->'} {row.fieldChanges.email.new || 'Empty'}
                                                </div>
                                              )}
                                              {row.fieldChanges?.role_name && (
-                                               <div className="text-[8px] font-semibold text-amber-300 mt-1">
+                                               <div className="text-xs font-semibold text-[var(--text-primary)] mt-1">
                                                 ROLE: {row.fieldChanges.role_name.old || 'Unassigned'} {'->'} {row.fieldChanges.role_name.new || 'Unassigned'}
                                                </div>
                                              )}
@@ -658,46 +649,46 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
                                       <td className="p-4 align-top">
                                          {row.fieldChanges?.department ? (
                                            <div className="space-y-1">
-                                             <div className="text-[9px] font-semibold text-slate-500 line-through">{row.fieldChanges.department.old || '—'}</div>
-                                             <div className="text-[10px] font-bold text-amber-300">{row.fieldChanges.department.new || '—'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{row.fieldChanges.department.old || '—'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{row.fieldChanges.department.new || '—'}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-[10px] font-bold text-slate-300">{current?.department || '—'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{current?.department || '—'}</span>
                                          )}
                                       </td>
                                       <td className="p-4 align-top">
                                          {row.fieldChanges?.team ? (
                                            <div className="space-y-1">
-                                             <div className="text-[9px] font-semibold text-slate-500 line-through">{row.fieldChanges.team.old || 'Unassigned'}</div>
-                                             <div className="text-[10px] font-bold text-amber-300">{row.fieldChanges.team.new || 'Unassigned'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{row.fieldChanges.team.old || 'Unassigned'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{row.fieldChanges.team.new || 'Unassigned'}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-[10px] font-bold text-slate-300">{current?.team || 'Unassigned'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{current?.team || 'Unassigned'}</span>
                                          )}
                                       </td>
                                       <td className="p-4 align-top">
                                          {row.fieldChanges?.groups ? (
                                            <div className="space-y-1">
-                                             <div className="text-[9px] font-semibold text-slate-500 line-through">{(row.fieldChanges.groups.old || []).join(', ') || 'No groups'}</div>
-                                             <div className="text-[10px] font-bold text-amber-300">{(row.fieldChanges.groups.new || []).join(', ') || 'No groups'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-secondary)] line-through">{(row.fieldChanges.groups.old || []).join(', ') || 'No groups'}</div>
+                                             <div className="text-xs font-semibold text-[var(--text-primary)]">{(row.fieldChanges.groups.new || []).join(', ') || 'No groups'}</div>
                                            </div>
                                          ) : (
-                                           <span className="text-[10px] font-bold text-slate-300">{(toSortedStringList(current?.teams)).join(', ') || 'No groups'}</span>
+                                           <span className="text-xs font-semibold text-[var(--text-primary)]">{(toSortedStringList(current?.teams)).join(', ') || 'No groups'}</span>
                                          )}
                                       </td>
                                       <td className="p-4 align-top text-center">
                                          {row.fieldChanges?.is_admin ? (
                                            <div className="flex flex-col items-center gap-1">
-                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.old ? 3 : 0, row.fieldChanges.is_admin.old)}`}>
+                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.old ? 3 : 0, row.fieldChanges.is_admin.old)}`}>
                                                {row.fieldChanges.is_admin.old ? 'Admin' : 'Standard'}
                                              </span>
-                                             <ChevronDown size={8} className="text-slate-700" />
-                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.new ? 3 : 0, row.fieldChanges.is_admin.new)}`}>
+                                             <ChevronDown size={8} className="text-[var(--text-secondary)]" />
+                                             <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(row.fieldChanges.is_admin.new ? 3 : 0, row.fieldChanges.is_admin.new)}`}>
                                                {row.fieldChanges.is_admin.new ? 'Admin' : 'Standard'}
                                              </span>
                                            </div>
                                          ) : (
-                                           <span className={`inline-flex rounded-lg border px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] ${getPermissionLevelTone(Boolean(current?.is_admin) ? 3 : 0, Boolean(current?.is_admin))}`}>
+                                           <span className={`inline-flex rounded-lg border px-2 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${getPermissionLevelTone(Boolean(current?.is_admin) ? 3 : 0, Boolean(current?.is_admin))}`}>
                                              {Boolean(current?.is_admin) ? 'Admin' : 'Standard'}
                                            </span>
                                          )}
@@ -706,14 +697,14 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
                                          {row.permissionChanges.length > 0 ? (
                                            <div className="flex flex-wrap gap-2">
                                              {row.permissionChanges.map((change: any) => (
-                                               <div key={`${row.key}-${change.view}`} className="rounded-lg border border-white/10 bg-black/20 px-2.5 py-2">
-                                                 <div className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-500">{change.view}</div>
+                                               <div key={`${row.key}-${change.view}`} className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-2.5 py-2">
+                                                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)]">{change.view}</div>
                                                  <div className="mt-1 flex items-center gap-1.5">
-                                                   <span className={`rounded-lg border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] ${getPermissionLevelTone(change.old, Boolean(row.before?.is_admin))}`}>
+                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.old, Boolean(row.before?.is_admin))}`}>
                                                      {getPermissionLevelLabel(change.old, Boolean(row.before?.is_admin))}
                                                    </span>
-                                                   <ChevronRight size={12} className="text-slate-600" />
-                                                   <span className={`rounded-lg border px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] ${getPermissionLevelTone(change.new, Boolean(row.after?.is_admin))}`}>
+                                                   <ChevronRight size={12} className="text-[var(--text-secondary)]" />
+                                                   <span className={`rounded-lg border px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] ${getPermissionLevelTone(change.new, Boolean(row.after?.is_admin))}`}>
                                                      {getPermissionLevelLabel(change.new, Boolean(row.after?.is_admin))}
                                                    </span>
                                                  </div>
@@ -721,7 +712,7 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
                                              ))}
                                            </div>
                                          ) : (
-                                           <span className="text-[9px] font-bold text-slate-600 italic">No permission delta</span>
+                                           <span className="text-xs font-semibold text-[var(--text-secondary)] italic">No permission delta</span>
                                          )}
                                       </td>
                                    </tr>
@@ -737,6 +728,7 @@ function PermissionHistoryModal({ versions, allViews, onClose }: { versions: any
            </>
           }
       />
+      </div>
     </WorkspaceModal>
   )
 }
@@ -838,6 +830,9 @@ export default function SettingsPage() {
   const bulkBusyRef = React.useRef(false)
   const bulkBusy = bulkPhase !== null
   const [bulkError, setBulkError] = useState('')
+  const [restorePhase, setRestorePhase] = useState<'review' | 'saving' | null>(null)
+  const restoreBusyRef = React.useRef(false)
+  const [restoreError, setRestoreError] = useState('')
   const {
     triggerRef: permissionBulkTriggerRef,
     panelRef: permissionBulkPanelRef,
@@ -1127,7 +1122,51 @@ export default function SettingsPage() {
     })
   }
 
-  const settingsWritePending = pendingPermissionWrites > 0 || syncBusy || bulkBusy
+  const restoreMutation = useMutation({
+    retry: false,
+    mutationFn: async (versionId: number) => {
+      const response = await apiFetch(`/api/v1/settings/user-pool/restore/${versionId}`, { method: 'POST' })
+      return response.json()
+    },
+    onSuccess: async () => {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
+    },
+  })
+
+  const runIdentityRestore = async (version: any): Promise<boolean> => {
+    if (restoreBusyRef.current || pendingPermissionWrites > 0 || syncBusy || bulkBusy) return false
+    let finishWrite: () => void
+    try { finishWrite = beginScopedWrite(false) } catch (error) {
+      setRestoreError((error as Error).message)
+      return false
+    }
+    restoreBusyRef.current = true
+    setRestorePhase('review')
+    setRestoreError('')
+    try {
+      if (!await confirmWorkspaceAction({
+        title: 'Restore identity revision?',
+        message: `Restore v${version.v_num}? This applies the entire identity and permission snapshot. Identities added later may be removed, and access rights will return to this revision. A new revision will record the result.`,
+        confirmText: 'Restore identities', cancelText: 'Keep current identities', variant: 'danger',
+      })) return false
+      setRestorePhase('saving')
+      await restoreMutation.mutateAsync(version.id)
+      showWorkspaceToast('Identity revision restored')
+      return true
+    } catch (error) {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
+      setRestoreError(`${(error as Error).message} Review the current identities before trying again.`)
+      return false
+    } finally {
+      finishWrite()
+      restoreBusyRef.current = false
+      setRestorePhase(null)
+    }
+  }
+
+  const settingsWritePending = pendingPermissionWrites > 0 || syncBusy || bulkBusy || restorePhase !== null
   const settingsBlocker = useBlocker(settingsWritePending || syncDraftDirty)
   const departurePromptPending = React.useRef(false)
   usePageLeaveGuard(settingsWritePending || syncDraftDirty)
@@ -2406,7 +2445,7 @@ export default function SettingsPage() {
                  }
                  right={
                    <ToolbarGroup>
-                     <ToolbarButton onClick={() => setShowPermissionHistory(true)}>
+                     <ToolbarButton disabled={settingsWritePending} onClick={() => setShowPermissionHistory(true)}>
                        <span className="flex items-center gap-2">
                          <HistoryIcon size={14} />
                          Revision History
@@ -3396,7 +3435,8 @@ export default function SettingsPage() {
 
       {/* Permission Registry History */}
       {settingsManage && showPermissionHistory && (
-         <PermissionHistoryModal versions={poolVersions || []} allViews={allViews} onClose={() => setShowPermissionHistory(false)} />
+         <PermissionHistoryModal versions={poolVersions || []} allViews={allViews} onClose={() => setShowPermissionHistory(false)}
+           restorePhase={restorePhase} restoreError={restoreError} onRestore={runIdentityRestore} />
       )}
 
       {/* Snapshot and script inspection share the same nested-dialog contract. */}

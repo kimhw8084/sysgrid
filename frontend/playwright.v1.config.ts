@@ -4,6 +4,7 @@ import baseConfig from './playwright.config'
 export default defineConfig({
   ...baseConfig,
   testMatch: [
+    /(^|[\\/])settings-permission-history\.spec\.ts$/,
     /(^|[\\/])settings-sync-workflow\.spec\.ts$/,
     /(^|[\\/])settings-bulk-menu\.spec\.ts$/,
     /(^|[\\/])settings-permission-pending\.spec\.ts$/,
