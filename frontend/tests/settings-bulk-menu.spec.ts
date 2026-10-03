@@ -172,6 +172,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     for (const fail of [false, true]) {
       test(`Settings bulk ${action} guards pending departure and ${fail ? 'recovers after failure' : 'persists'} in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
         await resetBrowserState(page)
+        await page.emulateMedia({ reducedMotion: 'no-preference' })
         await page.setViewportSize({ width: 1440, height: 900 })
         expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
         await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
@@ -234,7 +235,13 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
           await expect(settings).toHaveAttribute('aria-current', 'page')
           await expect(home).not.toHaveAttribute('aria-current', 'page')
           await expect(selection).toBeDisabled()
-          if (!await panel.isVisible()) await trigger.click()
+          // An exiting AnimatePresence panel can still be visible after its
+          // trigger closes. Wait for that lifecycle to finish, then reopen it.
+          await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+          await expect(panel).not.toBeVisible()
+          await trigger.click()
+          await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+          await expect(panel).toBeVisible()
           await expect(panel.getByRole('button', { name: 'Set Admin', exact: true })).toBeDisabled()
           await expect(panel.getByRole('button', { name: 'Unset Admin', exact: true })).toBeDisabled()
           await expect(panel.getByRole('button', { name: 'Clear Selection', exact: true })).toBeDisabled()
