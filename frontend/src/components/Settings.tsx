@@ -1918,7 +1918,7 @@ export default function SettingsPage() {
         }}
       />
 
-      <div className="min-w-0 flex-none overflow-x-clip pr-2 pb-4 sm:min-h-0 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:custom-scrollbar sm:pb-20" data-settings-content-scroll="true">
+      <div className="min-w-0 flex-none overflow-visible pr-2 pb-4 sm:min-h-0 sm:flex-1 sm:overflow-y-auto sm:custom-scrollbar sm:pb-20" data-settings-content-scroll="true">
         <AnimatePresence mode="wait">
           {topTab === 'metadata' && settingsManage && (
              <motion.div key="metadata" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="min-w-0 space-y-4 pt-2" data-settings-tab-content="metadata">
@@ -2658,7 +2658,7 @@ export default function SettingsPage() {
                               <span className="text-xs text-[var(--text-primary)]">{op.team || '—'}</span>
                             </td>
                             <td className="p-4 align-middle">
-                               <WorkspaceTooltip focusable className="inline-block" content={<>
+                               <WorkspaceTooltip focusable className="relative inline-block" content={<>
                                  <p className="font-semibold">Active Membership</p>
                                  {assignedGroups.length ? assignedGroups.map((g: any) => <p key={g.id} className="mt-1">{g.name}</p>) : <p className="mt-1">No assigned groups</p>}
                                </>}>
