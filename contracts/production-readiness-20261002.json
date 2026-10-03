@@ -8,32 +8,55 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-03T02:14:00Z",
+  "as_of_utc": "2026-10-03T03:41:18Z",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "4edb26251d54f0e5479490d350c55aca765af16a",
+    "candidate": "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37083282438",
-    "tested_merge": "12e49ae4f7fae029a840e109d92205d8c7f2c9ff",
-    "completed_at": "2026-10-03T01:11:48Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37089237399",
+    "tested_merge": "6763aa77ca88840b659d8b2c0744762e89c40cf3",
+    "completed_at": "2026-10-03T02:50:54Z",
     "conclusion": "success",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 1280,
+      "backend": 1344,
       "frontend": 868,
-      "normal_browser": 216,
+      "normal_browser": 224,
       "normal_browser_preexisting_skips": 2,
       "desktop_browser": 35,
       "root_preview_browser": 6
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "414529d1710c09fa57bca7c099f0ae55d7148053 adds omission-safe operator upsert, strict sync preview booleans, truthful team-authority preview/apply, an optional backend stale-review fingerprint and a functional guarded JSON-record review/apply UI. Latest local: 1344 canonical backend tests across 62 files, 868 frontend tests across 159 files, 48 Settings browser cases at 103e8f8 and 29 focused follow-up cases on current source; overlapping suites are not summed. Sixty-four backend cases and eight browser cases beyond 4edb2625 join canonical discovery. Sync preview contrast minimum 6.403:1. Stronger mobile workspace checks exposed 103e8f8 clipping as incomplete: local tooltip positioning replaces it, with final 343/343 mobile and 1121/1121 desktop client/scroll widths. The prior suspected sidebar selection defect was ordinary hover; new route/aria-current checks falsify that hypothesis. Failure evidence remains preserved. Fresh assembled hosted CI is required.",
-    "job_duration_seconds": 1669,
-    "backend_duration_seconds": 207.71
+    "later_source": "b26a29266f364e8a75e36b45edeac21b543a23ab adds supported SQLite sync serialization and in-transaction authority recheck, strict role/team reference inputs, above-anchored Settings menus with keyboard focus return, and shared flyout selection/readability repairs. Latest local backend: 1466 tests/62 files; frontend: 871 tests/160 files. Browser: 90 pass in a 92-case normal run, with two new Monitoring selector failures corrected and both passing in the focused replay; all 92 distinct cases are covered across those runs, not a single 92-pass report. Three additional root-preview consumer workflows pass. Compared with this hosted checkpoint, 122 backend cases, three frontend cases and 14 normal-browser cases join canonical discovery. Settings bulk text: 88 samples, minimum 4.574:1; Monitoring: 32 samples, minimum 5.984:1. The original light-theme delete contrast was 1.002:1. Failed/intermediate evidence and FAR/Services/External harness corrections are retained. Fresh assembled hosted CI is required.",
+    "job_duration_seconds": 2050,
+    "backend_duration_seconds": 236.53
   },
   "ci_history": [
+    {
+      "candidate": "4edb26251d54f0e5479490d350c55aca765af16a",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37083282438",
+      "tested_merge": "12e49ae4f7fae029a840e109d92205d8c7f2c9ff",
+      "completed_at": "2026-10-03T01:11:48Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1280,
+        "frontend": 868,
+        "normal_browser": 216,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "414529d1710c09fa57bca7c099f0ae55d7148053 adds omission-safe operator upsert, strict sync preview booleans, truthful team-authority preview/apply, an optional backend stale-review fingerprint and a functional guarded JSON-record review/apply UI. Latest local: 1344 canonical backend tests across 62 files, 868 frontend tests across 159 files, 48 Settings browser cases at 103e8f8 and 29 focused follow-up cases on current source; overlapping suites are not summed. Sixty-four backend cases and eight browser cases beyond 4edb2625 join canonical discovery. Sync preview contrast minimum 6.403:1. Stronger mobile workspace checks exposed 103e8f8 clipping as incomplete: local tooltip positioning replaces it, with final 343/343 mobile and 1121/1121 desktop client/scroll widths. The prior suspected sidebar selection defect was ordinary hover; new route/aria-current checks falsify that hypothesis. Failure evidence remains preserved. Fresh assembled hosted CI is required.",
+      "job_duration_seconds": 1669,
+      "backend_duration_seconds": 207.71
+    },
     {
       "candidate": "a432dac189865b50c99c3e49b1d8a4bac36bd479",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -373,12 +396,12 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "414529d1710c09fa57bca7c099f0ae55d7148053",
+    "source_head": "b26a29266f364e8a75e36b45edeac21b543a23ab",
     "registered_api_operations": 310,
-    "static_ui_declarations": 3133,
+    "static_ui_declarations": 3135,
     "static_ui_routes": 19,
-    "static_ui_overlays": 259,
-    "static_ui_controls": 2855,
+    "static_ui_overlays": 260,
+    "static_ui_controls": 2856,
     "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
   },
   "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
@@ -976,6 +999,31 @@
       "commit": "414529d1710c09fa57bca7c099f0ae55d7148053",
       "scope": "Fix actual tooltip scroll overflow, supersede partial clipping and qualify blocked-navigation selection",
       "archive_sha256": "6f53d3c3db23bde14682a90446635b21a717370de2cbbf16a5022dc586cef4fd"
+    },
+    {
+      "commit": "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
+      "scope": "Reconcile checkpoint17 with exact hosted CI, approved scope and source inventory",
+      "archive_sha256": "63ef92358c975b6b2ec1845d0f43968af2f3a9a02d4e2133b5721cef5f612dc6"
+    },
+    {
+      "commit": "7b38343670d6f1289cf373526d67b0253dea6700",
+      "scope": "Serialize supported SQLite identity apply and recheck Settings authority inside the snapshot transaction",
+      "archive_sha256": "9217f548ac806219faa890220073ba7da1448b937efe0b2a238c0f89803b7789"
+    },
+    {
+      "commit": "778d269841fa8e7f954123beed3f85be86874ec7",
+      "scope": "Validate strict operator role/team references and reject missing-ID fallback creation atomically",
+      "archive_sha256": "fd93e273a660ed2595b08a2b49c432eceef4cd0770c728120671bbff151e788b"
+    },
+    {
+      "commit": "100b388546463587b47a6a8cb14caae5b1452540",
+      "scope": "Keep Settings bulk menu reachable above its trigger with keyboard entry, navigation, nested dismissal and focus return",
+      "archive_sha256": "cddecfc58aba5ca1544d033e913b7b79b4f9640a802c3002010a5e4671c07a04"
+    },
+    {
+      "commit": "b26a29266f364e8a75e36b45edeac21b543a23ab",
+      "scope": "Repair shared flyout selection display and theme/readability with current consumer workflow regressions",
+      "archive_sha256": "5ce509a318e8a28236853453fb5e632068a6522c5b4903e0308d53d5f0e3ea86"
     }
   ],
   "groups": [
@@ -1003,9 +1051,10 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "27873d89"
+            "27873d89",
+            "f0e6373e3adf2a9e084d6c2662fdbce5d83af289"
           ],
-          "remaining": "Approval ledger and current source inventory refreshed. Notion checkpoints preserve actual direct provenance; final integrated release claims require main ancestry and field evidence."
+          "remaining": "Checkpoint18 reconciles 103 reviewed evidence archives, current source inventory and exact hosted f0e6373e success. Notion and PR checkpoints retain direct-development provenance; integrated release claims still require main ancestry and company evidence."
         },
         {
           "id": "A3",
@@ -1013,8 +1062,10 @@
           "outcome": "Every route, dialog, action, API, role, data state, and supported viewport has an owner and an explicit qualification requirement.",
           "approval": "yes",
           "status": "in_progress",
-          "reviewed_commits": [],
-          "remaining": "Source inventory is discovery evidence; every dynamic behavior still requires explicit qualification."
+          "reviewed_commits": [
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
+          ],
+          "remaining": "Fresh clean-source inventory at b26a2926 registers 310 API operations and 3135 static UI declarations. This is a discovery worklist; dynamic states, role behavior and rendered acceptance remain separate."
         }
       ]
     },
@@ -1084,9 +1135,12 @@
             "5e87770d",
             "ec7e6f2d",
             "643713e2",
-            "103e8f8a"
+            "103e8f8a",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "JSON identity imports now validate locally, review actual changes and removals, send the exact reviewed payload with a fingerprint, preserve drafts on errors and require a new preview after changes. Operator upserts preserve omissions. Earlier field-specific permission/admin writes remain. Permission-map conflicts, in-flight concurrent writers, uncertain outcomes and other forms remain."
+          "remaining": "Identity import applies the exact reviewed snapshot under supported SQLite write serialization and rechecks authority inside the transaction. Operator role/team inputs reject invalid scalars and explicit missing-ID fallback. Shared flyout numeric selections now display the actual chosen label. Permission-map conflicts, other writers, uncertain outcomes and broader form safety remain."
         },
         {
           "id": "B4",
@@ -1103,9 +1157,11 @@
             "c1a9050f",
             "01777425",
             "9c1ee626",
-            "414529d1"
+            "414529d1",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "Settings membership tooltip hidden text is anchored locally and no longer expands the workspace horizontally. Shared dialog timestamps and earlier overlay repairs remain. Remaining overlay states, focus return/trapping, scroll behavior and full dialog inventory still need qualification."
+          "remaining": "Settings bulk menus render above or below their trigger, expose dialog/expanded semantics, support arrow/Home/End and Escape focus return, and preserve nested dropdown dismissal. Real group assignment/removal and both themes at desktop/phone widths pass. Remaining overlay states, Tab/assistive-technology behavior, scroll and full dialog inventory remain."
         },
         {
           "id": "B5",
@@ -1128,9 +1184,10 @@
             "fd47a427",
             "df94778d",
             "103e8f8a",
-            "414529d1"
+            "414529d1",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "Settings sync review uses established theme tokens, readable values, explicit local-authority conflicts and removal acknowledgment; 199 scoped contrast samples minimum 6.403:1. Final mobile review/details and desktop pending screenshots inspected in both themes. Earlier permission/editor samples remain. Bulk flyouts, history details, remaining views and complete visual-state coverage remain."
+          "remaining": "Shared flyout cards/editors use current theme tokens and 12px control text. Settings light delete contrast improves from 1.002:1 to at least 5.277:1 in default state; all 88 measured Settings state samples reach 4.574:1 or better. Monitoring's 32 samples reach 5.984:1. Desktop/mobile and FAR shared controls visually inspected. Other nonshared headers, history details, FAR technical copy and complete visual-state coverage remain."
         },
         {
           "id": "B6",
@@ -1150,9 +1207,11 @@
             "fd47a427",
             "df94778d",
             "103e8f8a",
-            "414529d1"
+            "414529d1",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "Settings record review prioritizes changed identities and keeps table details horizontally reachable at 390px in both themes. Stronger workspace measurements exposed the initial clipping workaround as incomplete; local tooltip positioning fixes the root overflow with 343/343 mobile and 1121/1121 desktop client/scroll widths. Zoom, short screens, broader breakpoints and large datasets remain."
+          "remaining": "Settings bulk menus remain inside the viewport with keyboard access to the last action in above/below placement at 1440/390px; Monitoring's expanded shared editor remains operable after desktop-to-phone resize. Earlier tooltip containment and record-review repairs remain. Zoom, broader short-screen/reflow states and large datasets remain."
         },
         {
           "id": "B7",
@@ -1174,9 +1233,11 @@
             "fd47a427",
             "df94778d",
             "103e8f8a",
-            "414529d1"
+            "414529d1",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "The JSON editor has an accessible label and described editable/read-only state; removal acknowledgment is explicit. Blocked/canceled navigation preserves aria-current, and approved discard updates it. Earlier named controls and keyboard proof remain. Full assistive-technology, focus progression/return, zoom/reflow and remaining controls remain."
+          "remaining": "Settings bulk menu has a named nonmodal dialog, expanded/controls/haspopup trigger linkage, initial keyboard focus, arrow/Home/End navigation and Escape return. Nested Escape preserves the parent and selected rows; readable scoped contrast is measured. Full assistive-technology, Tab progression, zoom/reflow and remaining controls remain."
         },
         {
           "id": "B8",
@@ -1187,9 +1248,10 @@
           "reviewed_commits": [
             "82c2586e",
             "1255794d",
-            "fd47a427"
+            "fd47a427",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "Settings permission tables now provide named controls, explicit selection state, accurate empty-row span and reachable horizontal actions. Broader saved views, filters, selection, import/export and table behavior remain."
+          "remaining": "Shared flyout selectors consistently display numeric and string options through their existing string-valued callback contract. Settings group membership and Monitoring status changes persist with independent fields preserved. Broader saved views, filters, selection, import/export and table behavior remain."
         },
         {
           "id": "B9",
@@ -1216,9 +1278,11 @@
             "73a49155",
             "643713e2",
             "103e8f8a",
-            "414529d1"
+            "414529d1",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "Sync preview describes actual applied team authority and field changes; strict preview booleans prevent malformed dry-run requests from mutating. Pending apply, stale 409, invalid JSON and controlled 503 preserve truthful recovery. Previous sidebar-defect suspicion is falsified as hover; active route remains correct. Other domains' stale/partial/denied/conflict and uncertain outcomes remain."
+          "remaining": "Sync previews read a consistent supported SQLite snapshot; apply serializes fingerprint/plan/write and returns actionable 409 on unchanged-timeout contention. Shared selectors display the chosen value rather than a misleading placeholder. Bulk pending/departure safety, other domains' stale/partial/denied/conflict and uncertain outcomes remain."
         },
         {
           "id": "B10",
@@ -1281,9 +1345,10 @@
             "fcd095ed",
             "5e87770d",
             "ec7e6f2d",
-            "643713e2"
+            "643713e2",
+            "778d269841fa8e7f954123beed3f85be86874ec7"
           ],
-          "remaining": "Operator upsert preserves omitted fields; supplied preview must be a boolean and supplied expected_fingerprint must be 64 lowercase hexadecimal characters, with invalid values rejected before writes. Optional fingerprint preserves older caller compatibility. Earlier HTTP/scalar/import repairs remain. Full typed request/response/OpenAPI, resource bounds, pagination and other domains remain."
+          "remaining": "Operator role/team references accept omitted/null or strict positive bounded integers; invalid types fail structured 422 before query and explicit missing team IDs cannot fall back to name creation. Restore role lookup shares validation. Earlier upsert, preview-boolean and optional fingerprint contracts remain. Complete typed schemas/OpenAPI, resource bounds, pagination and other domains remain."
         },
         {
           "id": "C3",
@@ -1303,9 +1368,11 @@
             "ac01628f",
             "b18a299c",
             "3badc66a",
-            "fcd095ed"
+            "fcd095ed",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7"
           ],
-          "remaining": "Home source availability follows Asset/Rack capabilities; endpoint-IP search preserves tenant/record ownership for normal/root callers. Settings malformed privilege inputs cannot coerce access; reader denials and distinct control-plane policy remain verified. Full roles, embedded projections and company identity qualification remain."
+          "remaining": "Supported SQLite sync reloads admin/role/custom-permission authority after acquiring its snapshot transaction; six revoked-grant scenarios reject without state change. Strict operator references cannot alias booleans or overflow database bindings. Full tenant-access revocation, other concurrent writers, roles/projections and authentic company identity remain."
         },
         {
           "id": "C4",
@@ -1336,9 +1403,11 @@
             "38a09f73",
             "5e87770d",
             "643713e2",
-            "103e8f8a"
+            "103e8f8a",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7"
           ],
-          "remaining": "Operator upsert uses atomic team/history/audit transitions and no-op saves stay quiet. Optional sync fingerprints reject a stale reviewed source or identity snapshot before mutation; UI always supplies the reviewed token and prevents duplicate pending apply. This does not yet serialize in-flight writes after the check. Permission-map conflicts, other concurrent writers, general idempotency and unknown outcomes remain."
+          "remaining": "Supported file-backed SQLite sync uses one preview read snapshot and BEGIN IMMEDIATE for apply, covering fingerprint/plan/write and fresh Settings authority. Three concurrent apply races, six revoked grants, preview skew and lock contention pass without retries or a raised busy timeout. Reference rejection also preserves operator/team/audit/history rollback. Other databases, other writers' stale edits, permission-map conflicts, general idempotency and unknown outcomes remain."
         },
         {
           "id": "C5",
@@ -1387,9 +1456,10 @@
             "5e87770d",
             "ec7e6f2d",
             "73a49155",
-            "643713e2"
+            "643713e2",
+            "778d269841fa8e7f954123beed3f85be86874ec7"
           ],
-          "remaining": "Operator upsert now preserves omitted fields and team-source ownership. Sync preview/apply share effective team planning: local overrides survive, ignored source teams create no orphan team/history, and team update counts match actual additions/changes/clears. Malformed preview flags cannot trigger deletion. Role/team scalar schemas, primary-team versus group semantics, uniqueness and concurrent relationships remain."
+          "remaining": "Strict role/team reference validation covers create/upsert/patch/bulk and historical role restore; explicit missing IDs cannot create fallback teams. Existing omitted/clear/assign intent and name-only team creation are preserved. Sync effective-team planning remains verified. Primary-team/group consistency, all historical snapshot fields, uniqueness and other concurrent relationships remain."
         },
         {
           "id": "C7",
@@ -1415,9 +1485,10 @@
             "c2453f26",
             "a307320c",
             "062dd490",
-            "fcd095ed"
+            "fcd095ed",
+            "778d269841fa8e7f954123beed3f85be86874ec7"
           ],
-          "remaining": "Operator privilege values reject strings/numbers/null/containers; bool/nonpositive/overflow bulk IDs reject before database use with atomic persistence checks. Existing Service date/cost/finite-JSON and import limits remain. Remaining typed schemas and resource-bound qualification remain."
+          "remaining": "Role/team IDs reject booleans, floats, strings, containers, nonpositive and overflow values before database binding. Late bulk and restore failures preserve all state. Existing strict admin flags and bulk identity IDs remain. Historical restore admin coercion, remaining typed schemas and resource bounds still require work."
         },
         {
           "id": "C8",
@@ -1505,8 +1576,10 @@
           "outcome": "Preserve golden behavior; qualify logic, schedules, ownership, recovery references, lifecycle, and the distinction between configuration and observed health.",
           "approval": "yes",
           "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Preserve golden behavior; qualify logic, schedules, ownership, recovery references, lifecycle, and the distinction between configuration and observed health."
+          "reviewed_commits": [
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
+          ],
+          "remaining": "Shared Monitoring bulk status controls remain readable and persist the requested status without changing severity in both themes, including desktop-to-phone resize. Golden grid density remains unchanged. Broader logic, schedules, ownership, recovery/lifecycle and observed-health qualification remain."
         },
         {
           "id": "D4",
@@ -1599,9 +1672,13 @@
             "73a49155",
             "643713e2",
             "103e8f8a",
-            "414529d1"
+            "414529d1",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "JSON identity-record imports now support dry-run review, local-team conflict disclosure, explicit removal acknowledgment, stale-review rejection, guarded exact apply, reload persistence and draft-preserving failure recovery. Existing historical content is retained. Latest 48 Settings cases plus 29 overlapping follow-up cases cover both themes and mobile tooltip containment. Authentic company source remains unselected; restore authority, bounds, bulk/history-detail styles, full focus/AT, latent historical-editor reachability, restart persistence and concurrent permission/sync writers remain."
+          "remaining": "Identity sync now serializes supported SQLite apply and rechecks authority; operator reference inputs reject malformed/missing-ID ambiguity atomically. Settings bulk placement, keyboard return, nested group assignment/removal, truthful chosen labels and readable theme states are verified. All historical content is preserved. Company source remains unselected; historical admin-flag restore, full restore authority/concurrency, bulk pending/departure, bounds, history-detail styling, assistive technology and broader permission writers remain."
         }
       ]
     },
@@ -1707,9 +1784,14 @@
             "73a49155",
             "643713e2",
             "103e8f8a",
-            "414529d1"
+            "414529d1",
+            "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab"
           ],
-          "remaining": "Hosted 4edb2625 succeeds on merge 12e49ae4: 76 startup/recovery plus 23 subtests, 1280 backend, 868 frontend, 216 normal browser plus 2 existing skips, 35 desktop and 6 root-preview. Job 27m49s; backend 207.71s within unchanged 45-minute deadline. Later local proof reaches 1344 backend/62 files, 868 frontend/159 files, 48 Settings cases plus 29 overlapping follow-up cases; 64 new backend and 8 new canonical browser cases. Fresh assembled CI, supply chain and final release checks remain."
+          "remaining": "Hosted f0e6373e succeeds on merge 6763aa77: 76 startup/recovery plus 23 subtests, 1344 backend, 868 frontend, 224 normal browser plus two existing skips, 35 desktop and six root-preview. Job 34m10s and backend 236.53s, within the unchanged 45-minute deadline. Later local source reaches 1466 backend/62 files and 871 frontend/160 files; 90 normal cases plus two corrected focused cases and three root-preview consumer cases pass. New canonical coverage adds 122 backend, three frontend and 14 normal-browser cases. Fresh assembled CI, supply chain and final release checks remain."
         },
         {
           "id": "E7",
