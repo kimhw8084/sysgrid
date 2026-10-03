@@ -128,6 +128,9 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
   className?: string
   title?: string
   ariaLabel?: string
+  ariaExpanded?: boolean
+  ariaControls?: string
+  ariaHasPopup?: React.AriaAttributes['aria-haspopup']
 }>(({
   children,
   onClick,
@@ -136,7 +139,10 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
   variant = 'secondary',
   className = '',
   title,
-  ariaLabel
+  ariaLabel,
+  ariaExpanded,
+  ariaControls,
+  ariaHasPopup
 }, ref) => {
   const variantClass =
     variant === 'primary'
@@ -163,7 +169,10 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
       disabled={disabled}
       title={title}
       aria-label={ariaLabel || title}
-      aria-pressed={active || undefined}
+      aria-expanded={ariaExpanded}
+      aria-controls={ariaControls}
+      aria-haspopup={ariaHasPopup}
+      aria-pressed={ariaExpanded === undefined ? active || undefined : undefined}
       className={join(
         `${TOOLBAR_CONTROL_HEIGHT} inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors disabled:cursor-not-allowed disabled:opacity-40`,
         variantClass,

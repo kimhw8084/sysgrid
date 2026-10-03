@@ -26,6 +26,7 @@ import {
   ToolbarIconButton
 } from "./shared/LayoutPrimitives"
 import { WorkspaceEmptyState, WorkspaceFloatingPanel, WorkspaceSelectField, useWorkspaceAnchoredLayer } from "./shared/OperationalWorkspacePrimitives"
+import { useWorkspacePopupDismiss } from "./shared/WorkspaceOverlay"
 import { WorkspaceFlyoutActionCard, WorkspaceFlyoutDropdownEditor } from "./shared/WorkspaceFlyout"
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { WorkspaceHistoryShell } from "./shared/WorkspaceModalShells"
@@ -1539,22 +1540,16 @@ export default function SettingsPage() {
     }
   }, [selectedTeam?.id])
 
-  useEffect(() => {
-    if (!showPermissionBulkMenu) return
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        permissionBulkTriggerRef.current?.contains(target as HTMLElement) ||
-        permissionBulkPanelRef.current?.contains(target) ||
-        (target instanceof HTMLElement && target.closest('[data-workspace-panel]'))
-      ) return
+  useWorkspacePopupDismiss(
+    showPermissionBulkMenu,
+    permissionBulkTriggerRef,
+    permissionBulkPanelRef,
+    () => {
       setShowPermissionBulkMenu(false)
       setExpandedPermissionBulkSection(null)
       setPermissionBulkDeleteConfirm(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [permissionBulkPanelRef, permissionBulkTriggerRef, showPermissionBulkMenu])
+    },
+  )
 
   useEffect(() => {
     if (selectedOperatorIds.length > 0) return
@@ -2381,6 +2376,9 @@ export default function SettingsPage() {
                        onClick={togglePermissionBulkMenu}
                        disabled={selectedOperatorIds.length === 0}
                        active={showPermissionBulkMenu}
+                       ariaExpanded={showPermissionBulkMenu}
+                       ariaControls="settings-permission-bulk-actions"
+                       ariaHasPopup="dialog"
                        ref={permissionBulkTriggerRef as any}
                      >
                        <span className="flex items-center gap-2">
@@ -2394,15 +2392,21 @@ export default function SettingsPage() {
 
                {typeof document !== 'undefined' && createPortal(
                  <AnimatePresence>
-                   {showPermissionBulkMenu && !!permissionBulkPanelStyle.top && (
+                   {showPermissionBulkMenu && (
                      <motion.div
                        initial={{ opacity: 0, y: 10 }}
                        animate={{ opacity: 1, y: 0 }}
                        exit={{ opacity: 0, y: 10 }}
+                       onAnimationComplete={(definition) => {
+                         if (typeof definition === 'object' && 'opacity' in definition && definition.opacity === 1
+                           && document.activeElement === permissionBulkTriggerRef.current) {
+                           permissionBulkPanelRef.current?.querySelector<HTMLButtonElement>('button:not([disabled])')?.focus()
+                         }
+                       }}
                        style={permissionBulkPanelStyle}
                        data-workspace-panel="true"
                      >
-                       <div ref={permissionBulkPanelRef}>
+                       <div ref={permissionBulkPanelRef} id="settings-permission-bulk-actions" role="dialog" aria-label="Bulk identity actions">
                          <WorkspaceFloatingPanel kind="context" className="max-h-[560px] overflow-y-auto custom-scrollbar p-3">
                            <div className="mb-3 rounded-lg border border-slate-800 bg-slate-950 px-4 py-3">
                              <p className="text-[10px] font-semibold text-slate-400">Bulk actions</p>
