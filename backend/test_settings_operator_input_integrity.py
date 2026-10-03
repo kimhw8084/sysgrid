@@ -549,6 +549,127 @@ async def test_concurrent_restores_preserve_each_complete_revision(operator_scop
         assert operators[0].full_name == saved['full_name']
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('reserved_field', ['username', 'external_id'])
+async def test_restore_cannot_delete_reserved_root_by_omitting_it_from_snapshot(operator_scope, setup_db, reserved_field):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    await _grant_access(setup_db, tenant_id=c['tenant'], user_id='ordinary-restore-manager', role='ADMIN')
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        root = await db.scalar(select(models.Operator).where(models.Operator.username == 'admin_root'))
+        assert root is not None
+        root.username = 'admin_root' if reserved_field == 'username' else 'deployment-root-alias'
+        root.external_id = 'admin_root' if reserved_field == 'external_id' else 'deployment-root-key'
+        db.add(models.Operator(external_id='ordinary-restore-manager', username='ordinary-restore-manager', is_admin=True))
+        await db.flush()
+        records = [row for row in await build_user_pool_snapshot(db) if row['id'] != root.id]
+        next(row for row in records if row['external_id'] == 'input-target').update(
+            full_name='Rejected deletion change', team='Rejected deletion team')
+        version = models.UserPoolVersion(version_label='omitted-root-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}',
+        headers={**c['headers'], 'X-User-Id': 'ordinary-restore-manager'})
+    assert response.status_code == 403, response.text
+    assert response.json()['detail']['code'] == 'RESERVED_SYSTEM_ROOT_IDENTITY'
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('actor_identity', ['username', 'external_id'])
+async def test_empty_restore_preserves_actor_resolved_by_either_supported_identity(operator_scope, setup_db, actor_identity):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        actor = await db.scalar(select(models.Operator).where(models.Operator.username == 'admin_root'))
+        assert actor is not None
+        if actor_identity == 'external_id':
+            actor.username = 'root-display-name'
+        actor.external_id = 'admin_root'
+        actor_id = actor.id
+        version = models.UserPoolVersion(version_label='omitted-actor-fixture', snapshot_data=[],
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+        await db.refresh(actor)
+        expected = {col.name: getattr(actor, col.name) for col in models.Operator.__table__.columns}
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        operators = (await db.scalars(select(models.Operator))).all()
+        assert len(operators) == 1 and operators[0].id == actor_id
+        assert {col.name: getattr(operators[0], col.name) for col in models.Operator.__table__.columns} == expected
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 2 and versions[-1].is_active and not versions[0].is_active
+        assert versions[0].snapshot_data == []
+        assert [row['external_id'] for row in versions[-1].snapshot_data] == ['admin_root']
+        assert versions[-1].diff_summary['source_version_id'] == version_id
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('intent', ['mixed', 'empty'])
+async def test_restore_revision_counts_describe_actual_changes_and_repeated_restore(operator_scope, setup_db, intent):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        records = await build_user_pool_snapshot(db) if intent == 'mixed' else []
+        if intent == 'mixed':
+            records = [row for row in records if row['external_id'] != 'input-peer']
+            next(row for row in records if row['external_id'] == 'input-target')['full_name'] = 'Restored summary identity'
+            records.append({'external_id': 'summary-new', 'username': 'summary-new', 'full_name': 'Restored new identity'})
+        version = models.UserPoolVersion(version_label='restore-count-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    for iteration in range(2):
+        response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+        assert response.status_code == 200, response.text
+        expected = {'added': 0, 'removed': 0, 'changed': 0} if iteration else (
+            {'added': 1, 'removed': 1, 'changed': 1} if intent == 'mixed' else {'added': 0, 'removed': 2, 'changed': 0})
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+            assert len(versions) == iteration + 2
+            assert sum(row.is_active for row in versions) == 1 and versions[-1].is_active
+            assert versions[0].snapshot_data == records
+            assert {key: versions[-1].diff_summary[key] for key in expected} == expected
+            assert versions[-1].diff_summary['source_version_id'] == version_id
+            operators = (await db.scalars(select(models.Operator))).all()
+            by_identity = {row.external_id: row for row in operators}
+            assert set(by_identity) == ({'admin_root', 'input-target', 'summary-new'} if intent == 'mixed' else {'admin_root'})
+            if intent == 'mixed':
+                assert by_identity['input-target'].full_name == 'Restored summary identity'
+                assert by_identity['summary-new'].full_name == 'Restored new identity'
+
+
+@pytest.mark.asyncio
+async def test_restore_counts_preserved_text_bytes_as_actual_change(operator_scope, setup_db):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        records = await build_user_pool_snapshot(db)
+        next(row for row in records if row['external_id'] == 'input-target')['full_name'] = ' Original name '
+        version = models.UserPoolVersion(version_label='restore-text-count-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        assert (await db.get(models.Operator, c['ids'][0])).full_name == ' Original name '
+        version = await db.scalar(select(models.UserPoolVersion).where(models.UserPoolVersion.is_active.is_(True)))
+        assert {key: version.diff_summary[key] for key in ['added', 'removed', 'changed']} == {
+            'added': 0, 'removed': 0, 'changed': 1,
+        }
+
+
 async def write_operator(c, operation, payload):
     base = '/api/v1/settings/operators'
     if operation in ['create', 'upsert']:

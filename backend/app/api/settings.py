@@ -2042,6 +2042,9 @@ async def restore_user_pool(
     
     snapshot_external_ids = set()
     snapshot_usernames: set[str] = set()
+    restore_summary = {"added": 0, "removed": 0, "changed": 0}
+    restored_fields = ("username", "full_name", "email", "department", "team", "team_id",
+                       "team_source", "teams", "role_id", "is_admin", "custom_permissions", "registration_status")
     
     # Sync version data back to operators
     for index, u in enumerate(version.snapshot_data):
@@ -2087,6 +2090,7 @@ async def restore_user_pool(
         role = await resolve_role_assignment(db, u.get("role_id")) if u.get("role_id") is not None else None
         
         op = current_ops.get(ext_id)
+        before_state = {field: deepcopy(getattr(op, field)) for field in restored_fields} if op else None
         if not op:
             # Re-create missing operator
             op = models.Operator(external_id=ext_id)
@@ -2105,12 +2109,21 @@ async def restore_user_pool(
         op.is_admin = u.get("is_admin", False)
         op.custom_permissions = normalize_permission_map(u.get("custom_permissions", {}))
         op.registration_status = u.get("registration_status", "Verified")
+        if before_state is None:
+            restore_summary["added"] += 1
+        elif before_state != {field: getattr(op, field) for field in restored_fields}:
+            restore_summary["changed"] += 1
 
     # Delete operators NOT in the snapshot (excluding current user to avoid lockout if they aren't in old version)
     for ext_id, op in current_ops.items():
         if ext_id not in snapshot_external_ids:
-            if op.username != user_id:
+            if user_id not in (op.username, op.external_id):
+                reject_reserved_system_root_identity(
+                    {"external_id": op.external_id, "username": op.username, "id": op.external_id},
+                    actor_id=user_id,
+                )
                 await db.delete(op)
+                restore_summary["removed"] += 1
              
     # Create a NEW version record with descriptive label
     import datetime
@@ -2123,7 +2136,7 @@ async def restore_user_pool(
             "revert": True,
             "source_version_id": version.id,
             "source_version_label": version.version_label,
-            "added": 0, "removed": 0, "changed": 0 # Placeholder for diff summary
+            **restore_summary,
         },
         version_label=new_label
     )
