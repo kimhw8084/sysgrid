@@ -132,3 +132,70 @@ async def test_sync_preview_matches_applied_team_authority(operator_scope, setup
     assert applied.json()['summary'] == result['summary']
     if not expected_changes:
         assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('change', ['profile', 'permissions', 'team_authority', 'teams', 'records', 'source'])
+async def test_reviewed_sync_rejects_changed_state_or_input(operator_scope, setup_db, change):
+    c = operator_scope
+    payload = await prepare_sync(c, setup_db)
+    preview = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': True})
+    assert preview.status_code == 200, preview.text
+    fingerprint = preview.json().get('fingerprint', '0' * 64)
+    if change == 'teams':
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            db.add(models.Team(name='Independent team'))
+            await db.commit()
+    elif change in {'profile', 'permissions', 'team_authority'}:
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            row = await db.get(models.Operator, c['ids'][0])
+            if change == 'profile':
+                row.full_name = 'Independent update'
+            elif change == 'permissions':
+                row.custom_permissions = {'settings': 2}
+            else:
+                row.team_source = 'manual_override'
+            await db.commit()
+    elif change == 'records':
+        payload['records'][0]['full_name'] = 'Unreviewed name'
+    else:
+        payload['source'] = 'Unreviewed source'
+    before = await snapshot(c, setup_db)
+    applied = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': False, 'expected_fingerprint': fingerprint})
+    assert await snapshot(c, setup_db) == before
+    assert applied.status_code == 409, applied.text
+    assert 'Preview again' in applied.json()['detail']
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('value', [None, False, 42, '', 'invalid', 'g' * 64, [], {}])
+async def test_malformed_review_fingerprint_never_applies(operator_scope, setup_db, value):
+    c = operator_scope
+    payload = await prepare_sync(c, setup_db)
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': False, 'expected_fingerprint': value})
+    assert await snapshot(c, setup_db) == before
+    assert response.status_code == 422, response.text
+
+
+@pytest.mark.asyncio
+async def test_reviewed_sync_applies_exact_input_once_and_rejects_old_review(operator_scope, setup_db):
+    c = operator_scope
+    payload = await prepare_sync(c, setup_db)
+    before = await snapshot(c, setup_db)
+    preview = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': True})
+    assert preview.status_code == 200, preview.text
+    assert await snapshot(c, setup_db) == before
+    fingerprint = preview.json()['fingerprint']
+    assert len(fingerprint) == 64 and all(char in '0123456789abcdef' for char in fingerprint)
+    repeated_preview = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': True})
+    assert repeated_preview.json()['fingerprint'] == fingerprint
+    reviewed = {**payload, 'preview': False, 'expected_fingerprint': fingerprint}
+    applied = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json=reviewed)
+    assert applied.status_code == 200, applied.text
+    assert applied.json()['summary'] == preview.json()['summary']
+    after = await snapshot(c, setup_db)
+    assert after != before
+    repeated = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json=reviewed)
+    assert repeated.status_code == 409, repeated.text
+    assert await snapshot(c, setup_db) == after

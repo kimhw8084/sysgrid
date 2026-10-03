@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 from copy import deepcopy
@@ -1720,6 +1721,13 @@ async def refresh_user_pool(
 ):
     if "preview" in data and not isinstance(data["preview"], bool):
         raise HTTPException(422, {"field_errors": {"preview": "Must be a boolean"}})
+    expected_fingerprint = data.get("expected_fingerprint")
+    if "expected_fingerprint" in data and (
+        not isinstance(expected_fingerprint, str)
+        or len(expected_fingerprint) != 64
+        or any(char not in "0123456789abcdef" for char in expected_fingerprint)
+    ):
+        raise HTTPException(422, {"field_errors": {"expected_fingerprint": "Must be a preview fingerprint"}})
     preview = data.get("preview", False)
     user_id = get_current_user_id(request)
 
@@ -1775,6 +1783,22 @@ async def refresh_user_pool(
         "team_conflicts": [],
         "team_updates": [],
     }
+    fingerprint = None
+    if preview or expected_fingerprint is not None:
+        # This is a state precondition, not an authentication or authorization token.
+        reviewed_state = {
+            "tenant_id": getattr(request.state, "tenant_id", None),
+            "actor": user_id,
+            "records": source_records,
+            "source": diff_summary["source"],
+            "operators": await build_user_pool_snapshot(db),
+            "teams": [list(row) for row in (await db.execute(
+                select(models.Team.id, models.Team.name).order_by(models.Team.id)
+            )).all()],
+        }
+        fingerprint = hashlib.sha256(json.dumps(reviewed_state, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        if expected_fingerprint is not None and expected_fingerprint != fingerprint:
+            raise HTTPException(409, "Identity data or source records changed. Preview again before applying.")
     preview_items = []
     existing_username_map = {
         operator.username: operator.external_id
@@ -1943,6 +1967,7 @@ async def refresh_user_pool(
             "status": "success", 
             "preview": preview_items, 
             "summary": diff_summary,
+            "fingerprint": fingerprint,
             "version_label": version_label
         }
 
