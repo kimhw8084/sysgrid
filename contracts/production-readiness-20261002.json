@@ -8,33 +8,59 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-03T05:28:35Z",
+  "as_of_utc": "2026-10-03T06:18:00Z",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+    "candidate": "be55e543c35267decc07c234c968d32339d33443",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37097450946",
-    "tested_merge": "85c552ca44944502220227d1fbe17335257401ea",
-    "completed_at": "2026-10-03T05:21:17Z",
-    "conclusion": "success",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37100014977",
+    "tested_merge": "6caad7302566c93a9e6d1d34beeefe5121a1d451",
+    "completed_at": "2026-10-03T05:56:45Z",
+    "conclusion": "failure",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 1508,
+      "backend": 1581,
       "frontend": 871,
       "frontend_files": 160,
-      "normal_browser": 256,
-      "normal_browser_preexisting_skips": 2,
-      "desktop_browser": 35,
-      "root_preview_browser": 6
+      "normal_browser_passed": 253,
+      "normal_browser_failed": 3,
+      "normal_browser_preexisting_skips": 2
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "3bae47ba24814c3ee4904d2b34dae3331a833e9e adds legacy-compatible historical field validation, shared supported-SQLite restore serialization and fresh Settings authority, reserved-root omission protection, external-ID actor preservation and actual revision counters. History now has expandable permission details plus visible username/status changes. Latest local backend: 1581 tests/62 files; frontend: 871 tests/160 files. The preceding density source passed 32 related Settings browser cases; current field-display source passes all eight history/restore cases plus four focused visual replays. Seventy-three backend cases join canonical discovery; existing browser cases gain stronger assertions. Current final visual run: 1188 text-contrast samples, minimum 5.984:1. Fresh assembled hosted CI is required.",
-    "job_duration_seconds": 2306,
-    "backend_duration_seconds": 278.84
+    "failure": "Three Settings bulk-delete tests sampled an exiting menu as visible, skipped reopening and timed out after controls unmounted. All three downloaded traces show a closed trigger with retained panel, one trigger click and four successful disabled-control assertions. Desktop and root-preview stages were not reached.",
+    "recovery": "5af5a62ec5453cf08d7bb203fc9499ef8475e649 enables normal motion and waits for closed trigger/completed dismissal before explicitly reopening and verifying expanded state. All original safety assertions remain. Focused eight and complete 22-case local bulk suites pass; no timeout, retry, skip or Product change.",
+    "later_source": "5af5a62ec5453cf08d7bb203fc9499ef8475e649 includes exact historical text/null/missing distinctions and safe partial legacy comparison, Network detail wrapping/readability and removal of unused Knowledge reads, plus the bounded CI-test repair. Final history16, Network23 and bulk22 browser suites pass at their recorded sources; counts are not summed. Latest frontend871/160 and unchanged backend1581/62. History2764 scoped contrast samples minimum5.984:1; Network968 minimum6.354:1 withzero overflow andunused requests. Sixteen new browser cases join canonical discovery. Fresh assembled hosted CI is required; original failed run remains failed.",
+    "job_duration_seconds": 1598,
+    "backend_duration_seconds": 226.29,
+    "identity_sha256": "9fb29596f7feab942aa3780aa182541ca30f8e601d41e4352c66e5a01cbdbfad"
   },
   "ci_history": [
+    {
+      "candidate": "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37097450946",
+      "tested_merge": "85c552ca44944502220227d1fbe17335257401ea",
+      "completed_at": "2026-10-03T05:21:17Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1508,
+        "frontend": 871,
+        "frontend_files": 160,
+        "normal_browser": 256,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "3bae47ba24814c3ee4904d2b34dae3331a833e9e adds legacy-compatible historical field validation, shared supported-SQLite restore serialization and fresh Settings authority, reserved-root omission protection, external-ID actor preservation and actual revision counters. History now has expandable permission details plus visible username/status changes. Latest local backend: 1581 tests/62 files; frontend: 871 tests/160 files. The preceding density source passed 32 related Settings browser cases; current field-display source passes all eight history/restore cases plus four focused visual replays. Seventy-three backend cases join canonical discovery; existing browser cases gain stronger assertions. Current final visual run: 1188 text-contrast samples, minimum 5.984:1. Fresh assembled hosted CI is required.",
+      "job_duration_seconds": 2306,
+      "backend_duration_seconds": 278.84
+    },
     {
       "candidate": "73f268dd5ff08f8b1e812767d31866540b0d22f6",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -444,7 +470,7 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+    "source_head": "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
     "registered_api_operations": 310,
     "static_ui_declarations": 3148,
     "static_ui_routes": 19,
@@ -1127,6 +1153,26 @@
       "commit": "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
       "scope": "Render previously omitted username and registration-status changes in identity history",
       "archive_sha256": "8bb47d5fbcef8ef693393c569acec649557a78e4d57d6f9ad8ad6692fa177021"
+    },
+    {
+      "commit": "be55e543c35267decc07c234c968d32339d33443",
+      "scope": "Reconcile checkpoint20 with restore integrity, compact history and exact preceding hosted success",
+      "archive_sha256": "4e1484f392b35de7ff9d6592b0f480f24d491fbcb38c74f9abbad77c9b07e1a3"
+    },
+    {
+      "commit": "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+      "scope": "Preserve exact identity history values and safely display malformed legacy records",
+      "archive_sha256": "052fd0f2bc4f8baa7cce82a241aa6337c47493e1096b39cb3ef300c8171f7803"
+    },
+    {
+      "commit": "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+      "scope": "Make Network detail text and endpoint layout readable while removing unused Knowledge requests",
+      "archive_sha256": "bade656db4fac7d3a327c2cbf565e9b1b43cf109e91bc85fce5d68c7675ec457"
+    },
+    {
+      "commit": "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
+      "scope": "Synchronize bulk-menu tests with completed dismissal after trace-proven hosted exit-animation failures",
+      "archive_sha256": "2efdb33005a9da60d5fb0e94cecbff397909a102534df975985f7f95637da559"
     }
   ],
   "groups": [
@@ -1157,9 +1203,10 @@
             "27873d89",
             "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
             "73f268dd5ff08f8b1e812767d31866540b0d22f6",
-            "459291a678a13d19c0c9561a7f7a12d05c1aff9f"
+            "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+            "be55e543c35267decc07c234c968d32339d33443"
           ],
-          "remaining": "Checkpoint 20 reconciles 114 reviewed archives, fresh source inventory and exact hosted 459291a6 success. Main integration and whole-release/company acceptance remain separate; direct-development provenance is preserved."
+          "remaining": "Checkpoint 21 reconciles 118 reviewed archives and exact be55e543 hosted failure with trace-proven local test recovery. Fresh CI is required. Main integration and whole-release/company acceptance remain separate; direct-development provenance is preserved."
         },
         {
           "id": "A3",
@@ -1171,9 +1218,10 @@
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
             "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
             "977207653839845e1642a31b3811671187eeb870",
-            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649"
           ],
-          "remaining": "Fresh clean-source inventory at 3bae47ba lists 310 API operations and 3148 UI declarations. Native summary controls are now recognized: 14 discovered, adding 13 declarations beyond the earlier generator (including the new history disclosure). Runtime states and behavior remain qualification work."
+          "remaining": "Fresh clean-source inventory at 5af5a62e lists 310 API operations and 3148 UI declarations. Sixteen new history/Network browser cases join canonical discovery. Runtime states, all roles and full behavior remain qualification work."
         }
       ]
     },
@@ -1215,9 +1263,10 @@
             "103e8f8a",
             "414529d1",
             "fe91e4fb9cb41cae46564881c62c74482c10b535",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649"
           ],
-          "remaining": "Settings bulk and identity restore pin scope and prevent departure from confirmation through write and query refresh, with cancellation and failure recovery. Earlier sync/draft guards remain. Other forms, Back/tenant races, cross-tab/restart persistence and unknown outcomes remain."
+          "remaining": "Settings pending-write, cancellation, scope and departure protection remain covered. Bulk-menu tests now wait for actual dismissal/reopening under normal motion, preserving disabled-control and duplicate-write assertions. Other forms, cross-tab/restart persistence and unknown outcomes remain."
         },
         {
           "id": "B3",
@@ -1278,9 +1327,12 @@
             "100b388546463587b47a6a8cb14caae5b1452540",
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
             "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
-            "977207653839845e1642a31b3811671187eeb870"
+            "977207653839845e1642a31b3811671187eeb870",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649"
           ],
-          "remaining": "Permission deltas use native expandable details with Enter/Space behavior and retained focus. Existing history, confirmation and bulk-menu proof remains. Complete overlay inventory, assistive technology, Tab/reflow and expanded long-list usability remain."
+          "remaining": "History safely displays partial legacy records; Network detail wraps endpoint names and controls without body overflow. Bulk tests synchronize completed exit before reopening. Complete overlay inventory, assistive technology, Tab/reflow and expanded long-list usability remain."
         },
         {
           "id": "B5",
@@ -1307,9 +1359,11 @@
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
             "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
             "977207653839845e1642a31b3811671187eeb870",
-            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b"
           ],
-          "remaining": "Collapsed history rows fell from 976px to 168px on the same fixture; adding visible username/status changes produces 260px rows under the existing 320px bound. Final 1188 scoped contrast samples reach 5.984:1. Both themes and desktop/phone images inspected. Broader layouts, exact whitespace/null display, role-derived history and full visual qualification remain."
+          "remaining": "History now distinguishes whitespace/null/missing values and malformed legacy fields. Final2764 scoped history contrasts minimum5.984:1. Network has12px minimum body text, zero measured overflow and968 contrast samples minimum6.354:1; full connection heading preserved. Both themes/phone/desktop images inspected. Broader states/layouts and full visual qualification remain."
         },
         {
           "id": "B6",
@@ -1334,9 +1388,11 @@
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
             "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
             "977207653839845e1642a31b3811671187eeb870",
-            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b"
           ],
-          "remaining": "History supports compact initial rows and complete expandable permission data at 1440/390px. New identity before/after fields reach 90% viewport and remain readable. Expanded long lists, zoom, short screens, large datasets and other workspaces remain."
+          "remaining": "Exact history values remain reachable at1440/390px. Network source/peer cards now wrap long identities and controls; body overflow fell from8–152px tozero. Large/short screens, zoom, long headers, datasets and other workspaces remain."
         },
         {
           "id": "B7",
@@ -1363,9 +1419,11 @@
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
             "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
             "977207653839845e1642a31b3811671187eeb870",
-            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b"
           ],
-          "remaining": "History disclosure opens with Enter, closes with Space and retains visible focus; identity and first/last permission cards remain reachable. Scoped contrast passes. Full assistive technology, Tab progression, zoom/reflow and all controls remain."
+          "remaining": "Existing history keyboard/disclosure/focus and safe-restore proof remains. Malformed records no longer crash rendering; ambiguous comparisons warn explicitly. Network endpoint links remain operable with readable text. Full assistive technology, Tab progression, zoom/reflow and all controls remain."
         },
         {
           "id": "B8",
@@ -1774,9 +1832,10 @@
             "eedcd4de",
             "0d29d2bd",
             "3badc66a",
-            "9c1ee626"
+            "9c1ee626",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b"
           ],
-          "remaining": "Endpoint-IP search preserves ownership and supports legacy custom-only records; row/deep-link normalization displays saved IPs, peer ports and original speed text. Shared forensic timestamps agree with body dates in both themes/timezones. Legacy custom-only embedded Knowledge query, dormant revision UI, precision/concurrency and full roles/performance remain."
+          "remaining": "Network details preserve complete connection headings, endpoint navigation and legacy custom-IP projections. Semantic tokens,12px body text and phone wrapping pass; unused duplicate/unscoped Knowledge requests are removed without dropping a rendered consumer. Dormant revision UI, precision/concurrency, full roles/performance and remaining workspace layouts remain."
         },
         {
           "id": "D6",
@@ -1840,9 +1899,11 @@
             "67e7df395d2554a7d5956bcee840834098de3174",
             "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
             "977207653839845e1642a31b3811671187eeb870",
-            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649"
           ],
-          "remaining": "Historical field validation, supported-SQLite transaction authority/concurrency, root/current-actor omission protection and truthful revision counters now pass. Permission history is expandable, readable and renders username/status deltas. Company source remains unselected. Permission-map values, bounds, stale review, primary-team consistency, role-derived history, whitespace/null/invalid legacy display and broader Settings writers remain."
+          "remaining": "History now preserves exact text/null/missing fields, shows role/team IDs and team source, safely renders invalid legacy values and marks partial/ambiguous comparisons. Root/actor/transaction restore protections remain. Bulk lifecycle tests repair a trace-proven exit-animation race. Company source, permission-map values, bounds, stale review, primary-team consistency, role-derived history and broader Settings writers remain."
         }
       ]
     },
@@ -1857,8 +1918,10 @@
           "outcome": "Measure and improve startup, typing, filtering, scrolling, detail opening, bundle loading, long tasks, and long-session memory use.",
           "approval": "yes",
           "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Measure and improve startup, typing, filtering, scrolling, detail opening, bundle loading, long tasks, and long-session memory use."
+          "reviewed_commits": [
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b"
+          ],
+          "remaining": "Network details no longer issue unused Knowledge reads; baseline duplicate requests fell tozero inall8 tested states. This is bounded waste removal. Startup, typing/filtering/scrolling/detail latency, bundle loading, long tasks and long-session memory still require measured qualification."
         },
         {
           "id": "E2",
@@ -2091,8 +2154,10 @@
           "outcome": "Required backend, frontend, browser, role, concurrency, failure and recovery, and supported-browser checks pass on the release candidate.",
           "approval": "yes",
           "status": "pending_final_candidate",
-          "reviewed_commits": [],
-          "remaining": "Run all governed regression and browser checks on the final assembled release candidate."
+          "reviewed_commits": [
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649"
+          ],
+          "remaining": "be55e543 CI failed three bulk-delete test races after253 normal browser passes; original failure is preserved. Reviewed5af5a62e lifecycle synchronization passes local8/22 suites. A new exact-candidate hosted run and final complete release regression remain required."
         },
         {
           "id": "G2",
