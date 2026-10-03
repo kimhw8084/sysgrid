@@ -316,6 +316,7 @@ export function WorkspaceModal({
           <WorkspaceModalHeader
             icon={icon}
             title={title}
+            headingLabel={accessibleTitle || undefined}
             subtitle={subtitle || ''}
             status={status}
             forensicLineage={forensicLineage}

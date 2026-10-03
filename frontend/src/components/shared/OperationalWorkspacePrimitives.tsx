@@ -684,6 +684,7 @@ export function WorkspaceValidationBanner({ message }: { message?: string }) {
 export function WorkspaceModalHeader({
   icon,
   title,
+  headingLabel,
   subtitle,
   status,
   forensicLineage,
@@ -695,6 +696,7 @@ export function WorkspaceModalHeader({
 }: {
   icon: React.ReactNode
   title: React.ReactNode
+  headingLabel?: string
   subtitle: React.ReactNode
   status?: React.ReactNode
   forensicLineage?: { createdAt?: string | Date; updatedAt?: string | Date }
@@ -727,7 +729,7 @@ export function WorkspaceModalHeader({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-4">
                <div className="min-w-0 flex-1">
-                  <h2 className="min-w-0 break-words text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] [&>div]:min-w-0 [&>div]:flex-wrap">{title}</h2>
+                  <h2 aria-label={headingLabel} className="min-w-0 break-words text-lg font-semibold leading-snug tracking-tight text-[var(--text-primary)] [&>div]:min-w-0 [&>div]:flex-wrap">{title}</h2>
                   <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2 [&>div]:min-w-0 [&>div]:flex-wrap">
                     <span className="min-w-0 break-words text-xs leading-relaxed text-[var(--text-secondary)]">{subtitle}</span>
                     {status && (
