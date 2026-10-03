@@ -1,4 +1,5 @@
-"""Preview mode must never be inferred from a malformed synchronization flag."""
+"""Preview mode and reviewed identity state must survive malformed inputs and races."""
+import asyncio
 import pytest
 from sqlalchemy import select
 
@@ -199,3 +200,166 @@ async def test_reviewed_sync_applies_exact_input_once_and_rejects_old_review(ope
     repeated = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json=reviewed)
     assert repeated.status_code == 409, repeated.text
     assert await snapshot(c, setup_db) == after
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['same_update', 'different_updates', 'same_creation'])
+async def test_concurrent_reviewed_sync_has_one_winner(operator_scope, setup_db, monkeypatch, operation):
+    from app.api import authorization
+
+    c = operator_scope
+    name = 'concurrent-new' if operation == 'same_creation' else 'input-target'
+    payloads = [{'records': [{
+        'external_id': name, 'username': name, 'full_name': 'First reviewed name',
+        'registration_status': 'Pending',
+    }], 'source': 'controlled-concurrent-source'} for _ in range(2)]
+    if operation == 'different_updates':
+        payloads[1]['records'][0]['full_name'] = 'Second reviewed name'
+    for payload in payloads:
+        response = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json={**payload, 'preview': True})
+        assert response.status_code == 200, response.text
+        payload.update(preview=False, expected_fingerprint=response.json()['fingerprint'])
+
+    # Both real requests resolve their initial authorization before either can
+    # enter the mutation. Each request still uses its own real database session.
+    ready = asyncio.Event()
+    sessions = set()
+    original = authorization.resolve_current_operator
+
+    async def synchronized_authorization(request, db):
+        result = await original(request, db)
+        if db not in sessions:
+            sessions.add(db)
+            if len(sessions) == 2:
+                ready.set()
+            await asyncio.wait_for(ready.wait(), 5)
+        return result
+
+    monkeypatch.setattr(authorization, 'resolve_current_operator', synchronized_authorization)
+    responses = await asyncio.wait_for(asyncio.gather(*[
+        c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json=payload)
+        for payload in payloads
+    ], return_exceptions=True), 10)
+    assert not any(isinstance(response, BaseException) for response in responses), [repr(response) for response in responses]
+    assert sorted(response.status_code for response in responses) == [200, 409], [response.text for response in responses]
+    winner = next(index for index, response in enumerate(responses) if response.status_code == 200)
+    assert responses[winner].json()['changes'] is True
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        row = await db.scalar(select(models.Operator).where(models.Operator.external_id == name))
+        assert row.full_name == payloads[winner]['records'][0]['full_name']
+        versions = (await db.scalars(select(models.UserPoolVersion))).all()
+        assert len(versions) == 1 and versions[0].is_active
+        saved = next(item for item in versions[0].snapshot_data if item['external_id'] == name)
+        assert saved['full_name'] == row.full_name
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('grant', ['admin', 'custom', 'role'])
+@pytest.mark.parametrize('preview', [True, False])
+async def test_sync_rechecks_revoked_authority_after_initial_resolution(operator_scope, setup_db, monkeypatch, grant, preview):
+    from app.api import authorization
+
+    c = operator_scope
+    await _grant_access(setup_db, tenant_id=c['tenant'], user_id='sync-manager', role='EDITOR')
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        role = models.Role(name='Concurrent sync role', permissions={'settings': 3} if grant == 'role' else {})
+        db.add(role)
+        await db.flush()
+        manager = models.Operator(username='sync-manager', is_admin=grant == 'admin', role_id=role.id,
+                                  custom_permissions={'settings': 3} if grant == 'custom' else {})
+        db.add(manager)
+        await db.commit()
+        manager_id, role_id = manager.id, role.id
+    resolved, release = asyncio.Event(), asyncio.Event()
+    original = authorization.resolve_current_operator
+    held = False
+
+    async def hold_initial_authority(request, db):
+        nonlocal held
+        result = await original(request, db)
+        if not held:
+            held = True
+            resolved.set()
+            await release.wait()
+        return result
+
+    monkeypatch.setattr(authorization, 'resolve_current_operator', hold_initial_authority)
+    task = asyncio.create_task(c['client'].post('/api/v1/settings/user-pool/refresh',
+        headers={**c['headers'], 'X-User-Id': 'sync-manager'},
+        json={'preview': preview, 'records': [{'external_id': 'input-target', 'username': 'input-target', 'full_name': 'Revoked write'}]}))
+    try:
+        await asyncio.wait_for(resolved.wait(), 5)
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            manager = await db.get(models.Operator, manager_id)
+            manager.is_admin = False
+            manager.custom_permissions = {}
+            role = await db.get(models.Role, role_id)
+            role.permissions = {}
+            await db.commit()
+        before = await snapshot(c, setup_db)
+    finally:
+        release.set()
+        response = await asyncio.wait_for(task, 10)
+    assert response.status_code == 403, response.text
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+async def test_preview_uses_one_read_snapshot_without_blocking_a_writer(operator_scope, setup_db, monkeypatch):
+    from app.api import settings as settings_api
+
+    c = operator_scope
+    payload = {'preview': True, 'records': [{
+        'external_id': 'input-target', 'username': 'input-target', 'full_name': 'Reviewed update',
+        'registration_status': 'Pending',
+    }]}
+    captured, release = asyncio.Event(), asyncio.Event()
+    original = settings_api.build_user_pool_snapshot
+
+    async def hold_snapshot(db):
+        result = await original(db)
+        captured.set()
+        await release.wait()
+        return result
+
+    monkeypatch.setattr(settings_api, 'build_user_pool_snapshot', hold_snapshot)
+    task = asyncio.create_task(c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json=payload))
+    try:
+        await asyncio.wait_for(captured.wait(), 5)
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            row = await db.get(models.Operator, c['ids'][0])
+            row.full_name = 'Independent committed update'
+            await asyncio.wait_for(db.commit(), 5)
+        after_writer = await snapshot(c, setup_db)
+    finally:
+        release.set()
+        response = await asyncio.wait_for(task, 10)
+    assert response.status_code == 200, response.text
+    item = next(item for item in response.json()['preview'] if item['id'] == 'input-target')
+    assert item['changes']['full_name'] == {'old': 'Original name', 'new': 'Reviewed update'}
+    assert await snapshot(c, setup_db) == after_writer
+    applied = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'],
+        json={**payload, 'preview': False, 'expected_fingerprint': response.json()['fingerprint']})
+    assert applied.status_code == 409, applied.text
+    assert await snapshot(c, setup_db) == after_writer
+
+
+@pytest.mark.asyncio
+async def test_busy_sync_reports_conflict_and_releases_its_transaction(operator_scope, setup_db):
+    c = operator_scope
+    payload = {'records': [{'external_id': 'input-target', 'username': 'input-target', 'full_name': 'After contention'}]}
+    before = await snapshot(c, setup_db)
+    async with _tenant_db(setup_db, c['tenant']) as writer:
+        row = await writer.get(models.Operator, c['ids'][0])
+        row.full_name = 'Uncommitted competing write'
+        await writer.flush()
+        response = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json=payload)
+        assert response.status_code == 409, response.text
+        assert 'busy' in response.json()['detail']
+        await writer.rollback()
+    assert await snapshot(c, setup_db) == before
+    response = await c['client'].post('/api/v1/settings/user-pool/refresh', headers=c['headers'], json=payload)
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        assert (await db.get(models.Operator, c['ids'][0])).full_name == 'After contention'
+        assert len((await db.scalars(select(models.UserPoolVersion))).all()) == 1

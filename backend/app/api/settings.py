@@ -1,11 +1,13 @@
 import hashlib
 import json
 import os
+from sqlite3 import SQLITE_BUSY, SQLITE_LOCKED
 from copy import deepcopy
 from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select, delete, update, or_
+from sqlalchemy import select, delete, update, or_, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from ..database import get_db, get_config_db, Base
 from ..models import models
@@ -1774,6 +1776,23 @@ async def refresh_user_pool(
             "team": normalize_string(raw_record.get("team")),
             "registration_status": normalize_string(raw_record.get("registration_status")),
         })
+
+    if db.get_bind().dialect.name == "sqlite":
+        # Authorization has only read so far. Discard its cached state, then
+        # acquire the writer before checking the reviewed snapshot. SQLite's
+        # legacy SELECT behavior otherwise leaves a check/apply race open.
+        # A preview uses one read snapshot without taking the writer lock.
+        await db.rollback()
+        try:
+            await db.execute(text("BEGIN" if preview else "BEGIN IMMEDIATE"))
+        except OperationalError as exc:
+            await db.rollback()
+            code = getattr(exc.orig, "sqlite_errorcode", None)
+            if code is not None and (code & 0xFF) in {SQLITE_BUSY, SQLITE_LOCKED}:
+                raise HTTPException(409, "Identity data is busy. Wait for the current change, then preview again.") from exc
+            raise
+        # Another writer may have revoked this actor while acquisition waited.
+        await require_capability("settings", 3)(request=request, db=db)
 
     diff_summary = {
         "added": 0,
