@@ -2105,8 +2105,9 @@ export default function ServicesReal() {
             syncStatus={collaborativeViews.status}
             syncMessage={collaborativeViews.lastError || (collaborativeViews.status === 'offline' ? 'Personal views are available locally and will migrate when the API returns.' : undefined)}
             onCopyViewLink={(viewId) => {
-              void collaborativeViews.copyViewLink(viewId).then(() => showWorkspaceToast('View link copied'))
+              void collaborativeViews.copyViewLink(viewId)
             }}
+            isCopyingViewLink={collaborativeViews.copyingLink}
             conflictMessage={collaborativeViews.conflict?.message}
             onReloadConflict={collaborativeViews.reloadConflict}
             onSaveConflictCopy={() => { void collaborativeViews.saveConflictCopy() }}

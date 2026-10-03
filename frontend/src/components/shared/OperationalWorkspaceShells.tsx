@@ -391,6 +391,7 @@ export function OperationalSavedViewsPanel<TView extends {
   syncStatus,
   syncMessage,
   onCopyViewLink,
+  isCopyingViewLink = false,
   conflictMessage,
   onReloadConflict,
   onSaveConflictCopy,
@@ -416,6 +417,7 @@ export function OperationalSavedViewsPanel<TView extends {
   syncStatus?: 'loading' | 'synced' | 'saving' | 'unsaved' | 'offline' | 'conflict'
   syncMessage?: string
   onCopyViewLink?: (id: string | null) => void
+  isCopyingViewLink?: boolean
   conflictMessage?: string
   onReloadConflict?: () => void
   onSaveConflictCopy?: () => void
@@ -538,10 +540,12 @@ export function OperationalSavedViewsPanel<TView extends {
                   <button
                     type="button"
                     onClick={() => onCopyViewLink(activeViewId)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-[10px] font-semibold text-slate-200 transition-all hover:bg-white/[0.08]"
+                    disabled={isCopyingViewLink}
+                    aria-busy={isCopyingViewLink}
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--surface-hover)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--action-primary-muted)] disabled:cursor-wait"
                   >
-                    <Copy size={11} />
-                    Copy link
+                    <Copy size={14} aria-hidden="true" />
+                    {isCopyingViewLink ? 'Copying link…' : 'Copy link'}
                   </button>
                 ) : null}
                 {activeViewId ? (

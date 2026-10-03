@@ -870,6 +870,7 @@ export function useFARGoldenWorkspaceControls({
         syncStatus={collaborativeViews.status}
         syncMessage={collaborativeViews.lastError || undefined}
         onCopyViewLink={(id) => { void collaborativeViews.copyViewLink(id && isRemoteWorkspaceViewId(id) ? id : null) }}
+        isCopyingViewLink={collaborativeViews.copyingLink}
         conflictMessage={collaborativeViews.conflict?.message}
         onReloadConflict={() => {
           const serverView = collaborativeViews.conflict?.current

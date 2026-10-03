@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { clickResilientButton, openToolbarButton, resetBrowserState, testApiHeaders } from './helpers/sysgrid'
+import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
@@ -9,6 +10,82 @@ const workspaces = [
   { key: 'external', route: '/external', heading: 'External' },
   { key: 'services', route: '/services', heading: 'Services' },
 ] as const
+
+for (const workspace of workspaces.filter(item => item.key !== 'external')) {
+  for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+    for (const width of [1440, 390]) {
+      test(`${workspace.heading} saved-view clipboard feedback in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+        await resetBrowserState(page)
+        await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 })
+        expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+        await page.addInitScript(value => {
+          localStorage.setItem('sysgrid-theme', value)
+          const state = { calls: [] as string[], resolve: () => {}, reject: (_error: Error) => {} }
+          ;(window as any).__viewClipboard = state
+          Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+            writeText: (text: string) => new Promise<void>((resolve, reject) => {
+              state.calls.push(text); state.resolve = resolve; state.reject = reject
+            }),
+          } })
+        }, theme)
+        const viewName = `Clipboard ${workspace.key} ${theme} ${width} ${Date.now()}`
+        const errors: string[] = []
+        page.on('pageerror', error => errors.push(error.message))
+        await page.goto(workspace.route)
+        await expect(page.getByRole('heading', { name: workspace.heading, exact: true }).first()).toBeVisible()
+        if (width < 768) {
+          const tools = page.getByRole('button', { name: 'View & filters', exact: true })
+          await tools.click()
+          await expect(tools).toHaveAttribute('aria-expanded', 'true')
+        }
+        await openToolbarButton(page, 'Views')
+        await expect(page.getByTestId('workspace-view-sync-status')).toHaveText('Synced')
+        await page.getByPlaceholder('Save as new personal view...').fill(viewName)
+        await page.getByRole('button', { name: 'Save personal view', exact: true }).click()
+        await expect(page).toHaveURL(/(?:\?|&)view=\d+/)
+        await expect(page.getByTestId('workspace-view-sync-status')).toHaveText('Synced')
+        const saved = await request.get(`${apiBase}/workspaces/${workspace.key}/views`)
+        expect(saved.ok()).toBeTruthy()
+        expect((await saved.json()).views.some((view: any) => view.name === viewName && String(view.id) === new URL(page.url()).searchParams.get('view'))).toBeTruthy()
+        const copy = page.getByRole('button', { name: /^Copy(ing)? link/ })
+        await copy.scrollIntoViewIfNeeded()
+        await expect(copy).toBeInViewport({ ratio: 1 })
+        const bounds = await copy.boundingBox()
+        expect(bounds!.height).toBeGreaterThanOrEqual(44)
+        await expectReadableGridText(page, testInfo, 'view-copy-control', '[data-workspace-panel="true"] button[aria-busy]')
+        const locationBefore = page.url()
+        await copy.focus()
+        await page.keyboard.press('Enter')
+        await expect(copy).toBeDisabled()
+        await expect(copy).toHaveText('Copying link…')
+        const success = page.getByText('View link copied', { exact: true })
+        const failure = page.getByText('Could not copy the view link. Copy the URL from your address bar.', { exact: true })
+        await expect(success).toHaveCount(0)
+        expect(await page.evaluate(() => (window as any).__viewClipboard.calls.length)).toBe(1)
+        await page.evaluate(() => (window as any).__viewClipboard.reject(new DOMException('Denied', 'NotAllowedError')))
+        await expect(failure).toBeVisible()
+        await expect(success).toHaveCount(0)
+        await expect(copy).toBeEnabled()
+        await expect(copy).toHaveText('Copy link')
+        expect(page.url()).toBe(locationBefore)
+        await expectReadableGridText(page, testInfo, 'view-copy-failure', '[data-workspace-toast="error"]')
+        await page.screenshot({ path: testInfo.outputPath('view-copy-failure.png'), animations: 'disabled' })
+        await copy.focus()
+        await page.keyboard.press('Enter')
+        await expect(copy).toBeDisabled()
+        await page.evaluate(() => (window as any).__viewClipboard.resolve())
+        await expect(success).toBeVisible()
+        await expect(failure).toHaveCount(0)
+        await expect(copy).toBeEnabled()
+        expect(await page.evaluate(() => (window as any).__viewClipboard.calls)).toEqual([locationBefore, locationBefore])
+        await expectReadableGridText(page, testInfo, 'view-copy-success', '[data-workspace-toast="success"]')
+        await page.screenshot({ path: testInfo.outputPath('view-copy-success.png'), animations: 'disabled' })
+        expect(errors).toEqual([])
+        await testInfo.attach('view-copy-facts', { body: JSON.stringify({ workspace: workspace.key, bounds, writes: 2, deniedThenRetried: true, pageErrors: errors }), contentType: 'application/json' })
+      })
+    }
+  }
+}
 
 test.describe('Collaborative workspace views', () => {
   test('persists personal views through the backend and restores stable view links', async ({ page, sysApi: request }) => {

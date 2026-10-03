@@ -1,12 +1,15 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { apiClient } from '../../api/apiClient'
 import {
   useCollaborativeWorkspaceViews,
   type CollaborativeSavedView,
   type WorkspaceViewApiRecord,
 } from './CollaborativeWorkspaceViews'
+
+vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn() } }))
 
 type Config = {
   groupBy: string
@@ -82,6 +85,75 @@ describe('useCollaborativeWorkspaceViews', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.restoreAllMocks()
+  })
+
+  describe('clipboard outcome', () => {
+    const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+    const originalUrl = location.href
+    afterEach(() => {
+      if (originalClipboard) Object.defineProperty(navigator, 'clipboard', originalClipboard)
+      else Reflect.deleteProperty(navigator, 'clipboard')
+      history.replaceState(null, '', originalUrl)
+      vi.clearAllMocks()
+    })
+    async function copyHarness(writeText?: (text: string) => Promise<void>) {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: writeText ? { writeText } : undefined })
+      vi.spyOn(apiClient, 'get').mockResolvedValue({ views: [remoteRecord()] })
+      history.replaceState(null, '', '/monitoring?id=12#details')
+      const { result } = renderHook(() => useHarness({ initialViews: [], activeViewId: '9', currentDefinition: { groupBy: 'status' } }))
+      await waitFor(() => expect(result.current.collaborative.status).toBe('synced'))
+      return result
+    }
+
+    it('waits for clipboard completion and suppresses overlapping copies', async () => {
+      let resolve!: () => void
+      const write = vi.fn((_text: string) => new Promise<void>(done => { resolve = done }))
+      const result = await copyHarness(write)
+      let pending!: Promise<string>
+      act(() => { pending = result.current.collaborative.copyViewLink('9') })
+      expect(result.current.collaborative.copyingLink).toBe(true)
+      expect(toast.success).not.toHaveBeenCalled()
+      await act(async () => { await result.current.collaborative.copyViewLink('9') })
+      expect(write).toHaveBeenCalledTimes(1)
+      await act(async () => { resolve(); await pending })
+      expect(result.current.collaborative.copyingLink).toBe(false)
+      expect(toast.success).toHaveBeenCalledWith('View link copied', { id: expect.any(String) })
+      expect(toast.error).not.toHaveBeenCalled()
+      expect(new URL(write.mock.calls[0][0]).searchParams.get('view')).toBe('9')
+      expect(location.hash).toBe('#details')
+      expect(new URL(location.href).searchParams.get('id')).toBe('12')
+    })
+
+    it('keeps a manual-copy URL after rejection and replaces failure on a successful retry', async () => {
+      const write = vi.fn().mockRejectedValueOnce(new Error('Browser-specific private reason')).mockResolvedValueOnce(undefined)
+      const result = await copyHarness(write)
+      await act(async () => { await result.current.collaborative.copyViewLink('9') })
+      expect(toast.success).not.toHaveBeenCalled()
+      expect(toast.error).toHaveBeenCalledWith('Could not copy the view link. Copy the URL from your address bar.', { id: expect.any(String) })
+      expect(new URL(location.href).searchParams.get('view')).toBe('9')
+      expect(result.current.collaborative.copyingLink).toBe(false)
+      await act(async () => { await result.current.collaborative.copyViewLink('9') })
+      expect(toast.success).toHaveBeenCalledWith('View link copied', vi.mocked(toast.error).mock.calls[0][1])
+    })
+
+    it('reports unavailable clipboard and preserves the system-view URL', async () => {
+      const result = await copyHarness()
+      history.replaceState(null, '', '/monitoring?view=9&id=12#details')
+      await act(async () => { await result.current.collaborative.copyViewLink(null) })
+      expect(toast.success).not.toHaveBeenCalled()
+      expect(toast.error).toHaveBeenCalledTimes(1)
+      expect(new URL(location.href).searchParams.has('view')).toBe(false)
+      expect(new URL(location.href).searchParams.get('id')).toBe('12')
+      expect(result.current.collaborative.copyingLink).toBe(false)
+    })
+
+    it('contains synchronous clipboard failure and clears pending state', async () => {
+      const result = await copyHarness(() => { throw new Error('Clipboard unavailable') })
+      await act(async () => { await result.current.collaborative.copyViewLink('9') })
+      expect(toast.success).not.toHaveBeenCalled()
+      expect(toast.error).toHaveBeenCalledTimes(1)
+      expect(result.current.collaborative.copyingLink).toBe(false)
+    })
   })
 
   it('hydrates remote views and migrates each local view only once', async () => {
