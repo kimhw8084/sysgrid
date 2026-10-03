@@ -2039,6 +2039,7 @@ async def restore_user_pool(
     
     # Sync version data back to operators
     for u in version.snapshot_data:
+        validate_operator_admin_flag(u)
         ext_id = str(u.get("external_id") or u.get("id"))
         snapshot_external_ids.add(ext_id)
         username = normalize_string(u.get("username"))
@@ -2076,7 +2077,7 @@ async def restore_user_pool(
         op.team_source = u.get("team_source", "synced")
         op.teams = normalize_string_list(u.get("teams") or ([team.name] if team else []))
         op.role_id = role.id if role else None
-        op.is_admin = bool(u.get("is_admin", False))
+        op.is_admin = u.get("is_admin", False)
         op.custom_permissions = normalize_permission_map(u.get("custom_permissions", {}))
         op.registration_status = u.get("registration_status", "Verified")
 

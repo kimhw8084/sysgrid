@@ -162,6 +162,61 @@ async def test_restore_retains_valid_optional_role_references(operator_scope, se
         assert len((await db.scalars(select(models.UserPoolVersion))).all()) == 2
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('value', [None, 0, 1, 'false', 'true', '', [], ['ops'], {}, {'active': True}])
+async def test_restore_rejects_malformed_admin_flag_without_partial_state(operator_scope, setup_db, value):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        records = await build_user_pool_snapshot(db)
+        records.sort(key=lambda item: 0 if item['external_id'] == 'input-target' else 1)
+        next(item for item in records if item['external_id'] == 'input-target').update(
+            full_name='Earlier restore change', team='Rejected restore team')
+        next(item for item in records if item['external_id'] == 'input-peer')['is_admin'] = value
+        version = models.UserPoolVersion(version_label='malformed-admin-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 422, response.text
+    assert response.json()['detail']['field_errors'] == {'is_admin': 'Must be a boolean'}
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('intent', ['omitted', 'grant', 'revoke'])
+async def test_restore_preserves_valid_admin_intent_and_legacy_default(operator_scope, setup_db, intent):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        records = await build_user_pool_snapshot(db)
+        target = next(item for item in records if item['external_id'] == 'input-target')
+        target['full_name'] = 'Restored admin intent'
+        if intent == 'omitted':
+            target.pop('is_admin')
+        else:
+            target['is_admin'] = intent == 'grant'
+        version = models.UserPoolVersion(version_label='valid-admin-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        target = await db.get(models.Operator, c['ids'][0])
+        assert target.is_admin is (intent == 'grant')
+        assert target.full_name == 'Restored admin intent'
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 2
+        saved = next(item for item in versions[-1].snapshot_data if item['external_id'] == 'input-target')
+        assert saved['is_admin'] is (intent == 'grant')
+
+
 async def write_operator(c, operation, payload):
     base = '/api/v1/settings/operators'
     if operation in ['create', 'upsert']:
