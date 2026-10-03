@@ -332,6 +332,89 @@ async def test_empty_historical_list_preserves_current_user_and_records_actual_r
         assert [row['username'] for row in versions[-1].snapshot_data] == ['admin_root']
 
 
+async def field_restore_fixture(c, setup_db, *, payload=None, omitted=()):
+    from app.api.settings import build_user_pool_snapshot
+
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        records = await build_user_pool_snapshot(db)
+        records.sort(key=lambda item: 0 if item['external_id'] == 'input-target' else 1)
+        records[0].update(full_name='Earlier staged field restore', team='Earlier staged field team')
+        peer = next(item for item in records if item['external_id'] == 'input-peer')
+        peer.update(payload or {})
+        for field in omitted:
+            peer.pop(field, None)
+        version = models.UserPoolVersion(version_label='historical-field-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        return version.id, records.index(peer), records
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('field,value', [
+    *[(field, value) for field in ['full_name', 'email', 'department', 'team', 'team_source', 'registration_status']
+      for value in [False, 1, 1.5, [], {}]],
+    *[('username', value) for value in [None, '', '   ', False, 1, 1.5, [], {}, ['user']]],
+    *[('teams', value) for value in ['Operations', {}, False, 1, ['valid', None], ['valid', 1], ['valid', {}]]],
+    *[('custom_permissions', value) for value in [False, 1, 1.5, '', [], ['settings']]],
+])
+async def test_restore_rejects_malformed_historical_fields_atomically(operator_scope, setup_db, field, value):
+    c = operator_scope
+    version_id, index, _ = await field_restore_fixture(c, setup_db, payload={field: value})
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 422, response.text
+    assert f'snapshot_data[{index}].{field}' in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('intent', ['omitted', 'null', 'values'])
+async def test_restore_preserves_nullable_legacy_fields_and_text_values(operator_scope, setup_db, intent):
+    c = operator_scope
+    fields = ['full_name', 'email', 'department', 'team_source', 'registration_status']
+    values = {'full_name': '  Historical 이름  ', 'email': ' legacy@example.com ', 'department': 'Operations / IT',
+              'team_source': 'manual_override', 'registration_status': 'Pending'}
+    payload = values if intent == 'values' else dict.fromkeys(fields) if intent == 'null' else {}
+    version_id, _, original_records = await field_restore_fixture(
+        c, setup_db, payload=payload, omitted=fields if intent == 'omitted' else ())
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        peer = await db.get(models.Operator, c['ids'][1])
+        expected = values if intent == 'values' else dict.fromkeys(fields)
+        if intent == 'omitted':
+            expected.update(team_source='synced', registration_status='Verified')
+        assert {field: getattr(peer, field) for field in fields} == expected
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == 2 and not versions[0].is_active and versions[1].is_active
+        assert versions[0].snapshot_data == original_records
+        saved = next(row for row in versions[1].snapshot_data if row['external_id'] == 'input-peer')
+        assert {field: saved[field] for field in fields} == expected
+        assert versions[1].diff_summary['source_version_id'] == version_id
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('intent', ['omitted', 'null', 'empty', 'legacy'])
+async def test_restore_preserves_supported_group_and_permission_records(operator_scope, setup_db, intent):
+    c = operator_scope
+    payload = {} if intent == 'omitted' else {
+        'teams': None if intent == 'null' else [] if intent == 'empty' else [' Operators ', 'Operators', '연구', ''],
+        'custom_permissions': None if intent == 'null' else {} if intent == 'empty' else {
+            'assets': 'read', 'settings': 'manage', 'services': True, 'network': 2,
+        },
+    }
+    version_id, _, _ = await field_restore_fixture(
+        c, setup_db, payload=payload, omitted=('teams', 'custom_permissions') if intent == 'omitted' else ())
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        peer = await db.get(models.Operator, c['ids'][1])
+        assert peer.teams == (['Operators', '연구'] if intent == 'legacy' else [])
+        assert peer.custom_permissions == ({'assets': 1, 'settings': 3, 'services': 1, 'network': 2} if intent == 'legacy' else {})
+        assert len((await db.scalars(select(models.UserPoolVersion))).all()) == 2
+
+
 async def write_operator(c, operation, payload):
     base = '/api/v1/settings/operators'
     if operation in ['create', 'upsert']:

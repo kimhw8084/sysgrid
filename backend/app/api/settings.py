@@ -2043,6 +2043,20 @@ async def restore_user_pool(
     for index, u in enumerate(version.snapshot_data):
         if not isinstance(u, dict):
             raise HTTPException(422, {"field_errors": {f"snapshot_data[{index}]": "Must be an identity object"}})
+        field_errors = {}
+        if not isinstance(u.get("username"), str) or not u["username"].strip():
+            field_errors[f"snapshot_data[{index}].username"] = "Must be a non-empty string"
+        for field in ("full_name", "email", "department", "team", "team_source", "registration_status"):
+            if u.get(field) is not None and not isinstance(u[field], str):
+                field_errors[f"snapshot_data[{index}].{field}"] = "Must be a string or null"
+        groups = u.get("teams")
+        if groups is not None and (not isinstance(groups, list) or any(not isinstance(group, str) for group in groups)):
+            field_errors[f"snapshot_data[{index}].teams"] = "Must be a list of strings or null"
+        permissions = u.get("custom_permissions")
+        if permissions is not None and not isinstance(permissions, dict):
+            field_errors[f"snapshot_data[{index}].custom_permissions"] = "Must be an object or null"
+        if field_errors:
+            raise HTTPException(422, {"field_errors": field_errors})
         validate_operator_admin_flag(u)
         raw_id = u.get("external_id") or u.get("id")
         if not ((isinstance(raw_id, str) and raw_id.strip()) or (type(raw_id) is int and raw_id > 0)):
@@ -2052,8 +2066,6 @@ async def restore_user_pool(
             raise HTTPException(409, f"Snapshot contains duplicate external identity '{ext_id}'")
         snapshot_external_ids.add(ext_id)
         username = normalize_string(u.get("username"))
-        if not username:
-            raise HTTPException(status_code=400, detail=f"Snapshot record for '{ext_id}' is missing username")
         reject_reserved_system_root_identity(
             {"external_id": ext_id, "username": username, "id": ext_id},
             actor_id=user_id,
@@ -2078,9 +2090,9 @@ async def restore_user_pool(
         
         await ensure_operator_identity_uniqueness(db, external_id=ext_id, username=username, exclude_id=op.id if op.id else None)
         op.username = username
-        op.full_name = u["full_name"]
-        op.email = u["email"]
-        op.department = u["department"]
+        op.full_name = u.get("full_name")
+        op.email = u.get("email")
+        op.department = u.get("department")
         op.team = team.name if team else None
         op.team_id = team.id if team else None
         op.team_source = u.get("team_source", "synced")
