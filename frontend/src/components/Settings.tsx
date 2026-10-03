@@ -2408,9 +2408,9 @@ export default function SettingsPage() {
                      >
                        <div ref={permissionBulkPanelRef} id="settings-permission-bulk-actions" role="dialog" aria-label="Bulk identity actions">
                          <WorkspaceFloatingPanel kind="context" className="max-h-[560px] overflow-y-auto custom-scrollbar p-3">
-                           <div className="mb-3 rounded-lg border border-slate-800 bg-slate-950 px-4 py-3">
-                             <p className="text-[10px] font-semibold text-slate-400">Bulk actions</p>
-                             <p className="pt-1 text-[12px] font-semibold text-slate-100">{selectedOperatorIds.length} identities selected</p>
+                           <div className="mb-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3">
+                             <p className="text-xs font-semibold text-[var(--text-secondary)]">Bulk actions</p>
+                             <p className="pt-1 text-xs font-semibold text-[var(--text-primary)]">{selectedOperatorIds.length} {selectedOperatorIds.length === 1 ? 'identity' : 'identities'} selected</p>
                            </div>
 
                            <div className="space-y-2">
@@ -2449,31 +2449,31 @@ export default function SettingsPage() {
                              )}
                            </div>
 
-                           <div className="mx-1 my-3 h-px bg-slate-800" />
+                           <div className="mx-1 my-3 h-px bg-[var(--border-default)]" />
                            <div className="grid gap-2">
                              <button
                                onClick={() => bulkSetAdminState(true)}
                                disabled={bulkOperatorPatchMutation.isPending}
-                               className="w-full rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-left transition-all hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-950 disabled:text-slate-600"
+                               className="w-full min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--action-primary-muted)] px-4 py-3 text-left text-[var(--action-ink)] transition-colors hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:bg-[var(--input-bg)] disabled:text-[var(--text-disabled)]"
                              >
-                               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-300">Set Admin</p>
+                               <p className="text-xs font-semibold">Set Admin</p>
                              </button>
                              <button
                                onClick={() => bulkSetAdminState(false)}
                                disabled={bulkOperatorPatchMutation.isPending}
-                               className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 text-left transition-all hover:bg-white/5 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-950 disabled:text-slate-600"
+                               className="w-full min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] px-4 py-3 text-left text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:text-[var(--text-disabled)]"
                              >
-                               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-300">Unset Admin</p>
+                               <p className="text-xs font-semibold">Unset Admin</p>
                              </button>
                              <button
                                onClick={() => setSelectedOperatorIds([])}
-                               className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 text-left transition-all hover:bg-white/5"
+                               className="w-full min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] px-4 py-3 text-left text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
                              >
-                               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-300">Clear Selection</p>
+                               <p className="text-xs font-semibold">Clear Selection</p>
                              </button>
                            </div>
 
-                           <div className="mx-1 my-3 h-px bg-slate-800" />
+                           <div className="mx-1 my-3 h-px bg-[var(--border-default)]" />
                            <button
                              onClick={() => {
                                if (!permissionBulkDeleteConfirm) {
@@ -2484,13 +2484,13 @@ export default function SettingsPage() {
                              }}
                              onMouseLeave={() => setPermissionBulkDeleteConfirm(false)}
                              disabled={bulkOperatorDeleteMutation.isPending}
-                             className={`w-full rounded-lg border px-4 py-3 text-left transition-all ${
+                             className={`w-full min-h-10 rounded-lg border border-[var(--state-danger-border)] px-4 py-3 text-left text-[var(--state-danger)] transition-colors disabled:cursor-not-allowed ${
                                permissionBulkDeleteConfirm
-                                 ? 'border-rose-500 bg-rose-600 animate-pulse'
-                                 : 'border-rose-900/70 bg-rose-950/70 hover:bg-rose-950'
+                                 ? 'bg-[var(--state-danger-surface-strong)]'
+                                 : 'bg-[var(--state-danger-surface)] hover:bg-[var(--state-danger-surface-strong)]'
                              }`}
                            >
-                             <p className={`text-[10px] font-semibold ${permissionBulkDeleteConfirm ? 'text-white' : 'text-rose-300'}`}>
+                             <p className="text-xs font-semibold">
                                {permissionBulkDeleteConfirm ? 'Confirm Identity Deletion?' : 'Delete Selection'}
                              </p>
                            </button>

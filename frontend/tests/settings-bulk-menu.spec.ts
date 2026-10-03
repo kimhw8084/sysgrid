@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { resetBrowserState } from './helpers/sysgrid'
+import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
@@ -99,7 +100,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(panel).toBeVisible()
       await page.setViewportSize({ width: 390, height: 844 })
       await panel.getByRole('button', { name: action === 'assign' ? 'Assign Group' : 'Remove Group', exact: true }).click()
-      const picker = panel.getByRole('button', { name: 'Choose group', exact: true })
+      const picker = panel.locator('button[aria-haspopup="dialog"]')
+      await expect(picker).toHaveCount(1)
       await picker.click()
       const dropdown = page.locator('[data-workspace-panel="true"]').filter({ has: page.getByPlaceholder('Search options...') }).last()
       await expect(dropdown).toBeVisible()
@@ -111,6 +113,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await picker.click()
       await dropdown.getByRole('button', { name: groupName, exact: true }).click()
       await expect(panel).toBeVisible()
+      await expect(panel.getByRole('button', { name: groupName, exact: true })).toBeVisible()
       await page.screenshot({ path: testInfo.outputPath(`bulk-group-${action}.png`), animations: 'disabled' })
       const persisted = page.waitForResponse(response => response.url().endsWith('/settings/operators/bulk-update') && response.request().method() === 'POST')
       await panel.getByRole('button', { name: action === 'assign' ? 'Apply Group Assignment' : 'Remove Group Membership', exact: true }).click()
@@ -121,5 +124,45 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       expect(saved.teams).toEqual(action === 'assign' ? [groupName] : [])
       expect(saved.is_admin).toBe(false)
     }
+  })
+}
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`Settings bulk actions preserve visual clarity and safe confirmation in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 1000 })
+    expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const username = `pw-bulk-clarity-${Date.now()}`
+    expect((await request.post(`${apiBase}/settings/operators`, { data: {
+      external_id: username, username, full_name: 'Bulk action clarity', is_admin: false,
+    } })).ok()).toBeTruthy()
+    const before = await (await request.get(`${apiBase}/settings/operators`)).json()
+    await page.goto('/settings?tab=permissions')
+    await page.getByPlaceholder('Search identity, department, or team...').fill(username)
+    await page.getByRole('checkbox', { name: `Select ${username}`, exact: true }).check()
+    await page.getByRole('button', { name: 'Bulk Actions', exact: true }).click()
+    const panel = page.getByRole('dialog', { name: 'Bulk identity actions', exact: true })
+    await expect(panel).toBeVisible()
+    await expect(panel.locator('..')).toHaveCSS('opacity', '1')
+    await page.screenshot({ path: testInfo.outputPath('bulk-clarity-default.png'), animations: 'disabled' })
+    await expectReadableGridText(page, testInfo, 'bulk actions default', '#settings-permission-bulk-actions')
+    const fonts = await panel.locator('p').evaluateAll(labels => labels.map(label => ({ text: label.textContent, size: parseFloat(getComputedStyle(label).fontSize) })))
+    await testInfo.attach('bulk-action-font-sizes', { body: JSON.stringify(fonts), contentType: 'application/json' })
+    expect(fonts.every(label => label.size >= 12), 'bulk action labels must be at least 12px').toBe(true)
+    await panel.getByRole('button', { name: 'Set Admin', exact: true }).hover()
+    await page.screenshot({ path: testInfo.outputPath('bulk-clarity-hover.png'), animations: 'disabled' })
+    await expectReadableGridText(page, testInfo, 'bulk actions hover', '#settings-permission-bulk-actions')
+    await panel.getByRole('button', { name: 'Assign Group', exact: true }).click()
+    await expect(panel.locator('button[aria-haspopup="dialog"]')).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('bulk-clarity-expanded.png'), animations: 'disabled' })
+    await expectReadableGridText(page, testInfo, 'bulk actions expanded', '#settings-permission-bulk-actions')
+    await panel.getByRole('button', { name: 'Delete Selection', exact: true }).click()
+    await expect(panel.getByRole('button', { name: 'Confirm Identity Deletion?', exact: true })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('bulk-clarity-confirmation.png'), animations: 'disabled' })
+    await expectReadableGridText(page, testInfo, 'bulk actions confirmation', '#settings-permission-bulk-actions')
+    await page.keyboard.press('Escape')
+    await expect(panel).not.toBeVisible()
+    expect(await (await request.get(`${apiBase}/settings/operators`)).json()).toEqual(before)
   })
 }
