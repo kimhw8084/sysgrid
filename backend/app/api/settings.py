@@ -524,6 +524,13 @@ async def create_user_pool_version_from_snapshot_delta(
     ))
     return summary
 
+def validate_operator_reference_id(value, field: str) -> None:
+    if value is not None and (type(value) is not int or not 1 <= value <= 2 ** 63 - 1):
+        raise HTTPException(422, {"field_errors": {
+            field: "Must be a positive integer within the supported range, or null",
+        }})
+
+
 async def resolve_team_assignment(
     db: AsyncSession,
     *,
@@ -532,11 +539,14 @@ async def resolve_team_assignment(
     source: str = "manual",
     create_missing: bool = False,
 ):
+    validate_operator_reference_id(team_id, "team_id")
     normalized_name = team_name.strip() if isinstance(team_name, str) and team_name.strip() else None
     team = None
-    if team_id:
+    if team_id is not None:
         res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
         team = res.scalar_one_or_none()
+        if team is None:
+            raise HTTPException(status_code=400, detail="Team not found")
     elif normalized_name:
         res = await db.execute(select(models.Team).filter(models.Team.name == normalized_name))
         team = res.scalar_one_or_none()
@@ -618,6 +628,7 @@ async def ensure_operator_identity_uniqueness(
 
 
 async def resolve_role_assignment(db: AsyncSession, role_id: int | None) -> models.Role | None:
+    validate_operator_reference_id(role_id, "role_id")
     if role_id is None:
         return None
     res = await db.execute(select(models.Role).filter(models.Role.id == role_id))

@@ -36,6 +36,132 @@ async def snapshot(c, setup_db):
         return result
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'upsert', 'patch', 'bulk'])
+@pytest.mark.parametrize('field', ['role_id', 'team_id'])
+@pytest.mark.parametrize('value', [True, False, 0, -1, 2 ** 63, 1.0, '1', [], {}])
+async def test_invalid_operator_references_never_alias_or_create_fallback_state(operator_scope, setup_db, operation, field, value):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        db.add(models.Team(name='Existing reference team'))
+        await db.commit()
+    before = await snapshot(c, setup_db)
+    response = await write_operator(c, operation, {
+        field: value, 'full_name': 'Rejected reference change', 'team': 'Rejected fallback team',
+    })
+    assert response.status_code == 422, response.text
+    assert field in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'upsert', 'patch', 'bulk'])
+@pytest.mark.parametrize('field', ['role_id', 'team_id'])
+async def test_missing_operator_reference_cannot_fall_back_to_new_team(operator_scope, setup_db, operation, field):
+    c = operator_scope
+    before = await snapshot(c, setup_db)
+    response = await write_operator(c, operation, {
+        field: 2 ** 63 - 1, 'full_name': 'Missing reference change', 'team': 'Rejected fallback team',
+    })
+    assert response.status_code == 400, response.text
+    assert response.json()['detail'] == ('Role not found' if field == 'role_id' else 'Team not found')
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'upsert', 'patch', 'bulk'])
+@pytest.mark.parametrize('field', ['role_id', 'team_id'])
+@pytest.mark.parametrize('intent', ['omitted', 'clear', 'assign'])
+async def test_operator_reference_ids_preserve_supported_intent(operator_scope, setup_db, operation, field, intent):
+    c = operator_scope
+    model = models.Role if field == 'role_id' else models.Team
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        old_reference, new_reference = model(name='Previous reference'), model(name='Requested reference')
+        db.add_all([old_reference, new_reference])
+        await db.flush()
+        for op_id in c['ids']:
+            row = await db.get(models.Operator, op_id)
+            setattr(row, field, old_reference.id)
+            if field == 'team_id':
+                row.team = old_reference.name
+        await db.commit()
+        old_id, new_id = old_reference.id, new_reference.id
+    payload = {'full_name': 'Accepted reference change'}
+    if intent != 'omitted':
+        payload[field] = None if intent == 'clear' else new_id
+    response = await write_operator(c, operation, payload)
+    assert response.status_code == 200, response.text
+    expected = None if intent == 'clear' or (intent == 'omitted' and operation == 'create') else new_id if intent == 'assign' else old_id
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        name = 'input-new' if operation == 'create' else 'input-target'
+        row = await db.scalar(select(models.Operator).where(models.Operator.external_id == name))
+        assert getattr(row, field) == expected
+        assert row.full_name == 'Accepted reference change'
+        if field == 'team_id':
+            assert row.team == ('Requested reference' if intent == 'assign' else 'Previous reference' if expected else None)
+        versions = (await db.scalars(select(models.UserPoolVersion))).all()
+        assert len(versions) == 1
+        saved = next(item for item in versions[0].snapshot_data if item['external_id'] == name)
+        assert saved[field] == expected
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('value', [True, '1', 2 ** 63, {}])
+async def test_restore_rejects_malformed_role_reference_without_partial_state(operator_scope, setup_db, value):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        records = await build_user_pool_snapshot(db)
+        records.sort(key=lambda item: 0 if item['external_id'] == 'input-target' else 1)
+        target = next(item for item in records if item['external_id'] == 'input-target')
+        target.update(full_name='Earlier restore change', team='Rejected restore team')
+        next(item for item in records if item['external_id'] == 'input-peer')['role_id'] = value
+        version = models.UserPoolVersion(version_label='malformed-role-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 422, response.text
+    assert 'role_id' in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('intent', ['omitted', 'clear', 'assign'])
+async def test_restore_retains_valid_optional_role_references(operator_scope, setup_db, intent):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        role = models.Role(name='Restored role', permissions={'settings': 1})
+        db.add(role)
+        await db.flush()
+        role_id = role.id
+        records = await build_user_pool_snapshot(db)
+        target = next(item for item in records if item['external_id'] == 'input-target')
+        target['full_name'] = 'Restored identity'
+        if intent == 'omitted':
+            target.pop('role_id')
+        else:
+            target['role_id'] = role_id if intent == 'assign' else None
+        version = models.UserPoolVersion(version_label='valid-role-fixture', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id = version.id
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        target = await db.get(models.Operator, c['ids'][0])
+        assert target.full_name == 'Restored identity'
+        assert target.role_id == (role_id if intent == 'assign' else None)
+        assert len((await db.scalars(select(models.Operator))).all()) == len(records)
+        assert len((await db.scalars(select(models.UserPoolVersion))).all()) == 2
+
+
 async def write_operator(c, operation, payload):
     base = '/api/v1/settings/operators'
     if operation in ['create', 'upsert']:
