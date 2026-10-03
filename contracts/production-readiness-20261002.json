@@ -8,34 +8,59 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-03T07:11:00Z",
+  "as_of_utc": "2026-10-03T08:02:00Z",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+    "candidate": "fca3758399492c3a5f00b86e149401a96936de56",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37103158417",
-    "tested_merge": "91b7bdc73b6b444e667042e544b0ae9ef22d8f9e",
-    "completed_at": "2026-10-03T07:06:39Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37105723044",
+    "tested_merge": "babb92462ce76781989d9a3b8a734b460de82fee",
+    "completed_at": "2026-10-03T07:57:29Z",
     "conclusion": "success",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 1581,
-      "frontend": 871,
-      "frontend_files": 160,
-      "normal_browser": 272,
+      "backend": 1680,
+      "frontend": 904,
+      "frontend_files": 161,
+      "normal_browser": 280,
       "normal_browser_preexisting_skips": 2,
       "desktop_browser": 35,
       "root_preview_browser": 6
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "9944dce193f28a4497d798d060c623f83d86ffdf adds immutable recorded role grants and explicit legacy uncertainty, atomic permission-input validation, and truthful current global-grant controls. Latest local backend: 1680 tests/62 files; frontend: 904 tests/161 files. History source passed 50 related browser cases, input-validation source passed 42, and final grant-display source passed 40, each with zero failures/retries/skips; these source-bound counts are not summed. Ninety-nine backend, 33 frontend and eight browser cases join canonical discovery. Role-history scope has 608 text samples; live-grant scope has 144, both minimum 6.117:1. Light hover text previously failed at 4.132:1; phone help now stays visible during horizontal scrolling. Fresh assembled CI remains required.",
-    "job_duration_seconds": 2300,
-    "backend_duration_seconds": 311.9,
-    "identity_sha256": "48a1413f326c745d3f42e0ba2578c58de20cd62830ec84a965d7a09be3d5e7bc"
+    "later_source": "a3958e408e8007814d6a578978519473dfb81976 includes three later reviewed fixes: nonfinite stored grants deny without crashing valid access and allow authorized repair; direct-link and saved-view clipboard controls report actual results, block overlapping copies, recover on retry and use semantic 44px controls. Local backend: 1695/62; frontend: 912/162. Final source-bound browser suites pass 12 direct-link/network cases and nine saved-view cases, each with zero failures/retries/skips; counts are not summed. Fifteen backend, eight frontend and twelve browser cases enter canonical discovery. All eight direct-link and sixteen saved-view final images reviewed. Scoped contrast minima are 7.567:1 (16 and 56 samples). Direct-link retry replaces stale error with a concise 79.75px success notice. Fresh assembled CI remains required; the 42m22s predecessor run leaves 2m38s in the unchanged 45-minute budget.",
+    "job_duration_seconds": 2542,
+    "backend_duration_seconds": 321.74,
+    "identity_sha256": "d9c948ffdab1028168d6f6a2bbbd290bd27f6a16c17e746204b42dcf68560104"
   },
   "ci_history": [
+    {
+      "candidate": "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37103158417",
+      "tested_merge": "91b7bdc73b6b444e667042e544b0ae9ef22d8f9e",
+      "completed_at": "2026-10-03T07:06:39Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1581,
+        "frontend": 871,
+        "frontend_files": 160,
+        "normal_browser": 272,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "9944dce193f28a4497d798d060c623f83d86ffdf adds immutable recorded role grants and explicit legacy uncertainty, atomic permission-input validation, and truthful current global-grant controls. Latest local backend: 1680 tests/62 files; frontend: 904 tests/161 files. History source passed 50 related browser cases, input-validation source passed 42, and final grant-display source passed 40, each with zero failures/retries/skips; these source-bound counts are not summed. Ninety-nine backend, 33 frontend and eight browser cases join canonical discovery. Role-history scope has 608 text samples; live-grant scope has 144, both minimum 6.117:1. Light hover text previously failed at 4.132:1; phone help now stays visible during horizontal scrolling. Fresh assembled CI remains required.",
+      "job_duration_seconds": 2300,
+      "backend_duration_seconds": 311.9,
+      "identity_sha256": "48a1413f326c745d3f42e0ba2578c58de20cd62830ec84a965d7a09be3d5e7bc"
+    },
     {
       "candidate": "be55e543c35267decc07c234c968d32339d33443",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -495,7 +520,7 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "9944dce193f28a4497d798d060c623f83d86ffdf",
+    "source_head": "a3958e408e8007814d6a578978519473dfb81976",
     "registered_api_operations": 310,
     "static_ui_declarations": 3149,
     "static_ui_routes": 19,
@@ -1218,6 +1243,26 @@
       "commit": "9944dce193f28a4497d798d060c623f83d86ffdf",
       "scope": "Align live permission controls with global grants and repair hovered text contrast and phone help",
       "archive_sha256": "ddd3c166abc7a65f9762206cc8715df9b129f15315e8c9932098b88919e3c32e"
+    },
+    {
+      "commit": "fca3758399492c3a5f00b86e149401a96936de56",
+      "scope": "Record checkpoint 22 with preserved approvals and exact predecessor CI identity",
+      "archive_sha256": "19761c47cbb35ba506f42fe4490214aae5207166b0350725e56d8fdadfca5672"
+    },
+    {
+      "commit": "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+      "scope": "Deny nonfinite stored grants without crashing valid access and permit authorized repair",
+      "archive_sha256": "1a12b1307adefeb3da6e051c9d6647f382eac75945d553e1eeb21ff6a8823d88"
+    },
+    {
+      "commit": "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+      "scope": "Make direct-link clipboard feedback truthful, retryable, accessible and compact",
+      "archive_sha256": "20333150f624c27ad23d3b12fe3e2d40c53d7580fa74a0e8e0e786e0f4271821"
+    },
+    {
+      "commit": "a3958e408e8007814d6a578978519473dfb81976",
+      "scope": "Expose actual saved-view clipboard outcomes and pending controls with manual-copy recovery",
+      "archive_sha256": "3ab27b3927c345f151505d2aa3059ad8925364a87ab7c2b48b2683a00d6b7957"
     }
   ],
   "groups": [
@@ -1250,9 +1295,13 @@
             "73f268dd5ff08f8b1e812767d31866540b0d22f6",
             "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
             "be55e543c35267decc07c234c968d32339d33443",
-            "0bca1b14603c1ca019d36376c60bd7dd527a314e"
+            "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+            "fca3758399492c3a5f00b86e149401a96936de56",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Checkpoint 22 reconciles 122 reviewed archives and exact 0bca1b14 hosted success. Three later permission fixes remain separate local evidence pending fresh CI. Main integration and whole-release/company acceptance remain separate; direct-development provenance is preserved."
+          "remaining": "Checkpoint 23 reconciles 126 reviewed archives and exact fca37583 hosted success. Three subsequent fixes retain separate local evidence pending fresh assembled CI. Main integration, authentic company qualification and whole-production acceptance remain separate."
         },
         {
           "id": "A3",
@@ -1266,9 +1315,12 @@
             "977207653839845e1642a31b3811671187eeb870",
             "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
             "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Fresh clean-source inventory at 9944dce1 lists 310 API operations and 3149 UI declarations, including the new recorded-grant disclosure. Eight new browser cases, 99 backend cases and 33 frontend cases join canonical discovery. Full runtime states, all roles and behavior remain qualification work."
+          "remaining": "Fresh clean-source inventory at a3958e40 remains 310 API operations and 3149 UI declarations. Fifteen backend, eight frontend and twelve browser cases join canonical discovery. Inventory is a worklist; complete runtime states, all roles and behavioral qualification remain."
         }
       ]
     },
@@ -1356,9 +1408,12 @@
             "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
             "139fe66ff7bffe940ed22239425375a67c97e78c",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Restore and operator writes reject malformed/ambiguous permission maps atomically and retain supported clear/default/legacy vocabulary. Restore explains current-role and module-policy limits. Live controls cycle only through grant levels the server can apply. Stale reviews/maps, general idempotency, unknown outcomes and other form writers remain."
+          "remaining": "Nonfinite legacy grants fail closed without blocking valid access or authorized custom-override repair. Shared link copying now suppresses overlapping writes and permits retry with actual outcome feedback. Stale permission maps/reviews, broader idempotency and other form writers remain."
         },
         {
           "id": "B4",
@@ -1384,9 +1439,11 @@
             "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
             "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Historical role/custom grant sources use native disclosures; unknown legacy access is explicit. Global Full controls explain their disabled state, and global minimums constrain cycling. Complete overlay inventory, assistive technology, reflow and long-list usability remain."
+          "remaining": "Direct-link controls and saved-view copy controls use 44px targets and pending state. Copied URLs preserve context; saved-view denial retains an address-bar fallback. All 24 final scoped images reviewed. Whole saved-view-panel typography, complete overlay inventory and assistive technology/reflow remain."
         },
         {
           "id": "B5",
@@ -1417,9 +1474,11 @@
             "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
             "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "History and current grants now use the same supported permission vocabulary. Light hovered Read labels failed at 4.132:1 and now use semantic primary text. Final live-grant 144 scoped samples and history-role 608 samples have minimum 6.117:1. Both themes and phone/desktop images inspected. Broader states/layouts and full visual qualification remain."
+          "remaining": "Shared copy controls now use semantic theme colors. Final direct-link scope has 16 contrast samples and saved-view scope 56, minimum 7.567:1 in both. Desktop/phone failure and retry-success images reviewed. Broader saved-view-panel typography/colors and complete visual qualification remain."
         },
         {
           "id": "B6",
@@ -1448,9 +1507,11 @@
             "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
             "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Recorded role/override details remain reachable at 1440/390px. Current permission help stays visible outside horizontal table scrolling; no body overflow in the four real grant fixtures. Large/short screens, zoom, long headers, datasets and other workspaces remain."
+          "remaining": "Direct-link success is concise and replaces the same action’s prior failure; its tested notice is 79.75px high at 1440/390 widths. Saved-view proof follows the actual compact View & filters path. Broader small/short screens, zoom, dense notice stacks and long-list layouts remain."
         },
         {
           "id": "B7",
@@ -1481,9 +1542,11 @@
             "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
             "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Grant labels are at least 12px; global minimum descriptions are programmatically associated and remain visible on phones. Native disabled Full-global controls produce no writes. Legacy Unknown states and source disclosures remain readable. Full assistive technology, Tab progression, zoom/reflow and all controls remain."
+          "remaining": "Shared copying uses keyboard-operable native buttons with pending/disabled state and 44px targets. Saved-view copy text is 12px and semantic; notifications announce actual outcome. Full assistive technology, Tab progression, other controls and saved-view-panel text remain."
         },
         {
           "id": "B8",
@@ -1495,9 +1558,10 @@
             "82c2586e",
             "1255794d",
             "fd47a427",
-            "b26a29266f364e8a75e36b45edeac21b543a23ab"
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Shared flyout selectors consistently display numeric and string options through their existing string-valued callback contract. Settings group membership and Monitoring status changes persist with independent fields preserved. Broader saved views, filters, selection, import/export and table behavior remain."
+          "remaining": "Monitoring and Services saved-view tests create complete definitions through the UI, independently verify stored identities, and retain original rename/reload/stable-link assertions. The shared copy path now handles permission denial and retry. Broader view conflicts, filters, selection, import/export and table behavior remain."
         },
         {
           "id": "B9",
@@ -1533,9 +1597,12 @@
             "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
             "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Historical unknown grants no longer appear as None, restore wording distinguishes current role definitions, and the current grid cannot falsely show per-module revocation while a global grant survives. Existing pending-write/recovery behavior remains. Stale reviews/maps, unknown outcomes and broader partial/denied states remain."
+          "remaining": "Direct-link and saved-view notices await actual clipboard results; unavailable/denied/synchronous failures never claim success, pending copies are guarded, and successful retries replace prior failure. Invalid stored numeric grants deny access without crashing valid access. Other clipboard paths, unknown outcomes, stale reviews/maps and broader partial/denied states remain."
         },
         {
           "id": "B10",
@@ -1546,9 +1613,11 @@
           "reviewed_commits": [
             "3badc66a",
             "9c1ee626",
-            "414529d1"
+            "414529d1",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Settings blocked/canceled navigation preserves the actual route and selected marker; confirmed draft discard reaches Home with the correct marker. Earlier endpoint-IP search and timestamp fixes remain. Browser Back, broader context/preferences/search and dates/units/shortcuts remain."
+          "remaining": "Direct links retain existing query/hash context and never submit enclosing forms. Saved-view failure retains a stable URL for manual copying, and keyboard retry preserves it. Broader browser Back, navigation context/preferences/search and dates/units/shortcuts remain."
         }
       ]
     },
@@ -1632,9 +1701,10 @@
             "67e7df395d2554a7d5956bcee840834098de3174",
             "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422"
           ],
-          "remaining": "Supported SQLite restore rechecks admin/custom/role authority inside its writer transaction. Three isolated post-authorization revocations reject without state changes. Ordinary tenant managers cannot delete deployment-owned roots through snapshot omission; actor preservation covers username and external ID. Tenant-access revocation across config storage, other writers, roles/projections and authentic company identity remain. Historical and current UI grants now include role/custom/global precedence and keep reserved system capabilities separate; this does not change server authorization."
+          "remaining": "Stored NaN and positive/negative infinity normalize to no grant in shared authorization, preserving valid unrelated asset access and reserved-system rules. Twelve real API cases prove denied guarded writes make no option mutation. Authorized custom-override repair preserves other state. Malformed raw read serialization, config-storage revocation and other writers remain."
         },
         {
           "id": "C4",
@@ -1672,9 +1742,10 @@
             "c57f0338f540e64fe67715f8daf980d27bae93bc",
             "67e7df395d2554a7d5956bcee840834098de3174",
             "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
-            "139fe66ff7bffe940ed22239425375a67c97e78c"
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422"
           ],
-          "remaining": "Supported SQLite restore/import transaction protections remain. Ninety-six new permission-input cases verify rejected create/upsert/patch/bulk/restore requests leave operator/team/audit/version state unchanged, including earlier staged batch items. Stale reviews/maps, general idempotency/unknown outcomes, other engines and other writers remain."
+          "remaining": "Three nonfinite custom-override repair cases preserve unrelated operators, teams and audit state while recording one correct revision. Existing atomic permission-write and supported SQLite restore guards remain. Stale maps/reviews, other writers/engines and general unknown outcomes remain."
         },
         {
           "id": "C5",
@@ -1765,9 +1836,10 @@
             "c5106bdb16182bfac895641c2c818b1910151628",
             "c57f0338f540e64fe67715f8daf980d27bae93bc",
             "978eafe99faa60997bca5aa370c58d263aaab9e1",
-            "139fe66ff7bffe940ed22239425375a67c97e78c"
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422"
           ],
-          "remaining": "Permission containers, keys, scalar vocabulary, finite whole levels and bounds now validate on create/upsert/patch/bulk/restore. Supported null/omission/empty maps, booleans, named levels and integral numeric values remain. Resource limits, other typed inputs and malformed live authorization records remain."
+          "remaining": "Permission write validation remains strict. Nonfinite legacy grants now normalize safely for authorization and operator comparison without rewriting stored history. Raw malformed operator/role/profile/history JSON serialization, resource bounds and other typed inputs remain open."
         },
         {
           "id": "C8",
@@ -1858,9 +1930,10 @@
           "approval": "yes",
           "status": "unqualified",
           "reviewed_commits": [
-            "b26a29266f364e8a75e36b45edeac21b543a23ab"
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Shared Monitoring bulk status controls remain readable and persist the requested status without changing severity in both themes, including desktop-to-phone resize. Golden grid density remains unchanged. Broader logic, schedules, ownership, recovery/lifecycle and observed-health qualification remain."
+          "remaining": "Monitoring shared saved-view copying reports actual clipboard outcomes, exposes pending state and preserves stable manual-copy URLs. Both themes and desktop/phone paths pass alongside original persistence/rename/reload assertions. Golden grid density remains unchanged. Broader schedules, logic, ownership, recovery/lifecycle and observed health remain unqualified."
         },
         {
           "id": "D4",
@@ -1876,9 +1949,11 @@
             "a307320c",
             "1089cb11",
             "062dd490",
-            "07d8d2e5"
+            "07d8d2e5",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Service form recovery and error-console inspection now retain useful HTTP messages/status/field diagnostics; existing host/import/date/value/audit safeguards remain. Lifecycle authority, typed response/OpenAPI, pagination, broader UX/roles/performance and concurrency remain."
+          "remaining": "Services uses the repaired shared direct-link control and has explicit rendered saved-view denial/retry coverage in both themes and widths. Existing form recovery and domain safeguards remain. Lifecycle authority, typed response/OpenAPI, pagination, broader roles/performance and concurrency remain."
         },
         {
           "id": "D5",
@@ -1902,9 +1977,10 @@
             "0d29d2bd",
             "3badc66a",
             "9c1ee626",
-            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b"
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21"
           ],
-          "remaining": "Network details preserve complete connection headings, endpoint navigation and legacy custom-IP projections. Semantic tokens,12px body text and phone wrapping pass; unused duplicate/unscoped Knowledge requests are removed without dropping a rendered consumer. Dormant revision UI, precision/concurrency, full roles/performance and remaining workspace layouts remain."
+          "remaining": "Network detail now proves actual direct-link clipboard success, denial, retry and absence handling with no browser errors, plus existing eight endpoint/detail cases. Semantic 44px controls and compact replacement notices pass visual review. Dormant revision UI, precision/concurrency, broader roles/performance and layouts remain."
         },
         {
           "id": "D6",
@@ -1973,9 +2049,10 @@
             "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
             "139fe66ff7bffe940ed22239425375a67c97e78c",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422"
           ],
-          "remaining": "Historical role/custom grants, explicit unknown legacy access, immutable snapshots, current-role restore wording, permission-input validation and truthful global-grant controls now pass bounded tests. Hover contrast and phone help are repaired. Company source, resource bounds, stale restore/map concurrency, primary-team consistency, malformed live authorization recovery and broader Settings writers remain."
+          "remaining": "Nonfinite stored grants no longer crash authorization/comparison and authorized custom-override repair preserves unrelated state. Earlier historical/current grant truthfulness and atomic validation remain. Malformed raw read serialization, company sources, resource bounds, stale restore/map concurrency and primary-team consistency remain."
         }
       ]
     },
@@ -2100,9 +2177,13 @@
             "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
             "977207653839845e1642a31b3811671187eeb870",
             "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
-            "0bca1b14603c1ca019d36376c60bd7dd527a314e"
+            "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+            "fca3758399492c3a5f00b86e149401a96936de56",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Hosted 0bca1b14 succeeds on merge 91b7bdc7: 76 startup/recovery plus 23 subtests, 1581 backend, 871 frontend, 272 normal browser plus two existing skips, 35 desktop and six root-preview. Job 38m20s within unchanged 45-minute deadline. Later local source has 1680 backend/62 files and 904 frontend/161 files; final 40 related browser cases pass. Fresh assembled CI, supply-chain and final release checks remain."
+          "remaining": "Hosted fca37583 succeeds on merge babb9246: 76 startup/recovery plus 23 subtests, 1680 backend, 904 frontend, 280 normal browser plus two existing skips, 35 desktop and six root-preview. Job 42m22s leaves 2m38s in the unchanged 45-minute limit. Later local source has 1695 backend/62 files and 912 frontend/162 files; source-bound 12 and nine browser suites pass. Fresh assembled CI, runtime headroom, supply-chain and final release checks remain."
         },
         {
           "id": "E7",
@@ -2230,9 +2311,13 @@
           "reviewed_commits": [
             "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
             "0bca1b14603c1ca019d36376c60bd7dd527a314e",
-            "9944dce193f28a4497d798d060c623f83d86ffdf"
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "fca3758399492c3a5f00b86e149401a96936de56",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976"
           ],
-          "remaining": "Trace-based bulk-menu recovery is proven by exact 0bca1b14 hosted success through normal, desktop and root-preview stages. The original be55e543 failure remains preserved. Later 9944dce1 permission changes require a new exact-candidate hosted run and final complete release regression."
+          "remaining": "Exact checkpoint22 hosted identity/merge parents and complete normal/desktop/root-preview success are verified. Earlier failed evidence remains preserved. Later finite-grant and clipboard source at a3958e40 requires new exact-candidate assembled CI and complete final release qualification."
         },
         {
           "id": "G2",
