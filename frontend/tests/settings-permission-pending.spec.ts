@@ -71,7 +71,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         ...independentlyChanged, custom_permissions: { racks: 1, assets: 1 },
         team: 'Directory managed team', team_source: 'synced',
       })
-      expect(result.request().postDataJSON()).toEqual({ id: operator.id, custom_permissions: { racks: 1, assets: 1 } })
+      expect(result.request().postDataJSON()).toEqual({
+        id: operator.id, custom_permissions: { racks: 1, assets: 1 },
+        expected_custom_permissions: { racks: 0, assets: 1 },
+      })
     } finally {
       await page.clock.resume()
     }
@@ -123,6 +126,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         await permission('READ').click()
         await page.clock.runFor(900)
         await expect.poll(() => writes).toBe(1)
+        await expect(permission('WRITE')).toBeDisabled()
+        await expect(permission('WRITE')).toHaveAttribute('aria-busy', 'true')
+        await permission('WRITE').evaluate((button: HTMLButtonElement) => button.click())
+        expect(writes).toBe(1)
         await home.click()
         expect(new URL(page.url()).pathname).toBe('/settings')
         await page.screenshot({ path: testInfo.outputPath('permission-save-pending.png'), animations: 'disabled' })
@@ -144,6 +151,62 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       expect((await operators.json()).find((row: any) => row.id === operator.id).custom_permissions.racks).toBe(fail ? 1 : 2)
       await home.click()
       await expect(page).toHaveURL(/\/$/)
+    })
+  }
+}
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const width of [1440, 390]) {
+    test(`stale permission saves preserve peer changes and allow reviewed retry in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize({ width, height: width === 1440 ? 900 : 844 })
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+      const username = `pw-conflict-${Date.now()}`
+      const created = await request.post(`${apiBase}/settings/operators`, { data: {
+        external_id: username, username, full_name: 'Concurrent permission operator', is_admin: false,
+        custom_permissions: { racks: 0, assets: 1 },
+      } })
+      expect(created.ok()).toBeTruthy()
+      const operator = await created.json()
+      const endpoint = `/settings/operators/${operator.id}`
+      await page.goto('/settings?tab=permissions')
+      await page.getByPlaceholder('Search identity, department, or team...').fill(username)
+      const permission = (module: string, level: string) => page.getByRole('button', { name: `${module} permission for ${username}: ${level}`, exact: true })
+      await expect(permission('racks', 'NONE')).toBeVisible()
+      const peerMap = { racks: 0, assets: 2 }
+      expect((await request.patch(`${apiBase}${endpoint}`, { data: { custom_permissions: peerMap } })).ok()).toBeTruthy()
+      const versions = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
+      const conflicted = page.waitForResponse(response => response.url().endsWith(endpoint) && response.request().method() === 'PATCH')
+      await permission('racks', 'NONE').click()
+      const response = await conflicted
+      expect(response.status()).toBe(409)
+      expect(response.request().postDataJSON()).toEqual({
+        id: operator.id, custom_permissions: { racks: 1, assets: 1 },
+        expected_custom_permissions: { racks: 0, assets: 1 },
+      })
+      await expect(page.getByText('Permissions changed since this row was loaded. Review the current grants and try again.', { exact: true })).toBeVisible()
+      await expect(permission('racks', 'NONE')).toBeEnabled()
+      await expect(permission('assets', 'WRITE')).toBeVisible()
+      const afterConflict = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
+      expect(afterConflict).toEqual(versions)
+      await permission('assets', 'WRITE').scrollIntoViewIfNeeded()
+      await page.screenshot({ path: testInfo.outputPath('permission-conflict.png'), animations: 'disabled' })
+      const saved = page.waitForResponse(result => result.url().endsWith(endpoint) && result.request().method() === 'PATCH')
+      await permission('racks', 'NONE').click()
+      const retried = await saved
+      expect(retried.ok()).toBeTruthy()
+      expect(retried.request().postDataJSON()).toEqual({
+        id: operator.id, custom_permissions: { racks: 1, assets: 2 }, expected_custom_permissions: peerMap,
+      })
+      await expect(permission('racks', 'READ')).toBeEnabled()
+      expect(await page.getByText('Permissions changed since this row was loaded. Review the current grants and try again.', { exact: true }).count()).toBe(0)
+      const persisted = (await (await request.get(`${apiBase}/settings/operators`)).json()).find((row: any) => row.id === operator.id)
+      expect(persisted.custom_permissions).toEqual({ racks: 1, assets: 2 })
+      expect((await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()).length).toBe(versions.length + 1)
+      await page.screenshot({ path: testInfo.outputPath('permission-conflict-recovered.png'), animations: 'disabled' })
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(2)
+      await testInfo.attach('permission-conflict-result', { body: JSON.stringify({ status: response.status(), initial: response.request().postDataJSON(), retry: retried.request().postDataJSON(), persisted: persisted.custom_permissions }), contentType: 'application/json' })
     })
   }
 }

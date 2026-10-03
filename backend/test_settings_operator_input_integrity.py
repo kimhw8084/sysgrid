@@ -38,6 +38,107 @@ async def snapshot(c, setup_db):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('peer_permissions', [{'settings': 2}, {'settings': 1, 'assets': 0}])
+async def test_permission_compare_and_swap_rejects_stale_maps_then_allows_reviewed_retry(operator_scope, setup_db, peer_permissions):
+    c = operator_scope
+    endpoint = f"/api/v1/settings/operators/{c['ids'][0]}"
+    first = await c['client'].patch(endpoint, headers=c['headers'], json={
+        'custom_permissions': peer_permissions, 'expected_custom_permissions': {'settings': 1},
+    })
+    assert first.status_code == 200, first.text
+    before = await snapshot(c, setup_db)
+    stale = await c['client'].patch(endpoint, headers=c['headers'], json={
+        'custom_permissions': {'settings': 1, 'racks': 2}, 'expected_custom_permissions': {'settings': 1},
+        'full_name': 'Must not partially update', 'team': 'Must not create stale team', 'is_admin': False,
+    })
+    assert stale.status_code == 409, stale.text
+    assert stale.json()['detail'] == 'Permissions changed since this row was loaded. Review the current grants and try again.'
+    assert await snapshot(c, setup_db) == before
+    reviewed = await c['client'].patch(endpoint, headers=c['headers'], json={
+        'custom_permissions': {**peer_permissions, 'racks': 2}, 'expected_custom_permissions': peer_permissions,
+    })
+    assert reviewed.status_code == 200, reviewed.text
+    after = await snapshot(c, setup_db)
+    target = next(row for row in after[models.Operator.__tablename__] if row['id'] == c['ids'][0])
+    assert target['custom_permissions'] == {**peer_permissions, 'racks': 2}
+    assert target['full_name'] == 'Original name' and target['is_admin'] is True
+    versions = after[models.UserPoolVersion.__tablename__]
+    assert len(versions) == 2 and sum(row['is_active'] for row in versions) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('payload', [
+    {'expected_custom_permissions': {'settings': 1}},
+    {'custom_permissions': {}, 'expected_custom_permissions': []},
+    {'custom_permissions': {}, 'expected_custom_permissions': {'settings': '3'}},
+    {'custom_permissions': {}, 'expected_custom_permissions': {'settings': None}},
+    {'custom_permissions': {}, 'expected_custom_permissions': {'settings': float('inf')}},
+    {'custom_permissions': {}, 'expected_custom_permissions': {'settings': 1, ' settings ': 2}},
+])
+async def test_permission_compare_and_swap_validates_expectation_without_writes(operator_scope, setup_db, payload):
+    import json
+
+    c = operator_scope
+    before = await snapshot(c, setup_db)
+    response = await c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}",
+        headers={**c['headers'], 'Content-Type': 'application/json'},
+        content=json.dumps({**payload, 'full_name': 'Rejected expectation', 'team': 'Rejected team'}))
+    assert response.status_code == 422, response.text
+    assert 'expected_custom_permissions' in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('stored,expected', [(None, {}), ({}, None), ({'settings': ' Read '}, {' settings ': True})])
+async def test_permission_compare_and_swap_preserves_supported_semantics(operator_scope, setup_db, stored, expected):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        (await db.get(models.Operator, c['ids'][0])).custom_permissions = stored
+        await db.commit()
+    response = await c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}", headers=c['headers'], json={
+        'custom_permissions': {'assets': 2}, 'expected_custom_permissions': expected,
+    })
+    assert response.status_code == 200, response.text
+    assert response.json()['custom_permissions'] == {'assets': 2}
+
+
+@pytest.mark.asyncio
+async def test_permission_compare_and_swap_serializes_competing_http_writes(operator_scope, setup_db, monkeypatch):
+    from app.api import authorization
+
+    c = operator_scope
+    ready, sessions = asyncio.Event(), set()
+    original = authorization.resolve_current_operator
+
+    async def synchronize_initial_authorization(request, db):
+        result = await original(request, db)
+        if db not in sessions:
+            sessions.add(db)
+            if len(sessions) == 2:
+                ready.set()
+            await asyncio.wait_for(ready.wait(), 5)
+        return result
+
+    monkeypatch.setattr(authorization, 'resolve_current_operator', synchronize_initial_authorization)
+    maps = [{'settings': 1, 'assets': 2}, {'settings': 1, 'racks': 3}]
+    responses = await asyncio.wait_for(asyncio.gather(*[
+        c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}", headers=c['headers'], json={
+            'custom_permissions': permissions, 'expected_custom_permissions': {'settings': 1},
+        }) for permissions in maps
+    ], return_exceptions=True), 10)
+    assert not any(isinstance(response, BaseException) for response in responses), [repr(response) for response in responses]
+    assert sorted(response.status_code for response in responses) == [200, 409], [response.text for response in responses]
+    winner = maps[next(index for index, response in enumerate(responses) if response.status_code == 200)]
+    after = await snapshot(c, setup_db)
+    target = next(row for row in after[models.Operator.__tablename__] if row['id'] == c['ids'][0])
+    assert target['custom_permissions'] == winner
+    versions = after[models.UserPoolVersion.__tablename__]
+    assert len(versions) == 1 and versions[0]['is_active']
+    saved = next(row for row in versions[0]['snapshot_data'] if row['external_id'] == 'input-target')
+    assert saved['custom_permissions'] == winner
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('value', [float('nan'), float('inf'), -float('inf')], ids=['nan', 'infinity', 'negative-infinity'])
 async def test_authorized_repair_of_nonfinite_stored_overrides_preserves_other_state(operator_scope, setup_db, value):
     c = operator_scope
@@ -591,7 +692,8 @@ async def test_restore_preserves_supported_group_and_permission_records(operator
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('grant', ['admin', 'custom', 'role'])
-async def test_restore_rechecks_revoked_authority_inside_write_transaction(operator_scope, setup_db, grant):
+@pytest.mark.parametrize('operation', ['restore', 'patch'])
+async def test_identity_write_rechecks_revoked_authority_inside_write_transaction(operator_scope, setup_db, grant, operation):
     import inspect
     from fastapi import Depends, Request
     from app.api import authorization, settings as settings_api
@@ -610,7 +712,8 @@ async def test_restore_rechecks_revoked_authority_inside_write_transaction(opera
         manager_id, role_id = manager.id, role.id
     version_id, _, _ = await field_restore_fixture(c, setup_db)
     resolved, release = asyncio.Event(), asyncio.Event()
-    dependency = inspect.signature(settings_api.restore_user_pool).parameters['_settings_access'].default.dependency
+    handler = settings_api.restore_user_pool if operation == 'restore' else settings_api.update_operator
+    dependency = inspect.signature(handler).parameters['_settings_access'].default.dependency
 
     async def hold_accepted_authority(request: Request, db=Depends(get_db)):
         result = await dependency(request=request, db=db)
@@ -620,8 +723,10 @@ async def test_restore_rechecks_revoked_authority_inside_write_transaction(opera
         return result
 
     app.dependency_overrides[dependency] = hold_accepted_authority
-    task = asyncio.create_task(c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}',
-        headers=c['headers']))
+    task = asyncio.create_task(
+        c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+        if operation == 'restore' else c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}",
+            headers=c['headers'], json={'custom_permissions': {'settings': 2}, 'expected_custom_permissions': {'settings': 1}}))
     try:
         await asyncio.wait_for(resolved.wait(), 5)
         async with _tenant_db(setup_db, c['tenant']) as db:

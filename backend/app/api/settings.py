@@ -1604,10 +1604,21 @@ async def update_operator(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    if "expected_custom_permissions" in data:
+        if "custom_permissions" not in data:
+            raise HTTPException(422, {"field_errors": {
+                "expected_custom_permissions": "Requires a custom_permissions update",
+            }})
+        validate_operator_permissions(
+            {"custom_permissions": data["expected_custom_permissions"]}, field="expected_custom_permissions",
+        )
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
     op = res.scalar_one_or_none()
     if not op: raise HTTPException(404, "Operator not found")
+    if "expected_custom_permissions" in data and normalize_permission_map(op.custom_permissions) != normalize_permission_map(data["expected_custom_permissions"]):
+        raise HTTPException(409, "Permissions changed since this row was loaded. Review the current grants and try again.")
     reject_reserved_system_root_identity(
         {"external_id": op.external_id, "username": op.username, "id": op.external_id, **data},
         actor_id=user_id,

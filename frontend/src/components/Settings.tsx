@@ -137,7 +137,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label, activeColor = 'bg-bl
     </label>
 )
 
-const ViewPermissionIcon = ({ level, globalLevel, onClick, isGlobalAdmin, label: accessibleLabel }: any) => {
+const ViewPermissionIcon = ({ level, globalLevel, onClick, isGlobalAdmin, disabled, saving, label: accessibleLabel }: any) => {
     const descriptionId = React.useId()
     const colors = [
         "bg-[var(--surface-hover)] text-[var(--text-secondary)] border-[var(--grid-border)]",
@@ -160,7 +160,8 @@ const ViewPermissionIcon = ({ level, globalLevel, onClick, isGlobalAdmin, label:
             type="button"
             aria-label={`${accessibleLabel}: ${label}`}
             aria-describedby={description ? descriptionId : undefined}
-            disabled={isGlobalAdmin || globalLevel === 3 || level === null}
+            disabled={disabled || isGlobalAdmin || globalLevel === 3 || level === null}
+            aria-busy={saving || undefined}
             onClick={onClick}
             className={`px-2 py-1 min-h-9 rounded-lg border text-xs font-semibold tracking-wide transition-colors hover:bg-[var(--surface-hover)] min-w-16 text-center disabled:cursor-default ${colorClass}`}
             title={level === null ? 'Permission data is incomplete or invalid. Review grants before editing.' : !isGlobalAdmin && globalLevel > 0 ? `Global grants provide at least ${globalLabel} access. Per-module changes cannot reduce that grant.` : label}
@@ -902,8 +903,10 @@ export default function SettingsPage() {
     return parts[parts.length - 1] || dbUrl
   }, [])
   const permissionSelectionAnchorRef = React.useRef<number | null>(null)
-  const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any, finishWrite: () => void }>>({})
+  const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any, expectedPermissions: any, committing: boolean, finishWrite: () => void }>>({})
   const [pendingPermissionWrites, setPendingPermissionWrites] = useState(0)
+  const [savingPermissionIds, setSavingPermissionIds] = useState<Set<number>>(new Set())
+  const operatorNoticeId = React.useId()
   const [bulkPhase, setBulkPhase] = useState<'confirming' | 'saving' | null>(null)
   const bulkBusyRef = React.useRef(false)
   const bulkBusy = bulkPhase !== null
@@ -1417,6 +1420,7 @@ export default function SettingsPage() {
   });
 
   const operatorMutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async (op: any) => {
       const isUpdate = !!op.id;
       const url = isUpdate ? `/api/v1/settings/operators/${op.id}` : "/api/v1/settings/operators";
@@ -1427,15 +1431,23 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['operators'] })
-      queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+    onSuccess: async (data, variables) => {
+      const refreshes = [
+        queryClient.invalidateQueries({ queryKey: ['operators'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] }),
+      ]
       // If updating current user, refresh their profile to reflect permission changes immediately
       if (variables.username === userProfile?.username || (variables.id != null && variables.id === userProfile?.id)) {
-        queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+        refreshes.push(queryClient.invalidateQueries({ queryKey: ['user-profile'] }))
       }
-      showWorkspaceToast("Security profile synchronized")
-    }
+      await Promise.all(refreshes)
+      toast.success("Security profile synchronized", { id: `${operatorNoticeId}-${variables.id ?? 'new'}` })
+    },
+    onError: (error: Error, variables) => {
+      toast.error(error.message || 'Security profile could not be saved.', {
+        id: `${operatorNoticeId}-${variables.id ?? 'new'}`,
+      })
+    },
   })
 
   const applyOptimisticOperatorPatch = (operatorId: number, patch: any) => {
@@ -1469,6 +1481,8 @@ export default function SettingsPage() {
 
   const queuePermissionCommit = (op: any, payload: any) => {
     const existing = permissionCommitBufferRef.current[op.id]
+    if (existing?.committing) return
+    const expectedPermissions = existing ? existing.expectedPermissions : op.custom_permissions ?? null
     let finishWrite: () => void
     try {
       finishWrite = existing?.finishWrite || beginScopedWrite(false)
@@ -1484,11 +1498,13 @@ export default function SettingsPage() {
     const timeoutId = setTimeout(async () => {
       const queued = permissionCommitBufferRef.current[op.id]
       if (!queued) return
-      delete permissionCommitBufferRef.current[op.id]
+      queued.committing = true
+      setSavingPermissionIds(ids => new Set(ids).add(op.id))
       try {
         await operatorMutation.mutateAsync({
           id: queued.payload.id,
           custom_permissions: queued.payload.custom_permissions,
+          expected_custom_permissions: queued.expectedPermissions,
         })
       } catch {
         await queryClient.invalidateQueries({ queryKey: ['operators'] })
@@ -1497,12 +1513,18 @@ export default function SettingsPage() {
           await queryClient.invalidateQueries({ queryKey: ['user-profile'] })
         }
       } finally {
+        delete permissionCommitBufferRef.current[op.id]
+        setSavingPermissionIds(ids => {
+          const next = new Set(ids)
+          next.delete(op.id)
+          return next
+        })
         queued.finishWrite()
         setPendingPermissionWrites(count => count - 1)
       }
     }, PERMISSION_COMMIT_DEBOUNCE_MS)
 
-    permissionCommitBufferRef.current[op.id] = { timeoutId, payload, finishWrite }
+    permissionCommitBufferRef.current[op.id] = { timeoutId, payload, expectedPermissions, committing: false, finishWrite }
   }
 
   const deleteOperatorMutation = useMutation({
@@ -1909,6 +1931,7 @@ export default function SettingsPage() {
   }, view)
 
   const togglePermission = async (op: any, view: string) => {
+    if (permissionCommitBufferRef.current[op.id]?.committing || bulkBusy || syncBusy || restorePhase !== null) return
     const queuedPayload = permissionCommitBufferRef.current[op.id]?.payload
     const workingOperator = queuedPayload
       ? {
@@ -2837,6 +2860,7 @@ export default function SettingsPage() {
                               <div className="flex items-center justify-center min-h-[40px]" onClick={(e) => e.stopPropagation()}>
                                 <ToggleSwitch 
                                   label={`Admin access for ${op.username}`}
+                                  disabled={pendingPermissionWrites > 0 || bulkBusy || syncBusy || restorePhase !== null}
                                   checked={op.is_admin} 
                                   onChange={async (e: any) => {
                                     const checked = e.target.checked
@@ -2856,6 +2880,8 @@ export default function SettingsPage() {
                                     label={`${view} permission for ${op.username}`}
                                     level={permission.level}
                                     globalLevel={permission.global}
+                                    disabled={savingPermissionIds.has(op.id) || bulkBusy || syncBusy || restorePhase !== null}
+                                    saving={savingPermissionIds.has(op.id)}
                                     onClick={() => !op.is_admin && togglePermission(op, view)}
                                     isGlobalAdmin={op.is_admin}
                                   />
