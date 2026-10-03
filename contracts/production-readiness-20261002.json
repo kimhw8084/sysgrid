@@ -8,33 +8,57 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-03T04:38:15Z",
+  "as_of_utc": "2026-10-03T05:28:35Z",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "73f268dd5ff08f8b1e812767d31866540b0d22f6",
+    "candidate": "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37094554336",
-    "tested_merge": "51b98a702b1d6dbd3c5bdf475eeb6951e55c6a43",
-    "completed_at": "2026-10-03T04:28:20Z",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37097450946",
+    "tested_merge": "85c552ca44944502220227d1fbe17335257401ea",
+    "completed_at": "2026-10-03T05:21:17Z",
     "conclusion": "success",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 1466,
+      "backend": 1508,
       "frontend": 871,
       "frontend_files": 160,
-      "normal_browser": 238,
+      "normal_browser": 256,
       "normal_browser_preexisting_skips": 2,
       "desktop_browser": 35,
       "root_preview_browser": 6
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "4eff074977067c0c0849a5f9e0d54841c2c3aa63 adds strict historical admin and snapshot identity validation, truthful restore regression, bulk confirmation/save/refresh guards and readable accessible permission history with explicit whole-snapshot restore confirmation and recovery. Latest local backend:1508 tests/62 files; frontend:871 tests/160 files. Final54 Settings browser cases pass with no failures, retries or skips; preceding61-case Settings/shell qualification remains evidence for its exact source. Adds42 backend and18 canonical browser cases beyond hosted checkpoint. Final history contrast:622 scoped samples, minimum5.984:1; focused visual492 samples same minimum. Fresh assembled hosted CI is required.",
-    "job_duration_seconds": 2240,
-    "backend_duration_seconds": 271.26
+    "later_source": "3bae47ba24814c3ee4904d2b34dae3331a833e9e adds legacy-compatible historical field validation, shared supported-SQLite restore serialization and fresh Settings authority, reserved-root omission protection, external-ID actor preservation and actual revision counters. History now has expandable permission details plus visible username/status changes. Latest local backend: 1581 tests/62 files; frontend: 871 tests/160 files. The preceding density source passed 32 related Settings browser cases; current field-display source passes all eight history/restore cases plus four focused visual replays. Seventy-three backend cases join canonical discovery; existing browser cases gain stronger assertions. Current final visual run: 1188 text-contrast samples, minimum 5.984:1. Fresh assembled hosted CI is required.",
+    "job_duration_seconds": 2306,
+    "backend_duration_seconds": 278.84
   },
   "ci_history": [
+    {
+      "candidate": "73f268dd5ff08f8b1e812767d31866540b0d22f6",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37094554336",
+      "tested_merge": "51b98a702b1d6dbd3c5bdf475eeb6951e55c6a43",
+      "completed_at": "2026-10-03T04:28:20Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1466,
+        "frontend": 871,
+        "frontend_files": 160,
+        "normal_browser": 238,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "4eff074977067c0c0849a5f9e0d54841c2c3aa63 adds strict historical admin and snapshot identity validation, truthful restore regression, bulk confirmation/save/refresh guards and readable accessible permission history with explicit whole-snapshot restore confirmation and recovery. Latest local backend:1508 tests/62 files; frontend:871 tests/160 files. Final54 Settings browser cases pass with no failures, retries or skips; preceding61-case Settings/shell qualification remains evidence for its exact source. Adds42 backend and18 canonical browser cases beyond hosted checkpoint. Final history contrast:622 scoped samples, minimum5.984:1; focused visual492 samples same minimum. Fresh assembled hosted CI is required.",
+      "job_duration_seconds": 2240,
+      "backend_duration_seconds": 271.26
+    },
     {
       "candidate": "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
       "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -420,12 +444,12 @@
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+    "source_head": "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
     "registered_api_operations": 310,
-    "static_ui_declarations": 3135,
+    "static_ui_declarations": 3148,
     "static_ui_routes": 19,
     "static_ui_overlays": 260,
-    "static_ui_controls": 2856,
+    "static_ui_controls": 2869,
     "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
   },
   "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
@@ -1073,6 +1097,36 @@
       "commit": "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
       "scope": "Make permission history readable and reachable and guard the full rendered identity restore workflow",
       "archive_sha256": "5011c41362312e269afbfdf4253970b1a404c08161adf1df40cc99fffc0ded38"
+    },
+    {
+      "commit": "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+      "scope": "Reconcile checkpoint19 with reviewed restore safety, rendered history and exact hosted CI",
+      "archive_sha256": "3219ac6cbe9b499ad9ec55df70af754b7e8471e05ed1c4b342ae412d92ea816c"
+    },
+    {
+      "commit": "978eafe99faa60997bca5aa370c58d263aaab9e1",
+      "scope": "Validate historical text/group/map containers while preserving optional legacy fields and content",
+      "archive_sha256": "51264f9e180a85bdfb8522a92a36dbba8bb6eb05ccc9f00ae97193ca4e416a6f"
+    },
+    {
+      "commit": "67e7df395d2554a7d5956bcee840834098de3174",
+      "scope": "Serialize supported SQLite identity restore and reload Settings authority inside the transaction",
+      "archive_sha256": "af08a9bcea7e6fcf2fc25aecb5425a60b1964dc18e7d8751cfee109dae2d94c7"
+    },
+    {
+      "commit": "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+      "scope": "Protect reserved identities and the current actor from restore omission; record actual revision counts",
+      "archive_sha256": "70990593f0e70be31b0f7089985cd6a8953470b6b4bf33f5208e6d45f96f286b"
+    },
+    {
+      "commit": "977207653839845e1642a31b3811671187eeb870",
+      "scope": "Make complete permission deltas expandable and include native disclosures in the acceptance inventory",
+      "archive_sha256": "462b87318c823f1ac2fb71206375d420493fa538a71f9f4aa61128773dc1314d"
+    },
+    {
+      "commit": "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+      "scope": "Render previously omitted username and registration-status changes in identity history",
+      "archive_sha256": "8bb47d5fbcef8ef693393c569acec649557a78e4d57d6f9ad8ad6692fa177021"
     }
   ],
   "groups": [
@@ -1102,9 +1156,10 @@
           "reviewed_commits": [
             "27873d89",
             "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
-            "73f268dd5ff08f8b1e812767d31866540b0d22f6"
+            "73f268dd5ff08f8b1e812767d31866540b0d22f6",
+            "459291a678a13d19c0c9561a7f7a12d05c1aff9f"
           ],
-          "remaining": "Checkpoint19 reconciles108 reviewed archives, fresh source inventory and exact hosted73f268dd success. Notion/PR preserve direct-development provenance; integration requires main ancestry and company evidence."
+          "remaining": "Checkpoint 20 reconciles 114 reviewed archives, fresh source inventory and exact hosted 459291a6 success. Main integration and whole-release/company acceptance remain separate; direct-development provenance is preserved."
         },
         {
           "id": "A3",
@@ -1114,9 +1169,11 @@
           "status": "in_progress",
           "reviewed_commits": [
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
           ],
-          "remaining": "Fresh clean-source inventory at4eff0749 registers310 API operations and3135 static UI declarations. Discovery worklist only; dynamic states, role behavior and rendered acceptance remain."
+          "remaining": "Fresh clean-source inventory at 3bae47ba lists 310 API operations and 3148 UI declarations. Native summary controls are now recognized: 14 discovered, adding 13 declarations beyond the earlier generator (including the new history disclosure). Runtime states and behavior remain qualification work."
         }
       ]
     },
@@ -1195,9 +1252,12 @@
             "c5106bdb16182bfac895641c2c818b1910151628",
             "fe91e4fb9cb41cae46564881c62c74482c10b535",
             "c57f0338f540e64fe67715f8daf980d27bae93bc",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
           ],
-          "remaining": "Historical restore rejects malformed admin flags, snapshot containers and duplicate/invalid identities atomically. Bulk and restore prevent duplicate submissions, await refreshed state and require explicit retry after failure. Permission conflicts, other writers and uncertain outcomes remain."
+          "remaining": "Restore validates historical field containers, serializes supported SQLite writes and rechecks Settings authority, protects omitted root/current-actor identities and reports actual changes. Prior confirmation/refresh guards remain. Stale restore review, general idempotency, unknown outcomes and other form writers remain."
         },
         {
           "id": "B4",
@@ -1217,9 +1277,10 @@
             "414529d1",
             "100b388546463587b47a6a8cb14caae5b1452540",
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870"
           ],
-          "remaining": "Permission history uses separate named revision/restore buttons, keyboard selection and close focus return; nested restore confirmation states whole-snapshot impact. Earlier bulk menu proof remains. Remaining overlay states, assistive technology and full inventory remain."
+          "remaining": "Permission deltas use native expandable details with Enter/Space behavior and retained focus. Existing history, confirmation and bulk-menu proof remains. Complete overlay inventory, assistive technology, Tab/reflow and expanded long-list usability remain."
         },
         {
           "id": "B5",
@@ -1244,9 +1305,11 @@
             "103e8f8a",
             "414529d1",
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
           ],
-          "remaining": "Permission history replaces8–11px text and white-on-white/light-tint failures with theme tokens and12px minimum text. Final622 scoped samples reach5.984:1; both themes and1440/390px inspected. Earlier shared-flyout contrast proof remains. Long diff rows, other headers/FAR copy and complete visual-state coverage remain."
+          "remaining": "Collapsed history rows fell from 976px to 168px on the same fixture; adding visible username/status changes produces 260px rows under the existing 320px bound. Final 1188 scoped contrast samples reach 5.984:1. Both themes and desktop/phone images inspected. Broader layouts, exact whitespace/null display, role-derived history and full visual qualification remain."
         },
         {
           "id": "B6",
@@ -1269,9 +1332,11 @@
             "414529d1",
             "100b388546463587b47a6a8cb14caae5b1452540",
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
           ],
-          "remaining": "Permission-history first/last change cards are reachable at1440/390px, with contained modal body and horizontal region access. Earlier bulk placement and Monitoring resize remain. Long rows, zoom, short screens and large datasets remain."
+          "remaining": "History supports compact initial rows and complete expandable permission data at 1440/390px. New identity before/after fields reach 90% viewport and remain readable. Expanded long lists, zoom, short screens, large datasets and other workspaces remain."
         },
         {
           "id": "B7",
@@ -1296,9 +1361,11 @@
             "414529d1",
             "100b388546463587b47a6a8cb14caae5b1452540",
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
           ],
-          "remaining": "Permission history removes nested buttons, exposes named pressed selection and keyboard/focus return, and retains readable scoped contrast. Earlier menu semantics remain. Full assistive technology, Tab, zoom/reflow and remaining controls remain."
+          "remaining": "History disclosure opens with Enter, closes with Space and retains visible focus; identity and first/last permission cards remain reachable. Scoped contrast passes. Full assistive technology, Tab progression, zoom/reflow and all controls remain."
         },
         {
           "id": "B8",
@@ -1343,9 +1410,12 @@
             "7b38343670d6f1289cf373526d67b0253dea6700",
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
             "fe91e4fb9cb41cae46564881c62c74482c10b535",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
           ],
-          "remaining": "Bulk and historical restore show confirmation/saving states through awaited refresh, pin tenant scope, prevent duplicate writes and preserve explicit failure recovery. Earlier sync/selection fixes remain. Other domains, partial/denied/conflict states and unknown outcomes remain."
+          "remaining": "Restore reports actionable busy conflicts at the unchanged lock timeout, preserves current actors, and records actual change counts. Username/status deltas are now visible. Earlier guarded async/recovery behavior remains. Stale restore reviews, unknown outcomes and broader partial/denied states remain."
         },
         {
           "id": "B10",
@@ -1411,9 +1481,11 @@
             "643713e2",
             "778d269841fa8e7f954123beed3f85be86874ec7",
             "c5106bdb16182bfac895641c2c818b1910151628",
-            "c57f0338f540e64fe67715f8daf980d27bae93bc"
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
           ],
-          "remaining": "Historical snapshot must be a list of records; external IDs are nonempty strings or positive legacy integers and unique after normalization. Admin intent uses strict booleans with omitted legacy default. Invalid input fails atomically. Remaining fields/OpenAPI, resource bounds, pagination and other domains remain."
+          "remaining": "Historical text fields require strings/null, groups a string list/null, and custom-permission containers an object/null. Optional omitted legacy fields restore without KeyError. Revision counts reflect actual data. Permission-map values, full typed schemas/OpenAPI, resource bounds, pagination and other domains remain."
         },
         {
           "id": "C3",
@@ -1435,9 +1507,11 @@
             "3badc66a",
             "fcd095ed",
             "7b38343670d6f1289cf373526d67b0253dea6700",
-            "778d269841fa8e7f954123beed3f85be86874ec7"
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
           ],
-          "remaining": "Supported SQLite sync reloads admin/role/custom-permission authority after acquiring its snapshot transaction; six revoked-grant scenarios reject without state change. Strict operator references cannot alias booleans or overflow database bindings. Full tenant-access revocation, other concurrent writers, roles/projections and authentic company identity remain."
+          "remaining": "Supported SQLite restore rechecks admin/custom/role authority inside its writer transaction. Three isolated post-authorization revocations reject without state changes. Ordinary tenant managers cannot delete deployment-owned roots through snapshot omission; actor preservation covers username and external ID. Tenant-access revocation across config storage, other writers, roles/projections and authentic company identity remain."
         },
         {
           "id": "C4",
@@ -1472,9 +1546,11 @@
             "7b38343670d6f1289cf373526d67b0253dea6700",
             "778d269841fa8e7f954123beed3f85be86874ec7",
             "c5106bdb16182bfac895641c2c818b1910151628",
-            "c57f0338f540e64fe67715f8daf980d27bae93bc"
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
           ],
-          "remaining": "Malformed historical admin/identity rejection proves full Operator/Team/TeamAudit/UserPoolVersion rollback. Supported SQLite sync serialization remains qualified. Restore authority/concurrency, other writers, permission conflicts, idempotency and unknown outcomes remain."
+          "remaining": "Supported SQLite restore acquires the writer before reading current identities, preventing concurrent recreation uniqueness failures; separate-session races and contention rollback/retry pass. Import and restore share transaction ownership. Stale reviews, general idempotency/unknown outcomes, other engines and other writers remain."
         },
         {
           "id": "C5",
@@ -1487,9 +1563,10 @@
             "c4bbbd49",
             "3ea3b70a",
             "0d29d2bd",
-            "c57f0338f540e64fe67715f8daf980d27bae93bc"
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
           ],
-          "remaining": "Historical identity restore now proves real prior edits, restored fields and one new active revision/source binding. Earlier Network lifecycle audit proof remains. Cross-domain lifecycle parity, impact policy and recovery matrices remain."
+          "remaining": "Restore omission carries ordinary reserved-root deletion authority and preserves the current actor under both supported identity keys. Actual added/removed/changed counts and repeated zero-change restores are verified. Cross-domain lifecycle parity, broader impact policies and recovery matrices remain."
         },
         {
           "id": "C6",
@@ -1527,9 +1604,11 @@
             "643713e2",
             "778d269841fa8e7f954123beed3f85be86874ec7",
             "c5106bdb16182bfac895641c2c818b1910151628",
-            "c57f0338f540e64fe67715f8daf980d27bae93bc"
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
           ],
-          "remaining": "Historical snapshot container/admin/identity validation rejects malformed or duplicate records without partial mutations. Legacy IDs, omitted admin and empty-list current-user preservation remain. Remaining fields, primary-team/group consistency, uniqueness and concurrent relationships remain."
+          "remaining": "Historical nullable and omitted fields preserve valid legacy semantics, original text bytes and immutable source snapshots. Malformed text/groups/maps fail atomically; restored counts reflect actual fields, including whitespace-only changes. Primary-team consistency, permission-map values and remaining relationships remain."
         },
         {
           "id": "C7",
@@ -1558,9 +1637,10 @@
             "fcd095ed",
             "778d269841fa8e7f954123beed3f85be86874ec7",
             "c5106bdb16182bfac895641c2c818b1910151628",
-            "c57f0338f540e64fe67715f8daf980d27bae93bc"
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1"
           ],
-          "remaining": "Historical admin coercion and malformed/duplicate snapshot identities are repaired, with late-record rollback. Earlier strict role/team references remain. Remaining historical fields, typed schemas and resource bounds require work."
+          "remaining": "Historical field containers reject malformed values without type/database crashes. Valid null/omission, Unicode/whitespace, groups and legacy permission vocabulary remain. Permission-map scalar validation, resource limits and broader typed inputs remain."
         },
         {
           "id": "C8",
@@ -1592,8 +1672,10 @@
           "outcome": "Domain rules have clear shared owners, documented contracts, and meaningful tests; preserve the accepted scheduling and authorization foundations.",
           "approval": "yes",
           "status": "unqualified",
-          "reviewed_commits": [],
-          "remaining": "Domain rules have clear shared owners, documented contracts, and meaningful tests; preserve the accepted scheduling and authorization foundations."
+          "reviewed_commits": [
+            "67e7df395d2554a7d5956bcee840834098de3174"
+          ],
+          "remaining": "Import preview/apply and restore now share supported-SQLite transaction acquisition, conflict reporting and fresh Settings authorization, covered by meaningful concurrency/revocation tests. Broader shared domain ownership, contracts and maintainability remain unqualified."
         }
       ]
     },
@@ -1722,9 +1804,10 @@
             "d8523809",
             "0d29d2bd",
             "ac01628f",
-            "c2453f26"
+            "c2453f26",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
           ],
-          "remaining": "Ordinary Services now record trusted creators and bounded changed-field metadata without unchanged-write or repeated-mount audit noise. Existing Service/Network per-record import history and atomic rollback remain verified. Historical aggregates, remaining writers, retention, roles and complete-scope export/pagination remain."
+          "remaining": "New identity restore revisions report actual additions, removals and changes rather than zero placeholders, including repeated restores and preserved whitespace differences. Historical source records remain untouched. Other audit writers, retention, roles/export and aggregate history remain."
         },
         {
           "id": "D8",
@@ -1752,9 +1835,14 @@
             "c5106bdb16182bfac895641c2c818b1910151628",
             "fe91e4fb9cb41cae46564881c62c74482c10b535",
             "c57f0338f540e64fe67715f8daf980d27bae93bc",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
           ],
-          "remaining": "Historical admin and snapshot identity validation, bulk confirmation/pending/refresh guards, readable permission history, keyboard selection and explicit guarded restore/recovery pass. No historical records rewritten. Company source remains unselected; full restore field schemas, authority/concurrency, bounds, role-derived history, long diff rows and broader Settings writers remain."
+          "remaining": "Historical field validation, supported-SQLite transaction authority/concurrency, root/current-actor omission protection and truthful revision counters now pass. Permission history is expandable, readable and renders username/status deltas. Company source remains unselected. Permission-map values, bounds, stale review, primary-team consistency, role-derived history, whitespace/null/invalid legacy display and broader Settings writers remain."
         }
       ]
     },
@@ -1870,9 +1958,15 @@
             "c5106bdb16182bfac895641c2c818b1910151628",
             "fe91e4fb9cb41cae46564881c62c74482c10b535",
             "c57f0338f540e64fe67715f8daf980d27bae93bc",
-            "4eff074977067c0c0849a5f9e0d54841c2c3aa63"
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e"
           ],
-          "remaining": "Hosted73f268dd succeeds on merge51b98a70:76 startup/recovery plus23 subtests,1466 backend,871 frontend,238 normal browser plus2 existing skips,35 desktop and6 root-preview. Job37m20s within unchanged45-minute deadline. New local source:1508 backend/62files,871 frontend/160files and54 Settings browser cases pass. Adds42 backend and18 normal-browser cases. Fresh assembled CI, supply-chain and final release checks remain."
+          "remaining": "Hosted 459291a6 succeeds on merge 85c552ca: 76 startup/recovery plus 23 subtests, 1508 backend, 871 frontend, 256 normal browser plus two existing skips, 35 desktop and six root-preview. Job 38m26s within unchanged 45-minute deadline. Current local source: 1581 backend/62 files and 871 frontend/160 files; eight current history cases and four focused replays pass. Earlier 32-case density run remains source-bound. Adds 73 backend cases and strengthens existing browser coverage. Fresh assembled CI, supply-chain and final release checks remain."
         },
         {
           "id": "E7",
