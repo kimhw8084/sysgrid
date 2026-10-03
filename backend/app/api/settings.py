@@ -1718,6 +1718,8 @@ async def refresh_user_pool(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    if "preview" in data and not isinstance(data["preview"], bool):
+        raise HTTPException(422, {"field_errors": {"preview": "Must be a boolean"}})
     preview = data.get("preview", False)
     user_id = get_current_user_id(request)
 
