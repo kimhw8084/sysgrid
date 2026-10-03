@@ -7,6 +7,85 @@ const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   for (const width of [1440, 390]) {
+    test(`Direct-link copying reports actual clipboard results in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 })
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+      await page.addInitScript(value => {
+        localStorage.setItem('sysgrid-theme', value)
+        const state = { calls: [] as string[], resolve: () => {}, reject: (_error: Error) => {} }
+        ;(window as any).__shareClipboard = state
+        Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+          writeText: (text: string) => new Promise<void>((resolve, reject) => {
+            state.calls.push(text); state.resolve = resolve; state.reject = reject
+          }),
+        } })
+      }, theme)
+      const stamp = `${Date.now()}-${theme}-${width}`
+      const source = await createAsset(request, { name: `Copy source ${stamp}`, system: 'Clipboard proof' })
+      const peer = await createAsset(request, { name: `Copy peer ${stamp}`, system: 'Clipboard proof' })
+      const connection = await createConnection(request, { device_a_id: source.id, device_b_id: peer.id,
+        source_port: 'eth0', target_port: 'eth1', link_type: 'Data', status: 'Active' })
+      const errors: string[] = []
+      page.on('pageerror', error => errors.push(error.message))
+      await page.goto(`/network?id=${connection.id}`)
+      const detail = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Connection Forensics' }) })
+      await expect(detail).toBeVisible()
+      await expect(detail.locator(':scope > .glass-panel')).toHaveCSS('opacity', '1')
+      const button = detail.getByRole('button', { name: 'Share direct link', exact: true })
+      await expect(button).toBeInViewport({ ratio: 1 })
+      const bounds = await button.boundingBox()
+      expect(bounds!.width).toBeGreaterThanOrEqual(44)
+      expect(bounds!.height).toBeGreaterThanOrEqual(44)
+      const locationBefore = page.url()
+      await button.focus()
+      await page.keyboard.press('Enter')
+      await expect(button).toBeDisabled()
+      await expect(button).toHaveAttribute('aria-busy', 'true')
+      const success = page.getByText('Direct link copied to clipboard', { exact: true })
+      const failure = page.getByText('Could not copy the link. Check clipboard access and try again.', { exact: true })
+      await expect(success).toHaveCount(0)
+      expect(await page.evaluate(() => (window as any).__shareClipboard.calls.length)).toBe(1)
+      await page.evaluate(() => (window as any).__shareClipboard.reject(new DOMException('Clipboard denied', 'NotAllowedError')))
+      await expect(failure).toBeVisible()
+      await expect(success).toHaveCount(0)
+      await expect(button).toBeEnabled()
+      await expect(button).toHaveAttribute('aria-busy', 'false')
+      await expectReadableGridText(page, testInfo, 'copy-failure', '[data-workspace-toast="error"]')
+      await page.screenshot({ path: testInfo.outputPath('copy-failure.png'), animations: 'disabled' })
+      await button.focus()
+      await page.keyboard.press('Enter')
+      await expect(button).toBeDisabled()
+      await expect(success).toHaveCount(0)
+      await page.evaluate(() => (window as any).__shareClipboard.resolve())
+      await expect(success).toBeVisible()
+      await expect(failure).toHaveCount(0)
+      await expect(button).toBeEnabled()
+      const copied = await page.evaluate(() => (window as any).__shareClipboard.calls as string[])
+      expect(copied).toEqual([locationBefore, locationBefore])
+      expect(page.url()).toBe(locationBefore)
+      await expectReadableGridText(page, testInfo, 'copy-success', '[data-workspace-toast="success"]')
+      const noticeBounds = await page.locator('[data-workspace-toast="success"]').boundingBox()
+      expect(noticeBounds!.height).toBeLessThanOrEqual(110)
+      await page.screenshot({ path: testInfo.outputPath('copy-success.png'), animations: 'disabled' })
+      const dismissNotice = page.locator('[data-workspace-toast][data-visible="true"]').getByRole('button', { name: 'Dismiss notification' })
+      while (await dismissNotice.count()) await dismissNotice.first().click()
+      await expect(failure).toHaveCount(0)
+      await expect(success).toHaveCount(0)
+      await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined }))
+      await button.click()
+      await expect(failure).toBeVisible()
+      await expect(success).toHaveCount(0)
+      await expect(button).toBeEnabled()
+      expect(await page.evaluate(() => (window as any).__shareClipboard.calls.length)).toBe(2)
+      expect(errors).toEqual([])
+      await testInfo.attach('clipboard-facts', { body: JSON.stringify({ bounds, noticeBounds, writes: copied.length, deniedThenRetried: true, unavailableHandled: true, pageErrors: errors }), contentType: 'application/json' })
+    })
+  }
+}
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const width of [1440, 390]) {
     for (const custom of [false, true]) {
       test(`Network detail is readable without unused queries for ${custom ? 'custom endpoints' : 'linked assets'} in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
         await resetBrowserState(page)
