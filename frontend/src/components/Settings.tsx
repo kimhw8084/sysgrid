@@ -474,7 +474,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
   versions: any[]
   allViews: string[]
   onClose: () => void
-  restorePhase: 'review' | 'saving' | null
+  restorePhase: 'previewing' | 'review' | 'saving' | null
   restoreError: string
   onRestore: (version: any) => Promise<boolean>
 }) {
@@ -532,7 +532,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
     >
       <div data-permission-history className="[&_[data-workspace-history-content]]:border-[var(--border-default)] [&_[data-workspace-history-content]]:bg-[var(--surface-elevated)]">
       {restoreBusy && <p role="status" className="rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 text-sm text-[var(--text-primary)]">
-        {restorePhase === 'review' ? 'Review the identity restore. Finish or cancel confirmation before leaving.' : 'Restoring identity revision. Stay on this page until the restore finishes.'}
+        {restorePhase === 'previewing' ? 'Checking the identity restore against current data…' : restorePhase === 'review' ? 'Review the identity restore. Finish or cancel confirmation before leaving.' : 'Restoring identity revision. Stay on this page until the restore finishes.'}
       </p>}
       {restoreError && <p role="alert" className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-4 text-sm text-[var(--text-primary)]">{restoreError}</p>}
       {(partialComparison || permissionsIncomplete) && <div role="alert" className="space-y-2 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-4 text-sm text-[var(--text-primary)]">
@@ -911,7 +911,7 @@ export default function SettingsPage() {
   const bulkBusyRef = React.useRef(false)
   const bulkBusy = bulkPhase !== null
   const [bulkError, setBulkError] = useState('')
-  const [restorePhase, setRestorePhase] = useState<'review' | 'saving' | null>(null)
+  const [restorePhase, setRestorePhase] = useState<'previewing' | 'review' | 'saving' | null>(null)
   const restoreBusyRef = React.useRef(false)
   const [restoreError, setRestoreError] = useState('')
   const {
@@ -1204,9 +1204,12 @@ export default function SettingsPage() {
   }
 
   const restoreMutation = useMutation({
+    meta: { handlesErrorToast: true },
     retry: false,
-    mutationFn: async (versionId: number) => {
-      const response = await apiFetch(`/api/v1/settings/user-pool/restore/${versionId}`, { method: 'POST' })
+    mutationFn: async ({ versionId, fingerprint }: { versionId: number; fingerprint: string }) => {
+      const response = await apiFetch(`/api/v1/settings/user-pool/restore/${versionId}`, {
+        method: 'POST', body: JSON.stringify({ expected_fingerprint: fingerprint }),
+      })
       return response.json()
     },
     onSuccess: async () => {
@@ -1223,16 +1226,25 @@ export default function SettingsPage() {
       return false
     }
     restoreBusyRef.current = true
-    setRestorePhase('review')
+    setRestorePhase('previewing')
     setRestoreError('')
     try {
+      const response = await apiFetch(`/api/v1/settings/user-pool/restore/${version.id}`, {
+        method: 'POST', body: JSON.stringify({ preview: true }),
+      })
+      const preview = await response.json()
+      if (!/^[0-9a-f]{64}$/.test(preview?.fingerprint || '') || !preview?.summary ||
+          !['added', 'removed', 'changed'].every(key => Number.isSafeInteger(preview.summary[key]) && preview.summary[key] >= 0)) {
+        throw new Error('The restore preview could not be verified. Preview again before restoring.')
+      }
+      setRestorePhase('review')
       if (!await confirmWorkspaceAction({
         title: 'Restore identity revision?',
-        message: `Restore v${version.v_num}? This applies the entire identity and permission snapshot. Identities added later may be removed. Role assignments and custom overrides are restored; current role definitions and module policy still apply, so effective access may differ from this revision. A new revision will record the result.`,
+        message: `Restore v${version.v_num}? Preview: ${preview.summary.added} identities added, ${preview.summary.removed} removed, ${preview.summary.changed} changed. This applies the entire identity and permission snapshot. Identities added later may be removed. Role assignments and custom overrides are restored; current role definitions and module policy still apply, so effective access may differ from this revision. A new revision will record the result.`,
         confirmText: 'Restore identities', cancelText: 'Keep current identities', variant: 'danger',
       })) return false
       setRestorePhase('saving')
-      await restoreMutation.mutateAsync(version.id)
+      await restoreMutation.mutateAsync({ versionId: version.id, fingerprint: preview.fingerprint })
       showWorkspaceToast('Identity revision restored')
       return true
     } catch (error) {

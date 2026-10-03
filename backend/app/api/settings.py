@@ -2077,10 +2077,24 @@ async def refresh_user_pool(
 async def restore_user_pool(
     version_id: int,
     request: Request,
+    data: dict | None = None,
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    data = data if data is not None else {}
+    if "preview" in data and not isinstance(data["preview"], bool):
+        raise HTTPException(422, {"field_errors": {"preview": "Must be a boolean"}})
+    preview = data.get("preview", False)
+    expected_fingerprint = data.get("expected_fingerprint")
+    if "expected_fingerprint" in data and (
+        not isinstance(expected_fingerprint, str)
+        or len(expected_fingerprint) != 64
+        or any(char not in "0123456789abcdef" for char in expected_fingerprint)
+    ):
+        raise HTTPException(422, {"field_errors": {"expected_fingerprint": "Must be a preview fingerprint"}})
     user_id = get_current_user_id(request)
+    # Preview stages the same writes and rolls them back; both modes own the
+    # supported SQLite writer before inspecting state and rechecking authority.
     await begin_identity_transaction(db, request)
     res = await db.execute(select(models.UserPoolVersion).filter(models.UserPoolVersion.id == version_id))
     version = res.scalar_one_or_none()
@@ -2090,7 +2104,27 @@ async def restore_user_pool(
     
     # Identify all current operators to handle deletions
     res_current = await db.execute(select(models.Operator))
-    current_ops = {op.external_id: op for op in res_current.scalars().all() if op.external_id}
+    current_rows = res_current.scalars().all()
+    current_ops = {op.external_id: op for op in current_rows if op.external_id}
+    fingerprint = None
+    if preview or expected_fingerprint is not None:
+        # Bind review to exact source/current records, including unassigned roles
+        # and revision changes. This precondition never substitutes for access.
+        reviewed_state = {
+            "tenant_id": getattr(request.state, "tenant_id", None), "actor": user_id,
+            "version_id": version_id, "version_label": version.version_label, "source": version.snapshot_data,
+            "operators": [{col.name: getattr(op, col.name) for col in models.Operator.__table__.columns}
+                          for op in sorted(current_rows, key=lambda row: row.id)],
+            "revisions": [list(row) for row in (await db.execute(
+                select(models.UserPoolVersion.id, models.UserPoolVersion.is_active).order_by(models.UserPoolVersion.id)
+            )).all()],
+        }
+        for name, model in [("roles", models.Role), ("teams", models.Team)]:
+            reviewed_state[name] = [{col.name: getattr(row, col.name) for col in model.__table__.columns}
+                                   for row in (await db.scalars(select(model).order_by(model.id))).all()]
+        fingerprint = hashlib.sha256(json.dumps(reviewed_state, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+        if expected_fingerprint is not None and expected_fingerprint != fingerprint:
+            raise HTTPException(409, "Identity data or restore source changed. Preview again before restoring.")
     
     snapshot_external_ids = set()
     snapshot_usernames: set[str] = set()
@@ -2178,6 +2212,11 @@ async def restore_user_pool(
                 await db.delete(op)
                 restore_summary["removed"] += 1
              
+    if preview:
+        await db.flush()
+        await db.rollback()
+        return {"status": "success", "preview": True, "summary": restore_summary, "fingerprint": fingerprint}
+
     # Create a NEW version record with descriptive label
     import datetime
     new_label = f"v{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')} (Cloned from {version.version_label})"

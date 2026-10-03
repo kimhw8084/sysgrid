@@ -317,7 +317,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       const confirmation = page.getByRole('dialog', { name: 'Restore identity revision?', exact: true })
       let writes = 0
       const endpoint = `/settings/user-pool/restore/${data.source.id}`
-      page.on('request', req => { if (req.url().endsWith(endpoint) && req.method() === 'POST') writes++ })
+      page.on('request', req => { if (req.url().endsWith(endpoint) && req.method() === 'POST' && req.postDataJSON()?.preview !== true) writes++ })
       const guarded = () => page.evaluate(() => {
         const event = new Event('beforeunload', { cancelable: true })
         window.dispatchEvent(event)
@@ -328,6 +328,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(confirmation).toContainText('entire identity and permission snapshot')
       await expect(confirmation).toContainText('Identities added later may be removed')
       await expect(confirmation).toContainText('current role definitions and module policy still apply')
+      await expect(confirmation).toContainText('Preview: 0 identities added, 0 removed, 1 changed.')
       expect(await guarded()).toBe(true)
       await confirmation.getByRole('button', { name: 'Keep current identities', exact: true }).click()
       await expect(confirmation).not.toBeVisible()
@@ -340,6 +341,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       let release!: () => void
       const held = new Promise<void>(resolve => { release = resolve })
       await page.route(`**${endpoint}`, async route => {
+        if (route.request().postDataJSON()?.preview === true) { await route.continue(); return }
         await held
         if (fail) await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Controlled identity restore failure' }) })
         else await route.continue()
@@ -393,4 +395,102 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(trigger).toBeFocused()
     })
   }
+}
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const width of [1440, 390]) {
+    test(`identity restore rejects a stale review and requires fresh counts in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 })
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+      const data = await prepareHistory(request)
+      await page.goto('/settings?tab=permissions')
+      await page.getByRole('button', { name: 'Revision History', exact: true }).click()
+      const history = page.getByRole('dialog', { name: 'Permission Registry History', exact: true })
+      const restore = history.getByRole('button', { name: `Restore identity revision ${data.sourceNumber}`, exact: true })
+      const confirmation = page.getByRole('dialog', { name: 'Restore identity revision?', exact: true })
+      const endpoint = `/settings/user-pool/restore/${data.source.id}`
+      const errors: string[] = []
+      const previews: any[] = []
+      const applies: any[] = []
+      page.on('pageerror', error => errors.push(error.message))
+      page.on('request', req => {
+        if (!req.url().endsWith(endpoint) || req.method() !== 'POST') return
+        const body = req.postDataJSON()
+        ;(body?.preview ? previews : applies).push(body)
+      })
+      await restore.scrollIntoViewIfNeeded()
+      await restore.click()
+      await expect(confirmation).toContainText('Preview: 0 identities added, 0 removed, 1 changed.')
+      const peerName = `new-after-review-${Date.now()}`
+      const peer = await request.post(`${apiBase}/settings/operators`, { data: {
+        external_id: peerName, username: peerName, full_name: 'Identity added by another administrator', is_admin: false,
+      } })
+      expect(peer.ok()).toBeTruthy()
+      const before = await (await request.get(`${apiBase}/settings/operators`)).json()
+      const versions = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
+      const rejected = page.waitForResponse(response => response.url().endsWith(endpoint) && response.request().postDataJSON()?.preview !== true)
+      await confirmation.getByRole('button', { name: 'Restore identities', exact: true }).click()
+      expect((await rejected).status()).toBe(409)
+      const conflict = history.getByRole('alert')
+      await expect(conflict).toContainText('Identity data or restore source changed. Preview again before restoring.')
+      expect(await page.locator('[data-workspace-toast="error"][data-visible="true"]').count()).toBe(0)
+      await conflict.scrollIntoViewIfNeeded()
+      await page.screenshot({ path: testInfo.outputPath('restore-stale-review.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, 'stale restore review', '[role="dialog"][aria-label="Permission Registry History"]')
+      expect(await (await request.get(`${apiBase}/settings/operators`)).json()).toEqual(before)
+      expect(await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()).toEqual(versions)
+      await expect(restore).toBeEnabled()
+      await restore.scrollIntoViewIfNeeded()
+      await restore.click()
+      await expect(confirmation).toContainText('Preview: 0 identities added, 1 removed, 1 changed.')
+      await page.screenshot({ path: testInfo.outputPath('restore-fresh-review.png'), animations: 'disabled' })
+      const applied = page.waitForResponse(response => response.url().endsWith(endpoint) && response.request().postDataJSON()?.preview !== true)
+      await confirmation.getByRole('button', { name: 'Restore identities', exact: true }).click()
+      expect((await applied).ok()).toBeTruthy()
+      await expect(page.getByText('Identity revision restored', { exact: true })).toBeVisible()
+      const after = await (await request.get(`${apiBase}/settings/operators`)).json()
+      expect(after.some((row: any) => row.username === peerName)).toBe(false)
+      expect(after.find((row: any) => row.id === data.operator.id)).toMatchObject(data.original)
+      const recorded = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
+      expect(recorded).toHaveLength(versions.length + 1)
+      expect(recorded[0].diff_summary).toMatchObject({ added: 0, removed: 1, changed: 1 })
+      expect(previews).toEqual([{ preview: true }, { preview: true }])
+      expect(applies).toHaveLength(2)
+      expect(applies.every(body => /^[0-9a-f]{64}$/.test(body.expected_fingerprint))).toBe(true)
+      expect(applies[0].expected_fingerprint).not.toBe(applies[1].expected_fingerprint)
+      expect(errors).toEqual([])
+      await testInfo.attach('restore-review-facts', { body: JSON.stringify({ previews, applies, recordedSummary: recorded[0].diff_summary, errors, rejectedStatus: 409 }), contentType: 'application/json' })
+    })
+  }
+}
+
+for (const invalidPreview of ['denied', 'unverifiable']) {
+  test(`identity restore stops before confirmation when preview is ${invalidPreview}`, async ({ page, sysApi: request }) => {
+    await resetBrowserState(page)
+    const data = await prepareHistory(request)
+    const before = await (await request.get(`${apiBase}/settings/operators`)).json()
+    const versions = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
+    const endpoint = `/settings/user-pool/restore/${data.source.id}`
+    let writes = 0
+    await page.route(`**${endpoint}`, async route => {
+      expect(route.request().postDataJSON()).toEqual({ preview: true })
+      await route.fulfill(invalidPreview === 'denied'
+        ? { status: 403, json: { detail: 'Restore preview authority revoked' } }
+        : { json: { summary: { added: 0, removed: 0, changed: 1 }, fingerprint: 'unverifiable' } })
+    })
+    page.on('request', req => { if (req.url().endsWith(endpoint) && req.method() === 'POST' && req.postDataJSON()?.preview !== true) writes++ })
+    await page.goto('/settings?tab=permissions')
+    await page.getByRole('button', { name: 'Revision History', exact: true }).click()
+    const history = page.getByRole('dialog', { name: 'Permission Registry History', exact: true })
+    const restore = history.getByRole('button', { name: `Restore identity revision ${data.sourceNumber}`, exact: true })
+    await restore.click()
+    await expect(history.getByRole('alert')).toContainText(invalidPreview === 'denied' ? 'Restore preview authority revoked' : 'The restore preview could not be verified')
+    await expect(restore).toBeEnabled()
+    expect(await page.getByRole('dialog', { name: 'Restore identity revision?', exact: true }).count()).toBe(0)
+    expect(writes).toBe(0)
+    expect(await (await request.get(`${apiBase}/settings/operators`)).json()).toEqual(before)
+    expect(await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()).toEqual(versions)
+  })
 }

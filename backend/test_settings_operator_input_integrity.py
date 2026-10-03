@@ -706,6 +706,149 @@ async def field_restore_fixture(c, setup_db, *, payload=None, omitted=()):
 
 
 @pytest.mark.asyncio
+async def test_restore_preview_rolls_back_staged_changes_and_guards_repeated_apply(operator_scope, setup_db):
+    c = operator_scope
+    version_id, _, _ = await field_restore_fixture(c, setup_db)
+    endpoint = f'/api/v1/settings/user-pool/restore/{version_id}'
+    before = await snapshot(c, setup_db)
+    preview = await c['client'].post(endpoint, headers=c['headers'], json={'preview': True})
+    assert preview.status_code == 200, preview.text
+    data = preview.json()
+    assert data['summary'] == {'added': 0, 'removed': 0, 'changed': 1}
+    assert len(data['fingerprint']) == 64
+    assert await snapshot(c, setup_db) == before
+    repeated = await c['client'].post(endpoint, headers=c['headers'], json={'preview': True})
+    assert repeated.status_code == 200 and repeated.json() == data
+    assert await snapshot(c, setup_db) == before
+    applied = await c['client'].post(endpoint, headers=c['headers'], json={'expected_fingerprint': data['fingerprint']})
+    assert applied.status_code == 200, applied.text
+    after = await snapshot(c, setup_db)
+    assert len(after[models.UserPoolVersion.__tablename__]) == len(before[models.UserPoolVersion.__tablename__]) + 1
+    assert next(row for row in after[models.Operator.__tablename__] if row['id'] == c['ids'][0])['full_name'] == 'Earlier staged field restore'
+    duplicate = await c['client'].post(endpoint, headers=c['headers'], json={'expected_fingerprint': data['fingerprint']})
+    assert duplicate.status_code == 409, duplicate.text
+    assert await snapshot(c, setup_db) == after
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('change', ['operator', 'new_identity', 'role', 'team', 'source', 'revision'])
+async def test_restore_rejects_changed_review_before_mutation(operator_scope, setup_db, change):
+    from copy import deepcopy
+
+    c = operator_scope
+    version_id, _, _ = await field_restore_fixture(c, setup_db)
+    endpoint = f'/api/v1/settings/user-pool/restore/{version_id}'
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        db.add(models.Role(name='Unassigned reviewed role', permissions={'assets': 1}))
+        db.add(models.Team(name='Reviewed team'))
+        await db.commit()
+    preview = await c['client'].post(endpoint, headers=c['headers'], json={'preview': True})
+    assert preview.status_code == 200, preview.text
+    fingerprint = preview.json()['fingerprint']
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        if change == 'operator':
+            (await db.get(models.Operator, c['ids'][1])).full_name = 'Peer changed after review'
+        elif change == 'new_identity':
+            db.add(models.Operator(external_id='new-after-review', username='new-after-review', is_admin=False))
+        elif change == 'role':
+            (await db.scalar(select(models.Role).where(models.Role.name == 'Unassigned reviewed role'))).permissions = {'assets': 3}
+        elif change == 'team':
+            (await db.scalar(select(models.Team).where(models.Team.name == 'Reviewed team'))).name = 'Renamed after review'
+        elif change == 'source':
+            version = await db.get(models.UserPoolVersion, version_id)
+            records = deepcopy(version.snapshot_data)
+            records[0]['full_name'] = 'Different source content'
+            version.snapshot_data = records
+        else:
+            db.add(models.UserPoolVersion(version_label='new-after-review', snapshot_data=[], diff_summary={}, created_by='fixture'))
+        await db.commit()
+    before = await snapshot(c, setup_db)
+    rejected = await c['client'].post(endpoint, headers=c['headers'], json={'expected_fingerprint': fingerprint})
+    assert rejected.status_code == 409, rejected.text
+    assert rejected.json()['detail'] == 'Identity data or restore source changed. Preview again before restoring.'
+    assert await snapshot(c, setup_db) == before
+    reviewed = await c['client'].post(endpoint, headers=c['headers'], json={'preview': True})
+    assert reviewed.status_code == 200 and reviewed.json()['fingerprint'] != fingerprint
+    assert await snapshot(c, setup_db) == before
+    accepted = await c['client'].post(endpoint, headers=c['headers'], json={'expected_fingerprint': reviewed.json()['fingerprint']})
+    assert accepted.status_code == 200, accepted.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('payload', [{'preview': 'true'}, {'preview': None}, {'expected_fingerprint': None},
+    {'expected_fingerprint': 5}, {'expected_fingerprint': 'a' * 63}, {'expected_fingerprint': 'G' * 64}])
+async def test_restore_review_rejects_malformed_preconditions_atomically(operator_scope, setup_db, payload):
+    c = operator_scope
+    version_id, _, _ = await field_restore_fixture(c, setup_db)
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'], json=payload)
+    assert response.status_code == 422, response.text
+    assert next(iter(payload)) in response.json()['detail']['field_errors']
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+async def test_restore_review_is_bound_to_the_actor(operator_scope, setup_db):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        db.add(models.Operator(external_id='other-reviewer', username='other-reviewer', is_admin=True))
+        await db.commit()
+    await _grant_access(setup_db, tenant_id=c['tenant'], user_id='other-reviewer', role='ADMIN')
+    version_id, _, _ = await field_restore_fixture(c, setup_db)
+    endpoint = f'/api/v1/settings/user-pool/restore/{version_id}'
+    preview = await c['client'].post(endpoint, headers=c['headers'], json={'preview': True})
+    assert preview.status_code == 200, preview.text
+    before = await snapshot(c, setup_db)
+    other = await c['client'].post(endpoint, headers={**c['headers'], 'X-User-Id': 'other-reviewer'},
+        json={'expected_fingerprint': preview.json()['fingerprint']})
+    assert other.status_code == 409, other.text
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+async def test_restore_preview_failure_rolls_back_earlier_staged_changes(operator_scope, setup_db):
+    c = operator_scope
+    version_id, _, _ = await field_restore_fixture(c, setup_db, payload={'full_name': ['invalid legacy name']})
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'], json={'preview': True})
+    assert response.status_code == 422, response.text
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+async def test_restore_review_serializes_competing_confirmations(operator_scope, setup_db, monkeypatch):
+    from app.api import authorization
+
+    c = operator_scope
+    version_id, _, _ = await field_restore_fixture(c, setup_db)
+    endpoint = f'/api/v1/settings/user-pool/restore/{version_id}'
+    preview = await c['client'].post(endpoint, headers=c['headers'], json={'preview': True})
+    assert preview.status_code == 200, preview.text
+    fingerprint = preview.json()['fingerprint']
+    before = await snapshot(c, setup_db)
+    ready, sessions = asyncio.Event(), set()
+    original = authorization.resolve_current_operator
+    async def synchronize_initial_authorization(request, db):
+        result = await original(request, db)
+        if db not in sessions:
+            sessions.add(db)
+            if len(sessions) == 2:
+                ready.set()
+            await asyncio.wait_for(ready.wait(), 5)
+        return result
+    monkeypatch.setattr(authorization, 'resolve_current_operator', synchronize_initial_authorization)
+    responses = await asyncio.wait_for(asyncio.gather(*[
+        c['client'].post(endpoint, headers=c['headers'], json={'expected_fingerprint': fingerprint}) for _ in range(2)
+    ], return_exceptions=True), 10)
+    assert not any(isinstance(response, BaseException) for response in responses), [repr(response) for response in responses]
+    assert sorted(response.status_code for response in responses) == [200, 409], [response.text for response in responses]
+    after = await snapshot(c, setup_db)
+    versions = after[models.UserPoolVersion.__tablename__]
+    assert len(versions) == len(before[models.UserPoolVersion.__tablename__]) + 1
+    assert sum(row['is_active'] for row in versions) == 1
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('field,value', [
     *[(field, value) for field in ['full_name', 'email', 'department', 'team', 'team_source', 'registration_status']
       for value in [False, 1, 1.5, [], {}]],
