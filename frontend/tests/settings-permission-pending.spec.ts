@@ -19,7 +19,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     const original = { is_admin: operator.is_admin, custom_permissions: operator.custom_permissions }
     try {
       expect((await request.patch(`${apiBase}/settings/operators/${operator.id}`, { data: {
-        is_admin: false, custom_permissions: { ...operator.custom_permissions, settings: 3, racks: 0 },
+        is_admin: false, custom_permissions: { ...operator.custom_permissions, all: 0, settings: 3, racks: 0 },
       } })).ok()).toBeTruthy()
       await page.goto('/settings?tab=permissions')
       await page.getByPlaceholder('Search identity, department, or team...').fill(operator.username)

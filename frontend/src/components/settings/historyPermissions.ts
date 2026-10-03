@@ -38,12 +38,17 @@ export function hasCompleteHistoryPermissions(operator: PermissionHistoryRecord)
   return permissionMap(operator.role_permissions) !== null && permissionMap(operator.custom_permissions) !== null
 }
 
-export function recordedPermissionLevel(operator: PermissionHistoryRecord | null, capability: string): number | null {
-  if (!operator || capability.toLowerCase().startsWith('system.')) return 0
-  if (!hasCompleteHistoryPermissions(operator)) return null
-  if (operator.is_admin === true) return 3
+export function recordedPermissionState(operator: PermissionHistoryRecord | null, capability: string): { level: number | null; global: number | null } {
+  if (!operator || capability.toLowerCase().startsWith('system.')) return { level: 0, global: 0 }
+  if (!hasCompleteHistoryPermissions(operator)) return { level: null, global: null }
+  if (operator.is_admin === true) return { level: 3, global: 3 }
   const permissions = new Map([...permissionMap(operator.role_permissions)!, ...permissionMap(operator.custom_permissions)!])
-  return Math.max(permissions.get(capability) ?? 0, permissions.get('all') ?? 0)
+  const global = permissions.get('all') ?? 0
+  return { level: Math.max(permissions.get(capability) ?? 0, global), global }
+}
+
+export function recordedPermissionLevel(operator: PermissionHistoryRecord | null, capability: string): number | null {
+  return recordedPermissionState(operator, capability).level
 }
 
 export function historyPermissionViews(views: string[], ...operators: Array<PermissionHistoryRecord | null>): string[] {

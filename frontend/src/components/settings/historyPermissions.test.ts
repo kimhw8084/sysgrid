@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { formatRecordedPermissions, hasCompleteHistoryPermissions, historyPermissionViews, normalizeHistoryPermissionLevel, recordedPermissionLevel } from './historyPermissions'
+import { formatRecordedPermissions, hasCompleteHistoryPermissions, historyPermissionViews, normalizeHistoryPermissionLevel, recordedPermissionLevel, recordedPermissionState } from './historyPermissions'
 
 const standard = { is_admin: false, role_id: null, role_permissions: {}, custom_permissions: {} }
 
 describe('recorded tenant permission semantics', () => {
+  it.each([
+    [{ all: 1, assets: 0 }, { level: 1, global: 1 }],
+    [{ all: 0, assets: 0 }, { level: 0, global: 0 }],
+    [{ assets: 0 }, { level: 3, global: 3 }],
+    [{ all: 1, assets: 3 }, { level: 3, global: 1 }],
+  ])('exposes the global minimum after custom overrides: %s', (custom_permissions, expected) => {
+    expect(recordedPermissionState({ ...standard, role_id: 7, role_permissions: { all: 3 }, custom_permissions }, 'assets')).toEqual(expected)
+  })
   it.each([
     [true, 1], [false, 0], [' READ ', 1], ['Write', 2], [' add ', 2], ['MANAGE', 3],
     ['edit', 3], ['FULL', 3], ['admin', 3], ['none', 0], ['3', 0],

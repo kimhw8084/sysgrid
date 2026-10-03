@@ -39,7 +39,7 @@ import {
   type SettingsTab,
 } from "./settings/settingsPrivilegePolicy"
 import { normalizeTheme } from './shared/theme'
-import { formatRecordedPermissions, hasCompleteHistoryPermissions, historyPermissionViews, normalizeHistoryPermissionLevel, recordedPermissionLevel } from './settings/historyPermissions'
+import { formatRecordedPermissions, hasCompleteHistoryPermissions, historyPermissionViews, normalizeHistoryPermissionLevel, recordedPermissionLevel, recordedPermissionState } from './settings/historyPermissions'
 
 const PERMISSION_COMMIT_DEBOUNCE_MS = 900
 
@@ -137,37 +137,38 @@ const ToggleSwitch = ({ checked, onChange, disabled, label, activeColor = 'bg-bl
     </label>
 )
 
-const ViewPermissionIcon = ({ level, onClick, isGlobalAdmin, label: accessibleLabel }: any) => {
+const ViewPermissionIcon = ({ level, globalLevel, onClick, isGlobalAdmin, label: accessibleLabel }: any) => {
+    const descriptionId = React.useId()
     const colors = [
         "bg-[var(--surface-hover)] text-[var(--text-secondary)] border-[var(--grid-border)]",
-        "bg-[var(--state-info-surface)] text-[var(--state-info)] border-[var(--state-info-border)]",
+        "bg-[var(--state-info-surface)] text-[var(--text-primary)] border-[var(--state-info-border)]",
         "bg-[var(--state-warning-surface)] text-[var(--text-primary)] border-[var(--state-warning-border)]",
-        "bg-[var(--state-success-surface)] text-[var(--state-success)] border-[var(--state-success-border)]"
+        "bg-[var(--state-success-surface)] text-[var(--text-primary)] border-[var(--state-success-border)]"
     ];
     
-    let numericLevel = 0;
-    if (typeof level === 'number') numericLevel = level;
-    else if (level === 'read') numericLevel = 1;
-    else if (level === 'add') numericLevel = 2;
-    else if (level === 'edit' || level === 'manage') numericLevel = 3;
-    
-    numericLevel = Math.min(3, Math.max(0, Math.floor(numericLevel || 0)));
+    const numericLevel = normalizeHistoryPermissionLevel(level);
     const colorClass = colors[numericLevel];
     
     const labels = ["NONE", "READ", "WRITE", isGlobalAdmin ? "ADMIN" : "FULL"];
-    const label = labels[numericLevel];
+    const label = level === null ? 'UNKNOWN' : labels[numericLevel];
+    const globalLabel = ['None', 'Read', 'Write', 'Full'][globalLevel ?? 0];
+    const description = level === null ? 'Review permission data' : !isGlobalAdmin && globalLevel > 0 ? `Global: ${globalLabel}` : null;
 
     return (
+      <div className="flex flex-col items-center gap-1">
         <button 
             type="button"
             aria-label={`${accessibleLabel}: ${label}`}
-            disabled={isGlobalAdmin}
+            aria-describedby={description ? descriptionId : undefined}
+            disabled={isGlobalAdmin || globalLevel === 3 || level === null}
             onClick={onClick}
-            className={`px-2 py-1 min-h-9 rounded-lg border text-[10px] font-semibold tracking-wide transition-colors hover:bg-[var(--surface-hover)] w-16 text-center disabled:cursor-default ${colorClass}`}
-            title={label}
+            className={`px-2 py-1 min-h-9 rounded-lg border text-xs font-semibold tracking-wide transition-colors hover:bg-[var(--surface-hover)] min-w-16 text-center disabled:cursor-default ${colorClass}`}
+            title={level === null ? 'Permission data is incomplete or invalid. Review grants before editing.' : !isGlobalAdmin && globalLevel > 0 ? `Global grants provide at least ${globalLabel} access. Per-module changes cannot reduce that grant.` : label}
         >
             {label}
         </button>
+        {description && <span id={descriptionId} className="text-xs text-[var(--text-secondary)]">{description}</span>}
+      </div>
     )
 }
 
@@ -1900,15 +1901,12 @@ export default function SettingsPage() {
     }
   }, [teams, selectedTeamId])
 
-  const getPermLevel = (op: any, view: string) => {
-    const perms = { ...(op.role?.permissions || {}), ...(op.custom_permissions || {}) };
-    const val = perms?.[view] ?? perms?.['all'] ?? 0;
-    if (typeof val === 'number') return val;
-    if (val === 'read') return 1;
-    if (val === 'add') return 2;
-    if (val === 'edit' || val === 'manage') return 3;
-    return 0;
-  }
+  const getPermState = (op: any, view: string) => recordedPermissionState({
+    is_admin: op.is_admin,
+    role_id: op.role_id ?? null,
+    role_permissions: op.role?.permissions ?? {},
+    custom_permissions: op.custom_permissions,
+  }, view)
 
   const togglePermission = async (op: any, view: string) => {
     const queuedPayload = permissionCommitBufferRef.current[op.id]?.payload
@@ -1921,15 +1919,15 @@ export default function SettingsPage() {
       : op
 
     // Admin Lock-out Protection
+    const { level: current, global: minimum } = getPermState(workingOperator, view)
+    if (current === null || minimum === null || minimum === 3) return
     if (workingOperator.username === userProfile?.username && view === 'settings') {
-        const current = getPermLevel(workingOperator, view);
         if (current === 3 && !await confirmWorkspaceAction({ title: 'Change your Settings access', message: 'Reducing your own Settings permission may lock you out of this console.', confirmText: 'Change access', variant: 'warning' })) {
             return;
         }
     }
 
-    const current = getPermLevel(workingOperator, view);
-    const next = (current + 1) % 4;
+    const next = current === 3 ? minimum : current + 1;
     
     // Always persist as numeric for simplicity in this update
     const newPerms = { ...(workingOperator.custom_permissions || {}), [view]: next };
@@ -2752,6 +2750,9 @@ export default function SettingsPage() {
                </AnimatePresence>
 
                <div className="rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] overflow-hidden">
+                  <p data-permission-grant-help className="border-b border-[var(--border-default)] px-4 py-3 text-xs text-[var(--text-secondary)]">
+                    Levels show tenant grants; module policy may further restrict access. Global grants set the minimum level for every module.
+                  </p>
                   <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                       <thead>
@@ -2846,18 +2847,22 @@ export default function SettingsPage() {
                                 />
                               </div>
                             </td>
-                            {allViews.map(view => (
+                            {allViews.map(view => {
+                              const permission = getPermState(op, view)
+                              return (
                               <td key={view} className="p-1 text-center border-x border-white/[0.02] align-middle">
                                 <div className="flex items-center justify-center min-h-[40px]" onClick={(e) => e.stopPropagation()}>
                                   <ViewPermissionIcon 
                                     label={`${view} permission for ${op.username}`}
-                                    level={op.is_admin ? 3 : getPermLevel(op, view)}
+                                    level={permission.level}
+                                    globalLevel={permission.global}
                                     onClick={() => !op.is_admin && togglePermission(op, view)}
                                     isGlobalAdmin={op.is_admin}
                                   />
                                 </div>
                               </td>
-                            ))}
+                              )
+                            })}
                             <td className="p-4 text-center align-middle">
                               {op.username !== userProfile?.username ? (
                                 <SameButtonConfirm 
