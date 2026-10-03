@@ -834,6 +834,10 @@ export default function SettingsPage() {
   const permissionSelectionAnchorRef = React.useRef<number | null>(null)
   const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any, finishWrite: () => void }>>({})
   const [pendingPermissionWrites, setPendingPermissionWrites] = useState(0)
+  const [bulkPhase, setBulkPhase] = useState<'confirming' | 'saving' | null>(null)
+  const bulkBusyRef = React.useRef(false)
+  const bulkBusy = bulkPhase !== null
+  const [bulkError, setBulkError] = useState('')
   const {
     triggerRef: permissionBulkTriggerRef,
     panelRef: permissionBulkPanelRef,
@@ -1123,7 +1127,7 @@ export default function SettingsPage() {
     })
   }
 
-  const settingsWritePending = pendingPermissionWrites > 0 || syncBusy
+  const settingsWritePending = pendingPermissionWrites > 0 || syncBusy || bulkBusy
   const settingsBlocker = useBlocker(settingsWritePending || syncDraftDirty)
   const departurePromptPending = React.useRef(false)
   usePageLeaveGuard(settingsWritePending || syncDraftDirty)
@@ -1396,6 +1400,7 @@ export default function SettingsPage() {
   })
 
   const bulkOperatorPatchMutation = useMutation({
+    retry: false,
     mutationFn: async ({ updates }: { updates: Array<{ id: number, payload: any }> }) => {
       const res = await apiFetch(`/api/v1/settings/operators/bulk-update`, {
         method: "POST",
@@ -1404,17 +1409,16 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['operators'] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
-      queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
-      if (selectedTeamId) queryClient.invalidateQueries({ queryKey: ['team-audit', selectedTeamId] })
+    onSuccess: async () => {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
       setSelectedOperatorIds([])
       showWorkspaceToast("Identity updates applied")
     }
   })
 
   const bulkOperatorDeleteMutation = useMutation({
+    retry: false,
     mutationFn: async (ids: number[]) => {
       const res = await apiFetch(`/api/v1/settings/operators/bulk-delete`, {
         method: "POST",
@@ -1422,10 +1426,9 @@ export default function SettingsPage() {
       })
       if (!res.ok) throw new Error(await res.text())
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['operators'] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
-      queryClient.invalidateQueries({ queryKey: ['user-pool-versions'] })
+    onSuccess: async () => {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
       setSelectedOperatorIds([])
       showWorkspaceToast("Selected identities removed")
     }
@@ -1573,6 +1576,7 @@ export default function SettingsPage() {
   }
 
   const handleOperatorSelection = (id: number, event?: { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean }) => {
+    if (bulkBusyRef.current) return
     const visibleIds = filteredOperators.map((op: any) => op.id)
     const anchorId = permissionSelectionAnchorRef.current ?? id
     const isRangeSelection = Boolean(event?.shiftKey)
@@ -1602,9 +1606,32 @@ export default function SettingsPage() {
     setPermissionBulkDeleteConfirm(false)
   }
 
+  const runBulkOperatorWrite = async (write: () => Promise<unknown>, phase: 'confirming' | 'saving' = 'saving') => {
+    if (bulkBusyRef.current) return
+    let finishWrite: () => void
+    try { finishWrite = beginScopedWrite(false) } catch (error) {
+      setBulkError((error as Error).message)
+      return
+    }
+    bulkBusyRef.current = true
+    setBulkPhase(phase)
+    setBulkError('')
+    try {
+      await write()
+    } catch (error) {
+      await Promise.all(['operators', 'teams', 'user-pool-versions', 'team-audit', 'user-profile'].map(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })))
+      setBulkError(`${(error as Error).message} Review the current identities before trying again.`)
+    } finally {
+      finishWrite()
+      bulkBusyRef.current = false
+      setBulkPhase(null)
+    }
+  }
+
   const assignSelectedOperatorsToFocusedGroup = () => {
     if (!bulkGroupTarget || selectedOperators.length === 0) return
-    bulkOperatorPatchMutation.mutate({
+    void runBulkOperatorWrite(() => bulkOperatorPatchMutation.mutateAsync({
       updates: selectedOperators.map((op: any) => ({
         id: op.id,
         payload: {
@@ -1612,12 +1639,12 @@ export default function SettingsPage() {
           team_source: 'manual_override'
         }
       }))
-    })
+    }))
   }
 
   const removeSelectedOperatorsFromFocusedGroup = () => {
     if (!bulkGroupTarget || selectedOperators.length === 0) return
-    bulkOperatorPatchMutation.mutate({
+    void runBulkOperatorWrite(() => bulkOperatorPatchMutation.mutateAsync({
       updates: selectedOperators.map((op: any) => ({
         id: op.id,
         payload: {
@@ -1625,20 +1652,20 @@ export default function SettingsPage() {
           team_source: 'manual_override'
         }
       }))
-    })
+    }))
   }
 
   const bulkSetAdminState = (isAdmin: boolean) => {
     if (selectedOperators.length === 0) return
-    bulkOperatorPatchMutation.mutate({
+    void runBulkOperatorWrite(() => bulkOperatorPatchMutation.mutateAsync({
       updates: selectedOperators.map((op: any) => ({
         id: op.id,
         payload: { is_admin: isAdmin }
       }))
-    })
+    }))
   }
 
-  const bulkDeleteSelectedOperators = async () => {
+  const bulkDeleteSelectedOperators = () => {
     const deletableIds = selectedOperators
       .filter((op: any) => op.username !== userProfile?.username)
       .map((op: any) => op.id)
@@ -1646,8 +1673,11 @@ export default function SettingsPage() {
       showWorkspaceToast("Protected identities cannot be removed", { type: 'error' })
       return
     }
-    if (!await confirmWorkspaceAction({ title: 'Delete identities', message: `Delete ${deletableIds.length} selected identities? Their access will be removed.`, confirmText: 'Delete identities', variant: 'danger' })) return
-    bulkOperatorDeleteMutation.mutate(deletableIds)
+    void runBulkOperatorWrite(async () => {
+      if (!await confirmWorkspaceAction({ title: 'Delete identities', message: `Delete ${deletableIds.length} selected identities? Their access will be removed.`, confirmText: 'Delete identities', variant: 'danger' })) return
+      setBulkPhase('saving')
+      await bulkOperatorDeleteMutation.mutateAsync(deletableIds)
+    }, 'confirming')
   }
 
   const toggleTeamFilter = (teamName: string) => {
@@ -1801,6 +1831,16 @@ export default function SettingsPage() {
       {syncBusy && (
         <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
           {poolMutation.variables?.preview ? 'Preparing synchronization preview' : 'Applying identity records'}. Stay on this page until the request finishes.
+        </p>
+      )}
+      {bulkBusy && (
+        <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          {bulkPhase === 'confirming' ? 'Review the identity deletion. Finish or cancel confirmation before leaving.' : 'Saving bulk identity changes. Stay on this page until the save finishes.'}
+        </p>
+      )}
+      {bulkError && (
+        <p role="alert" className="shrink-0 rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] px-4 py-3 text-sm text-[var(--state-danger)]">
+          {bulkError}
         </p>
       )}
       <AnimatePresence>
@@ -2413,6 +2453,7 @@ export default function SettingsPage() {
                              <p className="pt-1 text-xs font-semibold text-[var(--text-primary)]">{selectedOperatorIds.length} {selectedOperatorIds.length === 1 ? 'identity' : 'identities'} selected</p>
                            </div>
 
+                           <fieldset disabled={bulkBusy} className="min-w-0 border-0 p-0 m-0">
                            <div className="space-y-2">
                              <WorkspaceFlyoutActionCard
                                title="Assign Group"
@@ -2494,6 +2535,7 @@ export default function SettingsPage() {
                                {permissionBulkDeleteConfirm ? 'Confirm Identity Deletion?' : 'Delete Selection'}
                              </p>
                            </button>
+                           </fieldset>
                          </WorkspaceFloatingPanel>
                        </div>
                      </motion.div>
@@ -2626,6 +2668,7 @@ export default function SettingsPage() {
                                 <input
                                   type="checkbox"
                                   aria-label={`Select ${op.username}`}
+                                  disabled={bulkBusy}
                                   readOnly
                                   checked={isSelected}
                                   onClick={(event) => {
@@ -2640,6 +2683,7 @@ export default function SettingsPage() {
                               <button
                                 type="button"
                                 aria-pressed={isSelected}
+                                disabled={bulkBusy}
                                 onClick={(event) => handleOperatorSelection(op.id, event)}
                                 className="flex w-full items-center gap-3 text-left"
                               >
