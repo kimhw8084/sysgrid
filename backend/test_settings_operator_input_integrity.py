@@ -132,7 +132,7 @@ async def test_settings_reader_cannot_reach_privilege_mutations(operator_scope, 
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('operation', ['patch', 'bulk'])
+@pytest.mark.parametrize('operation', ['patch', 'bulk', 'upsert'])
 @pytest.mark.parametrize('assignment', ['omitted', 'same', 'clear', 'new'])
 async def test_grouped_operator_edits_load_and_preserve_team_authority(operator_scope, setup_db, operation, assignment):
     c = operator_scope
@@ -170,7 +170,7 @@ async def test_grouped_operator_edits_load_and_preserve_team_authority(operator_
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('operation', ['patch', 'bulk'])
+@pytest.mark.parametrize('operation', ['patch', 'bulk', 'upsert'])
 @pytest.mark.parametrize('source', ['synced', 'manual', 'manual_override', None])
 @pytest.mark.parametrize('payload', [{}, {'is_admin': False}, {'custom_permissions': {'racks': 2}}, {'full_name': 'Updated name'}])
 async def test_partial_operator_updates_preserve_omitted_team_source(operator_scope, setup_db, operation, source, payload):
@@ -196,7 +196,7 @@ async def test_partial_operator_updates_preserve_omitted_team_source(operator_sc
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('operation', ['patch', 'bulk'])
+@pytest.mark.parametrize('operation', ['patch', 'bulk', 'upsert'])
 @pytest.mark.parametrize('assignment', ['same', 'clear', 'new', 'explicit-source'])
 async def test_explicit_operator_team_changes_retain_source_authority(operator_scope, setup_db, operation, assignment):
     c = operator_scope
@@ -216,4 +216,70 @@ async def test_explicit_operator_team_changes_retain_source_authority(operator_s
     assert response.status_code == 200, response.text
     async with _tenant_db(setup_db, c['tenant']) as db:
         row = await db.get(models.Operator, c['ids'][0])
-        assert row.team_source == ('manual' if assignment in ['clear', 'explicit-source'] else 'manual_override')
+        assert row.team_source == ('manual' if operation == 'upsert' or assignment in ['clear', 'explicit-source'] else 'manual_override')
+        if assignment == 'clear':
+            assert row.team_id is None and row.team is None
+        elif assignment == 'new':
+            assert row.team_id != team_id and row.team == 'Manual team'
+        else:
+            assert row.team_id == team_id and row.team == 'Directory owned team'
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('assignment', ['omitted', 'same', 'clear', 'new', 'create'])
+async def test_operator_upsert_records_only_actual_primary_team_transitions(operator_scope, setup_db, assignment):
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Original team')
+        db.add(team)
+        await db.flush()
+        row = await db.get(models.Operator, c['ids'][0])
+        row.team_id, row.team, row.teams, row.team_source = team.id, team.name, [team.name], 'manual'
+        await db.commit()
+        team_id = team.id
+    before = await snapshot(c, setup_db)
+    payload = {
+        'omitted': {}, 'same': {'team_id': team_id}, 'clear': {'team_id': None},
+        'new': {'team': 'Replacement team'}, 'create': {'team_id': team_id},
+    }[assignment]
+    response = await write_operator(c, 'create' if assignment == 'create' else 'upsert', payload)
+    assert response.status_code == 200, response.text
+    if assignment in ['omitted', 'same']:
+        assert await snapshot(c, setup_db) == before
+        return
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        audits = (await db.scalars(select(models.TeamAudit).order_by(models.TeamAudit.id))).all()
+        expected = ['member_removed', 'member_added'] if assignment == 'new' else ['member_removed'] if assignment == 'clear' else ['member_added']
+        assert [row.action for row in audits] == expected
+        assert all(row.actor == 'admin_root' for row in audits)
+        if assignment in ['clear', 'new']:
+            assert audits[0].team_id == team_id
+        if assignment == 'new':
+            assert audits[1].team_id != team_id
+        versions = (await db.scalars(select(models.UserPoolVersion))).all()
+        assert len(versions) == 1
+        summary = versions[0].diff_summary
+        assert summary['added'] == (1 if assignment == 'create' else 0)
+        assert summary['changed'] == (0 if assignment == 'create' else 1)
+        assert summary['removed'] == 0 and summary['team_updates']
+        if assignment != 'create':
+            transition = next(item for item in summary['team_updates'] if item['mode'] == 'primary_team_changed')
+            assert transition['old'] == 'Original team'
+            assert transition['new'] == (None if assignment == 'clear' else 'Replacement team')
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['create', 'upsert'])
+async def test_operator_upsert_rolls_back_team_and_audit_when_version_creation_fails(operator_scope, setup_db, monkeypatch, operation):
+    from fastapi import HTTPException
+    from app.api import settings as settings_api
+
+    async def fail_version(*args, **kwargs):
+        raise HTTPException(503, 'Controlled version write failure')
+
+    c = operator_scope
+    before = await snapshot(c, setup_db)
+    monkeypatch.setattr(settings_api, 'create_user_pool_version', fail_version)
+    response = await write_operator(c, operation, {'team': 'Rejected team', 'full_name': 'Rejected name'})
+    assert response.status_code == 503, response.text
+    assert await snapshot(c, setup_db) == before

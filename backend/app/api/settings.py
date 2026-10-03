@@ -630,6 +630,7 @@ async def apply_operator_patch(
     op: models.Operator,
     data: dict,
     user_id: str,
+    default_team_source: str = "manual_override",
 ) -> dict:
     validate_operator_admin_flag(data)
     previous_state = canonical_operator_state(op)
@@ -649,7 +650,7 @@ async def apply_operator_patch(
             db,
             team_id=data.get("team_id"),
             team_name=data.get("team"),
-            source=data.get("team_source") or "manual_override",
+            source=data.get("team_source") or default_team_source,
             create_missing=bool(data.get("team"))
         )
 
@@ -659,7 +660,7 @@ async def apply_operator_patch(
     if "username" in data:
         patch_payload["username"] = next_username
     previous_team_source = op.team_source
-    apply_operator_canonicalization(op, team=team, payload=patch_payload, default_source="manual_override")
+    apply_operator_canonicalization(op, team=team, payload=patch_payload, default_source=default_team_source)
     if not {"team", "team_id", "team_source"}.intersection(data):
         op.team_source = previous_team_source
     if "external_id" in patch_payload:
@@ -1492,35 +1493,30 @@ async def create_operator(
     res = await db.execute(select(models.Operator).filter(models.Operator.external_id == external_id))
     op = res.scalar_one_or_none()
     existing_operator = op is not None
-    if op:
-        await ensure_operator_identity_uniqueness(db, external_id=external_id, username=username, exclude_id=op.id)
-    else:
-        await ensure_operator_identity_uniqueness(db, external_id=external_id, username=username)
-    await resolve_role_assignment(db, data.get("role_id"))
-
-    team = await resolve_team_assignment(
-        db,
-        team_id=data.get("team_id"),
-        team_name=data.get("team"),
-        source=data.get("team_source") or "manual",
-        create_missing=bool(data.get("team"))
-    )
-
     user_id = get_current_user_id(request)
     reject_reserved_system_root_identity(
         {"external_id": external_id, "username": username, **data},
         actor_id=user_id,
     )
+    team = None
     if op:
-        previous_state = canonical_operator_state(op)
-        patch_payload = dict(data)
-        patch_payload["external_id"] = external_id
-        patch_payload["username"] = username
-        apply_operator_canonicalization(op, team=team, payload=patch_payload, default_source="manual")
-        current_state = canonical_operator_state(op)
-        has_semantic_change = previous_state != current_state
+        update_result = await apply_operator_patch(
+            db, op=op, data=data, user_id=user_id, default_team_source="manual",
+        )
+        has_semantic_change = update_result["changed"]
+        team_updates = update_result["team_updates"]
     else:
+        await ensure_operator_identity_uniqueness(db, external_id=external_id, username=username)
+        await resolve_role_assignment(db, data.get("role_id"))
+        team = await resolve_team_assignment(
+            db,
+            team_id=data.get("team_id"),
+            team_name=data.get("team"),
+            source=data.get("team_source") or "manual",
+            create_missing=bool(data.get("team"))
+        )
         has_semantic_change = True
+        team_updates = [{"external_id": external_id, "team": team.name, "mode": "member_added"}] if team else []
         clean_data = filter_valid_columns(models.Operator, {
             "username": username,
             "external_id": external_id,
@@ -1538,7 +1534,7 @@ async def create_operator(
         db.add(op)
     
     try:
-        if team:
+        if not existing_operator and team:
             await record_team_audit(db, team.id, "member_added", user_id, {"external_id": external_id, "username": op.username})
         
         if has_semantic_change:
@@ -1546,7 +1542,7 @@ async def create_operator(
                 "added": 0 if existing_operator else 1,
                 "removed": 0,
                 "changed": 1 if existing_operator else 0,
-                "team_updates": [{"external_id": external_id, "team": team.name, "mode": "member_added"}] if team else [],
+                "team_updates": team_updates,
             })
         await db.commit()
         await db.refresh(op)
