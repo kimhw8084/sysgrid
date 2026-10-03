@@ -91,6 +91,101 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const width of [1440, 390]) {
+    test(`permission history reports recorded role grants and legacy uncertainty in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 })
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+      const identity = (key: string, patch: Record<string, unknown> = {}) => ({
+        external_id: key, username: key, full_name: key, role_id: 7, role_name: 'Historical role',
+        is_admin: false, custom_permissions: {}, role_permissions: {}, ...patch,
+      })
+      const before = [
+        identity('Role only', { role_permissions: { assets: ' Read ' } }),
+        identity('Global grant', { role_permissions: { all: 0 } }),
+        identity('Override removed', { role_permissions: { assets: 2 }, custom_permissions: { assets: 0 } }),
+        identity('Latent override', { role_permissions: { all: 3 }, custom_permissions: { assets: 1 } }),
+        identity('Legacy role', { role_permissions: undefined }),
+        identity('Newly recorded', { role_permissions: undefined }),
+        identity('Extra capability', { role_permissions: { diagnostics: true } }),
+        identity('System restriction', { role_permissions: { 'system.tenants': 1 } }),
+        identity('Malformed grants', { custom_permissions: [] }),
+        identity('Ambiguous grants', { role_permissions: { assets: 1, ' assets ': 3 } }),
+      ]
+      const after = [
+        identity('Role only', { role_permissions: { assets: 'MANAGE' } }),
+        identity('Global grant', { role_permissions: { all: 2 } }),
+        identity('Override removed', { role_permissions: { assets: 2 } }),
+        identity('Latent override', { role_permissions: { all: 3 }, custom_permissions: { assets: 2 } }),
+        identity('Legacy role', { role_permissions: undefined, role_name: 'Another historical role' }),
+        identity('Newly recorded', { role_permissions: { assets: 2 } }),
+        identity('Extra capability', { role_permissions: { diagnostics: 3 } }),
+        identity('System restriction', { role_permissions: { 'system.tenants': 3 } }),
+        identity('Malformed grants'),
+        identity('Ambiguous grants'),
+      ]
+      const versions = [after, before].map((snapshot_data, index) => ({
+        id: 952 - index, created_at: `2026-10-0${2 - index}T12:00:00Z`,
+        created_by: 'History fixture', is_active: index === 0, snapshot_data,
+      }))
+      let restoreWrites = 0
+      const errors: string[] = []
+      page.on('request', req => { if (req.url().includes('/user-pool/restore/') && req.method() === 'POST') restoreWrites++ })
+      page.on('pageerror', error => errors.push(error.message))
+      await page.route('**/api/v1/settings/user-pool/versions', route => route.fulfill({ json: versions }))
+      await page.goto('/settings?tab=permissions')
+      await page.getByRole('button', { name: 'Revision History', exact: true }).click()
+      const history = page.getByRole('dialog', { name: 'Permission Registry History', exact: true })
+      await expect(history).toBeVisible()
+      const row = (name: string) => history.getByRole('row').filter({ has: page.getByText(name, { exact: true }).first() })
+      for (const [name, capability, oldLevel, newLevel] of [
+        ['Role only', 'assets', 'Read', 'Full'], ['Global grant', 'assets', 'None', 'Write'],
+        ['Override removed', 'assets', 'None', 'Write'], ['Newly recorded', 'assets', 'Unknown', 'Write'],
+        ['Extra capability', 'diagnostics', 'Read', 'Full'],
+        ['Ambiguous grants', 'assets', 'Unknown', 'None'],
+      ]) {
+        const item = row(name)
+        await expect(item).toHaveCount(1)
+        const changes = item.locator('details').filter({ has: page.locator('[data-permission-change]') })
+        await changes.locator('summary').click()
+        const change = changes.locator('[data-permission-change]').filter({ has: page.getByText(capability, { exact: true }) })
+        await expect(change).toContainText(oldLevel)
+        await expect(change).toContainText(newLevel)
+        await change.scrollIntoViewIfNeeded()
+        await expect(change).toBeInViewport({ ratio: 0.9 })
+        if (name === 'Newly recorded') {
+          await expect(changes.locator('summary')).toContainText('permission comparisons')
+          await page.screenshot({ path: testInfo.outputPath('history-role-uncertainty.png'), animations: 'disabled' })
+          await expectReadableGridText(page, testInfo, 'history recorded grants', '[data-workspace-history]')
+        }
+      }
+      const latent = row('Latent override')
+      await expect(latent).toHaveCount(1)
+      await expect(latent.locator('[data-permission-change]')).toHaveCount(0)
+      const source = latent.locator('[data-permission-source-change]')
+      await source.locator('summary').click()
+      await expect(source).toContainText('Custom overrides')
+      await expect(source).toContainText('"assets": 1')
+      await expect(source).toContainText('"assets": 2')
+      await expect(row('System restriction').locator('[data-permission-change]')).toHaveCount(0)
+      await expect(row('Legacy role')).toContainText('Permission comparison unavailable')
+      await expect(history.getByRole('alert')).toContainText('Historical permission data is incomplete')
+      await expect(history).toContainText('Restore uses current role definitions')
+      const body = await history.locator('[data-workspace-modal-body]').evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth }))
+      expect(body.scroll - body.client).toBeLessThanOrEqual(1)
+      await source.scrollIntoViewIfNeeded()
+      await page.screenshot({ path: testInfo.outputPath('history-role-source.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, 'history grant sources', '[data-workspace-history]')
+      expect(restoreWrites).toBe(0)
+      expect(errors).toEqual([])
+      await testInfo.attach('history-permissions-evidence', { body: JSON.stringify({ versions, restoreWrites, errors, body }), contentType: 'application/json' })
+    })
+  }
+}
+
+
 async function prepareHistory(request: any) {
   const username = `pw-permission-history-${Date.now()}`
   const original = { external_id: username, username, full_name: 'Original history identity',
@@ -222,6 +317,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(confirmation).toBeVisible()
       await expect(confirmation).toContainText('entire identity and permission snapshot')
       await expect(confirmation).toContainText('Identities added later may be removed')
+      await expect(confirmation).toContainText('current role definitions and module policy still apply')
       expect(await guarded()).toBe(true)
       await confirmation.getByRole('button', { name: 'Keep current identities', exact: true }).click()
       await expect(confirmation).not.toBeVisible()

@@ -406,6 +406,7 @@ async def build_user_pool_snapshot(db: AsyncSession):
             "teams": operator.teams or [],
             "role_id": operator.role_id,
             "role_name": operator.role.name if operator.role else None,
+            "role_permissions": operator.role.permissions if operator.role else {},
             "is_admin": bool(operator.is_admin),
             "custom_permissions": operator.custom_permissions or {},
             "registration_status": operator.registration_status,

@@ -38,6 +38,70 @@ async def snapshot(c, setup_db):
 
 
 @pytest.mark.asyncio
+async def test_history_captures_role_grants_without_rewriting_previous_snapshots(operator_scope, setup_db):
+    from app.api.settings import build_user_pool_snapshot, create_user_pool_version
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        role = models.Role(name='Historical role', permissions={'all': ' Read ', 'assets': 2})
+        db.add(role)
+        await db.flush()
+        target = await db.get(models.Operator, c['ids'][0])
+        target.role_id = role.id
+        target.is_admin = False
+        target.custom_permissions = {'assets': 0}
+        await create_user_pool_version(db, created_by='admin_root', diff_summary={}, version_label='role-before')
+        await db.commit()
+        first = await db.scalar(select(models.UserPoolVersion))
+        recorded = next(row for row in first.snapshot_data if row['external_id'] == 'input-target')
+        assert recorded['role_permissions'] == {'all': ' Read ', 'assets': 2}
+        assert recorded['custom_permissions'] == {'assets': 0}
+        no_role = next(row for row in first.snapshot_data if row['external_id'] == 'input-peer')
+        assert no_role['role_id'] is None and no_role['role_permissions'] == {}
+        role.permissions = {'all': 3}
+        await db.commit()
+        fresh = next(row for row in await build_user_pool_snapshot(db) if row['external_id'] == 'input-target')
+        assert fresh['role_permissions'] == {'all': 3}
+        await db.refresh(first)
+        assert next(row for row in first.snapshot_data if row['external_id'] == 'input-target') == recorded
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('legacy', [False, True])
+async def test_identity_restore_retains_current_role_definition_and_records_it(operator_scope, setup_db, legacy):
+    from app.api.settings import build_user_pool_snapshot
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        role = models.Role(name='Current role', permissions={'assets': 3, 'all': 1})
+        db.add(role)
+        await db.flush()
+        records = await build_user_pool_snapshot(db)
+        target = next(row for row in records if row['external_id'] == 'input-target')
+        target.update(role_id=role.id, role_name='Historical role', is_admin=False, custom_permissions={'assets': 0})
+        if legacy:
+            target.pop('role_permissions', None)
+        else:
+            target['role_permissions'] = {'assets': 1, 'all': 0}
+        version = models.UserPoolVersion(version_label='historical-role-definition', snapshot_data=records,
+                                        diff_summary={}, created_by='admin_root', is_active=False)
+        db.add(version)
+        await db.commit()
+        version_id, role_id = version.id, role.id
+    response = await c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
+    assert response.status_code == 200, response.text
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        assert (await db.get(models.Role, role_id)).permissions == {'assets': 3, 'all': 1}
+        restored = await db.get(models.Operator, c['ids'][0])
+        assert restored.role_id == role_id and restored.custom_permissions == {'assets': 0}
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert versions[0].snapshot_data == records
+        saved = next(row for row in versions[-1].snapshot_data if row['external_id'] == 'input-target')
+        assert saved['role_permissions'] == {'assets': 3, 'all': 1}
+        assert saved['role_name'] == 'Current role'
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('operation', ['create', 'upsert', 'patch', 'bulk'])
 @pytest.mark.parametrize('field', ['role_id', 'team_id'])
 @pytest.mark.parametrize('value', [True, False, 0, -1, 2 ** 63, 1.0, '1', [], {}])

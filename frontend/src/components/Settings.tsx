@@ -39,6 +39,7 @@ import {
   type SettingsTab,
 } from "./settings/settingsPrivilegePolicy"
 import { normalizeTheme } from './shared/theme'
+import { formatRecordedPermissions, hasCompleteHistoryPermissions, historyPermissionViews, normalizeHistoryPermissionLevel, recordedPermissionLevel } from './settings/historyPermissions'
 
 const PERMISSION_COMMIT_DEBOUNCE_MS = 900
 
@@ -295,15 +296,10 @@ import { SettingsStandards } from "./SettingsStandards"
 
 const PERMISSION_LEVEL_LABELS = ["None", "Read", "Write", "Full"] as const
 
-const normalizePermissionLevel = (level: any) => {
-  if (typeof level === 'number') return Math.min(3, Math.max(0, Math.floor(level)))
-  if (level === 'read') return 1
-  if (level === 'add' || level === 'write') return 2
-  if (level === 'edit' || level === 'manage' || level === 'full' || level === 'admin') return 3
-  return 0
-}
+const normalizePermissionLevel = normalizeHistoryPermissionLevel
 
 const getPermissionLevelLabel = (level: any, isGlobalAdmin = false) => {
+  if (level === null) return 'Unknown'
   const normalized = normalizePermissionLevel(level)
   if (isGlobalAdmin && normalized === 3) return 'Admin'
   return PERMISSION_LEVEL_LABELS[normalized]
@@ -318,11 +314,7 @@ const getPermissionLevelTone = (level: any, isGlobalAdmin = false) => {
   return 'border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-secondary)]'
 }
 
-const getOperatorPermissionLevel = (operator: any, view: string) => {
-  if (!operator) return 0
-  if (operator.is_admin === true) return 3
-  return normalizePermissionLevel(operator.custom_permissions?.[view] ?? 0)
-}
+const getOperatorPermissionLevel = recordedPermissionLevel
 
 const formatHistoryValue = (value: unknown): string => {
   if (value === undefined) return 'Not recorded'
@@ -348,6 +340,7 @@ const HISTORY_TEXT_FIELDS = ['full_name', 'username', 'role_name', 'department',
 
 const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) => {
   let partial = false
+  let permissionsIncomplete = false
   const ambiguousKeys = new Set<string>()
   const readSnapshot = (version: any) => {
     const entries = new Map<string, any>()
@@ -372,13 +365,14 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
         || ['team_id', 'role_id'].some(field => operator[field] != null && !(Number.isInteger(operator[field]) && operator[field] > 0))
         || (operator.teams != null && (!Array.isArray(operator.teams) || operator.teams.some((group: unknown) => typeof group !== 'string')))
         || (operator.is_admin !== undefined && typeof operator.is_admin !== 'boolean')) partial = true
+      if (!hasCompleteHistoryPermissions(operator)) permissionsIncomplete = true
       entries.set(key, operator)
     }
     return entries
   }
   const newerMap = readSnapshot(newer)
   const olderMap = readSnapshot(older)
-  if (!newerMap || !olderMap) return { rows: [], partial: true }
+  if (!newerMap || !olderMap) return { rows: [], partial: true, permissionsIncomplete }
   const keys = Array.from(new Set([...newerMap.keys(), ...olderMap.keys()])).filter(key => !ambiguousKeys.has(key))
 
   const isEquivalent = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
@@ -386,6 +380,10 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
   const rows = keys.map((key) => {
     const before = olderMap.get(key) || null
     const after = newerMap.get(key) || null
+    const permissionViews = historyPermissionViews(allViews, before, after)
+    const permissionSources = ['custom_permissions', 'role_permissions'].filter(field =>
+      formatRecordedPermissions(before?.[field]) !== formatRecordedPermissions(after?.[field]))
+    const permissionsUnknown = [before, after].some(operator => operator && !hasCompleteHistoryPermissions(operator))
 
     if (!before && after) {
       return {
@@ -394,7 +392,9 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
         before,
         after,
         fieldChanges: {},
-        permissionChanges: allViews
+        permissionSources,
+        permissionsUnknown,
+        permissionChanges: permissionViews
           .map((view) => ({ view, old: 0, new: getOperatorPermissionLevel(after, view) }))
           .filter((entry) => entry.new !== entry.old),
       }
@@ -407,13 +407,15 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
         before,
         after,
         fieldChanges: {},
-        permissionChanges: allViews
+        permissionSources,
+        permissionsUnknown,
+        permissionChanges: permissionViews
           .map((view) => ({ view, old: getOperatorPermissionLevel(before, view), new: 0 }))
           .filter((entry) => entry.new !== entry.old),
       }
     }
 
-    const permissionChanges = allViews
+    const permissionChanges = permissionViews
       .map((view) => ({
         view,
         old: getOperatorPermissionLevel(before, view),
@@ -439,7 +441,7 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
       fieldChanges['groups'] = { old: toSortedStringList(beforeAny?.teams), new: toSortedStringList(afterAny?.teams) }
     }
 
-    if (Object.keys(fieldChanges).length === 0 && permissionChanges.length === 0) {
+    if (Object.keys(fieldChanges).length === 0 && permissionChanges.length === 0 && permissionSources.length === 0) {
       return null
     }
 
@@ -450,6 +452,8 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
       after,
       fieldChanges,
       permissionChanges,
+      permissionSources,
+      permissionsUnknown,
     }
   }).filter(Boolean) as Array<any>
 
@@ -461,7 +465,7 @@ const buildPermissionHistoryRows = (newer: any, older: any, allViews: string[]) 
     const nameB = formatHistoryValue(b.after?.full_name ?? b.before?.full_name ?? '').toLowerCase()
     return nameA.localeCompare(nameB)
   })
-  return { rows, partial }
+  return { rows, partial, permissionsIncomplete }
 }
 
 function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, restoreError, onRestore }: {
@@ -500,7 +504,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
     ? indexedVersions?.[Math.max(...selectedIndices)] 
     : (selectedIndices[0] + 1 < indexedVersions.length ? indexedVersions[selectedIndices[0] + 1] : null)
 
-  const { rows: historyRows, partial: partialComparison } = React.useMemo(
+  const { rows: historyRows, partial: partialComparison, permissionsIncomplete } = React.useMemo(
     () => buildPermissionHistoryRows(newer, older, allViews),
     [allViews, newer, older]
   )
@@ -518,7 +522,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
       title="Permission Registry History"
-      subtitle="Compare identity and permission changes. Restoring applies an entire revision."
+      subtitle="Compare recorded tenant grants. Restore uses current role definitions and module policy."
       icon={<HistoryIcon size={20} />}
       footerRight={
         <ToolbarButton disabled={restoreBusy} onClick={onClose}>Dismiss</ToolbarButton>
@@ -529,9 +533,10 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
         {restorePhase === 'review' ? 'Review the identity restore. Finish or cancel confirmation before leaving.' : 'Restoring identity revision. Stay on this page until the restore finishes.'}
       </p>}
       {restoreError && <p role="alert" className="rounded-lg border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-4 text-sm text-[var(--text-primary)]">{restoreError}</p>}
-      {partialComparison && <p role="alert" className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-4 text-sm text-[var(--text-primary)]">
-        Comparison is partial. Some historical records are invalid, missing an identity key or duplicated. Ambiguous identities are excluded; invalid field values are shown as recorded. Original history is preserved.
-      </p>}
+      {(partialComparison || permissionsIncomplete) && <div role="alert" className="space-y-2 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-4 text-sm text-[var(--text-primary)]">
+        {partialComparison && <p>Comparison is partial. Some historical records are invalid, missing an identity key or duplicated. Ambiguous identities are excluded; invalid field values are shown as recorded. Original history is preserved.</p>}
+        {permissionsIncomplete && <p>Historical permission data is incomplete. Missing role definitions or invalid grants are Unknown, not None. Recorded overrides remain available; current roles are never substituted into history.</p>}
+      </div>}
       <WorkspaceHistoryShell
           header={null}
           sidebar={
@@ -751,7 +756,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                          {row.permissionChanges.length > 0 ? (
                                            <details>
                                              <summary className="min-h-10 cursor-pointer rounded-md px-2 py-2 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
-                                               {row.permissionChanges.length} permission {row.permissionChanges.length === 1 ? 'change' : 'changes'}
+                                               {row.permissionChanges.length} permission {row.permissionChanges.some((change: any) => change.old === null || change.new === null) ? 'comparisons' : row.permissionChanges.length === 1 ? 'change' : 'changes'}
                                              </summary>
                                            <div className="mt-2 flex flex-wrap gap-2">
                                              {row.permissionChanges.map((change: any) => (
@@ -771,8 +776,21 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                                            </div>
                                            </details>
                                          ) : (
-                                           <span className="text-xs font-semibold text-[var(--text-secondary)] italic">No permission delta</span>
+                                           <span className="text-xs font-semibold text-[var(--text-secondary)] italic">{row.permissionsUnknown ? 'Permission comparison unavailable' : 'No permission delta'}</span>
                                          )}
+                                         {row.permissionSources.map((field: string) => (
+                                           <details data-permission-source-change key={field} className="mt-2 max-w-sm text-xs text-[var(--text-primary)]">
+                                             <summary className="min-h-10 cursor-pointer rounded-md px-2 py-2 font-semibold hover:bg-[var(--surface-hover)]">
+                                               {field === 'custom_permissions' ? 'Custom overrides' : 'Recorded role grants'} changed
+                                             </summary>
+                                             <dl className="space-y-2 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-3">
+                                               <dt className="font-semibold text-[var(--text-secondary)]">Before</dt>
+                                               <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">{formatRecordedPermissions(row.before?.[field])}</dd>
+                                               <dt className="font-semibold text-[var(--text-secondary)]">After</dt>
+                                               <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">{formatRecordedPermissions(row.after?.[field])}</dd>
+                                             </dl>
+                                           </details>
+                                         ))}
                                       </td>
                                    </tr>
                                 )})}
@@ -1206,7 +1224,7 @@ export default function SettingsPage() {
     try {
       if (!await confirmWorkspaceAction({
         title: 'Restore identity revision?',
-        message: `Restore v${version.v_num}? This applies the entire identity and permission snapshot. Identities added later may be removed, and access rights will return to this revision. A new revision will record the result.`,
+        message: `Restore v${version.v_num}? This applies the entire identity and permission snapshot. Identities added later may be removed. Role assignments and custom overrides are restored; current role definitions and module policy still apply, so effective access may differ from this revision. A new revision will record the result.`,
         confirmText: 'Restore identities', cancelText: 'Keep current identities', variant: 'danger',
       })) return false
       setRestorePhase('saving')
