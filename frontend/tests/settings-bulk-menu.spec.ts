@@ -3,6 +3,104 @@ import { test } from './helpers/sysgrid-test'
 import { resetBrowserState } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const action of ['update', 'delete']) {
+    test(`phone bulk ${action} failure has one recovery alert and retains diagnostics in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+      await resetBrowserState(page)
+      await page.setViewportSize({ width: 390, height: 844 })
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+      await page.addInitScript(value => {
+        localStorage.setItem('sysgrid-theme', value)
+        localStorage.setItem('SYSGRID_ERROR_LOGS', JSON.stringify([{
+          id: 'unrelated-prior-error', timestamp: new Date().toISOString(), message: 'Prior unrelated error',
+          type: 'backend', severity: 'error', status: 409, method: 'PATCH',
+        }]))
+      }, theme)
+      const username = `pw-phone-bulk-${Date.now()}`
+      const created = await request.post(`${apiBase}/settings/operators`, { data: {
+        external_id: username, username, is_admin: false, department: 'Preserved department',
+      } })
+      expect(created.ok()).toBeTruthy()
+      const operator = await created.json()
+      const before = await (await request.get(`${apiBase}/settings/operators`)).json()
+      const versions = await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()
+      await page.goto('/settings?tab=permissions')
+      await page.getByPlaceholder('Search identity, department, or team...').fill(username)
+      const selection = page.getByRole('checkbox', { name: `Select ${username}`, exact: true })
+      await selection.check()
+      const trigger = page.getByRole('button', { name: 'Bulk Actions', exact: true })
+      const panel = page.getByRole('dialog', { name: 'Bulk identity actions', exact: true })
+      const start = async () => {
+        await trigger.click()
+        await expect(panel).toBeVisible()
+        await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+        await expect(panel.locator('..')).toHaveCSS('opacity', '1')
+        await expect(panel.locator('..')).toHaveCSS('transform', 'none')
+        await expect(panel).toBeInViewport({ ratio: 1 })
+        if (action === 'update') await panel.getByRole('button', { name: 'Set Admin', exact: true }).click()
+        else {
+          await panel.getByRole('button', { name: 'Delete Selection', exact: true }).click()
+          await panel.getByRole('button', { name: 'Confirm Identity Deletion?', exact: true }).click()
+          const confirmation = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Delete identities', exact: true }) })
+          await expect(confirmation).toBeVisible()
+          await confirmation.getByRole('button', { name: 'Delete identities', exact: true }).click()
+        }
+      }
+      let fail = true
+      let writes = 0
+      const endpoint = `/settings/operators/bulk-${action}`
+      await page.route(`**${endpoint}`, async route => {
+        writes++
+        if (fail) await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Controlled phone bulk failure' }) })
+        else await route.continue()
+      })
+      await start()
+      const alert = page.getByRole('alert').filter({ hasText: 'Controlled phone bulk failure' })
+      await expect(alert).toBeVisible()
+      expect(await page.locator('[data-workspace-toast="error"][data-visible="true"]').filter({ hasText: 'Controlled phone bulk failure' }).count()).toBe(0)
+      await expect(selection).toBeChecked()
+      await expect(selection).toBeEnabled()
+      expect(await (await request.get(`${apiBase}/settings/operators`)).json()).toEqual(before)
+      expect(await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()).toEqual(versions)
+      const errors = await page.evaluate(() => JSON.parse(localStorage.getItem('SYSGRID_ERROR_LOGS') || '[]'))
+      expect(errors).toHaveLength(2)
+      expect(errors.some((entry: { id: string }) => entry.id === 'unrelated-prior-error')).toBe(true)
+      expect(errors.filter((entry: { status: number; method: string }) => entry.status === 503 && entry.method === 'POST')).toHaveLength(1)
+      await testInfo.attach('phone-bulk-recovery-focus', { body: JSON.stringify(await page.evaluate(() => ({
+        tag: document.activeElement?.tagName,
+        label: document.activeElement?.getAttribute('aria-label'),
+        bulkExpanded: document.querySelector('[aria-controls="settings-permission-bulk-actions"]')?.getAttribute('aria-expanded'),
+      }))), contentType: 'application/json' })
+      if (await trigger.getAttribute('aria-expanded') === 'true') {
+        await trigger.focus()
+        await page.keyboard.press('Escape')
+      }
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+      await expect(panel).not.toBeVisible()
+      await alert.scrollIntoViewIfNeeded()
+      await expect(alert).toBeInViewport({ ratio: 1 })
+      await expectReadableGridText(page, testInfo, 'phone-bulk-recovery', '[role="alert"]')
+      await page.screenshot({ path: testInfo.outputPath('phone-bulk-failure.png'), animations: 'disabled' })
+      fail = false
+      const saved = page.waitForResponse(response => response.url().endsWith(endpoint) && response.request().method() === 'POST')
+      await start()
+      expect((await saved).ok()).toBeTruthy()
+      await expect(panel).not.toBeVisible()
+      await expect(alert).toHaveCount(0)
+      expect(writes).toBe(2)
+      const persisted = (await (await request.get(`${apiBase}/settings/operators`)).json()).find((row: { id: number }) => row.id === operator.id)
+      if (action === 'update') expect(persisted).toMatchObject({ is_admin: true, department: 'Preserved department' })
+      else expect(persisted).toBeUndefined()
+      expect(await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()).toHaveLength(versions.length + 1)
+      expect((await page.evaluate(() => JSON.parse(localStorage.getItem('SYSGRID_ERROR_LOGS') || '[]'))).map((entry: { id: string }) => entry.id)).toEqual(errors.map((entry: { id: string }) => entry.id))
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(2)
+      await page.screenshot({ path: testInfo.outputPath('phone-bulk-recovered.png'), animations: 'disabled' })
+      await testInfo.attach('phone-bulk-result', { body: JSON.stringify({ theme, action, writes, retainedErrors: errors.length, versions: versions.length + 1 }), contentType: 'application/json' })
+    })
+  }
+}
+
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
@@ -256,6 +354,9 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         await page.unroute(path)
         if (fail) {
           await expect(page.getByRole('alert').filter({ hasText: 'Controlled bulk save failure' })).toBeVisible()
+          expect(await page.locator('[data-workspace-toast="error"][data-visible="true"]').filter({ hasText: 'Controlled bulk save failure' }).count()).toBe(0)
+          const failureLogs = await page.evaluate(() => JSON.parse(localStorage.getItem('SYSGRID_ERROR_LOGS') || '[]'))
+          expect(failureLogs.filter((entry: { status: number; method: string }) => entry.status === 503 && entry.method === 'POST')).toHaveLength(1)
           await expect(selection).toBeChecked()
           await expect(selection).toBeEnabled()
           expect(await (await request.get(`${apiBase}/settings/operators`)).json()).toEqual(before)

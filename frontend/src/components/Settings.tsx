@@ -1551,6 +1551,7 @@ export default function SettingsPage() {
   })
 
   const bulkOperatorPatchMutation = useMutation({
+    meta: { handlesErrorToast: true },
     retry: false,
     mutationFn: async ({ updates }: { updates: Array<{ id: number, payload: any }> }) => {
       const res = await apiFetch(`/api/v1/settings/operators/bulk-update`, {
@@ -1569,6 +1570,7 @@ export default function SettingsPage() {
   })
 
   const bulkOperatorDeleteMutation = useMutation({
+    meta: { handlesErrorToast: true },
     retry: false,
     mutationFn: async (ids: number[]) => {
       const res = await apiFetch(`/api/v1/settings/operators/bulk-delete`, {
