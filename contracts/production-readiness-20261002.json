@@ -8,34 +8,34 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-03T09:37:00Z",
+  "as_of_utc": "2026-10-13T16:44:21Z",
   "production_accepted": false,
   "verified_checkpoint": {
-    "candidate": "f97300d9d1facacde6b24458a04c48f18698c914",
+    "candidate": "dcbe8b6e2423991cbc92273788d1762bb110edbd",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
-    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37111497546",
-    "tested_merge": "33e0d83e82ac5fd038ec26bf45e561720e868697",
-    "completed_at": "2026-10-03T09:26:41Z",
-    "conclusion": "failure",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37113695016",
+    "tested_merge": "b1f2a30aa321fc1b6706ede5df184019926d00a7",
+    "completed_at": "2026-10-03T10:23:12Z",
+    "conclusion": "cancelled",
     "counts": {
       "startup_and_recovery": 76,
       "subtests": 23,
-      "backend": 1710,
-      "frontend": 912,
+      "backend": 1750,
+      "frontend": 913,
       "frontend_files": 162,
-      "normal_browser": 295,
-      "normal_browser_failures": 1,
+      "normal_browser": 306,
       "normal_browser_preexisting_skips": 2,
-      "desktop_browser": "not reached",
-      "root_preview_browser": "not reached"
+      "desktop_browser": 35,
+      "root_preview_browser": 4,
+      "root_preview_browser_incomplete": 2
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae contains four later reviewed slices: coalesced saved-view success feedback, JSON-safe malformed identity reads, affected-count restore previews with state/source fingerprints, and the trace-attributed permission-refresh test correction. Latest local backend 1750/62 and frontend 913/162 pass. Separate source-bound browser runs pass nine saved-view, eight malformed-read/history, 26 restore/history and 12 permission-pending cases; counts are not summed. Forty backend, one frontend and ten normal browser cases enter canonical discovery. Eight final saved-view, twelve malformed-read, eight final stale/fresh-restore and two held-refresh images reviewed. Scoped contrast minima are 6.117:1 (352 saved-view and 976 identity samples) and 5.984:1 (3970 restore samples). Coalescing removes multiple success banners, but single-banner phone overlap remains. The sole checkpoint24 failure is traced to a Home click before refresh completed; both-theme held-refresh proof verifies the existing departure guard and waits for actual UI readiness without timeout/retry or Product changes. Fresh assembled hosted CI remains required.",
-    "job_duration_seconds": 1668,
-    "backend_duration_seconds": 233.98,
-    "identity_sha256": "c35a412e0d1e967e8f2d6fea278f3c26a6656c8d124ef4acee6756aad1ba9278",
-    "attribution": "The final Home click completed before the post-save revision refresh. Product intentionally retains the departure guard until awaited refreshes complete. The test synchronized only to the PATCH response, so it raced this existing guard. Reviewed de83c8ce0552c45a1a6fbed749c02f0dfaa9efae supplies both-theme deterministic held-refresh proof, preserving the original final Home oracle and all timeouts/retries. The original hosted failure remains failed."
+    "later_source": "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74 carries reviewed diagnostics, exact team references, confirmation reflow, stronger visual-foundation proof and bounded CI stages after checkpoint25. Latest local backend 1847/62 and frontend 924/163 pass. Separate source-bound browser runs pass four diagnostics, 26 team/history, 52 confirmation/history and ten visual-foundation cases; counts are not summed. Final foundation: 148 renders, 20 complete detail frames, five widths/both themes, 2137 contrast samples minimum 4.7588:1; 28 final and 48 intermediate images reviewed. Final CI startup proof: 109 tests plus 23 subtests; focused stage/aggregate proof: 33 tests; real root six and desktop 35 pass. Real normal-v1 stage was not rerun locally. Final aggregate metadata and eight added receipt tests were separately requalified after the checks stage. Fresh assembled hosted qualification, full visual state/before-after atlas and production acceptance remain required.",
+    "job_duration_seconds": 2721,
+    "backend_duration_seconds": 332.63,
+    "identity_sha256": "a48e61945bca53876b4175ad98c8c688bd1a115dd6a2341485c012676b89e8c1",
+    "attribution": "The hosted annotation states: The job has exceeded the maximum execution time of 45m0s. Normal browser 306 pass/two existing skips and desktop 35 pass completed, followed by four of six root-preview cases before cancellation. The two remaining root cases and whole required job are not accepted. Reviewed 381d5e8e preserves canonical scope, retries and 45-minute stage budgets using four matrix stages and a stable fail-closed AppCI / required aggregate. Fresh hosted recovery is pending."
   },
   "ci_history": [
     {
@@ -569,17 +569,44 @@
         "desktop_browser": 35,
         "root_preview_browser": 6
       }
+    },
+    {
+      "candidate": "f97300d9d1facacde6b24458a04c48f18698c914",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37111497546",
+      "tested_merge": "33e0d83e82ac5fd038ec26bf45e561720e868697",
+      "completed_at": "2026-10-03T09:26:41Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1710,
+        "frontend": 912,
+        "frontend_files": 162,
+        "normal_browser": 295,
+        "normal_browser_failures": 1,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": "not reached",
+        "root_preview_browser": "not reached"
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae contains four later reviewed slices: coalesced saved-view success feedback, JSON-safe malformed identity reads, affected-count restore previews with state/source fingerprints, and the trace-attributed permission-refresh test correction. Latest local backend 1750/62 and frontend 913/162 pass. Separate source-bound browser runs pass nine saved-view, eight malformed-read/history, 26 restore/history and 12 permission-pending cases; counts are not summed. Forty backend, one frontend and ten normal browser cases enter canonical discovery. Eight final saved-view, twelve malformed-read, eight final stale/fresh-restore and two held-refresh images reviewed. Scoped contrast minima are 6.117:1 (352 saved-view and 976 identity samples) and 5.984:1 (3970 restore samples). Coalescing removes multiple success banners, but single-banner phone overlap remains. The sole checkpoint24 failure is traced to a Home click before refresh completed; both-theme held-refresh proof verifies the existing departure guard and waits for actual UI readiness without timeout/retry or Product changes. Fresh assembled hosted CI remains required.",
+      "job_duration_seconds": 1668,
+      "backend_duration_seconds": 233.98,
+      "identity_sha256": "c35a412e0d1e967e8f2d6fea278f3c26a6656c8d124ef4acee6756aad1ba9278",
+      "attribution": "The final Home click completed before the post-save revision refresh. Product intentionally retains the departure guard until awaited refreshes complete. The test synchronized only to the PATCH response, so it raced this existing guard. Reviewed de83c8ce0552c45a1a6fbed749c02f0dfaa9efae supplies both-theme deterministic held-refresh proof, preserving the original final Home oracle and all timeouts/retries. The original hosted failure remains failed."
     }
   ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+    "source_head": "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74",
     "registered_api_operations": 310,
-    "static_ui_declarations": 3149,
+    "static_ui_declarations": 3150,
     "static_ui_routes": 19,
     "static_ui_overlays": 260,
-    "static_ui_controls": 2870,
+    "static_ui_controls": 2871,
     "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
   },
   "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
@@ -1362,6 +1389,36 @@
       "commit": "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
       "scope": "Synchronize permission-departure test with post-save refresh after exact hosted trace attribution",
       "archive_sha256": "3ee29735078caeeaa1eeb63abf5f436c5e8aef339aff378843e2aba03466a28c"
+    },
+    {
+      "commit": "dcbe8b6e2423991cbc92273788d1762bb110edbd",
+      "scope": "Record checkpoint25 with preserved approvals, inventories and attributed failed predecessor",
+      "archive_sha256": "acd9921b93b5d0ce482caabaed7203aac843516e680b9883379b85236ef321cf"
+    },
+    {
+      "commit": "c3495900a60f2422f793d2c5f7029863afe91e2e",
+      "scope": "Make shared diagnostics truthful, readable and single-flight with clipboard recovery",
+      "archive_sha256": "bb3fc2b61e6b421b9f63d7f35326ef28b5bf02c2f5109dbf5b7e54b85df14992"
+    },
+    {
+      "commit": "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+      "scope": "Preserve exact primary and secondary team references and omitted legacy groups",
+      "archive_sha256": "10ce06149a9e73385681bac53a029255a96717265edb192620ca1d08748c5bc4"
+    },
+    {
+      "commit": "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+      "scope": "Bound confirmation width and preserve visible keyboard actions on short screens",
+      "archive_sha256": "6b4d1a94f03f73ea1202d290a37aca93608a92e0d416f29c385f28bb7a160577"
+    },
+    {
+      "commit": "43fbb68980048ce732f70477878f30dbe85b99ff",
+      "scope": "Strengthen chart and detail-frame visual-preservation proof without application changes",
+      "archive_sha256": "72a1550e58644783a88572714c2bf05f4aaac3be80ae9965afb1eb4d959b8c49"
+    },
+    {
+      "commit": "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74",
+      "scope": "Preserve every canonical application gate across bounded CI stages and stable required aggregation",
+      "archive_sha256": "66a9e529bdedc57659acd1e759b7e429f6c55ff5f7329e54802792182a2f777a"
     }
   ],
   "groups": [
@@ -1406,9 +1463,15 @@
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
             "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
-            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae"
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "dcbe8b6e2423991cbc92273788d1762bb110edbd",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74"
           ],
-          "remaining": "Checkpoint25 preserves all 51 owner decisions, 135 reviewed archives, current clean-source inventories and the exact failed checkpoint24 PR identity. Four reviewed recovery/feature slices remain distinct from hosted acceptance. Main integration, fresh CI, company evidence and final release reconciliation remain."
+          "remaining": "Checkpoint26 preserves all 51 decisions and statuses, 141 reviewed archives, fresh inventories and the exact cancelled checkpoint25 identity/merge. Later local repairs remain distinct from hosted acceptance. Main integration, fresh CI, company evidence and release reconciliation remain."
         },
         {
           "id": "A3",
@@ -1527,9 +1590,12 @@
             "a3958e408e8007814d6a578978519473dfb81976",
             "177aa8f9",
             "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
-            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae"
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea"
           ],
-          "remaining": "Restore confirmation now shows validated affected counts and binds the reviewed source/current identity state. Conflicts preserve data and revisions; fresh review enables explicit retry. Guarded permission saves retain existing full-map protection and tested refresh readiness. Other writers, general idempotency and unknown outcomes remain."
+          "remaining": "Diagnostics clipboard writes are awaited, single-flight and recoverable. Confirmation keeps actions visible and long messages keyboard-scrollable on short screens. Team membership and omission handling preserve data. Restore fingerprints and refresh guards remain; other writers, general idempotency and unknown outcomes remain."
         },
         {
           "id": "B4",
@@ -1561,9 +1627,12 @@
             "363e5dcf",
             "5fef9f02",
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
-            "cd1d198132d339c7fe84bd3a774dd41ae78780e2"
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff"
           ],
-          "remaining": "Saved-view success notices coalesce by workspace, preserving unrelated errors. Restore review reports affected counts and one owned conflict alert. Both-theme desktop/phone proofs pass; a single floating notice still overlaps phone content. Shared confirmation desktop layout, complete overlay inventory and AT/reflow remain."
+          "remaining": "Confirmation is capped at 512px, retains 44px actions and independently scrolls long content with focus trapping on short screens. Fifty-two confirmation/history cases pass. Foundation proof checks 20 complete detail frames across five widths/themes. Single floating notice overlap, complete overlay inventory and AT/reflow remain."
         },
         {
           "id": "B5",
@@ -1600,9 +1669,12 @@
             "363e5dcf",
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
-            "cd1d198132d339c7fe84bd3a774dd41ae78780e2"
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff"
           ],
-          "remaining": "Scoped final images reviewed in both themes: saved-view confirmation, malformed permission display/history, and restore conflict/fresh review. Contrast minima 6.117:1 for saved views/current identity and 5.984:1 for restore scope. Whole visual-system and state atlas acceptance remain."
+          "remaining": "Foundation: ten cases across five widths/both themes, 148 renders, 20 complete detail frames and 2137 contrast samples minimum 4.7588:1. Twenty-eight final chart/detail and 48 intermediate images reviewed. Charts require fully visible wrappers/direct SVGs and actual pie/bar marks. Tracked fonts/graphics unchanged and no frontend source deletions versus main. Full visual state/before-after atlas remains."
         },
         {
           "id": "B6",
@@ -1637,9 +1709,12 @@
             "177aa8f9",
             "363e5dcf",
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
-            "cd1d198132d339c7fe84bd3a774dd41ae78780e2"
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff"
           ],
-          "remaining": "Coalesced saved-view feedback removes accumulated success notices; original negative browser/unit evidence preserved. Final phone restore conflict is readable after suppressing duplicate global errors. Single floating notice overlap, wide desktop confirmation, zoom/short screens and long lists remain."
+          "remaining": "Confirmation width and short-screen message/action layout are repaired; both-theme phone/desktop flows pass. Chart/detail geometry passes at widths 390/1024/1280/1440/1920. Single floating notice overlap, all-component long lists, zoom and complete responsive states remain."
         },
         {
           "id": "B7",
@@ -1677,9 +1752,12 @@
             "5fef9f02",
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
-            "cd1d198132d339c7fe84bd3a774dd41ae78780e2"
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff"
           ],
-          "remaining": "Scoped semantic controls, status/error text and both-theme contrast checks pass for reviewed flows. Complete keyboard, screen reader, zoom, reflow and stateful accessibility acceptance remain."
+          "remaining": "Diagnostics recovery semantics and confirmation keyboard scroll/focus are covered. Foundation contrast has 2137 scoped samples minimum 4.7588:1, with complete frame controls visible. Complete keyboard, screen reader, zoom, reflow and stateful accessibility acceptance remain."
         },
         {
           "id": "B8",
@@ -1815,9 +1893,10 @@
             "c57f0338f540e64fe67715f8daf980d27bae93bc",
             "978eafe99faa60997bca5aa370c58d263aaab9e1",
             "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
-            "139fe66ff7bffe940ed22239425375a67c97e78c"
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a"
           ],
-          "remaining": "Permission writes now require supported scalar values and unique non-empty keys after trimming. Nonfinite, fractional/out-of-range, invalid-container and unknown-label input returns field validation instead of silent coercion or server errors. Full typed schemas/OpenAPI, resource bounds, pagination and other domains remain."
+          "remaining": "Permission input validation and exact group-list validation reject malformed writes atomically; omitted malformed legacy groups survive unrelated edits. Full typed schemas/OpenAPI, resource bounds, pagination and other domains remain."
         },
         {
           "id": "C3",
@@ -1952,9 +2031,10 @@
             "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
             "139fe66ff7bffe940ed22239425375a67c97e78c",
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
-            "cd1d198132d339c7fe84bd3a774dd41ae78780e2"
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a"
           ],
-          "remaining": "Malformed nonfinite read values are projected as explicit invalid-number markers without changing stored rows/history. Restore affected counts and stale-state detection preserve peer changes and use actual staged validation. Primary-team consistency, resource bounds and remaining relationships remain."
+          "remaining": "Exact list membership replaces JSON LIKE matching for team rename/delete; restore creates the union of primary/secondary teams while preserving historical snapshots. Ninety-seven new focused cases and full 1847/62 backend pass. Other relationships, tenant-scan bounds, concurrent legacy writers and non-SQLite qualification remain."
         },
         {
           "id": "C7",
@@ -2213,9 +2293,12 @@
             "177aa8f9",
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
             "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
-            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae"
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff"
           ],
-          "remaining": "Malformed raw identity reads remain truthful and profile grants match authorization. Restore preview shows actual affected counts, rolls back staged writes, and guarded confirmation rejects changed source/current state before mutation. Final local backend 1750/62, frontend 913/162, restore/history 26 and pending-permission 12 pass in separate runs. Company sources, primary-team consistency, resource bounds, legacy unconditional callers and non-SQLite qualification remain."
+          "remaining": "Team rename/delete and restore use exact primary/secondary references and retain omitted legacy data. Ninety-seven new backend cases qualify this slice; latest full backend 1847/62 and frontend 924/163 pass. Separate team/history 26, confirmation/history 52 and foundation ten browser runs pass. Company sources, resource bounds, remaining transaction-time writers, legacy unconditional callers and non-SQLite qualification remain."
         }
       ]
     },
@@ -2274,9 +2357,10 @@
           "approval": "yes",
           "status": "in_progress",
           "reviewed_commits": [
-            "6c900da5"
+            "6c900da5",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74"
           ],
-          "remaining": "23 startup safety tests and launcher self-test passed; exact work-environment startup remains."
+          "remaining": "Final startup/safety proof passes 109 tests plus 23 subtests, with stage argument rejection before mutation and preserved launcher self-test. Exact work-environment pull/configure/start and forwarded-port qualification remain."
         },
         {
           "id": "E6",
@@ -2348,9 +2432,10 @@
             "177aa8f9",
             "363e5dcf",
             "5fef9f02",
-            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae"
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74"
           ],
-          "remaining": "The sole checkpoint24 failure is traced to a Home click before post-save refresh finished. Both-theme deterministic held-refresh proof qualifies the one-file harness correction; original URL oracle/timeouts/retries and failed hosted evidence remain. Fresh assembled CI, full supply-chain and final release gates remain."
+          "remaining": "Checkpoint25 cancelled at the 45-minute limit after normal 306/two existing skips, desktop 35 and root four/six. Reviewed repair preserves canonical scope, retries and timeout budgets, adds checks/normal-v1/desktop/root-preview stages, stage receipts and one stable fail-closed AppCI / required aggregate. Local checks, final startup 109 plus 23 subtests, 33 focused cases, desktop 35 and root six pass; normal-v1 not rerun locally. Fresh hosted CI, full supply-chain and release gates remain."
         },
         {
           "id": "E7",
@@ -2490,9 +2575,15 @@
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
             "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
-            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae"
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "dcbe8b6e2423991cbc92273788d1762bb110edbd",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74"
           ],
-          "remaining": "Exact checkpoint24 PR identity/merge parents and 295-pass/one-failure/two-existing-skip browser result are preserved. The refresh race has reviewed deterministic local recovery; desktop/root were not reached. Latest local backend 1750 and frontend 913 pass, with separate scoped browser proofs. Fresh exact-candidate hosted CI and complete company/release qualification remain."
+          "remaining": "Exact checkpoint25 cancelled identity/merge is preserved: backend 1750, frontend 913, normal 306/two existing skips, desktop 35, root four/six before cancellation. Later local backend 1847, frontend 924 and separate diagnostics/team/confirmation/foundation/stage proofs pass. Four-stage CI recovery remains pending on the fresh exact PR candidate; company/release qualification remains."
         },
         {
           "id": "G2",
@@ -2505,9 +2596,13 @@
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
             "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
-            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae"
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff"
           ],
-          "remaining": "Current scoped saved-view, malformed identity and restore screenshots are reviewed in both themes at desktop/phone widths; refresh-pending screenshots confirm the guarded desktop state. Single notice overlap, shared confirmation layout, full state atlas and exact final-source accessibility acceptance remain."
+          "remaining": "Scoped diagnostics, team/history and confirmation images are reviewed in both themes. Foundation captures 148 renders and 20 complete frames across five widths, with chart marks and visible dialog actions; 28 final and 48 intermediate images reviewed. Full before-after pixel baseline/all-component/state atlas, single floating notice overlap, AT/zoom and final-source acceptance remain."
         },
         {
           "id": "G3",
