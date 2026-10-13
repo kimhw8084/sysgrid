@@ -61,6 +61,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       expect(await page.locator('[data-workspace-toast="error"][data-visible="true"]').filter({ hasText: 'Controlled phone bulk failure' }).count()).toBe(0)
       await expect(selection).toBeChecked()
       await expect(selection).toBeEnabled()
+      await expect(trigger).toBeFocused()
       expect(await (await request.get(`${apiBase}/settings/operators`)).json()).toEqual(before)
       expect(await (await request.get(`${apiBase}/settings/user-pool/versions`)).json()).toEqual(versions)
       const errors = await page.evaluate(() => JSON.parse(localStorage.getItem('SYSGRID_ERROR_LOGS') || '[]'))
@@ -73,7 +74,6 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         bulkExpanded: document.querySelector('[aria-controls="settings-permission-bulk-actions"]')?.getAttribute('aria-expanded'),
       }))), contentType: 'application/json' })
       if (await trigger.getAttribute('aria-expanded') === 'true') {
-        await trigger.focus()
         await page.keyboard.press('Escape')
       }
       await expect(trigger).toHaveAttribute('aria-expanded', 'false')
@@ -88,6 +88,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       expect((await saved).ok()).toBeTruthy()
       await expect(panel).not.toBeVisible()
       await expect(alert).toHaveCount(0)
+      await expect(page.getByPlaceholder('Search identity, department, or team...')).toBeFocused()
       expect(writes).toBe(2)
       const persisted = (await (await request.get(`${apiBase}/settings/operators`)).json()).find((row: { id: number }) => row.id === operator.id)
       if (action === 'update') expect(persisted).toMatchObject({ is_admin: true, department: 'Preserved department' })
@@ -349,8 +350,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
           await panel.getByRole('button', { name: 'Clear Selection', exact: true }).evaluate((button: HTMLButtonElement) => button.click())
           expect(writes).toBe(1)
           await expect(selection).toBeChecked()
+          if (!fail) await page.getByRole('button', { name: 'Golden Template', exact: true }).focus()
         } finally { release() }
         await expect(page.getByRole('status').filter({ hasText: 'Saving bulk identity changes' })).toHaveCount(0)
+        if (!fail) await expect(page.getByRole('button', { name: 'Golden Template', exact: true })).toBeFocused()
         await page.unroute(path)
         if (fail) {
           await expect(page.getByRole('alert').filter({ hasText: 'Controlled bulk save failure' })).toBeVisible()

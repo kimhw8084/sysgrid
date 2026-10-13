@@ -903,12 +903,14 @@ export default function SettingsPage() {
     return parts[parts.length - 1] || dbUrl
   }, [])
   const permissionSelectionAnchorRef = React.useRef<number | null>(null)
+  const permissionSearchRef = React.useRef<HTMLInputElement | null>(null)
   const permissionCommitBufferRef = React.useRef<Record<number, { timeoutId: ReturnType<typeof setTimeout>, payload: any, expectedPermissions: any, committing: boolean, finishWrite: () => void }>>({})
   const [pendingPermissionWrites, setPendingPermissionWrites] = useState(0)
   const [savingPermissionIds, setSavingPermissionIds] = useState<Set<number>>(new Set())
   const operatorNoticeId = React.useId()
   const [bulkPhase, setBulkPhase] = useState<'confirming' | 'saving' | null>(null)
   const bulkBusyRef = React.useRef(false)
+  const bulkFocusPendingRef = React.useRef(false)
   const bulkBusy = bulkPhase !== null
   const [bulkError, setBulkError] = useState('')
   const [restorePhase, setRestorePhase] = useState<'previewing' | 'review' | 'saving' | null>(null)
@@ -919,6 +921,17 @@ export default function SettingsPage() {
     panelRef: permissionBulkPanelRef,
     panelStyle: permissionBulkPanelStyle,
   } = useWorkspaceAnchoredLayer(showPermissionBulkMenu, { minWidth: 360 })
+
+  React.useLayoutEffect(() => {
+    if (bulkPhase !== null || !bulkFocusPendingRef.current) return
+    bulkFocusPendingRef.current = false
+    // Disabled controls can leave focus on the body. Preserve any control the
+    // user chose while waiting, and avoid scrolling the workspace on recovery.
+    if (document.activeElement !== document.body) return
+    const trigger = permissionBulkTriggerRef.current
+    const target = trigger && !trigger.matches(':disabled') ? trigger : permissionSearchRef.current
+    target?.focus({ preventScroll: true })
+  }, [bulkPhase, permissionBulkTriggerRef])
 
   useEffect(() => {
     return () => {
@@ -1767,6 +1780,7 @@ export default function SettingsPage() {
       return
     }
     bulkBusyRef.current = true
+    bulkFocusPendingRef.current = true
     setBulkPhase(phase)
     setBulkError('')
     try {
@@ -2533,6 +2547,7 @@ export default function SettingsPage() {
                  left={
                    <>
                      <ToolbarSearch
+                       inputRef={permissionSearchRef}
                        value={operatorFilter}
                        onChange={(e) => setOperatorFilter(e.target.value)}
                        placeholder="Search identity, department, or team..."

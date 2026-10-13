@@ -97,11 +97,13 @@ export const ToolbarSearch = ({
   value,
   onChange,
   placeholder,
+  inputRef,
   className = ''
 }: {
   value: string
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   placeholder: string
+  inputRef?: React.Ref<HTMLInputElement>
   className?: string
 }) => (
   <div className={join('relative min-w-[240px] flex-1 max-w-md', className)}>
@@ -111,6 +113,7 @@ export const ToolbarSearch = ({
         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition-colors group-focus-within:text-[var(--accent-primary)]"
     />
     <input
+      ref={inputRef}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
