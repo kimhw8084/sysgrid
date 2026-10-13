@@ -343,7 +343,6 @@ function MainLayout() {
 
   return (
     <div className="sg-app-shell flex h-[100dvh] overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" data-sg-projects-app={projectNavigation.active ? "true" : undefined} data-sg-mobile={projectNavigation.mobile ? 'true' : undefined}>
-      <WorkspaceToaster />
       <ProjectsNavigationBackdrop nav={projectNavigation} />
       <a href="#sg-main-content" className="skip-link">Skip to content</a>
       <motion.aside
@@ -479,6 +478,7 @@ function MainLayout() {
           />}
         />
 
+        <WorkspaceToaster portal={false} />
         <div ref={mainContentRef} id="sg-main-content" tabIndex={-1} className={`relative flex min-h-0 flex-1 flex-col overflow-hidden focus-visible:outline-none ${location.pathname === '/architecture' || location.pathname === '/logs' || location.pathname === '/projects' ? '' : 'p-4 sm:p-8'}`} data-sg-content-panel="true">
           <ErrorBoundary>
             <Suspense fallback={<div role="status" className="flex min-h-40 flex-1 items-center justify-center text-sm text-[var(--text-secondary)]" data-sg-state="route-loading">Loading workspace…</div>}>

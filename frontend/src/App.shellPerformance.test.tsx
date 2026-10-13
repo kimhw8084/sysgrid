@@ -1,5 +1,5 @@
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const observed = vi.hoisted(() => ({
   layouts: 0, pages: 0, health: 0,
@@ -28,7 +28,8 @@ vi.mock('./api/apiClient', () => ({
 
 import App from './App'
 
-afterEach(() => { cleanup(); vi.useRealTimers() })
+beforeEach(() => { vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }))) })
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals() })
 
 describe('application shell render isolation', () => {
   it('updates real clock, latency and health regions without rerendering MainLayout or the active page', async () => {

@@ -304,6 +304,18 @@
 }
 @media (max-width: 767px) {
   .workspace-toaster { top: 80px; bottom: auto; }
+  .workspace-toaster[data-workspace-toaster-host='shell'] {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    flex-shrink: 0;
+    width: calc(100% - 32px);
+    max-height: min(240px, max(96px, calc(100dvh - 300px)));
+    margin: 8px 16px 0;
+  }
+  .workspace-toaster[data-workspace-toaster-host='shell'] .workspace-toast {
+    box-shadow: 0 2px 4px rgb(0 0 0 / 8%);
+  }
 }
 .workspace-toast[data-visible='false'] { display: none; }
 .workspace-toast-icon {

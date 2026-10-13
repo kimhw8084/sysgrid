@@ -80,29 +80,58 @@ export const WorkspaceToast = ({ t, message, onRevert, type = 'success' }: Works
 }
 
 // One renderer covers existing success/error/blank/promise calls as well as reversible custom notices.
-export function WorkspaceToaster() {
+export function WorkspaceToaster({ portal = true }: { portal?: boolean }) {
   const { toasts, handlers } = useToaster({ duration: 4000, loading: { duration: Infinity }, error: { duration: 6000 } })
   // Keep subscriptions at the persistent stack. A toast unmount must never
   // unsubscribe the renderer (react-hot-toast groups subscriptions by toaster ID).
   const { pausedAt } = useToasterStore()
   const hovered = useRef(false)
   const focused = useRef(false)
+  const covered = useRef(false)
   const paused = useRef(false)
+  const hasVisible = toasts.some((t) => t.visible)
   const syncPause = () => {
-    const next = hovered.current || focused.current
+    const next = hasVisible && (hovered.current || focused.current || covered.current)
     if (next === paused.current) return
     paused.current = next
     if (next) handlers.startPause()
     else handlers.endPause()
   }
+  const syncPauseRef = useRef(syncPause)
+  syncPauseRef.current = syncPause
   useEffect(() => {
-    if (toasts.some((t) => t.visible)) return
-    hovered.current = false
-    focused.current = false
-    if (paused.current) { paused.current = false; handlers.endPause() }
-  }, [toasts, handlers.endPause])
-  return createPortal(
-    <ToastPauseContext.Provider value={pausedAt}><section aria-label="Notifications" data-workspace-toaster className="workspace-toaster"
+    if (portal) return
+    const phone = window.matchMedia('(max-width: 767px)')
+    const modalSelector = '[aria-modal="true"]'
+    const updateCoverage = () => {
+      covered.current = phone.matches && Array.from(document.querySelectorAll(modalSelector)).some(node => node.getClientRects().length > 0)
+      syncPauseRef.current()
+    }
+    const containsModal = (node: Node) => node instanceof Element && (node.matches(modalSelector) || !!node.querySelector(modalSelector))
+    // Watch modal lifetime, not every style mutation from gauges, charts or grid rows.
+    const observer = new MutationObserver(records => {
+      if (records.some(record => record.type === 'attributes'
+        ? containsModal(record.target) || (record.attributeName === 'aria-modal')
+        : [...record.addedNodes, ...record.removedNodes].some(containsModal))) updateCoverage()
+    })
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-modal', 'hidden'] })
+    phone.addEventListener('change', updateCoverage)
+    updateCoverage()
+    return () => {
+      observer.disconnect()
+      phone.removeEventListener('change', updateCoverage)
+      covered.current = false
+      hovered.current = false
+      focused.current = false
+      syncPauseRef.current()
+    }
+  }, [portal])
+  useEffect(() => {
+    if (!hasVisible) { hovered.current = false; focused.current = false }
+    syncPauseRef.current()
+  }, [hasVisible])
+  const content = (
+    <ToastPauseContext.Provider value={pausedAt}><section aria-label="Notifications" data-workspace-toaster data-workspace-toaster-host={portal ? 'portal' : 'shell'} className="workspace-toaster" style={{ display: hasVisible ? undefined : 'none' }}
       onMouseEnter={() => { hovered.current = true; syncPause() }} onMouseLeave={() => { hovered.current = false; syncPause() }}
       onFocusCapture={() => { focused.current = true; syncPause() }} onBlurCapture={(event) => {
         if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return
@@ -110,7 +139,8 @@ export function WorkspaceToaster() {
       }}>
       {toasts.map((t) => <React.Fragment key={t.id}>{t.type === 'custom' ? resolveValue(t.message, t) :
         <WorkspaceToast t={t} type={t.type === 'blank' ? 'info' : t.type} message={resolveValue(t.message, t)} />}</React.Fragment>)}
-    </section></ToastPauseContext.Provider>, document.body)
+    </section></ToastPauseContext.Provider>)
+  return portal ? createPortal(content, document.body) : content
 }
 
 export const showWorkspaceToast = (message: string, options?: WorkspaceToastOptions) => (
