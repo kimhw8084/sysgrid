@@ -1432,6 +1432,7 @@ async def create_team(
     name = (data.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Team name is required")
+    await begin_identity_transaction(db, request)
     existing_res = await db.execute(select(models.Team).filter(models.Team.name == name))
     if existing_res.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="Team already exists")
@@ -1464,6 +1465,7 @@ async def update_team(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    await begin_identity_transaction(db, request)
     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
     team = team_res.scalar_one_or_none()
     if not team:
@@ -1525,6 +1527,7 @@ async def delete_team(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    await begin_identity_transaction(db, request)
     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
     team = team_res.scalar_one_or_none()
     if not team:
@@ -1564,6 +1567,7 @@ async def create_operator(
         raise HTTPException(status_code=400, detail="External ID is required")
     if not username:
         raise HTTPException(status_code=400, detail="Username is required")
+    await begin_identity_transaction(db, request)
     res = await db.execute(select(models.Operator).filter(models.Operator.external_id == external_id))
     op = res.scalar_one_or_none()
     existing_operator = op is not None
@@ -1672,6 +1676,7 @@ async def delete_operator(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
     op = res.scalar_one_or_none()
@@ -1702,6 +1707,7 @@ async def bulk_update_operators(
     if not isinstance(updates, list) or not updates:
         raise HTTPException(status_code=400, detail="A non-empty updates list is required")
 
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     before_snapshot = await build_user_pool_snapshot(db)
     team_updates: list[dict] = []
@@ -1752,6 +1758,7 @@ async def bulk_delete_operators(
     if not isinstance(ids, list) or not ids:
         raise HTTPException(status_code=400, detail="A non-empty ids list is required")
 
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     before_snapshot = await build_user_pool_snapshot(db)
     team_updates: list[dict] = []
@@ -1800,7 +1807,7 @@ async def begin_identity_transaction(db: AsyncSession, request: Request, *, prev
     if db.get_bind().dialect.name != "sqlite":
         return
     # Discard authorization's cached read state before acquiring a consistent
-    # snapshot. Apply/restore must own the writer before reading current data.
+    # snapshot. Identity writers must own the writer before reading current data.
     await db.rollback()
     try:
         await db.execute(text("BEGIN" if preview else "BEGIN IMMEDIATE"))

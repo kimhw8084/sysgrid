@@ -1105,13 +1105,50 @@ async def test_restore_preserves_supported_group_and_permission_records(operator
         assert len((await db.scalars(select(models.UserPoolVersion))).all()) == 2
 
 
+IDENTITY_WRITER_OPERATIONS = [
+    'team_create', 'team_update', 'team_delete', 'operator_create',
+    'operator_upsert', 'operator_delete', 'bulk_update', 'bulk_delete',
+]
+
+
+async def identity_writer_case(c, setup_db, operation, version_id=None):
+    from app.api import settings as settings_api
+
+    if operation in {'team_update', 'team_delete'}:
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            team = models.Team(name='Transaction team', description='Original description')
+            db.add(team)
+            await db.commit()
+            team_id = team.id
+    cases = {
+        'restore': ('restore_user_pool', 'POST', f'/user-pool/restore/{version_id}', None),
+        'patch': ('update_operator', 'PATCH', f"/operators/{c['ids'][0]}",
+                  {'custom_permissions': {'settings': 2}, 'expected_custom_permissions': {'settings': 1}}),
+        'team_create': ('create_team', 'POST', '/teams', {'name': 'Transaction created team'}),
+        'operator_create': ('create_operator', 'POST', '/operators',
+                            {'external_id': 'transaction-created', 'username': 'transaction-created'}),
+        'operator_upsert': ('create_operator', 'POST', '/operators',
+                            {'external_id': 'input-target', 'username': 'input-target', 'full_name': 'Transaction updated'}),
+        'operator_delete': ('delete_operator', 'DELETE', f"/operators/{c['ids'][0]}", None),
+        'bulk_update': ('bulk_update_operators', 'POST', '/operators/bulk-update',
+                        {'updates': [{'id': op_id, 'payload': {'full_name': 'Transaction updated'}} for op_id in c['ids']]}),
+        'bulk_delete': ('bulk_delete_operators', 'POST', '/operators/bulk-delete', {'ids': c['ids']}),
+    }
+    if operation in {'team_update', 'team_delete'}:
+        cases[operation] = ('update_team' if operation == 'team_update' else 'delete_team',
+                            'PATCH' if operation == 'team_update' else 'DELETE', f'/teams/{team_id}',
+                            {'name': 'Transaction renamed team'} if operation == 'team_update' else None)
+    handler, method, path, payload = cases[operation]
+    return getattr(settings_api, handler), method, '/api/v1/settings' + path, payload
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize('grant', ['admin', 'custom', 'role'])
-@pytest.mark.parametrize('operation', ['restore', 'patch'])
+@pytest.mark.parametrize('operation', ['restore', 'patch', *IDENTITY_WRITER_OPERATIONS])
 async def test_identity_write_rechecks_revoked_authority_inside_write_transaction(operator_scope, setup_db, grant, operation):
     import inspect
     from fastapi import Depends, Request
-    from app.api import authorization, settings as settings_api
+    from app.api import authorization
 
     c = operator_scope
     async with _tenant_db(setup_db, c['tenant']) as db:
@@ -1127,7 +1164,7 @@ async def test_identity_write_rechecks_revoked_authority_inside_write_transactio
         manager_id, role_id = manager.id, role.id
     version_id, _, _ = await field_restore_fixture(c, setup_db)
     resolved, release = asyncio.Event(), asyncio.Event()
-    handler = settings_api.restore_user_pool if operation == 'restore' else settings_api.update_operator
+    handler, method, path, payload = await identity_writer_case(c, setup_db, operation, version_id)
     dependency = inspect.signature(handler).parameters['_settings_access'].default.dependency
 
     async def hold_accepted_authority(request: Request, db=Depends(get_db)):
@@ -1138,10 +1175,7 @@ async def test_identity_write_rechecks_revoked_authority_inside_write_transactio
         return result
 
     app.dependency_overrides[dependency] = hold_accepted_authority
-    task = asyncio.create_task(
-        c['client'].post(f'/api/v1/settings/user-pool/restore/{version_id}', headers=c['headers'])
-        if operation == 'restore' else c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}",
-            headers=c['headers'], json={'custom_permissions': {'settings': 2}, 'expected_custom_permissions': {'settings': 1}}))
+    task = asyncio.create_task(c['client'].request(method, path, headers=c['headers'], json=payload))
     try:
         await asyncio.wait_for(resolved.wait(), 5)
         async with _tenant_db(setup_db, c['tenant']) as db:
@@ -1159,6 +1193,100 @@ async def test_identity_write_rechecks_revoked_authority_inside_write_transactio
     assert response.status_code == 403, response.text
     assert response.json()['detail'] == "Insufficient capability 'settings' at level 3."
     assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', IDENTITY_WRITER_OPERATIONS)
+async def test_identity_writer_busy_conflict_preserves_state_and_allows_explicit_retry(operator_scope, setup_db, operation):
+    c = operator_scope
+    _, method, path, payload = await identity_writer_case(c, setup_db, operation)
+    before = await snapshot(c, setup_db)
+    async with _tenant_db(setup_db, c['tenant']) as writer:
+        target = await writer.get(models.Operator, c['ids'][0])
+        target.full_name = 'Uncommitted competing identity write'
+        await writer.flush()
+        response = await c['client'].request(method, path, headers=c['headers'], json=payload)
+        assert response.status_code == 409, response.text
+        assert 'busy' in response.json()['detail']
+        await writer.rollback()
+    assert await snapshot(c, setup_db) == before
+    response = await c['client'].request(method, path, headers=c['headers'], json=payload)
+    assert response.status_code == 200, response.text
+    after = await snapshot(c, setup_db)
+    assert after != before
+    versions = after[models.UserPoolVersion.__tablename__]
+    assert len(versions) == len(before[models.UserPoolVersion.__tablename__]) + 1
+    assert sum(version['is_active'] for version in versions) == 1 and versions[-1]['is_active']
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        from app.api.settings import build_user_pool_snapshot
+        assert versions[-1]['snapshot_data'] == await build_user_pool_snapshot(db)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['bulk_partial_updates', 'team_rename_assignment', 'team_delete_assignment'])
+async def test_concurrent_identity_writers_preserve_relationships_and_complete_revisions(operator_scope, setup_db, monkeypatch, operation):
+    from app.api import authorization
+    from app.api.settings import build_user_pool_snapshot, create_user_pool_version, summarize_user_pool_snapshot_delta
+
+    c = operator_scope
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        team = models.Team(name='Concurrent team')
+        db.add(team)
+        await db.flush()
+        team_id = team.id
+        await create_user_pool_version(db, created_by='admin_root', diff_summary={})
+        await db.commit()
+    ready = asyncio.Event()
+    sessions = set()
+    original = authorization.resolve_current_operator
+
+    async def synchronized_authorization(request, db):
+        result = await original(request, db)
+        if db not in sessions:
+            sessions.add(db)
+            if len(sessions) == 2:
+                ready.set()
+            await asyncio.wait_for(ready.wait(), 5)
+        return result
+
+    monkeypatch.setattr(authorization, 'resolve_current_operator', synchronized_authorization)
+    if operation == 'bulk_partial_updates':
+        calls = [c['client'].post('/api/v1/settings/operators/bulk-update', headers=c['headers'],
+                    json={'updates': [{'id': c['ids'][0], 'payload': payload}]})
+                 for payload in [{'full_name': 'Concurrent name'}, {'department': 'Concurrent department'}]]
+    else:
+        calls = [c['client'].patch(f"/api/v1/settings/operators/{c['ids'][0]}",
+                    headers=c['headers'], json={'team_id': team_id})]
+        calls.append(c['client'].patch(f'/api/v1/settings/teams/{team_id}', headers=c['headers'],
+                        json={'name': 'Concurrent renamed team'}) if operation == 'team_rename_assignment'
+                     else c['client'].delete(f'/api/v1/settings/teams/{team_id}', headers=c['headers']))
+    responses = await asyncio.wait_for(asyncio.gather(*calls, return_exceptions=True), 10)
+    assert not any(isinstance(response, BaseException) for response in responses), [repr(response) for response in responses]
+    statuses = sorted(response.status_code for response in responses)
+    assert statuses == ([200, 400] if operation == 'team_delete_assignment' else [200, 200]), [response.text for response in responses]
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        operator = await db.get(models.Operator, c['ids'][0])
+        team = await db.get(models.Team, team_id)
+        if operation == 'bulk_partial_updates':
+            assert operator.full_name == 'Concurrent name' and operator.department == 'Concurrent department'
+        elif operation == 'team_rename_assignment':
+            assert team.name == operator.team == 'Concurrent renamed team'
+            assert operator.team_id == team_id and operator.teams == [team.name]
+        elif team is None:
+            assert operator.team_id is None and operator.team is None and not operator.teams
+        else:
+            assert operator.team_id == team_id and operator.team == team.name and operator.teams == [team.name]
+        versions = (await db.scalars(select(models.UserPoolVersion).order_by(models.UserPoolVersion.id))).all()
+        assert len(versions) == (2 if operation == 'team_delete_assignment' else 3)
+        assert sum(version.is_active for version in versions) == 1 and versions[-1].is_active
+        assert versions[-1].snapshot_data == await build_user_pool_snapshot(db)
+        if operation == 'bulk_partial_updates':
+            for previous, current in zip(versions, versions[1:]):
+                delta = summarize_user_pool_snapshot_delta(previous.snapshot_data, current.snapshot_data)
+                assert delta['changed'] == current.diff_summary['changed'] == 1
+                assert delta['added'] == current.diff_summary['added'] == 0
+                assert delta['removed'] == current.diff_summary['removed'] == 0
+                assert delta['changed_identities'] == current.diff_summary['changed_identities']
 
 
 @pytest.mark.asyncio
