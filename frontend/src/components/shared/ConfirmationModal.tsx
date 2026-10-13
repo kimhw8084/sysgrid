@@ -38,12 +38,12 @@ export const ConfirmationModal = ({
   // blocker here can replace the dirty form's blocker while its question is open.
   return (
     <WorkspaceDialogFrame title={title} onClose={onClose}>
-      <div className="max-h-[82vh] w-full max-w-lg space-y-5 overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-5 shadow-2xl sm:p-6">
-        <div className="flex items-center gap-3">{getVariantIcon()}<h2 className="text-base font-semibold text-[var(--text-primary)]">{title}</h2></div>
-        <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{message}</p>
-        <div className="flex flex-wrap justify-end gap-3">
-          <ToolbarButton onClick={onClose}>{cancelText}</ToolbarButton>
-          <ToolbarButton onClick={onConfirm} variant={variant === 'danger' ? 'danger' : 'primary'}>{confirmText}</ToolbarButton>
+      <div style={{ maxWidth: 'min(32rem, calc(100vw - 32px))' }} className="flex max-h-[82vh] w-full flex-col gap-5 overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-5 shadow-2xl sm:p-6">
+        <div className="flex shrink-0 items-center gap-3">{getVariantIcon()}<h2 className="text-base font-semibold text-[var(--text-primary)]">{title}</h2></div>
+        <p role="region" aria-label="Confirmation details" tabIndex={0} className="min-h-0 overflow-y-auto text-sm leading-relaxed text-[var(--text-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--action-primary)]">{message}</p>
+        <div className="flex shrink-0 flex-wrap justify-end gap-3">
+          <ToolbarButton onClick={onClose} className="min-h-11">{cancelText}</ToolbarButton>
+          <ToolbarButton onClick={onConfirm} className="min-h-11" variant={variant === 'danger' ? 'danger' : 'primary'}>{confirmText}</ToolbarButton>
         </div>
       </div>
     </WorkspaceDialogFrame>
