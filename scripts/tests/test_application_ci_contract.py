@@ -37,14 +37,22 @@ def main() -> None:
     assert "group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}" in workflow
     assert "cancel-in-progress: true" in workflow
 
-    required_job = workflow.split("  required:\n", 1)[1]
+    qualification_job, required_job = workflow.split("  qualification:\n", 1)[1].split("  required:\n", 1)
+    assert "    name: qualification (${{ matrix.stage }})\n" in qualification_job
+    assert "      fail-fast: false\n" in qualification_job
+    assert "        stage: [checks, normal-v1, desktop, root-preview]\n" in qualification_job
+    assert "exclude:" not in qualification_job and "include:" not in qualification_job
+    assert "continue-on-error" not in workflow
+    assert workflow.count("    timeout-minutes: 45\n") == 2
+    assert "runs-on: ubuntu-24.04" in qualification_job
     assert "    name: required\n" in required_job
-    assert "runs-on: ubuntu-24.04" in required_job
-    assert "continue-on-error" not in required_job
-    job_env = required_job.split("    steps:\n", 1)[0]
+    assert "    needs: qualification\n    if: always()\n" in required_job
+    assert "QUALIFICATION_RESULT: ${{ needs.qualification.result }}" in required_job
+    job_env = qualification_job.split("    steps:\n", 1)[0]
     assert "runner" not in job_env
     assert "SYSGRID_VERIFY_TEMP_ROOT" not in job_env
     assert "CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" in job_env
+    assert "QUALIFICATION_STAGE: ${{ matrix.stage }}" in job_env
 
     decisive_steps = (
         "Check candidate whitespace",
@@ -54,10 +62,10 @@ def main() -> None:
         "Run canonical application verifier",
     )
     for name in decisive_steps:
-        block = step_block(required_job, name)
+        block = step_block(qualification_job, name)
         assert "if:" not in block, name
 
-    whitespace_step = step_block(required_job, "Check candidate whitespace")
+    whitespace_step = step_block(qualification_job, "Check candidate whitespace")
     assert 'pull_request)' in whitespace_step
     assert 'base_sha="${PR_BASE_SHA:-}"' in whitespace_step
     assert 'if [[ -z "$base_sha" ]] || ! git cat-file -e "$base_sha^{commit}" 2>/dev/null;' in whitespace_step
@@ -79,17 +87,17 @@ def main() -> None:
     assert 'echo "SYSGRID_CANDIDATE_BASE_SHA=$base_sha" >> "$GITHUB_ENV"' in whitespace_step
     assert 'git diff --check "$base_sha..$GITHUB_SHA"' in whitespace_step
     assert 'git diff --check 4b825dc642cb6eb9a060e54bf8d69288fbee4904' not in whitespace_step
-    assert "npm ci --prefix frontend" in required_job
-    assert "frontend/package-lock.json" in required_job
-    assert "--require-hashes" in required_job
-    assert "-r backend/requirements.lock" in required_job
-    assert '"$GITHUB_WORKSPACE/scripts/verify-app.sh"' in required_job
-    verifier_step = step_block(required_job, "Run canonical application verifier")
+    assert "npm ci --prefix frontend" in qualification_job
+    assert "frontend/package-lock.json" in qualification_job
+    assert "--require-hashes" in qualification_job
+    assert "-r backend/requirements.lock" in qualification_job
+    assert '"$GITHUB_WORKSPACE/scripts/verify-app.sh" --stage "$QUALIFICATION_STAGE"' in qualification_job
+    verifier_step = step_block(qualification_job, "Run canonical application verifier")
     assert 'SYSGRID_VERIFY_TEMP_ROOT="$RUNNER_TEMP/sysgrid-verification"' in verifier_step
     assert "SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID: ci-system-root" in workflow
     assert "SYSGRID_VERIFY_USER_ID" not in workflow
     assert "SYSGRID_VERIFY_PROFILE=root-preview" not in workflow
-    assert "scripts/verify-app.sh" in required_job
+    assert "scripts/verify-app.sh" in qualification_job
     for divergent_command in (
         "pytest",
         "npm run check:operational-contracts",
@@ -99,10 +107,12 @@ def main() -> None:
     ):
         assert divergent_command not in workflow, divergent_command
 
-    assert "if: always()" in required_job
-    assert "ci-evidence/ci-identity.json" in required_job
-    assert "final_required_gate_result" in required_job
-    evidence_step = step_block(required_job, "Collect SHA-bound CI evidence")
+    assert "if: always()" in qualification_job
+    assert "ci-evidence/ci-identity.json" in qualification_job
+    assert "qualification_stage" in qualification_job
+    assert "qualification_result" in qualification_job
+    assert "final_required_gate_result" not in qualification_job
+    evidence_step = step_block(qualification_job, "Collect SHA-bound CI evidence")
     assert '"github_sha": os.environ["GITHUB_SHA"]' in evidence_step
     assert '"tested_trigger_sha": os.environ["GITHUB_SHA"]' in evidence_step
     assert '"candidate_sha": os.environ["CANDIDATE_SHA"]' in evidence_step
@@ -110,13 +120,27 @@ def main() -> None:
     assert '"candidate_base_sha": os.environ.get("SYSGRID_CANDIDATE_BASE_SHA") or None' in evidence_step
     assert '"pr_base_sha": os.environ.get("PR_BASE_SHA") or None' in evidence_step
     assert '"BASE_SHA"' not in evidence_step
-    assert "backend/test-results" in required_job
-    assert "frontend/test-results" in required_job
-    assert "frontend/test-results-v1" in required_job
-    assert "frontend/test-results-desktop" in required_job
-    assert "frontend/test-results-root-preview" in required_job
-    assert "frontend/playwright-report-desktop" in required_job
-    assert "owned-runtime" in required_job
+    assert "backend/test-results" in qualification_job
+    assert "frontend/test-results" in qualification_job
+    assert "frontend/test-results-v1" in qualification_job
+    assert "frontend/test-results-desktop" in qualification_job
+    assert "frontend/test-results-root-preview" in qualification_job
+    assert "frontend/playwright-report-desktop" in qualification_job
+    assert "owned-runtime" in qualification_job
+    assert "application-ci-${{ env.QUALIFICATION_STAGE }}-evidence-${{ env.CANDIDATE_SHA }}" in qualification_job
+
+    barrier = step_block(required_job, "Require every qualification stage")
+    assert "if:" not in barrier
+    assert 'if [[ "$QUALIFICATION_RESULT" != success ]]; then' in barrier and 'exit 1' in barrier
+    aggregate = step_block(required_job, "Collect aggregate CI identity")
+    assert '"schema_version": "sysgrid.application-ci.evidence.v2"' in aggregate
+    assert '"tested_trigger_sha": os.environ["GITHUB_SHA"]' in aggregate
+    assert '"candidate_sha": os.environ["CANDIDATE_SHA"]' in aggregate
+    assert '"qualification_stages": ["checks", "normal-v1", "desktop", "root-preview"]' in aggregate
+    assert '"ref": os.environ["GITHUB_REF"]' in aggregate
+    assert '"head_ref": os.environ.get("GITHUB_HEAD_REF") or os.environ["GITHUB_REF_NAME"]' in aggregate
+    assert '"stage_evidence_artifacts"' in aggregate and '"runtime_provenance"' in aggregate
+    assert '"final_required_gate_result": os.environ["FINAL_REQUIRED_GATE_RESULT"]' in aggregate
     assert "application-ci-evidence-${{ env.CANDIDATE_SHA }}" in required_job
     assert "actions/upload-artifact@" in required_job
     assert all(
