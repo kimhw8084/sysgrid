@@ -24,6 +24,7 @@ export function computeWorkspaceAnchoredPanelStyle({
   offset,
   minWidth,
   placement,
+  verticalBounds,
 }: {
   triggerRect: Pick<DOMRect, 'top' | 'right' | 'bottom' | 'left' | 'width'>
   viewportWidth: number
@@ -31,14 +32,17 @@ export function computeWorkspaceAnchoredPanelStyle({
   offset: number
   minWidth: number
   placement: WorkspaceAnchoredPlacement | null
+  verticalBounds?: Pick<DOMRect, 'top' | 'bottom'>
 }): { placement: WorkspaceAnchoredPlacement; style: CSSProperties } {
   const padding = 12
   const maxWidth = Math.max(0, viewportWidth - padding * 2)
   const desiredWidth = Math.max(triggerRect.width, minWidth)
   const width = Math.min(desiredWidth, maxWidth)
   const left = clamp(triggerRect.left, padding, Math.max(padding, viewportWidth - width - padding))
-  const availableBelow = Math.max(0, viewportHeight - triggerRect.bottom - offset - padding)
-  const availableAbove = Math.max(0, triggerRect.top - offset - padding)
+  const topBoundary = clamp(verticalBounds?.top ?? 0, 0, Math.max(0, viewportHeight - padding * 2)) + padding
+  const bottomBoundary = clamp(verticalBounds?.bottom ?? viewportHeight, topBoundary + padding, viewportHeight) - padding
+  const availableBelow = Math.max(0, bottomBoundary - triggerRect.bottom - offset)
+  const availableAbove = Math.max(0, triggerRect.top - offset - topBoundary)
   // Retain a stable side while usable, but flip when scrolling/resizing removes its space.
   const preferred = placement ?? (availableBelow >= availableAbove ? 'below' : 'above')
   const preferredSpace = preferred === 'below' ? availableBelow : availableAbove
@@ -50,11 +54,11 @@ export function computeWorkspaceAnchoredPanelStyle({
     placement: resolvedPlacement,
     style: {
       position: 'fixed',
-      top: resolvedPlacement === 'below' ? clamp(triggerRect.bottom + offset, padding, viewportHeight - padding) : undefined,
-      bottom: resolvedPlacement === 'above' ? clamp(viewportHeight - triggerRect.top + offset, padding, viewportHeight - padding) : undefined,
+      top: resolvedPlacement === 'below' ? clamp(triggerRect.bottom + offset, topBoundary, bottomBoundary) : undefined,
+      bottom: resolvedPlacement === 'above' ? viewportHeight - clamp(triggerRect.top - offset, topBoundary, bottomBoundary) : undefined,
       left,
       width,
-      maxHeight: Math.min(availableHeight, Math.max(0, viewportHeight - padding * 2)),
+      maxHeight: Math.min(availableHeight, bottomBoundary - topBoundary),
       overflowY: 'auto',
       overscrollBehavior: 'contain',
       scrollbarGutter: 'stable',
@@ -153,6 +157,7 @@ export function useWorkspaceAnchoredLayer(isOpen: boolean, options?: { offset?: 
       offset,
       minWidth,
       placement: placementRef.current,
+      verticalBounds: trigger.closest('[data-sg-content-panel], [data-workspace-modal-body]')?.getBoundingClientRect(),
     })
     placementRef.current = result.placement
     if (!trigger.id) trigger.id = anchorId
@@ -206,6 +211,8 @@ export function useWorkspaceAnchoredLayer(isOpen: boolean, options?: { offset?: 
       observerFrame = window.requestAnimationFrame(() => {
         if (panelRef.current) observer?.observe(panelRef.current)
         if (triggerRef.current) observer?.observe(triggerRef.current)
+        const viewport = triggerRef.current?.closest('[data-sg-content-panel], [data-workspace-modal-body]')
+        if (viewport) observer?.observe(viewport)
       })
     }
 

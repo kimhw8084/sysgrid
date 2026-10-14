@@ -364,7 +364,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         expect(writes).toBe(1)
         await page.screenshot({ path: testInfo.outputPath('permission-restore-pending.png'), animations: 'disabled' })
       } finally { release() }
-      await expect(history.getByRole('status')).toHaveCount(0)
+      await expect(history.getByRole('status').filter({ hasText: 'Restoring identity revision' })).toHaveCount(0)
       await page.unroute(`**${endpoint}`)
       if (fail) {
         await expect(history.getByRole('alert')).toContainText('Controlled identity restore failure')
@@ -376,7 +376,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         const applied = page.waitForResponse(response => response.url().endsWith(endpoint) && response.request().method() === 'POST')
         await confirmation.getByRole('button', { name: 'Restore identities', exact: true }).click()
         expect((await applied).ok()).toBeTruthy()
-        await expect(history.getByRole('status')).toHaveCount(0)
+        await expect(history.getByRole('status').filter({ hasText: 'Restoring identity revision' })).toHaveCount(0)
       }
       await expect(page.getByText('Identity revision restored', { exact: true })).toBeVisible()
       const saved = (await (await request.get(`${apiBase}/settings/operators`)).json()).find((row: { id: number }) => row.id === data.operator.id)

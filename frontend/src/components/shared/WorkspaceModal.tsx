@@ -359,6 +359,7 @@ export function WorkspaceModal({
             onTabChange={onTabChange}
           />
 
+          <div data-workspace-modal-notification-slot style={{ display: 'contents' }} />
           <div data-workspace-modal-body className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain custom-scrollbar px-4 pb-6 sm:px-6 modal-content-spacing">
             {children}
           </div>

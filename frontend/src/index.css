@@ -304,7 +304,7 @@
 }
 @media (max-width: 767px) {
   .workspace-toaster { top: 80px; bottom: auto; }
-  .workspace-toaster[data-workspace-toaster-host='shell'] {
+  .workspace-toaster:is([data-workspace-toaster-host='shell'], [data-workspace-toaster-host='modal']) {
     position: relative;
     inset: auto;
     z-index: auto;
@@ -313,7 +313,12 @@
     max-height: min(240px, max(96px, calc(100dvh - 300px)));
     margin: 8px 16px 0;
   }
-  .workspace-toaster[data-workspace-toaster-host='shell'] .workspace-toast {
+  .workspace-toaster[data-workspace-toaster-host='modal'] {
+    flex-shrink: 1;
+    min-height: 0;
+    max-height: min(160px, max(48px, calc(100dvh - 300px)));
+  }
+  .workspace-toaster:is([data-workspace-toaster-host='shell'], [data-workspace-toaster-host='modal']) .workspace-toast {
     box-shadow: 0 2px 4px rgb(0 0 0 / 8%);
   }
 }

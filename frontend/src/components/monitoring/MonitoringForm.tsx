@@ -20,14 +20,13 @@ import {
 import { StatusPill } from '../shared/StatusPill'
 import { ToolbarButton } from '../shared/LayoutPrimitives'
 import { useOperationalFormDirty } from '../shared/OperationalFormContracts'
-import CodeMirror from '@uiw/react-codemirror'
+import { MonitoringLogicEditor } from './MonitoringLogicEditor'
 import { OperationalAssetSelector } from '../shared/OperationalAssetSelector'
 import { showWorkspaceToast } from '../shared/WorkspaceToast'
 import {
   STATUSES,
   LOGIC_TYPES,
   LOGIC_SUGGESTIONS,
-  getLogicExtensions,
   type MonitoringLogicEntry,
   type MonitoringOwner,
   type MonitoringFormErrors,
@@ -970,15 +969,11 @@ export function MonitoringForm({ item, devices, categories, severities, platform
                               <div className={`flex-1 overflow-hidden rounded-lg border shadow-inner min-h-[280px] ${
                                 activeLogicErrors.logic_info ? 'border-rose-500/60 bg-rose-500/10' : 'border-white/10 bg-black/40'
                               }`}>
-                                <CodeMirror
+                                <MonitoringLogicEditor
                                   value={activeLogicEntry.logic_info ?? ''}
-                                  height="100%"
-                                  minHeight="280px"
-                                  extensions={getLogicExtensions(activeLogicEntry.type)}
-                                  basicSetup={{ lineNumbers: true, foldGutter: true }}
+                                  logicType={activeLogicEntry.type}
                                   placeholder={LOGIC_SUGGESTIONS[activeLogicEntry.type] || 'Enter logic parameters...'}
                                   onChange={(value) => updateLogicEntry(activeLogicEntry.id, 'logic_info', value)}
-                                  theme="dark"
                                 />
                               </div>
                               <FieldError message={activeLogicErrors.logic_info} />

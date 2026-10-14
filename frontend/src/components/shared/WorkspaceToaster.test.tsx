@@ -5,7 +5,7 @@ import { WorkspaceToaster, showWorkspaceToast } from './WorkspaceToast'
 
 beforeEach(() => {
   vi.useFakeTimers()
-  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
   act(() => toast.remove())
 })
 afterEach(() => { act(() => toast.remove()); vi.useRealTimers(); vi.unstubAllGlobals() })
@@ -13,6 +13,29 @@ const advance = (ms: number) => act(() => { vi.advanceTimersByTime(ms) })
 const visible = () => document.querySelectorAll('[data-workspace-toast][data-visible="true"]')
 
 describe('unified notifications', () => {
+  it('moves the persistent recovery notice into a modal slot and back without resetting confirmation', async () => {
+    const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)
+    const modal = document.createElement('div'), slot = document.createElement('div')
+    modal.setAttribute('aria-modal', 'true')
+    slot.setAttribute('data-workspace-modal-notification-slot', '')
+    modal.append(slot)
+    try {
+      const { container } = render(<WorkspaceToaster portal={false} />)
+      act(() => showWorkspaceToast('Recover this record', { onRevert: vi.fn() }))
+      fireEvent.click(screen.getByRole('button', { name: 'Revert' }))
+      const confirm = screen.getByRole('button', { name: 'Confirm Undo?' })
+      act(() => confirm.focus())
+      await act(async () => { document.body.append(modal) })
+      expect(slot).toContainElement(confirm)
+      expect(confirm).toHaveFocus()
+      advance(10000)
+      expect(screen.getByRole('button', { name: 'Confirm Undo?' })).toBe(confirm)
+      await act(async () => modal.remove())
+      expect(container).toContainElement(confirm)
+      expect(screen.getByRole('button', { name: 'Confirm Undo?' })).toBe(confirm)
+    } finally { modal.remove(); rectangles.mockRestore() }
+  })
+
   it('pauses newly arriving notices behind an existing phone modal and releases its clock on unmount', async () => {
     vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
     const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)

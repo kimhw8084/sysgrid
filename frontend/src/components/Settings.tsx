@@ -2612,8 +2612,8 @@ export default function SettingsPage() {
                        style={permissionBulkPanelStyle}
                        data-workspace-panel="true"
                      >
-                       <div ref={permissionBulkPanelRef} id="settings-permission-bulk-actions" role="dialog" aria-label="Bulk identity actions">
-                         <WorkspaceFloatingPanel kind="context" className="max-h-[560px] overflow-y-auto custom-scrollbar p-3">
+                       <div ref={permissionBulkPanelRef} id="settings-permission-bulk-actions" role="dialog" aria-label="Bulk identity actions" style={{ maxHeight: 'inherit' }}>
+                         <WorkspaceFloatingPanel kind="context" className="max-h-[inherit] overflow-y-auto custom-scrollbar p-3">
                            <div className="mb-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3">
                              <p className="text-xs font-semibold text-[var(--text-secondary)]">Bulk actions</p>
                              <p className="pt-1 text-xs font-semibold text-[var(--text-primary)]">{selectedOperatorIds.length} {selectedOperatorIds.length === 1 ? 'identity' : 'identities'} selected</p>

@@ -70,7 +70,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         await expect(field).toHaveValue(changed)
         expect(writes).toBe(1)
         await expect(dialog.getByRole('button', { name: 'metadata', exact: true })).toBeDisabled()
-        await expect(dialog.getByRole('status')).toHaveText('Saving asset changes...')
+        await expect(dialog.getByRole('status').filter({ hasText: /^Saving asset changes\.\.\.$/ })).toHaveText('Saving asset changes...')
         await dialog.getByTitle('Close', { exact: true }).click()
         await expect(dialog).toBeVisible()
         await expect(page.getByRole('alertdialog', { name: 'Unsaved Changes', exact: true })).toHaveCount(0)

@@ -115,7 +115,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) test.describe(theme, ()
       await page.keyboard.press('Escape')
       await expect(page.getByRole('alertdialog')).toHaveCount(0)
       await expect(dialog).toBeVisible()
-      await expect(dialog.getByRole('status')).toHaveText(operation === 'preview' ? 'Validating import rows...' : 'Importing selected rows...')
+      const pendingStatus = dialog.getByRole('status').filter({ hasText: operation === 'preview' ? /^Validating import rows\.\.\.$/ : /^Importing selected rows\.\.\.$/ })
+      await expect(pendingStatus).toHaveText(operation === 'preview' ? 'Validating import rows...' : 'Importing selected rows...')
       const busyButton = dialog.getByRole('button', { name: operation === 'preview' ? 'Auditing...' : 'Importing...', exact: true })
       await expect(busyButton.locator('svg').first()).toHaveCSS('animation-name', 'none')
       await page.setViewportSize({ width: 390, height: 844 })
@@ -127,7 +128,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) test.describe(theme, ()
         expect(box!.x + box!.width).toBeLessThanOrEqual(firstHeaderAction!.x)
       }
       const bounds = await dialog.boundingBox()
-      for (const control of [dialog.getByRole('status'), dialog.getByTitle('Close', { exact: true })]) {
+      for (const control of [pendingStatus, dialog.getByTitle('Close', { exact: true })]) {
         const box = await control.boundingBox()
         expect(box).not.toBeNull()
         expect(box!.x).toBeGreaterThanOrEqual(bounds!.x)

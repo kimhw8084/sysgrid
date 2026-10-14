@@ -47,9 +47,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await page.getByRole('button', { name: 'Register Asset', exact: true }).click()
       const form = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Create Asset', exact: true }) })
       await expect(form).toBeVisible()
+      await expect(form.locator('[data-workspace-modal-notification-slot]')).toContainText('Asset CSV exported')
       await expect.poll(() => notice.evaluate(node => {
         const r = node.getBoundingClientRect(), hit = document.elementFromPoint(r.left + r.width / 2, r.top + 20)
-        return !!hit && !node.contains(hit)
+        return !!hit && node.contains(hit) && !!hit.closest('[aria-modal="true"]')
       })).toBe(true)
       const coveredGauge = await notice.locator('[data-toast-gauge] > div').getAttribute('style')
       const started = Date.now()

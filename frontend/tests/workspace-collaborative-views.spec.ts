@@ -48,6 +48,22 @@ for (const workspace of workspaces.filter(item => item.key !== 'external')) {
         expect(saved.ok()).toBeTruthy()
         expect((await saved.json()).views.some((view: any) => view.name === viewName && String(view.id) === new URL(page.url()).searchParams.get('view'))).toBeTruthy()
         const panel = page.locator('[data-workspace-panel-key="views-menu"]')
+        const expectAnchorAfterNotice = async (phase: string) => {
+          await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+          const bounds = () => panel.evaluate(element => {
+            const trigger = document.getElementById(element.getAttribute('data-workspace-anchor') || '')
+            if (!trigger) return null
+            const p = element.getBoundingClientRect(), t = trigger.getBoundingClientRect()
+            const owner = trigger.closest('[data-sg-content-panel], [data-workspace-modal-body]')!.getBoundingClientRect()
+            return { panel: p.toJSON(), trigger: t.toJSON(), owner: owner.toJSON(), gap: Math.min(Math.abs(p.top - t.bottom - 8), Math.abs(t.top - p.bottom - 8)) }
+          })
+          await testInfo.attach(`notice-anchor-${phase}`, { body: JSON.stringify(await bounds()), contentType: 'application/json' })
+          expect((await bounds())?.gap, 'Open saved-view panel must follow its trigger when notification space changes').toBeLessThanOrEqual(2)
+          const positioned = (await bounds())!
+          expect(positioned.panel.top).toBeGreaterThanOrEqual(positioned.owner.top + 10)
+          expect(positioned.panel.bottom).toBeLessThanOrEqual(positioned.owner.bottom - 10)
+          await page.locator('[data-workspace-toast][data-visible="true"]').first().hover()
+        }
         const typography = await panel.evaluate(element => {
           const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
           const samples = []
@@ -87,6 +103,7 @@ for (const workspace of workspaces.filter(item => item.key !== 'external')) {
         await expect(success).toHaveCount(0)
         await expect(copy).toBeEnabled()
         await expect(copy).toHaveText('Copy link')
+        await expectAnchorAfterNotice('failure')
         expect(page.url()).toBe(locationBefore)
         await expectReadableGridText(page, testInfo, 'view-copy-failure', '[data-workspace-toast="error"]')
         await page.screenshot({ path: testInfo.outputPath('view-copy-failure.png'), animations: 'disabled' })
@@ -101,6 +118,7 @@ for (const workspace of workspaces.filter(item => item.key !== 'external')) {
         const successes = page.locator('[data-workspace-toast="success"][data-visible="true"]')
         expect(await successes.count()).toBe(1)
         expect(await successes.innerText()).toContain('View link copied')
+        await expectAnchorAfterNotice('success')
         expect(await page.evaluate(() => (window as any).__viewClipboard.calls)).toEqual([locationBefore, locationBefore])
         await expectReadableGridText(page, testInfo, 'view-copy-success', '[data-workspace-toast="success"]')
         await page.screenshot({ path: testInfo.outputPath('view-copy-success.png'), animations: 'disabled' })
