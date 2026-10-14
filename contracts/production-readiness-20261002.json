@@ -8,7 +8,7 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-13T22:49:16Z",
+  "as_of_utc": "2026-10-14",
   "production_accepted": false,
   "verified_checkpoint": {
     "candidate": "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
@@ -30,7 +30,7 @@
     },
     "main": "d3860311f11bcb176e108391a35c348280a8de61",
     "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
-    "later_source": "3a89ac99e54b31749a9f68d7c6491110c630c80e adds reviewed focus and phone-notification repairs after the hosted checkpoint. Bulk completion restores a disabled invoker or search only after BODY focus loss and preserves deliberate independent focus; four original-source controls fail, final 26 browser cases and frontend 924/163 pass. Phone notices reserve bounded shell space, preserve recovery state across resize, pause covered clocks and release empty space. Three original-source unit controls and four geometry controls fail as intended; disclosure/jsdom harness failures are retained separately. Final frontend 928/163 with contracts/typecheck/build, 35 targeted browser cases, separate ten-case/148-render foundation and six root-preview cases pass with zero failure/retry/skip. Thirty-four final images reviewed among 269 retained; targeted contrast 663 samples minimum 4.574:1 and foundation 2137 minimum 4.7588:1. Fonts/graphics match main and no UI source is deleted. Full state/before-after atlas, supported browsers, AT/zoom, performance, company evidence, fresh assembled hosted qualification and governed main integration remain open.",
+    "later_source": "513577a34fd89eaa59e1c0ec07c302da9da9fb79 adds reviewed editor and modal/popup recovery after the latest green checkpoint27; checkpoint28's hosted failure remains in CI history and is not waived. Final local frontend 930/163, all seven checks, normal 333/two exact existing skips, desktop 35 and root six pass with zero retries. Eight desktop plus two phone foundation cases retain 148 populated captures, 20 complete detail frames and 2735 contrast samples minimum 4.7588:1. Normal has 8732 positive contrast samples minimum 4.574:1 plus seven correctly rejected unreadable controls. Thirty-four final-source and eighteen earlier renderer-state images reviewed; 1008 positive/negative/intermediate captures retained. Eager-download/stale-anchor controls, native Undo blur, introduced Settings clipping and invalid probes are attributed separately. Final cold observations reduce decoded payloads by 391935 bytes for Assets and 390185 for Monitoring in both themes; other routes add 1304-1334 bytes. One sample per route/theme proves bytes, not p95 or field latency. Fonts/graphics match main and no UI source is deleted. Short-screen content discovery, legacy no-slot surfaces, full state/before-after atlas, supported engines, AT/zoom, scaling, company evidence, fresh hosted qualification and governed integration remain open.",
     "job_duration_seconds": 1543,
     "workflow_duration_seconds": 1553,
     "stage_durations_seconds": {
@@ -716,17 +716,82 @@
         }
       },
       "attribution": "The four-stage recovery completes all canonical gates on the exact checkpoint26 PR merge in 30m14s workflow time; all four stage receipts and stable required job report success. Normal browser 310 pass/two existing skips, desktop 35 and root-preview six complete. Per-stage budgets remain 45 minutes, retries unchanged. Checkpoint25's cancelled 45-minute result is preserved in CI history. This proves bounded hosted stage orchestration, not main integration, full release acceptance or later-source hosted qualification."
+    },
+    {
+      "candidate": "f501ee443c65cc910307009a179fc6629bf18aed",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/38480990105",
+      "tested_merge": "71ec1b5456db7ca0ee5562c05443544d57a4bb09",
+      "completed_at": "2026-10-13T23:28:40Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 109,
+        "subtests": 23,
+        "backend": 1882,
+        "frontend": 928,
+        "frontend_files": 163,
+        "normal_browser": 306,
+        "normal_browser_failed": 12,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "513577a34fd89eaa59e1c0ec07c302da9da9fb79 repairs modal feedback ownership; local recovery is recorded separately and fresh hosted qualification remains pending.",
+      "job_duration_seconds": 1970,
+      "workflow_duration_seconds": 1981,
+      "stage_durations_seconds": {
+        "qualification (root-preview)": 135,
+        "qualification (checks)": 511,
+        "qualification (normal-v1)": 1970,
+        "qualification (desktop)": 461,
+        "required": 4
+      },
+      "backend_duration_seconds": 292.84,
+      "identity_sha256": "fa346dd87c8caa305f967d22883c59e6e593e787889a48e26e2f48c978f45bcb",
+      "stage_identities": {
+        "checks": {
+          "sha256": "0b02085522da75d10c990fb24c5862c74ae764a3448156ddb1fb942e4cbe4463",
+          "artifact": "application-ci-checks-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "success"
+        },
+        "normal-v1": {
+          "sha256": "e710b5c7b829ee76f014a15c8115987f0c85e74e0c628a8ee2d0cd01d0727663",
+          "artifact": "application-ci-normal-v1-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "failure"
+        },
+        "desktop": {
+          "sha256": "280eed57b6b6769037d5f9ea80d13b25f5704deddbf23166187f04c5c84a7635",
+          "artifact": "application-ci-desktop-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "success"
+        },
+        "root-preview": {
+          "sha256": "d159844f915ac299bf12520f7fd31da3b7a453ba68831fdd9a2e2a3e0d69d71d",
+          "artifact": "application-ci-root-preview-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "success"
+        }
+      },
+      "attribution": "Phone notification feedback was behind active modal surfaces, including actual clipboard feedback and cleanup interactions. This is a Product ownership defect; the failed candidate is not accepted. Later recovery is qualified separately. Earlier successful checkpoint27 remains the latest completed green checkpoint. All 862 extracted files / 156755271 bytes were verified against the durable manifest; original ZIP digests remain provider-declared."
     }
   ],
   "inventory": {
     "api_generator": "scripts/inventory-acceptance.py",
     "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
-    "source_head": "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+    "source_head": "513577a34fd89eaa59e1c0ec07c302da9da9fb79",
     "registered_api_operations": 310,
-    "static_ui_declarations": 3150,
+    "static_ui_declarations": 3154,
     "static_ui_routes": 19,
     "static_ui_overlays": 260,
-    "static_ui_controls": 2871,
+    "static_ui_controls": 2875,
     "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
   },
   "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
@@ -1569,6 +1634,16 @@
       "commit": "3a89ac99e54b31749a9f68d7c6491110c630c80e",
       "scope": "Reserve phone notification space, preserve recovery state and pause covered clocks with populated visual/preview regression proof",
       "archive_sha256": "2e671e93ac75f33069328b3f95b737fe45eff89d37a6fff846bda0d41f0d32f1"
+    },
+    {
+      "commit": "f501ee443c65cc910307009a179fc6629bf18aed",
+      "scope": "Record checkpoint28 with checkpoint27 hosted qualification and reviewed local UI proof; preserve its subsequent hosted modal-feedback failure separately.",
+      "archive_sha256": "cda68cac46ab0b2987f41007845490aefcdc90d37b2d8d3403392784ce964394"
+    },
+    {
+      "commit": "513577a34fd89eaa59e1c0ec07c302da9da9fb79",
+      "scope": "Preserve editor loading recovery, own phone modal feedback, retain Undo through node-move blur, and reflow bounded popups with full local regression/visual proof.",
+      "archive_sha256": "259b21c3fc2ed5a3d0fe506dd8fba4b38324cd9382eee1db78114839d970318d"
     }
   ],
   "groups": [
@@ -1625,9 +1700,10 @@
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
             "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
             "fcd8560c2ef25682519db2694d3599bac28e5840",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Checkpoint28 preserves all 51 decisions/statuses, 147 reviewed archives, fresh inventories and successful checkpoint27 hosted qualification with four stage receipts. Later focus/notification proof remains distinct. Main integration, fresh later-source CI, company evidence and release reconciliation remain."
+          "remaining": "Checkpoint29 preserves all 51 decisions/statuses, 149 reviewed archives and 154 inventory source hashes. Latest green checkpoint27 remains distinct from checkpoint28's verified hosted failure and later reviewed local recovery. Fresh hosted qualification, governed integration, company evidence and release reconciliation remain."
         },
         {
           "id": "A3",
@@ -1649,9 +1725,10 @@
             "363e5dcf",
             "5fef9f02",
             "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Current clean-source inventory contains 310 registered API operations and 3150 static UI declarations across 153 hashed source files. Static inventory is a worklist; runtime conditional actions, stateful surfaces and full coverage remain."
+          "remaining": "Current clean-source inventory contains 310 registered API operations and 3154 static UI declarations across 154 hashed source files. Static inventory is a worklist; runtime conditional actions, stateful surfaces and full coverage remain."
         }
       ]
     },
@@ -1753,9 +1830,10 @@
             "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
             "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
-            "fcd8560c2ef25682519db2694d3599bac28e5840"
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Supported-SQLite identity writers recheck authority under write acquisition and preserve atomic history, busy rejection and explicit retry. Bulk failures have one inline recovery alert and recorded diagnostics. Completion returns focus to Bulk Actions or identity search only after BODY loss, preserving deliberate independent focus. General idempotency, unknown outcomes and other forms remain."
+          "remaining": "Supported-SQLite identity writers retain atomic authority/history and explicit retry. Monitoring logic now loads on demand; blocked or slow downloads preserve multiline plain-text entry, focus and actual save/readback. General idempotency, unknown outcomes and complete form qualification remain."
         },
         {
           "id": "B4",
@@ -1793,9 +1871,10 @@
             "43fbb68980048ce732f70477878f30dbe85b99ff",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
             "fcd8560c2ef25682519db2694d3599bac28e5840",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Confirmation remains capped at 512px with 44px actions, independently scrolling content and focus trapping on short screens. Phone notifications occupy a bounded shell row, preserve recovery state across resize, pause behind modal stacks and release empty space. Final targeted 35 browser cases preserve real archive/Undo, overlay layering and bulk recovery; separate foundation verifies 20 complete detail frames. Complete overlay inventory, supported engines and AT/reflow remain."
+          "remaining": "Phone feedback moves into the active modern modal using a stable portal; owned node-move blur preserves Undo confirmation/focus. Popups observe the owning viewport and stay inside it; Settings semantic/visual scroll surfaces inherit the height limit. Normal 333/two existing skips, desktop 35 and root six pass, including actual archive/Undo across resize. Original stale-anchor and introduced Settings clipping failures are retained. Legacy no-slot surfaces, short-screen content discovery, all overlay combinations, supported engines and AT/reflow remain."
         },
         {
           "id": "B5",
@@ -1837,9 +1916,10 @@
             "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
             "43fbb68980048ce732f70477878f30dbe85b99ff",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Fresh foundation: ten cases across five widths/both themes, 148 renders, 20 complete detail frames and 2137 contrast samples minimum 4.7588:1. Targeted overlay/notification/bulk proof retains 115 images and 663 contrast samples minimum 4.574:1; root-preview retains six images. Thirty-four final images reviewed among 269 total. Charts, fonts, graphics and detailed workspaces remain; tracked assets match main and no UI source is deleted. Pixel review removed a harsh clipped phone light-theme shadow while preserving desktop styling. Full visual state/before-after atlas remains."
+          "remaining": "Final foundation: eight canonical desktop plus two phone cases, five widths/both themes, 148 populated captures, 20 complete detail frames and 2735 contrast samples minimum 4.7588:1. Thirty-four final-source and eighteen earlier renderer-state images directly reviewed; 1008 total captures include attributed negative/intermediate results. Charts, rack equipment, fonts, graphics and detailed dialogs remain; tracked assets match main and no UI source is deleted. Full visual state/before-after atlas remains."
         },
         {
           "id": "B6",
@@ -1879,9 +1959,10 @@
             "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
             "43fbb68980048ce732f70477878f30dbe85b99ff",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Phone notices reserve a bounded row below shell tools and release empty space. Both themes at 390x360 and 390x844 pass actual export, resize, modal coverage and restoration; Settings recovery scenes preserve unobscured headings/controls. All-component long lists, zoom and complete responsive states remain."
+          "remaining": "Phone notices reserve shell space and move into the active modern modal; popups follow notification-driven reflow and Settings lower actions remain within their scroll surface. Both-theme recovery, five-width foundation and resize proofs pass. Capped notice rows on very short screens still require complete content-discovery/interaction, zoom and all-component responsive qualification."
         },
         {
           "id": "B7",
@@ -1925,9 +2006,10 @@
             "43fbb68980048ce732f70477878f30dbe85b99ff",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
             "fcd8560c2ef25682519db2694d3599bac28e5840",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Bulk completion restores meaningful focus only after disabled-write BODY loss and preserves deliberate independent focus. Phone notices do not steal focus, survive covering modals, retain recovery state and remain dismissible. Scoped clock/stack/unit and browser regressions pass. Full screen-reader, supported-engine, zoom, reflow and stateful accessibility acceptance remain."
+          "remaining": "Stable notification ownership preserves recovery state and restores existing focus during node movement; actual archive/Undo survives desktop-phone-desktop resizing and restores the record once. Popup keyboard placement, nested dismissal and Settings recovery pass. Full screen-reader, supported-engine, zoom/reflow, short-screen and stateful accessibility acceptance remain."
         },
         {
           "id": "B8",
@@ -1942,9 +2024,10 @@
             "b26a29266f364e8a75e36b45edeac21b543a23ab",
             "a3958e408e8007814d6a578978519473dfb81976",
             "363e5dcf",
-            "c00077939aae1f5ffe79e1c3e7299803210a534a"
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Monitoring/Services saved-view operations share one current success notice per workspace while preserving distinct errors and existing Undo. External/FAR use the same identities but were not separately rendered in this slice. Broader mechanics and single-notice placement remain."
+          "remaining": "Monitoring/Services saved-view popups follow notification-driven reflow and retain clipboard failure/retry, rename/delete and persistence in both themes at phone/desktop sizes. Monitoring bulk tests select the exact named row and assert the submitted ID; Product fast-filter selection policy remains unqualified. Broader shared mechanics and conditional states remain."
         },
         {
           "id": "B9",
@@ -1989,9 +2072,10 @@
             "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
             "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
             "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Nonfinite raw permission values remain visibly Unknown through safe JSON markers, profile grants match authorization, restore previews are validated before confirmation and stale review returns one useful error. Saved-view successes coalesce and permission tests observe final refresh readiness. Wider diagnostics, stale reads and unknown outcomes remain. Phone notice clocks now pause through modal coverage, retain custom recovery state and release their owned pause on unmount."
+          "remaining": "Logic editor loading, unavailable downloads and late arrival expose truthful states and preserve plain-text entry, focus and actual persistence. Phone modal feedback is visible within its owning surface; paused clocks and stable Undo state survive reparenting. Wider diagnostics, stale reads, unknown outcomes and all async states remain."
         },
         {
           "id": "B10",
@@ -2326,9 +2410,10 @@
             "bf236cad",
             "4629b134",
             "5d147d7b",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Earlier draft/scalar/form repairs passed assembled CI. Later reviewed stages cover ordinary create/edit audit, service synchronization rollback, quoted multiline paste/edit/readback, truthful errors and bounded import admission. Header mapping, deeper resource complexity, bulk-table feedback, optimistic conflicts, roles and large datasets remain. Actual phone export and desktop archive/Undo now qualify through the shared notification repair."
+          "remaining": "Existing Asset draft/scalar/audit/import and lifecycle safeguards remain. Assembled normal regression passes actual phone export/modal feedback and archive/Undo through resize, restoring the record once. Header mapping, resource complexity, optimistic conflicts, roles, large datasets and complete module qualification remain."
         },
         {
           "id": "D3",
@@ -2342,9 +2427,10 @@
             "363e5dcf",
             "5fef9f02",
             "c00077939aae1f5ffe79e1c3e7299803210a534a",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Monitoring saved-view notices coalesce with clipboard recovery and meaningful negative controls; prior both-theme workflow passes. Shared phone placement is repaired with actual Assets/Settings consumer proof and fresh populated Monitoring foundation renders. Complete Monitoring notification, operational and performance qualification remain."
+          "remaining": "Logic editing loads on demand with blocked/slow module recovery and exact multiline save/readback; native plain-text focus/value survives late enhanced-editor arrival. Saved-view reflow, exact-ID bulk persistence and populated detail foundations pass. Complete lifecycle, Product fast-filter policy, syntax/language behavior, roles and performance qualification remain."
         },
         {
           "id": "D4",
@@ -2365,9 +2451,10 @@
             "a3958e408e8007814d6a578978519473dfb81976",
             "363e5dcf",
             "5fef9f02",
-            "c00077939aae1f5ffe79e1c3e7299803210a534a"
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Services saved-view notices coalesce and preserve explicit delete confirmation; both-theme desktop/phone workflow passes. Full lifecycle authority, typed responses, pagination and final module qualification remain."
+          "remaining": "Services saved-view popups retain clipboard failure/retry, rename/delete, persistence and correct anchoring after notice reflow in both themes at phone/desktop sizes. Populated metadata/detail foundations remain. Full lifecycle authority, typed responses, pagination and final module qualification remain."
         },
         {
           "id": "D5",
@@ -2393,9 +2480,10 @@
             "9c1ee626",
             "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
             "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
-            "5fef9f02"
+            "5fef9f02",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Network's shared modal heading receives an explicit record label while named clipboard controls and their four real-browser failure/retry cases remain valid. Existing endpoint/detail safeguards remain. Dormant revision UI, precision/concurrency, broader roles/performance and layouts remain."
+          "remaining": "Actual direct-link clipboard failure/retry is visible within the owning phone modal in both themes; final normal regression preserves endpoint/detail safeguards. Dormant revision UI, precision/concurrency, broader roles/performance and complete layouts remain."
         },
         {
           "id": "D6",
@@ -2476,9 +2564,10 @@
             "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
             "fcd8560c2ef25682519db2694d3599bac28e5840",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Team/operator writers recheck authority under supported SQLite write acquisition, with atomic busy/revoked rejection and complete concurrent revisions. Hosted checkpoint27 verifies backend 1882/62 and frontend 924/163. Later focus/notification repairs pass local frontend 928/163 and separate targeted 35/foundation ten/root-preview six browser runs; actual Settings phone recovery scenes are reviewed. Company sources, resource bounds, legacy unconditional callers, broader accessibility and non-SQLite qualification remain."
+          "remaining": "Final normal and targeted 26-case Settings bulk proofs preserve exact records, atomic history, nested menus, pending guards, single recovery alerts, explicit retry and meaningful focus. Shared popup bounds exposed inner-dialog clipping; semantic/visual height inheritance now passes the unchanged full-viewport/action assertions. Complete roles, scale, schemas and final module qualification remain."
         }
       ]
     },
@@ -2494,9 +2583,10 @@
           "approval": "yes",
           "status": "unqualified",
           "reviewed_commits": [
-            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b"
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Network details no longer issue unused Knowledge reads; baseline duplicate requests fell tozero inall8 tested states. This is bounded waste removal. Startup, typing/filtering/scrolling/detail latency, bundle loading, long tasks and long-session memory still require measured qualification."
+          "remaining": "Final cold observations reduce decoded JavaScript by 391935 bytes (14.6987%) on Assets and 390185 bytes (16.2262%) on Monitoring in both themes by deferring CodeMirror. Shared recovery code adds 1304-1334 bytes on other routes. One sample per route/theme with sparse fixtures proves payload waste removal, not startup/p95 or field latency. Typing/filtering/scroll/detail budgets, long tasks, large estates and long-session memory remain unqualified."
         },
         {
           "id": "E2",
@@ -2617,9 +2707,10 @@
             "faea5bfc072a7de86f1426810afcfe3fe2d514e5",
             "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
-            "02785ddd4b034e6c5de900a0adbd76dc82dd38a2"
+            "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Exact checkpoint27 hosted run succeeds: startup 109 plus 23 subtests, backend 1882, frontend 924, normal browser 314/two existing skips, desktop 35 and root six. Four stage receipts match candidate/merge/base and actual runtimes; required succeeds in a 25m53s workflow with unchanged budgets/retries. Later focus/notification source requires fresh assembled CI. Full supply-chain and final release gates remain."
+          "remaining": "Checkpoint28 hosted checks, desktop and root pass, but normal 306 pass/12 fail/two existing skips and required fail; four receipts and 862 durable files are verified. Later recovery passes local frontend 930/163, normal 333/two exact existing skips, desktop 35 and root six with zero retries. Fresh hosted qualification, supply-chain controls and final release gates remain."
         },
         {
           "id": "E7",
@@ -2771,9 +2862,10 @@
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
             "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
             "fcd8560c2ef25682519db2694d3599bac28e5840",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Exact checkpoint27 PR merge passes every canonical hosted stage and required; earlier cancellation/failures remain preserved. Later source has local frontend 928 and separate targeted 35/foundation ten/root-preview six browser proofs. Fresh assembled CI and complete supported-browser/company/release qualification remain."
+          "remaining": "Latest completed green checkpoint27 remains separate from checkpoint28's verified hosted failure. Later reviewed source passes all local frontend checks, normal 333/two exact existing skips, desktop 35 and root six; complementary phone foundation supplies the two missing viewport cases without repeating desktop work. Fresh hosted, supported-browser/company and release qualification remain."
         },
         {
           "id": "G2",
@@ -2794,9 +2886,10 @@
             "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
             "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
             "fcd8560c2ef25682519db2694d3599bac28e5840",
-            "3a89ac99e54b31749a9f68d7c6491110c630c80e"
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Latest source passes ten foundation cases/148 populated renders plus separate targeted 35 and root-preview six. Thirty-four final images reviewed among 269 retained, including actual phone recovery, notice placement, modal coverage and populated charts/details. Disabled-write focus and success-notice overlap have bounded reviewed repairs. Fonts/graphics match main and no UI source is deleted. Full before-after/all-component/state atlas, AT/zoom, supported-engine and final-source acceptance remain."
+          "remaining": "Final proof retains 148 populated foundation captures and 20 complete detail frames across five widths/both themes, with 2735 contrast samples minimum 4.7588:1. Thirty-four final-source and eighteen earlier renderer-state images directly reviewed. Actual modal feedback, popup reflow, Settings containment and archive/Undo focus/state survive tested paths. Fonts/graphics match main and no UI source is deleted. Full before-after/state atlas, short-screen content discovery, legacy no-slot surfaces, AT/zoom and supported-engine acceptance remain."
         },
         {
           "id": "G3",
