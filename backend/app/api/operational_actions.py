@@ -58,7 +58,7 @@ async def discover_capabilities(
     device_id: int | None = Query(default=None, gt=0),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    tenant_id, _, _ = _context(request)
+    tenant_id, actor_id, access_role = _context(request)
     if device_id is not None:
         result = await db.execute(
             select(models.Device.id).where(models.Device.id == device_id, models.Device.tenant_id == tenant_id)
@@ -66,6 +66,9 @@ async def discover_capabilities(
         if result.scalar_one_or_none() is None:
             _raise(service.TargetNotFound([device_id]))
     catalog = REGISTRY.describe()
+    # The authenticated request actor can differ from an Operator username
+    # (for example, an external identity). Bind UI affordances to this value.
+    catalog["identity"] = {"actor_id": actor_id, "access_role": access_role}
     if device_id is not None:
         catalog["target"] = {"device_id": device_id, "tenant_id": tenant_id}
     return catalog

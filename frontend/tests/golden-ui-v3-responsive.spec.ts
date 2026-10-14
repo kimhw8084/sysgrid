@@ -982,12 +982,18 @@ test('Architecture v2 and legacy primary tasks remain reachable at mobile, short
   await resetBrowserState(page)
 
   await page.setViewportSize({ width: 390, height: 844 })
+  // Isolate the empty-model branch from models left by other real-backend journeys.
+  // Creation and every subsequent model read still use the real API.
+  await page.route('**/api/v2/architecture/models', route => route.request().method() === 'GET'
+    ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [] }) })
+    : route.continue())
   await page.goto('/architecture')
   const createForm = page.locator('[data-architecture-create-model="true"]')
   await expect(createForm).toBeVisible({ timeout: 20000 })
+  await page.unroute('**/api/v2/architecture/models')
   const input = page.getByRole('textbox', { name: 'New Architecture model name' })
   const create = page.getByRole('button', { name: 'Create model', exact: true })
-  const longModelName = `Responsive Architecture Model ${'Long text pressure '.repeat(5)}`
+  const longModelName = `Responsive Architecture Model ${Date.now()} ${'Long text pressure '.repeat(5)}`
   await input.fill(longModelName)
   await input.evaluate((element: HTMLInputElement) => element.blur())
   await assertReachable(input, 'Architecture v2 model name')

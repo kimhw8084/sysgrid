@@ -1,17 +1,21 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 import io
 import json
 import re
+import zipfile
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 import pandas as pd
+from pydantic import ValidationError
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 from sqlalchemy import and_, func, inspect, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from ..database import get_db
@@ -25,8 +29,19 @@ from .monitoring import (
     summarize_monitoring_snapshot_delta,
 )
 from .far import save_far_history
-from .utils import filter_valid_columns, get_current_user_id
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor, get_current_user_id
 from .module_policy import ensure_module_access
+from .asset_import import execute_asset_rows, preview_asset_rows
+from .devices import _DEVICE_WRITABLE_FIELDS
+from .networks import _connection_scope
+from .logical_services import (
+    SERVICE_DATE_FIELDS, _normalize_service_device_id, _service_scope,
+    normalize_service_date, normalize_service_values, sync_device_os_state,
+)
+from ..import_limits import (
+    IMPORT_LIMITS, MAX_IMPORT_FILE_BYTES, MAX_IMPORT_WORKBOOK_BYTES,
+    MAX_IMPORT_WORKBOOK_ENTRIES, require_import_row_limit,
+)
 
 router = APIRouter(prefix="/import", tags=["Intelligence Engine"])
 MONITORING_IMPORT_SCHEMA_VERSION = "2026-06-monitoring-v1"
@@ -143,12 +158,20 @@ def rows_from_dataframe(df: pd.DataFrame) -> list[dict[str, Any]]:
     ]
 
 
-def load_dataframe_from_upload(file: UploadFile, content: bytes) -> pd.DataFrame:
+def load_dataframe_from_upload(file: UploadFile, content: bytes, *, preserve_text: bool = False) -> pd.DataFrame:
     lower_name = (file.filename or "").lower()
+    options = {"dtype": str, "keep_default_na": False} if preserve_text else {}
+    options['nrows'] = IMPORT_LIMITS['max_rows'] + 1
     if lower_name.endswith(".csv"):
-        return pd.read_csv(io.BytesIO(content))
+        return pd.read_csv(io.BytesIO(content), **options)
     if lower_name.endswith(".xlsx") or lower_name.endswith(".xls"):
-        return pd.read_excel(io.BytesIO(content))
+        if lower_name.endswith('.xlsx') or zipfile.is_zipfile(io.BytesIO(content)):
+            with zipfile.ZipFile(io.BytesIO(content)) as workbook:
+                entries = workbook.infolist()
+                if (len(entries) > MAX_IMPORT_WORKBOOK_ENTRIES
+                        or sum(entry.file_size for entry in entries) > MAX_IMPORT_WORKBOOK_BYTES):
+                    raise HTTPException(413, 'Excel workbook exceeds the expanded-size limit. Split it into smaller files.')
+        return pd.read_excel(io.BytesIO(content), **options)
     raise HTTPException(status_code=400, detail="Only CSV and Excel uploads are supported")
 
 
@@ -157,6 +180,8 @@ def generic_fields_for_model(model: Any) -> list[ImportField]:
     fields: list[ImportField] = []
     for column in mapper.columns:
         if column.primary_key or column.name in GENERIC_EXCLUDE_COLUMNS:
+            continue
+        if model is models.Device and column.name not in _DEVICE_WRITABLE_FIELDS:
             continue
         hint = "[STRING]"
         try:
@@ -177,7 +202,8 @@ def generic_fields_for_model(model: Any) -> list[ImportField]:
             ImportField(
                 name=column.name,
                 label=column.name.replace("_", " ").title(),
-                required=not column.nullable and column.default is None and column.server_default is None,
+                required=(model is models.Device and column.name in {'name', 'system'}) or
+                         (not column.nullable and column.default is None and column.server_default is None),
                 template_hint=hint,
             )
         )
@@ -198,7 +224,7 @@ async def preview_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
         for column_name, column in relevant_columns.items():
             try:
                 normalized_row[column_name] = coerce_value_for_column(column, raw_row.get(column_name))
-            except (ValueError, TypeError, json.JSONDecodeError):
+            except (ValueError, TypeError, OverflowError, json.JSONDecodeError):
                 errors.append(f"{column_name} has an invalid value")
 
             value = normalized_row.get(column_name)
@@ -258,6 +284,97 @@ async def execute_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
         ))
         await db.commit()
     return {"status": "success", "count": count}
+
+
+async def preview_service_rows(request: Request, db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    try:
+        json.dumps(rows, allow_nan=False)
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(422, 'Service import values must be valid finite JSON') from exc
+
+    preview = await preview_generic_rows(db, models.LogicalService, [row if isinstance(row, dict) else {} for row in rows])
+    for result, raw_row in zip(preview['results'], rows):
+        result['source'] = raw_row
+        if not isinstance(raw_row, dict):
+            result['errors'].append('Each Service row must be an object')
+            continue
+        try:
+            # Validate the original reference: generic integer coercion truncates
+            # fractions and accepts booleans before relationship authorization.
+            result['normalized']['device_id'] = _normalize_service_device_id(normalize_scalar(raw_row.get('device_id')))
+            # Keep the original cost's type until domain validation: float(True)
+            # would otherwise disguise a malformed value as an ordinary cost.
+            result['normalized']['cost'] = normalize_scalar(raw_row.get('cost'))
+            normalize_service_values(result['normalized'])
+            for field in SERVICE_DATE_FIELDS:
+                parsed = normalize_service_date(result['normalized'].get(field), field)
+                result['normalized'][field] = parsed.isoformat() if parsed is not None else None
+            json.dumps(result['normalized'], allow_nan=False)
+        except HTTPException as exc:
+            if isinstance(exc.detail, dict) and 'field_errors' in exc.detail:
+                result['errors'].extend(f'{field}: {message}' for field, message in exc.detail['field_errors'].items())
+            else:
+                result['errors'].append(str(exc.detail))
+        except (ValueError, TypeError):
+            result['errors'].append('Service import values must be valid finite JSON')
+
+    device_ids = {result['normalized'].get('device_id') for result in preview['results']
+                  if not result['errors'] and result['normalized'].get('device_id') is not None}
+    owned_ids = set(await db.scalars(select(models.Device.id).where(
+        models.Device.id.in_(device_ids), models.Device.tenant_id == request.state.tenant_id,
+        models.Device.is_deleted == False,
+    ))) if device_ids else set()
+    for result in preview['results']:
+        device_id = result['normalized'].get('device_id')
+        if not result['errors'] and device_id is not None and device_id not in owned_ids:
+            result['errors'].append('Asset not found')
+        result['status'] = 'INVALID' if result['errors'] else 'VALID'
+        if result['errors']:
+            result['normalized'] = {}
+    preview['invalid_rows'] = sum(result['status'] == 'INVALID' for result in preview['results'])
+    preview['valid_rows'] = preview['total_rows'] - preview['invalid_rows']
+    preview['total_errors'] = sum(len(result['errors']) for result in preview['results'])
+    return preview
+
+
+async def execute_service_rows(request: Request, db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    preview = await preview_service_rows(request, db, rows)
+    invalid = [result for result in preview['results'] if result['status'] == 'INVALID']
+    if invalid:
+        return {'status': 'failed', 'errors': [f"Row {result['row']}: {', '.join(result['errors'])}" for result in invalid], 'count': 0}
+
+    count = len(preview['results'])
+    try:
+        imported = []
+        for result in preview['results']:
+            values = dict(result['normalized'])
+            for field in SERVICE_DATE_FIELDS:
+                values[field] = normalize_service_date(values.get(field), field)
+            service = models.LogicalService(**values, created_by_user_id=get_audit_actor(request))
+            db.add(service)
+            imported.append((service, result['normalized']))
+        if count:
+            await db.flush()
+            for device_id in {service.device_id for service, _ in imported if service.service_type == 'OS' and service.device_id is not None}:
+                await sync_device_os_state(device_id, db)
+            for service, normalized in imported:
+                db.add(build_audit_log(
+                    request=request, action='CREATE', target_table='logical_services', target_id=str(service.id),
+                    description='Imported logical service',
+                    changes={'changed_fields': sorted(normalized), 'batch_count': count},
+                ))
+            db.add(build_audit_log(
+                request=request, action='BULK_IMPORT', target_table='LOGICAL_SERVICES', target_id='MULTIPLE',
+                description=f'Bulk imported {count} records into logical_services.', changes={'count': count},
+            ))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Service import conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
+    return {'status': 'success', 'count': count}
 
 
 MONITORING_IMPORT_REQUIRED_FIELD_NAMES = {"category", "status", "title"}
@@ -949,10 +1066,10 @@ async def execute_external_rows(db: AsyncSession, rows: list[dict[str, Any]], us
     return {"status": "success", "count": count}
 
 
-async def build_network_schema_context(db: AsyncSession) -> dict[str, Any]:
+async def build_network_schema_context(request: Request, db: AsyncSession) -> dict[str, Any]:
     devices = await db.execute(
         select(models.Device.id, models.Device.name, models.Device.asset_tag)
-        .where(models.Device.is_deleted == False)
+        .where(models.Device.is_deleted == False, models.Device.tenant_id == request.state.tenant_id)
         .order_by(models.Device.name)
     )
     link_types = await fetch_setting_options(db, "LinkPurpose")
@@ -986,7 +1103,9 @@ def _normalize_network_import_text(value: Any) -> Optional[str]:
     normalized = normalize_scalar(value)
     if normalized is None:
         return None
-    cleaned = str(normalized).strip()
+    if not isinstance(normalized, str):
+        raise ValueError('Network text fields must be strings')
+    cleaned = normalized.strip()
     return cleaned or None
 
 
@@ -1014,31 +1133,37 @@ def _parse_int_like(value: Any) -> Optional[int]:
         raise ValueError("must be an integer")
 
 
-async def _resolve_network_device_id(db: AsyncSession, value: Any, label: str) -> Optional[int]:
+async def _resolve_network_device_id(request: Request, db: AsyncSession, value: Any, label: str) -> Optional[int]:
     normalized = normalize_scalar(value)
     if normalized is None:
         return None
+    if type(normalized) not in (int, float, str):
+        raise ValueError('Network device references must be IDs or names')
     try:
         device_id = _parse_int_like(normalized)
     except ValueError:
         device_id = None
+    owned_active = select(models.Device.id).where(
+        models.Device.tenant_id == request.state.tenant_id, models.Device.is_deleted == False,
+    )
     if device_id is not None:
-        device = await db.get(models.Device, device_id)
-        if device and not device.is_deleted:
-            return device.id
+        if not 1 <= device_id <= 2 ** 63 - 1:
+            raise HTTPException(400, f'{label} not found or unavailable')
+        found = await db.scalar(owned_active.where(models.Device.id == device_id))
+        if found is not None:
+            return found
     result = await db.execute(
-        select(models.Device.id).where(
-            models.Device.is_deleted == False,
+        owned_active.where(
             or_(
                 func.lower(models.Device.name) == func.lower(str(normalized)),
                 func.lower(models.Device.asset_tag) == func.lower(str(normalized)),
             ),
-        )
+        ).limit(2)
     )
-    device_id = result.scalar_one_or_none()
-    if device_id is None:
-        raise HTTPException(status_code=400, detail=f"Unknown {label}: {normalized}")
-    return device_id
+    matches = result.scalars().all()
+    if len(matches) != 1:
+        raise HTTPException(400, f'{label} not found or ambiguous')
+    return matches[0]
 
 
 async def _validate_network_import_enums(db: AsyncSession, payload: dict[str, Any]) -> None:
@@ -1095,20 +1220,29 @@ async def _validate_network_import_identity(db: AsyncSession, payload: dict[str,
         raise HTTPException(status_code=400, detail="One of the selected ports is already physically cross-connected")
 
 
-async def build_network_import_row(db: AsyncSession, raw_row: dict[str, Any]) -> dict[str, Any]:
+async def build_network_import_row(request: Request, db: AsyncSession, raw_row: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(raw_row, dict):
+        raise HTTPException(422, 'Each Network row must be an object')
     row = {key: normalize_scalar(value) for key, value in raw_row.items()}
+    # Choose the first populated alias without dropping false/zero values before
+    # validation. A malformed canonical field must not silently become absent.
+    def first_value(*keys):
+        return next((row[key] for key in keys if row.get(key) is not None), None)
+
+    if isinstance(row.get('speed_gbps'), bool):
+        raise ValueError('Network speed cannot be a boolean')
     payload: dict[str, Any] = {
-        "source_device_id": await _resolve_network_device_id(db, row.get("source_device_id") or row.get("source_device_name") or row.get("src_node"), "Source Device"),
-        "source_port": _normalize_network_import_text(row.get("source_port") or row.get("src_port")),
-        "source_ip": _normalize_network_import_text(row.get("source_ip") or row.get("src_ip")),
+        "source_device_id": await _resolve_network_device_id(request, db, first_value("source_device_id", "source_device_name", "src_node"), "Source Device"),
+        "source_port": _normalize_network_import_text(first_value("source_port", "src_port")),
+        "source_ip": _normalize_network_import_text(first_value("source_ip", "src_ip")),
         "source_mac": _normalize_network_import_text(row.get("source_mac")),
         "source_vlan": _parse_int_like(row.get("source_vlan")),
-        "target_device_id": await _resolve_network_device_id(db, row.get("target_device_id") or row.get("target_device_name") or row.get("peer_node") or row.get("dst_node"), "Peer Device"),
-        "target_port": _normalize_network_import_text(row.get("target_port") or row.get("peer_port") or row.get("dst_port")),
-        "target_ip": _normalize_network_import_text(row.get("target_ip") or row.get("peer_ip") or row.get("dst_ip")),
+        "target_device_id": await _resolve_network_device_id(request, db, first_value("target_device_id", "target_device_name", "peer_node", "dst_node"), "Peer Device"),
+        "target_port": _normalize_network_import_text(first_value("target_port", "peer_port", "dst_port")),
+        "target_ip": _normalize_network_import_text(first_value("target_ip", "peer_ip", "dst_ip")),
         "target_mac": _normalize_network_import_text(row.get("target_mac")),
         "target_vlan": _parse_int_like(row.get("target_vlan")),
-        "link_type": _normalize_network_import_text(row.get("link_type") or row.get("type")),
+        "link_type": _normalize_network_import_text(first_value("link_type", "type")),
         "purpose": _normalize_network_import_text(row.get("purpose")),
         "speed_gbps": float(row["speed_gbps"]) if row.get("speed_gbps") is not None else None,
         "unit": _normalize_network_import_text(row.get("unit")) or "Gbps",
@@ -1131,14 +1265,19 @@ async def build_network_import_row(db: AsyncSession, raw_row: dict[str, Any]) ->
     return candidate
 
 
-async def preview_network_rows(db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+async def preview_network_rows(request: Request, db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    try:
+        json.dumps(rows, allow_nan=False)
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(422, 'Network import values must be valid finite JSON') from exc
     results = []
     seen_fingerprints: set[tuple[Any, ...]] = set()
+    seen_ports: set[tuple[int, str]] = set()
     for index, raw_row in enumerate(rows):
         errors: list[str] = []
         normalized_row: dict[str, Any] = {}
         try:
-            candidate = await build_network_import_row(db, raw_row)
+            candidate = await build_network_import_row(request, db, raw_row)
             fingerprint = (
                 candidate.get("source_device_id"),
                 (candidate.get("source_port") or "").strip().lower(),
@@ -1147,7 +1286,11 @@ async def preview_network_rows(db: AsyncSession, rows: list[dict[str, Any]]) -> 
             )
             if fingerprint in seen_fingerprints:
                 raise HTTPException(status_code=400, detail="Duplicate network row in the same import batch.")
+            ports = {(fingerprint[0], fingerprint[1]), (fingerprint[2], fingerprint[3])}
+            if ports & seen_ports:
+                raise HTTPException(400, 'A selected port is already used by another row in this import batch.')
             seen_fingerprints.add(fingerprint)
+            seen_ports.update(ports)
             normalized_row = candidate
         except HTTPException as exc:
             detail = exc.detail
@@ -1155,8 +1298,11 @@ async def preview_network_rows(db: AsyncSession, rows: list[dict[str, Any]]) -> 
                 errors.extend(str(entry) for entry in detail)
             else:
                 errors.append(str(detail))
-        except (ValueError, TypeError, json.JSONDecodeError) as exc:
-            errors.append(str(exc))
+        except ValidationError as exc:
+            errors.extend(f"{'.'.join(str(part) for part in entry['loc']) or 'Network row'}: {entry['msg']}"
+                          for entry in exc.errors(include_input=False, include_context=False, include_url=False))
+        except (ValueError, TypeError, OverflowError):
+            errors.append('Network row contains an invalid field value; check text, IDs, VLANs and speed')
 
         results.append({
             "row": index + 1,
@@ -1177,30 +1323,38 @@ async def preview_network_rows(db: AsyncSession, rows: list[dict[str, Any]]) -> 
     }
 
 
-async def execute_network_rows(db: AsyncSession, rows: list[dict[str, Any]], user_id: Optional[str]) -> dict[str, Any]:
-    preview = await preview_network_rows(db, rows)
+async def execute_network_rows(request: Request, db: AsyncSession, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    preview = await preview_network_rows(request, db, rows)
     invalid = [result for result in preview["results"] if result["status"] == "INVALID"]
     if invalid:
         return {"status": "failed", "errors": [f"Row {result['row']}: {', '.join(result['errors'])}" for result in invalid], "count": 0}
 
-    count = 0
-    for raw_row in rows:
-        candidate = await build_network_import_row(db, raw_row)
-        if user_id:
-            candidate["created_by_user_id"] = user_id
-        db.add(models.PortConnection(**filter_valid_columns(models.PortConnection, candidate)))
-        count += 1
-
-    await db.commit()
-    if user_id:
-        db.add(models.AuditLog(
-            user_id=user_id,
-            action="BULK_IMPORT",
-            target_table=models.PortConnection.__tablename__.upper(),
-            target_id="MULTIPLE",
-            description=f"Bulk imported {count} records into port_connections.",
-        ))
+    count = len(preview['results'])
+    try:
+        imported = []
+        for result in preview['results']:
+            conn = models.PortConnection(**result['normalized'], created_by_user_id=get_audit_actor(request))
+            db.add(conn)
+            imported.append((conn, result['normalized']))
+        if count:
+            await db.flush()
+            for conn, normalized in imported:
+                db.add(build_audit_log(
+                    request=request, action='CREATE', target_table='port_connections', target_id=str(conn.id),
+                    description='Imported network link',
+                    changes={'changed_fields': sorted(normalized), 'batch_count': count},
+                ))
+            db.add(build_audit_log(
+                request=request, action='BULK_IMPORT', target_table='PORT_CONNECTIONS', target_id='MULTIPLE',
+                description=f'Bulk imported {count} records into port_connections.', changes={'count': count},
+            ))
         await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Network import conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
     return {"status": "success", "count": count}
 
 
@@ -1603,15 +1757,6 @@ def build_import_profiles() -> dict[str, ImportProfile]:
             execute_rows=execute_far_rows,
             serialize_example_row=serialize_far_example_row,
         ),
-        "port_connections": ImportProfile(
-            key="port_connections",
-            display_name="Network Connections",
-            model=models.PortConnection,
-            fields=NETWORK_IMPORT_FIELDS,
-            preview_rows=preview_network_rows,
-            execute_rows=execute_network_rows,
-            schema_context=build_network_schema_context,
-        )
     }
 
     for key, model in GENERIC_MODEL_MAPPING.items():
@@ -1645,7 +1790,27 @@ async def enforce_import_profile_access(profile: ImportProfile, request: Request
         await ensure_module_access(module_id, request, db)
 
 
-def get_import_profile(table_name: str) -> ImportProfile:
+def get_import_profile(table_name: str, request: Request) -> ImportProfile:
+    if table_name == 'logical_services':
+        return ImportProfile(
+            key=table_name, display_name='Logical Services', model=models.LogicalService,
+            fields=[
+                replace(entry, required=True, validation_rules=['Required. Must be non-empty text.']) if entry.name == 'name'
+                else replace(entry, validation_rules=['Optional. Must be a finite number zero or greater, or blank.']) if entry.name == 'cost'
+                else entry for entry in IMPORT_PROFILES[table_name].fields
+            ],
+            preview_rows=lambda db, rows: preview_service_rows(request, db, rows),
+            execute_rows=lambda db, rows, _user_id: execute_service_rows(request, db, rows),
+        )
+    if table_name == 'port_connections':
+        # Bind trusted request identity without retaining it in the global registry.
+        return ImportProfile(
+            key=table_name, display_name='Network Connections', model=models.PortConnection,
+            fields=NETWORK_IMPORT_FIELDS,
+            preview_rows=lambda db, rows: preview_network_rows(request, db, rows),
+            execute_rows=lambda db, rows, _user_id: execute_network_rows(request, db, rows),
+            schema_context=lambda db: build_network_schema_context(request, db),
+        )
     profile = IMPORT_PROFILES.get(table_name)
     if not profile:
         raise HTTPException(status_code=404, detail="Import profile not found")
@@ -1728,7 +1893,7 @@ def build_snapshot_manifest(profile: ImportProfile, export_token: Optional[str] 
 
 @router.get("/schema/{table_name}")
 async def get_import_schema(table_name: str, request: Request, db: AsyncSession = Depends(get_db)):
-    profile = get_import_profile(table_name)
+    profile = get_import_profile(table_name, request)
     await enforce_import_profile_access(profile, request, db)
     context = await profile.schema_context(db) if profile.schema_context else {}
     headers = {}
@@ -1747,6 +1912,7 @@ async def get_import_schema(table_name: str, request: Request, db: AsyncSession 
         "required_fields": [field.name for field in profile.fields if field.required],
         "example_records": context.get("example_records", []),
         "schema_version": headers.get("schema_version"),
+        "limits": IMPORT_LIMITS,
     }
 
 
@@ -1759,7 +1925,7 @@ async def download_template(
     example_id: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    profile = get_import_profile(table_name)
+    profile = get_import_profile(table_name, request)
     await enforce_import_profile_access(profile, request, db)
     fields = resolve_template_fields(profile, columns)
     df = pd.DataFrame(columns=[field.name for field in fields])
@@ -1803,7 +1969,7 @@ async def download_template(
 
 @router.get("/snapshot/{table_name}")
 async def download_snapshot(table_name: str, request: Request, export_token: Optional[str] = None, db: AsyncSession = Depends(get_db)):
-    profile = get_import_profile(table_name)
+    profile = get_import_profile(table_name, request)
     await enforce_import_profile_access(profile, request, db)
     export_contract = build_snapshot_manifest(profile, export_token=export_token if profile.key == "external_entities" else None)
     model = profile.model
@@ -1828,8 +1994,16 @@ async def download_snapshot(table_name: str, request: Request, export_token: Opt
         mapper = inspect(model)
         exclude = {"id", "created_at", "updated_at", "created_by_user_id"}
         cols = [column.name for column in mapper.columns if column.name not in exclude]
+        if model is models.Device:
+            cols = [field.name for field in profile.fields]
 
         query = select(model)
+        if model is models.Device:
+            query = query.where(models.Device.tenant_id == request.state.tenant_id)
+        elif model is models.PortConnection:
+            query = query.where(_connection_scope(request))
+        elif model is models.LogicalService:
+            query = query.where(_service_scope(request))
         if hasattr(model, "is_deleted"):
             query = query.where(model.is_deleted == False)
 
@@ -1856,7 +2030,7 @@ async def download_snapshot(table_name: str, request: Request, export_token: Opt
 
 @router.get("/snapshot/{table_name}/manifest")
 async def get_snapshot_manifest(table_name: str, request: Request, db: AsyncSession = Depends(get_db)):
-    profile = get_import_profile(table_name)
+    profile = get_import_profile(table_name, request)
     await enforce_import_profile_access(profile, request, db)
     if profile.key not in {"external_entities", "far_records"}:
         raise HTTPException(status_code=404, detail="Snapshot manifest not found")
@@ -1865,14 +2039,23 @@ async def get_snapshot_manifest(table_name: str, request: Request, db: AsyncSess
 
 @router.post("/preview-file")
 async def preview_import_file(request: Request, table_name: str = Form(...), file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
-    profile = get_import_profile(table_name)
+    profile = get_import_profile(table_name, request)
     await enforce_import_profile_access(profile, request, db)
-    content = await file.read()
+    content = await file.read(MAX_IMPORT_FILE_BYTES + 1)
+    if len(content) > MAX_IMPORT_FILE_BYTES:
+        raise HTTPException(413, 'Import files are limited to 10 MiB. Split the data into smaller files.')
     try:
-        df = load_dataframe_from_upload(file, content)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    preview = await profile.preview_rows(db, rows_from_dataframe(df))
+        df = await run_in_threadpool(
+            load_dataframe_from_upload, file, content,
+            preserve_text=profile.model in {models.Device, models.PortConnection, models.LogicalService},
+        )
+    except (ValueError, OSError, zipfile.BadZipFile) as exc:
+        raise HTTPException(400, 'Could not parse the import file. Check its format and contents.') from exc
+    require_import_row_limit(df)
+    rows = rows_from_dataframe(df)
+    # Asset identity and uniqueness require the request's trusted tenant.
+    preview = (await preview_asset_rows(request, db, rows) if profile.model is models.Device
+               else await profile.preview_rows(db, rows))
     return {"table_name": table_name, **preview}
 
 
@@ -1883,12 +2066,14 @@ async def preview_import_rows(
     payload: dict[str, Any] = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
-    profile = get_import_profile(table_name)
+    profile = get_import_profile(table_name, request)
     await enforce_import_profile_access(profile, request, db)
     rows = payload.get("rows")
     if not isinstance(rows, list):
         raise HTTPException(status_code=400, detail="rows must be a list")
-    preview = await profile.preview_rows(db, rows)
+    require_import_row_limit(rows)
+    preview = (await preview_asset_rows(request, db, rows) if profile.model is models.Device
+               else await profile.preview_rows(db, rows))
     return {"table_name": table_name, **preview}
 
 
@@ -1904,7 +2089,7 @@ async def execute_import(
     body: Any = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
-    profile = get_import_profile(table_name)
+    profile = get_import_profile(table_name, request)
     await enforce_import_profile_access(profile, request, db)
     if isinstance(body, dict):
         rows = body.get("rows")
@@ -1912,6 +2097,9 @@ async def execute_import(
         rows = body
     if not isinstance(rows, list):
         raise HTTPException(status_code=400, detail="rows must be a list")
+    require_import_row_limit(rows)
 
     user_id = get_current_user_id(request)
+    if profile.model is models.Device:
+        return await execute_asset_rows(request, db, rows)
     return await profile.execute_rows(db, rows, user_id)

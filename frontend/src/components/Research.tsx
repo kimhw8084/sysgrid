@@ -415,6 +415,8 @@ export default function Research() {
       field: "involved_systems", 
       headerName: "Involved System", 
       width: 140, 
+      minWidth: 140,
+      maxWidth: 240,
       filter: true, 
       cellClass: "font-bold text-center", 
       headerClass: 'text-center',
@@ -428,7 +430,7 @@ export default function Research() {
         const display = sys.length > 1 ? `${sys[0]} +${sys.length - 1}` : sys[0]
         return (
           <div className="group relative cursor-help w-full h-full flex items-center justify-center">
-            <span style={{ fontSize: `${fontSize}px` }}>{display}</span>
+            <span className="truncate" title={sys.join(', ')} style={{ fontSize: `${fontSize}px` }}>{display}</span>
             {sys.length > 1 && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none">
                 <div className="bg-slate-900 border border-white/20 rounded-lg p-2 shadow-[0_10px_30px_rgba(0,0,0,0.5)] whitespace-nowrap">
@@ -720,7 +722,7 @@ export default function Research() {
         )}
       </AnimatePresence>
 
-      <div className="flex-1 min-h-0 relative">
+      <div className="flex flex-col flex-1 min-h-0 relative">
         <OperationalDataGrid
           gridRef={gridRef}
           rows={filteredData}

@@ -1,10 +1,15 @@
+import hashlib
 import json
 import os
+from math import isfinite
+from sqlite3 import SQLITE_BUSY, SQLITE_LOCKED
 from copy import deepcopy
 from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select, delete, update, or_
+from sqlalchemy import select, delete, update, or_, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from ..database import get_db, get_config_db, Base
 from ..models import models
@@ -16,13 +21,24 @@ from ..runtime_diagnostics import (
     infer_sanitized_environment_mode,
 )
 from .utils import filter_valid_columns, get_current_user_id, normalize_json_list, normalize_json_object
-from .authorization import require_capability
+from .authorization import PERMISSION_LEVELS, merge_operator_permissions, require_capability
 from .module_policy import is_system_root_user_id, require_diagnostics_access
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 LOCKED_MONITORING_OPTION_CATEGORIES = {"MonitoringSeverity", "MonitoringOwnerRole", "MonitoringPlatform", "MonitoringCategory", "NotificationMethod"}
 RELATIONAL_OPTION_CATEGORIES = {"MonitoringTeam"}
 SAFE_DIAGNOSTIC_ENV_KEYS = {"PORT", "ENVIRONMENT", "LOG_LEVEL", "API_V1_STR", "VITE_UI_DEBUG_LOGGING"}
+
+
+def identity_read_response(value):
+    """Project legacy non-JSON numbers as explicit invalid evidence, without writes.
+
+    A structured marker stays Unknown in recorded-grant views; null, a numeric
+    denial or a string could incorrectly imply a known permission value.
+    """
+    return jsonable_encoder(value, custom_encoder={float: lambda number: number if isfinite(number) else {
+        "invalid_number": "NaN" if number != number else "Infinity" if number > 0 else "-Infinity",
+    }})
 
 
 def parse_env_file_to_map(path: str | None) -> dict[str, str]:
@@ -121,7 +137,7 @@ def normalize_permission_map(raw_permissions: dict | None) -> dict:
         if isinstance(value, bool):
             normalized_value = 1 if value else 0
         elif isinstance(value, (int, float)):
-            normalized_value = int(value)
+            normalized_value = int(value) if not isinstance(value, float) or isfinite(value) else 0
         elif isinstance(value, str):
             lookup = value.strip().lower()
             normalized_value = {
@@ -181,12 +197,55 @@ def canonical_operator_state(operator: models.Operator) -> dict:
         "team": normalize_string(operator.team),
         "team_id": operator.team_id,
         "team_source": normalize_string(operator.team_source) or "manual",
-        "teams": normalize_string_list(operator.teams or []),
+        "teams": deepcopy(operator.teams),
         "is_admin": bool(operator.is_admin),
         "custom_permissions": normalize_permission_map(operator.custom_permissions or {}),
         "registration_status": normalize_string(operator.registration_status),
         "role_id": operator.role_id,
     }
+
+
+def validate_operator_admin_flag(payload: dict) -> None:
+    if "is_admin" in payload and not isinstance(payload["is_admin"], bool):
+        raise HTTPException(422, {"field_errors": {"is_admin": "Must be a boolean"}})
+
+
+def validated_operator_groups(value, *, field: str = "teams") -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list) or any(not isinstance(group, str) for group in value):
+        raise HTTPException(422, {
+            "message": f"Invalid group memberships in {field}. Use a list of team names before changing teams.",
+            "field_errors": {field: "Must be a list of strings or null"},
+        })
+    return value
+
+
+def validate_operator_permissions(payload: dict, *, field: str = "custom_permissions") -> None:
+    permissions = payload.get("custom_permissions")
+    if permissions is None:
+        return
+
+    def reject(message: str) -> None:
+        raise HTTPException(422, {"field_errors": {field: message}})
+
+    if not isinstance(permissions, dict):
+        reject("Must be an object or null")
+    keys: set[str] = set()
+    for key, value in permissions.items():
+        if not isinstance(key, str) or not key.strip():
+            reject("Permission keys must be non-empty strings")
+        normalized_key = key.strip()
+        if normalized_key in keys:
+            reject("Permission keys must be unique after trimming whitespace")
+        keys.add(normalized_key)
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, (int, float)) and value in (0, 1, 2, 3):
+            continue
+        if isinstance(value, str) and value.strip().lower() in PERMISSION_LEVELS:
+            continue
+        reject("Permission levels must be booleans, whole numbers from 0 to 3, or supported names")
 
 
 def apply_operator_canonicalization(
@@ -201,18 +260,19 @@ def apply_operator_canonicalization(
             setattr(operator, field, normalize_string(payload.get(field)))
 
     if "is_admin" in payload:
-        operator.is_admin = bool(payload.get("is_admin"))
+        operator.is_admin = payload["is_admin"]
     if "role_id" in payload:
         operator.role_id = payload.get("role_id")
     if "custom_permissions" in payload:
         operator.custom_permissions = normalize_permission_map(payload.get("custom_permissions"))
 
-    provided_groups = payload.get("teams") if "teams" in payload else operator.teams
-    normalized_groups = normalize_string_list(provided_groups or [])
-    if team and team.name not in normalized_groups:
-        normalized_groups.append(team.name)
-        normalized_groups = sorted(set(normalized_groups), key=lambda value: value.lower())
-    operator.teams = normalized_groups
+    if {"teams", "team", "team_id"}.intersection(payload):
+        provided_groups = payload.get("teams") if "teams" in payload else operator.teams
+        normalized_groups = normalize_string_list(validated_operator_groups(provided_groups))
+        if team and team.name not in normalized_groups:
+            normalized_groups.append(team.name)
+            normalized_groups = sorted(set(normalized_groups), key=lambda value: value.lower())
+        operator.teams = normalized_groups
 
     operator.team_id = team.id if team else None
     operator.team = team.name if team else None
@@ -398,6 +458,7 @@ async def build_user_pool_snapshot(db: AsyncSession):
             "teams": operator.teams or [],
             "role_id": operator.role_id,
             "role_name": operator.role.name if operator.role else None,
+            "role_permissions": operator.role.permissions if operator.role else {},
             "is_admin": bool(operator.is_admin),
             "custom_permissions": operator.custom_permissions or {},
             "registration_status": operator.registration_status,
@@ -516,6 +577,13 @@ async def create_user_pool_version_from_snapshot_delta(
     ))
     return summary
 
+def validate_operator_reference_id(value, field: str) -> None:
+    if value is not None and (type(value) is not int or not 1 <= value <= 2 ** 63 - 1):
+        raise HTTPException(422, {"field_errors": {
+            field: "Must be a positive integer within the supported range, or null",
+        }})
+
+
 async def resolve_team_assignment(
     db: AsyncSession,
     *,
@@ -524,11 +592,14 @@ async def resolve_team_assignment(
     source: str = "manual",
     create_missing: bool = False,
 ):
+    validate_operator_reference_id(team_id, "team_id")
     normalized_name = team_name.strip() if isinstance(team_name, str) and team_name.strip() else None
     team = None
-    if team_id:
+    if team_id is not None:
         res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
         team = res.scalar_one_or_none()
+        if team is None:
+            raise HTTPException(status_code=400, detail="Team not found")
     elif normalized_name:
         res = await db.execute(select(models.Team).filter(models.Team.name == normalized_name))
         team = res.scalar_one_or_none()
@@ -546,10 +617,15 @@ async def resolve_team_assignment(
 async def rename_operator_group_memberships(db: AsyncSession, old_name: str, new_name: str) -> None:
     if old_name == new_name:
         return
-    result = await db.execute(select(models.Operator).filter(models.Operator.teams.contains([old_name])))
+    # Generic JSON.contains uses string matching on supported SQLite, which
+    # misses multi-member arrays and treats SQL wildcard characters specially.
+    result = await db.execute(select(models.Operator))
     operators = result.scalars().all()
     for operator in operators:
-        memberships = [new_name if entry == old_name else entry for entry in (operator.teams or [])]
+        groups = validated_operator_groups(operator.teams, field=f"operators[{operator.id}].teams")
+        if old_name not in groups:
+            continue
+        memberships = [new_name if entry == old_name else entry for entry in groups]
         operator.teams = normalize_string_list(memberships)
 
 
@@ -567,13 +643,13 @@ async def rename_monitoring_team_references(db: AsyncSession, old_name: str, new
 
 
 async def team_references_exist(db: AsyncSession, *, team_id: int | None, team_name: str) -> dict[str, bool]:
+    operator_groups = (await db.execute(select(models.Operator.id, models.Operator.teams))).all()
     monitoring_team_values = (
         await db.execute(select(models.MonitoringItem.owner_team).filter(models.MonitoringItem.owner_team.is_not(None)))
     ).scalars().all()
     return {
-        "operator_groups": bool((await db.execute(
-            select(models.Operator.id).filter(models.Operator.teams.contains([team_name]))
-        )).scalars().first()),
+        "operator_groups": any(team_name in validated_operator_groups(groups, field=f"operators[{operator_id}].teams")
+                               for operator_id, groups in operator_groups),
         "monitoring_items": any(team_name in split_team_name_values(owner_team) for owner_team in monitoring_team_values),
         "external_entities": bool((await db.execute(
             select(models.ExternalEntity.id).filter(
@@ -610,6 +686,7 @@ async def ensure_operator_identity_uniqueness(
 
 
 async def resolve_role_assignment(db: AsyncSession, role_id: int | None) -> models.Role | None:
+    validate_operator_reference_id(role_id, "role_id")
     if role_id is None:
         return None
     res = await db.execute(select(models.Role).filter(models.Role.id == role_id))
@@ -625,7 +702,11 @@ async def apply_operator_patch(
     op: models.Operator,
     data: dict,
     user_id: str,
+    default_team_source: str = "manual_override",
 ) -> dict:
+    validate_operator_admin_flag(data)
+    validated_operator_groups(data.get("teams"))
+    validate_operator_permissions(data)
     previous_state = canonical_operator_state(op)
     next_external_id = normalize_string(data.get("external_id")) if "external_id" in data else op.external_id
     next_username = normalize_string(data.get("username")) if "username" in data else op.username
@@ -637,13 +718,13 @@ async def apply_operator_patch(
     if "role_id" in data:
         await resolve_role_assignment(db, data.get("role_id"))
 
-    team = op.team_rel
+    team = await db.get(models.Team, op.team_id) if op.team_id is not None else None
     if "team_id" in data or "team" in data:
         team = await resolve_team_assignment(
             db,
             team_id=data.get("team_id"),
             team_name=data.get("team"),
-            source=data.get("team_source") or "manual_override",
+            source=data.get("team_source") or default_team_source,
             create_missing=bool(data.get("team"))
         )
 
@@ -652,7 +733,10 @@ async def apply_operator_patch(
         patch_payload["external_id"] = next_external_id
     if "username" in data:
         patch_payload["username"] = next_username
-    apply_operator_canonicalization(op, team=team, payload=patch_payload, default_source="manual_override")
+    previous_team_source = op.team_source
+    apply_operator_canonicalization(op, team=team, payload=patch_payload, default_source=default_team_source)
+    if not {"team", "team_id", "team_source"}.intersection(data):
+        op.team_source = previous_team_source
     if "external_id" in patch_payload:
         op.external_id = next_external_id
     if "username" in patch_payload:
@@ -767,10 +851,8 @@ async def get_user_profile(request: Request, db: AsyncSession = Depends(get_db))
             "access_mode": "public_readonly" if is_public_readonly else "viewer",
         }
     
-    # Merge permissions: role permissions + custom overrides
-    permissions = (operator.role.permissions if operator.role else {}).copy()
-    if operator.custom_permissions:
-        permissions.update(operator.custom_permissions)
+    # The profile advertises the same bounded grants used by authorization.
+    permissions = merge_operator_permissions(operator)
 
     return {
         "id": operator.id,
@@ -1290,7 +1372,7 @@ async def get_env_history(
 async def get_operators(db: AsyncSession = Depends(get_db)):
     from sqlalchemy.orm import selectinload
     res = await db.execute(select(models.Operator).options(selectinload(models.Operator.role), selectinload(models.Operator.team_rel)))
-    return res.scalars().all()
+    return identity_read_response(res.scalars().all())
 
 @router.get("/teams")
 async def get_teams(db: AsyncSession = Depends(get_db)):
@@ -1350,6 +1432,7 @@ async def create_team(
     name = (data.get("name") or "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="Team name is required")
+    await begin_identity_transaction(db, request)
     existing_res = await db.execute(select(models.Team).filter(models.Team.name == name))
     if existing_res.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="Team already exists")
@@ -1382,6 +1465,7 @@ async def update_team(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    await begin_identity_transaction(db, request)
     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
     team = team_res.scalar_one_or_none()
     if not team:
@@ -1443,6 +1527,7 @@ async def delete_team(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    await begin_identity_transaction(db, request)
     team_res = await db.execute(select(models.Team).filter(models.Team.id == team_id))
     team = team_res.scalar_one_or_none()
     if not team:
@@ -1473,44 +1558,43 @@ async def create_operator(
     db: AsyncSession = Depends(get_db),
 ):
     from sqlalchemy.exc import IntegrityError
+    validate_operator_admin_flag(data)
+    validated_operator_groups(data.get("teams"))
+    validate_operator_permissions(data)
     external_id = normalize_string(data.get("external_id"))
     username = normalize_string(data.get("username"))
     if not external_id:
         raise HTTPException(status_code=400, detail="External ID is required")
     if not username:
         raise HTTPException(status_code=400, detail="Username is required")
+    await begin_identity_transaction(db, request)
     res = await db.execute(select(models.Operator).filter(models.Operator.external_id == external_id))
     op = res.scalar_one_or_none()
     existing_operator = op is not None
-    if op:
-        await ensure_operator_identity_uniqueness(db, external_id=external_id, username=username, exclude_id=op.id)
-    else:
-        await ensure_operator_identity_uniqueness(db, external_id=external_id, username=username)
-    await resolve_role_assignment(db, data.get("role_id"))
-
-    team = await resolve_team_assignment(
-        db,
-        team_id=data.get("team_id"),
-        team_name=data.get("team"),
-        source=data.get("team_source") or "manual",
-        create_missing=bool(data.get("team"))
-    )
-
     user_id = get_current_user_id(request)
     reject_reserved_system_root_identity(
         {"external_id": external_id, "username": username, **data},
         actor_id=user_id,
     )
+    team = None
     if op:
-        previous_state = canonical_operator_state(op)
-        patch_payload = dict(data)
-        patch_payload["external_id"] = external_id
-        patch_payload["username"] = username
-        apply_operator_canonicalization(op, team=team, payload=patch_payload, default_source="manual")
-        current_state = canonical_operator_state(op)
-        has_semantic_change = previous_state != current_state
+        update_result = await apply_operator_patch(
+            db, op=op, data=data, user_id=user_id, default_team_source="manual",
+        )
+        has_semantic_change = update_result["changed"]
+        team_updates = update_result["team_updates"]
     else:
+        await ensure_operator_identity_uniqueness(db, external_id=external_id, username=username)
+        await resolve_role_assignment(db, data.get("role_id"))
+        team = await resolve_team_assignment(
+            db,
+            team_id=data.get("team_id"),
+            team_name=data.get("team"),
+            source=data.get("team_source") or "manual",
+            create_missing=bool(data.get("team"))
+        )
         has_semantic_change = True
+        team_updates = [{"external_id": external_id, "team": team.name, "mode": "member_added"}] if team else []
         clean_data = filter_valid_columns(models.Operator, {
             "username": username,
             "external_id": external_id,
@@ -1518,7 +1602,7 @@ async def create_operator(
             "email": normalize_string(data.get("email")),
             "department": normalize_string(data.get("department")),
             "registration_status": normalize_string(data.get("registration_status")),
-            "is_admin": bool(data.get("is_admin", False)),
+            "is_admin": data.get("is_admin", False),
             "custom_permissions": normalize_permission_map(data.get("custom_permissions")),
             "role_id": data.get("role_id"),
             "teams": normalize_string_list(data.get("teams") or []),
@@ -1528,7 +1612,7 @@ async def create_operator(
         db.add(op)
     
     try:
-        if team:
+        if not existing_operator and team:
             await record_team_audit(db, team.id, "member_added", user_id, {"external_id": external_id, "username": op.username})
         
         if has_semantic_change:
@@ -1536,7 +1620,7 @@ async def create_operator(
                 "added": 0 if existing_operator else 1,
                 "removed": 0,
                 "changed": 1 if existing_operator else 0,
-                "team_updates": [{"external_id": external_id, "team": team.name, "mode": "member_added"}] if team else [],
+                "team_updates": team_updates,
             })
         await db.commit()
         await db.refresh(op)
@@ -1553,10 +1637,21 @@ async def update_operator(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    if "expected_custom_permissions" in data:
+        if "custom_permissions" not in data:
+            raise HTTPException(422, {"field_errors": {
+                "expected_custom_permissions": "Requires a custom_permissions update",
+            }})
+        validate_operator_permissions(
+            {"custom_permissions": data["expected_custom_permissions"]}, field="expected_custom_permissions",
+        )
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
     op = res.scalar_one_or_none()
     if not op: raise HTTPException(404, "Operator not found")
+    if "expected_custom_permissions" in data and normalize_permission_map(op.custom_permissions) != normalize_permission_map(data["expected_custom_permissions"]):
+        raise HTTPException(409, "Permissions changed since this row was loaded. Review the current grants and try again.")
     reject_reserved_system_root_identity(
         {"external_id": op.external_id, "username": op.username, "id": op.external_id, **data},
         actor_id=user_id,
@@ -1581,6 +1676,7 @@ async def delete_operator(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
     op = res.scalar_one_or_none()
@@ -1611,6 +1707,7 @@ async def bulk_update_operators(
     if not isinstance(updates, list) or not updates:
         raise HTTPException(status_code=400, detail="A non-empty updates list is required")
 
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     before_snapshot = await build_user_pool_snapshot(db)
     team_updates: list[dict] = []
@@ -1621,8 +1718,8 @@ async def bulk_update_operators(
             raise HTTPException(status_code=400, detail=f"updates[{index}] must be an object")
         op_id = update_item.get("id")
         payload = update_item.get("payload")
-        if not isinstance(op_id, int):
-            raise HTTPException(status_code=400, detail=f"updates[{index}].id must be an integer")
+        if type(op_id) is not int or not 1 <= op_id <= 2 ** 63 - 1:
+            raise HTTPException(status_code=400, detail=f"updates[{index}].id must be a positive integer within the supported range")
         if not isinstance(payload, dict):
             raise HTTPException(status_code=400, detail=f"updates[{index}].payload must be an object")
         res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
@@ -1661,14 +1758,15 @@ async def bulk_delete_operators(
     if not isinstance(ids, list) or not ids:
         raise HTTPException(status_code=400, detail="A non-empty ids list is required")
 
+    await begin_identity_transaction(db, request)
     user_id = get_current_user_id(request)
     before_snapshot = await build_user_pool_snapshot(db)
     team_updates: list[dict] = []
     deleted_count = 0
 
     for index, op_id in enumerate(ids):
-        if not isinstance(op_id, int):
-            raise HTTPException(status_code=400, detail=f"ids[{index}] must be an integer")
+        if type(op_id) is not int or not 1 <= op_id <= 2 ** 63 - 1:
+            raise HTTPException(status_code=400, detail=f"ids[{index}] must be a positive integer within the supported range")
         res = await db.execute(select(models.Operator).filter(models.Operator.id == op_id))
         op = res.scalar_one_or_none()
         if not op:
@@ -1695,7 +1793,7 @@ async def bulk_delete_operators(
 @router.get("/roles")
 async def get_roles(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(models.Role))
-    return res.scalars().all()
+    return identity_read_response(res.scalars().all())
 
 @router.get("/user-pool/versions")
 async def get_user_pool_versions(
@@ -1703,7 +1801,25 @@ async def get_user_pool_versions(
     db: AsyncSession = Depends(get_db),
 ):
     res = await db.execute(select(models.UserPoolVersion).order_by(models.UserPoolVersion.created_at.desc(), models.UserPoolVersion.id.desc()))
-    return res.scalars().all()
+    return identity_read_response(res.scalars().all())
+
+async def begin_identity_transaction(db: AsyncSession, request: Request, *, preview: bool = False) -> None:
+    if db.get_bind().dialect.name != "sqlite":
+        return
+    # Discard authorization's cached read state before acquiring a consistent
+    # snapshot. Identity writers must own the writer before reading current data.
+    await db.rollback()
+    try:
+        await db.execute(text("BEGIN" if preview else "BEGIN IMMEDIATE"))
+    except OperationalError as exc:
+        await db.rollback()
+        code = getattr(exc.orig, "sqlite_errorcode", None)
+        if code is not None and (code & 0xFF) in {SQLITE_BUSY, SQLITE_LOCKED}:
+            raise HTTPException(409, "Identity data is busy. Wait for the current change, then review and try again.") from exc
+        raise
+    # Another writer may have revoked this actor while acquisition waited.
+    await require_capability("settings", 3)(request=request, db=db)
+
 
 @router.post("/user-pool/refresh")
 async def refresh_user_pool(
@@ -1712,6 +1828,15 @@ async def refresh_user_pool(
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    if "preview" in data and not isinstance(data["preview"], bool):
+        raise HTTPException(422, {"field_errors": {"preview": "Must be a boolean"}})
+    expected_fingerprint = data.get("expected_fingerprint")
+    if "expected_fingerprint" in data and (
+        not isinstance(expected_fingerprint, str)
+        or len(expected_fingerprint) != 64
+        or any(char not in "0123456789abcdef" for char in expected_fingerprint)
+    ):
+        raise HTTPException(422, {"field_errors": {"expected_fingerprint": "Must be a preview fingerprint"}})
     preview = data.get("preview", False)
     user_id = get_current_user_id(request)
 
@@ -1759,6 +1884,8 @@ async def refresh_user_pool(
             "registration_status": normalize_string(raw_record.get("registration_status")),
         })
 
+    await begin_identity_transaction(db, request, preview=preview)
+
     diff_summary = {
         "added": 0,
         "removed": 0,
@@ -1767,6 +1894,22 @@ async def refresh_user_pool(
         "team_conflicts": [],
         "team_updates": [],
     }
+    fingerprint = None
+    if preview or expected_fingerprint is not None:
+        # This is a state precondition, not an authentication or authorization token.
+        reviewed_state = {
+            "tenant_id": getattr(request.state, "tenant_id", None),
+            "actor": user_id,
+            "records": source_records,
+            "source": diff_summary["source"],
+            "operators": await build_user_pool_snapshot(db),
+            "teams": [list(row) for row in (await db.execute(
+                select(models.Team.id, models.Team.name).order_by(models.Team.id)
+            )).all()],
+        }
+        fingerprint = hashlib.sha256(json.dumps(reviewed_state, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        if expected_fingerprint is not None and expected_fingerprint != fingerprint:
+            raise HTTPException(409, "Identity data or source records changed. Preview again before applying.")
     preview_items = []
     existing_username_map = {
         operator.username: operator.external_id
@@ -1799,6 +1942,8 @@ async def refresh_user_pool(
         if not op:
             item_status = "new"
             diff_summary["added"] += 1
+            if u.get("team"):
+                diff_summary["team_updates"].append({"external_id": ext_id, "team": u["team"], "mode": "created"})
             preview_items.append({
                 "id": ext_id,
                 "username": u["username"],
@@ -1806,6 +1951,7 @@ async def refresh_user_pool(
                 "email": u["email"],
                 "department": u["department"],
                 "team": u.get("team"),
+                "registration_status": u["registration_status"],
                 "status": "new",
                 "changes": {}
             })
@@ -1830,14 +1976,25 @@ async def refresh_user_pool(
                     team_source="synced" if team else "manual"
                 ))
                 if team:
-                    diff_summary["team_updates"].append({"external_id": ext_id, "team": team.name, "mode": "created"})
                     await record_team_audit(db, team.id, "member_added_via_sync", user_id, {"external_id": ext_id, "username": u["username"]})
         else:
+            incoming_team = u.get("team")
+            preserve_local_team = bool(op.team and (
+                (op.team_source == "manual_override" and op.team != incoming_team)
+                or (not incoming_team and op.team_source != "synced")
+            ))
+            effective_team = op.team if preserve_local_team else incoming_team
+            if preserve_local_team:
+                diff_summary["team_conflicts"].append({
+                    "external_id": op.external_id,
+                    "local_team": op.team,
+                    "synced_team": incoming_team,
+                })
             core_fields = ["username", "full_name", "email", "department", "registration_status", "team"]
             has_changes = False
             for f in core_fields:
                 old_val = getattr(op, f)
-                new_val = u.get(f)
+                new_val = effective_team if f == "team" else u.get(f)
                 if str(old_val) != str(new_val):
                     item_changes[f] = {"old": old_val, "new": new_val}
                     has_changes = True
@@ -1845,6 +2002,11 @@ async def refresh_user_pool(
             if has_changes:
                 item_status = "changed"
                 diff_summary["changed"] += 1
+            if "team" in item_changes:
+                diff_summary["team_updates"].append({
+                    "external_id": ext_id, "team": effective_team,
+                    "mode": "updated" if effective_team else "cleared",
+                })
             
             preview_items.append({
                 "id": ext_id,
@@ -1852,7 +2014,7 @@ async def refresh_user_pool(
                 "full_name": u["full_name"],
                 "email": u["email"],
                 "department": u["department"],
-                "team": u.get("team"),
+                "team": effective_team,
                 "status": item_status,
                 "changes": item_changes
             })
@@ -1866,27 +2028,19 @@ async def refresh_user_pool(
                 
                 team = await resolve_team_assignment(
                     db,
-                    team_name=u.get("team"),
+                    team_name=effective_team,
                     source="synced",
-                    create_missing=bool(u.get("team"))
-                ) if u.get("team") else None
+                    create_missing=True,
+                ) if effective_team and not preserve_local_team else None
                 
                 if team:
-                    if op.team_source == "manual_override" and op.team and op.team != team.name:
-                        diff_summary["team_conflicts"].append({
-                            "external_id": op.external_id,
-                            "local_team": op.team,
-                            "synced_team": team.name
-                        })
-                    else:
-                        if op.team_id != team.id:
-                            if op.team_id:
-                                await record_team_audit(db, op.team_id, "member_removed_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
-                            await record_team_audit(db, team.id, "member_added_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
-                            diff_summary["team_updates"].append({"external_id": op.external_id, "team": team.name, "mode": "updated"})
-                        op.team = team.name
-                        op.team_id = team.id
-                        op.team_source = "synced"
+                    if op.team_id != team.id:
+                        if op.team_id:
+                            await record_team_audit(db, op.team_id, "member_removed_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
+                        await record_team_audit(db, team.id, "member_added_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
+                    op.team = team.name
+                    op.team_id = team.id
+                    op.team_source = "synced"
                 elif op.team_source == "synced":
                     if op.team_id:
                         await record_team_audit(db, op.team_id, "member_removed_via_sync", user_id, {"external_id": op.external_id, "username": op.username})
@@ -1925,6 +2079,7 @@ async def refresh_user_pool(
             "status": "success", 
             "preview": preview_items, 
             "summary": diff_summary,
+            "fingerprint": fingerprint,
             "version_label": version_label
         }
 
@@ -1939,37 +2094,98 @@ async def refresh_user_pool(
             version_label=version_label,
         )
         await db.commit()
-        return {"status": "success", "version": version_label, "changes": True}
+        return {"status": "success", "version": version_label, "changes": True, "summary": diff_summary}
     
     await db.commit()
-    return {"status": "success", "version": None, "changes": False}
+    return {"status": "success", "version": None, "changes": False, "summary": diff_summary}
 
 @router.post("/user-pool/restore/{version_id}")
 async def restore_user_pool(
     version_id: int,
     request: Request,
+    data: dict | None = None,
     _settings_access: models.Operator = Depends(require_capability("settings", 3)),
     db: AsyncSession = Depends(get_db),
 ):
+    data = data if data is not None else {}
+    if "preview" in data and not isinstance(data["preview"], bool):
+        raise HTTPException(422, {"field_errors": {"preview": "Must be a boolean"}})
+    preview = data.get("preview", False)
+    expected_fingerprint = data.get("expected_fingerprint")
+    if "expected_fingerprint" in data and (
+        not isinstance(expected_fingerprint, str)
+        or len(expected_fingerprint) != 64
+        or any(char not in "0123456789abcdef" for char in expected_fingerprint)
+    ):
+        raise HTTPException(422, {"field_errors": {"expected_fingerprint": "Must be a preview fingerprint"}})
     user_id = get_current_user_id(request)
+    # Preview stages the same writes and rolls them back; both modes own the
+    # supported SQLite writer before inspecting state and rechecking authority.
+    await begin_identity_transaction(db, request)
     res = await db.execute(select(models.UserPoolVersion).filter(models.UserPoolVersion.id == version_id))
     version = res.scalar_one_or_none()
     if not version: raise HTTPException(404, "Version not found")
+    if not isinstance(version.snapshot_data, list):
+        raise HTTPException(422, {"field_errors": {"snapshot_data": "Must be a list of identity records"}})
     
     # Identify all current operators to handle deletions
     res_current = await db.execute(select(models.Operator))
-    current_ops = {op.external_id: op for op in res_current.scalars().all() if op.external_id}
+    current_rows = res_current.scalars().all()
+    current_ops = {op.external_id: op for op in current_rows if op.external_id}
+    fingerprint = None
+    if preview or expected_fingerprint is not None:
+        # Bind review to exact source/current records, including unassigned roles
+        # and revision changes. This precondition never substitutes for access.
+        reviewed_state = {
+            "tenant_id": getattr(request.state, "tenant_id", None), "actor": user_id,
+            "version_id": version_id, "version_label": version.version_label, "source": version.snapshot_data,
+            "operators": [{col.name: getattr(op, col.name) for col in models.Operator.__table__.columns}
+                          for op in sorted(current_rows, key=lambda row: row.id)],
+            "revisions": [list(row) for row in (await db.execute(
+                select(models.UserPoolVersion.id, models.UserPoolVersion.is_active).order_by(models.UserPoolVersion.id)
+            )).all()],
+        }
+        for name, model in [("roles", models.Role), ("teams", models.Team)]:
+            reviewed_state[name] = [{col.name: getattr(row, col.name) for col in model.__table__.columns}
+                                   for row in (await db.scalars(select(model).order_by(model.id))).all()]
+        fingerprint = hashlib.sha256(json.dumps(reviewed_state, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+        if expected_fingerprint is not None and expected_fingerprint != fingerprint:
+            raise HTTPException(409, "Identity data or restore source changed. Preview again before restoring.")
     
     snapshot_external_ids = set()
     snapshot_usernames: set[str] = set()
+    restore_summary = {"added": 0, "removed": 0, "changed": 0}
+    restored_fields = ("username", "full_name", "email", "department", "team", "team_id",
+                       "team_source", "teams", "role_id", "is_admin", "custom_permissions", "registration_status")
     
     # Sync version data back to operators
-    for u in version.snapshot_data:
-        ext_id = str(u.get("external_id") or u.get("id"))
+    for index, u in enumerate(version.snapshot_data):
+        if not isinstance(u, dict):
+            raise HTTPException(422, {"field_errors": {f"snapshot_data[{index}]": "Must be an identity object"}})
+        field_errors = {}
+        if not isinstance(u.get("username"), str) or not u["username"].strip():
+            field_errors[f"snapshot_data[{index}].username"] = "Must be a non-empty string"
+        for field in ("full_name", "email", "department", "team", "team_source", "registration_status"):
+            if u.get(field) is not None and not isinstance(u[field], str):
+                field_errors[f"snapshot_data[{index}].{field}"] = "Must be a string or null"
+        groups = u.get("teams")
+        if groups is not None and (not isinstance(groups, list) or any(not isinstance(group, str) for group in groups)):
+            field_errors[f"snapshot_data[{index}].teams"] = "Must be a list of strings or null"
+        permissions = u.get("custom_permissions")
+        if permissions is not None and not isinstance(permissions, dict):
+            field_errors[f"snapshot_data[{index}].custom_permissions"] = "Must be an object or null"
+        if field_errors:
+            raise HTTPException(422, {"field_errors": field_errors})
+        validate_operator_permissions(u, field=f"snapshot_data[{index}].custom_permissions")
+        validate_operator_admin_flag(u)
+        raw_id = u.get("external_id") or u.get("id")
+        if not ((isinstance(raw_id, str) and raw_id.strip()) or (type(raw_id) is int and raw_id > 0)):
+            raise HTTPException(422, {"field_errors": {f"snapshot_data[{index}].external_id": "Must be a non-empty string or positive legacy identity ID"}})
+        ext_id = str(raw_id).strip()
+        if ext_id in snapshot_external_ids:
+            raise HTTPException(409, f"Snapshot contains duplicate external identity '{ext_id}'")
         snapshot_external_ids.add(ext_id)
         username = normalize_string(u.get("username"))
-        if not username:
-            raise HTTPException(status_code=400, detail=f"Snapshot record for '{ext_id}' is missing username")
         reject_reserved_system_root_identity(
             {"external_id": ext_id, "username": username, "id": ext_id},
             actor_id=user_id,
@@ -1987,6 +2203,7 @@ async def restore_user_pool(
         role = await resolve_role_assignment(db, u.get("role_id")) if u.get("role_id") is not None else None
         
         op = current_ops.get(ext_id)
+        before_state = {field: deepcopy(getattr(op, field)) for field in restored_fields} if op else None
         if not op:
             # Re-create missing operator
             op = models.Operator(external_id=ext_id)
@@ -1994,24 +2211,38 @@ async def restore_user_pool(
         
         await ensure_operator_identity_uniqueness(db, external_id=ext_id, username=username, exclude_id=op.id if op.id else None)
         op.username = username
-        op.full_name = u["full_name"]
-        op.email = u["email"]
-        op.department = u["department"]
+        op.full_name = u.get("full_name")
+        op.email = u.get("email")
+        op.department = u.get("department")
         op.team = team.name if team else None
         op.team_id = team.id if team else None
         op.team_source = u.get("team_source", "synced")
-        op.teams = normalize_string_list(u.get("teams") or ([team.name] if team else []))
+        op.teams = normalize_string_list([*(u.get("teams") or []), *([team.name] if team else [])])
         op.role_id = role.id if role else None
-        op.is_admin = bool(u.get("is_admin", False))
+        op.is_admin = u.get("is_admin", False)
         op.custom_permissions = normalize_permission_map(u.get("custom_permissions", {}))
         op.registration_status = u.get("registration_status", "Verified")
+        if before_state is None:
+            restore_summary["added"] += 1
+        elif before_state != {field: getattr(op, field) for field in restored_fields}:
+            restore_summary["changed"] += 1
 
     # Delete operators NOT in the snapshot (excluding current user to avoid lockout if they aren't in old version)
     for ext_id, op in current_ops.items():
         if ext_id not in snapshot_external_ids:
-            if op.username != user_id:
+            if user_id not in (op.username, op.external_id):
+                reject_reserved_system_root_identity(
+                    {"external_id": op.external_id, "username": op.username, "id": op.external_id},
+                    actor_id=user_id,
+                )
                 await db.delete(op)
+                restore_summary["removed"] += 1
              
+    if preview:
+        await db.flush()
+        await db.rollback()
+        return {"status": "success", "preview": True, "summary": restore_summary, "fingerprint": fingerprint}
+
     # Create a NEW version record with descriptive label
     import datetime
     new_label = f"v{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')} (Cloned from {version.version_label})"
@@ -2023,7 +2254,7 @@ async def restore_user_pool(
             "revert": True,
             "source_version_id": version.id,
             "source_version_label": version.version_label,
-            "added": 0, "removed": 0, "changed": 0 # Placeholder for diff summary
+            **restore_summary,
         },
         version_label=new_label
     )

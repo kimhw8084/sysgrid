@@ -2,8 +2,183 @@ import { clickResilientButton, createAsset, expectWorkspaceLogicalRowSelected, f
 import { expect, type Page, type TestInfo } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import fs from 'fs';
+import { expectReadableGridText } from './helpers/grid-contrast';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
+for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] as const) {
+  test(`hardware quantity validation preserves input and supports audited edits in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width, height: 900 })
+    await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const asset = await createAsset(request, { name: `Quantity proof ${theme} ${Date.now()}`, system: 'Hardware proof' })
+    await page.goto(`/asset?id=${asset.id}`)
+    const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: asset.name, exact: true }) })
+    const name = dialog.getByPlaceholder('Component Name')
+    const quantity = dialog.getByRole('spinbutton')
+    await name.fill('Precision CPU')
+    let writes = 0
+    page.on('request', request => {
+      if (new URL(request.url()).pathname === `/api/v1/devices/${asset.id}/hardware` && request.method() === 'POST') writes++
+    })
+    await quantity.fill('1.5')
+    await expect(quantity).toHaveValue('1.5')
+    await dialog.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Quantity must be a whole number of zero or more' })).toBeVisible()
+    expect(writes).toBe(0)
+    await expect(name).toHaveValue('Precision CPU')
+    await quantity.fill('')
+    await expect(quantity).toHaveValue('')
+    await dialog.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Quantity must be a whole number of zero or more' })).toHaveCount(1)
+    expect(writes).toBe(0)
+    await quantity.fill('2')
+    await dialog.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Quantity must be a whole number of zero or more' })).toHaveCount(0)
+    const row = dialog.getByRole('row').filter({ hasText: 'Precision CPU' })
+    await expect(row).toContainText('x2')
+    await row.getByRole('button', { name: 'Edit hardware component', exact: true }).click()
+    const editor = dialog.getByRole('row').filter({ has: page.getByRole('button', { name: 'Save hardware component', exact: true }) })
+    await editor.getByRole('spinbutton', { name: 'Component quantity', exact: true }).fill('3')
+    await editor.getByRole('button', { name: 'Save hardware component', exact: true }).click()
+    await expect(row).toContainText('x3')
+    const stored = await request.get(`${apiBase}/devices/${asset.id}/hardware`)
+    expect(stored.ok()).toBeTruthy()
+    expect((await stored.json()).find((item: any) => item.name === 'Precision CPU').count).toBe(3)
+    const notices = page.locator('[data-workspace-toast][data-visible="true"]')
+    while (await notices.count()) await notices.first().getByRole('button', { name: 'Dismiss notification', exact: true }).click()
+    const dialogBounds = await dialog.boundingBox()
+    for (const control of [name, dialog.getByRole('spinbutton', { name: 'New component quantity', exact: true })]) {
+      const bounds = await control.boundingBox()
+      expect(bounds).not.toBeNull()
+      expect(bounds!.x, 'Editing table columns must not scroll the add form out of the dialog').toBeGreaterThanOrEqual(dialogBounds!.x)
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(dialogBounds!.x + dialogBounds!.width)
+    }
+    await expectReadableGridText(page, testInfo, 'hardware-quantity', '[role="dialog"]')
+    await page.screenshot({ path: testInfo.outputPath('hardware-quantity.png'), animations: 'disabled' })
+  })
+}
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  test(`relationship form and editing remain contained and labeled on mobile in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const owner = await createAsset(request, { name: `Mobile relationship owner ${Date.now()}`, system: 'Relationship proof' })
+    const peer = await createAsset(request, { name: `Mobile relationship peer ${Date.now()}`, system: 'Relationship proof' })
+    await page.goto(`/asset?id=${owner.id}`)
+    const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: owner.name, exact: true }) })
+    await dialog.getByRole('button', { name: 'relations', exact: true }).click()
+    await expect(dialog.getByRole('combobox')).toHaveCount(3)
+    const assertFormContained = async () => {
+      const boundary = await dialog.boundingBox()
+      for (const control of await dialog.getByRole('combobox').all()) {
+        const bounds = await control.boundingBox()
+        expect(bounds).not.toBeNull()
+        expect(bounds!.x).toBeGreaterThanOrEqual(boundary!.x)
+        expect(bounds!.x + bounds!.width, 'Relationship form controls must remain inside the dialog').toBeLessThanOrEqual(boundary!.x + boundary!.width)
+      }
+    }
+    await assertFormContained()
+    await dialog.getByRole('combobox', { name: 'Peer Asset (B)', exact: true }).selectOption(String(peer.id))
+    await expect(dialog.getByRole('combobox', { name: 'Role (A)', exact: true })).toHaveValue('Consumer')
+    await expect(dialog.getByRole('combobox', { name: 'Role (B)', exact: true })).toHaveValue('Provider')
+    await dialog.getByRole('group', { name: 'Add asset relationship', exact: true }).scrollIntoViewIfNeeded()
+    await page.screenshot({ path: testInfo.outputPath('relationship-form.png'), animations: 'disabled' })
+    await dialog.getByRole('button', { name: 'Establish Vector', exact: true }).click()
+    const row = dialog.getByRole('row').filter({ hasText: peer.name })
+    await row.getByRole('button', { name: 'Edit relationship', exact: true }).click()
+    await dialog.getByRole('combobox', { name: 'Local role', exact: true }).selectOption('Hypervisor')
+    await dialog.getByRole('combobox', { name: 'Relationship type', exact: true }).selectOption('Hosts')
+    await dialog.getByRole('combobox', { name: 'Peer role', exact: true }).selectOption('Guest')
+    await dialog.getByRole('button', { name: 'Save relationship', exact: true }).click()
+    await expect(row).toContainText('Hypervisor')
+    await expect(row).toContainText('Guest')
+    await assertFormContained()
+    const notices = page.locator('[data-workspace-toast][data-visible="true"]')
+    while (await notices.count()) await notices.first().getByRole('button', { name: 'Dismiss notification', exact: true }).click()
+    await dialog.getByRole('button', { name: 'Establish Vector', exact: true }).scrollIntoViewIfNeeded()
+    await expectReadableGridText(page, testInfo, 'relationship-mobile', '[role="dialog"]')
+    await page.screenshot({ path: testInfo.outputPath('relationship-mobile.png'), animations: 'disabled' })
+  })
+}
+
+test('relationship creation and inline role edits preserve both asset endpoints', async ({ page, sysApi: request }, testInfo) => {
+  await resetBrowserState(page)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await request.patch(`${apiBase}/settings/user/settings`, { data: { theme: 'nordic-frost-v1' } })
+  await page.addInitScript(() => localStorage.setItem('sysgrid-theme', 'nordic-frost-v1'))
+  const owner = await createAsset(request, { name: `Relationship owner ${Date.now()}`, system: 'Relationship proof' })
+  const peer = await createAsset(request, { name: `Relationship peer ${Date.now()}`, system: 'Relationship proof' })
+  await page.goto(`/asset?id=${owner.id}`)
+  const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: owner.name, exact: true }) })
+  await dialog.getByRole('button', { name: 'relations', exact: true }).click()
+  const peerSelect = dialog.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'Select Peer...', exact: true }) })
+  await peerSelect.selectOption(String(peer.id))
+  await dialog.getByRole('button', { name: 'Establish Vector', exact: true }).click()
+  const row = dialog.getByRole('row').filter({ hasText: peer.name })
+  await expect(row).toContainText('Consumer')
+  await expect(row).toContainText('Provider')
+  await row.getByRole('button', { name: 'Edit relationship', exact: true }).click()
+  const editor = dialog.getByRole('row').filter({ has: page.getByRole('combobox') })
+  await editor.getByRole('combobox', { name: 'Local role', exact: true }).selectOption('Hypervisor')
+  await editor.getByRole('combobox', { name: 'Relationship type', exact: true }).selectOption('Hosts')
+  await editor.getByRole('combobox', { name: 'Peer role', exact: true }).selectOption('Guest')
+  await editor.getByRole('button', { name: 'Save relationship', exact: true }).click()
+  await expect(row).toContainText('Hypervisor')
+  await expect(row).toContainText('Guest')
+  const response = await request.get(`${apiBase}/devices/${owner.id}/relationships`)
+  expect(response.ok()).toBeTruthy()
+  const [stored] = await response.json()
+  expect(stored).toMatchObject({ source_device_id: owner.id, target_device_id: peer.id, relationship_type: 'Hosts', source_role: 'Hypervisor', target_role: 'Guest' })
+  await expectReadableGridText(page, testInfo, 'relationship-desktop', '[role="dialog"]')
+  await page.screenshot({ path: testInfo.outputPath('relationship-desktop.png'), animations: 'disabled' })
+  await row.getByRole('button', { name: 'Remove relationship', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Delete Relationship', exact: true }).getByRole('button', { name: 'Confirm Action', exact: true }).click()
+  await expect(row).toHaveCount(0)
+  const remaining = await request.get(`${apiBase}/devices/${owner.id}/relationships`)
+  expect(await remaining.json()).toEqual([])
+})
+
+test('preserves asset selection on preview cancellation and clears it after a status change or scope change', async ({ page, sysApi: request }) => {
+  await resetBrowserState(page)
+  const name = `PW-SELECTION-RESET-${Date.now()}`
+  const asset = await createAsset(request, { name, system: name, type: 'Physical', status: 'Active' })
+  await page.goto('/asset')
+  await fillGridSearch(page, 'Scan asset matrix...', name)
+  const row = await getWorkspaceLogicalRowByText(page, 'assets', name)
+  await selectWorkspaceLogicalRow(row)
+  const bulk = page.getByTitle('Bulk actions', { exact: true })
+  const preview = page.getByRole('dialog', { name: 'Assets bulk preview' })
+  const openStatusPreview = async () => {
+    await bulk.click()
+    await page.getByText('Set Status', { exact: true }).click()
+    await page.getByRole('button', { name: 'Choose status', exact: true }).click()
+    await page.getByRole('button', { name: 'Offline', exact: true }).click()
+    await page.getByRole('button', { name: 'Preview Status Change', exact: true }).click()
+    await expect(preview.getByRole('button', { name: /^Confirm / })).toBeEnabled()
+  }
+  await openStatusPreview()
+  await preview.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expectWorkspaceLogicalRowSelected(row)
+  await expect(bulk).toBeEnabled()
+  await openStatusPreview()
+  await preview.getByRole('button', { name: /^Confirm / }).click()
+  await page.getByRole('dialog', { name: 'Assets bulk complete' }).getByRole('button', { name: 'Close bulk receipt' }).click()
+  await expect(row.center!).toContainText('Offline')
+  await expect(row.center!).toHaveAttribute('aria-selected', 'false')
+  await expect(row.center!).not.toHaveClass(/ag-row-selected/)
+  await expect(bulk).toBeDisabled()
+  expect((await getDeviceFromBackend(request, asset.id)).status).toBe('Offline')
+  await selectWorkspaceLogicalRow(row)
+  await openToolbarButton(page, /^Archived/)
+  await expect(bulk).toBeDisabled()
+  await openToolbarButton(page, /^Existing/)
+  await expect((await getWorkspaceLogicalRowByText(page, 'assets', name)).center!).toHaveAttribute('aria-selected', 'false')
+  await expect(bulk).toBeDisabled()
+})
 
 async function attachEvidence(testInfo: TestInfo, name: string, body: Buffer | string, contentType: string) {
   const path = testInfo.outputPath(name)
@@ -270,7 +445,7 @@ test.describe('Assets workflows', () => {
     await primaryDetailsRow.action('More actions').click()
     await viewDetailsButtons.filter({ visible: true }).click()
     await expect(page.getByText(primary.name).first()).toBeVisible({ timeout: 20000 })
-    await expect(page.getByText('Suggested Runbooks Now')).toBeVisible()
+    await expect(page.getByText('Linked Runbooks', { exact: true })).toBeVisible()
     await expect(farRisksButton).toBeVisible()
     await expect(farRisksButton).toBeDisabled()
     await expect(auditButton).toBeVisible()
@@ -315,7 +490,7 @@ test.describe('Assets workflows', () => {
     await cell0.click()
     await expect(rows.nth(0)).toHaveClass(/ag-row-selected/)
     // Target B.2: Name/Instance click no-panel behavior proof
-    await expect(page.getByText('Suggested Runbooks Now')).not.toBeVisible()
+    await expect(page.getByText('Linked Runbooks', { exact: true })).not.toBeVisible()
 
     // Deselect the selected row through the shared toggle-selection contract.
     const multiSelectModifier = process.platform === 'darwin' ? 'Meta' : 'Control'
@@ -332,7 +507,7 @@ test.describe('Assets workflows', () => {
     // Explicit Details button click DOES open details
     await primaryCompareRow.action('More actions').click()
     await viewDetailsButtons.filter({ visible: true }).click()
-    await expect(page.getByText('Suggested Runbooks Now')).toBeVisible()
+    await expect(page.getByText('Linked Runbooks', { exact: true })).toBeVisible()
 
     // Re-goto assets to reset UI state
     await page.goto('/asset')
@@ -431,7 +606,7 @@ test.describe('Assets workflows', () => {
 
     // Verify parser parsed cells and transitioned to builder layout
     await expect(page.getByText('Manual Data Builder')).toBeVisible()
-    await expect(page.locator('tbody tr input').first()).toHaveValue('PW-IMPORTED-ASSET-01')
+    await expect(importDialog.getByRole('textbox', { name: 'Name, row 1', exact: true })).toHaveValue('PW-IMPORTED-ASSET-01')
 
     // Close import modal cleanly (handling dirty state guard)
     await importDialog.getByRole('button', { name: 'Close', exact: true }).filter({ hasText: 'Close' }).click()

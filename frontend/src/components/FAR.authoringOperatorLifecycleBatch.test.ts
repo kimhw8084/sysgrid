@@ -136,7 +136,8 @@ describe('PC-49 FAR authoring + operator intelligence + lifecycle/history exact 
       'dirtyConfirmMessage="This failure vector has unsaved authoring changes. Close and discard them?"',
     ])
     expect(workspaceModalSource).toContain('useOperationalDirtyGuard({')
-    expectAll(workspaceHooksSource, [
+    expect(workspaceHooksSource).toContain('usePageLeaveGuard(effectiveDirty)')
+    expectAll(readFileSync(resolve(process.cwd(), 'src/components/shared/workspaceDeparture.ts'), 'utf8'), [
       'BeforeUnloadEvent',
       "window.addEventListener('beforeunload', handleBeforeUnload)",
       "window.removeEventListener('beforeunload', handleBeforeUnload)",

@@ -14,13 +14,13 @@ export function WorkspaceFlyoutActionCard({
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded-lg border px-4 py-3 text-left transition-all ${
-        active ? 'border-blue-500/40 bg-blue-950/40' : 'border-slate-800 bg-slate-950 hover:border-slate-700 hover:bg-slate-900'
+      className={`w-full min-h-10 rounded-lg border px-4 py-3 text-left transition-colors ${
+        active ? 'border-[var(--accent-primary)] bg-[var(--action-primary-muted)]' : 'border-[var(--border-default)] bg-[var(--input-bg)] hover:bg-[var(--surface-hover)]'
       }`}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[10px] font-semibold text-slate-100">{title}</p>
-        <ChevronRight size={14} className={active ? 'text-blue-300' : 'text-slate-500'} />
+        <p className="text-xs font-semibold text-[var(--text-primary)]">{title}</p>
+        <ChevronRight size={14} className={active ? 'text-[var(--action-ink)]' : 'text-[var(--text-secondary)]'} />
       </div>
     </button>
   )
@@ -46,12 +46,12 @@ export function WorkspaceFlyoutDropdownEditor({
   disabled?: boolean
 }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-[#0b1220] p-3">
+    <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-3">
       <div className="grid gap-3">
         <AppDropdown
-          value={value}
+          value={String(value)}
           onChange={(next) => onChange(String(next))}
-          options={options}
+          options={options.map(option => ({ ...option, value: String(option.value) }))}
           placeholder={placeholder}
         />
         {quickSelectOptions?.length ? (
@@ -63,10 +63,10 @@ export function WorkspaceFlyoutDropdownEditor({
                   key={String(option.value)}
                   type="button"
                   onClick={() => onChange(String(option.value))}
-                  className={`rounded-lg border px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] transition-all ${
+                  className={`min-h-8 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
                     isActive
-                      ? 'border-blue-500/30 bg-blue-600/20 text-blue-100'
-                      : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                      ? 'border-[var(--accent-primary)] bg-[var(--action-primary-muted)] text-[var(--action-ink)]'
+                      : 'border-[var(--border-default)] bg-[var(--input-bg)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
                   }`}
                 >
                   {option.label}
@@ -78,7 +78,7 @@ export function WorkspaceFlyoutDropdownEditor({
         <button
           onClick={onApply}
           disabled={disabled}
-          className="rounded-lg border border-blue-500/20 bg-blue-600/15 px-4 py-2.5 text-[10px] font-semibold text-blue-200 transition-all hover:bg-blue-600/25 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-950 disabled:text-slate-600"
+          className="min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--action-primary-muted)] px-4 py-2.5 text-xs font-semibold text-[var(--action-ink)] transition-colors hover:bg-[var(--surface-hover)] disabled:cursor-not-allowed disabled:bg-[var(--input-bg)] disabled:text-[var(--text-disabled)]"
         >
           {actionLabel}
         </button>

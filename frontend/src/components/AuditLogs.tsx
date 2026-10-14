@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { useQuery } from '@tanstack/react-query'
 import { Activity, Calendar, RefreshCcw, Zap, Layers, X, Search, Filter, Download, BarChart2, Clock } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { apiFetch } from '../api/apiClient'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -22,6 +22,7 @@ import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 
 export default function AuditLogs() {
+  const reducedMotion = useReducedMotion()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const gridRef = React.useRef<any>(null)
@@ -193,7 +194,10 @@ export default function AuditLogs() {
     },
     {
         headerName: 'ACTIONS',
-        width: 150,
+        colId: 'audit-actions',
+        width: 88,
+        minWidth: 88,
+        maxWidth: 88,
         pinned: 'right' as const,
         cellRenderer: (params: any) => {
           const target = resolveOperationalObjectReference(params.data?.target_table, params.data?.target_id)
@@ -420,6 +424,11 @@ export default function AuditLogs() {
           ref={gridRef}
           rowData={logs}
           columnDefs={columnDefs}
+          processUnpinnedColumns={({ api, columns }) => {
+            // Keep record actions reachable when pinned columns exceed a narrow viewport.
+            const leftColumns = api.getColumns()?.filter(column => column.getPinned() === 'left') || []
+            return leftColumns.length ? leftColumns : columns
+          }}
           defaultColDef={{ 
               resizable: true, 
               filter: true, 
@@ -440,19 +449,20 @@ export default function AuditLogs() {
         {activeLog && (
           <WorkspaceDialogFrame title="Audit Change Payload" onClose={() => setActiveLog(null)}>
             <motion.div
-              initial={{ scale: 0.96, opacity: 0 }}
+              initial={reducedMotion ? false : { scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              className="w-full max-w-4xl overflow-hidden rounded-lg border border-white/10 bg-slate-950 shadow-2xl"
+              exit={reducedMotion ? { opacity: 1 } : { scale: 0.96, opacity: 0 }}
+              transition={reducedMotion ? { duration: 0 } : undefined}
+              className="w-full max-w-4xl overflow-hidden rounded-lg border border-white/10 bg-[var(--surface-overlay)] shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-white/5 p-5">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-default)] bg-[var(--panel-item-bg)] p-5">
                 <div>
                   <h3 className="text-lg font-black uppercase tracking-tight text-white">Audit Change Payload</h3>
                   <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                     {activeLog.target_table} / {activeLog.target_id || 'N/A'}
                   </p>
                 </div>
-                <button aria-label="Close audit payload" onClick={() => setActiveLog(null)} className="text-slate-500 transition-colors hover:text-white">
+                <button aria-label="Close audit payload" onClick={() => setActiveLog(null)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]">
                   <X size={18} />
                 </button>
               </div>
@@ -464,7 +474,7 @@ export default function AuditLogs() {
                 </div>
                 <div className="rounded-lg border border-white/5 bg-black/30 p-4">
                   <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-blue-400">Change JSON</p>
-                  <pre className="max-h-[40vh] overflow-auto whitespace-pre-wrap break-words text-[10px] text-slate-300 custom-scrollbar">
+                  <pre role="region" aria-label="Audit change JSON" tabIndex={0} className="max-h-[40vh] overflow-auto whitespace-pre-wrap break-words rounded-sm text-[10px] text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] custom-scrollbar">
                     {JSON.stringify(activeLog.changes || {}, null, 2)}
                   </pre>
                 </div>

@@ -74,7 +74,12 @@ export function parseOperationalApiValidationError(error: any): {
     }
 
     if (input instanceof Error) {
-      collect(input.message)
+      const fieldCount = Object.keys(fieldErrors).length
+      const messageCount = generalMessages.length
+      collect((input as Error & { data?: unknown }).data)
+      if (Object.keys(fieldErrors).length === fieldCount && generalMessages.length === messageCount) {
+        collect(input.message)
+      }
       return
     }
 

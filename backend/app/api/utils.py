@@ -1,5 +1,5 @@
 import os
-from fastapi import Request
+from fastapi import HTTPException, Request, status
 from datetime import datetime
 from ..core.config import settings
 from ..models import models
@@ -43,15 +43,23 @@ def _normalize_user_id(value: str | None) -> str | None:
 def get_current_user_id(request: Request = None):
     """Resolve identity using an environment-aware trust contract.
 
-    Production accepts only the header inserted by the trusted reverse proxy.
+    Production accepts an explicit process identity or a trusted proxy identity.
     Browser-controlled X-User-Id remains available only in development/test mode.
     """
+    if settings.identity_mode == "environment":
+        environment_user = settings.environment_user_id
+        if environment_user:
+            return environment_user
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Configured company environment identity is missing or invalid.",
+        )
+
     if settings.identity_mode == "trusted_proxy":
         if request is not None:
             trusted_user = _normalize_user_id(request.headers.get(settings.TRUSTED_PROXY_USER_HEADER))
             if trusted_user:
                 return trusted_user
-            from fastapi import HTTPException, status
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authenticated proxy identity header is missing.",
@@ -60,6 +68,9 @@ def get_current_user_id(request: Request = None):
         if service_user:
             return service_user
         return _normalize_user_id(settings.DEFAULT_USER_ID)
+
+    if settings.identity_mode != "development":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Identity mode is not configured.")
 
     configured_env_user = _normalize_user_id(os.getenv(settings.USER_ID_ENV_VAR))
     if configured_env_user:

@@ -3,6 +3,22 @@ import { describe, expect, it } from 'vitest'
 import { parseOperationalApiValidationError } from './OperationalFieldValidation'
 
 describe('parseOperationalApiValidationError', () => {
+  it.each([
+    { detail: { field_errors: { installation_date: 'Correct the date' } } },
+    { detail: [{ loc: ['body', 'installation_date'], msg: 'Correct the date' }] },
+    { errors: [{ field: 'installation_date', message: 'Correct the date' }] },
+  ])('uses structured apiFetch error data without displaying the coerced object message', data => {
+    const error = Object.assign(new Error('[object Object]'), { status: 422, data })
+    expect(parseOperationalApiValidationError(error)).toEqual({
+      fieldErrors: { installation_date: 'Correct the date' }, generalError: null,
+    })
+  })
+
+  it('retains the error message when apiFetch data provides no useful diagnostic', () => {
+    const error = Object.assign(new Error('Backend unavailable'), { data: {} })
+    expect(parseOperationalApiValidationError(error)).toEqual({ fieldErrors: {}, generalError: 'Backend unavailable' })
+  })
+
   it('parses JSON strings with field_errors', () => {
     expect(
       parseOperationalApiValidationError('{"field_errors":{"name":"Required"},"detail":"Validation failed"}')

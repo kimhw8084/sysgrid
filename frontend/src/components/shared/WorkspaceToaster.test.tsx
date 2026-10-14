@@ -1,14 +1,143 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import toast from 'react-hot-toast'
 import { WorkspaceToaster, showWorkspaceToast } from './WorkspaceToast'
 
-beforeEach(() => { vi.useFakeTimers(); act(() => toast.remove()) })
-afterEach(() => { act(() => toast.remove()); vi.useRealTimers() })
+beforeEach(() => {
+  vi.useFakeTimers()
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
+  act(() => toast.remove())
+})
+afterEach(() => { act(() => toast.remove()); vi.useRealTimers(); vi.unstubAllGlobals() })
 const advance = (ms: number) => act(() => { vi.advanceTimersByTime(ms) })
 const visible = () => document.querySelectorAll('[data-workspace-toast][data-visible="true"]')
 
 describe('unified notifications', () => {
+  it('moves the persistent recovery notice into a modal slot and back without resetting confirmation', async () => {
+    const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)
+    const modal = document.createElement('div'), slot = document.createElement('div')
+    modal.setAttribute('aria-modal', 'true')
+    slot.setAttribute('data-workspace-modal-notification-slot', '')
+    modal.append(slot)
+    try {
+      const { container } = render(<WorkspaceToaster portal={false} />)
+      act(() => showWorkspaceToast('Recover this record', { onRevert: vi.fn() }))
+      fireEvent.click(screen.getByRole('button', { name: 'Revert' }))
+      const confirm = screen.getByRole('button', { name: 'Confirm Undo?' })
+      act(() => confirm.focus())
+      await act(async () => { document.body.append(modal) })
+      expect(slot).toContainElement(confirm)
+      expect(confirm).toHaveFocus()
+      advance(10000)
+      expect(screen.getByRole('button', { name: 'Confirm Undo?' })).toBe(confirm)
+      await act(async () => modal.remove())
+      expect(container).toContainElement(confirm)
+      expect(screen.getByRole('button', { name: 'Confirm Undo?' })).toBe(confirm)
+    } finally { modal.remove(); rectangles.mockRestore() }
+  })
+
+  it('pauses newly arriving notices behind an existing phone modal and releases its clock on unmount', async () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
+    const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)
+    const modal = document.createElement('div')
+    modal.setAttribute('aria-modal', 'true')
+    document.body.append(modal)
+    try {
+      const host = render(<WorkspaceToaster portal={false} />)
+      act(() => toast.success('Arrived while covered'))
+      advance(10000)
+      expect(visible()).toHaveLength(1)
+      host.unmount()
+      render(<WorkspaceToaster />)
+      advance(4100)
+      expect(visible()).toHaveLength(0)
+    } finally {
+      modal.remove(); rectangles.mockRestore(); vi.unstubAllGlobals()
+    }
+  })
+
+  it('renders in the shell host and releases empty notification space after dismissal', () => {
+    const { container } = render(<WorkspaceToaster portal={false} />)
+    act(() => toast.success('Docked notice'))
+    expect(within(container).getByRole('region', { name: 'Notifications' })).toBeVisible()
+    act(() => toast.dismiss())
+    expect(within(container).queryByRole('region', { name: 'Notifications' })).not.toBeInTheDocument()
+    act(() => toast.custom(<span>Custom notification content</span>))
+    expect(within(container).getByText('Custom notification content')).toBeVisible()
+  })
+
+  it('retains custom recovery state in the shell host as other notifications expire', () => {
+    const { container } = render(<WorkspaceToaster portal={false} />)
+    const host = within(container)
+    act(() => { showWorkspaceToast('Restore this record', { onRevert: vi.fn() }); toast.success('Short notice', { duration: 100 }) })
+    fireEvent.click(host.getByRole('button', { name: 'Revert' }))
+    advance(1500)
+    expect(host.getByText('Short notice').closest('[data-workspace-toast]')).toHaveAttribute('data-visible', 'false')
+    advance(1100)
+    expect(host.queryByText('Short notice')).not.toBeInTheDocument()
+    expect(host.getByRole('button', { name: 'Confirm Undo?' })).toBeVisible()
+    act(() => toast.error('Independent error'))
+    expect(host.getByRole('button', { name: 'Confirm Undo?' })).toBeVisible()
+    expect(host.getByText('Independent error')).toBeVisible()
+  })
+
+  it('pauses a covered phone notice through stacked modals and preserves an overlapping hover pause', async () => {
+    const media = { matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }
+    vi.stubGlobal('matchMedia', vi.fn(() => media))
+    const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)
+    const first = document.createElement('div'), second = document.createElement('div')
+    first.setAttribute('aria-modal', 'true'); second.setAttribute('aria-modal', 'true')
+    try {
+      render(<WorkspaceToaster portal={false} />)
+      act(() => toast.success('Covered notice'))
+      advance(1000)
+      const stack = screen.getByRole('region', { name: 'Notifications' })
+      const gauge = document.querySelector('[data-toast-gauge] > div') as HTMLElement
+      await act(async () => { document.body.append(first, second) })
+      advance(10000)
+      expect(visible()).toHaveLength(1)
+      expect(parseFloat(gauge.style.width)).toBe(75)
+      await act(async () => first.remove())
+      advance(10000)
+      expect(visible()).toHaveLength(1)
+      fireEvent.mouseEnter(stack)
+      await act(async () => second.remove())
+      advance(10000)
+      expect(visible()).toHaveLength(1)
+      expect(parseFloat(gauge.style.width)).toBe(75)
+      fireEvent.mouseLeave(stack)
+      advance(3100)
+      expect(visible()).toHaveLength(0)
+    } finally {
+      first.remove(); second.remove(); rectangles.mockRestore(); vi.unstubAllGlobals()
+    }
+  })
+
+  it('replaces contextual successes without removing errors or recovery actions and restarts expiry', () => {
+    render(<WorkspaceToaster />)
+    act(() => {
+      toast.error('Unrelated save failed')
+      showWorkspaceToast('Archived record', { onRevert: vi.fn() })
+      showWorkspaceToast('Saved personal view', { id: 'saved-view-success' })
+    })
+    advance(3000)
+    act(() => toast.success('View link copied', { id: 'saved-view-success' }))
+    expect(screen.queryByText('Saved personal view')).not.toBeInTheDocument()
+    expect(visible()).toHaveLength(3)
+    expect(screen.getByText('Unrelated save failed')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Revert' })).toBeInTheDocument()
+    advance(2000)
+    act(() => showWorkspaceToast('Renamed view', { id: 'saved-view-success' }))
+    expect(screen.queryByText('View link copied')).not.toBeInTheDocument()
+    expect(visible()).toHaveLength(3)
+    advance(3000)
+    expect(document.querySelector('[data-workspace-toast="success"][data-visible="true"]')).toBeTruthy()
+    expect(screen.getByText('Renamed view').closest('[data-workspace-toast]')).toHaveAttribute('data-visible', 'true')
+    advance(1100)
+    expect(screen.getByText('Renamed view').closest('[data-workspace-toast]')).toHaveAttribute('data-visible', 'false')
+    expect(screen.getByRole('button', { name: 'Revert' })).toBeInTheDocument()
+  })
+
   it('continues delivering and dismissing messages after earlier cards unmount', () => {
     render(<WorkspaceToaster />)
     act(() => { toast.success('First notice'); showWorkspaceToast('Second notice', { onRevert: vi.fn() }) })

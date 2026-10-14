@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useSearchParams } from 'react-router-dom'
+import { usePageLeaveGuard } from './workspaceDeparture'
 import {
   applyOperationalColumnState,
   getOperationalColumnLayoutSnapshot,
@@ -8,7 +9,8 @@ import {
 
 export function usePersistentJsonState<T>(
   storageKey: string,
-  fallback: T | (() => T)
+  fallback: T | (() => T),
+  normalizeStoredValue?: (value: unknown) => T
 ) {
   const [value, setValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
@@ -19,7 +21,8 @@ export function usePersistentJsonState<T>(
       if (raw == null) {
         return typeof fallback === 'function' ? (fallback as () => T)() : fallback
       }
-      return JSON.parse(raw) as T
+      const stored: unknown = JSON.parse(raw)
+      return normalizeStoredValue ? normalizeStoredValue(stored) : stored as T
     } catch {
       return typeof fallback === 'function' ? (fallback as () => T)() : fallback
     }
@@ -521,7 +524,6 @@ export function useOperationalDirtyGuard({
   const confirmDiscard = useCallback(() => {
     const action = pendingActionRef.current || onDiscard
     pendingActionRef.current = null
-    blockedLocationRef.current = null
     setIsConfirmOpen(false)
     action()
   }, [onDiscard])
@@ -531,7 +533,6 @@ export function useOperationalDirtyGuard({
       blocker.reset()
     }
     pendingActionRef.current = null
-    blockedLocationRef.current = null
     setIsConfirmOpen(false)
   }, [blocker])
 
@@ -542,22 +543,17 @@ export function useOperationalDirtyGuard({
     }
 
     const nextLocationKey = `${blocker.location.pathname}${blocker.location.search}${blocker.location.hash}`
-    if (blockedLocationRef.current === nextLocationKey && isConfirmOpen) return
+    // Router reset/proceed settles in a separate render. Keep the handled
+    // location until the blocker is unblocked, otherwise dismissing the dialog
+    // can immediately reopen it against the previous blocked navigation.
+    if (blockedLocationRef.current === nextLocationKey) return
 
     blockedLocationRef.current = nextLocationKey
     pendingActionRef.current = () => blocker.proceed()
     setIsConfirmOpen(true)
   }, [blocker, isConfirmOpen])
 
-  useEffect(() => {
-    if (!effectiveDirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [effectiveDirty])
+  usePageLeaveGuard(effectiveDirty)
 
   useEffect(() => {
     if (!effectiveDirty) return

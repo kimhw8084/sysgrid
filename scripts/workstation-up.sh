@@ -4,6 +4,7 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/lib/safe-startup.sh"
 ORIGINAL_ARGS=("$@")
 
 COMMAND="start"
@@ -80,7 +81,7 @@ UAT data modes:
   --data-mode resume                  Preserve and continue the current Local Demo data
 
 Workflow controls:
-  --skip-sync                         Do not fetch/reset origin/main for this invocation
+  --skip-sync                         Do not fetch/fast-forward main for this invocation
   --sync                              Force repository synchronization
   --skip-dependency-install           Require existing current dependencies
   --install-dependencies              Force dependency reconciliation
@@ -402,9 +403,10 @@ run_configuration_wizard() {
   ADMIN_EMAIL="$(prompt_value 'Primary admin email' "${ADMIN_EMAIL:-haewon.kim@sysgrid.local}")"
   ADMIN_DEPARTMENT="$(prompt_value 'Admin department' "${ADMIN_DEPARTMENT:-Infrastructure}")"
   BUGANIZER_URL="$(prompt_value 'Buganizer/new-issue URL (optional)' "${BUGANIZER_URL:-}")"
-  DEFAULT_DATA_MODE="$(prompt_choice 'Default UAT data mode' "${DEFAULT_DATA_MODE:-fresh-full}" 'fresh-full fresh-foundation resume')"
+  DEFAULT_DATA_MODE="resume"
+  echo "Normal launches preserve data; use reset or --data-mode explicitly for a fresh dataset."
   PUBLIC_FRONTEND_POLICY="$(prompt_choice 'Browser-visible frontend proof policy' "${PUBLIC_FRONTEND_POLICY:-warn}" 'warn require skip')"
-  SYNC_MAIN="$(prompt_yes_no 'Synchronize and hard-reset to origin/main before each start?' "${SYNC_MAIN:-true}")"
+  SYNC_MAIN="$(prompt_yes_no 'Fast-forward a clean main checkout from origin/main before each start?' "${SYNC_MAIN:-true}")"
   INSTALL_DEPENDENCIES="$(prompt_yes_no 'Automatically reconcile backend/frontend dependencies?' "${INSTALL_DEPENDENCIES:-true}")"
   STRICT_CHECKS="$(prompt_yes_no 'Require strict typecheck before startup?' "${STRICT_CHECKS:-true}")"
 
@@ -439,7 +441,7 @@ resolve_config() {
   ADMIN_EMAIL="${ADMIN_EMAIL_ARG:-${SYSGRID_ADMIN_EMAIL:-${SAVED_ADMIN_EMAIL:-haewon.kim@sysgrid.local}}}"
   ADMIN_DEPARTMENT="${ADMIN_DEPARTMENT_ARG:-${SYSGRID_ADMIN_DEPARTMENT:-${SAVED_ADMIN_DEPARTMENT:-Infrastructure}}}"
   BUGANIZER_URL="${BUGANIZER_URL_ARG:-${SYSGRID_BUGANIZER_URL:-${SAVED_BUGANIZER_URL:-}}}"
-  DEFAULT_DATA_MODE="${SAVED_DEFAULT_DATA_MODE:-fresh-full}"
+  DEFAULT_DATA_MODE="resume"
   DATA_MODE="${DATA_MODE_ARG:-${SYSGRID_DATA_MODE:-$DEFAULT_DATA_MODE}}"
   PUBLIC_FRONTEND_POLICY="${PUBLIC_FRONTEND_POLICY_ARG:-${SYSGRID_PUBLIC_FRONTEND_POLICY:-${SAVED_PUBLIC_FRONTEND_POLICY:-warn}}}"
   SYNC_MAIN="${SYNC_MAIN_ARG:-${SYSGRID_SYNC_MAIN:-${SAVED_SYNC_MAIN:-true}}}"
@@ -475,7 +477,7 @@ resolve_config_after_wizard() {
   ADMIN_EMAIL="${ADMIN_EMAIL_ARG:-${SYSGRID_ADMIN_EMAIL:-$SAVED_ADMIN_EMAIL}}"
   ADMIN_DEPARTMENT="${ADMIN_DEPARTMENT_ARG:-${SYSGRID_ADMIN_DEPARTMENT:-$SAVED_ADMIN_DEPARTMENT}}"
   BUGANIZER_URL="${BUGANIZER_URL_ARG:-${SYSGRID_BUGANIZER_URL:-$SAVED_BUGANIZER_URL}}"
-  DEFAULT_DATA_MODE="$SAVED_DEFAULT_DATA_MODE"
+  DEFAULT_DATA_MODE="resume"
   DATA_MODE="${DATA_MODE_ARG:-${SYSGRID_DATA_MODE:-$DEFAULT_DATA_MODE}}"
   PUBLIC_FRONTEND_POLICY="${PUBLIC_FRONTEND_POLICY_ARG:-${SYSGRID_PUBLIC_FRONTEND_POLICY:-$SAVED_PUBLIC_FRONTEND_POLICY}}"
   SYNC_MAIN="${SYNC_MAIN_ARG:-${SYSGRID_SYNC_MAIN:-$SAVED_SYNC_MAIN}}"
@@ -613,13 +615,8 @@ sync_main() {
   check_repository
   local old_script_hash new_script_hash head origin_main
   old_script_hash="$(sha256_file "$ROOT_DIR/scripts/workstation-up.sh")"
-  echo "Fetching authoritative origin/main..."
-  git -C "$ROOT_DIR" fetch --prune origin main
-  git -C "$ROOT_DIR" rev-parse --verify origin/main >/dev/null
-  backup_worktree
-  git -C "$ROOT_DIR" clean -fd
-  git -C "$ROOT_DIR" checkout -B main origin/main
-  git -C "$ROOT_DIR" reset --hard origin/main
+  echo "Checking and fast-forwarding main..."
+  sysgrid_sync_main "$ROOT_DIR"
   head="$(git -C "$ROOT_DIR" rev-parse HEAD)"
   origin_main="$(git -C "$ROOT_DIR" rev-parse origin/main)"
   [[ "$head" == "$origin_main" ]] || { echo "Synchronization failed: HEAD != origin/main" >&2; exit 1; }
@@ -765,11 +762,11 @@ start_runtime() {
   fi
 
   local data_args public_args strict_args
-  data_args="--seed-data"
+  data_args=(--preserve-data)
   case "$DATA_MODE" in
-    fresh-full) data_args="--seed-data" ;;
-    fresh-foundation) data_args="--no-seed-data" ;;
-    resume) data_args="--preserve-data" ;;
+    fresh-full) data_args=(--reset-data --seed-data) ;;
+    fresh-foundation) data_args=(--reset-data --no-seed-data) ;;
+    resume) data_args=(--preserve-data) ;;
   esac
   public_args=""
   case "$PUBLIC_FRONTEND_POLICY" in
@@ -812,7 +809,7 @@ start_runtime() {
     --runtime-report-file "$RUN_DIR/runtime-report.json"
   )
   [[ -n "$BUGANIZER_URL" ]] && args+=(--buganizer-url "$BUGANIZER_URL")
-  args+=("$data_args")
+  args+=("${data_args[@]}")
   [[ -n "$public_args" ]] && args+=("$public_args")
   [[ -n "$strict_args" ]] && args+=("$strict_args")
 

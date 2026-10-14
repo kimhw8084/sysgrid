@@ -515,9 +515,9 @@ export default function Knowledge() {
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 overflow-y-auto custom-scrollbar sm:space-y-6" data-knowledge-workspace="true">
       {/* Header Section */}
-      <div className="flex min-w-0 shrink-0 flex-col gap-4 rounded-lg border border-white/5 bg-slate-900/50 p-4 shadow-2xl backdrop-blur-xl sm:p-6 lg:flex-row lg:items-center lg:justify-between" data-knowledge-primary-tools="true">
+      <div className="flex min-w-0 shrink-0 flex-col gap-4 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between" data-knowledge-primary-tools="true">
         <div className="min-w-0 flex-1">
-          <h1 className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-black uppercase tracking-tighter text-white sm:text-4xl sm:gap-4">
+          <h1 className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-black uppercase tracking-tighter text-[var(--text-primary)] sm:text-4xl sm:gap-4">
             <div className="shrink-0 rounded-lg bg-blue-600 p-2 shadow-lg shadow-blue-500/20 sm:p-3">
               <BookOpen size={24} className="text-white sm:h-8 sm:w-8" />
             </div>
@@ -536,7 +536,7 @@ export default function Knowledge() {
               placeholder="Query Matrix..." 
               aria-label="Search Knowledge"
               data-knowledge-search="true"
-              className="w-full min-w-0 rounded-lg border border-white/10 bg-black/40 py-3 pl-12 pr-4 text-[11px] font-black uppercase outline-none transition-all placeholder:text-slate-700 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 sm:pr-6"
+              className="w-full min-w-0 rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] py-3 pl-12 pr-4 text-[11px] text-[var(--text-primary)] font-black uppercase outline-none transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--focus-ring)] focus:ring-4 focus:ring-blue-500/10 sm:pr-6"
             />
           </div>
           <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap" data-knowledge-primary-actions="true">
@@ -604,7 +604,7 @@ export default function Knowledge() {
               </button>
             ))}
          </div>
-         <div className="flex w-fit max-w-full bg-black/40 p-1 rounded-lg border border-white/5">
+         <div className="flex w-fit max-w-full bg-[var(--surface-elevated)] p-1 rounded-lg border border-[var(--border-default)]">
             {(['Grid', 'Timeline'] as const).map(mode => (
               <button
                 key={mode}
@@ -619,8 +619,8 @@ export default function Knowledge() {
          </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid shrink-0 items-start grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
+        <div className="grid items-start grid-cols-2 lg:grid-cols-4 gap-4">
           <KnowledgeSummaryCard
             label="Knowledge Coverage"
             value={summary.total}
@@ -654,7 +654,7 @@ export default function Knowledge() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="min-w-0 shrink-0" data-knowledge-record-list="true">
          {!!(deviceParam || serviceParam || monitoringParam || farParam || researchParam || vendorParam || projectParam) && (
            <div className="mb-6 rounded-lg border border-amber-500/15 bg-amber-500/[0.04] px-5 py-4 flex items-center justify-between gap-6">
              <div>
@@ -681,7 +681,7 @@ export default function Knowledge() {
                  className="rounded-lg border border-blue-500/15 bg-blue-500/[0.04] p-4 text-left hover:bg-blue-500/[0.08] transition-all"
                >
                  <p className="text-[9px] font-black uppercase tracking-[0.26em] text-blue-300">Suggested Runbook</p>
-                 <h3 className="mt-2 text-sm font-black uppercase tracking-tight text-white">{entry.title}</h3>
+                 <h3 className="mt-2 text-sm font-black uppercase tracking-tight text-[var(--text-primary)]">{entry.title}</h3>
                  <p className="mt-2 text-[11px] text-slate-400 line-clamp-2">{entry.content_json?.purpose || entry.question_context || entry.content}</p>
                </button>
              ))}
@@ -765,36 +765,36 @@ function KnowledgeSummaryCard({ label, value, detail, icon, tone }: any) {
   }
 
   return (
-    <div className={`rounded-lg border bg-gradient-to-br ${toneClasses[tone] || toneClasses.blue} p-5 shadow-2xl`}>
+    <div className={`rounded-lg border bg-gradient-to-br ${toneClasses[tone] || toneClasses.blue} p-5 shadow-sm`} data-knowledge-summary="true">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.28em] text-slate-400">{label}</p>
-          <p className="mt-3 text-4xl font-black tracking-tighter text-white">{value}</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.28em] text-[var(--text-secondary)]">{label}</p>
+          <p className="mt-3 text-4xl font-black tracking-tighter text-[var(--text-primary)]">{value}</p>
         </div>
-        <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-3">
           {icon}
         </div>
       </div>
-      <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{detail}</p>
+      <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)]">{detail}</p>
     </div>
   )
 }
 
 function KnowledgeQueuePanel({ entries, onOpenEntry }: any) {
   return (
-    <div className="rounded-lg border border-white/5 bg-black/30 p-5 shadow-2xl">
-      <div className="flex items-center justify-between gap-4">
+    <div className="flex max-h-[220px] flex-col rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-5 shadow-sm" data-knowledge-queue="true">
+      <div className="flex shrink-0 items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white">Knowledge Action Queue</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[var(--text-primary)]">Knowledge Action Queue</p>
           <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Highest-value records to harden next</p>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-slate-300">
+        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
           {entries.length} items
         </div>
       </div>
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 min-h-0 overflow-y-auto custom-scrollbar space-y-3" role="region" aria-label="Knowledge action queue entries" tabIndex={0}>
         {entries.length === 0 && (
-          <div className="rounded-lg border border-emerald-500/10 bg-emerald-500/5 px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+          <div className="rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--state-success)]">
             No urgent governance debt detected
           </div>
         )}
@@ -809,20 +809,20 @@ function KnowledgeQueuePanel({ entries, onOpenEntry }: any) {
             <button
               key={`queue-${entry.id}`}
               onClick={() => onOpenEntry(entry)}
-              className="w-full rounded-lg border border-white/5 bg-white/[0.03] px-4 py-4 text-left hover:border-blue-500/25 hover:bg-blue-500/[0.04] transition-all"
+              className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] px-4 py-4 text-left hover:border-[var(--accent-primary)] hover:bg-[var(--surface-hover)] transition-all"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-[0.24em] text-slate-500">{entry.category} // {entry.metadata_json?.entry_type}</p>
-                  <p className="mt-2 text-sm font-black uppercase tracking-tight text-white">{entry.title}</p>
+                  <p className="mt-2 text-sm font-black uppercase tracking-tight text-[var(--text-primary)]">{entry.title}</p>
                 </div>
-                <span className="rounded-lg border border-white/10 bg-black/20 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-slate-300">
+                <span className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-2 py-1 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
                   {entry.__readiness.label}
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {reasons.map((reason: string) => (
-                  <span key={`${entry.id}-${reason}`} className="rounded-lg border border-amber-500/15 bg-amber-500/10 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-amber-300">
+                  <span key={`${entry.id}-${reason}`} className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-widest text-[var(--state-warning)]">
                     {reason}
                   </span>
                 ))}
@@ -846,12 +846,14 @@ function KnowledgeCard({ entry, onClick }: any) {
   const readiness = entry.__readiness || getKnowledgeReadiness(entry)
 
   return (
-    <motion.div 
+    <motion.button
+      type="button"
+      aria-label={`Open knowledge: ${entry.title}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       layoutId={`entry-${entry.id}`}
       onClick={onClick}
-      className={`glass-panel border border-white/5 p-6 rounded-lg hover:border-blue-500/40 transition-all cursor-pointer group flex flex-col h-80 relative overflow-hidden ${
+      className={`glass-panel border border-white/5 p-6 rounded-lg text-left hover:border-blue-500/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] transition-all cursor-pointer group flex flex-col h-80 relative overflow-hidden ${
         isBKM ? 'bg-rose-500/[0.02] border-rose-500/10' : 
         isQA ? 'bg-amber-500/[0.02] border-amber-500/10' :
         isManual ? 'bg-emerald-500/[0.02] border-emerald-500/10' : ''
@@ -876,26 +878,26 @@ function KnowledgeCard({ entry, onClick }: any) {
        </div>
 
        <div className="flex flex-wrap items-center gap-2 mb-4 relative z-10">
-         <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${critical ? 'bg-rose-500/15 text-rose-300 border-rose-500/20' : 'bg-white/5 text-slate-400 border-white/5'}`}>
+         <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${critical ? 'bg-[var(--state-danger-surface)] text-[var(--state-danger)] border-[var(--state-danger-border)]' : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] border-[var(--border-default)]'}`}>
            {entry.metadata_json?.entry_type}
          </span>
-         <span className="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border bg-blue-500/10 text-blue-300 border-blue-500/20">
+         <span className="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border bg-[var(--state-info-surface)] text-[var(--state-info)] border-[var(--state-info-border)]">
            {verification}
          </span>
          {isStale && (
-           <span className="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border bg-amber-500/10 text-amber-300 border-amber-500/20">
+           <span className="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border bg-[var(--state-warning-surface)] text-[var(--state-warning)] border-[var(--state-warning-border)]">
              Stale
            </span>
          )}
          {isBKM && isKnowledgeIncidentReady(entry) && (
-           <span className="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
+           <span className="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border bg-[var(--state-success-surface)] text-[var(--state-success)] border-[var(--state-success-border)]">
              Incident Ready
            </span>
          )}
        </div>
 
        <div className="flex-1 overflow-hidden relative z-10">
-          <h3 className="text-base font-black text-white uppercase tracking-tight line-clamp-2 group-hover:text-blue-400 transition-colors leading-tight mb-2">
+          <h3 className="text-base font-black text-[var(--text-primary)] uppercase tracking-tight line-clamp-2 group-hover:text-[var(--accent-primary)] transition-colors leading-tight mb-2">
             {entry.title}
           </h3>
           <p className="text-[11px] text-slate-500 line-clamp-3 leading-relaxed font-medium">
@@ -927,7 +929,7 @@ function KnowledgeCard({ entry, onClick }: any) {
              </div>
           </div>
        </div>
-    </motion.div>
+    </motion.button>
   )
 }
 

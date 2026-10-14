@@ -224,6 +224,21 @@ function DismissLockHarness({ locked }: { locked: boolean }) {
 }
 
 describe('Operational anchored-panel interaction continuity', () => {
+  it('keeps an open popup below reserved header and notification space', () => {
+    const result = computeWorkspaceAnchoredPanelStyle({
+      triggerRect: { top: 736.5, right: 116.5, bottom: 776.5, left: 33, width: 83.5 },
+      viewportWidth: 390,
+      viewportHeight: 844,
+      offset: 8,
+      minWidth: 366,
+      placement: 'above',
+      verticalBounds: { top: 244, bottom: 812 },
+    })
+    expect(result.placement).toBe('above')
+    expect(result.style).toMatchObject({ bottom: 115.5, maxHeight: 472.5, width: 366 })
+    expect(844 - Number(result.style.bottom) - Number(result.style.maxHeight)).toBe(256)
+  })
+
   it('keeps a usable placement and flips when resizing or scrolling removes its space', () => {
     const first = computeWorkspaceAnchoredPanelStyle({
       triggerRect: { top: 120, right: 220, bottom: 160, left: 100, width: 120 },

@@ -2,6 +2,7 @@
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT_DIR/scripts/lib/safe-startup.sh"
 BACKEND_DIR="$ROOT_DIR/backend"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
@@ -19,8 +20,9 @@ ADMIN_EMAIL="${ADMIN_EMAIL:-haewon.kim@sysgrid.local}"
 ADMIN_DEPARTMENT="${ADMIN_DEPARTMENT:-Infrastructure}"
 USER_ID_ENV_VAR_VALUE="${USER_ID_ENV_VAR_VALUE:-USER_ID}"
 RUNTIME_EFFECTIVE_USER_ID="${RUNTIME_EFFECTIVE_USER_ID:-}"
-SEED_DOMAIN_DATA="${SEED_DOMAIN_DATA:-true}"
-DATA_MODE="${DATA_MODE:-reset}"
+SEED_DOMAIN_DATA="${SEED_DOMAIN_DATA:-false}"
+DATA_MODE="${DATA_MODE:-preserve}"
+RESET_DATA_EXPLICIT="false"
 RUN_TYPECHECK="${RUN_TYPECHECK:-true}"
 STRICT_STARTUP_CHECKS="${STRICT_STARTUP_CHECKS:-false}"
 PRINT_RUNTIME_CONFIG="${PRINT_RUNTIME_CONFIG:-false}"
@@ -56,10 +58,10 @@ Options:
   --user-id-env-var <envVarName>
   --runtime-effective-user-id <userId>
   --buganizer-url <url>              Optional company Buganizer/new-issue URL
-  --seed-data                        Reset and seed representative domain data
-  --no-seed-data                     Reset and seed only foundation data
-  --reset-data                       Recreate Local Demo databases (default)
-  --preserve-data                    Reuse existing Local Demo databases
+  --seed-data                        Include representative data on first initialization
+  --no-seed-data                     Seed only foundation data on first initialization (default)
+  --reset-data                       Archive old Local Demo data and initialize fresh databases
+  --preserve-data                    Reuse existing data; initialize when absent (default)
   --runtime-log-dir <directory>      Persist backend/frontend/typecheck logs
   --runtime-report-file <path>       Write a machine-readable runtime JSON report
   --profile-name <name>              UAT/workstation profile name for evidence
@@ -104,9 +106,9 @@ while [[ $# -gt 0 ]]; do
     --user-id-env-var) USER_ID_ENV_VAR_VALUE="$2"; shift 2 ;;
     --runtime-effective-user-id) RUNTIME_EFFECTIVE_USER_ID="$2"; shift 2 ;;
     --buganizer-url) BUGANIZER_URL="$2"; shift 2 ;;
-    --seed-data) SEED_DOMAIN_DATA="true"; DATA_MODE="reset"; shift ;;
-    --no-seed-data) SEED_DOMAIN_DATA="false"; DATA_MODE="reset"; shift ;;
-    --reset-data) DATA_MODE="reset"; shift ;;
+    --seed-data) SEED_DOMAIN_DATA="true"; shift ;;
+    --no-seed-data) SEED_DOMAIN_DATA="false"; shift ;;
+    --reset-data) DATA_MODE="reset"; RESET_DATA_EXPLICIT="true"; shift ;;
     --preserve-data) DATA_MODE="preserve"; shift ;;
     --runtime-log-dir) RUNTIME_LOG_DIR="$2"; shift 2 ;;
     --runtime-report-file) RUNTIME_REPORT_FILE="$2"; shift 2 ;;
@@ -130,6 +132,11 @@ case "$DATA_MODE" in
   *) echo "Invalid DATA_MODE: $DATA_MODE (expected reset or preserve)" >&2; exit 1 ;;
 esac
 
+if [[ "$DATA_MODE" == "reset" && "$RESET_DATA_EXPLICIT" != "true" ]]; then
+  echo "Reset requires an explicit --reset-data argument; environment defaults cannot reset data." >&2
+  exit 1
+fi
+
 for port_value in "$BACKEND_PORT" "$FRONTEND_PORT"; do
   [[ "$port_value" =~ ^[0-9]+$ ]] && (( port_value >= 1 && port_value <= 65535 )) || {
     echo "Invalid port: $port_value" >&2
@@ -149,8 +156,11 @@ if [[ -z "$FRONTEND_ORIGIN" ]]; then
   FRONTEND_ORIGIN="http://$FRONTEND_HOST:$FRONTEND_PORT"
 fi
 
+origin_source_policy="enforce"
+[[ "$PRINT_RUNTIME_CONFIG" == "true" ]] && origin_source_policy="inspect"
 runtime_assignments="$(
   "$PYTHON_BIN" "$ROOT_DIR/scripts/runtime_origin_config.py" \
+    --source-policy "$origin_source_policy" \
     --api-base-url "$API_BASE_URL" \
     --frontend-origin "$FRONTEND_ORIGIN" \
     --backend-host "$BACKEND_HOST" \
@@ -222,6 +232,9 @@ LOCAL_CONFIG_DB="$BACKEND_DIR/config.local.db"
 LOCAL_TENANT_ROOT="$BACKEND_DIR/tenants/local-demo"
 LOCAL_TENANT_DB_REL="tenants/local-demo/local_demo.db"
 LOCAL_TENANT_DB="$BACKEND_DIR/$LOCAL_TENANT_DB_REL"
+sysgrid_require_free_port "$BACKEND_PORT"
+sysgrid_require_free_port "$FRONTEND_PORT"
+LOCAL_DATA_ACTION="$(sysgrid_local_data_action "$DATA_MODE" "$LOCAL_CONFIG_DB" "$LOCAL_TENANT_DB" "$LOCAL_TENANT_ROOT")"
 LOCAL_BACKEND_ENV_FILE="$BACKEND_DIR/.env.local.runtime"
 BACKEND_ENV_BACKUP_FILE="$(mktemp -t sysgrid-backend-env)"
 BACKEND_ENV_EXISTED="false"
@@ -269,19 +282,6 @@ cleanup() {
   restore_backend_runtime_env || true
 }
 trap cleanup EXIT INT TERM
-
-kill_listener_on_port() {
-  local port="$1"
-  local pids
-  pids="$(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)"
-  if [[ -n "$pids" ]]; then
-    echo "Stopping existing listener(s) on port $port: $pids"
-    for pid in $pids; do
-      kill "$pid" >/dev/null 2>&1 || true
-    done
-    sleep 1
-  fi
-}
 
 require_file() {
   local path="$1"
@@ -507,17 +507,11 @@ rm -rf "$FRONTEND_DIR/dist" "$FRONTEND_DIR/.vite" "$FRONTEND_DIR/node_modules/.c
 require_file "$BACKEND_DIR/venv/bin/python" "Create the backend venv first: cd backend && python3 -m venv venv && venv/bin/pip install -r requirements.txt"
 require_file "$FRONTEND_DIR/node_modules" "Install frontend dependencies first: cd frontend && npm install"
 
-kill_listener_on_port "$BACKEND_PORT"
-kill_listener_on_port "$FRONTEND_PORT"
-
 mkdir -p "$BACKEND_DIR/tenants"
-if [[ "$DATA_MODE" == "reset" ]]; then
-  rm -f "$LOCAL_CONFIG_DB" "$LOCAL_TENANT_DB"
-  rm -rf "$LOCAL_TENANT_ROOT"
+if [[ "$LOCAL_DATA_ACTION" == "reset" ]]; then
+  sysgrid_archive_local_data "$LOCAL_CONFIG_DB" "$LOCAL_TENANT_ROOT" "$BACKEND_DIR/local-data-archives"
   mkdir -p "$LOCAL_TENANT_ROOT"
-else
-  require_file "$LOCAL_CONFIG_DB" "Use --reset-data or a fresh UAT data mode to create the Local Demo configuration database."
-  require_file "$LOCAL_TENANT_DB" "Use --reset-data or a fresh UAT data mode to create the Local Demo tenant database."
+elif [[ "$LOCAL_DATA_ACTION" == "preserve" ]]; then
   echo "Preserving existing Local Demo databases."
 fi
 
@@ -550,8 +544,8 @@ VITE_BACKEND_HOST=$BACKEND_HOST
 VITE_BUGANIZER_URL=$BUGANIZER_URL
 EOF_FRONTEND
 
-if [[ "$DATA_MODE" == "reset" ]]; then
-  echo "Seeding disposable Local Demo tenant..."
+if [[ "$LOCAL_DATA_ACTION" != "preserve" ]]; then
+  echo "Initializing Local Demo tenant..."
   seed_args=(
     --tenant-name "Local Demo"
     --tenant-db "$LOCAL_TENANT_DB_REL"

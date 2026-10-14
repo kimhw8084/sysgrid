@@ -271,6 +271,7 @@ class SecretVault(Base, BaseMixin):
 
 class MaintenanceWindow(Base, BaseMixin):
     __tablename__ = "maintenance_windows"
+    __table_args__ = (Index("uq_maintenance_creation_key", "creation_key_hash", unique=True),)
     device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"))
     title = Column(String)
     start_time = Column(DateTime)
@@ -278,6 +279,11 @@ class MaintenanceWindow(Base, BaseMixin):
     ticket_number = Column(String)
     coordinator = Column(String)
     status = Column(String)
+    creation_key_hash = Column(String(64))
+    creation_request_hash = Column(String(64))
+    cancelled_at = Column(DateTime)
+    cancelled_by = Column(String(200))
+    cancellation_reason = Column(String(2000))
     device = relationship("Device", back_populates="maintenance_windows")
 
 

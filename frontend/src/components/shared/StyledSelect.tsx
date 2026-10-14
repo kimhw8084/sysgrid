@@ -31,6 +31,7 @@ export const StyledSelect = ({
   disabled = false
 }: StyledSelectProps) => {
   const describedById = useId()
+  const controlId = `${describedById}-control`
   const errorMessage = typeof error === 'string' ? error : undefined
   const hasError = Boolean(error)
   const errorId = errorMessage ? `${describedById}-error` : undefined
@@ -40,12 +41,13 @@ export const StyledSelect = ({
   return (
     <div className={`space-y-1 ${className} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
       {label && (
-        <label className="text-[9px] font-black text-slate-500 uppercase block tracking-widest px-1">
+        <label htmlFor={controlId} className="text-[9px] font-black text-slate-500 uppercase block tracking-widest px-1">
           {label}
         </label>
       )}
       <div className="relative group">
         <select 
+          id={controlId}
           value={value} 
           onChange={onChange}
           disabled={disabled}
@@ -54,7 +56,7 @@ export const StyledSelect = ({
           className={`
             w-full appearance-none bg-slate-900 border 
             ${hasError ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/10 group-hover:border-white/20'} 
-            rounded-lg px-4 py-2.5 text-xs outline-none focus:border-blue-500 
+            rounded-lg pl-4 pr-10 py-2.5 text-xs outline-none focus:border-blue-500
             transition-all ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} 
             ${!value ? 'text-slate-500' : 'text-slate-200'}
           `}

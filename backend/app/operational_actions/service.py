@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.utils import normalize_json_object
 from ..models import models
+from ..maintenance_windows import is_cancelled, locked_window, window_facts
 from .domain import (
     ActionDefinition,
     ActionAttemptPhase,
@@ -351,6 +352,16 @@ async def _ensure_fresh_preview(
         await db.commit()
         raise OperationalActionError("The preview has expired and must be regenerated", code="STALE_PREVIEW")
 
+    try:
+        window = await _window_preconditions(db, action.maintenance_window_id)
+        bound_window = (action.precondition_snapshot or {}).get("maintenance_window")
+        if window != bound_window:
+            raise OperationalActionError("Maintenance window details changed; review a fresh preview", code="STALE_PREVIEW")
+    except OperationalActionError:
+        await _mark_stale(db, action=action, actor_id=actor_id, reason="maintenance_window_changed_or_cancelled")
+        await db.commit()
+        raise
+
     target_rows = await _get_target_rows(db, action.id)
     target_ids = [row.device_id for row in target_rows]
     try:
@@ -374,6 +385,15 @@ async def _ensure_fresh_preview(
             code="STALE_PREVIEW",
         )
     return target_ids
+
+
+async def _window_preconditions(db: AsyncSession, window_id: int | None) -> dict | None:
+    if window_id is None:
+        return None
+    window = await locked_window(db, window_id)
+    if window is None or is_cancelled(window):
+        raise OperationalActionError("The linked maintenance window is missing or cancelled; create a new plan with an active window", code="MAINTENANCE_WINDOW_UNAVAILABLE")
+    return window_facts(window)
 
 
 async def _add_evidence(
@@ -479,13 +499,8 @@ async def create_action(
 
     snapshots, _ = await _target_snapshots(db, tenant_id=tenant_id, device_ids=normalized_ids)
     if maintenance_window_id is not None:
-        maintenance_result = await db.execute(
-            select(models.MaintenanceWindow).where(models.MaintenanceWindow.id == maintenance_window_id)
-        )
-        maintenance = maintenance_result.scalar_one_or_none()
-        if maintenance is None:
-            raise ActionBadRequest("The maintenance window context does not exist")
-        if maintenance.device_id not in normalized_ids:
+        maintenance = await _window_preconditions(db, maintenance_window_id)
+        if maintenance["device_id"] not in normalized_ids:
             raise ActionBadRequest("The maintenance window must reference one of the action targets")
 
     action_id = str(uuid4())
@@ -606,6 +621,7 @@ async def preview_action(
     target_rows = await _get_target_rows(db, action.id)
     target_ids = [row.device_id for row in target_rows]
     try:
+        window = await _window_preconditions(db, action.maintenance_window_id)
         snapshots, _ = await _target_snapshots(db, tenant_id=tenant_id, device_ids=target_ids)
         if any(snapshot.get("status") == "Decommissioned" for snapshot in snapshots):
             await _mark_stale(db, action=action, actor_id=actor_id, reason="target_decommissioned")
@@ -617,10 +633,17 @@ async def preview_action(
         await _audit(db, actor_id=actor_id, action="PREVIEW_REJECTED", action_id=action.id, details={"reason": "target_missing_or_cross_tenant"})
         await db.commit()
         raise OperationalActionError(str(exc), code="TARGET_NOT_FOUND") from exc
+    except OperationalActionError as exc:
+        if exc.code == "MAINTENANCE_WINDOW_UNAVAILABLE":
+            await _mark_stale(db, action=action, actor_id=actor_id, reason="maintenance_window_changed_or_cancelled")
+            await _audit(db, actor_id=actor_id, action="PREVIEW_REJECTED", action_id=action.id, details={"reason": "maintenance_window_changed_or_cancelled"})
+            await db.commit()
+        raise
 
     target_hash = _target_set_hash(snapshots)
     preconditions = {
         "targets": snapshots,
+        "maintenance_window": window,
         "requirements": ["target_exists", "not_deleted", "not_decommissioned", "adapter_supported"],
         "target_set_hash": target_hash,
     }

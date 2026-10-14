@@ -3,7 +3,7 @@ import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-li
 import { Link, createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useOperationalDetailRoute, useWorkspaceOverlayController } from './OperationalWorkspaceHooks'
+import { useOperationalDetailRoute, usePersistentJsonState, useWorkspaceOverlayController } from './OperationalWorkspaceHooks'
 import { WorkspaceModal } from './WorkspaceModal'
 
 function DirtyModalHarness({ isDirty }: { isDirty: boolean }) {
@@ -83,6 +83,31 @@ function deferred<T>() {
   })
   return { promise, resolve }
 }
+
+describe('validated persistent state', () => {
+  it.each(['null', '{}', '"invalid"', '[1,"2",null]'])('normalizes stored %s before rendering and persisting', (raw) => {
+    const key = 'validated-workspace-test'
+    localStorage.setItem(key, raw)
+    const normalize = (value: unknown): number[] => Array.isArray(value) ? value.filter(entry => typeof entry === 'number') : []
+    const { result } = renderHook(() => usePersistentJsonState<number[]>(key, [9], normalize))
+    const expected = raw.startsWith('[') ? [1] : []
+    expect(result.current[0]).toEqual(expected)
+    expect(JSON.parse(localStorage.getItem(key)!)).toEqual(expected)
+    act(() => result.current[1](current => [...current, 3]))
+    expect(result.current[0]).toEqual([...expected, 3])
+    expect(JSON.parse(localStorage.getItem(key)!)).toEqual([...expected, 3])
+  })
+
+  it.each([null, '{broken'])('retains the fallback for missing or unparsable storage %s', (raw) => {
+    const key = 'validated-workspace-fallback'
+    if (raw === null) localStorage.removeItem(key)
+    else localStorage.setItem(key, raw)
+    const normalize = vi.fn(() => [4])
+    const { result } = renderHook(() => usePersistentJsonState<number[]>(key, () => [9], normalize))
+    expect(result.current[0]).toEqual([9])
+    expect(normalize).not.toHaveBeenCalled()
+  })
+})
 
 describe('useOperationalDirtyGuard navigation protection', () => {
   it('does not block untouched navigation', async () => {

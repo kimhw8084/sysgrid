@@ -117,12 +117,6 @@ export default function AssetGoldenOperationalWorkspace() {
   }, [activeOverlay, setRowActionMenu, workspace.rowActionMenu])
 
   useEffect(() => {
-    if (gridRef.current?.api) {
-      gridRef.current.api.deselectAll()
-    }
-  }, [workspace.activeTab])
-
-  useEffect(() => {
     if (activeOverlay === 'rowAction' && !workspace.rowActionMenu) {
       dismissOverlays()
     }
@@ -291,7 +285,9 @@ export default function AssetGoldenOperationalWorkspace() {
     showWorkspaceToast(hasSelection ? 'Exported selected asset rows to CSV' : 'Asset CSV exported')
   }, [workspace.selectedIds.length])
 
-  const selectionScopeKey = `${workspace.activeTab}:${workspace.viewMode}:${workspace.groupBy}`
+  // AgGrid owns live selection; stable row IDs preserve it across data refreshes.
+  // Only a scope change or an explicit successful bulk operation resets it.
+  const selectionScopeKey = `${workspace.activeTab}:${workspace.viewMode}:${workspace.groupBy}:${workspace.selectionResetVersion}`
   const { handleSelectionChanged } = useOperationalGroupedSelection({
     setSelectedIds: workspace.setSelectedIds,
     selectionScopeKey,
@@ -330,20 +326,6 @@ export default function AssetGoldenOperationalWorkspace() {
       return next
     })
   }, [workspace.groupBy, workspace.visibleAssets])
-
-  // Synchronize selection back to AgGrid after row-data refreshes.
-  useEffect(() => {
-    const api = gridRef.current?.api
-    if (!api) return
-    if (workspace.selectedIds.length === 0) {
-      api.deselectAll()
-      return
-    }
-    const selectedIds = new Set(workspace.selectedIds.map(Number))
-    api.forEachNode((node: any) => {
-      node.setSelected(selectedIds.has(Number(node.data?.id)))
-    })
-  }, [workspace.selectedIds, workspace.visibleAssets])
 
   // Refresh favorite and watch columns immediately in AgGrid when changed
   useEffect(() => {

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import toast from 'react-hot-toast'
 import { apiClient } from '../../api/apiClient'
 
 export type CollaborativeViewScope = 'personal' | 'team'
@@ -239,6 +240,11 @@ export function useCollaborativeWorkspaceViews<
   currentDefinition: TConfig
 }) {
   const currentViewsRef = useRef(currentViews)
+  const copyInFlight = useRef(false)
+  const [copyingLink, setCopyingLink] = useState(false)
+  const copyNoticeId = useId()
+  // Only successes share a slot. Errors and undo actions retain their own notices.
+  const successNoticeId = useId()
   const activeViewIdRef = useRef(activeViewId)
   const [baseStatus, setBaseStatus] = useState<Exclude<CollaborativeViewSyncStatus, 'unsaved' | 'conflict'>>('loading')
   const [conflict, setConflict] = useState<WorkspaceViewConflict<TConfig> | null>(null)
@@ -491,15 +497,24 @@ export function useCollaborativeWorkspaceViews<
   }, [])
 
   const copyViewLink = useCallback(async (viewId: string | null) => {
+    if (copyInFlight.current) return ''
     const link = setViewLink(viewId)
     if (!link) return ''
+    copyInFlight.current = true
+    setCopyingLink(true)
     try {
-      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(link)
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable')
+      await navigator.clipboard.writeText(link)
+      toast.remove(copyNoticeId)
+      toast.success('View link copied', { id: successNoticeId })
     } catch {
-      // The stable URL is still updated when clipboard access is unavailable.
+      toast.error('Could not copy the view link. Copy the URL from your address bar.', { id: copyNoticeId })
+    } finally {
+      copyInFlight.current = false
+      setCopyingLink(false)
     }
     return link
-  }, [setViewLink])
+  }, [copyNoticeId, successNoticeId, setViewLink])
 
   const activeView = useMemo(() => (
     activeViewId ? currentViews.find((view) => view.id === activeViewId) || null : null
@@ -518,6 +533,8 @@ export function useCollaborativeWorkspaceViews<
 
   return {
     status,
+    copyingLink,
+    successNoticeId,
     conflict,
     lastError,
     dirty,

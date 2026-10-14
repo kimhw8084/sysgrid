@@ -155,7 +155,7 @@ export async function resetBrowserState(page: Page) {
       ))
       keysToRemove.forEach((key) => window.localStorage.removeItem(key))
       Object.keys(window.sessionStorage)
-        .filter((key) => key.startsWith('sysgrid_') || key.startsWith('__sysgrid_'))
+        .filter((key) => key.startsWith('sysgrid_') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_'))
         .forEach((key) => window.sessionStorage.removeItem(key))
     })
   } catch (e) {

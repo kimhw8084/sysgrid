@@ -1,4 +1,5 @@
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
+import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
@@ -1588,15 +1589,7 @@ export default function External() {
   }>({ isOpen: false, title: '', message: '' })
 
 
-  useEffect(() => {
-    if (!isWorkspaceDirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [isWorkspaceDirty])
+  usePageLeaveGuard(isWorkspaceDirty)
 
   const { triggerRef: displayMenuButtonRef, panelRef: displayMenuPanelRef, panelStyle: displayMenuStyle } = useWorkspaceAnchoredLayer(showDisplayMenu, { minWidth: 320 })
   const { triggerRef: viewsMenuButtonRef, panelRef: viewsMenuPanelRef, panelStyle: viewsMenuStyle } = useWorkspaceAnchoredLayer(showViewsMenu, { minWidth: 420 })
@@ -2050,15 +2043,7 @@ export default function External() {
     currentDefinition: currentWorkspaceConfig,
   })
 
-  useEffect(() => {
-    if (!collaborativeViews.dirty) return
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [collaborativeViews.dirty])
+  usePageLeaveGuard(collaborativeViews.dirty)
 
   const allowViewSwitch = async (nextViewId: string | null) => {
     if (!collaborativeViews.dirty || nextViewId === activeViewId) return true
@@ -2123,7 +2108,7 @@ export default function External() {
       collaborativeViews.setViewLink(result.view.id)
       setNewViewName('')
     }
-    showWorkspaceToast(result.persisted ? 'External personal view saved' : 'External view saved locally; server unavailable', { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? 'External personal view saved' : 'External view saved locally; server unavailable', { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const saveCurrentToView = async (viewId: string) => {
@@ -2139,7 +2124,7 @@ export default function External() {
       return
     }
     if (result.view) setActiveViewId(result.view.id)
-    showWorkspaceToast(result.persisted ? 'External personal view updated' : 'External view updated locally; server unavailable', { type: result.persisted ? 'success' : 'error' })
+    showWorkspaceToast(result.persisted ? 'External personal view updated' : 'External view updated locally; server unavailable', { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const renameView = async (viewId: string, name: string): Promise<boolean> => {
@@ -2154,7 +2139,7 @@ export default function External() {
       showWorkspaceToast(result.error || 'Unable to rename this view', { type: 'error' })
       return false
     }
-    showWorkspaceToast(`Renamed view to ${name}`)
+    showWorkspaceToast(`Renamed view to ${name}`, { id: collaborativeViews.successNoticeId })
     return true
   }
 
@@ -2175,7 +2160,7 @@ export default function External() {
       collaborativeViews.setViewLink(null)
     }
     dismissOverlays()
-    showWorkspaceToast(result.persisted ? 'External personal view removed' : 'External local fallback removed')
+    showWorkspaceToast(result.persisted ? 'External personal view removed' : 'External local fallback removed', { id: collaborativeViews.successNoticeId })
   }
 
   const applySavedView = async (viewId: string) => {
@@ -3140,8 +3125,9 @@ export default function External() {
             syncStatus={collaborativeViews.status}
             syncMessage={collaborativeViews.lastError || (collaborativeViews.status === 'offline' ? 'Personal views are available locally and will migrate when the API returns.' : undefined)}
             onCopyViewLink={(viewId) => {
-              void collaborativeViews.copyViewLink(viewId).then(() => showWorkspaceToast('View link copied'))
+              void collaborativeViews.copyViewLink(viewId)
             }}
+            isCopyingViewLink={collaborativeViews.copyingLink}
             conflictMessage={collaborativeViews.conflict?.message}
             onReloadConflict={collaborativeViews.reloadConflict}
             onSaveConflictCopy={() => { void collaborativeViews.saveConflictCopy() }}

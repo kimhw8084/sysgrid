@@ -110,6 +110,15 @@ def test_registry_is_capability_oriented_and_simulation_is_non_production():
 
 
 @pytest.mark.asyncio
+async def test_capability_identity_matches_authenticated_action_actor(client, seeded_admin_tenant):
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    response = await client.get("/api/v1/operational-actions/capabilities", headers=_headers(tenant_id))
+    assert response.status_code == 200
+    assert response.json()["identity"] == {"actor_id": "admin_root", "access_role": "ADMIN"}
+    assert response.json()["adapter"]["production_capable"] is False
+
+
+@pytest.mark.asyncio
 async def test_simulation_lifecycle_progress_verification_history_and_asset_projection(client, seeded_admin_tenant, setup_db):
     tenant_id = seeded_admin_tenant["tenant_id"]
     device_id = await _device(client, tenant_id)

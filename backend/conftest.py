@@ -1,5 +1,6 @@
 import hashlib
 import os
+from contextlib import closing
 from pathlib import Path
 import sqlite3
 import sys
@@ -124,6 +125,7 @@ from app.database import (
 from app.models.config import ConfigBase, Tenant, UserTenantAccess
 from app.main import app
 from app.core.config import settings
+from app.observability import SlidingWindowRateLimiter
 from app.models import models  # noqa: F401
 from fastapi import Request
 
@@ -156,6 +158,16 @@ def protect_user_databases():
         "Qualification tests modified a configured user database. "
         f"before={_ORIGINAL_USER_DATABASE_SNAPSHOT!r} after={after!r}"
     )
+
+@pytest.fixture(autouse=True)
+def isolate_request_rate_limit(monkeypatch):
+    # Each test provisions a new registry but reuses the application singleton.
+    # Give it an equally fresh budget; requests within a test still share the
+    # real limiter and unchanged production limits.
+    monkeypatch.setattr(app.state, "rate_limiter", SlidingWindowRateLimiter(
+        limit=settings.RATE_LIMIT_REQUESTS,
+        window_seconds=settings.RATE_LIMIT_WINDOW_SECONDS,
+    ))
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def setup_db(tmp_path_factory, monkeypatch, tmp_path):
@@ -341,16 +353,28 @@ async def client():
         yield ac
 
 
+@pytest.fixture(scope="session")
+def migrated_tenant_template(tmp_path_factory):
+    """Migrate once per test process; never share a writable tenant database."""
+    from app.api.tenants import run_alembic_upgrade
+
+    path = tmp_path_factory.mktemp("migrated_tenant_template") / "template.db"
+    success, error_msg = run_alembic_upgrade(f"sqlite+aiosqlite:///{path}")
+    if not success:
+        pytest.fail(f"Alembic migration failed for tenant test template: {error_msg}")
+    snapshot = _file_snapshot(path)
+    yield path
+    assert _file_snapshot(path) == snapshot, "A test modified the pristine tenant template."
+
+
 @pytest_asyncio.fixture(scope="function")
-async def seeded_admin_tenant(client, tmp_path, tmp_path_factory, setup_db):
+async def seeded_admin_tenant(client, tmp_path, tmp_path_factory, setup_db, migrated_tenant_template):
     _test_config_engine, ConfigSessionLocal = setup_db
     """
     Fixture to create and seed a unique tenant for the 'admin_root' user.
     Tests requiring a pre-existing tenant can depend on this fixture.
     """
     from app.models.config import Tenant, UserTenantAccess
-    from app.database import Base # Keep Base for potential future use, though not used directly for schema creation here
-    from app.api.tenants import run_alembic_upgrade # Import the migration function
 
     tenant_name = f"Admin Root Tenant {tmp_path.name}"
     tenant_db_path = tmp_path_factory.mktemp(f"seeded_tenant_db_{tmp_path.name}") / f"admin_root_tenant_{tmp_path.name}.db"
@@ -372,12 +396,12 @@ async def seeded_admin_tenant(client, tmp_path, tmp_path_factory, setup_db):
         config_session.add(UserTenantAccess(user_id="admin_root", tenant_id=tenant_id, role="ADMIN", is_selected=True))
         await config_session.commit()
 
-    # Now, run alembic migrations on this newly created tenant's database
-    success, error_msg = run_alembic_upgrade(tenant_db_url)
-    if not success:
-        pytest.fail(f"Alembic migration failed for seeded tenant {tenant_name}: {error_msg}")
-    
-    # We don't need to dispose the engine here as run_alembic_upgrade uses subprocess.
+    # SQLite backup includes committed WAL content and creates an independent
+    # database. Each test still owns its schema, data, identity and registry.
+    with closing(sqlite3.connect(
+        f"{migrated_tenant_template.as_uri()}?mode=ro", uri=True,
+    )) as template, closing(sqlite3.connect(tenant_db_path)) as destination:
+        template.backup(destination)
 
     # The release-policy layer resolves an Operator from the tenant database;
     # tenant-registry access alone is intentionally insufficient. Provision the

@@ -219,6 +219,38 @@ def test_capability_preserves_is_admin_and_all_compatibility():
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("source", ["role", "custom"])
+@pytest.mark.parametrize("capability", ["settings", "all"])
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")], ids=["nan", "infinity", "negative-infinity"])
+async def test_nonfinite_stored_grants_deny_without_breaking_unrelated_access(
+    seeded_admin_tenant, setup_db, source, capability, value,
+):
+    import math
+
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    user_id = f"legacy-finite-{source}-{capability}"
+    await _grant_access(setup_db, tenant_id=tenant_id, user_id=user_id, role="EDITOR")
+    permissions = {capability: value, "assets": 1}
+    await _seed_operator(setup_db, tenant_id, user_id,
+        role_permissions=permissions if source == "role" else {},
+        custom_permissions=permissions if source == "custom" else {})
+    headers = {"X-User-Id": user_id, "X-Tenant-Id": str(tenant_id)}
+    client = seeded_admin_tenant["client"]
+    denied = await client.post("/api/v1/settings/options", headers=headers,
+        json={"category": "FiniteAuth", "label": "Denied", "value": "denied"})
+    assert denied.status_code == 403, denied.text
+    allowed = await client.get("/api/v1/devices", headers=headers)
+    assert allowed.status_code == 200, allowed.text
+    async with _tenant_db(setup_db, tenant_id) as db:
+        assert await db.scalar(select(models.SettingOption.id).where(models.SettingOption.category == "FiniteAuth")) is None
+        operator = await db.scalar(select(models.Operator).where(models.Operator.username == user_id))
+        role = await db.get(models.Role, operator.role_id)
+        recorded = (role.permissions if source == "role" else operator.custom_permissions)[capability]
+        assert math.isnan(recorded) if math.isnan(value) else recorded == value
+        assert operator.is_admin is False
+
+
+@pytest.mark.anyio
 async def test_capability_dependency_denies_missing_operator(setup_db, seeded_admin_tenant):
     request = SimpleNamespace(headers={"X-User-Id": "no-operator"})
     async with _tenant_db(setup_db, seeded_admin_tenant["tenant_id"]) as tenant_db:

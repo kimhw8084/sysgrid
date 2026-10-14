@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import ForceGraph2D from 'react-force-graph-2d'
-import { Plus, Trash2, Cpu, Package, X, RefreshCcw, Search, Edit2, LayoutGrid, List, FileJson, Check, MoreVertical, Settings, Sliders, Globe, Eye, EyeOff, ArrowRightLeft, Tag, AlertCircle, Layers, Terminal, FileText, Filter, Calendar, Activity, Link as LinkIcon, Database, HardDrive, Cpu as CpuIcon, Box, Zap, Clipboard, Share2, ZoomIn, ZoomOut, Maximize2, Shield } from 'lucide-react'
+import { Plus, Trash2, Cpu, Package, X, RefreshCcw, Search, Edit2, LayoutGrid, List, FileJson, Check, MoreVertical, Settings, Sliders, Globe, Eye, ArrowRightLeft, Tag, AlertCircle, Layers, Terminal, FileText, Filter, Calendar, Activity, Link as LinkIcon, Database, HardDrive, Cpu as CpuIcon, Box, Zap, Clipboard, Share2, ZoomIn, ZoomOut, Maximize2, Shield } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { apiFetch } from "../api/apiClient"
@@ -14,6 +14,7 @@ import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { PageHeader, PageToolbar, ToolbarGroup, ToolbarSearch, ToolbarButton } from "./shared/LayoutPrimitives"
 import { WorkspaceEmptyState, WorkspaceSectionCard, WorkspaceSelectField, WorkspaceTabStrip } from "./shared/OperationalWorkspacePrimitives"
 import { ServiceDetailsView, ServiceForm } from "./ServiceRegistry"
+import { CredentialValue, credentialUpdatePayload } from './shared/CredentialValue'
 
 const SharedServiceModals = ({ 
   activeDetails, 
@@ -1827,12 +1828,7 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
   const { data: secrets } = useQuery({ queryKey: ['device-secrets', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/secrets`)).json()) })
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editData, setEditData] = useState<any>(null)
-  const [visibleIds, setVisibleIds] = useState<number[]>([])
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
-
-  const toggleVisibility = (id: number) => {
-    setVisibleIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-  }
 
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/secrets/${id}`, { method: 'DELETE' }),
@@ -1842,7 +1838,7 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => apiFetch(`/api/v1/devices/secrets/${data.id}`, {
-        method: 'PUT', body: JSON.stringify(data)
+        method: 'PUT', body: JSON.stringify(credentialUpdatePayload(data))
     }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setEditingId(null); toast.success('Credential updated') },
     onError: (e: any) => toast.error(e.message || 'Failed to update credential')
@@ -1871,7 +1867,7 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
         <tbody className="divide-y divide-white/5">
           {secrets?.map((s: any) => (
             <tr key={s.id} className="hover:bg-white/5 transition-colors">
-              <td className="px-4 py-2 font-bold uppercase text-amber-500/80">
+              <td className="px-4 py-2 font-bold uppercase text-[var(--text-secondary)]">
                 {editingId === s.id ? (
                     <StyledSelect
                         value={editData.secret_type}
@@ -1888,14 +1884,9 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
               </td>
               <td className="px-4 py-2 font-mono text-slate-400">
                 {editingId === s.id ? (
-                    <input type="password" value={editData.encrypted_payload} onChange={e => setEditData({...editData, encrypted_payload: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] w-full outline-none focus:border-blue-500" placeholder="Update secret..." />
+                    <input type="password" autoComplete="new-password" aria-label="Replacement credential value" value={editData.encrypted_payload} onChange={e => setEditData({...editData, encrypted_payload: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[11px] w-full outline-none focus:border-blue-500" placeholder="Leave blank to keep stored value" />
                 ) : (
-                    <div className="flex items-center space-x-3 group">
-                       <span className={visibleIds.includes(s.id) ? 'text-blue-300' : 'text-slate-700'}>{visibleIds.includes(s.id) ? s.encrypted_payload : '••••••••••••'}</span>
-                       <button onClick={() => toggleVisibility(s.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-blue-400">
-                          {visibleIds.includes(s.id) ? <EyeOff size={14}/> : <Eye size={14}/>}
-                       </button>
-                    </div>
+                    <CredentialValue deviceId={deviceId} secretId={s.id} canReveal={s.can_reveal} hasPayload={s.has_payload} />
                 )}
               </td>
               <td className="px-4 py-2 text-slate-500">
@@ -1906,13 +1897,13 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
               <td className="px-4 py-2 text-center">
                 {editingId === s.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
-                        <button onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
+                        <button aria-label="Save credential" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
+                        <button aria-label="Cancel credential editing" disabled={updateMutation.isPending} onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => { setEditingId(s.id); setEditData({...s}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                        <button onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Credential', message: 'Remove this credential?', onConfirm: () => delMutation.mutate(s.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                        <button aria-label="Edit credential" disabled={!s.can_manage} onClick={() => { setEditingId(s.id); setEditData({...s, encrypted_payload: ''}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
+                        <button aria-label="Delete credential" disabled={!s.can_manage || delMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Credential', message: 'Remove this credential?', onConfirm: () => delMutation.mutate(s.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
                     </div>
                 )}
               </td>

@@ -22,6 +22,7 @@ import {
 } from './shared/OperationalGridInteractions'
 import { apiFetch } from '../api/apiClient'
 import { buildMonitoringFormErrors, getMonitoringTabErrorCounts } from '../utils/monitoringValidation'
+import { buildAssetScalarErrors } from '../utils/assetValidation'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
 import { ConfigRegistryModal } from "./ConfigRegistry"
@@ -3489,6 +3490,28 @@ function AssetRecordDetailModal({ item, onClose, onEdit, onDelete }: any) {
   )
 }
 
+type AssetRecordFieldProps = {
+  label: string; value: string | number; onChange: (value: string) => void; error?: string;
+  required?: boolean; disabled?: boolean; multiline?: boolean; type?: React.HTMLInputTypeAttribute;
+  min?: number; max?: number; step?: string;
+}
+
+function AssetRecordField({ label, value, onChange, error, required, disabled, multiline, type = 'text', min, max, step }: AssetRecordFieldProps) {
+  const id = React.useId()
+  const inputProps = {
+    id, value, required, disabled,
+    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(event.target.value),
+    'aria-invalid': Boolean(error), 'aria-describedby': error ? `${id}-error` : undefined,
+    className: monitoringInputClass(error),
+  }
+  return <div>
+    <FieldLabel label={label} required={required} htmlFor={id} />
+    {multiline ? <textarea {...inputProps} className={`${inputProps.className} min-h-[180px] font-mono text-[11px]`} />
+      : <input {...inputProps} type={type} min={min} max={max} step={step} />}
+    <FieldError id={`${id}-error`} message={error} />
+  </div>
+}
+
 export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
   useBodyModalFlag()
   const queryClient = useQueryClient()
@@ -3532,6 +3555,7 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
   )
 
   const updateField = useCallback((field: string, value: any) => {
+    if (isSaving) return
     setFormData((current) => ({ ...current, [field]: value }))
     setFormErrors((current) => {
       if (!current[field]) return current
@@ -3539,10 +3563,10 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
       delete next[field]
       return next
     })
-  }, [])
+  }, [isSaving])
 
   const validate = useCallback(() => {
-    const nextErrors: Record<string, string> = {}
+    const nextErrors: Record<string, string> = buildAssetScalarErrors(formData)
     if (!String(formData.name || '').trim()) nextErrors.name = 'Hostname is required.'
     if (!String(formData.system || '').trim()) nextErrors.system = 'Logical system is required.'
     if (!String(formData.serial_number || '').trim()) nextErrors.serial_number = 'Serial number is required.'
@@ -3582,6 +3606,7 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
   })
 
   const handleSave = useCallback(() => {
+    if (isSaving) return
     const nextErrors = validate()
     setFormErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -3589,15 +3614,25 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
       return
     }
     mutation.mutate()
-  }, [mutation, validate])
+  }, [isSaving, mutation, validate])
 
-  const fieldClass = useCallback((field: string) => monitoringInputClass(formErrors[field]), [formErrors])
+  const handleClose = () => {
+    if (isSaving) {
+      showWorkspaceToast('Wait for the asset save to finish before closing.', { type: 'error' })
+      return
+    }
+    onClose()
+  }
+  const renderField = (field: keyof typeof formData, label: string, props: Partial<AssetRecordFieldProps> = {}) => (
+    <AssetRecordField label={label} value={formData[field]} onChange={value => updateField(field, value)}
+      error={formErrors[field]} disabled={isSaving} {...props} />
+  )
   const formTitle = item?.id ? getAssetTitle(item) : 'Create Asset'
 
   return (
     <WorkspaceModal
       isOpen={true}
-      onClose={onClose}
+      onClose={handleClose}
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
@@ -3609,11 +3644,12 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
       }
       subtitle={item?.id ? `Asset ID ${item.id}` : 'Create a new asset'}
       icon={<Activity size={20} />}
-      isDirty={isDirty}
+      isDirty={isDirty && !isSaving}
       dirtyConfirmTitle="Discard Asset Changes?"
       dirtyConfirmMessage="You have unsaved asset changes. Close this window and discard them?"
       status={
         <div className="flex items-center gap-2">
+          {isSaving && <span role="status">Saving asset changes...</span>}
           <StatusPill value={formData.status || 'Active'} />
           <StatusPill value={formData.environment || 'Production'} />
         </div>
@@ -3632,124 +3668,54 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
             <section className="grid gap-4 xl:grid-cols-3">
               <WorkspaceSectionCard title="Identity">
                 <div className="space-y-4">
-                  <div>
-                    <FieldLabel label="Hostname" required />
-                    <input value={formData.name} onChange={(e) => updateField('name', e.target.value)} className={fieldClass('name')} />
-                    <FieldError message={formErrors.name} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Role / Description" />
-                    <input value={formData.role} onChange={(e) => updateField('role', e.target.value)} className={fieldClass('role')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Logical System" required />
-                    <input value={formData.system} onChange={(e) => updateField('system', e.target.value)} className={fieldClass('system')} />
-                    <FieldError message={formErrors.system} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Owner" />
-                    <input value={formData.owner} onChange={(e) => updateField('owner', e.target.value)} className={fieldClass('owner')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Business Unit" />
-                    <input value={formData.business_unit} onChange={(e) => updateField('business_unit', e.target.value)} className={fieldClass('business_unit')} />
-                  </div>
+                  {renderField('name', 'Hostname', { required: true })}
+                  {renderField('role', 'Role / Description')}
+                  {renderField('system', 'Logical System', { required: true })}
+                  {renderField('owner', 'Owner')}
+                  {renderField('business_unit', 'Business Unit')}
                 </div>
               </WorkspaceSectionCard>
               <WorkspaceSectionCard title="Classification">
                 <div className="space-y-4">
-                  <AppDropdown label="Asset Type" value={formData.type} onChange={(value) => updateField('type', value)} options={['Physical', 'Virtual', 'Storage', 'Switch', 'Firewall', 'Load Balancer', 'PDU', 'UPS', 'Console-Server', 'Patch Panel'].map((value) => ({ value, label: value }))} />
-                  <AppDropdown label="Status" value={formData.status} onChange={(value) => updateField('status', value)} options={ASSET_STATUSES.filter((value) => value !== 'Deleted').map((value) => ({ value, label: value }))} />
-                  <AppDropdown label="Environment" value={formData.environment} onChange={(value) => updateField('environment', value)} options={ASSET_ENVIRONMENTS.map((value) => ({ value, label: value }))} />
-                  <AppDropdown label="Depth" value={formData.depth} onChange={(value) => updateField('depth', value)} options={ASSET_DEPTHS.map((value) => ({ value, label: value }))} />
-                  <AppDropdown label="Mount Orientation" value={formData.mount_orientation} onChange={(value) => updateField('mount_orientation', value)} options={ASSET_MOUNT_ORIENTATIONS.map((value) => ({ value, label: value }))} />
-                  <div>
-                    <FieldLabel label="Size (U)" />
-                    <input type="number" min="1" value={formData.size_u} onChange={(e) => updateField('size_u', e.target.value)} className={fieldClass('size_u')} />
-                  </div>
+                  <AppDropdown disabled={isSaving} label="Asset Type" value={formData.type} onChange={(value) => updateField('type', value)} options={['Physical', 'Virtual', 'Storage', 'Switch', 'Firewall', 'Load Balancer', 'PDU', 'UPS', 'Console-Server', 'Patch Panel'].map((value) => ({ value, label: value }))} />
+                  <AppDropdown disabled={isSaving} label="Status" value={formData.status} onChange={(value) => updateField('status', value)} options={ASSET_STATUSES.filter((value) => value !== 'Deleted').map((value) => ({ value, label: value }))} />
+                  <AppDropdown disabled={isSaving} label="Environment" value={formData.environment} onChange={(value) => updateField('environment', value)} options={ASSET_ENVIRONMENTS.map((value) => ({ value, label: value }))} />
+                  <AppDropdown disabled={isSaving} label="Depth" value={formData.depth} onChange={(value) => updateField('depth', value)} options={ASSET_DEPTHS.map((value) => ({ value, label: value }))} />
+                  <AppDropdown disabled={isSaving} label="Mount Orientation" value={formData.mount_orientation} onChange={(value) => updateField('mount_orientation', value)} options={ASSET_MOUNT_ORIENTATIONS.map((value) => ({ value, label: value }))} />
+                  {renderField('size_u', 'Size (U)', { type: 'number', min: 1, max: Number.MAX_SAFE_INTEGER, step: '1' })}
                 </div>
               </WorkspaceSectionCard>
               <WorkspaceSectionCard title="Management">
                 <div className="space-y-4">
-                  <div>
-                    <FieldLabel label="Primary IP" />
-                    <input value={formData.primary_ip} onChange={(e) => updateField('primary_ip', e.target.value)} className={fieldClass('primary_ip')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Management IP" />
-                    <input value={formData.management_ip} onChange={(e) => updateField('management_ip', e.target.value)} className={fieldClass('management_ip')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Management URL" />
-                    <input value={formData.management_url} onChange={(e) => updateField('management_url', e.target.value)} className={fieldClass('management_url')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="OS Name" />
-                    <input value={formData.os_name} onChange={(e) => updateField('os_name', e.target.value)} className={fieldClass('os_name')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="OS Version" />
-                    <input value={formData.os_version} onChange={(e) => updateField('os_version', e.target.value)} className={fieldClass('os_version')} />
-                  </div>
+                  {renderField('primary_ip', 'Primary IP')}
+                  {renderField('management_ip', 'Management IP')}
+                  {renderField('management_url', 'Management URL')}
+                  {renderField('os_name', 'OS Name')}
+                  {renderField('os_version', 'OS Version')}
                 </div>
               </WorkspaceSectionCard>
             </section>
             <section className="grid gap-4 xl:grid-cols-2">
               <WorkspaceSectionCard title="Hardware & Inventory">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <FieldLabel label="Manufacturer" />
-                    <input value={formData.manufacturer} onChange={(e) => updateField('manufacturer', e.target.value)} className={fieldClass('manufacturer')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Model" />
-                    <input value={formData.model} onChange={(e) => updateField('model', e.target.value)} className={fieldClass('model')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Serial Number" required />
-                    <input value={formData.serial_number} onChange={(e) => updateField('serial_number', e.target.value)} className={fieldClass('serial_number')} />
-                    <FieldError message={formErrors.serial_number} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Asset Tag" required />
-                    <input value={formData.asset_tag} onChange={(e) => updateField('asset_tag', e.target.value)} className={fieldClass('asset_tag')} />
-                    <FieldError message={formErrors.asset_tag} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Typical Power (W)" />
-                    <input type="number" min="0" value={formData.power_typical_w} onChange={(e) => updateField('power_typical_w', e.target.value)} className={fieldClass('power_typical_w')} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Max Power (W)" />
-                    <input type="number" min="0" value={formData.power_max_w} onChange={(e) => updateField('power_max_w', e.target.value)} className={fieldClass('power_max_w')} />
-                  </div>
+                  {renderField('manufacturer', 'Manufacturer')}
+                  {renderField('model', 'Model')}
+                  {renderField('serial_number', 'Serial Number', { required: true })}
+                  {renderField('asset_tag', 'Asset Tag', { required: true })}
+                  {renderField('power_typical_w', 'Typical Power (W)', { type: 'number', min: 0, step: 'any' })}
+                  {renderField('power_max_w', 'Max Power (W)', { type: 'number', min: 0, step: 'any' })}
                 </div>
               </WorkspaceSectionCard>
               <WorkspaceSectionCard title="Lifecycle & Metadata">
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <FieldLabel label="Purchase Date" />
-                      <input type="date" value={formData.purchase_date} onChange={(e) => updateField('purchase_date', e.target.value)} className={fieldClass('purchase_date')} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Install Date" />
-                      <input type="date" value={formData.install_date} onChange={(e) => updateField('install_date', e.target.value)} className={fieldClass('install_date')} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Warranty End" />
-                      <input type="date" value={formData.warranty_end} onChange={(e) => updateField('warranty_end', e.target.value)} className={fieldClass('warranty_end')} />
-                    </div>
-                    <div>
-                      <FieldLabel label="EOL Date" />
-                      <input type="date" value={formData.eol_date} onChange={(e) => updateField('eol_date', e.target.value)} className={fieldClass('eol_date')} />
-                    </div>
+                    {renderField('purchase_date', 'Purchase Date', { type: 'date' })}
+                    {renderField('install_date', 'Install Date', { type: 'date' })}
+                    {renderField('warranty_end', 'Warranty End', { type: 'date' })}
+                    {renderField('eol_date', 'EOL Date', { type: 'date' })}
                   </div>
-                  <div>
-                    <FieldLabel label="Metadata JSON" />
-                    <textarea value={metadataJsonText} onChange={(e) => setMetadataJsonText(e.target.value)} className={`${fieldClass('metadata_json')} min-h-[180px] font-mono text-[11px]`} />
-                    <FieldError message={formErrors.metadata_json} />
-                  </div>
+                  <AssetRecordField label="Metadata JSON" value={metadataJsonText} onChange={setMetadataJsonText}
+                    error={formErrors.metadata_json} disabled={isSaving} multiline />
                 </div>
               </WorkspaceSectionCard>
             </section>

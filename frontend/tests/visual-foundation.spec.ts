@@ -13,7 +13,10 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
     await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
   })
   const panel = page.getByRole('dialog').locator(':scope > .glass-panel').first()
-  if (await panel.count()) await expect(panel).toHaveCSS('opacity', '1')
+  if (await panel.count()) {
+    await expect(panel).toHaveCSS('opacity', '1')
+    await expect(panel).toHaveCSS('transform', 'none')
+  }
   await expect(page.getByText('Unexpected Application Error!', { exact: true })).not.toBeVisible()
   if (['assets', 'monitoring', 'services', 'network'].includes(name)) await expectReadableGridText(page, testInfo, name)
   if (['service-detail', 'monitoring-detail'].includes(name)) await expectReadableGridText(page, testInfo, name, '[role="dialog"] [data-sg-status-pill]')
@@ -168,8 +171,14 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
           const observations = await page.getByRole('heading', { name: 'Observed health history (24h)', exact: true }).boundingBox()
           expect(inventory!.y + inventory!.height).toBeLessThan(observations!.y)
           await expect(page.getByRole('link', { name: 'Open Infrastructure assets', exact: true })).toBeInViewport()
-          await page.getByRole('heading', { name: 'Asset composition', exact: true }).scrollIntoViewIfNeeded()
-          await capture(page, testInfo, 'home-inventory-charts')
+          for (const [index, name] of ['home-inventory-charts', 'home-service-chart'].entries()) {
+            const chart = page.locator('.recharts-wrapper').nth(index)
+            await chart.scrollIntoViewIfNeeded()
+            await expect(chart).toBeInViewport({ ratio: 0.99 })
+            await expect(chart.locator(':scope > svg.recharts-surface')).toBeInViewport({ ratio: 0.99 })
+            await expect(chart.locator('.recharts-sector, .recharts-bar-rectangle .recharts-rectangle').first()).toBeVisible()
+            await capture(page, testInfo, name)
+          }
           await page.getByRole('heading', { name: 'Released entry points', exact: true }).scrollIntoViewIfNeeded()
           await capture(page, testInfo, 'home-activity-and-links')
         }
@@ -202,6 +211,24 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
           await expect(dialog.getByText(/"mode": "synchronous"/)).toBeVisible()
         }
         await capture(page, testInfo, detail.slug)
+        const frame = dialog.locator(':scope > .glass-panel')
+        await expect(frame).toHaveCSS('transform', 'none')
+        const layout = await frame.evaluate(panel => {
+          const rect = (element: Element | null) => element?.getBoundingClientRect().toJSON() ?? null
+          return { panel: rect(panel), header: rect(panel.querySelector('[data-workspace-modal-header]')),
+            heading: rect(panel.querySelector('h2')), footer: rect(panel.querySelector('[data-workspace-modal-footer]')),
+            panelScrollTop: panel.scrollTop, parentScrollTop: panel.parentElement?.scrollTop,
+            actions: Array.from(panel.querySelectorAll('[data-workspace-modal-header] button, [data-workspace-modal-footer] button'))
+              .map(button => ({ name: button.getAttribute('aria-label') || button.textContent, bounds: rect(button) })) }
+        })
+        await testInfo.attach(`${detail.slug}-complete-frame`, { body: JSON.stringify(layout), contentType: 'application/json' })
+        expect(layout.panel!.top).toBeGreaterThanOrEqual(16)
+        expect(layout.panel!.bottom).toBeLessThanOrEqual(viewport.height - 16)
+        expect(layout.heading!.top).toBeGreaterThanOrEqual(layout.panel!.top)
+        await expect(dialog.getByRole('heading', { name: detail.name, exact: true })).toBeInViewport({ ratio: 1 })
+        for (const button of await frame.locator('[data-workspace-modal-header] button, [data-workspace-modal-footer] button').all()) {
+          await expect(button).toBeInViewport({ ratio: 1 })
+        }
         if (detail.slug === 'service-detail') {
           await dialog.getByText(/"mode": "synchronous"/).scrollIntoViewIfNeeded()
           await expect(dialog.getByText(/"mode": "synchronous"/)).toBeInViewport()

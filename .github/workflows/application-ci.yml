@@ -15,11 +15,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  required:
-    name: required
+  qualification:
+    name: qualification (${{ matrix.stage }})
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        stage: [checks, normal-v1, desktop, root-preview]
     env:
+      QUALIFICATION_STAGE: ${{ matrix.stage }}
       SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID: ci-system-root
       SYSGRID_VERIFY_KEEP_LOGS: "1"
       CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -128,14 +133,14 @@ jobs:
           SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID="$SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID" \
           SYSGRID_VERIFY_KEEP_LOGS="$SYSGRID_VERIFY_KEEP_LOGS" \
           SYSGRID_VERIFY_TEMP_ROOT="$RUNNER_TEMP/sysgrid-verification" \
-          "$GITHUB_WORKSPACE/scripts/verify-app.sh"
+          "$GITHUB_WORKSPACE/scripts/verify-app.sh" --stage "$QUALIFICATION_STAGE"
 
       - name: Collect SHA-bound CI evidence
         if: always()
         shell: bash
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
-          FINAL_REQUIRED_GATE_RESULT: ${{ job.status }}
+          QUALIFICATION_RESULT: ${{ job.status }}
         run: |
           set -euo pipefail
           mkdir -p ci-evidence
@@ -161,7 +166,7 @@ jobs:
           from pathlib import Path
 
           evidence = {
-              "schema_version": "sysgrid.application-ci.evidence.v1",
+              "schema_version": "sysgrid.application-ci.stage-evidence.v1",
               "repository": os.environ["GITHUB_REPOSITORY"],
               "workflow_name": os.environ["GITHUB_WORKFLOW"],
               "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
@@ -176,7 +181,8 @@ jobs:
               "node_version": os.environ["NODE_VERSION"],
               "python_bin": os.environ["PYTHON_BIN_USED"],
               "python_version": os.environ["PYTHON_VERSION"],
-              "final_required_gate_result": os.environ["FINAL_REQUIRED_GATE_RESULT"],
+              "qualification_stage": os.environ["QUALIFICATION_STAGE"],
+              "qualification_result": os.environ["QUALIFICATION_RESULT"],
           }
           Path("ci-evidence/ci-identity.json").write_text(
               json.dumps(evidence, indent=2, sort_keys=True) + "\n",
@@ -210,6 +216,75 @@ jobs:
           done
 
       - name: Upload SHA-bound CI evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: application-ci-${{ env.QUALIFICATION_STAGE }}-evidence-${{ env.CANDIDATE_SHA }}
+          path: ci-evidence
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 14
+
+  required:
+    name: required
+    needs: qualification
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      QUALIFICATION_RESULT: ${{ needs.qualification.result }}
+      CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Require every qualification stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$QUALIFICATION_RESULT" != success ]]; then
+            echo "Application qualification is incomplete: $QUALIFICATION_RESULT" >&2
+            exit 1
+          fi
+
+      - name: Collect aggregate CI identity
+        if: always()
+        shell: bash
+        env:
+          FINAL_REQUIRED_GATE_RESULT: ${{ job.status }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          evidence = {
+              "schema_version": "sysgrid.application-ci.evidence.v2",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow_name": os.environ["GITHUB_WORKFLOW"],
+              "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "event": os.environ["GITHUB_EVENT_NAME"],
+              "github_sha": os.environ["GITHUB_SHA"],
+              "tested_trigger_sha": os.environ["GITHUB_SHA"],
+              "candidate_sha": os.environ["CANDIDATE_SHA"],
+              "pr_base_sha": os.environ.get("PR_BASE_SHA") or None,
+              "qualification_stages": ["checks", "normal-v1", "desktop", "root-preview"],
+              "ref": os.environ["GITHUB_REF"],
+              "head_ref": os.environ.get("GITHUB_HEAD_REF") or os.environ["GITHUB_REF_NAME"],
+              "stage_evidence_artifacts": {
+                  stage: f"application-ci-{stage}-evidence-{os.environ['CANDIDATE_SHA']}"
+                  for stage in ["checks", "normal-v1", "desktop", "root-preview"]
+              },
+              "runtime_provenance": "Each stage receipt records the Node and Python versions actually used.",
+              "qualification_result": os.environ["QUALIFICATION_RESULT"],
+              "final_required_gate_result": os.environ["FINAL_REQUIRED_GATE_RESULT"],
+          }
+          Path("ci-evidence").mkdir(exist_ok=True)
+          Path("ci-evidence/ci-identity.json").write_text(
+              json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+          )
+          PY
+
+      - name: Upload aggregate CI identity
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

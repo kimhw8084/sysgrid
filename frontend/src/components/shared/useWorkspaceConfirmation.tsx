@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmationModal } from './ConfirmationModal'
 
-type Request = { title: string; message: string; confirmText?: string; variant?: 'danger' | 'warning' | 'info' }
+type Request = { title: string; message: string; confirmText?: string; cancelText?: string; variant?: 'danger' | 'warning' | 'info' }
 
 /** In-app confirmation with cancellation on unmount; never leaves a pending action behind. */
 export function useWorkspaceConfirmation() {
@@ -23,7 +23,7 @@ export function useWorkspaceConfirmation() {
   return {
     confirm,
     confirmation: request ? <ConfirmationModal isOpen title={request.title} message={request.message}
-      confirmText={request.confirmText} variant={request.variant} cancelText="Cancel"
+      confirmText={request.confirmText} variant={request.variant} cancelText={request.cancelText || 'Cancel'}
       onClose={() => settle(false)} onConfirm={() => settle(true)} /> : null,
   }
 }

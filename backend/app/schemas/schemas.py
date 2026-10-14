@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, AliasChoices, field_validator, model_validator
 from typing import List, Optional, Any, Dict, Literal
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 from ipaddress import ip_address
 from math import isfinite
@@ -128,7 +128,40 @@ class MaintenanceWindowBase(BaseModel):
     coordinator: Optional[str] = None
     status: str = "Scheduled"
 
-class MaintenanceWindowCreate(MaintenanceWindowBase): pass
+class MaintenanceWindowCreate(MaintenanceWindowBase):
+    device_id: int = Field(gt=0, strict=True)
+    title: str = Field(min_length=1, max_length=500)
+    start_time: datetime
+    end_time: datetime
+    ticket_number: Optional[str] = Field(default=None, max_length=500)
+    coordinator: Optional[str] = Field(default=None, max_length=500)
+    status: str = Field(default="Scheduled", min_length=1, max_length=100)
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    @field_validator("start_time", "end_time", mode="before")
+    @classmethod
+    def require_datetime_value(cls, value):
+        if not isinstance(value, (str, datetime)):
+            raise ValueError("Use an ISO 8601 date and time")
+        return value
+
+    @model_validator(mode="after")
+    def validate_time_range(self):
+        start_aware = self.start_time.utcoffset() is not None
+        end_aware = self.end_time.utcoffset() is not None
+        if start_aware != end_aware:
+            raise ValueError("Start and end must use the same timezone convention")
+        # Existing datetime-local clients supply UTC-naive values. Preserve that
+        # contract, and normalize explicit offsets before storing in SQLite's
+        # existing timezone-naive columns (which otherwise discard the offset).
+        if start_aware:
+            self.start_time = self.start_time.astimezone(timezone.utc).replace(tzinfo=None)
+            self.end_time = self.end_time.astimezone(timezone.utc).replace(tzinfo=None)
+        if self.end_time <= self.start_time:
+            raise ValueError("End time must be after start time")
+        return self
+
 class MaintenanceWindowResponse(MaintenanceWindowBase, BaseSchema): pass
 
 class MonitoringOwnerBase(BaseModel):
@@ -663,6 +696,31 @@ class ExternalLinkResponse(ExternalLinkBase, BaseSchema):
     device_name: Optional[str] = None
     service_name: Optional[str] = None
 
+class NetworkInterfaceUpdate(BaseModel):
+    model_config = ConfigDict(extra='ignore', strict=True)
+
+    device_id: int | None = Field(default=None, ge=1, le=2 ** 63 - 1)
+    name: str | None = None
+    mac_address: str | None = None
+    ip_address: str | None = None
+    vlan_id: int | None = Field(default=None, ge=0, le=4094)
+    link_speed_gbps: int | None = Field(default=None, ge=0, le=2 ** 63 - 1)
+
+    @field_validator('device_id', mode='before')
+    @classmethod
+    def require_parent_id(cls, value):
+        if value is None:
+            raise ValueError('Interface parent cannot be cleared')
+        # Preserve native-select IDs without coercing booleans or fractions.
+        if isinstance(value, str) and value.isascii() and value.isdigit() and len(value) <= 19:
+            return int(value)
+        return value
+
+
+class NetworkInterfaceCreate(NetworkInterfaceUpdate):
+    device_id: int = Field(ge=1, le=2 ** 63 - 1)
+
+
 NETWORK_CONNECTION_DIRECTIONS = ("Bidirectional", "Unidirectional", "Source to Target", "Target to Source")
 NETWORK_CONNECTION_UNITS = ("Gbps", "Mbps", "Kbps")
 NETWORK_CONNECTION_STATUSES = ("Active", "Maintenance", "Down", "Planned", "Requested", "Standby", "Offline", "Deleted")
@@ -680,13 +738,20 @@ class NetworkConnectionBase(BaseModel):
     target_vlan: Optional[int] = Field(default=None, ge=0, le=4094)
     link_type: Optional[str] = None
     purpose: Optional[str] = None
-    speed_gbps: Optional[float] = Field(default=None, gt=0)
+    speed_gbps: Optional[float] = Field(default=None, gt=0, allow_inf_nan=False)
     unit: Literal["Gbps", "Mbps", "Kbps"] = "Gbps"
     direction: Literal["Bidirectional", "Unidirectional", "Source to Target", "Target to Source"] = "Bidirectional"
     cable_type: Optional[str] = None
     status: Literal["Active", "Maintenance", "Down", "Planned", "Requested", "Standby", "Offline", "Deleted"] = "Active"
     farm: Optional[str] = None
     request_link: Optional[str] = None
+
+    @field_validator('source_device_id', 'target_device_id', 'source_vlan', 'target_vlan', 'speed_gbps', mode='before')
+    @classmethod
+    def reject_boolean_numbers(cls, value):
+        if isinstance(value, bool):
+            raise ValueError('Network numeric fields cannot be booleans')
+        return value
 
     @field_validator(
         "source_port",
@@ -703,7 +768,9 @@ class NetworkConnectionBase(BaseModel):
     def validate_and_trim_text(cls, value):
         if value is None:
             return None
-        cleaned = str(value).strip()
+        if not isinstance(value, str):
+            raise ValueError('Network text fields must be strings')
+        cleaned = value.strip()
         return cleaned or None
 
     @field_validator("source_ip", "target_ip", mode="before")
@@ -711,7 +778,9 @@ class NetworkConnectionBase(BaseModel):
     def validate_ip_address(cls, value):
         if value is None:
             return None
-        cleaned = str(value).strip()
+        if not isinstance(value, str):
+            raise ValueError('IP address must be text')
+        cleaned = value.strip()
         if not cleaned:
             return None
         try:
@@ -725,7 +794,9 @@ class NetworkConnectionBase(BaseModel):
     def validate_request_link(cls, value):
         if value is None:
             return None
-        cleaned = str(value).strip()
+        if not isinstance(value, str):
+            raise ValueError('Request link must be text')
+        cleaned = value.strip()
         if not cleaned:
             return None
         if any(token in cleaned.lower() for token in ["<script", "javascript:", "data:text/html", "vbscript:"]):
@@ -761,6 +832,13 @@ class NetworkConnectionUpdate(NetworkConnectionBase):
 
 class NetworkConnectionBulkIds(BaseModel):
     ids: List[int] = Field(default_factory=list, min_length=1)
+
+    @field_validator('ids', mode='before')
+    @classmethod
+    def reject_boolean_ids(cls, value):
+        if isinstance(value, list) and any(isinstance(item, bool) for item in value):
+            raise ValueError('Connection IDs cannot be booleans')
+        return value
 
 
 class NetworkConnectionBulkStatus(NetworkConnectionBulkIds):

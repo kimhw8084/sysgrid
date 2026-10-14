@@ -1,7 +1,7 @@
 import { clickResilientButton } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
-import { resetBrowserState, seedRackScenario } from './helpers/sysgrid'
+import { createAsset, resetBrowserState, seedRackScenario } from './helpers/sysgrid'
 
 test.describe('Racks workflows', () => {
   test('opens authoritative rack deep links and keeps query/history state coherent', async ({ page, sysApi: request }) => {
@@ -49,6 +49,9 @@ test.describe('Racks workflows', () => {
 
   test('handles spatial navigation, site decommission fallback, and sandbox collision safety', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
+    // Nullable optional fields are legitimate in ordinary/imported asset rows.
+    // A non-matching asset must not crash the full candidate-list filter.
+    await createAsset(request, { name: `Nullable rack candidate ${Date.now()}`, system: 'Import compatibility', type: null })
     const { siteA, rackA1, rackA2, devicePrimary, deviceSecondary } = await seedRackScenario(request)
     const rackCard = (id: number) => page.locator(`.glass-panel[data-rack-id="${id}"]`)
 

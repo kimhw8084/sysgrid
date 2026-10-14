@@ -24,6 +24,22 @@ export interface SysError {
   acknowledged?: boolean
 }
 
+function storedError(error: SysError): SysError {
+  const type = error.type === 'backend' ? 'backend' : 'frontend'
+  const status = Number.isInteger(error.status) && error.status! >= 0 && error.status! <= 599 ? error.status : undefined
+  return {
+    id: typeof error.id === 'string' && /^[a-z0-9_-]{1,80}$/i.test(error.id) ? error.id : Math.random().toString(36).substring(2, 9),
+    timestamp: typeof error.timestamp === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(error.timestamp) ? error.timestamp : new Date().toISOString(),
+    type,
+    severity: error.severity === 'critical' || error.severity === 'warning' ? error.severity : 'error',
+    acknowledged: error.acknowledged === true,
+    status,
+    method: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].includes(error.method || '') ? error.method : undefined,
+    requestId: typeof error.requestId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(error.requestId) ? error.requestId : undefined,
+    message: `${type === 'backend' ? 'API' : 'Frontend'} error${status ? ` (${status})` : ''}. Detailed diagnostics were available in the original page session.`,
+  }
+}
+
 class ErrorManager {
   private errors: SysError[] = []
   private listeners: ((errors: SysError[]) => void)[] = []
@@ -42,20 +58,25 @@ class ErrorManager {
     try {
       const saved = localStorage.getItem(this.STORAGE_KEY);
       if (saved) {
-        this.errors = JSON.parse(saved);
+        const parsed = JSON.parse(saved)
+        this.errors = Array.isArray(parsed) ? parsed.filter(item => item && typeof item === 'object').slice(0, 100).map(storedError) : [];
+        // Rewrite legacy records without retaining arbitrary message, response,
+        // stack, URL or input data. Keep event identity and acknowledgement.
+        this.saveToStorage();
         this.notify();
       }
     } catch (e) {
-      console.warn("Failed to load error logs from storage:", e);
+      console.warn("Failed to load error logs from storage.");
       this.errors = [];
+      this.saveToStorage();
     }
   }
 
   private saveToStorage() {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.errors));
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.errors.map(storedError)));
     } catch (e) {
-      console.warn("Failed to save error logs to storage:", e);
+      console.warn("Failed to save error logs to storage.");
     }
   }
 

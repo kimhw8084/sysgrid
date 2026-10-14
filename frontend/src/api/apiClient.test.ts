@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient, apiFetch, getApiBaseUrl, getConfig, setApiOverride, subscribeToLatency } from './apiClient'
 import { makeJsonResponse } from '../test/response'
+import { beginTenantSwitch, getCurrentTenantId } from './tenantContext'
 
 function makeJsonErrorResponse(status: number, statusText: string, body: unknown) {
   return makeJsonResponse(body, {
@@ -12,6 +13,8 @@ function makeJsonErrorResponse(status: number, statusText: string, body: unknown
 describe('apiClient', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
+    vi.unstubAllEnvs()
     vi.restoreAllMocks()
   })
 
@@ -138,6 +141,48 @@ describe('apiClient', () => {
     expect(options.headers['X-User-Id']).toBe('admin_root')
   })
 
+  it('does not send identity to an origin that merely starts with the API origin', async () => {
+    localStorage.setItem('SYSGRID_OVERRIDE_API_URL', 'https://api.example.com')
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    await apiFetch('https://api.example.com.attacker.invalid/collect')
+    expect(fetchMock.mock.calls[0][1].headers['X-User-Id']).toBeUndefined()
+    expect(fetchMock.mock.calls[0][1].headers['X-Tenant-Id']).toBeUndefined()
+  })
+
+  it('pins requests in this tab when another tab changes the tenant default', async () => {
+    localStorage.setItem('SYSGRID_TENANT_ID', '7')
+    expect(getCurrentTenantId()).toBe('7')
+    localStorage.setItem('SYSGRID_TENANT_ID', '99')
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    await apiClient.post('/api/v1/devices', { name: 'Current tab edit' })
+    expect(fetchMock.mock.calls[0][1].headers['X-Tenant-Id']).toBe('7')
+  })
+
+  it.each(['trusted_proxy', 'environment'])('keeps explicit tenant scope with %s identity and removes browser identity', async (identityMode) => {
+    vi.stubEnv('VITE_IDENTITY_MODE', identityMode)
+    localStorage.setItem('SYSGRID_TENANT_ID', '7')
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    await apiFetch('/api/v1/devices', { headers: new Headers({ 'X-User-Id': 'spoofed', 'X-Tenant-Id': '99' }) })
+    expect(fetchMock.mock.calls[0][1].headers['X-Tenant-Id']).toBe('7')
+    expect(new Headers(fetchMock.mock.calls[0][1].headers).get('X-User-Id')).toBeNull()
+  })
+
+  it('cannot switch during an in-flight write and rejects new writes during a switch', async () => {
+    let resolve!: (value: Response) => void
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(done => { resolve = done })))
+    const writing = apiClient.post('/api/v1/devices', { name: 'Pending edit' })
+    expect(() => beginTenantSwitch()).toThrow('current save')
+    resolve(makeJsonResponse({ ok: true }))
+    await writing
+    const finish = beginTenantSwitch()
+    try {
+      await expect(apiClient.post('/api/v1/devices', { name: 'Late edit' })).rejects.toThrow('not sent')
+    } finally { finish() }
+  })
+
   it('emits latency updates and unsubscribes cleanly', async () => {
     const listener = vi.fn()
     const unsubscribe = subscribeToLatency(listener)
@@ -197,6 +242,42 @@ describe('apiClient', () => {
       status: 422,
       data: { message: 'Validation Failed' },
     })
+  })
+
+  it.each([
+    ['nested message', { detail: { message: 'Review the current revision.' } }, 'Review the current revision.'],
+    ['message beside unknown detail', { detail: { code: 'CONFLICT' }, message: 'Refresh and review.' }, 'Refresh and review.'],
+    ['field diagnostics', { detail: { field_errors: { cost: 'Must be nonnegative' } } }, 'Request validation failed. Review the submitted values and try again.'],
+    ['top-level field diagnostics', { field_errors: { name: 'Required' } }, 'Request validation failed. Review the submitted values and try again.'],
+    ['validation entries', { detail: [{ loc: ['body', 'password'], msg: 'Invalid value', input: 'private-sentinel' }] }, 'Request validation failed. Review the submitted values and try again.'],
+    ['null', null, 'API error: 422'],
+    ['number', 7, 'API error: 422'],
+    ['boolean', false, 'API error: 422'],
+    ['array', ['private-sentinel'], 'API error: 422'],
+    ['unknown object', { detail: { input: 'private-sentinel' } }, 'API error: 422'],
+    ['unknown message shape', { message: { input: 'private-sentinel' } }, 'API error: 422'],
+    ['blank detail', { detail: '  ', message: 'Useful message' }, 'Useful message'],
+    ['trimmed string detail', { detail: '  Useful message  ' }, 'Useful message'],
+    ['string body', 'Review the current revision.', 'Review the current revision.'],
+  ])('preserves HTTP diagnostics and a readable message for %s', async (_name, body, message) => {
+    const response = makeJsonErrorResponse(422, 'Unprocessable Entity', body)
+    response.headers.set('x-request-id', 'error-contract-request')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response))
+    const error = await apiFetch('/api/v1/logical-services', { method: 'POST', body: '{}' }).catch(value => value)
+    expect(error).toBeInstanceOf(Error)
+    expect(error).toMatchObject({ message, status: 422, statusText: 'Unprocessable Entity',
+      method: 'POST', url: expect.stringMatching(/\/api\/v1\/logical-services$/), requestId: 'error-contract-request', data: body })
+    expect(error.rawBody).toBe(JSON.stringify(body))
+    expect(error.message).not.toContain('[object Object]')
+    expect(error.message).not.toContain('private-sentinel')
+  })
+
+  it('bounds display messages while preserving the structured error payload', async () => {
+    const body = { detail: { message: 'x'.repeat(2000), field_errors: { name: 'Required' } } }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(makeJsonErrorResponse(422, 'Unprocessable Entity', body)))
+    const error = await apiFetch('/invalid').catch(value => value)
+    expect(error.message).toBe('x'.repeat(500))
+    expect(error.data).toEqual(body)
   })
 
   it('supports the convenience get, put, delete, and patch helpers', async () => {

@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 from sqlalchemy import select, delete, update, or_, and_, func
 from datetime import datetime
+from math import isfinite
 from typing import Optional
 from ..database import get_db
 from ..models import models
 from ..database_base import Base
-from .utils import build_audit_log, filter_valid_columns, parse_iso_date
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor
 from .operational_bulk import (
     build_operational_bulk_summary,
     normalize_operational_bulk_ids,
@@ -14,8 +17,74 @@ from .operational_bulk import (
     require_executable_operational_bulk,
 )
 from .module_policy import require_module_access
+from .authorization import require_capability, resolve_current_operator
+from .secret_vault import can_manage_vault, commit_vault_audit, require_vault_device, scoped_vault_query, serialize_secret_vault_entry
+from .asset_hardware import HardwarePayload, commit_hardware_audit, hardware_update_payload, require_hardware_parent, scoped_hardware_query
+from .asset_links import RelationshipCreate, asset_link_update_payload, commit_asset_link_audit, get_asset_link, require_relationship_asset, scoped_relationship_query
+from fastapi.responses import JSONResponse
 
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
+_DEVICE_SERVER_FIELDS = {'id', 'tenant_id', 'created_at', 'updated_at', 'created_by_user_id', 'is_deleted'}
+_DEVICE_DATE_FIELDS = {'purchase_date', 'install_date', 'warranty_end', 'eol_date'}
+_DEVICE_TEXT_FIELDS = {
+    'name', 'system', 'environment', 'status', 'type',
+    'manufacturer', 'model', 'serial_number', 'asset_tag', 'part_number',
+    'os_name', 'os_version', 'management_ip', 'primary_ip', 'management_url',
+    'owner', 'business_unit', 'vendor', 'purchase_order', 'cost_center',
+    'role', 'depth', 'tool_group', 'fab_area',
+}
+_DEVICE_INTEGER_MINIMUMS = {'size_u': 1, 'power_supply_count': 0}
+_DEVICE_POWER_FIELDS = {'power_max_w', 'power_typical_w', 'btu_hr'}
+_DEVICE_BOOLEAN_FIELDS = {'recipe_critical', 'is_reservation'}
+_DEVICE_WRITABLE_FIELDS = (
+    _DEVICE_TEXT_FIELDS | _DEVICE_DATE_FIELDS | _DEVICE_INTEGER_MINIMUMS.keys()
+    | _DEVICE_POWER_FIELDS | _DEVICE_BOOLEAN_FIELDS | {'metadata_json', 'reservation_info', 'logic_json'}
+)
+
+
+def _device_write_data(data: dict, *, creating: bool = False) -> dict:
+    clean = {key: value for key, value in data.items() if key in _DEVICE_WRITABLE_FIELDS}
+    required = ('name', 'system') if creating else ('name',) if 'name' in clean else ()
+    for field in required:
+        value = clean.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise HTTPException(400, f'Field {field} must be non-empty text')
+    if clean.get('system') is not None and not isinstance(clean['system'], str):
+        raise HTTPException(400, 'Field system must be text or null')
+    for field in _DEVICE_TEXT_FIELDS & clean.keys():
+        if clean[field] is not None and not isinstance(clean[field], str):
+            raise HTTPException(422, f'Field {field} must be text or null')
+    for field, minimum in _DEVICE_INTEGER_MINIMUMS.items():
+        value = clean.get(field)
+        if value is not None and (type(value) is not int or not minimum <= value <= 2 ** 63 - 1):
+            raise HTTPException(422, f'Field {field} must be a whole number from {minimum} to {2 ** 63 - 1}, or null')
+    for field in _DEVICE_POWER_FIELDS & clean.keys():
+        value = clean[field]
+        if value is None:
+            continue
+        try:
+            valid = type(value) in (int, float) and value >= 0 and isfinite(value)
+        except OverflowError:
+            valid = False
+        if not valid:
+            raise HTTPException(422, f'Field {field} must be a finite non-negative number or null')
+    for field in _DEVICE_BOOLEAN_FIELDS & clean.keys():
+        if clean[field] is not None and type(clean[field]) is not bool:
+            raise HTTPException(422, f'Field {field} must be a boolean or null')
+    for field in _DEVICE_DATE_FIELDS & clean.keys():
+        value = clean[field]
+        if value is None or value == '':
+            clean[field] = None
+            continue
+        if not isinstance(value, str):
+            raise HTTPException(422, f'Field {field} must be a valid ISO date or null')
+        try:
+            # The asset editor uses calendar dates. Preserve the existing
+            # timezone-naive wall-date storage instead of shifting their day.
+            clean[field] = datetime.fromisoformat(value).replace(tzinfo=None)
+        except ValueError as exc:
+            raise HTTPException(422, f'Field {field} must be a valid ISO date or null') from exc
+    return clean
 
 
 def _device_purge_table_label(table_name: str) -> str:
@@ -385,9 +454,9 @@ async def sync_device_to_os(device, db: AsyncSession):
         svc = result.scalar_one_or_none()
         
         if svc:
-            svc.name = device.os_name
-            svc.version = device.os_version
-            svc.environment = device.environment or svc.environment or "Production"
+            desired = (device.os_name, device.os_version, device.environment or svc.environment or "Production")
+            changed = (svc.name, svc.version, svc.environment) != desired
+            svc.name, svc.version, svc.environment = desired
         else:
             svc = models.LogicalService(
                 device_id=device.id,
@@ -398,7 +467,31 @@ async def sync_device_to_os(device, db: AsyncSession):
                 environment=device.environment or "Production"
             )
             db.add(svc)
+            changed = True
         # No internal commit here, calling code handles it
+        return changed
+    return False
+
+
+async def _commit_device_definition(request, db, device, action, changed_fields):
+    try:
+        await db.flush()
+        os_service_changed = await sync_device_to_os(device, db)
+        if action == 'CREATE' or changed_fields or os_service_changed:
+            db.add(build_audit_log(
+                request=request, action=action, target_table='devices', target_id=str(device.id),
+                description='Created asset' if action == 'CREATE' else 'Updated asset',
+                # Free-form fields can contain private values. Record only the
+                # bounded field inventory and whether synchronization changed.
+                changes={'changed_fields': sorted(changed_fields), 'os_service_changed': os_service_changed},
+            ))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Asset conflicts with current data; reload and retry') from exc
+    except Exception:
+        await db.rollback()
+        raise
 
 @router.get("")
 async def get_devices(request: Request, system: Optional[str] = None, include_deleted: bool = False, db: AsyncSession = Depends(get_db)):
@@ -479,14 +572,18 @@ async def get_devices(request: Request, system: Optional[str] = None, include_de
         # Hardware Summary (Resource Snapshot)
         comps = hw_map.get(d.id, [])
         hw_summary = []
-        cpu = sum(c.count for c in comps if c.category == 'CPU')
-        mem = sum(c.count for c in comps if c.category == 'Memory')
-        disk = sum(c.count for c in comps if c.category == 'Disk')
+        quantified = [c for c in comps if type(c.count) is int and c.count >= 0]
+        device_dict['hardware_summary_complete'] = len(quantified) == len(comps)
+        cpu = sum(c.count for c in quantified if c.category == 'CPU')
+        mem = sum(c.count for c in quantified if c.category == 'Memory')
+        disk = sum(c.count for c in quantified if c.category == 'Disk')
         # Clever summary: check specs too if possible? 
         # Actually count is most straightforward for now.
         if cpu: hw_summary.append(f"{cpu}x CPU")
         if mem: hw_summary.append(f"{mem}x MEM")
         if disk: hw_summary.append(f"{disk}x DSK")
+        if not device_dict['hardware_summary_complete']:
+            hw_summary.append('Quantity unavailable')
         device_dict["hardware_summary"] = " / ".join(hw_summary) if hw_summary else "No Components"
 
         # Hardware Age
@@ -577,44 +674,48 @@ async def get_devices_summary(
 
 @router.get("/{device_id}/interfaces")
 async def get_device_interfaces(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
+    await require_relationship_asset(request, db, device_id)
     # Fetch interfaces for the device
-    res = await db.execute(select(models.NetworkInterface).filter(models.NetworkInterface.device_id == device_id))
+    res = await db.execute(select(models.NetworkInterface).filter(models.NetworkInterface.device_id == device_id).order_by(models.NetworkInterface.id))
     interfaces = res.scalars().all()
-    
-    # Fetch all connections involving this device to map to interfaces
-    conn_res = await db.execute(select(models.PortConnection).filter(
+
+    # Join both endpoints once. Custom-IP endpoints have no asset ID; every
+    # referenced asset must belong to the same authorized tenant.
+    source, target = aliased(models.Device), aliased(models.Device)
+    conn_res = await db.execute(select(models.PortConnection, source.name, target.name).outerjoin(
+        source, source.id == models.PortConnection.source_device_id,
+    ).outerjoin(target, target.id == models.PortConnection.target_device_id).where(
         or_(
             models.PortConnection.source_device_id == device_id,
             models.PortConnection.target_device_id == device_id
-        )
-    ))
-    connections = conn_res.scalars().all()
-    
+        ),
+        or_(models.PortConnection.source_device_id.is_(None), source.tenant_id == request.state.tenant_id),
+        or_(models.PortConnection.target_device_id.is_(None), target.tenant_id == request.state.tenant_id),
+    ).order_by(models.PortConnection.id))
+    by_port = {}
+    for conn, source_name, target_name in conn_res.all():
+        if conn.source_device_id == device_id:
+            by_port.setdefault(conn.source_port, (conn, True, target_name))
+        if conn.target_device_id == device_id:
+            by_port.setdefault(conn.target_port, (conn, False, source_name))
+
     result = []
     for i in interfaces:
         iface_dict = {c.name: getattr(i, c.name) for c in i.__table__.columns}
-        
-        # Find connection matching this interface name (port)
-        conn = next((c for c in connections if 
-            (c.source_device_id == device_id and c.source_port == i.name) or
-            (c.target_device_id == device_id and c.target_port == i.name)
-        ), None)
-        
-        if conn:
-            peer_device_id = conn.target_device_id if conn.source_device_id == device_id else conn.source_device_id
-            peer_port = conn.target_port if conn.source_device_id == device_id else conn.source_port
-            peer_ip = conn.target_ip if conn.source_device_id == device_id else conn.source_ip
-            peer_mac = conn.target_mac if conn.source_device_id == device_id else conn.source_mac
-            peer_vlan = conn.target_vlan if conn.source_device_id == device_id else conn.source_vlan
-            
-            # Local side info from the connection record
-            local_mac = conn.source_mac if conn.source_device_id == device_id else conn.target_mac
-            local_vlan = conn.source_vlan if conn.source_device_id == device_id else conn.target_vlan
-            local_ip = conn.source_ip if conn.source_device_id == device_id else conn.target_ip
+        matched = by_port.get(i.name)
+        if matched:
+            conn, is_source, peer_name = matched
+            peer_device_id = conn.target_device_id if is_source else conn.source_device_id
+            peer_port = conn.target_port if is_source else conn.source_port
+            peer_ip = conn.target_ip if is_source else conn.source_ip
+            peer_mac = conn.target_mac if is_source else conn.source_mac
+            peer_vlan = conn.target_vlan if is_source else conn.source_vlan
 
-            peer_res = await db.execute(select(models.Device).filter(models.Device.id == peer_device_id))
-            peer_dev = peer_res.scalar_one_or_none()
-            
+            # Local side info from the connection record
+            local_mac = conn.source_mac if is_source else conn.target_mac
+            local_vlan = conn.source_vlan if is_source else conn.target_vlan
+            local_ip = conn.source_ip if is_source else conn.target_ip
+
             iface_dict["connection"] = {
                 "id": conn.id,
                 "source_device_id": conn.source_device_id,
@@ -630,7 +731,7 @@ async def get_device_interfaces(request: Request, device_id: int, db: AsyncSessi
                 "direction": conn.direction,
                 "unit": conn.unit,
                 "peer_device_id": peer_device_id,
-                "peer_device_name": peer_dev.name if peer_dev else "Unknown",
+                "peer_device_name": peer_name if peer_name is not None else "Unknown",
                 "peer_port": peer_port,
                 "peer_ip": peer_ip,
                 "peer_mac": peer_mac,
@@ -653,31 +754,20 @@ async def get_device_interfaces(request: Request, device_id: int, db: AsyncSessi
 @router.post("")
 async def create_device(request: Request, data: dict, db: AsyncSession = Depends(get_db)):
     tenant_id = request.state.tenant_id
-    required = ["name", "system"]
-    for f in required:
-        if not data.get(f): raise HTTPException(400, f"Field {f} is mandatory")
+    clean_data = _device_write_data(data, creating=True)
     
     # Case-insensitive duplicate check
     dup_res = await db.execute(select(models.Device).filter(
-        func.lower(models.Device.name) == data["name"].lower(), 
+        func.lower(models.Device.name) == clean_data["name"].lower(),
         models.Device.tenant_id == tenant_id,
         models.Device.is_deleted == False
     ))
     if dup_res.scalars().first():
         raise HTTPException(409, "DUPLICATE_HOSTNAME")
 
-    clean_data = filter_valid_columns(models.Device, data)
-    for date_f in ["purchase_date", "install_date", "warranty_end", "eol_date"]:
-        if date_f in clean_data: clean_data[date_f] = parse_iso_date(clean_data[date_f])
-    
-    db_device = models.Device(**clean_data, tenant_id=tenant_id)
+    db_device = models.Device(**clean_data, tenant_id=tenant_id, created_by_user_id=get_audit_actor(request))
     db.add(db_device)
-    await db.flush() # Flush to get ID
-
-    # Sync OS to services
-    await sync_device_to_os(db_device, db)
-    
-    await db.commit()
+    await _commit_device_definition(request, db, db_device, 'CREATE', clean_data.keys())
     await db.refresh(db_device)
 
     # Re-fetch for full response consistency (all enriched fields)
@@ -691,11 +781,12 @@ async def update_device(request: Request, device_id: int, data: dict, db: AsyncS
     result = await db.execute(select(models.Device).filter(models.Device.id == device_id, models.Device.tenant_id == tenant_id))
     db_device = result.scalar_one_or_none()
     if not db_device: raise HTTPException(404)
+    clean_data = _device_write_data(data)
     
-    if 'name' in data and data['name'].lower() != db_device.name.lower():
+    if 'name' in clean_data and clean_data['name'].lower() != (db_device.name or '').lower():
         # Check for duplicate name in ANOTHER active device (case-insensitive)
         dup_res = await db.execute(select(models.Device).filter(
-            func.lower(models.Device.name) == data["name"].lower(), 
+            func.lower(models.Device.name) == clean_data["name"].lower(),
             models.Device.is_deleted == False, 
             models.Device.id != device_id,
             models.Device.tenant_id == tenant_id
@@ -703,29 +794,19 @@ async def update_device(request: Request, device_id: int, data: dict, db: AsyncS
         if dup_res.scalars().first():
             raise HTTPException(409, "DUPLICATE_HOSTNAME")
 
-    clean_data = filter_valid_columns(models.Device, data)
-    # Exclude read-only fields
-    for ro_field in ["id", "created_at", "updated_at", "created_by_user_id"]:
-        if ro_field in clean_data:
-            del clean_data[ro_field]
-
+    changed_fields = []
     for k, v in clean_data.items():
-        if k in ["purchase_date", "install_date", "warranty_end", "eol_date"]:
-            # Ensure we only pass datetime objects or None to SQLAlchemy for DateTime columns
-            setattr(db_device, k, parse_iso_date(v))
-        elif k == "metadata_json" and isinstance(v, str):
+        if k == "metadata_json" and isinstance(v, str):
             try:
                 import json
-                setattr(db_device, k, json.loads(v))
+                v = json.loads(v)
             except:
-                setattr(db_device, k, v)
-        else:
+                pass
+        if getattr(db_device, k) != v:
+            changed_fields.append(k)
             setattr(db_device, k, v)
-    
-    # Sync OS to services
-    await sync_device_to_os(db_device, db)
-    
-    await db.commit()
+
+    await _commit_device_definition(request, db, db_device, 'UPDATE', changed_fields)
     await db.refresh(db_device)
     return db_device
 
@@ -780,13 +861,12 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     purge_impact_plan: dict | None = None
 
     if action == "update":
-        protected_fields = {"id", "tenant_id", "created_at", "updated_at", "created_by_user_id", "is_deleted"}
         clean_update = {
             key: value
-            for key, value in filter_valid_columns(models.Device, payload).items()
-            if key not in protected_fields and value is not None
+            for key, value in _device_write_data(payload).items()
+            if value is not None
         }
-        unsupported = sorted(set(payload) - set(clean_update) - protected_fields)
+        unsupported = sorted(set(payload) - set(clean_update) - _DEVICE_SERVER_FIELDS)
         if unsupported:
             raise HTTPException(status_code=400, detail=f"Unsupported asset bulk fields: {', '.join(unsupported)}")
         if not clean_update:
@@ -971,38 +1051,63 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
 
 @router.get("/{device_id}/hardware")
 async def get_hardware(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(models.HardwareComponent).filter(models.HardwareComponent.device_id == device_id))
+    await require_hardware_parent(request, db, device_id)
+    res = await db.execute(scoped_hardware_query(request).where(models.HardwareComponent.device_id == device_id))
     return res.scalars().all()
 
 @router.post("/{device_id}/hardware")
-async def add_hardware(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db)):
-    # Audit: Ensure data is not empty
-    if not data or not any(data.values()): raise HTTPException(400, "Empty hardware data")
-    clean = filter_valid_columns(models.HardwareComponent, data)
-    comp = models.HardwareComponent(device_id=device_id, **clean)
-    db.add(comp); await db.commit(); return comp
+async def add_hardware(request: Request, device_id: int, data: HardwarePayload, db: AsyncSession = Depends(get_db)):
+    await require_hardware_parent(request, db, device_id)
+    clean = data.model_dump(exclude_unset=True)
+    if not clean or not any(clean.values()): raise HTTPException(400, "Empty hardware data")
+    comp = models.HardwareComponent(device_id=device_id, created_by_user_id=get_audit_actor(request), **clean)
+    db.add(comp)
+    await commit_hardware_audit(request, db, comp, 'CREATE', clean)
+    await db.refresh(comp)
+    return comp
 
 @router.get("/{device_id}/secrets")
 async def get_secrets(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(models.SecretVault).filter(models.SecretVault.device_id == device_id))
-    return res.scalars().all()
+    await require_vault_device(request, db, device_id)
+    can_manage = can_manage_vault(request, await resolve_current_operator(request, db))
+    res = await db.execute(scoped_vault_query(request).where(models.SecretVault.device_id == device_id))
+    return [serialize_secret_vault_entry(secret, can_manage=can_manage) for secret in res.scalars()]
 
 @router.post("/{device_id}/secrets")
-async def add_secret(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db)):
+async def add_secret(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db), _secret_admin=Depends(require_capability('secrets', 3))):
+    await require_vault_device(request, db, device_id)
     if not data or not data.get("secret_type"): raise HTTPException(400, "Secret type required")
-    clean = filter_valid_columns(models.SecretVault, data)
+    clean = {key: data[key] for key in ('secret_type', 'username', 'encrypted_payload', 'notes') if key in data}
     sec = models.SecretVault(device_id=device_id, **clean)
-    db.add(sec); await db.commit(); return sec
+    db.add(sec)
+    await db.flush()
+    await commit_vault_audit(request, db, sec, 'CREATE')
+    await db.refresh(sec)
+    return serialize_secret_vault_entry(sec, can_manage=True)
+
+
+@router.post('/{device_id}/secrets/{secret_id}/reveal')
+async def reveal_secret(request: Request, device_id: int, secret_id: int, db: AsyncSession = Depends(get_db), _secret_admin=Depends(require_capability('secrets', 3))):
+    secret = await db.scalar(scoped_vault_query(request).where(
+        models.SecretVault.device_id == device_id,
+        models.SecretVault.id == secret_id,
+    ))
+    if secret is None:
+        raise HTTPException(404, 'Credential not found')
+    value = secret.encrypted_payload or ''
+    await commit_vault_audit(request, db, secret, 'REVEAL')
+    return JSONResponse({'value': value}, headers={'Cache-Control': 'no-store', 'Pragma': 'no-cache'})
 
 @router.get("/relationships/all")
 async def get_all_relationships(request: Request, db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(models.DeviceRelationship))
+    res = await db.execute(scoped_relationship_query(request))
     return res.scalars().all()
 
 @router.get("/{device_id}/relationships")
 async def get_relationships(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
     from sqlalchemy import or_
-    res = await db.execute(select(models.DeviceRelationship).filter(
+    await require_relationship_asset(request, db, device_id)
+    res = await db.execute(scoped_relationship_query(request).filter(
         or_(
             models.DeviceRelationship.source_device_id == device_id,
             models.DeviceRelationship.target_device_id == device_id
@@ -1011,13 +1116,16 @@ async def get_relationships(request: Request, device_id: int, db: AsyncSession =
     return res.scalars().all()
 
 @router.post("/{device_id}/relationships")
-async def add_relationship(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db)):
-    target_id = data.get("target_device_id")
-    if not target_id: raise HTTPException(400, "Target device ID required")
-    if int(target_id) == device_id: raise HTTPException(400, "Cannot link server to itself")
-    clean = filter_valid_columns(models.DeviceRelationship, data)
-    rel = models.DeviceRelationship(source_device_id=device_id, **clean)
-    db.add(rel); await db.commit(); return rel
+async def add_relationship(request: Request, device_id: int, data: RelationshipCreate, db: AsyncSession = Depends(get_db)):
+    await require_relationship_asset(request, db, device_id, active=True)
+    await require_relationship_asset(request, db, data.target_device_id, active=True)
+    if data.target_device_id == device_id: raise HTTPException(400, "Cannot link server to itself")
+    clean = data.model_dump(exclude_unset=True)
+    rel = models.DeviceRelationship(source_device_id=device_id, created_by_user_id=get_audit_actor(request), **clean)
+    db.add(rel)
+    await commit_asset_link_audit(request, db, rel, 'CREATE', {'source_device_id': device_id, **clean})
+    await db.refresh(rel)
+    return rel
 
 @router.delete("/{device_id}")
 async def delete_device(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
@@ -1045,20 +1153,69 @@ async def delete_device(request: Request, device_id: int, db: AsyncSession = Dep
 async def delete_resource(request: Request, resource: str, id: int, db: AsyncSession = Depends(get_db)):
     model_map = {"hardware": models.HardwareComponent, "software": models.DeviceSoftware, "secrets": models.SecretVault, "relationships": models.DeviceRelationship}
     if resource not in model_map: raise HTTPException(400)
-    await db.execute(delete(model_map[resource]).where(model_map[resource].id == id))
-    await db.commit(); return {"status": "success"}
+    if resource == 'hardware':
+        component = await db.scalar(scoped_hardware_query(request).where(models.HardwareComponent.id == id))
+        if component is None:
+            raise HTTPException(404, 'Hardware component not found')
+        await db.delete(component)
+        await commit_hardware_audit(request, db, component, 'DELETE', {'name': component.name, 'count': component.count})
+        return {'status': 'success'}
+    if resource == 'secrets':
+        await require_capability('secrets', 3)(request=request, db=db)
+        secret = await db.scalar(scoped_vault_query(request).where(models.SecretVault.id == id))
+        if secret is None:
+            raise HTTPException(404, 'Credential not found')
+        await db.delete(secret)
+        await commit_vault_audit(request, db, secret, 'DELETE')
+        return {'status': 'success'}
+    item = await get_asset_link(request, db, resource, id)
+    removed = await db.scalar(delete(model_map[resource]).where(model_map[resource].id == id).returning(
+        model_map[resource].id,
+    ).execution_options(synchronize_session=False))
+    if removed is None:
+        raise HTTPException(404, 'Asset definition not found')
+    ownership = ({'device_id': item.device_id} if resource == 'software' else
+                 {'source_device_id': item.source_device_id, 'target_device_id': item.target_device_id})
+    await commit_asset_link_audit(request, db, item, 'DELETE', ownership)
+    return {'status': 'success'}
 
 @router.put("/{resource}/{id}")
 async def update_resource(request: Request, resource: str, id: int, data: dict, db: AsyncSession = Depends(get_db)):
     model_map = {"hardware": models.HardwareComponent, "software": models.DeviceSoftware, "secrets": models.SecretVault, "relationships": models.DeviceRelationship}
     if resource not in model_map: raise HTTPException(400)
+    if resource == 'hardware':
+        component = await db.scalar(scoped_hardware_query(request).where(models.HardwareComponent.id == id))
+        if component is None:
+            raise HTTPException(404, 'Hardware component not found')
+        clean = hardware_update_payload(data)
+        changes = {key: {'before': getattr(component, key), 'after': value}
+                   for key, value in clean.items() if getattr(component, key) != value}
+        for key, change in changes.items():
+            setattr(component, key, change['after'])
+        if changes:
+            await commit_hardware_audit(request, db, component, 'UPDATE', changes)
+        await db.refresh(component)
+        return component
+
+    if resource == 'secrets':
+        await require_capability('secrets', 3)(request=request, db=db)
+        secret = await db.scalar(scoped_vault_query(request).where(models.SecretVault.id == id))
+        if secret is None:
+            raise HTTPException(404, 'Credential not found')
+        for key in ('secret_type', 'username', 'encrypted_payload', 'notes'):
+            if key in data:
+                setattr(secret, key, data[key])
+        await commit_vault_audit(request, db, secret, 'UPDATE')
+        await db.refresh(secret)
+        return serialize_secret_vault_entry(secret, can_manage=True)
     
-    res = await db.execute(select(model_map[resource]).filter(model_map[resource].id == id))
-    item = res.scalar_one_or_none()
-    if not item: raise HTTPException(404)
-    
-    clean = filter_valid_columns(model_map[resource], data)
-    for k, v in clean.items():
-        if k != "id": setattr(item, k, v)
-    
-    await db.commit(); return item
+    item = await get_asset_link(request, db, resource, id)
+    clean = asset_link_update_payload(resource, data)
+    changes = {key: {'before': getattr(item, key), 'after': value}
+               for key, value in clean.items() if getattr(item, key) != value}
+    for key, change in changes.items():
+        setattr(item, key, change['after'])
+    if changes:
+        await commit_asset_link_audit(request, db, item, 'UPDATE', changes)
+    await db.refresh(item)
+    return item

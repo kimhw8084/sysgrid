@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react'
-import { ArrowRightLeft, Check, X, Edit2, Trash2, Box, Zap, Clock, Globe, Info, Search, Plus, Terminal, Activity, AlertTriangle, RefreshCw, Book, Settings, Eye, EyeOff } from 'lucide-react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { ArrowRightLeft, Check, X, Edit2, Trash2, Box, Zap, Clock, Globe, Info, Search, Plus, Terminal, Activity, AlertTriangle, RefreshCw, Book, Settings, Eye } from 'lucide-react'
 import { ConfirmationModal } from '../shared/ConfirmationModal'
 import { apiFetch } from '../../api/apiClient'
 import toast from 'react-hot-toast'
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import { WorkspaceEmptyState } from '../shared/OperationalWorkspacePrimitives'
 import { AssetServicesTable, MetadataViewer, MiniMonitoringTable } from '../AssetGrid_Legacy'
 import { ModulePolicyButton } from '../../policy/ModulePolicy'
+import { CredentialValue, credentialUpdatePayload } from '../shared/CredentialValue'
 
 const getAssetConsoleUrl = (asset: any) => {
   if (asset?.management_url) {
@@ -21,6 +22,39 @@ const getAssetConsoleUrl = (asset: any) => {
 }
 
 const MonitoringTab = ({ deviceId }: { deviceId: number }) => <MiniMonitoringTable deviceId={deviceId} />
+
+const emptyHardwareDraft = () => ({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 })
+const validHardwareQuantity = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+const hardwareQuantityMessage = 'Quantity must be a whole number of zero or more'
+const hardwareQuantityToastId = (deviceId: number) => `hardware-quantity-${deviceId}`
+const emptyCredentialDraft = () => ({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' })
+const emptyRelationshipDraft = () => ({ target_device_id: '', relationship_type: 'Depends On', source_role: 'Consumer', target_role: 'Provider' })
+type DraftProps<T> = { draft: T; setDraft: React.Dispatch<React.SetStateAction<T>>; onPendingChange: (pending: boolean) => void }
+type InlineAssetDraft = { original: any; values: any } | null
+type InlineDraftProps = { inlineDraft?: {
+  draft: InlineAssetDraft
+  setDraft: React.Dispatch<React.SetStateAction<InlineAssetDraft>>
+  onPendingChange: (pending: boolean) => void
+} }
+const isInlineDraftDirty = (draft: InlineAssetDraft) => draft !== null && JSON.stringify(draft.original) !== JSON.stringify(draft.values)
+
+function useAssetInlineDraft(controller?: InlineDraftProps['inlineDraft']) {
+  const [localDraft, setLocalDraft] = useState<InlineAssetDraft>(null)
+  const draft = controller ? controller.draft : localDraft
+  const setDraft = controller?.setDraft || setLocalDraft
+  return {
+    editingId: draft?.values.id ?? null,
+    editData: draft?.values ?? null,
+    beginEdit: (values: any) => setDraft({ original: values, values }),
+    setEditData: (values: any) => setDraft(current => current ? { ...current, values } : null),
+    cancelEdit: () => setDraft(null),
+  }
+}
+
+function useInlinePending(pending: boolean, onPendingChange?: (pending: boolean) => void) {
+  useEffect(() => { onPendingChange?.(pending) }, [pending, onPendingChange])
+  useEffect(() => () => { onPendingChange?.(false) }, [onPendingChange])
+}
 
 const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { device: any, connections: any[], onEditLink: (l: any) => void, onViewLink: (l: any) => void }) => {
   const [hoveredPort, setHoveredPort] = useState<any | null>(null)
@@ -287,9 +321,25 @@ const SecurityTab = ({ device }: { device: any }) => (
   </div>
 )
 
-export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEditService, onEditLink, onViewLink }: { device: any, options: any, onViewServiceDetails: (s:any)=>void, onEditService: (s:any)=>void, onEditLink: (l:any)=>void, onViewLink: (l:any)=>void }) => {
+export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEditService, onEditLink, onViewLink, onDraftDirtyChange, onDraftPendingChange }: { device: any, options: any, onViewServiceDetails: (s:any)=>void, onEditService: (s:any)=>void, onEditLink: (l:any)=>void, onViewLink: (l:any)=>void, onDraftDirtyChange?: (dirty: boolean) => void, onDraftPendingChange?: (pending: boolean) => void }) => {
     const navigate = useNavigate()
     const [tab, setTab] = useState('hardware')
+    const [hardwareDraft, setHardwareDraft] = useState(emptyHardwareDraft)
+    const [credentialDraft, setCredentialDraft] = useState(emptyCredentialDraft)
+    const [relationshipDraft, setRelationshipDraft] = useState(emptyRelationshipDraft)
+    const [hardwarePending, setHardwarePending] = useState(false)
+    const [credentialPending, setCredentialPending] = useState(false)
+    const [relationshipPending, setRelationshipPending] = useState(false)
+    const [hardwareEditDraft, setHardwareEditDraft] = useState<InlineAssetDraft>(null)
+    const [credentialEditDraft, setCredentialEditDraft] = useState<InlineAssetDraft>(null)
+    const [relationshipEditDraft, setRelationshipEditDraft] = useState<InlineAssetDraft>(null)
+    const [hardwareEditPending, setHardwareEditPending] = useState(false)
+    const [credentialEditPending, setCredentialEditPending] = useState(false)
+    const [relationshipEditPending, setRelationshipEditPending] = useState(false)
+    const draftDirty = JSON.stringify(hardwareDraft) !== JSON.stringify(emptyHardwareDraft()) || JSON.stringify(credentialDraft) !== JSON.stringify(emptyCredentialDraft()) || JSON.stringify(relationshipDraft) !== JSON.stringify(emptyRelationshipDraft()) || [hardwareEditDraft, credentialEditDraft, relationshipEditDraft].some(isInlineDraftDirty)
+    const draftPending = hardwarePending || credentialPending || relationshipPending || hardwareEditPending || credentialEditPending || relationshipEditPending
+    useEffect(() => { onDraftDirtyChange?.(draftDirty) }, [draftDirty, onDraftDirtyChange])
+    useEffect(() => { onDraftPendingChange?.(draftPending) }, [draftPending, onDraftPendingChange])
     const queryClient = useQueryClient()
 
     // --- FETCH RELATED CONTEXT ---
@@ -324,16 +374,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     })
 
     const primaryMonitoringId = Array.isArray(monitoringItems) && monitoringItems[0]?.id ? monitoringItems[0].id : null
-    const { data: suggestedKnowledge } = useQuery({
-      queryKey: ['asset-knowledge-suggestions', device.id, primaryMonitoringId],
-      queryFn: async () => {
-        const params = new URLSearchParams()
-        params.append('device_id', String(device.id))
-        params.append('embedded_consumer', 'assets')
-        return (await apiFetch(`/api/v1/knowledge?${params.toString()}`)).json()
-      },
-      enabled: !!device.id
-    })
+    const suggestedKnowledge = relatedKnowledge
 
     const { data: maintenanceWindows } = useQuery({
       queryKey: ['asset-maintenance', device.id],
@@ -368,11 +409,11 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     })
 
     return (
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col xl:flex-row gap-6 items-start">
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 space-y-6">
+            <div className="w-full min-w-0 flex-1 space-y-6">
                 <div className="rounded-lg border border-blue-500/20 bg-gradient-to-r from-blue-600/10 to-transparent p-5">
-                    <div className="flex items-start justify-between gap-6">
+                    <div className="flex flex-wrap items-start justify-between gap-6">
                         <div className="flex items-center space-x-6">
                            <div className="bg-blue-600 p-2.5 rounded-lg text-white shadow-xl shadow-blue-500/20 ring-4 ring-blue-500/10 shrink-0">
                               <Box size={32} />
@@ -388,11 +429,11 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                                </div>
                                <div className="flex flex-col">
                                   <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Network IP</span>
-                                  <span className="text-lg font-mono text-blue-400 font-bold">{device.primary_ip || '---.---.---.---'}</span>
+                                  <span className="text-sm font-mono text-blue-400 font-bold">{device.primary_ip || 'Not configured'}</span>
                                </div>
                                <div className="flex flex-col">
                                   <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Management IP</span>
-                                  <span className="text-lg font-mono text-indigo-400 font-bold">{device.management_ip || '---.---.---.---'}</span>
+                                  <span className="text-sm font-mono text-[var(--text-secondary)] font-bold">{device.management_ip || 'Not configured'}</span>
                                </div>
                            </div>
                         </div>
@@ -413,8 +454,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                     <div className="mt-4 rounded-lg border border-amber-500/15 bg-amber-500/[0.05] p-4">
                         <div className="flex items-center justify-between gap-4">
                             <div>
-                                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-amber-300">Suggested Runbooks Now</p>
-                                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Procedures matched to this asset and active monitoring context.</p>
+                                <p className="text-[9px] font-black uppercase tracking-[0.24em] text-amber-300">Linked Runbooks</p>
+                                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Procedures linked to this asset.</p>
                             </div>
                             <ModulePolicyButton
                               moduleId="knowledge"
@@ -433,16 +474,16 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                                 </p>
                               </ModulePolicyButton>
                             ))}
-                            {!suggestedKnowledge?.length && <p className="col-span-2 text-[10px] font-bold uppercase text-slate-600 italic">No suggested runbooks identified</p>}
+                            {!suggestedKnowledge?.length && <p className="col-span-2 text-[10px] font-bold uppercase text-slate-600 italic">No linked runbooks identified</p>}
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex space-x-1 bg-black/40 p-1 rounded-lg w-fit">
+                        <div className="flex flex-wrap gap-1 bg-black/40 p-1 rounded-lg w-fit" role="group" aria-label="Asset detail sections">
                             {['hardware', 'secrets', 'relations', 'services', 'network', 'security', 'monitoring', 'metadata'].map(t => (
-                                <button key={t} onClick={() => setTab(t)} className={`px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${tab === t ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
+                                <button key={t} aria-pressed={tab === t} disabled={draftPending} onClick={() => setTab(t)} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all disabled:cursor-wait ${tab === t ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>
                                     {t}
                                 </button>
                             ))}
@@ -450,8 +491,10 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                     </div>
 
                     <div className="glass-panel border-white/5 rounded-lg overflow-hidden min-h-[400px]">
-                        {tab === 'hardware' && <HWTab deviceId={device.id} />}
-                        {tab === 'secrets' && <SecretsTab deviceId={device.id} />}
+                        {tab === 'hardware' && <HWTab deviceId={device.id} draft={hardwareDraft} setDraft={setHardwareDraft} onPendingChange={setHardwarePending}
+                          inlineDraft={{ draft: hardwareEditDraft, setDraft: setHardwareEditDraft, onPendingChange: setHardwareEditPending }} />}
+                        {tab === 'secrets' && <SecretsTab deviceId={device.id} draft={credentialDraft} setDraft={setCredentialDraft} onPendingChange={setCredentialPending}
+                          inlineDraft={{ draft: credentialEditDraft, setDraft: setCredentialEditDraft, onPendingChange: setCredentialEditPending }} />}
                         {tab === 'monitoring' && <MonitoringTab deviceId={device.id} />}
                         {tab === 'services' && (
                             <AssetServicesTable
@@ -461,7 +504,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                             />
                         )}
                         {tab === 'network' && <NetworkingTab device={device} onEditLink={onEditLink} onViewLink={onViewLink} />}
-                        {tab === 'relations' && <RelationshipsTab deviceId={device.id} />}
+                        {tab === 'relations' && <RelationshipsTab deviceId={device.id} draft={relationshipDraft} setDraft={setRelationshipDraft} onPendingChange={setRelationshipPending}
+                          inlineDraft={{ draft: relationshipEditDraft, setDraft: setRelationshipEditDraft, onPendingChange: setRelationshipEditPending }} />}
                         {tab === 'security' && <SecurityTab device={device} />}
                         {tab === 'metadata' && (
                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 p-2 h-full flex flex-col">
@@ -473,7 +517,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
             </div>
 
             {/* SIDEBAR JUMP & META COLUMN */}
-            <div className="w-80 shrink-0 space-y-6 sticky top-0">
+            <div className="w-full xl:w-80 shrink-0 space-y-6 xl:sticky xl:top-0">
                 {/* PRIMARY JUMP ACTIONS */}
                 <div className="glass-panel p-5 rounded-lg border-white/5 bg-white/5 space-y-3">
                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-500 mb-2">Jump Actions</p>
@@ -569,6 +613,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                           </div>
                         ))}
                         {!maintenanceCount && !(recentAuditLogs?.length > 0) && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No recent care events</p>}
+                        <ModulePolicyButton moduleId="monitoring" onClick={() => navigate(`/monitoring?workspace=maintenance&device_id=${device.id}`)} className="min-h-10 text-xs font-semibold text-[var(--action-ink)] underline">Open maintenance history</ModulePolicyButton>
                     </div>
                     <button 
                       onClick={() => navigate(`/logs?target_table=devices&target_id=${device.id}`)}
@@ -582,9 +627,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     )
 }
 
-const HWTab = ({ deviceId }: { deviceId: number }) => {
+const HWTab = ({ deviceId, draft: newComp, setDraft: setNewComp, onPendingChange, inlineDraft }: { deviceId: number } & DraftProps<ReturnType<typeof emptyHardwareDraft>> & InlineDraftProps) => {
   const queryClient = useQueryClient()
-  const [newComp, setNewComp] = useState({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 })
 
   const mutation = useMutation({
     mutationFn: async (d: any) => {
@@ -592,31 +636,32 @@ const HWTab = ({ deviceId }: { deviceId: number }) => {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] }); setNewComp({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 }) }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] }); setNewComp({ category: 'CPU', name: '', manufacturer: '', specs: '', count: 1 }) },
   })
+
+  useEffect(() => { onPendingChange(mutation.isPending) }, [mutation.isPending, onPendingChange])
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-6 gap-2 bg-white/5 p-3 rounded-lg border border-white/5">
+      <div role="group" aria-label="Add hardware component" className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-2 bg-white/5 p-3 rounded-lg border border-white/5 [&>input]:min-w-0 [&>input]:w-full [&>select]:min-w-0 [&>select]:w-full">
          <select value={newComp.category} onChange={e => setNewComp({...newComp, category: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] outline-none">
             <option>CPU</option><option>Memory</option><option>Card</option><option>Disk</option><option>NIC</option><option>PSU</option>
          </select>
          <input value={newComp.name} onChange={e => setNewComp({...newComp, name: e.target.value})} placeholder="Component Name" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
          <input value={newComp.manufacturer} onChange={e => setNewComp({...newComp, manufacturer: e.target.value})} placeholder="Manufacturer" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
          <input value={newComp.specs} onChange={e => setNewComp({...newComp, specs: e.target.value})} placeholder="Specifications" className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
-         <input type="number" value={newComp.count} onChange={e => setNewComp({...newComp, count: parseInt(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
-         <button onClick={() => { if(!newComp.name) return toast.error("Name required"); mutation.mutate(newComp) }} className="bg-blue-600 text-white rounded-lg text-[9px] font-bold uppercase">Add</button>
+         <input type="number" aria-label="New component quantity" min={0} step={1} value={Number.isNaN(newComp.count) ? '' : newComp.count} onChange={e => setNewComp({...newComp, count: e.target.value === '' ? Number.NaN : Number(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] outline-none" />
+         <button disabled={mutation.isPending} onClick={() => { if(!newComp.name.trim()) return toast.error("Name required"); if (!validHardwareQuantity(newComp.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); mutation.mutate(newComp) }} className="bg-blue-600 text-white rounded-lg text-[9px] font-bold uppercase disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
       </div>
-      <HWTable deviceId={deviceId} />
+      <HWTable deviceId={deviceId} inlineDraft={inlineDraft} />
     </div>
   )
 }
 
-export const HWTable = ({ deviceId }: { deviceId: number }) => {
+export const HWTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: hardware } = useQuery({ queryKey: ['device-hw', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/hardware`)).json()) })
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editData, setEditData] = useState<any>(null)
+  const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
   
   const delMutation = useMutation({
@@ -632,7 +677,7 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
     }),
     onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] })
-        setEditingId(null)
+        cancelEdit()
         toast.success('Component Updated')
     },
     onError: (e: any) => toast.error(e.message || 'Failed to update component')
@@ -647,9 +692,11 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
     { value: 'PSU', label: 'PSU' }
   ]
 
+  useInlinePending(updateMutation.isPending || delMutation.isPending, inlineDraft?.onPendingChange)
+
   return (
-    <div className="p-0">
-      <table className="w-full text-[10px]">
+    <div role="region" aria-label="Hardware components" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
+      <table aria-busy={updateMutation.isPending} className="w-full min-w-[24rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-center font-bold uppercase tracking-widest text-slate-500">Category</th>
@@ -666,6 +713,7 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
                 {editingId === h.id ? (
                     <StyledSelect
                         value={editData.category}
+                        disabled={updateMutation.isPending}
                         onChange={e => setEditData({...editData, category: e.target.value})}
                         options={catOptions}
                         className="w-24 mx-auto"
@@ -676,29 +724,29 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
               </td>
               <td className="px-4 py-2 font-bold text-slate-200 text-center text-[10px]">
                 {editingId === h.id ? (
-                    <input value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : h.name}
               </td>
               <td className="px-4 py-2 text-slate-500 text-center font-bold text-[10px]">
                 {editingId === h.id ? (
-                    <input value={editData.specs} onChange={e => setEditData({...editData, specs: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.specs} onChange={e => setEditData({...editData, specs: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : h.specs}
               </td>
               <td className="px-4 py-2 text-center text-slate-400 font-bold text-[10px]">
                 {editingId === h.id ? (
-                    <input type="number" value={editData.count} onChange={e => setEditData({...editData, count: parseInt(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-1 py-1.5 text-[10px] w-12 outline-none focus:border-blue-500" />
-                ) : `x${h.count}`}
+                    <input disabled={updateMutation.isPending} type="number" aria-label="Component quantity" min={0} step={1} value={editData.count == null || Number.isNaN(editData.count) ? '' : editData.count} onChange={e => setEditData({...editData, count: e.target.value === '' ? Number.NaN : Number(e.target.value)})} className="bg-slate-900 border border-white/10 rounded-lg px-1 py-1.5 text-[10px] w-12 outline-none focus:border-blue-500" />
+                ) : validHardwareQuantity(h.count) ? `x${h.count}` : 'Quantity unavailable'}
               </td>
               <td className="px-4 py-2 text-center">
                 {editingId === h.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
-                        <button onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
+                        <button aria-label="Save hardware component" disabled={updateMutation.isPending} onClick={() => { if (!validHardwareQuantity(editData.count)) return toast.error(hardwareQuantityMessage, { id: hardwareQuantityToastId(deviceId) }); toast.dismiss(hardwareQuantityToastId(deviceId)); updateMutation.mutate(editData) }} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
+                        <button aria-label="Cancel hardware edit" disabled={updateMutation.isPending} onClick={cancelEdit} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => { setEditingId(h.id); setEditData({...h}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                        <button onClick={() => setConfirmModal({ isOpen: true, title: 'Purge Component', message: 'Purge this hardware component?', onConfirm: () => delMutation.mutate(h.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                        <button aria-label="Edit hardware component" title={editingId !== null ? 'Save or cancel the current edit first' : undefined} disabled={editingId !== null || delMutation.isPending} onClick={() => beginEdit({...h})} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                        <button aria-label="Remove hardware component" disabled={delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Purge Component', message: 'Purge this hardware component?', onConfirm: () => delMutation.mutate(h.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                 )}
               </td>
@@ -719,9 +767,8 @@ export const HWTable = ({ deviceId }: { deviceId: number }) => {
   )
 }
 
-const SecretsTab = ({ deviceId }: { deviceId: number }) => {
+const SecretsTab = ({ deviceId, draft: newSec, setDraft: setNewSec, onPendingChange, inlineDraft }: { deviceId: number } & DraftProps<ReturnType<typeof emptyCredentialDraft>> & InlineDraftProps) => {
   const queryClient = useQueryClient()
-  const [newSec, setNewSec] = useState({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' })
 
   const mutation = useMutation({
     mutationFn: async (d: any) => {
@@ -729,8 +776,10 @@ const SecretsTab = ({ deviceId }: { deviceId: number }) => {
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setNewSec({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' }); toast.success('Credential added') }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setNewSec({ secret_type: 'Root Password', username: '', encrypted_payload: '', notes: '' }); toast.success('Credential added') },
   })
+
+  useEffect(() => { onPendingChange(mutation.isPending) }, [mutation.isPending, onPendingChange])
 
   const secOptions = [
     { value: 'Root Password', label: 'Root Password' },
@@ -742,7 +791,7 @@ const SecretsTab = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-5 gap-2 bg-white/5 p-3 rounded-lg border border-white/5 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-5 gap-2 bg-white/5 p-3 rounded-lg border border-white/5 items-end">
          <div className="col-span-1">
            <StyledSelect
               value={newSec.secret_type}
@@ -763,24 +812,18 @@ const SecretsTab = ({ deviceId }: { deviceId: number }) => {
             <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1 px-1">Notes</label>
             <input value={newSec.notes} onChange={e => setNewSec({...newSec, notes: e.target.value})} placeholder="Purpose / Note" className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-2.5 text-xs outline-none focus:border-blue-500" />
          </div>
-         <button onClick={() => { if(!newSec.username || !newSec.encrypted_payload) return toast.error("Identity/Value required"); mutation.mutate(newSec) }} className="h-[38px] bg-emerald-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Add</button>
+         <button disabled={mutation.isPending} onClick={() => { if(!newSec.username || !newSec.encrypted_payload) return toast.error("Identity/Value required"); mutation.mutate(newSec) }} className="h-[38px] bg-emerald-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-wait">{mutation.isPending ? 'Adding...' : 'Add'}</button>
       </div>
-      <SecretsTable deviceId={deviceId} />
+      <SecretsTable deviceId={deviceId} inlineDraft={inlineDraft} />
     </div>
   )
 }
 
-export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
+export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: secrets } = useQuery({ queryKey: ['device-secrets', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/secrets`)).json()) })
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editData, setEditData] = useState<any>(null)
-  const [visibleIds, setVisibleIds] = useState<number[]>([])
+  const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
-
-  const toggleVisibility = (id: number) => {
-    setVisibleIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-  }
 
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/secrets/${id}`, { method: 'DELETE' }),
@@ -790,9 +833,9 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => apiFetch(`/api/v1/devices/secrets/${data.id}`, {
-        method: 'PUT', body: JSON.stringify(data)
+        method: 'PUT', body: JSON.stringify(credentialUpdatePayload(data))
     }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setEditingId(null); toast.success('Credential updated') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); cancelEdit(); toast.success('Credential updated') },
     onError: (e: any) => toast.error(e.message || 'Failed to update credential')
   })
 
@@ -804,9 +847,11 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
     { value: 'ILO/IDRAC', label: 'ILO/IDRAC' }
   ]
 
+  useInlinePending(updateMutation.isPending || delMutation.isPending, inlineDraft?.onPendingChange)
+
   return (
     <div className="p-0">
-      <table className="w-full text-[10px]">
+      <table aria-busy={updateMutation.isPending} className="w-full text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Type</th>
@@ -819,10 +864,11 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
         <tbody className="divide-y divide-white/5">
           {secrets?.map((s: any) => (
             <tr key={s.id} className="hover:bg-white/5 transition-colors">
-              <td className="px-4 py-2 font-bold uppercase text-amber-500/80">
+              <td className="px-4 py-2 font-bold uppercase text-[var(--text-secondary)]">
                 {editingId === s.id ? (
                     <StyledSelect
                         value={editData.secret_type}
+                        disabled={updateMutation.isPending}
                         onChange={e => setEditData({...editData, secret_type: e.target.value})}
                         options={secOptions}
                         className="w-32"
@@ -831,36 +877,31 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
               </td>
               <td className="px-4 py-2 font-bold text-slate-200">
                 {editingId === s.id ? (
-                    <input value={editData.username} onChange={e => setEditData({...editData, username: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.username} onChange={e => setEditData({...editData, username: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : s.username}
               </td>
               <td className="px-4 py-2 text-slate-400">
                 {editingId === s.id ? (
-                    <input type="password" value={editData.encrypted_payload} onChange={e => setEditData({...editData, encrypted_payload: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" placeholder="Update secret..." />
+                    <input disabled={updateMutation.isPending} type="password" autoComplete="new-password" aria-label="Replacement credential value" value={editData.encrypted_payload} onChange={e => setEditData({...editData, encrypted_payload: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" placeholder="Leave blank to keep stored value" />
                 ) : (
-                    <div className="flex items-center space-x-3 group">
-                       <span className={visibleIds.includes(s.id) ? 'text-blue-300' : 'text-slate-700'}>{visibleIds.includes(s.id) ? s.encrypted_payload : '••••••••••••'}</span>
-                       <button onClick={() => toggleVisibility(s.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-blue-400">
-                          {visibleIds.includes(s.id) ? <EyeOff size={14}/> : <Eye size={14}/>}
-                       </button>
-                    </div>
+                    <CredentialValue deviceId={deviceId} secretId={s.id} canReveal={s.can_reveal} hasPayload={s.has_payload} />
                 )}
               </td>
               <td className="px-4 py-2 text-slate-500">
                 {editingId === s.id ? (
-                    <input value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
+                    <input disabled={updateMutation.isPending} value={editData.notes} onChange={e => setEditData({...editData, notes: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] w-full outline-none focus:border-blue-500" />
                 ) : s.notes}
               </td>
               <td className="px-4 py-2 text-center">
                 {editingId === s.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg"><Check size={14}/></button>
-                        <button onClick={() => setEditingId(null)} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
+                        <button aria-label="Save credential" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
+                        <button aria-label="Cancel credential editing" disabled={updateMutation.isPending} onClick={cancelEdit} className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-lg"><X size={14}/></button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center space-x-1">
-                        <button onClick={() => { setEditingId(s.id); setEditData({...s}); }} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                        <button onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Credential', message: 'Remove this credential?', onConfirm: () => delMutation.mutate(s.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                        <button aria-label="Edit credential" title={editingId !== null ? 'Save or cancel the current edit first' : undefined} disabled={!s.can_manage || editingId !== null || delMutation.isPending} onClick={() => beginEdit({...s, encrypted_payload: ''})} className="p-1.5 hover:bg-white/10 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                        <button aria-label="Delete credential" disabled={!s.can_manage || delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Credential', message: 'Remove this credential?', onConfirm: () => delMutation.mutate(s.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                 )}
               </td>
@@ -881,7 +922,7 @@ export const SecretsTable = ({ deviceId }: { deviceId: number }) => {
   )
 }
 
-export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
+export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange, inlineDraft }: { deviceId: number } & Partial<DraftProps<ReturnType<typeof emptyRelationshipDraft>>> & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
   
@@ -895,12 +936,9 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
 
   const currentDevice = useMemo(() => devices?.find((d: any) => d.id === deviceId), [devices, deviceId]);
 
-  const [newRel, setNewRel] = useState({ 
-    target_device_id: '', 
-    relationship_type: 'Depends On', 
-    source_role: 'Consumer', 
-    target_role: 'Provider' 
-  })
+  const [localDraft, setLocalDraft] = useState(emptyRelationshipDraft)
+  const newRel = draft || localDraft
+  const setNewRel = setDraft || setLocalDraft
 
   const mutation = useMutation({
     mutationFn: async (d: any) => {
@@ -914,8 +952,11 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
     onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] });
         toast.success('Relationship added')
+        setNewRel(emptyRelationshipDraft())
     }
   })
+
+  useEffect(() => { onPendingChange?.(mutation.isPending) }, [mutation.isPending, onPendingChange])
 
   const syncRoles = (role: string, isSource: boolean) => {
     const pair = types.find(t => t.s === role || t.t === role);
@@ -946,16 +987,16 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/5 p-6 rounded-lg border border-white/5 space-y-6">
-         <div className="grid grid-cols-11 gap-4 items-end">
-            <div className="col-span-3">
+      <div role="group" aria-label="Add asset relationship" className="bg-white/5 p-4 sm:p-6 rounded-lg border border-white/5 space-y-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-end">
+            <div className="min-w-0">
                <label className="text-[9px] font-bold text-slate-500 uppercase block mb-2 px-1">Local Asset (A)</label>
                <div className="w-full bg-blue-600/10 border border-blue-500/20 rounded-lg px-4 py-2.5 text-xs text-blue-400 font-bold uppercase truncate">
                   {currentDevice?.name || 'Local'}
                </div>
             </div>
 
-            <div className="col-span-2">
+            <div className="min-w-0">
                <StyledSelect
                   label="Role (A)"
                   value={newRel.source_role}
@@ -964,17 +1005,7 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
                />
             </div>
 
-            <div className="col-span-1 flex justify-center pb-2">
-               <button 
-                 onClick={swapRoles}
-                 className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-400 hover:text-white transition-all group"
-                 title="Swap Roles"
-               >
-                  <ArrowRightLeft size={16} className="group-active:rotate-180 transition-transform duration-300" />
-               </button>
-            </div>
-
-            <div className="col-span-2">
+            <div className="min-w-0">
                <StyledSelect
                   label="Role (B)"
                   value={newRel.target_role}
@@ -983,7 +1014,7 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
                />
             </div>
 
-            <div className="col-span-3">
+            <div className="min-w-0">
                <StyledSelect
                   value={newRel.target_device_id}
                   onChange={e => setNewRel({...newRel, target_device_id: e.target.value})}
@@ -994,31 +1025,36 @@ export const RelationshipsTab = ({ deviceId }: { deviceId: number }) => {
             </div>
          </div>
 
-         <div className="flex items-center justify-between pt-2 border-t border-white/5">
-            <div className="flex items-center space-x-2">
+         <div className="flex flex-col gap-3 pt-3 border-t border-white/5">
+            <div className="flex flex-wrap items-center gap-2">
                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Vector Classification:</span>
-               <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">{newRel.relationship_type}</span>
+               <span className="text-[9px] font-bold text-[var(--action-ink)] uppercase tracking-widest bg-[var(--action-primary-muted)] px-2 py-0.5 rounded-lg border border-[var(--border-default)]">{newRel.relationship_type}</span>
             </div>
-            <button 
-              onClick={() => { if(!newRel.target_device_id) return toast.error("Select peer asset"); mutation.mutate(newRel) }} 
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex items-center space-x-2"
-            >
-               <Plus size={14} /> <span>Establish Vector</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+            <button onClick={swapRoles} title="Swap Roles" className="min-h-11 px-3 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-slate-400 hover:text-white transition-all">
+               <ArrowRightLeft size={16} aria-hidden="true" /> Swap roles
             </button>
+            <button 
+              disabled={mutation.isPending}
+              onClick={() => { if(!newRel.target_device_id) return toast.error("Select peer asset"); mutation.mutate(newRel) }} 
+              className="min-h-11 px-4 py-2 bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-sm active:scale-95 transition-all flex items-center space-x-2 disabled:opacity-50 disabled:cursor-wait"
+            >
+               <Plus size={14} /> <span>{mutation.isPending ? 'Establishing...' : 'Establish Vector'}</span>
+            </button>
+            </div>
          </div>
       </div>
-      <RelationsTable deviceId={deviceId} />
+      <RelationsTable deviceId={deviceId} inlineDraft={inlineDraft} />
     </div>
   )
 }
 
-const RelationsTable = ({ deviceId }: { deviceId: number }) => {
+const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
   const { data: relationships } = useQuery({ queryKey: ['device-rel', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/relationships`)).json()) })
   const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editData, setEditData] = useState<any>(null)
+  const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
 
   const currentDevice = useMemo(() => devices?.find((d: any) => d.id === deviceId), [devices, deviceId]);
 
@@ -1032,13 +1068,15 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
     mutationFn: async (data: any) => apiFetch(`/api/v1/devices/relationships/${data.id}`, {
         method: 'PUT', body: JSON.stringify(data)
     }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); setEditingId(null); toast.success('Relationship updated') },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); cancelEdit(); toast.success('Relationship updated') },
     onError: (e: any) => toast.error(e.message || 'Failed to update relationship')
   })
 
+  useInlinePending(updateMutation.isPending || delMutation.isPending, inlineDraft?.onPendingChange)
+
   return (
-    <div className="p-0">
-      <table className="w-full text-[10px]">
+    <div role="region" aria-label="Asset relationships" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
+      <table aria-busy={updateMutation.isPending} className="w-full min-w-[36rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Local Identity</th>
@@ -1059,7 +1097,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
               <tr key={r.id} className="hover:bg-white/5 transition-colors">
                 <td className="px-4 py-3">
                    {editingId === r.id ? (
-                     <select value={isSource ? editData.source_role : editData.target_role} onChange={e => isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                     <select disabled={updateMutation.isPending} aria-label="Local role" value={isSource ? editData.source_role : editData.target_role} onChange={e => isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                        <option>Consumer</option>
                        <option>Provider</option>
                        <option>Hypervisor</option>
@@ -1082,7 +1120,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 </td>
                 <td className="px-4 py-3 text-center">
                   {editingId === r.id ? (
-                    <select value={editData.relationship_type} onChange={e => setEditData({...editData, relationship_type: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                    <select disabled={updateMutation.isPending} aria-label="Relationship type" value={editData.relationship_type} onChange={e => setEditData({...editData, relationship_type: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                       <option>Depends On</option>
                       <option>Hosts</option>
                       <option>Backs Up</option>
@@ -1102,7 +1140,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 </td>
                 <td className="px-4 py-3">
                     {editingId === r.id ? (
-                      <select value={!isSource ? editData.source_role : editData.target_role} onChange={e => !isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
+                      <select disabled={updateMutation.isPending} aria-label="Peer role" value={!isSource ? editData.source_role : editData.target_role} onChange={e => !isSource ? setEditData({...editData, source_role: e.target.value}) : setEditData({...editData, target_role: e.target.value})} className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1 text-[10px] w-full outline-none focus:border-blue-500">
                         <option>Consumer</option>
                         <option>Provider</option>
                         <option>Hypervisor</option>
@@ -1126,13 +1164,13 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
                 <td className="px-4 py-3 text-center">
                   {editingId === r.id ? (
                     <div className="flex items-center justify-center space-x-1">
-                      <button onClick={() => updateMutation.mutate(editData)} className="p-1.5 hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all"><Check size={14}/></button>
-                      <button onClick={() => setEditingId(null)} className="p-1.5 hover:bg-slate-500/20 text-slate-500 rounded-lg transition-all"><X size={14}/></button>
+                      <button aria-label="Save relationship" disabled={updateMutation.isPending} onClick={() => updateMutation.mutate(editData)} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all disabled:opacity-50">{updateMutation.isPending ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Check size={14}/>}</button>
+                      <button aria-label="Cancel relationship edit" disabled={updateMutation.isPending} onClick={cancelEdit} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-slate-500/20 text-slate-500 rounded-lg transition-all disabled:opacity-50"><X size={14}/></button>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center space-x-1">
-                      <button onClick={() => { setEditingId(r.id); setEditData({...r}) }} className="p-1.5 hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all"><Edit2 size={14}/></button>
-                      <button onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Relationship', message: 'Remove this relationship?', onConfirm: () => delMutation.mutate(r.id) })} className="p-1.5 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all"><Trash2 size={14}/></button>
+                      <button aria-label="Edit relationship" title={editingId !== null ? 'Save or cancel the current edit first' : undefined} disabled={editingId !== null || delMutation.isPending} onClick={() => beginEdit({...r})} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition-all disabled:opacity-50"><Edit2 size={14}/></button>
+                      <button aria-label="Remove relationship" disabled={delMutation.isPending || updateMutation.isPending} onClick={() => setConfirmModal({ isOpen: true, title: 'Delete Relationship', message: 'Remove this relationship?', onConfirm: () => delMutation.mutate(r.id) })} className="min-h-11 min-w-11 flex items-center justify-center hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 rounded-lg transition-all disabled:opacity-50"><Trash2 size={14}/></button>
                     </div>
                   )}
                 </td>

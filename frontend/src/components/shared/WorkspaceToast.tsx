@@ -11,7 +11,7 @@ interface WorkspaceToastProps {
   onRevert?: RevertAction
   type?: ToastTone
 }
-type WorkspaceToastOptions = { onRevert?: RevertAction; type?: ToastTone }
+type WorkspaceToastOptions = { onRevert?: RevertAction; type?: ToastTone; id?: string }
 
 const toastTitles = { success: 'Completed', error: 'Action needed', loading: 'In progress', info: 'Notice' }
 const toastIcons = { success: Check, error: AlertTriangle, loading: LoaderCircle, info: Info }
@@ -66,7 +66,9 @@ export const WorkspaceToast = ({ t, message, onRevert, type = 'success' }: Works
           <p className="text-xs font-semibold text-[var(--text-primary)]">{isReverting ? 'Reverting change' : toastTitles[type]}</p>
           <div {...(t.ariaProps || { role: 'status', 'aria-live': 'polite' })} className="mt-1 text-sm leading-relaxed text-[var(--text-secondary)]">{message}</div>
           {revertError && <p role="alert" className="mt-2 text-xs text-[var(--state-danger)]">{revertError}</p>}
-          {onRevert && <button type="button" onClick={revert} onBlur={() => setIsConfirmingRevert(false)} disabled={isReverting}
+          {onRevert && <button type="button" onClick={revert} onBlur={event => {
+            if (!event.currentTarget.closest('[data-workspace-toast-moving]')) setIsConfirmingRevert(false)
+          }} disabled={isReverting}
             className="mt-3 inline-flex min-h-8 items-center gap-2 rounded-md border border-[var(--border-default)] bg-[var(--surface-hover)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--action-primary-muted)] disabled:opacity-60">
             <RotateCcw size={13} aria-hidden="true" />{isReverting ? 'Reverting…' : isConfirmingRevert ? 'Confirm Undo?' : 'Revert'}
           </button>}
@@ -80,29 +82,82 @@ export const WorkspaceToast = ({ t, message, onRevert, type = 'success' }: Works
 }
 
 // One renderer covers existing success/error/blank/promise calls as well as reversible custom notices.
-export function WorkspaceToaster() {
+export function WorkspaceToaster({ portal = true }: { portal?: boolean }) {
+  const shellHost = useRef<HTMLDivElement>(null)
+  // Keep this portal target stable while its DOM parent follows the active surface.
+  const [container] = useState(() => {
+    const node = document.createElement('div')
+    node.style.display = 'contents'
+    return node
+  })
+  const [host, setHost] = useState('portal')
   const { toasts, handlers } = useToaster({ duration: 4000, loading: { duration: Infinity }, error: { duration: 6000 } })
   // Keep subscriptions at the persistent stack. A toast unmount must never
   // unsubscribe the renderer (react-hot-toast groups subscriptions by toaster ID).
   const { pausedAt } = useToasterStore()
   const hovered = useRef(false)
   const focused = useRef(false)
+  const covered = useRef(false)
   const paused = useRef(false)
+  const hasVisible = toasts.some((t) => t.visible)
   const syncPause = () => {
-    const next = hovered.current || focused.current
+    const next = hasVisible && (hovered.current || focused.current || covered.current)
     if (next === paused.current) return
     paused.current = next
     if (next) handlers.startPause()
     else handlers.endPause()
   }
+  const syncPauseRef = useRef(syncPause)
+  syncPauseRef.current = syncPause
   useEffect(() => {
-    if (toasts.some((t) => t.visible)) return
-    hovered.current = false
-    focused.current = false
-    if (paused.current) { paused.current = false; handlers.endPause() }
-  }, [toasts, handlers.endPause])
-  return createPortal(
-    <ToastPauseContext.Provider value={pausedAt}><section aria-label="Notifications" data-workspace-toaster className="workspace-toaster"
+    if (portal) return
+    const phone = window.matchMedia('(max-width: 767px)')
+    const modalSelector = '[aria-modal="true"]'
+    const updateCoverage = () => {
+      const modal = Array.from(document.querySelectorAll<HTMLElement>(modalSelector))
+        .filter(node => node.getClientRects().length > 0)
+        .sort((a, b) => (Number(getComputedStyle(a).zIndex) || 0) - (Number(getComputedStyle(b).zIndex) || 0)).at(-1)
+      const modalHost = modal?.querySelector<HTMLElement>('[data-workspace-modal-notification-slot]')
+      const target = phone.matches ? modalHost || (modal ? document.body : shellHost.current) : document.body
+      if (target && container.parentNode !== target) {
+        const active = document.activeElement
+        const restore = active instanceof HTMLElement && container.contains(active) ? active : null
+        container.setAttribute('data-workspace-toast-moving', '')
+        try {
+          target.append(container)
+          restore?.focus({ preventScroll: true })
+        } finally { container.removeAttribute('data-workspace-toast-moving') }
+      }
+      setHost(phone.matches ? modalHost ? 'modal' : modal ? 'portal' : 'shell' : 'portal')
+      covered.current = phone.matches && !!modal
+      syncPauseRef.current()
+    }
+    const containsModal = (node: Node) => node instanceof Element && (node.matches(modalSelector) || !!node.querySelector(modalSelector))
+    // Watch modal lifetime, not every style mutation from gauges, charts or grid rows.
+    const observer = new MutationObserver(records => {
+      if (records.some(record => record.type === 'attributes'
+        ? containsModal(record.target) || (record.attributeName === 'aria-modal')
+        : [...record.addedNodes, ...record.removedNodes].some(containsModal))) updateCoverage()
+    })
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-modal', 'hidden'] })
+    phone.addEventListener('change', updateCoverage)
+    updateCoverage()
+    return () => {
+      observer.disconnect()
+      phone.removeEventListener('change', updateCoverage)
+      covered.current = false
+      hovered.current = false
+      focused.current = false
+      syncPauseRef.current()
+      container.remove()
+    }
+  }, [portal, container])
+  useEffect(() => {
+    if (!hasVisible) { hovered.current = false; focused.current = false }
+    syncPauseRef.current()
+  }, [hasVisible])
+  const content = (
+    <ToastPauseContext.Provider value={pausedAt}><section aria-label="Notifications" data-workspace-toaster data-workspace-toaster-host={host} className="workspace-toaster" style={{ display: hasVisible ? undefined : 'none' }}
       onMouseEnter={() => { hovered.current = true; syncPause() }} onMouseLeave={() => { hovered.current = false; syncPause() }}
       onFocusCapture={() => { focused.current = true; syncPause() }} onBlurCapture={(event) => {
         if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return
@@ -110,13 +165,17 @@ export function WorkspaceToaster() {
       }}>
       {toasts.map((t) => <React.Fragment key={t.id}>{t.type === 'custom' ? resolveValue(t.message, t) :
         <WorkspaceToast t={t} type={t.type === 'blank' ? 'info' : t.type} message={resolveValue(t.message, t)} />}</React.Fragment>)}
-    </section></ToastPauseContext.Provider>, document.body)
+    </section></ToastPauseContext.Provider>)
+  return portal ? createPortal(content, document.body) : <>
+    <div ref={shellHost} data-workspace-shell-notification-slot style={{ display: 'contents' }} />
+    {createPortal(content, container)}
+  </>
 }
 
 export const showWorkspaceToast = (message: string, options?: WorkspaceToastOptions) => (
   toast.custom((t) => <WorkspaceToast t={t} message={message} onRevert={options?.onRevert} type={options?.type} />, {
     duration: options?.type === 'loading' ? Infinity : options?.onRevert ? 10000 : options?.type === 'error' ? 6000 : 4000,
-    position: 'top-right', id: message,
+    position: 'top-right', id: options?.id ?? message,
   })
 )
 export const dismissWorkspaceToasts = () => toast.dismiss()

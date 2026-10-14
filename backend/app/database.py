@@ -25,7 +25,7 @@ def sqlite_path_from_url(db_url: str) -> str | None:
     return None
 
 def build_engine(db_url: str):
-    engine_args = {"pool_pre_ping": True}
+    engine_args = {"pool_pre_ping": True, "hide_parameters": True}
     if is_sqlite_url(db_url):
         # PV1 qualification exercises 50 active clients against the isolated
         # SQLite profile.  The previous default queue (five connections)

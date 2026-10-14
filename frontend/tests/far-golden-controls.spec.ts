@@ -2,15 +2,17 @@ import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { clickResilientButton, resetBrowserState, waitForAppIdle } from './helpers/sysgrid'
 
+const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
+
 test.describe('FAR Monitoring-golden controls', () => {
-  test('keeps FAR domain depth while exposing the golden command and interaction surfaces', async ({ page, sysApi }) => {
+  test('keeps FAR domain depth while exposing the golden command and interaction surfaces', async ({ page, sysApi }, testInfo) => {
     await resetBrowserState(page)
 
     const stamp = Date.now()
     const title = `PA16-FAR-GOLDEN-A-${stamp}`
     const secondTitle = `PA16-FAR-GOLDEN-B-${stamp}`
     for (const [index, modeTitle] of [title, secondTitle].entries()) {
-      const create = await sysApi.post('/far/modes', {
+      const create = await sysApi.post(`${apiBase}/far/modes`, {
         data: {
           system_name: 'PA16-GOLDEN-SYS',
           title: modeTitle,
@@ -32,12 +34,12 @@ test.describe('FAR Monitoring-golden controls', () => {
     await expect(shell.locator('[data-golden-grid-surface="true"]')).toBeVisible()
     await expect(shell.getByText(title)).toBeVisible()
 
-    for (const label of ['Views', 'Display', 'Filters', 'Insights', 'Activity', 'Compare', 'Bulk Actions', 'Import', 'Add Failure Mode']) {
+    for (const label of ['Views', 'Display', 'Filters', 'FAR domain tools', 'Activity', 'Compare', 'Bulk Actions', 'Import', 'Add Failure Mode']) {
       await expect(shell.getByRole('button', { name: new RegExp(label, 'i') }).first()).toBeVisible()
     }
     await expect(shell.getByTitle('Export CSV')).toBeVisible()
-    await expect(shell.getByTitle('Copy to Clipboard')).toBeVisible()
-    await expect(shell.getByTitle('Matrix Registry Enums')).toBeVisible()
+    await expect(shell.getByRole('button', { name: 'Copy to clipboard', exact: true })).toBeVisible()
+    await expect(shell.getByRole('button', { name: 'Registry configuration', exact: true })).toBeVisible()
 
     await shell.getByRole('button', { name: /^Views$/i }).click()
     await expect(page.getByText('Saved views', { exact: true })).toBeVisible()
@@ -49,13 +51,20 @@ test.describe('FAR Monitoring-golden controls', () => {
     await expect(page.getByText('Columns', { exact: true })).toBeVisible()
     await shell.getByRole('button', { name: /^Display$/i }).click()
 
-    await shell.getByRole('button', { name: /^Filters$/i }).click()
-    await expect(shell.getByRole('button', { name: /^ALL$/i })).toBeVisible()
+    await shell.getByRole('button', { name: 'Hide filters', exact: true }).click()
+    await expect(shell.getByRole('button', { name: 'All systems', exact: true })).not.toBeVisible()
+    await shell.getByRole('button', { name: 'Show filters', exact: true }).click()
+    await expect(shell.getByRole('button', { name: 'All systems', exact: true })).toBeVisible()
 
-    await shell.getByRole('button', { name: /^Insights$/i }).click()
+    await shell.getByRole('button', { name: 'FAR domain tools', exact: true }).click()
+    await page.getByRole('button', { name: 'Reliability insights', exact: true }).click()
+    await page.getByRole('button', { name: 'Close FAR tools', exact: true }).click()
     await expect(shell.getByText('Reliability Index', { exact: true })).toBeVisible()
 
-    await shell.getByRole('button', { name: /^Activity$/i }).click()
+    await shell.getByRole('button', { name: 'FAR domain tools', exact: true }).click()
+    await page.getByRole('button', { name: 'FAR activity summary', exact: true }).click()
+    await page.screenshot({ path: testInfo.outputPath('far-shared-tools.png'), animations: 'disabled' })
+    await page.getByRole('button', { name: 'Close FAR tools', exact: true }).click()
     await expect(shell.getByTestId('far-activity-panel')).toBeVisible()
     await expect(shell.getByText('FAR Activity', { exact: true })).toBeVisible()
 
@@ -63,10 +72,13 @@ test.describe('FAR Monitoring-golden controls', () => {
     const secondRow = shell.locator('.ag-row').filter({ hasText: secondTitle }).first()
     await expect(row).toBeVisible()
     await expect(secondRow).toBeVisible()
-    await row.locator('.ag-selection-checkbox').click()
-    await secondRow.locator('.ag-selection-checkbox').click()
+    for (const center of [row, secondRow]) {
+      const index = await center.getAttribute('row-index')
+      expect(index).not.toBeNull()
+      await shell.locator(`.ag-pinned-left-cols-container .ag-row[row-index="${index}"]`).getByRole('checkbox').check()
+    }
 
-    const compare = shell.getByRole('button', { name: /^Compare$/i })
+    const compare = shell.getByRole('button', { name: 'Compare 2 to 5 selected failure modes', exact: true })
     const bulk = shell.getByRole('button', { name: /Bulk Actions/i })
     await expect(compare).toBeEnabled()
     await compare.click()
@@ -82,13 +94,15 @@ test.describe('FAR Monitoring-golden controls', () => {
     await expect(page.getByRole('button', { name: /Copy selected/i })).toBeVisible()
     await expect(page.getByRole('button', { name: /Export selected/i })).toBeVisible()
     await expect(page.getByRole('button', { name: /Retire selected/i })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('far-shared-bulk.png'), animations: 'disabled' })
     await bulk.click()
 
     await row.click({ button: 'right' })
-    await expect(page.getByText('Row actions', { exact: true })).toBeVisible()
-    await expect(page.getByRole('button', { name: /Open details/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /Edit/i }).first()).toBeVisible()
-    await expect(page.getByRole('button', { name: /Copy row/i })).toBeVisible()
-    await expect(page.getByRole('button', { name: /Retire failure vector/i })).toBeVisible()
+    const rowActions = page.locator('.row-action-menu-container')
+    await expect(rowActions.getByText('Row actions', { exact: true })).toBeVisible()
+    await expect(rowActions.getByRole('button', { name: 'Open details', exact: true })).toBeVisible()
+    await expect(rowActions.getByRole('button', { name: 'Edit', exact: true })).toBeVisible()
+    await expect(rowActions.getByRole('button', { name: 'Copy row', exact: true })).toBeVisible()
+    await expect(rowActions.getByRole('button', { name: 'Retire failure vector', exact: true })).toBeVisible()
   })
 })

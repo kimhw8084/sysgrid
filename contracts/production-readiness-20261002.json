@@ -1,0 +1,2916 @@
+{
+  "schema_version": 1,
+  "review_id": "sysgrid-production-plan-2026-10-01",
+  "approval": {
+    "revision": 90,
+    "all_items_approved": true,
+    "snapshot_sha256": "e863fa02557b945cba77a7bfa83aa814120b75c98926c10ef9ac3e30fcac5a8c",
+    "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
+  },
+  "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
+  "as_of_utc": "2026-10-14",
+  "production_accepted": false,
+  "verified_checkpoint": {
+    "candidate": "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
+    "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+    "run": "https://github.com/kimhw8084/sysgrid/actions/runs/38474582472",
+    "tested_merge": "6bbcf9d5f94dbfb37e4a7dda49f406c98207440d",
+    "completed_at": "2026-10-13T22:25:00Z",
+    "conclusion": "success",
+    "counts": {
+      "startup_and_recovery": 109,
+      "subtests": 23,
+      "backend": 1882,
+      "frontend": 924,
+      "frontend_files": 163,
+      "normal_browser": 314,
+      "normal_browser_preexisting_skips": 2,
+      "desktop_browser": 35,
+      "root_preview_browser": 6
+    },
+    "main": "d3860311f11bcb176e108391a35c348280a8de61",
+    "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+    "later_source": "513577a34fd89eaa59e1c0ec07c302da9da9fb79 adds reviewed editor and modal/popup recovery after the latest green checkpoint27; checkpoint28's hosted failure remains in CI history and is not waived. Final local frontend 930/163, all seven checks, normal 333/two exact existing skips, desktop 35 and root six pass with zero retries. Eight desktop plus two phone foundation cases retain 148 populated captures, 20 complete detail frames and 2735 contrast samples minimum 4.7588:1. Normal has 8732 positive contrast samples minimum 4.574:1 plus seven correctly rejected unreadable controls. Thirty-four final-source and eighteen earlier renderer-state images reviewed; 1008 positive/negative/intermediate captures retained. Eager-download/stale-anchor controls, native Undo blur, introduced Settings clipping and invalid probes are attributed separately. Final cold observations reduce decoded payloads by 391935 bytes for Assets and 390185 for Monitoring in both themes; other routes add 1304-1334 bytes. One sample per route/theme proves bytes, not p95 or field latency. Fonts/graphics match main and no UI source is deleted. Short-screen content discovery, legacy no-slot surfaces, full state/before-after atlas, supported engines, AT/zoom, scaling, company evidence, fresh hosted qualification and governed integration remain open.",
+    "job_duration_seconds": 1543,
+    "workflow_duration_seconds": 1553,
+    "stage_durations_seconds": {
+      "qualification (desktop)": 462,
+      "qualification (normal-v1)": 1543,
+      "qualification (root-preview)": 135,
+      "qualification (checks)": 698,
+      "required": 4
+    },
+    "backend_duration_seconds": 395.6,
+    "identity_sha256": "46929baa4c93d1a06cba090a45e2417b513f7ed49be7ad93a6829aa09e8e3afb",
+    "stage_identities": {
+      "checks": {
+        "sha256": "12178930eee8468c14fb56ac269bd6ccf4c5a38f35c917705463101c461955f6",
+        "node": "v22.23.3",
+        "python": "Python 3.14.8",
+        "artifact": "application-ci-checks-evidence-02785ddd4b034e6c5de900a0adbd76dc82dd38a2"
+      },
+      "desktop": {
+        "sha256": "a7966fd47c02d5ad5a119e38dfde1850216a450bda7ba89324037b1e407a5219",
+        "node": "v22.23.3",
+        "python": "Python 3.14.8",
+        "artifact": "application-ci-desktop-evidence-02785ddd4b034e6c5de900a0adbd76dc82dd38a2"
+      },
+      "normal-v1": {
+        "sha256": "29f6ec1beace3f42768bed6734bd093519a863809f1cd75a9d3b09b7ae6c824c",
+        "node": "v22.23.3",
+        "python": "Python 3.14.8",
+        "artifact": "application-ci-normal-v1-evidence-02785ddd4b034e6c5de900a0adbd76dc82dd38a2"
+      },
+      "root-preview": {
+        "sha256": "3814b64bfc46059bb00787c5d25573d8343c595a52e7630be13a9548fbd57a6d",
+        "node": "v22.23.3",
+        "python": "Python 3.14.8",
+        "artifact": "application-ci-root-preview-evidence-02785ddd4b034e6c5de900a0adbd76dc82dd38a2"
+      }
+    },
+    "attribution": "Checkpoint27 completes every canonical stage and required on the exact PR merge in 25m53s workflow time, attempt one. All four receipts bind exact candidate/base/merge and actual Node v22.23.3/Python 3.14.8. Normal browser 314 pass/two existing skips, desktop 35, root-preview six, backend 1882 and frontend 924 pass. All 747 extracted artifact files are hashed and durably retained; original ZIP digests remain provider-declared. Earlier cancelled/failure results are preserved. This proves checkpoint27 hosted qualification, not main integration, later-source hosted proof or full release acceptance."
+  },
+  "ci_history": [
+    {
+      "candidate": "a59b4b34a33c799e8b92b9b876d432cf35d8b74f",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37108597556",
+      "tested_merge": "481040a644946a0595a26facf90e638b75467127",
+      "completed_at": "2026-10-03T08:35:53Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1695,
+        "frontend": 912,
+        "frontend_files": 162,
+        "normal_browser": 283,
+        "normal_browser_failures": 9,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": "not reached",
+        "root_preview_browser": "not reached"
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "5fef9f02000e786b083463fe0370b486aa194b8d includes reviewed stale permission-map protection, saved-view readability and a four-line shared heading repair for all nine checkpoint23 failures. Local backend: 1710/62; frontend: 912/162. Separate source-bound browser runs pass 24 permission cases, nine saved-view cases and 13 heading/clipboard cases; counts are not summed. Fifteen backend cases and four normal browser cases enter canonical discovery. All eight permission conflict/recovery and sixteen saved-view rename/delete final images reviewed. Permission contrast minimum 5.982:1 across 655 samples; saved-view minimum 6.117:1 across 368 samples with 72 measured controls at least 44x44. Stacked independent phone notifications remain open. The real hosted snapshots prove all nine accessible heading names included the share control; original browser assertions remain unchanged. An attempted jsdom regression did not reproduce browser naming and was removed. Fresh assembled CI is required.",
+      "job_duration_seconds": 1742,
+      "backend_duration_seconds": 238.54,
+      "identity_sha256": "9c5f52a1813f057c8a02eaa6a82845aed86f29e1534e7cc727804743a0091f3c",
+      "attribution": "Product accessibility regression introduced by 92827330: named share button contributes to its enclosing h2 name. All nine failed exact-heading assertions have matching polluted level-2 headings in captured accessibility snapshots. No timeout/retry/test-oracle changes authorized by this result."
+    },
+    {
+      "candidate": "fca3758399492c3a5f00b86e149401a96936de56",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37105723044",
+      "tested_merge": "babb92462ce76781989d9a3b8a734b460de82fee",
+      "completed_at": "2026-10-03T07:57:29Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1680,
+        "frontend": 904,
+        "frontend_files": 161,
+        "normal_browser": 280,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "a3958e408e8007814d6a578978519473dfb81976 includes three later reviewed fixes: nonfinite stored grants deny without crashing valid access and allow authorized repair; direct-link and saved-view clipboard controls report actual results, block overlapping copies, recover on retry and use semantic 44px controls. Local backend: 1695/62; frontend: 912/162. Final source-bound browser suites pass 12 direct-link/network cases and nine saved-view cases, each with zero failures/retries/skips; counts are not summed. Fifteen backend, eight frontend and twelve browser cases enter canonical discovery. All eight direct-link and sixteen saved-view final images reviewed. Scoped contrast minima are 7.567:1 (16 and 56 samples). Direct-link retry replaces stale error with a concise 79.75px success notice. Fresh assembled CI remains required; the 42m22s predecessor run leaves 2m38s in the unchanged 45-minute budget.",
+      "job_duration_seconds": 2542,
+      "backend_duration_seconds": 321.74,
+      "identity_sha256": "d9c948ffdab1028168d6f6a2bbbd290bd27f6a16c17e746204b42dcf68560104"
+    },
+    {
+      "candidate": "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37103158417",
+      "tested_merge": "91b7bdc73b6b444e667042e544b0ae9ef22d8f9e",
+      "completed_at": "2026-10-03T07:06:39Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1581,
+        "frontend": 871,
+        "frontend_files": 160,
+        "normal_browser": 272,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "9944dce193f28a4497d798d060c623f83d86ffdf adds immutable recorded role grants and explicit legacy uncertainty, atomic permission-input validation, and truthful current global-grant controls. Latest local backend: 1680 tests/62 files; frontend: 904 tests/161 files. History source passed 50 related browser cases, input-validation source passed 42, and final grant-display source passed 40, each with zero failures/retries/skips; these source-bound counts are not summed. Ninety-nine backend, 33 frontend and eight browser cases join canonical discovery. Role-history scope has 608 text samples; live-grant scope has 144, both minimum 6.117:1. Light hover text previously failed at 4.132:1; phone help now stays visible during horizontal scrolling. Fresh assembled CI remains required.",
+      "job_duration_seconds": 2300,
+      "backend_duration_seconds": 311.9,
+      "identity_sha256": "48a1413f326c745d3f42e0ba2578c58de20cd62830ec84a965d7a09be3d5e7bc"
+    },
+    {
+      "candidate": "be55e543c35267decc07c234c968d32339d33443",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37100014977",
+      "tested_merge": "6caad7302566c93a9e6d1d34beeefe5121a1d451",
+      "completed_at": "2026-10-03T05:56:45Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1581,
+        "frontend": 871,
+        "frontend_files": 160,
+        "normal_browser_passed": 253,
+        "normal_browser_failed": 3,
+        "normal_browser_preexisting_skips": 2
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "failure": "Three Settings bulk-delete tests sampled an exiting menu as visible, skipped reopening and timed out after controls unmounted. All three downloaded traces show a closed trigger with retained panel, one trigger click and four successful disabled-control assertions. Desktop and root-preview stages were not reached.",
+      "recovery": "5af5a62ec5453cf08d7bb203fc9499ef8475e649 enables normal motion and waits for closed trigger/completed dismissal before explicitly reopening and verifying expanded state. All original safety assertions remain. Focused eight and complete 22-case local bulk suites pass; no timeout, retry, skip or Product change.",
+      "later_source": "5af5a62ec5453cf08d7bb203fc9499ef8475e649 includes exact historical text/null/missing distinctions and safe partial legacy comparison, Network detail wrapping/readability and removal of unused Knowledge reads, plus the bounded CI-test repair. Final history16, Network23 and bulk22 browser suites pass at their recorded sources; counts are not summed. Latest frontend871/160 and unchanged backend1581/62. History2764 scoped contrast samples minimum5.984:1; Network968 minimum6.354:1 withzero overflow andunused requests. Sixteen new browser cases join canonical discovery. Fresh assembled hosted CI is required; original failed run remains failed.",
+      "job_duration_seconds": 1598,
+      "backend_duration_seconds": 226.29,
+      "identity_sha256": "9fb29596f7feab942aa3780aa182541ca30f8e601d41e4352c66e5a01cbdbfad"
+    },
+    {
+      "candidate": "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37097450946",
+      "tested_merge": "85c552ca44944502220227d1fbe17335257401ea",
+      "completed_at": "2026-10-03T05:21:17Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1508,
+        "frontend": 871,
+        "frontend_files": 160,
+        "normal_browser": 256,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "3bae47ba24814c3ee4904d2b34dae3331a833e9e adds legacy-compatible historical field validation, shared supported-SQLite restore serialization and fresh Settings authority, reserved-root omission protection, external-ID actor preservation and actual revision counters. History now has expandable permission details plus visible username/status changes. Latest local backend: 1581 tests/62 files; frontend: 871 tests/160 files. The preceding density source passed 32 related Settings browser cases; current field-display source passes all eight history/restore cases plus four focused visual replays. Seventy-three backend cases join canonical discovery; existing browser cases gain stronger assertions. Current final visual run: 1188 text-contrast samples, minimum 5.984:1. Fresh assembled hosted CI is required.",
+      "job_duration_seconds": 2306,
+      "backend_duration_seconds": 278.84
+    },
+    {
+      "candidate": "73f268dd5ff08f8b1e812767d31866540b0d22f6",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37094554336",
+      "tested_merge": "51b98a702b1d6dbd3c5bdf475eeb6951e55c6a43",
+      "completed_at": "2026-10-03T04:28:20Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1466,
+        "frontend": 871,
+        "frontend_files": 160,
+        "normal_browser": 238,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "4eff074977067c0c0849a5f9e0d54841c2c3aa63 adds strict historical admin and snapshot identity validation, truthful restore regression, bulk confirmation/save/refresh guards and readable accessible permission history with explicit whole-snapshot restore confirmation and recovery. Latest local backend:1508 tests/62 files; frontend:871 tests/160 files. Final54 Settings browser cases pass with no failures, retries or skips; preceding61-case Settings/shell qualification remains evidence for its exact source. Adds42 backend and18 canonical browser cases beyond hosted checkpoint. Final history contrast:622 scoped samples, minimum5.984:1; focused visual492 samples same minimum. Fresh assembled hosted CI is required.",
+      "job_duration_seconds": 2240,
+      "backend_duration_seconds": 271.26
+    },
+    {
+      "candidate": "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37089237399",
+      "tested_merge": "6763aa77ca88840b659d8b2c0744762e89c40cf3",
+      "completed_at": "2026-10-03T02:50:54Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1344,
+        "frontend": 868,
+        "normal_browser": 224,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "b26a29266f364e8a75e36b45edeac21b543a23ab adds supported SQLite sync serialization and in-transaction authority recheck, strict role/team reference inputs, above-anchored Settings menus with keyboard focus return, and shared flyout selection/readability repairs. Latest local backend: 1466 tests/62 files; frontend: 871 tests/160 files. Browser: 90 pass in a 92-case normal run, with two new Monitoring selector failures corrected and both passing in the focused replay; all 92 distinct cases are covered across those runs, not a single 92-pass report. Three additional root-preview consumer workflows pass. Compared with this hosted checkpoint, 122 backend cases, three frontend cases and 14 normal-browser cases join canonical discovery. Settings bulk text: 88 samples, minimum 4.574:1; Monitoring: 32 samples, minimum 5.984:1. The original light-theme delete contrast was 1.002:1. Failed/intermediate evidence and FAR/Services/External harness corrections are retained. Fresh assembled hosted CI is required.",
+      "job_duration_seconds": 2050,
+      "backend_duration_seconds": 236.53
+    },
+    {
+      "candidate": "4edb26251d54f0e5479490d350c55aca765af16a",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37083282438",
+      "tested_merge": "12e49ae4f7fae029a840e109d92205d8c7f2c9ff",
+      "completed_at": "2026-10-03T01:11:48Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1280,
+        "frontend": 868,
+        "normal_browser": 216,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "414529d1710c09fa57bca7c099f0ae55d7148053 adds omission-safe operator upsert, strict sync preview booleans, truthful team-authority preview/apply, an optional backend stale-review fingerprint and a functional guarded JSON-record review/apply UI. Latest local: 1344 canonical backend tests across 62 files, 868 frontend tests across 159 files, 48 Settings browser cases at 103e8f8 and 29 focused follow-up cases on current source; overlapping suites are not summed. Sixty-four backend cases and eight browser cases beyond 4edb2625 join canonical discovery. Sync preview contrast minimum 6.403:1. Stronger mobile workspace checks exposed 103e8f8 clipping as incomplete: local tooltip positioning replaces it, with final 343/343 mobile and 1121/1121 desktop client/scroll widths. The prior suspected sidebar selection defect was ordinary hover; new route/aria-current checks falsify that hypothesis. Failure evidence remains preserved. Fresh assembled hosted CI is required.",
+      "job_duration_seconds": 1669,
+      "backend_duration_seconds": 207.71
+    },
+    {
+      "candidate": "a432dac189865b50c99c3e49b1d8a4bac36bd479",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37079629919",
+      "tested_merge": "3d88c9c57765b993a5152f43c500b27f4120bd1d",
+      "completed_at": "2026-10-03T00:25:51Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1240,
+        "frontend": 868,
+        "normal_browser": 200,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1975,
+      "backend_duration_seconds": 227.47
+    },
+    {
+      "candidate": "f4d6e8a679f99a6a49eeea5585311c87d18fd9b1",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37075150782",
+      "tested_merge": "4f0ab2fd80b7c10b3061a5e81c6ffbbde9a874ff",
+      "completed_at": "2026-10-02T23:29:44Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1147,
+        "frontend": 846,
+        "normal_browser": 188,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1969,
+      "backend_duration_seconds": 216.73
+    },
+    {
+      "candidate": "f014798e0f3826fa44f9a24b11391aacb7312b22",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37071367594",
+      "tested_merge": "afb7486d662f966833ff2b88fa24540cb140a2ac",
+      "completed_at": "2026-10-02T22:44:57Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 922,
+        "frontend": 839,
+        "normal_browser": 184,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1851,
+      "backend_duration_seconds": 169.36
+    },
+    {
+      "candidate": "ff9e065ee8be5e1116c961bee21daf32c14ba700",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37067042539",
+      "tested_merge": "746009dd790bc7ff7ac1970419e61efb97bf10a6",
+      "completed_at": "2026-10-02T21:51:17Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 763,
+        "frontend": 839,
+        "normal_browser": 182,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1365,
+      "backend_duration_seconds": 109.98
+    },
+    {
+      "candidate": "e488ff50485d8d1b57fa6cb1b829312138f2b3bf",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37062504171",
+      "tested_merge": "e6722e7bb8b1cb49d2d45a95a1f261c1e04008bd",
+      "completed_at": "2026-10-02T21:14:37Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 724,
+        "frontend": 839,
+        "normal_browser": 178,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1809,
+      "backend_duration_seconds": 144.42
+    },
+    {
+      "candidate": "2073f7ae1a865797d49232c2ac2d23f457fbd83e",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37058723114",
+      "tested_merge": "1673b6b17e914eb996d2ca92dc69ff176a930e26",
+      "completed_at": "2026-10-02T20:38:33Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 580,
+        "frontend": 839,
+        "normal_browser": 178,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1764,
+      "backend_duration_seconds": 122.48
+    },
+    {
+      "candidate": "7733c705a9becc9e338119c11c4a1c3369e49215",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37053710667",
+      "tested_merge": "6f5e71ea0a5d7d8bd448790d7484bfb58399427c",
+      "completed_at": "2026-10-02T19:51:46Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 498,
+        "frontend": 836,
+        "normal_browser": 176,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "job_duration_seconds": 1745,
+      "backend_duration_seconds": 111.11
+    },
+    {
+      "candidate": "1362951eaa0ecb5100e845741845257afeed8b2a",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37040933835",
+      "tested_merge": "07b9a86210bc4d8b2819c758de19033d8fdc31f8",
+      "completed_at": "2026-10-02T18:12:25Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 464,
+        "frontend": 822,
+        "normal_browser": 158,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
+    },
+    {
+      "candidate": "fa0f5facf169cefb2e950357935509ef5258b1c3",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37047353435",
+      "tested_merge": "d28f75e30c2442ae3797e2d07ecea7a9aeaf4ff1",
+      "completed_at": "2026-10-02T19:00:54Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 489,
+        "frontend": 830,
+        "normal_browser_passed": 163,
+        "normal_browser_failed": 1,
+        "normal_browser_preexisting_skips": 2
+      },
+      "failure": "Assets end-to-end import selected tbody tr input after the multiline editor became a labeled textarea. Hosted DOM and screenshot show the correct imported value. The same selector failed locally; desktop/root profiles did not run.",
+      "recovery": "d9a5a868 selects the exact Name, row 1 textbox within the import dialog, preserving value assertion, full workflow, timeout and retries. All 61 local import/Assets/Audit/Monitoring/Network/overlay/Rack/Services cases pass. The later assembled hosted run on 7733c705 passes all three browser profiles."
+    },
+    {
+      "candidate": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/32",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36960327787",
+      "tested_merge": "8db45e39c78df92c3e2947509d3d5d948df16cd0",
+      "completed_at": "2026-10-02T04:10:08Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 71,
+        "subtests": 23,
+        "backend": 188,
+        "frontend": 773,
+        "normal_browser": 91,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
+    },
+    {
+      "candidate": "0f0ec2fa2d0fe5dbf31a26f309fad093304cab9f",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36964933511",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 71,
+        "subtests": 23,
+        "backend": 206,
+        "frontend": 786,
+        "normal_browser_passed": 98,
+        "normal_browser_failed": 1,
+        "normal_browser_preexisting_skips": 2
+      },
+      "failure": "Assets multi-selection disappeared before the overlapping-purge scenario. Later desktop/root browser profiles did not run.",
+      "recovery": "c4fe60fc reproduces and repairs stale React selection overwriting a newer grid selection. Local proof and the later successful assembled run on 597c2dd9 cover this repair."
+    },
+    {
+      "candidate": "7c91ef720e845212915302f18e96755fabfa222d",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/36968683132",
+      "conclusion": "failure",
+      "counts": {
+        "backend": 225,
+        "frontend": 789,
+        "normal_browser": 106,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser_passed": 34,
+        "desktop_browser_failed": 1
+      },
+      "failure": "Pure Clarity 1920 visual journey reached the 60-second deadline at its final font assertion after visual assertions. Root profile did not run.",
+      "recovery": "0c9cabcf serves a freshly built, hashed production frontend for browser qualification. Existing assertions, timeouts and zero retries are preserved; 597c2dd9 subsequently passed all three hosted browser profiles."
+    },
+    {
+      "candidate": "0c9cabcf3ea150e4c86166cc31ed92ef7935738a",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37006716089",
+      "tested_merge": "505528a2ea4d89837f7720bf41a266fa51a269d8",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery_passed": 75,
+        "startup_and_recovery_failed": 1,
+        "subtests": 23
+      },
+      "failure": "Linux ps truncated the owned runtime command in the newly included process-identity check; later gates did not run.",
+      "recovery": "597c2dd9 reads full ps arguments and includes observed command text in failures while preserving the exact process assertion. The subsequent hosted run passed 76 startup/recovery checks and every later gate."
+    },
+    {
+      "candidate": "d3640e004f3174d0ee0a1bb060d1782c254a1769",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37013407447",
+      "tested_merge": "794b9b96737113ab408882a1a2a8f50375bb2673",
+      "completed_at": "2026-10-02T14:02:33Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 318,
+        "frontend": 791,
+        "normal_browser": 114,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser_passed": 5,
+        "root_preview_browser_failed": 1
+      },
+      "failure": "The Pure Clarity tenant-switch test read session storage during the intentional page reload and lost its execution context. The old document had briefly displayed the new tenant label.",
+      "recovery": "2a56682a observes DOMContentLoaded before the switch click, waits for the replacement document and additionally checks its timeOrigin increased. All existing scope/draft/write assertions and timeouts/retries remain. Six local root-profile journeys and the subsequent full hosted run on 978b14d5 pass."
+    },
+    {
+      "candidate": "597c2dd94602e5635e2e705d8bdab74c4ea6efad",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37007525305",
+      "tested_merge": "227e8610cf5ae4098f11ca7128c139eadcfc1a4b",
+      "completed_at": "2026-10-02T13:05:00Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 225,
+        "frontend": 791,
+        "normal_browser": 112,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
+    },
+    {
+      "candidate": "978b14d53508175e674878565014fd5b88019b2e",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37018340948",
+      "tested_merge": "d2bb1acd865d1f541da12aa184e3e2bce3ae7943",
+      "completed_at": "2026-10-02T14:48:15Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 363,
+        "frontend": 791,
+        "normal_browser": 117,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
+    },
+    {
+      "candidate": "5bace2101c5f0bcdf8d5dd26307e6303afdcefc6",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37023854421",
+      "tested_merge": "f464ea376264bd3c51904b009a46034a7c420f28",
+      "completed_at": "2026-10-02T15:38:02Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 412,
+        "frontend": 791,
+        "normal_browser": 136,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
+    },
+    {
+      "candidate": "71b214828a13098df69b23bdd4f201e191189dbd",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37031440284",
+      "tested_merge": "31c85a5c6ba43f4c3c5bd3af6386b274b351cb49",
+      "completed_at": "2026-10-02T16:40:49Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 435,
+        "frontend": 820,
+        "normal_browser": 148,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      }
+    },
+    {
+      "candidate": "f97300d9d1facacde6b24458a04c48f18698c914",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37111497546",
+      "tested_merge": "33e0d83e82ac5fd038ec26bf45e561720e868697",
+      "completed_at": "2026-10-03T09:26:41Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1710,
+        "frontend": 912,
+        "frontend_files": 162,
+        "normal_browser": 295,
+        "normal_browser_failures": 1,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": "not reached",
+        "root_preview_browser": "not reached"
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae contains four later reviewed slices: coalesced saved-view success feedback, JSON-safe malformed identity reads, affected-count restore previews with state/source fingerprints, and the trace-attributed permission-refresh test correction. Latest local backend 1750/62 and frontend 913/162 pass. Separate source-bound browser runs pass nine saved-view, eight malformed-read/history, 26 restore/history and 12 permission-pending cases; counts are not summed. Forty backend, one frontend and ten normal browser cases enter canonical discovery. Eight final saved-view, twelve malformed-read, eight final stale/fresh-restore and two held-refresh images reviewed. Scoped contrast minima are 6.117:1 (352 saved-view and 976 identity samples) and 5.984:1 (3970 restore samples). Coalescing removes multiple success banners, but single-banner phone overlap remains. The sole checkpoint24 failure is traced to a Home click before refresh completed; both-theme held-refresh proof verifies the existing departure guard and waits for actual UI readiness without timeout/retry or Product changes. Fresh assembled hosted CI remains required.",
+      "job_duration_seconds": 1668,
+      "backend_duration_seconds": 233.98,
+      "identity_sha256": "c35a412e0d1e967e8f2d6fea278f3c26a6656c8d124ef4acee6756aad1ba9278",
+      "attribution": "The final Home click completed before the post-save revision refresh. Product intentionally retains the departure guard until awaited refreshes complete. The test synchronized only to the PATCH response, so it raced this existing guard. Reviewed de83c8ce0552c45a1a6fbed749c02f0dfaa9efae supplies both-theme deterministic held-refresh proof, preserving the original final Home oracle and all timeouts/retries. The original hosted failure remains failed."
+    },
+    {
+      "candidate": "dcbe8b6e2423991cbc92273788d1762bb110edbd",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/37113695016",
+      "tested_merge": "b1f2a30aa321fc1b6706ede5df184019926d00a7",
+      "completed_at": "2026-10-03T10:23:12Z",
+      "conclusion": "cancelled",
+      "counts": {
+        "startup_and_recovery": 76,
+        "subtests": 23,
+        "backend": 1750,
+        "frontend": 913,
+        "frontend_files": 162,
+        "normal_browser": 306,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 4,
+        "root_preview_browser_incomplete": 2
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74 carries reviewed diagnostics, exact team references, confirmation reflow, stronger visual-foundation proof and bounded CI stages after checkpoint25. Latest local backend 1847/62 and frontend 924/163 pass. Separate source-bound browser runs pass four diagnostics, 26 team/history, 52 confirmation/history and ten visual-foundation cases; counts are not summed. Final foundation: 148 renders, 20 complete detail frames, five widths/both themes, 2137 contrast samples minimum 4.7588:1; 28 final and 48 intermediate images reviewed. Final CI startup proof: 109 tests plus 23 subtests; focused stage/aggregate proof: 33 tests; real root six and desktop 35 pass. Real normal-v1 stage was not rerun locally. Final aggregate metadata and eight added receipt tests were separately requalified after the checks stage. Fresh assembled hosted qualification, full visual state/before-after atlas and production acceptance remain required.",
+      "job_duration_seconds": 2721,
+      "backend_duration_seconds": 332.63,
+      "identity_sha256": "a48e61945bca53876b4175ad98c8c688bd1a115dd6a2341485c012676b89e8c1",
+      "attribution": "The hosted annotation states: The job has exceeded the maximum execution time of 45m0s. Normal browser 306 pass/two existing skips and desktop 35 pass completed, followed by four of six root-preview cases before cancellation. The two remaining root cases and whole required job are not accepted. Reviewed 381d5e8e preserves canonical scope, retries and 45-minute stage budgets using four matrix stages and a stable fail-closed AppCI / required aggregate. Fresh hosted recovery is pending."
+    },
+    {
+      "candidate": "faea5bfc072a7de86f1426810afcfe3fe2d514e5",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/38433450682",
+      "tested_merge": "a92d3dacf3f6a2e63b9a7740c1bcc2a9b80b88a8",
+      "completed_at": "2026-10-13T17:18:16Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 109,
+        "subtests": 23,
+        "backend": 1847,
+        "frontend": 924,
+        "frontend_files": 163,
+        "normal_browser": 310,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "d51a32f0ad7de39d54a64cad80d20b23f433a0c4 adds two reviewed slices after the hosted checkpoint. Remaining Settings team/operator writers acquire the supported SQLite transaction before state reads and recheck current authority; 24 stale-grant negative controls fail on original source, with 35 new canonical backend cases covering revocation, busy rejection/retry and complete concurrent revisions. Latest full local backend 1882/62 passes. Bulk update/delete failures now use one inline recovery alert while diagnostics remain recorded; four original-source duplicate-notice controls fail, final local frontend 924/163 and 26 bulk browser cases pass. A separate 32-case Settings browser run qualifies the backend slice; counts are not summed. Twelve final bulk images reviewed among 50 retained, with eight failure images and four trace frames; scoped contrast 92 samples, minimum 4.574:1. New phone tests explicitly focus the trigger and verify menu closure after disabled writes lose focus. Automatic focus recovery, success-notice phone overlap, full visual state/before-after atlas and fresh assembled hosted qualification remain open.",
+      "job_duration_seconds": 1804,
+      "workflow_duration_seconds": 1814,
+      "stage_durations_seconds": {
+        "qualification (checks)": 667,
+        "qualification (root-preview)": 104,
+        "qualification (normal-v1)": 1804,
+        "qualification (desktop)": 352,
+        "required": 5
+      },
+      "backend_duration_seconds": 345.09,
+      "identity_sha256": "34aa404204a084e19c383e5e3cc3e7aa594a200a9124483741395ad4cea19a1a",
+      "stage_identities": {
+        "checks": {
+          "sha256": "1cc771ed6692f9f673e403ecf74626325368420349d3102fed6f065ef9112e09",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "artifact": "application-ci-checks-evidence-faea5bfc072a7de86f1426810afcfe3fe2d514e5"
+        },
+        "desktop": {
+          "sha256": "fb9a39db3d8e69f0353a6f2d67aa6fcb5fcef04f08684e1c0e86cc85e9491daf",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "artifact": "application-ci-desktop-evidence-faea5bfc072a7de86f1426810afcfe3fe2d514e5"
+        },
+        "normal-v1": {
+          "sha256": "e6f268ac6ef71b5365971e277e19ac37b63b0e13d12d0290f78111714d65c782",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "artifact": "application-ci-normal-v1-evidence-faea5bfc072a7de86f1426810afcfe3fe2d514e5"
+        },
+        "root-preview": {
+          "sha256": "ffbd408adc0cf79034569e4742f4f002da50efcaa31f0fbab83fca636e182106",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "artifact": "application-ci-root-preview-evidence-faea5bfc072a7de86f1426810afcfe3fe2d514e5"
+        }
+      },
+      "attribution": "The four-stage recovery completes all canonical gates on the exact checkpoint26 PR merge in 30m14s workflow time; all four stage receipts and stable required job report success. Normal browser 310 pass/two existing skips, desktop 35 and root-preview six complete. Per-stage budgets remain 45 minutes, retries unchanged. Checkpoint25's cancelled 45-minute result is preserved in CI history. This proves bounded hosted stage orchestration, not main integration, full release acceptance or later-source hosted qualification."
+    },
+    {
+      "candidate": "f501ee443c65cc910307009a179fc6629bf18aed",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
+      "run": "https://github.com/kimhw8084/sysgrid/actions/runs/38480990105",
+      "tested_merge": "71ec1b5456db7ca0ee5562c05443544d57a4bb09",
+      "completed_at": "2026-10-13T23:28:40Z",
+      "conclusion": "failure",
+      "counts": {
+        "startup_and_recovery": 109,
+        "subtests": 23,
+        "backend": 1882,
+        "frontend": 928,
+        "frontend_files": 163,
+        "normal_browser": 306,
+        "normal_browser_failed": 12,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6
+      },
+      "main": "d3860311f11bcb176e108391a35c348280a8de61",
+      "integration": "Pending owner response to a concrete PR32-only integration exception. The installed Project OS operator accepts Fabric-bound candidates, not this direct-development provenance.",
+      "later_source": "513577a34fd89eaa59e1c0ec07c302da9da9fb79 repairs modal feedback ownership; local recovery is recorded separately and fresh hosted qualification remains pending.",
+      "job_duration_seconds": 1970,
+      "workflow_duration_seconds": 1981,
+      "stage_durations_seconds": {
+        "qualification (root-preview)": 135,
+        "qualification (checks)": 511,
+        "qualification (normal-v1)": 1970,
+        "qualification (desktop)": 461,
+        "required": 4
+      },
+      "backend_duration_seconds": 292.84,
+      "identity_sha256": "fa346dd87c8caa305f967d22883c59e6e593e787889a48e26e2f48c978f45bcb",
+      "stage_identities": {
+        "checks": {
+          "sha256": "0b02085522da75d10c990fb24c5862c74ae764a3448156ddb1fb942e4cbe4463",
+          "artifact": "application-ci-checks-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "success"
+        },
+        "normal-v1": {
+          "sha256": "e710b5c7b829ee76f014a15c8115987f0c85e74e0c628a8ee2d0cd01d0727663",
+          "artifact": "application-ci-normal-v1-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "failure"
+        },
+        "desktop": {
+          "sha256": "280eed57b6b6769037d5f9ea80d13b25f5704deddbf23166187f04c5c84a7635",
+          "artifact": "application-ci-desktop-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "success"
+        },
+        "root-preview": {
+          "sha256": "d159844f915ac299bf12520f7fd31da3b7a453ba68831fdd9a2e2a3e0d69d71d",
+          "artifact": "application-ci-root-preview-evidence-f501ee443c65cc910307009a179fc6629bf18aed",
+          "node": "v22.23.3",
+          "python": "Python 3.14.8",
+          "conclusion": "success"
+        }
+      },
+      "attribution": "Phone notification feedback was behind active modal surfaces, including actual clipboard feedback and cleanup interactions. This is a Product ownership defect; the failed candidate is not accepted. Later recovery is qualified separately. Earlier successful checkpoint27 remains the latest completed green checkpoint. All 862 extracted files / 156755271 bytes were verified against the durable manifest; original ZIP digests remain provider-declared."
+    }
+  ],
+  "inventory": {
+    "api_generator": "scripts/inventory-acceptance.py",
+    "ui_generator": "frontend/scripts/inventory-acceptance.mjs",
+    "source_head": "513577a34fd89eaa59e1c0ec07c302da9da9fb79",
+    "registered_api_operations": 310,
+    "static_ui_declarations": 3154,
+    "static_ui_routes": 19,
+    "static_ui_overlays": 260,
+    "static_ui_controls": 2875,
+    "qualification_status": "Worklist only. Runtime-generated actions, conditional states and permission behavior still require rendered and API qualification."
+  },
+  "provenance": "Direct ChatGPT authorship and review; no independent external audit, Fabric job, or Codash binding asserted.",
+  "owner_constraints": [
+    "Preserve every existing feature and all existing operator data. Addition and tuning are approved; deletion or retirement is not.",
+    "Resolve company identity from an explicitly named hosting environment variable, for example AccessKey; preserve tenant authorization and Admin/System Root separation.",
+    "Advance main through reviewed, tested, versioned slices; no force push, destructive reset, unreviewed integration or terminal-side AI authorship."
+  ],
+  "release_contract": {
+    "production_profile": "contracts/system_management_v1.json",
+    "production_modules": [
+      "home",
+      "assets",
+      "monitoring",
+      "services",
+      "network",
+      "racks",
+      "logs",
+      "settings"
+    ],
+    "preview_preservation": "All existing modules and legacy paths remain preserved; graduation requires separate acceptance.",
+    "pv1": {
+      "tasks": 10000,
+      "dependencies": 20000,
+      "home_p95_ms": 2500,
+      "schedule_preview_p95_ms": 1500,
+      "warmups": 10,
+      "measured_samples": 100,
+      "p12": {
+        "total": 136,
+        "verified": 124,
+        "failed": 0,
+        "blocked": 0,
+        "not_evaluated": 12
+      },
+      "sequence": [
+        "P12",
+        "P13",
+        "authentic P14"
+      ]
+    }
+  },
+  "acceptance_dimensions": {
+    "roles": [
+      "anonymous",
+      "tenant_read_only",
+      "tenant_editor",
+      "tenant_admin",
+      "system_root_with_capability",
+      "system_root_without_capability",
+      "control_plane_admin",
+      "foreign_tenant",
+      "revoked_user"
+    ],
+    "identity_modes": [
+      "environment",
+      "trusted_proxy",
+      "development_fixture_only"
+    ],
+    "states": [
+      "loading",
+      "empty",
+      "populated",
+      "large_dataset",
+      "stale",
+      "partial",
+      "offline",
+      "denied",
+      "conflict",
+      "failure",
+      "pending_write",
+      "recovery"
+    ],
+    "themes": [
+      "nordic-frost-v1",
+      "pure-clarity"
+    ],
+    "viewports": [
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "width": 1440,
+        "height": 900
+      }
+    ],
+    "interaction": [
+      "pointer",
+      "keyboard_only",
+      "screen_reader",
+      "zoom_200_percent",
+      "reflow_400_percent",
+      "reduced_motion",
+      "long_content",
+      "multi_tab"
+    ],
+    "rule": "Applicable dimensions require source-bound evidence or an explicit reviewed non-applicability rationale; inventory presence and prior-source evidence are not acceptance."
+  },
+  "batches": [
+    {
+      "commit": "944c8709615045ac0b9f953d3bbc11bbf8e33813",
+      "scope": "UI draft, overlay, theme and responsive repairs",
+      "archive_sha256": "f54bf82b50f3ee7e345ae0fd43821462b154c666d93313be796a1f64ece8e93c"
+    },
+    {
+      "commit": "39b3704da1bbdaa97964b4cdb24532e84eccb0cc",
+      "scope": "Maintenance validation and atomic audit",
+      "archive_sha256": "a25666016c2285886dce0c99264faf58ba63467a75c92a97063220764ff91447"
+    },
+    {
+      "commit": "8b2ec178f17e14463b82623a9b321c1fbe0ced80",
+      "scope": "Tab scope and tenant-switch consent",
+      "archive_sha256": "2dd449efe320e9d4b86cac88ebf6d71e8e4cf703bdb26565421a16164c1e9e06"
+    },
+    {
+      "commit": "6c900da5720abae7654ebbd3c5017b3c92626697",
+      "scope": "Preserving startup and clean-main fast-forward",
+      "archive_sha256": "28da6881c37bc1f67b49ed9a7cf6531a8c5d759c7d633cb78e621fa34360264b"
+    },
+    {
+      "commit": "38c82a58017df5f0710e97d8efe4b4bf266104ec",
+      "scope": "CI coverage and retained behavioral browser assertions",
+      "archive_sha256": "946dff78098316e9259fbcbe19fdf6fd67e8040b4023c34ac253f5c2a8050055"
+    },
+    {
+      "commit": "27873d89d0a9f6b6e7e9a5fa66305d64798a91e3",
+      "scope": "Explicit company environment identity",
+      "archive_sha256": "8a14f4ac6ed2b8648c5cc27e46a5aeadd46c9877e52786fec9578cecf474e305"
+    },
+    {
+      "commit": "0b41d3c70e637ab4d8ed4f0f0a9ffca7427b6514",
+      "scope": "First-tab tenant initialization and real transport headers",
+      "archive_sha256": "d3c113ca69f69d6101ce9cb8719574619aa246149633d3f2b5537c57f1623167"
+    },
+    {
+      "commit": "7e7f8d18f601f8efad125fd0af212224b53ebf93",
+      "scope": "Connection revocation and cancellation cleanup",
+      "archive_sha256": "b063cd453fda24786e8db335f8ca8cba10f78544e704d36df944587d6ba72a14"
+    },
+    {
+      "commit": "3b8d6724e20d51cdbfbd55e3c204bca458d48a85",
+      "scope": "Approved acceptance ledger and reproducible source inventories",
+      "archive_sha256": "13b0904f2adb24448fd5712668e69507ff030ef4c435b3d8e7d84009236064a2"
+    },
+    {
+      "commit": "a54b0ab2794f621529a655dd34d6c182157b92e2",
+      "scope": "Accessible, responsive and recoverable shell dialogs",
+      "archive_sha256": "7034e21b9530d23bae4f897b2bc8c6e7f535e8701461016e5fdf6a32edb8aa38"
+    },
+    {
+      "commit": "0390df80c815191e12b978315ab60a3cc1403980",
+      "scope": "Measured rack relation query batching",
+      "archive_sha256": "d25de16bd13fe6779954465ccb0d1c62db734806fcb78b910f9d19687b84c68f"
+    },
+    {
+      "commit": "9906b2ed91de92a757f904a8c0911db79a6b2865",
+      "scope": "Toolbar wrapping before control clipping",
+      "archive_sha256": "b8506cb6909202390de0564a5b74b1941701890b54ac6bedb58086f44b4d19da"
+    },
+    {
+      "commit": "ff16b087f294109b918cb6db3b8faac08176fa86",
+      "scope": "Trusted-identity request budgets",
+      "archive_sha256": "bd38a87f38904fe373b9f907d60969b0166241dabffe29d7d4b8a3eb19bf3de9"
+    },
+    {
+      "commit": "c27ea47c160ecc44e455fbdc25ced0de78aac3d3",
+      "scope": "Retain recovery and deployment lifecycle checks in CI",
+      "archive_sha256": "32a14cb45844ebb96461add0e8aa965f3209daf7014bc09bedfb51c06a814c29"
+    },
+    {
+      "commit": "e5160949f7dba4b94e4b66b4c9f70aa659dbcb49",
+      "scope": "Metadata-only credential reads and explicit privileged audited reveal",
+      "archive_sha256": "c0b9a0c2744dae150ca3a8d0325791e090ed0b48094e553e0ebe63a0bf6f6d29"
+    },
+    {
+      "commit": "8b8a8db4d9a4f3e0b867a4bb51eb19cf1a438efe",
+      "scope": "Hide bound values in database diagnostics",
+      "archive_sha256": "bb02a47f4c1d28ae5f112ac30c19b7e1d530f0efc1458fcb9f402d5e2e54b11e"
+    },
+    {
+      "commit": "82940eeb27868e412d4444ee209dd62b750ddfe2",
+      "scope": "Validate rack site filters while preserving legacy sentinels",
+      "archive_sha256": "5fd61eb79aa14982cd7d69289e34c6ed6e67d6fc2664c17d4cd0ba11d16f462e"
+    },
+    {
+      "commit": "bc40bdc9b58888369048b31b6b6d6471e5c3e40f",
+      "scope": "Maintenance simulation lifecycle UI, recovery and draft departure correction",
+      "archive_sha256": "6bb3e3410278af4ce0658c53676f5b551119cabe42648853473cb812de76cddd"
+    },
+    {
+      "commit": "0f0ec2fa2d0fe5dbf31a26f309fad093304cab9f",
+      "scope": "Qualification ledger checkpoint and source inventories",
+      "archive_sha256": "51e53a58a24685a4f696eda3007ea6ddc511536b9e779590a1699daacafbb595"
+    },
+    {
+      "commit": "8c85f832404cdfe0992e28b0d20dbb121728a49d",
+      "scope": "Maintenance window authoring, idempotency, cancellation and execution serialization",
+      "archive_sha256": "00b557b3e99f1f6772ece128341d137d2f918c506b5b59dec784697712a676cc"
+    },
+    {
+      "commit": "a5d268f6cc393853f694dfec83e6583d2e9485a7",
+      "scope": "Public validation guidance and metadata-only persisted error history",
+      "archive_sha256": "130496dbaddb7e971f60c9895fb6232f3012531f3d86e0fe746c92a70710d4e0"
+    },
+    {
+      "commit": "c4fe60fc0e65870c8578b435208dc028761251db",
+      "scope": "Preserve native Assets selection across row refreshes and explicit reset behavior",
+      "archive_sha256": "3e92f7813b03dfa243417ba6c6fbe2bd8ebac5349bec4a62b8f9f718e6ee5b9d"
+    },
+    {
+      "commit": "7c91ef720e845212915302f18e96755fabfa222d",
+      "scope": "Second evidence ledger and source inventory checkpoint",
+      "archive_sha256": "a02662aca67e5db1d623a18b834f42747e601d71b031032bee2f6a8ed599f0cc"
+    },
+    {
+      "commit": "be33d28584c17b8d24dd306f1a01ad7a10d48426",
+      "scope": "Readable error diagnostics, mobile dialogs and reachable App tools",
+      "archive_sha256": "cb68f7f82acc12d1ea44a36eb1a5b5e82d92e66b2d24a1eb4413ec431829cbbc"
+    },
+    {
+      "commit": "0c9cabcf3ea150e4c86166cc31ed92ef7935738a",
+      "scope": "Fresh production frontend builds for owned browser qualification",
+      "archive_sha256": "5a0e2ca18a9bf6bf6eac05e17ca6d3ca7560b37af1fd0f65c3dfe7b76702caca"
+    },
+    {
+      "commit": "597c2dd94602e5635e2e705d8bdab74c4ea6efad",
+      "scope": "Portable full-command runtime identity proof",
+      "archive_sha256": "50a5f1160e84980acbd7bb857ee015d83a8532b760f61368f82bd9be0e58acfc"
+    },
+    {
+      "commit": "12b1801b431be9cc0b3de8ddc2e69e42dfb8cc13",
+      "scope": "Typed firewall definitions, authorized references and atomic audit",
+      "archive_sha256": "c9501e8be305a2057ebfc63f9e7166f1ed0c8fe5f93fb971138a45bcd73161f9"
+    },
+    {
+      "commit": "c4bbbd49174d3cfa9dff940f6dbedfdf03767e70",
+      "scope": "Server-owned asset identity and protected lifecycle boundaries",
+      "archive_sha256": "23eea0fcb07c815d54b05b9d0dabbd1c4eddde2a242e83b9c55123c01a6bcaf3"
+    },
+    {
+      "commit": "259ebc5289b567097067bf03e413a8a41676df10",
+      "scope": "Hardware parent and quantity validation, atomic audit and mobile editing",
+      "archive_sha256": "0418c185b05a14f1c80af9f21cbdb61912e2cdbd264cdb2f29d696add2b9af79"
+    },
+    {
+      "commit": "d3640e004f3174d0ee0a1bb060d1782c254a1769",
+      "scope": "Third production CI and source-inventory checkpoint",
+      "archive_sha256": "8864700b3c33b2c1ef6a89c5a214d760350c6ec9d3d3af8838204a1c2ae66e6a"
+    },
+    {
+      "commit": "7323ef6d7fbd6d109da24a95286c296522f3c6e4",
+      "scope": "Relationship/software ownership, typed validation, read isolation and atomic audit",
+      "archive_sha256": "69b91073c8e56b21d0f97db9ad4b705841c0b4c150a277011347ec950f927791"
+    },
+    {
+      "commit": "290e1db76c0cc47d24ca1913290d7d61ba5de95f",
+      "scope": "Responsive relationship editing, labeled selects, named actions and theme contrast",
+      "archive_sha256": "a8904b87eba50596a097dd74b81f4dcc9acc7cedc85aae66f72875ffd5d34eb4"
+    },
+    {
+      "commit": "2a56682afcea41192ef2184d91f8cd0fdee3b37a",
+      "scope": "Observe the replacement document before tenant-scope browser assertions",
+      "archive_sha256": "5d08f4f791535ac966f2cb855fd773addcc1975077d5d06984690881c244fea0"
+    },
+    {
+      "commit": "978b14d53508175e674878565014fd5b88019b2e",
+      "scope": "Fourth ledger checkpoint and source inventories",
+      "archive_sha256": "ff4a7d741e7ddb2459ae2eb236954013213115d55138b786b02a7cb33359c2b9"
+    },
+    {
+      "commit": "bb6bf5d50b223fbbe806dac544e84db3cd25e597",
+      "scope": "Modern CSS color contrast measurement with positive and negative controls",
+      "archive_sha256": "3f8c297349c3075295b3352d4f3954e525e15e057a0150553a22db9ca1ee5a6c"
+    },
+    {
+      "commit": "28e0579baf40094ccf68876063b786d1039afd3a",
+      "scope": "Consistent asset calendar-date validation before create, edit and bulk writes",
+      "archive_sha256": "ef0a808bb75ccf397f7455e8333bb62e788f72963a568ee025f0d4eb5eb8aa16"
+    },
+    {
+      "commit": "679f366a9ac7bb7e4c0545b420f94b5412eb427d",
+      "scope": "Authorized interface peers, correct loopback projection and constant SELECT counts",
+      "archive_sha256": "075dc42b18df3cc583629cf5222983b39cbfab6fe66094a93763b688272bdc81"
+    },
+    {
+      "commit": "ba72aa1585cfc1b3f5b908ea5a537de6f5f02d52",
+      "scope": "Inline hardware, relationship and credential pending-save safety and failed-save recovery",
+      "archive_sha256": "d35f8014b396bf6153d7a3c06bef63db945ce43929589525e9e469881714376c"
+    },
+    {
+      "commit": "5bace2101c5f0bcdf8d5dd26307e6303afdcefc6",
+      "scope": "Fifth ledger checkpoint with exact-head CI success and source inventories",
+      "archive_sha256": "b1eb01ab0e868361ca75b36fac8c7e1a3db43af205f317205e9286dc7af2908b"
+    },
+    {
+      "commit": "9edd3e4782f5073ce8011b6667c705aec569d7bb",
+      "scope": "Inline asset drafts survive tabs and require deliberate discard; pending writes guard departure",
+      "archive_sha256": "7ec466a8674f0dce8b683b1662e999d83f8a96c8127c3a8494540ee8155248ab"
+    },
+    {
+      "commit": "5b6520d219d93ad9aa5daa293f0fac5c8ef7c977",
+      "scope": "Strict scalar types and bounds before ordinary and bulk asset writes",
+      "archive_sha256": "55e914c9c71d5f8016bf3ba1b99e18429dc3cd386fef59a47126eb33521bb5cf"
+    },
+    {
+      "commit": "70ade100e314434e9a73eb0a81c8efd1e930f419",
+      "scope": "Accessible asset form fields, inline scalar feedback and protected save/failure/completion lifecycle",
+      "archive_sha256": "99459ab194e3ef50f7763aeca4baef5745b00c30895f5cf4d283d1e25ab01dd8"
+    },
+    {
+      "commit": "71b214828a13098df69b23bdd4f201e191189dbd",
+      "scope": "Reviewed scalar/form/draft checkpoint and exact 5bace210 hosted CI reconciliation",
+      "archive_sha256": "b1f6a95dd2d61bb9e2bbf7d4910ff1293d02fa680306d6ad9c11c0e0b93035dc"
+    },
+    {
+      "commit": "adce6f8ecc9248d5814a7202f0b1bf48790e35b1",
+      "scope": "Trusted asset imports, shared scalar validation, atomic OS/audit writes and file identifier fidelity",
+      "archive_sha256": "4f644261d29bedad7344a15b40d7f13be2e62b8dd587dbaaac71b543da7a1d3c"
+    },
+    {
+      "commit": "d838deac7de3e6c1f75955c195225da8c87495a8",
+      "scope": "Shared import request lifetime, mobile header and nullable-asset Rack search; discovered Network race carried forward",
+      "archive_sha256": "fcb9950279805b9e52703f68b9ec8e60b98cab88ff34e29f2e157429318b998b"
+    },
+    {
+      "commit": "82c2586e5021bbf91ef36aec346386e2532c95cd",
+      "scope": "Network search intent survives delayed preferences; all 47 cross-consumer browser checks pass",
+      "archive_sha256": "afd237481bb841bd17187b2de30ce6fd5de347dc66f9ed69a80f5e3000e52668"
+    },
+    {
+      "commit": "1362951eaa0ecb5100e845741845257afeed8b2a",
+      "scope": "Seventh reviewed evidence checkpoint and source inventories",
+      "archive_sha256": "44398dae93eeef54628ab74205c26bef4166aeb9fd59909fdc5bd1d8b8c6b514"
+    },
+    {
+      "commit": "bf236cad12420910733ba5872ffb818c977f146a",
+      "scope": "Ordinary asset definition and OS synchronization atomic audit",
+      "archive_sha256": "e159450f1b4675b71be371dfaa5884db998da5975f948db85f07f028d4b01d86"
+    },
+    {
+      "commit": "4629b1343d9342e31fba6806dde5ab68b49c2a8d",
+      "scope": "Quoted multiline paste integrity, editable cells and truthful errors",
+      "archive_sha256": "ecff96f26d3dadb360b4e788710181c345e22aec44723b96729c1c52098fcba0"
+    },
+    {
+      "commit": "5d147d7be16ab59a21258d2cd902bfb7cacb2da8",
+      "scope": "Import request/file/expansion/batch limits and safe parser scheduling",
+      "archive_sha256": "da63da1c270394cad9420dfa742292d457198b88ce108ac4a30e658fd3fbf959"
+    },
+    {
+      "commit": "fa0f5facf169cefb2e950357935509ef5258b1c3",
+      "scope": "Eighth reviewed checkpoint and bounded-import source inventories",
+      "archive_sha256": "0ca186e2492f395ce97f8dc2655128a27a83012ad37a6f1cb50b3eb7106c3cfc"
+    },
+    {
+      "commit": "b772c8bc9e9393ce9ec3280f3096bec284f794a4",
+      "scope": "Profiled backend fixture capacity with independent per-test databases and fresh migration parity",
+      "archive_sha256": "703c8be86f8e1a9a83b3eb91a188f6d81ba453be8487c44606c9c3d98c316d48"
+    },
+    {
+      "commit": "1255794d5f87acab10d72b907becc4d7ec725cf7",
+      "scope": "Network preference restoration respects actual local fields and normalizes malformed stored collections",
+      "archive_sha256": "8115fbb5ba1fcf2b6cd866af40fabc64930d78900e52f14d5da8b864c92fdf73"
+    },
+    {
+      "commit": "755bc2dbbe87b3e80e8e8170ef38a9224ce9c258",
+      "scope": "Audit payload keyboard scrolling, accessible close target and persistent short-screen dismissal",
+      "archive_sha256": "e97193b14251277cf7f98259793fe56a6141ba9a8d0992fc25f13577ecc3e633"
+    },
+    {
+      "commit": "c1a9050f2cf312dd0ea6f3bde653226bb7dd3fe9",
+      "scope": "Opaque shared menus, notification and Audit payload surfaces in both themes",
+      "archive_sha256": "1dc292c7a98c7bbcc5e84e415e0acfa015ba3206dcf896c6793e53e019c1857f"
+    },
+    {
+      "commit": "d9a5a8682d7df8ebc65300c1c19820d944f24c99",
+      "scope": "Semantic import editor selector repairs proven hosted failure without weakening the workflow",
+      "archive_sha256": "d89552ddb8b4979c3d44698a6039a38f8ee287712f14ac97a3e012fdde621764"
+    },
+    {
+      "commit": "7733c705a9becc9e338119c11c4a1c3369e49215",
+      "scope": "Ninth qualification checkpoint preserves failed CI and reviewed recovery evidence",
+      "archive_sha256": "d039b73a6a7c8db853e66407da507bef8224a45440b41648958c6a6e767717b0"
+    },
+    {
+      "commit": "9e04102f0730f168175467cc3e174b0d2d9852b7",
+      "scope": "Direct Network connection reads, endpoint assignment and whole-batch mutations enforce tenant ownership",
+      "archive_sha256": "dacc1f1b27765d51dd20ce0be1f9f1dacd2d2df8d1e8b0c9b873d8cf7ee337f5"
+    },
+    {
+      "commit": "18f0527f7be7e45aa9fb167d1a639987f93794fa",
+      "scope": "Network imports scope discovery and export, reject invalid endpoints and batch port reuse, and commit audit atomically",
+      "archive_sha256": "9c291ad8db1e1b4c3777bdbc4e5c2f98a084836662709512b624acdeaf54bef1"
+    },
+    {
+      "commit": "4b567bbf6ec1cb58515f6413c100267a3882b314",
+      "scope": "Shared import source and hint readability, truthful preview counts and both-theme rendered proof",
+      "archive_sha256": "2967d79d69b5af1a6d3342572fad2ade0399302e777707f346e20b27379d9bfb"
+    },
+    {
+      "commit": "2073f7ae1a865797d49232c2ac2d23f457fbd83e",
+      "scope": "Tenth checkpoint binds Network endpoint/import proof and complete hosted recovery success",
+      "archive_sha256": "eb89a050bffe90d078b281c6065ad765ebecc24c9d91c7b9471686fabbe2be89"
+    },
+    {
+      "commit": "602cdf6aa00c0321d9cb271942a989103e72be68",
+      "scope": "Raw Network interface ownership, typed definitions, protected metadata and atomic per-record audit",
+      "archive_sha256": "a6add65e9e9e635277f3e8d4dbe6008779b5b3a5322dd91ab6853e1eade06d91"
+    },
+    {
+      "commit": "ead9b5089f23f44aa8e89c5a89373bf683393e78",
+      "scope": "Network CSV/XLSX import preserves port/MAC identifiers and literal NA values",
+      "archive_sha256": "dd6fe1baf8562a09efaf13a2aa0ae420d146e05490ff258ca97c75eada6b04b8"
+    },
+    {
+      "commit": "5bb99964f082006d474bb994255615dd2d681364",
+      "scope": "Network scalar, finite-value and malformed-row validation prevents coercion and partial writes",
+      "archive_sha256": "f7d228060fb30e1cd549a639799ed6054df4f1f611b5950028e5440a75dee0ff"
+    },
+    {
+      "commit": "d8523809a38c24469e83d1d9fe60b2ae40a03c71",
+      "scope": "Ordinary connection creation records trusted creator and atomic record-target audit",
+      "archive_sha256": "2ce24f177dd3dbd3de29ca1fc13701b2adc0a293920e68a1a68e4cfc706d2e17"
+    },
+    {
+      "commit": "e488ff50485d8d1b57fa6cb1b829312138f2b3bf",
+      "scope": "Eleventh checkpoint binds typed Network integrity and ordinary target audit to complete prior hosted success",
+      "archive_sha256": "c0bcbc1eb8623ae8eb56d07dca07154b1f1de3148156d4ecdf3f5b138cc70d57"
+    },
+    {
+      "commit": "3ea3b70a5e09743805a1b3b96c1f64c0a5fa009a",
+      "scope": "Network no-op edits and archive retries preserve state; bulk receipts count actual changed members",
+      "archive_sha256": "8765a387650c20394e432727d42317b2ce44b8884c082fbe2bea70b743ee362e"
+    },
+    {
+      "commit": "eedcd4dec6c0488b12304674597415073cfe9959",
+      "scope": "Preserved custom-IP links remain editable without false null-identity or port collisions",
+      "archive_sha256": "7fb4678d42555686519a365c42deac395257b12f3b0b775a9cbebdebe6d05f65"
+    },
+    {
+      "commit": "0d29d2bd2d3a8d3d1e4a567f0ea367f1e7429a07",
+      "scope": "Network bulk and import writes retain atomic per-record target history with no-op exclusion",
+      "archive_sha256": "a5b379208af0a378682173234db4003839b3076861e0d7f8eee16800e10d0625"
+    },
+    {
+      "commit": "017774255bcbe127b6e4b3dce4933df897c00024",
+      "scope": "Shared modal and dirty confirmation respect reduced motion with keyboard and draft safety",
+      "archive_sha256": "17ad85e013a6c0903d99da28d2e271fd190275b6578ffaae0ead52f203a26722"
+    },
+    {
+      "commit": "ff9e065ee8be5e1116c961bee21daf32c14ba700",
+      "scope": "Checkpoint twelve: 70 prior reviewed batches and exact e488ff50 hosted success",
+      "archive_sha256": "2cdf6c751f90ad7844312e98de251e76a3f1c8944a290c481968825b01dc3510"
+    },
+    {
+      "commit": "e08fdad13d98111cd4231b7cccd2c717773013ab",
+      "scope": "Preserve omitted Service configuration, attributes and logic during partial edits",
+      "archive_sha256": "ff3c87b394d50df383819583130189df41aa7a30fd0b626399d84707ee09fedb"
+    },
+    {
+      "commit": "91f0b9168028f09edbe7184ee00af4b79d3f5bef",
+      "scope": "Authorize Service mount relationships and atomically synchronize both hosts after OS moves",
+      "archive_sha256": "10449d980f9ad47f1932a5a1109b1ae2f129e1883d77c2034d2897a8d5af4c03"
+    },
+    {
+      "commit": "ac01628f4acc226754e14a2458077a19a4aa3a2f",
+      "scope": "Scoped and atomic Service imports, preserved identifiers, record history and readable selected-row feedback",
+      "archive_sha256": "b5b5a9d8f0bd6afd4237502924097702067710cb84049fd1e63d669540e56be0"
+    },
+    {
+      "commit": "f014798e0f3826fa44f9a24b11391aacb7312b22",
+      "scope": "Checkpoint thirteen: 74 prior reviewed batches and exact ff9e065e hosted success",
+      "archive_sha256": "58cec05b4a50204084d46a929e7b6981d97f8e0fc2816fdfd08c69fb09c31876"
+    },
+    {
+      "commit": "c2453f26fe133452ecb6bf8445a10e76d4c8292d",
+      "scope": "Trusted Service creators, accurate ordinary no-op receipts and safe creation conflicts",
+      "archive_sha256": "01879ade65ec4e1a4fed936f432e0dc62db8ee81d5c4c81da1977e0dec925526"
+    },
+    {
+      "commit": "a307320ccd55bef3617e527a5526bcaf698e7160",
+      "scope": "Reject invalid Service dates without clearing persisted values and preserve import date round trips",
+      "archive_sha256": "78694b25adc581db1cd028d453050badde07d675d5b3891fdc45818bf44fc69d"
+    },
+    {
+      "commit": "1089cb1182605d85b82fbdd7daca1215abfb164e",
+      "scope": "Accessible Service field diagnostics, preserved save retries and one useful error notice",
+      "archive_sha256": "ad15cabc272338bdc7c6709fddcc8def04dd92fc880986c359c5026664cb3d34"
+    },
+    {
+      "commit": "062dd490ec681ca4d2595b2c318352459d4cf534",
+      "scope": "Validate Service text, cost and finite JSON consistently across ordinary, bulk and import writes",
+      "archive_sha256": "b82cd82a8d0baff4771168f485a290b970ed2cf32eb861381162d557b9e214ef"
+    },
+    {
+      "commit": "b18a299c013b738127dcd412df622de5df722eb9",
+      "scope": "Home counts/search inherit registry authority and preserve every grouped inventory record",
+      "archive_sha256": "57210b88cc34d2764bb48b5ff763ae152d93d4bebbdbc844fabf1b1f71f01f67"
+    },
+    {
+      "commit": "f4d6e8a679f99a6a49eeea5585311c87d18fd9b1",
+      "scope": "Record reviewed Service and Home checkpoint with exact prior hosted CI and 80 verified archives",
+      "archive_sha256": "027dd9f44b2ecfb8e8112b1e4b55fa1166387f2e7a2d016378292de76486f6ce"
+    },
+    {
+      "commit": "07d8d2e56d3826a88d8e31391b870448ec394d9e",
+      "scope": "Preserve HTTP status and useful bounded messages for null, primitive and structured error responses",
+      "archive_sha256": "7f10aabe04591f24e936ec3cb83a38ce3bff7e7f0def04bf43cf8b234704af13"
+    },
+    {
+      "commit": "3badc66a583d7f1aa103fddc2dd1f2fa3bbc6734",
+      "scope": "Search Network endpoint IPs, preserve deep-link values and truthfully report Home source availability",
+      "archive_sha256": "5702d426c82a61fcf7f69a731a1f4ee271ca5b3fb6dcf14ce1786eb31194d397"
+    },
+    {
+      "commit": "9c1ee62676512b4987d5773881c4c950139ff20b",
+      "scope": "Render consistent UTC-derived forensic timestamps with explicit local timezone and unavailable states",
+      "archive_sha256": "d5eac918391d28bb4208e225d137f56ec34f8989b494aaed0cc53b1ae07e3530"
+    },
+    {
+      "commit": "fcd095eda20cf77b66cc44a9c02ff1942226f8e5",
+      "scope": "Require boolean operator privilege flags and bounded integer bulk IDs with atomic rejection",
+      "archive_sha256": "da578af10bc2e12340651ab6468e8f68690ab695abbb8f3a88bc91029efe1035"
+    },
+    {
+      "commit": "fd47a42749cef79f8e29a13123a9628b2e17b757",
+      "scope": "Make Settings permission controls readable and accessible; repair grouped-operator permission saves",
+      "archive_sha256": "a96da2713d78d902fc506e570fd6bafeae7bb4564bf3e436985557e067b781a1"
+    },
+    {
+      "commit": "a432dac189865b50c99c3e49b1d8a4bac36bd479",
+      "scope": "Reconcile operational truth, timestamp and Settings qualification checkpoint 15",
+      "archive_sha256": "f4fc87db2e4e6e2a1205a76aa71086090038800665ebc2d3644f80929d75aff3"
+    },
+    {
+      "commit": "ac419e4e081b960f7a6d7800e7b1ecf35e41f6e7",
+      "scope": "Protect queued permission saves from departure and recover failed optimistic edits",
+      "archive_sha256": "80df46ff0412fc277560587363c467eadc8f4990e96a19b9c77f8b699348facd"
+    },
+    {
+      "commit": "92e3d0d7597ea6d3db9712c686458f0963fc2f0a",
+      "scope": "Preserve unrelated operator fields during queued permission saves and refresh the current profile",
+      "archive_sha256": "e9a8f9a99aafbf54937e18cc2447f8af65807e87b81883134058ca374f5a1fbe"
+    },
+    {
+      "commit": "38a09f739a770fb771a46090c62e381d1ebc9142",
+      "scope": "Preserve admin-toggle field intent and omitted team synchronization ownership",
+      "archive_sha256": "d13d8b2468155428819b5c034e2c3ccd6dcd71ebcf67a31689e39a3dac93eb4c"
+    },
+    {
+      "commit": "df94778db9e52725e224596667630433c66dd5e1",
+      "scope": "Make expanded identity sync readable, accessible and reachable in both themes",
+      "archive_sha256": "073353b2ff870f2eb3c7449b4000c57ae9098de29eccde31c4557fc98f005944"
+    },
+    {
+      "commit": "4edb26251d54f0e5479490d350c55aca765af16a",
+      "scope": "Reconcile checkpoint16 with approved items, source inventory and exact hosted CI",
+      "archive_sha256": "576b05937d9b62a4df6aa40680a107bdc190b51bba3c5c6b39915c5855f971a0"
+    },
+    {
+      "commit": "5e87770d66cc5725692504e20332d5ae4b7d9124",
+      "scope": "Preserve omitted operator upsert fields and atomic team/audit/history transitions",
+      "archive_sha256": "dbc8d02fba0ecc2b7d9b14776fc50e6e0a9755ca457b6e1be313892f81f09100"
+    },
+    {
+      "commit": "ec7e6f2df3b2d66f0866b90932fd66e2afee4e66",
+      "scope": "Reject nonboolean sync preview inputs before mutation",
+      "archive_sha256": "8ac8787f03891481c7c466d46057893c00b4c28cd854be17a24a88c02e7223ac"
+    },
+    {
+      "commit": "73a491551c2eadf38961758bdbd195b739a49e78",
+      "scope": "Make sync team preview match preserved local authority and actual applied changes",
+      "archive_sha256": "587bd01b3eb75074dcd191cb4b76c270232d3f7aec5c90d3d85a6a3953df0f36"
+    },
+    {
+      "commit": "643713e2ce9e4b9034415401306880451b1fb463",
+      "scope": "Reject stale reviewed identity snapshots with an optional exact fingerprint precondition",
+      "archive_sha256": "5345c583971bcb708799608d13f377423433ef290189d9fcbd3bbe4bfe7a2de4"
+    },
+    {
+      "commit": "103e8f8aba0b1a46c1f45e93112e545e1392798b",
+      "scope": "Complete JSON identity-record review/apply, removal acknowledgment, pending/draft protection and recovery",
+      "archive_sha256": "7f414c49dd25ada6467a084096e8f6bf1945f440ed618960a4f47ccfc3b1303d"
+    },
+    {
+      "commit": "414529d1710c09fa57bca7c099f0ae55d7148053",
+      "scope": "Fix actual tooltip scroll overflow, supersede partial clipping and qualify blocked-navigation selection",
+      "archive_sha256": "6f53d3c3db23bde14682a90446635b21a717370de2cbbf16a5022dc586cef4fd"
+    },
+    {
+      "commit": "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
+      "scope": "Reconcile checkpoint17 with exact hosted CI, approved scope and source inventory",
+      "archive_sha256": "63ef92358c975b6b2ec1845d0f43968af2f3a9a02d4e2133b5721cef5f612dc6"
+    },
+    {
+      "commit": "7b38343670d6f1289cf373526d67b0253dea6700",
+      "scope": "Serialize supported SQLite identity apply and recheck Settings authority inside the snapshot transaction",
+      "archive_sha256": "9217f548ac806219faa890220073ba7da1448b937efe0b2a238c0f89803b7789"
+    },
+    {
+      "commit": "778d269841fa8e7f954123beed3f85be86874ec7",
+      "scope": "Validate strict operator role/team references and reject missing-ID fallback creation atomically",
+      "archive_sha256": "fd93e273a660ed2595b08a2b49c432eceef4cd0770c728120671bbff151e788b"
+    },
+    {
+      "commit": "100b388546463587b47a6a8cb14caae5b1452540",
+      "scope": "Keep Settings bulk menu reachable above its trigger with keyboard entry, navigation, nested dismissal and focus return",
+      "archive_sha256": "cddecfc58aba5ca1544d033e913b7b79b4f9640a802c3002010a5e4671c07a04"
+    },
+    {
+      "commit": "b26a29266f364e8a75e36b45edeac21b543a23ab",
+      "scope": "Repair shared flyout selection display and theme/readability with current consumer workflow regressions",
+      "archive_sha256": "5ce509a318e8a28236853453fb5e632068a6522c5b4903e0308d53d5f0e3ea86"
+    },
+    {
+      "commit": "73f268dd5ff08f8b1e812767d31866540b0d22f6",
+      "scope": "Reconcile checkpoint18 with approved scope, source inventory and exact hosted CI",
+      "archive_sha256": "1dc2f0d4ff1e0161ab35a9944a8b4f617c6ae1e2666a3c04db22a24a5f904b13"
+    },
+    {
+      "commit": "c5106bdb16182bfac895641c2c818b1910151628",
+      "scope": "Reject malformed historical admin intent with atomic rollback and legacy omission semantics",
+      "archive_sha256": "17fe89fe840826fc376655ac5b7aedfca18eeb81049dc4091a4057f9c2430d45"
+    },
+    {
+      "commit": "fe91e4fb9cb41cae46564881c62c74482c10b535",
+      "scope": "Guard Settings bulk confirmation, pending writes and refreshed state with explicit recovery",
+      "archive_sha256": "20987a1a389d501ba01ab88ba36dff2a8cf92e9884d309fb53e519518695faa3"
+    },
+    {
+      "commit": "c57f0338f540e64fe67715f8daf980d27bae93bc",
+      "scope": "Validate historical snapshot containers and unique identities; prove actual restored data",
+      "archive_sha256": "2c34ca17110fe76c7c8b3fce42f0956dbce881b3cf5baa665dc5bbbc971f8a82"
+    },
+    {
+      "commit": "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+      "scope": "Make permission history readable and reachable and guard the full rendered identity restore workflow",
+      "archive_sha256": "5011c41362312e269afbfdf4253970b1a404c08161adf1df40cc99fffc0ded38"
+    },
+    {
+      "commit": "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+      "scope": "Reconcile checkpoint19 with reviewed restore safety, rendered history and exact hosted CI",
+      "archive_sha256": "3219ac6cbe9b499ad9ec55df70af754b7e8471e05ed1c4b342ae412d92ea816c"
+    },
+    {
+      "commit": "978eafe99faa60997bca5aa370c58d263aaab9e1",
+      "scope": "Validate historical text/group/map containers while preserving optional legacy fields and content",
+      "archive_sha256": "51264f9e180a85bdfb8522a92a36dbba8bb6eb05ccc9f00ae97193ca4e416a6f"
+    },
+    {
+      "commit": "67e7df395d2554a7d5956bcee840834098de3174",
+      "scope": "Serialize supported SQLite identity restore and reload Settings authority inside the transaction",
+      "archive_sha256": "af08a9bcea7e6fcf2fc25aecb5425a60b1964dc18e7d8751cfee109dae2d94c7"
+    },
+    {
+      "commit": "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+      "scope": "Protect reserved identities and the current actor from restore omission; record actual revision counts",
+      "archive_sha256": "70990593f0e70be31b0f7089985cd6a8953470b6b4bf33f5208e6d45f96f286b"
+    },
+    {
+      "commit": "977207653839845e1642a31b3811671187eeb870",
+      "scope": "Make complete permission deltas expandable and include native disclosures in the acceptance inventory",
+      "archive_sha256": "462b87318c823f1ac2fb71206375d420493fa538a71f9f4aa61128773dc1314d"
+    },
+    {
+      "commit": "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+      "scope": "Render previously omitted username and registration-status changes in identity history",
+      "archive_sha256": "8bb47d5fbcef8ef693393c569acec649557a78e4d57d6f9ad8ad6692fa177021"
+    },
+    {
+      "commit": "be55e543c35267decc07c234c968d32339d33443",
+      "scope": "Reconcile checkpoint20 with restore integrity, compact history and exact preceding hosted success",
+      "archive_sha256": "4e1484f392b35de7ff9d6592b0f480f24d491fbcb38c74f9abbad77c9b07e1a3"
+    },
+    {
+      "commit": "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+      "scope": "Preserve exact identity history values and safely display malformed legacy records",
+      "archive_sha256": "052fd0f2bc4f8baa7cce82a241aa6337c47493e1096b39cb3ef300c8171f7803"
+    },
+    {
+      "commit": "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+      "scope": "Make Network detail text and endpoint layout readable while removing unused Knowledge requests",
+      "archive_sha256": "bade656db4fac7d3a327c2cbf565e9b1b43cf109e91bc85fce5d68c7675ec457"
+    },
+    {
+      "commit": "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
+      "scope": "Synchronize bulk-menu tests with completed dismissal after trace-proven hosted exit-animation failures",
+      "archive_sha256": "2efdb33005a9da60d5fb0e94cecbff397909a102534df975985f7f95637da559"
+    },
+    {
+      "commit": "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+      "scope": "Record checkpoint 21 and bounded recovery from the trace-proven bulk-menu test race",
+      "archive_sha256": "7d0827a24b9080f9f773ab90108af29e29c8a07a713d7ad73c3c64231e336ef4"
+    },
+    {
+      "commit": "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+      "scope": "Preserve historical role grants, expose legacy uncertainty and explain current-role restore semantics",
+      "archive_sha256": "36e17b06bdb0332395c0df029bb78d38ad37021beeada8e0eae0ea68df2eaf08"
+    },
+    {
+      "commit": "139fe66ff7bffe940ed22239425375a67c97e78c",
+      "scope": "Reject malformed, nonfinite and ambiguous permission writes atomically while retaining supported intent",
+      "archive_sha256": "05a5096ca1e0b8dbc87ac53c44bcf8cd0ebcae439c1189ee5e6e3331e62c1937"
+    },
+    {
+      "commit": "9944dce193f28a4497d798d060c623f83d86ffdf",
+      "scope": "Align live permission controls with global grants and repair hovered text contrast and phone help",
+      "archive_sha256": "ddd3c166abc7a65f9762206cc8715df9b129f15315e8c9932098b88919e3c32e"
+    },
+    {
+      "commit": "fca3758399492c3a5f00b86e149401a96936de56",
+      "scope": "Record checkpoint 22 with preserved approvals and exact predecessor CI identity",
+      "archive_sha256": "19761c47cbb35ba506f42fe4490214aae5207166b0350725e56d8fdadfca5672"
+    },
+    {
+      "commit": "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+      "scope": "Deny nonfinite stored grants without crashing valid access and permit authorized repair",
+      "archive_sha256": "1a12b1307adefeb3da6e051c9d6647f382eac75945d553e1eeb21ff6a8823d88"
+    },
+    {
+      "commit": "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+      "scope": "Make direct-link clipboard feedback truthful, retryable, accessible and compact",
+      "archive_sha256": "20333150f624c27ad23d3b12fe3e2d40c53d7580fa74a0e8e0e786e0f4271821"
+    },
+    {
+      "commit": "a3958e408e8007814d6a578978519473dfb81976",
+      "scope": "Expose actual saved-view clipboard outcomes and pending controls with manual-copy recovery",
+      "archive_sha256": "3ab27b3927c345f151505d2aa3059ad8925364a87ab7c2b48b2683a00d6b7957"
+    },
+    {
+      "commit": "a59b4b34a33c799e8b92b9b876d432cf35d8b74f",
+      "scope": "Record checkpoint 23 with exact predecessor hosted success and separate local clipboard/grant proof",
+      "archive_sha256": "df78bdfebaeecf3ff29bb0c9a1972a7755c8721d6b1c762975f9f6c0626feb1d"
+    },
+    {
+      "commit": "177aa8f988254876951a6aa89880560f3d19ee41",
+      "scope": "Reject stale full permission maps and recheck authority under supported SQLite write acquisition",
+      "archive_sha256": "2c8e50fba46b4ab14d12d5f2575fbe9453f9bab568682ec417454818f6041503"
+    },
+    {
+      "commit": "363e5dcfa93fb3732ff16d597c6c080f95039cf9",
+      "scope": "Improve saved-view typography, semantic colors, action targets and explicit delete confirmation",
+      "archive_sha256": "6a7f328165116d5f99500084f0f00737e5a1d6c229461362ae2f4e68ae423706"
+    },
+    {
+      "commit": "5fef9f02000e786b083463fe0370b486aa194b8d",
+      "scope": "Repair modal heading accessible names after share-button regression; preserve nine original browser oracles",
+      "archive_sha256": "7a09e8d8b1df78dd9c70bb576dcd998ea977f9e8b77f9ffb84f11aca65281915"
+    },
+    {
+      "commit": "f97300d9d1facacde6b24458a04c48f18698c914",
+      "scope": "Record checkpoint24 with preserved heading-regression failure and reviewed source recovery",
+      "archive_sha256": "3a6eed60a34b0ad9886f5cae1a9b5fa1381c02d403c201e396976b3e40bf5cf4"
+    },
+    {
+      "commit": "c00077939aae1f5ffe79e1c3e7299803210a534a",
+      "scope": "Coalesce saved-view success notices and replace owned clipboard errors after recovery",
+      "archive_sha256": "9bd445ce6320cf1b4916061c1d404917b017002fc51752090ea00868540aaf6f"
+    },
+    {
+      "commit": "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+      "scope": "Serialize malformed stored permission numbers truthfully and align profile grants with authorization",
+      "archive_sha256": "01012530e7495947e3a3da4a853e342bcf974f36d2f3d30f161fc23fcacc7d84"
+    },
+    {
+      "commit": "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+      "scope": "Preview identity restore counts and reject stale reviewed state or source before mutation",
+      "archive_sha256": "7dfc05f408c240f7d1a03f96429a079bfb118361e3844effeb0aad7b07a0541c"
+    },
+    {
+      "commit": "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+      "scope": "Synchronize permission-departure test with post-save refresh after exact hosted trace attribution",
+      "archive_sha256": "3ee29735078caeeaa1eeb63abf5f436c5e8aef339aff378843e2aba03466a28c"
+    },
+    {
+      "commit": "dcbe8b6e2423991cbc92273788d1762bb110edbd",
+      "scope": "Record checkpoint25 with preserved approvals, inventories and attributed failed predecessor",
+      "archive_sha256": "acd9921b93b5d0ce482caabaed7203aac843516e680b9883379b85236ef321cf"
+    },
+    {
+      "commit": "c3495900a60f2422f793d2c5f7029863afe91e2e",
+      "scope": "Make shared diagnostics truthful, readable and single-flight with clipboard recovery",
+      "archive_sha256": "bb3fc2b61e6b421b9f63d7f35326ef28b5bf02c2f5109dbf5b7e54b85df14992"
+    },
+    {
+      "commit": "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+      "scope": "Preserve exact primary and secondary team references and omitted legacy groups",
+      "archive_sha256": "10ce06149a9e73385681bac53a029255a96717265edb192620ca1d08748c5bc4"
+    },
+    {
+      "commit": "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+      "scope": "Bound confirmation width and preserve visible keyboard actions on short screens",
+      "archive_sha256": "6b4d1a94f03f73ea1202d290a37aca93608a92e0d416f29c385f28bb7a160577"
+    },
+    {
+      "commit": "43fbb68980048ce732f70477878f30dbe85b99ff",
+      "scope": "Strengthen chart and detail-frame visual-preservation proof without application changes",
+      "archive_sha256": "72a1550e58644783a88572714c2bf05f4aaac3be80ae9965afb1eb4d959b8c49"
+    },
+    {
+      "commit": "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74",
+      "scope": "Preserve every canonical application gate across bounded CI stages and stable required aggregation",
+      "archive_sha256": "66a9e529bdedc57659acd1e759b7e429f6c55ff5f7329e54802792182a2f777a"
+    },
+    {
+      "commit": "faea5bfc072a7de86f1426810afcfe3fe2d514e5",
+      "scope": "Record checkpoint26 with preserved visual proof, exact cancelled predecessor and reviewed CI recovery",
+      "archive_sha256": "e35c4150c1a0019e39e90f556218c3c9b81be41d2141f769286d02226a08b137"
+    },
+    {
+      "commit": "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
+      "scope": "Recheck remaining Settings identity writer authority inside supported SQLite transactions and preserve concurrent revisions",
+      "archive_sha256": "d073877931bb41e76479757dcab568ca3bffc60a89fbaebb8f9a3680fd19e7ce"
+    },
+    {
+      "commit": "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+      "scope": "Keep bulk identity failures in one recoverable Settings alert while preserving diagnostics and explicit retry",
+      "archive_sha256": "8067ba788897976ef5042ee48c9ee6ad355905fd95ef9cae7902cd9c3d1a16be"
+    },
+    {
+      "commit": "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
+      "scope": "Record checkpoint27 with exact successful hosted capacity repair and reviewed identity-writer/bulk-feedback proof",
+      "archive_sha256": "b97a87cc522a2f784e206a8f469962a239a73e2ca25b622f0b27f2d7d7385ddb"
+    },
+    {
+      "commit": "fcd8560c2ef25682519db2694d3599bac28e5840",
+      "scope": "Restore bulk-write focus only after native disabled-control loss and preserve deliberate independent focus",
+      "archive_sha256": "11fe17def2b6cf52b32b7f1b29350deadd6ac2a9ccd026cee546cca195026c8e"
+    },
+    {
+      "commit": "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+      "scope": "Reserve phone notification space, preserve recovery state and pause covered clocks with populated visual/preview regression proof",
+      "archive_sha256": "2e671e93ac75f33069328b3f95b737fe45eff89d37a6fff846bda0d41f0d32f1"
+    },
+    {
+      "commit": "f501ee443c65cc910307009a179fc6629bf18aed",
+      "scope": "Record checkpoint28 with checkpoint27 hosted qualification and reviewed local UI proof; preserve its subsequent hosted modal-feedback failure separately.",
+      "archive_sha256": "cda68cac46ab0b2987f41007845490aefcdc90d37b2d8d3403392784ce964394"
+    },
+    {
+      "commit": "513577a34fd89eaa59e1c0ec07c302da9da9fb79",
+      "scope": "Preserve editor loading recovery, own phone modal feedback, retain Undo through node-move blur, and reflow bounded popups with full local regression/visual proof.",
+      "archive_sha256": "259b21c3fc2ed5a3d0fe506dd8fba4b38324cd9382eee1db78114839d970318d"
+    }
+  ],
+  "groups": [
+    {
+      "id": "A",
+      "title": "Release baseline",
+      "subtitle": "One reviewable candidate and a complete acceptance inventory.",
+      "items": [
+        {
+          "id": "A1",
+          "title": "Review and integrate the existing UI repairs",
+          "outcome": "The reviewed, tested changes reach main, so your work-environment pull actually receives them.",
+          "approval": "yes",
+          "status": "awaiting_integration",
+          "reviewed_commits": [
+            "944c8709",
+            "38c82a58"
+          ],
+          "remaining": "PR32 exact-head CI passed at c27ea47c; main remains unchanged pending the explicit direct-candidate integration exception."
+        },
+        {
+          "id": "A2",
+          "title": "Reconcile Git, Notion, documentation, and release status",
+          "outcome": "Current instructions, supported versions, screenshots, and readiness claims describe the same candidate.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "27873d89",
+            "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
+            "73f268dd5ff08f8b1e812767d31866540b0d22f6",
+            "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+            "be55e543c35267decc07c234c968d32339d33443",
+            "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+            "fca3758399492c3a5f00b86e149401a96936de56",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "177aa8f9",
+            "363e5dcf",
+            "5fef9f02",
+            "f97300d9d1facacde6b24458a04c48f18698c914",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "dcbe8b6e2423991cbc92273788d1762bb110edbd",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74",
+            "faea5bfc072a7de86f1426810afcfe3fe2d514e5",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Checkpoint29 preserves all 51 decisions/statuses, 149 reviewed archives and 154 inventory source hashes. Latest green checkpoint27 remains distinct from checkpoint28's verified hosted failure and later reviewed local recovery. Fresh hosted qualification, governed integration, company evidence and release reconciliation remain."
+        },
+        {
+          "id": "A3",
+          "title": "Build the complete acceptance inventory",
+          "outcome": "Every route, dialog, action, API, role, data state, and supported viewport has an owner and an explicit qualification requirement.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "177aa8f9",
+            "363e5dcf",
+            "5fef9f02",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Current clean-source inventory contains 310 registered API operations and 3154 static UI declarations across 154 hashed source files. Static inventory is a worklist; runtime conditional actions, stateful surfaces and full coverage remain."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "title": "Shared UI & UX",
+      "subtitle": "Preserve Soft Carbon, Pure Clarity, and Monitoring’s approved density and interaction model.",
+      "items": [
+        {
+          "id": "B1",
+          "title": "Repair tenant-switch safety",
+          "outcome": "Cancelling a switch leaves the server tenant, browser context, and drafts unchanged. Cover multiple tabs and in-flight requests.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "scoped_implementation_verified",
+          "reviewed_commits": [
+            "8b2ec178",
+            "0b41d3c7",
+            "2a56682a"
+          ],
+          "remaining": "Scoped tenant fixes and corrected reload synchronization passed assembled CI at 978b14d5, including six root-preview journeys. Company-host trust and final release-candidate proof remain separate."
+        },
+        {
+          "id": "B2",
+          "title": "Complete draft protection",
+          "outcome": "Add forms and inline edits survive tab changes, nested navigation, failures, and accidental closure; deliberate discard is predictable.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709",
+            "8b2ec178",
+            "ba72aa15",
+            "9edd3e47",
+            "70ade100",
+            "d838deac",
+            "4629b134",
+            "ac419e4e",
+            "103e8f8a",
+            "414529d1",
+            "fe91e4fb9cb41cae46564881c62c74482c10b535",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae"
+          ],
+          "remaining": "Identity restore preview/review/apply retains cancellation, pending/tenant/departure guards; stale confirmations preserve peer data and require fresh review. Both-theme held-refresh tests prove queued permission guards outlive PATCH200 and end only after refresh. Other forms, cross-tab/restart persistence and unknown outcomes remain."
+        },
+        {
+          "id": "B3",
+          "title": "Complete form and save behavior",
+          "outcome": "Consistent validation, visible field errors, pending feedback, duplicate-submission prevention, conflict handling, and draft-preserving retries.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "259ebc52",
+            "ba72aa15",
+            "9edd3e47",
+            "70ade100",
+            "d838deac",
+            "4629b134",
+            "5d147d7b",
+            "4b567bbf",
+            "1089cb11",
+            "a307320c",
+            "062dd490",
+            "07d8d2e5",
+            "fcd095ed",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73",
+            "5e87770d",
+            "ec7e6f2d",
+            "643713e2",
+            "103e8f8a",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "c5106bdb16182bfac895641c2c818b1910151628",
+            "fe91e4fb9cb41cae46564881c62c74482c10b535",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "177aa8f9",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Supported-SQLite identity writers retain atomic authority/history and explicit retry. Monitoring logic now loads on demand; blocked or slow downloads preserve multiline plain-text entry, focus and actual save/readback. General idempotency, unknown outcomes and complete form qualification remain."
+        },
+        {
+          "id": "B4",
+          "title": "Finish dialogs, drawers, menus, and popovers",
+          "outcome": "Correct layering, scroll ownership, focus trapping and return, Escape behavior, dismissal, and anchoring during resize or scrolling.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709",
+            "be33d285",
+            "259ebc52",
+            "290e1db7",
+            "755bc2db",
+            "c1a9050f",
+            "01777425",
+            "9c1ee626",
+            "414529d1",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "363e5dcf",
+            "5fef9f02",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Phone feedback moves into the active modern modal using a stable portal; owned node-move blur preserves Undo confirmation/focus. Popups observe the owning viewport and stay inside it; Settings semantic/visual scroll surfaces inherit the height limit. Normal 333/two existing skips, desktop 35 and root six pass, including actual archive/Undo across resize. Original stale-anchor and introduced Settings clipping failures are retained. Legacy no-slot surfaces, short-screen content discovery, all overlay combinations, supported engines and AT/reflow remain."
+        },
+        {
+          "id": "B5",
+          "title": "Qualify the entire visual system",
+          "outcome": "Consistent colors, contrast, typography, spacing, borders, icons, status badges, and hover, selected, and disabled states across populated screens.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709",
+            "be33d285",
+            "259ebc52",
+            "290e1db7",
+            "bb6bf5d5",
+            "70ade100",
+            "d838deac",
+            "4629b134",
+            "c1a9050f",
+            "4b567bbf",
+            "ac01628f",
+            "fd47a427",
+            "df94778d",
+            "103e8f8a",
+            "414529d1",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "363e5dcf",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Final foundation: eight canonical desktop plus two phone cases, five widths/both themes, 148 populated captures, 20 complete detail frames and 2735 contrast samples minimum 4.7588:1. Thirty-four final-source and eighteen earlier renderer-state images directly reviewed; 1008 total captures include attributed negative/intermediate results. Charts, rack equipment, fonts, graphics and detailed dialogs remain; tracked assets match main and no UI source is deleted. Full visual state/before-after atlas remains."
+        },
+        {
+          "id": "B6",
+          "title": "Repair responsive information hierarchy",
+          "outcome": "Primary record identity and essential actions remain usable on phones, laptops, short screens, large text, and long-content datasets.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709",
+            "be33d285",
+            "259ebc52",
+            "290e1db7",
+            "70ade100",
+            "d838deac",
+            "755bc2db",
+            "fd47a427",
+            "df94778d",
+            "103e8f8a",
+            "414529d1",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "177aa8f9",
+            "363e5dcf",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Phone notices reserve shell space and move into the active modern modal; popups follow notification-driven reflow and Settings lower actions remain within their scroll surface. Both-theme recovery, five-width foundation and resize proofs pass. Capped notice rows on very short screens still require complete content-discovery/interaction, zoom and all-component responsive qualification."
+        },
+        {
+          "id": "B7",
+          "title": "Complete accessibility",
+          "outcome": "Keyboard-only workflows, screen-reader semantics, visible focus, adequate targets, zoom and reflow, and reduced-motion behavior.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709",
+            "be33d285",
+            "259ebc52",
+            "290e1db7",
+            "70ade100",
+            "d838deac",
+            "755bc2db",
+            "4b567bbf",
+            "01777425",
+            "1089cb11",
+            "fd47a427",
+            "df94778d",
+            "103e8f8a",
+            "414529d1",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "363e5dcf",
+            "5fef9f02",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Stable notification ownership preserves recovery state and restores existing focus during node movement; actual archive/Undo survives desktop-phone-desktop resizing and restores the record once. Popup keyboard placement, nested dismissal and Settings recovery pass. Full screen-reader, supported-engine, zoom/reflow, short-screen and stateful accessibility acceptance remain."
+        },
+        {
+          "id": "B8",
+          "title": "Unify data-workspace mechanics",
+          "outcome": "Reliable filtering, sorting, selection, grouping, saved views, column preferences, bulk actions, history, and comparison where applicable.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "82c2586e",
+            "1255794d",
+            "fd47a427",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "363e5dcf",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Monitoring/Services saved-view popups follow notification-driven reflow and retain clipboard failure/retry, rename/delete and persistence in both themes at phone/desktop sizes. Monitoring bulk tests select the exact named row and assert the submitted ID; Product fast-filter selection policy remains unqualified. Broader shared mechanics and conditional states remain."
+        },
+        {
+          "id": "B9",
+          "title": "Make every asynchronous state truthful",
+          "outcome": "Loading, empty, stale, partial, unavailable, denied, conflict, and failure states have distinct explanations and useful recovery actions.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "ba72aa15",
+            "9edd3e47",
+            "70ade100",
+            "d838deac",
+            "82c2586e",
+            "4629b134",
+            "5d147d7b",
+            "4b567bbf",
+            "1089cb11",
+            "07d8d2e5",
+            "3badc66a",
+            "9c1ee626",
+            "ac419e4e",
+            "df94778d",
+            "ec7e6f2d",
+            "73a49155",
+            "643713e2",
+            "103e8f8a",
+            "414529d1",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "fe91e4fb9cb41cae46564881c62c74482c10b535",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "177aa8f9",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Logic editor loading, unavailable downloads and late arrival expose truthful states and preserve plain-text entry, focus and actual persistence. Phone modal feedback is visible within its owning surface; paused clocks and stable Undo state survive reparenting. Wider diagnostics, stale reads, unknown outcomes and all async states remain."
+        },
+        {
+          "id": "B10",
+          "title": "Improve navigation and daily efficiency",
+          "outcome": "Reliable deep links, Back behavior, preserved context, tenant-scoped preferences, useful search, clear terminology, dates, units, and shortcuts.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "3badc66a",
+            "9c1ee626",
+            "414529d1",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "363e5dcf",
+            "5fef9f02"
+          ],
+          "remaining": "Saved-view keyboard rename and live stable-link flows remain intact with larger controls. The shared modal heading regression is repaired with all nine original deep-link/search/import/recovery workflow assertions unchanged. Broader browser Back, preferences, search context and daily shortcuts remain."
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "title": "Backend correctness & security",
+      "subtitle": "Prove existing foundations and repair failures at their source.",
+      "items": [
+        {
+          "id": "C1",
+          "title": "Repair Maintenance API defects",
+          "outcome": "Correct awaited deletion, validated dates and references, truthful results, and atomic mutation-plus-audit behavior.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "scoped_implementation_verified",
+          "reviewed_commits": [
+            "39b3704d"
+          ],
+          "remaining": "Maintenance validation and atomic audit passed PR32 assembled CI. Window lifecycle/authoring and broader operations workspace are tracked separately."
+        },
+        {
+          "id": "C2",
+          "title": "Converge API contracts",
+          "outcome": "Typed requests and responses, consistent validation and errors, bounded pagination, and correct omitted-versus-null PATCH semantics.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "12b1801b",
+            "259ebc52",
+            "7323ef6d",
+            "28e0579b",
+            "5b6520d2",
+            "adce6f8e",
+            "bf236cad",
+            "5d147d7b",
+            "602cdf6a",
+            "5bb99964",
+            "eedcd4de",
+            "e08fdad1",
+            "91f0b916",
+            "ac01628f",
+            "c2453f26",
+            "a307320c",
+            "1089cb11",
+            "062dd490",
+            "07d8d2e5",
+            "fcd095ed",
+            "5e87770d",
+            "ec7e6f2d",
+            "643713e2",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "c5106bdb16182bfac895641c2c818b1910151628",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a"
+          ],
+          "remaining": "Permission input validation and exact group-list validation reject malformed writes atomically; omitted malformed legacy groups survive unrelated edits. Full typed schemas/OpenAPI, resource bounds, pagination and other domains remain."
+        },
+        {
+          "id": "C3",
+          "title": "Qualify authorization and tenant isolation",
+          "outcome": "A complete permission matrix across reads, mutations, search, aggregates, exports, embedded projections, and direct URLs. Admin and System Root remain distinct.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "27873d89",
+            "0b41d3c7",
+            "7323ef6d",
+            "679f366a",
+            "9e04102f",
+            "18f0527f",
+            "602cdf6a",
+            "91f0b916",
+            "ac01628f",
+            "b18a299c",
+            "3badc66a",
+            "fcd095ed",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "177aa8f9",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1"
+          ],
+          "remaining": "Seven remaining Settings handlers/eight operations now reload supported-SQLite transaction-time authority after prior dependency authorization. Twenty-four original-source stale-grant controls reproduce accepted writes after admin/custom/role revocation; final full backend 1882/62 passes. Complete tenant/control-plane revocation, other databases and remaining authorization matrix remain."
+        },
+        {
+          "id": "C4",
+          "title": "Prove transaction, retry, and concurrency safety",
+          "outcome": "Stale edits produce actionable conflicts; retries do not duplicate effects; partial failures and unknown outcomes are recoverable.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "8c85f832",
+            "12b1801b",
+            "259ebc52",
+            "7323ef6d",
+            "adce6f8e",
+            "bf236cad",
+            "18f0527f",
+            "602cdf6a",
+            "5bb99964",
+            "d8523809",
+            "3ea3b70a",
+            "0d29d2bd",
+            "91f0b916",
+            "ac01628f",
+            "c2453f26",
+            "fcd095ed",
+            "fd47a427",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73",
+            "5e87770d",
+            "643713e2",
+            "103e8f8a",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "c5106bdb16182bfac895641c2c818b1910151628",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "177aa8f9",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1"
+          ],
+          "remaining": "Remaining Settings identity writers serialize under supported SQLite acquisition, reject busy writes with no mutation and support explicit retry. Concurrent bulk partial writes retain both updates and accurate revisions; team rename/delete versus assignment preserves valid relationships. Thirty-five new canonical backend cases pass. Whole-system idempotency, unknown outcomes, tenant-scale contention/resource bounds and non-SQLite qualification remain."
+        },
+        {
+          "id": "C5",
+          "title": "Unify archive, restore, and purge semantics",
+          "outcome": "Consistent dependency checks, authorization, impact previews, audit records, and valid recovery behavior across domains.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "12b1801b",
+            "c4bbbd49",
+            "3ea3b70a",
+            "0d29d2bd",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
+          ],
+          "remaining": "Restore omission carries ordinary reserved-root deletion authority and preserves the current actor under both supported identity keys. Actual added/removed/changed counts and repeated zero-change restores are verified. Cross-domain lifecycle parity, broader impact policies and recovery matrices remain."
+        },
+        {
+          "id": "C6",
+          "title": "Enforce data and relationship integrity",
+          "outcome": "Stable identities, valid parent and child references, uniqueness rules, canonical relationships, and safe handling of legacy inconsistent records.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "12b1801b",
+            "c4bbbd49",
+            "259ebc52",
+            "7323ef6d",
+            "28e0579b",
+            "679f366a",
+            "5b6520d2",
+            "adce6f8e",
+            "4629b134",
+            "9e04102f",
+            "18f0527f",
+            "602cdf6a",
+            "ead9b508",
+            "5bb99964",
+            "91f0b916",
+            "ac01628f",
+            "a307320c",
+            "062dd490",
+            "b18a299c",
+            "3badc66a",
+            "fcd095ed",
+            "fd47a427",
+            "38a09f73",
+            "5e87770d",
+            "ec7e6f2d",
+            "73a49155",
+            "643713e2",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "c5106bdb16182bfac895641c2c818b1910151628",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1"
+          ],
+          "remaining": "Exact list membership replaces JSON LIKE matching for team rename/delete; restore creates the union of primary/secondary teams while preserving historical snapshots. Ninety-seven new focused cases and full 1847/62 backend pass. Other relationships, tenant-scan bounds, concurrent legacy writers and non-SQLite qualification remain. Concurrent team rename/delete versus assignment now has bounded supported-SQLite relationship proof; latest backend 1882/62 passes."
+        },
+        {
+          "id": "C7",
+          "title": "Harden input and resource boundaries",
+          "outcome": "Test applicable injection, unsafe URLs and files, rich content, exports, oversized requests, rate limits, and information-disclosure risks.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "ff16b087",
+            "a5d268f6",
+            "12b1801b",
+            "c4bbbd49",
+            "259ebc52",
+            "7323ef6d",
+            "28e0579b",
+            "679f366a",
+            "5b6520d2",
+            "adce6f8e",
+            "bf236cad",
+            "5d147d7b",
+            "5bb99964",
+            "ac01628f",
+            "c2453f26",
+            "a307320c",
+            "062dd490",
+            "fcd095ed",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "c5106bdb16182bfac895641c2c818b1910151628",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "177aa8f9",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2"
+          ],
+          "remaining": "Raw malformed identity numbers serialize without endpoint crashes and preserve uncertainty. Restore preview requires strict boolean input and guarded apply requires a 64-character lowercase hash; malformed fields and unsafe snapshots reject atomically. Map-size/depth and broader resource boundaries remain."
+        },
+        {
+          "id": "C8",
+          "title": "Complete credential and secret custody",
+          "outcome": "Approved provider references, privileged access, rotation and revocation, and redaction. Inspect tracked configuration and history; remediate any actual exposure found.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "e5160949",
+            "8b8a8db4",
+            "a5d268f6"
+          ],
+          "remaining": "Ordinary vault reads are metadata-only; reveal is privileged/audited/no-store, UI values expire, metadata edits preserve values, SQL parameters are hidden. Public validation errors no longer echo inputs/custom exceptions and persisted browser diagnostics use metadata only, with legacy migration. Provider custody/rotation, remaining logs/proxy diagnostics and manual report privacy are not qualified; company provider selection is pending."
+        },
+        {
+          "id": "C9",
+          "title": "Qualify long-lived connections and background work",
+          "outcome": "Permission revocation, reconnects, cancellation, process restarts, shutdown, retries, and worker boundaries behave correctly.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "7e7f8d18"
+          ],
+          "remaining": "Revocation, inactive tenants, idle checks, broadcast failure and cancellation verified; remaining workers/reconnect/multi-process behavior unqualified."
+        },
+        {
+          "id": "C10",
+          "title": "Strengthen backend ownership and maintainability",
+          "outcome": "Domain rules have clear shared owners, documented contracts, and meaningful tests; preserve the accepted scheduling and authorization foundations.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [
+            "67e7df395d2554a7d5956bcee840834098de3174"
+          ],
+          "remaining": "Import preview/apply and restore now share supported-SQLite transaction acquisition, conflict reporting and fresh Settings authorization, covered by meaningful concurrency/revocation tests. Broader shared domain ownership, contracts and maintainability remain unqualified."
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "title": "Eight production views",
+      "subtitle": "Domain acceptance for System Management V1, beyond shared-component checks.",
+      "items": [
+        {
+          "id": "D1",
+          "title": "Home",
+          "outcome": "Accurate counts, explicit observation freshness, useful drill-downs, permission-aware search, and no unsupported operational claims.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "b18a299c",
+            "3badc66a"
+          ],
+          "remaining": "Home count/search ownership and grouped conservation remain verified. Endpoint-IP search and mixed Asset/Rack source availability now pass, including zero versus unavailable values. Full roles/freshness/performance and authentic multi-source observation integrations remain."
+        },
+        {
+          "id": "D2",
+          "title": "Assets",
+          "outcome": "Complete hardware, software, service, network, and rack context; trustworthy relationships; safe editing, import, and bulk workflows; usable history.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "944c8709",
+            "e5160949",
+            "c4fe60fc",
+            "c4bbbd49",
+            "259ebc52",
+            "7323ef6d",
+            "290e1db7",
+            "28e0579b",
+            "679f366a",
+            "ba72aa15",
+            "9edd3e47",
+            "5b6520d2",
+            "70ade100",
+            "adce6f8e",
+            "d838deac",
+            "bf236cad",
+            "4629b134",
+            "5d147d7b",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Existing Asset draft/scalar/audit/import and lifecycle safeguards remain. Assembled normal regression passes actual phone export/modal feedback and archive/Undo through resize, restoring the record once. Header mapping, resource complexity, optimistic conflicts, roles, large datasets and complete module qualification remain."
+        },
+        {
+          "id": "D3",
+          "title": "Monitoring",
+          "outcome": "Preserve golden behavior; qualify logic, schedules, ownership, recovery references, lifecycle, and the distinction between configuration and observed health.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "363e5dcf",
+            "5fef9f02",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Logic editing loads on demand with blocked/slow module recovery and exact multiline save/readback; native plain-text focus/value survives late enhanced-editor arrival. Saved-view reflow, exact-ID bulk persistence and populated detail foundations pass. Complete lifecycle, Product fast-filter policy, syntax/language behavior, roles and performance qualification remain."
+        },
+        {
+          "id": "D4",
+          "title": "Services",
+          "outcome": "Consistent hosting and asset synchronization, lifecycle, configuration, secret references, relationships, and bulk and import behavior.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "e08fdad1",
+            "91f0b916",
+            "ac01628f",
+            "c2453f26",
+            "a307320c",
+            "1089cb11",
+            "062dd490",
+            "07d8d2e5",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "363e5dcf",
+            "5fef9f02",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Services saved-view popups retain clipboard failure/retry, rename/delete, persistence and correct anchoring after notice reflow in both themes at phone/desktop sizes. Populated metadata/detail foundations remain. Full lifecycle authority, typed responses, pagination and final module qualification remain."
+        },
+        {
+          "id": "D5",
+          "title": "Network",
+          "outcome": "Valid endpoints, ports, direction and connection semantics; consistent creation, import, and bulk validation; useful relationship navigation.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "679f366a",
+            "82c2586e",
+            "1255794d",
+            "9e04102f",
+            "18f0527f",
+            "4b567bbf",
+            "602cdf6a",
+            "ead9b508",
+            "5bb99964",
+            "d8523809",
+            "3ea3b70a",
+            "eedcd4de",
+            "0d29d2bd",
+            "3badc66a",
+            "9c1ee626",
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "5fef9f02",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Actual direct-link clipboard failure/retry is visible within the owning phone modal in both themes; final normal regression preserves endpoint/detail safeguards. Dormant revision UI, precision/concurrency, broader roles/performance and complete layouts remain."
+        },
+        {
+          "id": "D6",
+          "title": "Racks",
+          "outcome": "Transaction-safe placement and collision checks, credible capacity information, responsive planning, reliable relocation and recovery.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "0390df80",
+            "d838deac"
+          ],
+          "remaining": "Earlier Rack query batching is reviewed. Nullable imported asset types no longer crash mount search; the explicit regression preserves site navigation, blank-plan mounting and collision rejection. Broad placement concurrency, capacity, responsive planning, relocation and recovery remain."
+        },
+        {
+          "id": "D7",
+          "title": "Audit Logs",
+          "outcome": "Correct actor and target history, date and filter semantics, stable pagination, complete-scope exports, useful record links, and protected retention.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "bf236cad",
+            "755bc2db",
+            "c1a9050f",
+            "602cdf6a",
+            "d8523809",
+            "0d29d2bd",
+            "ac01628f",
+            "c2453f26",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08"
+          ],
+          "remaining": "New identity restore revisions report actual additions, removals and changes rather than zero placeholders, including repeated restores and preserved whitespace differences. Historical source records remain untouched. Other audit writers, retention, roles/export and aggregate history remain."
+        },
+        {
+          "id": "D8",
+          "title": "Settings / Access",
+          "outcome": "Predictable administration, privilege boundaries, safe tenant, user, and role changes, actionable diagnostics, and recovery from administrative mistakes.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "fcd095ed",
+            "fd47a427",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73",
+            "df94778d",
+            "5e87770d",
+            "ec7e6f2d",
+            "73a49155",
+            "643713e2",
+            "103e8f8a",
+            "414529d1",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "c5106bdb16182bfac895641c2c818b1910151628",
+            "fe91e4fb9cb41cae46564881c62c74482c10b535",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "71537075e400d3af65a0bad7f2dfa1b9d9d56f3e",
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
+            "f7974c193f3d6cb025fa5ac82b3827860ae8cc9a",
+            "139fe66ff7bffe940ed22239425375a67c97e78c",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "177aa8f9",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Final normal and targeted 26-case Settings bulk proofs preserve exact records, atomic history, nested menus, pending guards, single recovery alerts, explicit retry and meaningful focus. Shared popup bounds exposed inner-dialog clipping; semantic/visual height inheritance now passes the unchanged full-viewport/action assertions. Complete roles, scale, schemas and final module qualification remain."
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "title": "Performance & deployment",
+      "subtitle": "Demonstrate speed, reliability, a safe work setup, and recoverable operations.",
+      "items": [
+        {
+          "id": "E1",
+          "title": "Frontend performance",
+          "outcome": "Measure and improve startup, typing, filtering, scrolling, detail opening, bundle loading, long tasks, and long-session memory use.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [
+            "b92c16fecc7b1edc0c28e55748fb7a2aa95dfb8b",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Final cold observations reduce decoded JavaScript by 391935 bytes (14.6987%) on Assets and 390185 bytes (16.2262%) on Monitoring in both themes by deferring CodeMirror. Shared recovery code adds 1304-1334 bytes on other routes. One sample per route/theme with sparse fixtures proves payload waste removal, not startup/p95 or field latency. Typing/filtering/scroll/detail budgets, long tasks, large estates and long-session memory remain unqualified."
+        },
+        {
+          "id": "E2",
+          "title": "Backend and database capacity",
+          "outcome": "Remove measured query waterfalls and N+1 patterns; qualify indexes, pagination, SQLite contention, connection handling, and supported process topology.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "0390df80",
+            "679f366a",
+            "5d147d7b"
+          ],
+          "remaining": "Rack SELECTs reduced from 241 to 2 for 40 racks/120 placements; interface reads use three SELECTs at 1/40/600 ports. Import file parsing now runs off the request event loop with bounded row admission. Aggregate concurrency/memory/CPU, pagination, broader scale, indexes, contention and process topology remain unqualified."
+        },
+        {
+          "id": "E3",
+          "title": "Load and failure testing",
+          "outcome": "Representative concurrent users, large estates, slow networks, interrupted requests, restart recovery, and sustained-use tests meet declared budgets.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Representative concurrent users, large estates, slow networks, interrupted requests, restart recovery, and sustained-use tests meet declared budgets."
+        },
+        {
+          "id": "E4",
+          "title": "Operational observability",
+          "outcome": "Useful request and action correlation, structured redacted logs, latency, error, and saturation metrics, readiness, and actionable alerts.",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Useful request and action correlation, structured redacted logs, latency, error, and saturation metrics, readiness, and actionable alerts."
+        },
+        {
+          "id": "E5",
+          "title": "Repair the work-environment startup experience",
+          "outcome": "A documented pull, configure, and start path preserves work and data, avoids automatic hard resets, uses qualified dependencies, and diagnoses forwarded-port failures.",
+          "tag": "Known repair",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "6c900da5",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74"
+          ],
+          "remaining": "Final startup/safety proof passes 109 tests plus 23 subtests, with stage argument rejection before mutation and preserved launcher self-test. Exact work-environment pull/configure/start and forwarded-port qualification remain."
+        },
+        {
+          "id": "E6",
+          "title": "Strengthen CI and supply-chain controls",
+          "outcome": "Required checks protect the actual PR and main candidate; dependency locks, vulnerability checks, secret scanning, and risk-based regression coverage stay current.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "38c82a58",
+            "0c9cabcf",
+            "597c2dd9",
+            "2a56682a",
+            "adce6f8e",
+            "bf236cad",
+            "5d147d7b",
+            "b772c8bc",
+            "d9a5a868",
+            "9e04102f",
+            "18f0527f",
+            "602cdf6a",
+            "ead9b508",
+            "5bb99964",
+            "d8523809",
+            "3ea3b70a",
+            "eedcd4de",
+            "0d29d2bd",
+            "01777425",
+            "e08fdad1",
+            "91f0b916",
+            "ac01628f",
+            "c2453f26",
+            "a307320c",
+            "1089cb11",
+            "062dd490",
+            "b18a299c",
+            "fcd095ed",
+            "fd47a427",
+            "ac419e4e",
+            "92e3d0d7",
+            "38a09f73",
+            "df94778d",
+            "5e87770d",
+            "ec7e6f2d",
+            "73a49155",
+            "643713e2",
+            "103e8f8a",
+            "414529d1",
+            "f0e6373e3adf2a9e084d6c2662fdbce5d83af289",
+            "7b38343670d6f1289cf373526d67b0253dea6700",
+            "778d269841fa8e7f954123beed3f85be86874ec7",
+            "100b388546463587b47a6a8cb14caae5b1452540",
+            "b26a29266f364e8a75e36b45edeac21b543a23ab",
+            "73f268dd5ff08f8b1e812767d31866540b0d22f6",
+            "c5106bdb16182bfac895641c2c818b1910151628",
+            "fe91e4fb9cb41cae46564881c62c74482c10b535",
+            "c57f0338f540e64fe67715f8daf980d27bae93bc",
+            "4eff074977067c0c0849a5f9e0d54841c2c3aa63",
+            "459291a678a13d19c0c9561a7f7a12d05c1aff9f",
+            "978eafe99faa60997bca5aa370c58d263aaab9e1",
+            "67e7df395d2554a7d5956bcee840834098de3174",
+            "6146121a8c1a3e842a67eff635d21ffbd0e00a08",
+            "977207653839845e1642a31b3811671187eeb870",
+            "3bae47ba24814c3ee4904d2b34dae3331a833e9e",
+            "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+            "fca3758399492c3a5f00b86e149401a96936de56",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "177aa8f9",
+            "363e5dcf",
+            "5fef9f02",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74",
+            "faea5bfc072a7de86f1426810afcfe3fe2d514e5",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Checkpoint28 hosted checks, desktop and root pass, but normal 306 pass/12 fail/two existing skips and required fail; four receipts and 862 durable files are verified. Later recovery passes local frontend 930/163, normal 333/two exact existing skips, desktop 35 and root six with zero retries. Fresh hosted qualification, supply-chain controls and final release gates remain."
+        },
+        {
+          "id": "E7",
+          "title": "Qualify the company runtime",
+          "outcome": "Real identity, proxy, and CORS behavior, persistent storage, process supervision, release-version consistency, and readiness work in your environment.",
+          "approval": "yes",
+          "status": "requires_company_evidence",
+          "reviewed_commits": [
+            "27873d89"
+          ],
+          "remaining": "Need authentic company hosting, identity, origins, persistent volume and supervision."
+        },
+        {
+          "id": "E8",
+          "title": "Prove backup, migration, restore, and rollback",
+          "outcome": "All tenant databases are covered; upgrades are rehearsed; recovery is executed against isolated targets and meets agreed recovery objectives.",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [],
+          "remaining": "Recovery/preflight checks are retained in CI: 76 combined startup/recovery tests and 23 subtests passed at 597c2dd9. Authentic operational rehearsal and agreed RPO/RTO remain."
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "title": "Broader SysGrid product",
+      "subtitle": "Additional scope beyond the eight-view release, graduated after its prerequisites.",
+      "items": [
+        {
+          "id": "F1",
+          "title": "Real estate discovery and synchronization",
+          "outcome": "Company-selected integrations populate canonical assets with provenance, reconciliation rules, freshness, and controlled conflict handling.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "requires_company_input",
+          "reviewed_commits": [],
+          "remaining": "Pending company-selected source/API and approved test target; never invent integration credentials or provenance."
+        },
+        {
+          "id": "F2",
+          "title": "Production operational adapters",
+          "outcome": "Real supported actions complete preview → authorize → execute → progress → verify → recover, with durable records and appropriate safeguards.",
+          "tag": "Known expansion gap",
+          "approval": "yes",
+          "status": "requires_company_input",
+          "reviewed_commits": [],
+          "remaining": "Pending company-selected action provider and supported actions; existing simulation remains clearly labeled."
+        },
+        {
+          "id": "F3",
+          "title": "Complete Maintenance and operations workspace",
+          "outcome": "Engineers can plan affected systems, schedule work, use runbooks, execute approved actions, verify results, and recover within SysGrid.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "in_progress",
+          "reviewed_commits": [
+            "bc40bdc9",
+            "8c85f832"
+          ],
+          "remaining": "Simulation workspace plus window authoring/idempotent save/nondestructive cancellation passed assembled CI at 597c2dd9. Cancellation preserves history and blocks stale execution. Real provider adapters, runbook integration and authentic company evidence remain."
+        },
+        {
+          "id": "F4",
+          "title": "Canonical Architecture workspace",
+          "outcome": "Productize Architecture v2 and traceability while preserving all valuable legacy information, existing features and write paths until a separately approved migration. The owner's preservation feedback overrides the original retirement language.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Productize Architecture v2 and asset/project traceability while preserving existing legacy information, features and write paths. Any retirement requires separate explicit approval."
+        },
+        {
+          "id": "F5",
+          "title": "Projects / PV1 completion",
+          "outcome": "Complete Portfolio, My Day, Home, Work, Plan, Timeline, Updates, and Outcomes while preserving accepted scheduling and virtualization contracts.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Complete Portfolio, My Day, Home, Work, Plan, Timeline, Updates, and Outcomes while preserving accepted scheduling and virtualization contracts."
+        },
+        {
+          "id": "F6",
+          "title": "Knowledge and runbooks",
+          "outcome": "Useful authoring, versions, review and verification status, ownership, search, contextual links, permissions, and recovery from mistaken edits.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Useful authoring, versions, review and verification status, ownership, search, contextual links, permissions, and recovery from mistaken edits."
+        },
+        {
+          "id": "F7",
+          "title": "Monitoring-to-incident / RCA / Research / FAR workflows",
+          "outcome": "Connect observations, affected systems, investigation, corrective action, knowledge, and verified outcomes through one traceable workflow.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Connect observations, affected systems, investigation, corrective action, knowledge, and verified outcomes through one traceable workflow."
+        },
+        {
+          "id": "F8",
+          "title": "Remaining modules and management projections",
+          "outcome": "Qualify Vendors and External workflows and management reporting against canonical operational facts before promoting them to production.",
+          "tag": "Expanded scope",
+          "approval": "yes",
+          "status": "unqualified",
+          "reviewed_commits": [],
+          "remaining": "Qualify Vendors and External workflows and management reporting against canonical operational facts before promoting them to production."
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "title": "Final acceptance",
+      "subtitle": "Prove the assembled product on the exact release candidate and in the company environment.",
+      "items": [
+        {
+          "id": "G1",
+          "title": "Final candidate regression",
+          "outcome": "Required backend, frontend, browser, role, concurrency, failure and recovery, and supported-browser checks pass on the release candidate.",
+          "approval": "yes",
+          "status": "pending_final_candidate",
+          "reviewed_commits": [
+            "5af5a62ec5453cf08d7bb203fc9499ef8475e649",
+            "0bca1b14603c1ca019d36376c60bd7dd527a314e",
+            "9944dce193f28a4497d798d060c623f83d86ffdf",
+            "fca3758399492c3a5f00b86e149401a96936de56",
+            "97eab1d1a11589bfb15d95cfdbf8a370570c6422",
+            "92827330a6a42dfb2d8e8fc8a46e1ecc84e47f21",
+            "a3958e408e8007814d6a578978519473dfb81976",
+            "177aa8f9",
+            "363e5dcf",
+            "5fef9f02",
+            "f97300d9d1facacde6b24458a04c48f18698c914",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "dcbe8b6e2423991cbc92273788d1762bb110edbd",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "381d5e8ef4d906ae617c204ba0aae9aa8f2cca74",
+            "faea5bfc072a7de86f1426810afcfe3fe2d514e5",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Latest completed green checkpoint27 remains separate from checkpoint28's verified hosted failure. Later reviewed source passes all local frontend checks, normal 333/two exact existing skips, desktop 35 and root six; complementary phone foundation supplies the two missing viewport cases without repeating desktop work. Fresh hosted, supported-browser/company and release qualification remain."
+        },
+        {
+          "id": "G2",
+          "title": "Stateful visual and accessibility acceptance",
+          "outcome": "Review actual populated screens and material interactions in both themes; refresh the source-bound atlas and protect accepted behavior.",
+          "approval": "yes",
+          "status": "pending_final_candidate",
+          "reviewed_commits": [
+            "944c8709",
+            "c00077939aae1f5ffe79e1c3e7299803210a534a",
+            "a3988aa9d2db7a358af2ef54c83ff4e30bfdaf50",
+            "cd1d198132d339c7fe84bd3a774dd41ae78780e2",
+            "de83c8ce0552c45a1a6fbed749c02f0dfaa9efae",
+            "c3495900a60f2422f793d2c5f7029863afe91e2e",
+            "74625ab8a3cb664ad2d4982b4b9a44b1ee0e896a",
+            "3d55dbb0878816c57eb9bbe7463edbad51b259ea",
+            "43fbb68980048ce732f70477878f30dbe85b99ff",
+            "b0a403bcffaf3ba1950d3d4e0272e75e886dc7d1",
+            "d51a32f0ad7de39d54a64cad80d20b23f433a0c4",
+            "fcd8560c2ef25682519db2694d3599bac28e5840",
+            "3a89ac99e54b31749a9f68d7c6491110c630c80e",
+            "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
+          ],
+          "remaining": "Final proof retains 148 populated foundation captures and 20 complete detail frames across five widths/both themes, with 2735 contrast samples minimum 4.7588:1. Thirty-four final-source and eighteen earlier renderer-state images directly reviewed. Actual modal feedback, popup reflow, Settings containment and archive/Undo focus/state survive tested paths. Fonts/graphics match main and no UI source is deleted. Full before-after/state atlas, short-screen content discovery, legacy no-slot surfaces, AT/zoom and supported-engine acceptance remain."
+        },
+        {
+          "id": "G3",
+          "title": "Authentic company pilot",
+          "outcome": "Real engineers complete representative tasks using real identity and supported systems; measure usability, performance, errors, persistence, and recovery.",
+          "approval": "yes",
+          "status": "requires_company_evidence",
+          "reviewed_commits": [],
+          "remaining": "Authentic engineers, representative tasks, real systems and measured outcomes."
+        },
+        {
+          "id": "G4",
+          "title": "Applicable release graduation",
+          "outcome": "V1 receives its own acceptance; PV1 follows fresh P12 → P13 → authentic P14, preserving its exact arithmetic, fixtures, and performance requirements.",
+          "detail": "PV1 retains 10,000 tasks / 20,000 dependencies; Project Home p95 ≤ 2,500 ms; schedule preview p95 ≤ 1,500 ms; 10 warmups + 100 measured samples. P12: 136 total / 124 VERIFIED / 0 FAILED / 0 BLOCKED / 12 NOT_EVALUATED. Note in your feedback if you are approving only the V1 portion.",
+          "approval": "yes",
+          "status": "pending_final_candidate",
+          "reviewed_commits": [],
+          "remaining": "Separate V1 acceptance; PV1 fresh same-lineage P12 then P13 then authentic P14."
+        }
+      ]
+    }
+  ]
+}
