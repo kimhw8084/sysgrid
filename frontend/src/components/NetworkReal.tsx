@@ -30,6 +30,7 @@ import {
 } from './shared/OperationalRowActionMenu'
 import {
   createOperationalUtilityColumns,
+  renderOperationalRowActions,
 } from './shared/OperationalGridStandard'
 import {
   applyOperationalActionColumn,
@@ -2108,7 +2109,7 @@ export default function NetworkReal() {
         headerClass: 'text-center',
         sortable: false,
         filter: false,
-        cellRenderer: (p: any) => p.data ? renderPrimaryRowActions(p.data) : null,
+        cellRenderer: (p: any) => p.data ? renderOperationalRowActions(renderPrimaryRowActions(p.data), getNetworkConnectionTitle(p.data)) : null,
         lockVisible: true,
       }, OPERATIONAL_GRID_WIDTHS.standardAction),
     ]

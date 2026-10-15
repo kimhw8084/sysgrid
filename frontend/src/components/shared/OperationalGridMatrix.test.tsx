@@ -15,6 +15,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => setTimeout(() => callback(0), 16))
   vi.stubGlobal('cancelAnimationFrame', clearTimeout)
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
 })
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
 
@@ -59,4 +60,24 @@ it('still releases commands if even they cannot fit with the minimum center view
   captured.props.processUnpinnedColumns({ columns: [commands], api, viewportWidth: 120 })
   act(() => vi.advanceTimersByTime(16))
   expect(api.setColumnsPinned).toHaveBeenCalledExactlyOnceWith([commands], null)
+})
+
+it('gives phone identities and commands room and restores the configured desktop density', () => {
+  let changed: (() => void) | undefined
+  const media = { matches: true, addEventListener: vi.fn((_event, listener) => { changed = listener }), removeEventListener: vi.fn() }
+  const match = vi.spyOn(window, 'matchMedia').mockReturnValue(media as any)
+  const { unmount, rerender } = render(<OperationalGridMatrix fontSize={11} rowDensity={8} />)
+  try {
+    expect(captured.props.rowHeight).toBe(52)
+    media.matches = false
+    act(() => changed?.())
+    expect(captured.props.rowHeight).toBe(23)
+    rerender(<OperationalGridMatrix fontSize={20} rowDensity={8} />)
+    expect(captured.props.rowHeight).toBe(32)
+    media.matches = true
+    act(() => changed?.())
+    expect(captured.props.rowHeight).toBe(57)
+    unmount()
+    expect(media.removeEventListener).toHaveBeenCalledWith('change', changed)
+  } finally { match.mockRestore() }
 })

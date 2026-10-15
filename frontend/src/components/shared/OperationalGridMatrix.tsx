@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { OPERATIONAL_GRID_CLASSES } from './OperationalGridContract'
 
@@ -33,6 +33,15 @@ export const OperationalGridMatrix = React.memo(({
   suppressRowClickSelection = true,
 }: any) => {
   const apiRef = useRef<any>(null)
+  const [phone, setPhone] = useState(() => window.matchMedia?.('(max-width: 767px)').matches ?? false)
+  useEffect(() => {
+    const media = window.matchMedia?.('(max-width: 767px)')
+    if (!media) return
+    const changed = () => setPhone(media.matches)
+    media.addEventListener('change', changed)
+    changed()
+    return () => media.removeEventListener('change', changed)
+  }, [])
   const unpinFrame = useRef<number>()
   // AG Grid detects pinned overflow inside ResizeObserver delivery. Defer its
   // layout-changing unpin until the next frame to avoid same-frame resize loops.
@@ -104,7 +113,7 @@ export const OperationalGridMatrix = React.memo(({
       rowSelection="multiple"
       animateRows={false}
       headerHeight={fontSize + rowDensity + 10}
-      rowHeight={fontSize + rowDensity + 4}
+      rowHeight={Math.max(phone ? Math.max(52, Math.ceil(fontSize * 1.25) + 32) : 0, fontSize + rowDensity + 4)}
       rowBuffer={6}
       valueCache={true}
       context={context}
