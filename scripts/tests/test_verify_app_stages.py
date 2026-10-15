@@ -109,7 +109,8 @@ def test_checks_stage_retains_canonical_backend_startup_and_frontend_coverage(st
     assert result.returncode == 0, result.stderr
     tests = shlex.split(re.search(r'BACKEND_QUALIFICATION_TESTS=\((.*?)\)', VERIFIER.read_text(), re.S).group(1))
     backend = next(event for event in events if 'test_migration_graph.py' in event['args'])
-    assert backend['args'] == ['-m', 'pytest', '-q', *tests] and len(tests) == 66
+    assert backend['args'] == ['-m', 'pytest', '-q', *tests] and len(tests) == 67
+    assert 'test_settings_deployment_boundary.py' in tests
     assert {'test_monitoring_history_authority.py', 'test_monitoring_domain_contract.py',
             'test_monitoring_purge_authority.py', 'tests/test_monitoring_helpers.py'} <= set(tests)
     startup = next(event for event in events if 'scripts/tests/test_safe_startup.py' in event['args'])

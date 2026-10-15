@@ -14,7 +14,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from ..database import get_db, get_config_db, Base
 from ..models import models
 from ..models.config import Tenant, UserTenantAccess, GlobalSetting
-from ..core.config import settings
+from ..core.config import PRODUCTION_REQUIRED_ENV, settings
 from ..runtime_diagnostics import (
     build_import_export_contract_summary,
     frontend_build_version_hint,
@@ -1268,7 +1268,7 @@ async def update_global_settings(
     if not operator or not operator.is_admin:
         raise HTTPException(status_code=403, detail="Privileged Access Required: Configuration updates restricted to administrators.")
 
-    protected_keys = {
+    protected_keys = set(PRODUCTION_REQUIRED_ENV) | {
         "DATABASE_URL",
         "CONFIG_DATABASE_URL",
         "TENANT_STORAGE_ROOT",
@@ -1282,13 +1282,23 @@ async def update_global_settings(
         "MODULE_STAGE_OVERRIDES",
         "PV1_RELEASE_CANDIDATE_SHA",
         "PV1_RELEASE_ID",
-        "DEFAULT_EMAIL_DOMAIN"
+        "DEFAULT_EMAIL_DOMAIN",
+        "USER_ID_ENV_VAR",
+        "PUBLIC_READONLY_TENANT_NAME",
+        "RATE_LIMIT_ENABLED",
+        "RATE_LIMIT_REQUESTS",
+        "RATE_LIMIT_WINDOW_SECONDS",
+        "API_V1_STR",
     }
+
+    # Validate the whole request before changing either persistent or in-memory
+    # configuration. Security boundaries are deployment-owned, in every mode.
+    for key in data:
+        if key in protected_keys:
+            raise HTTPException(status_code=400, detail=f"{key} is a deploy-time setting and must be changed through environment/bootstrap configuration, not runtime global settings.")
 
     for key, value in data.items():
         if key.startswith("_"): continue # Skip metadata
-        if key in protected_keys:
-            raise HTTPException(status_code=400, detail=f"{key} is a deploy-time setting and must be changed through environment/bootstrap configuration, not runtime global settings.")
         res = await config_db.execute(select(GlobalSetting).filter(GlobalSetting.key == key))
         setting = res.scalar_one_or_none()
         old_value = setting.value if setting else "None"

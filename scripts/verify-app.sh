@@ -94,6 +94,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_cross_module_integrations.py
   test_operational_actions.py
   test_settings_api_edges.py
+  test_settings_deployment_boundary.py
   test_settings_workflows.py
   test_settings_operator_input_integrity.py
   test_settings_sync_preview_integrity.py
