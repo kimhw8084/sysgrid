@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import path from 'node:path'
-import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test'
+import { expect, type APIRequestContext, type Locator, type Page, type Route } from '@playwright/test'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const apiOrigin = apiBase.replace(/\/api\/v1$/, '')
@@ -147,7 +147,13 @@ export async function resetBrowserState(page: Page) {
   }
 
   // Direct clean up of localStorage and sessionStorage on the app origin
+  // An inert same-origin document gives storage access without starting an app
+  // that the caller immediately tears down while bootstrap requests are active.
+  const resetDocument = (route: Route) => route.request().isNavigationRequest() && route.request().resourceType() === 'document'
+    ? route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html lang="en"><title>Storage reset</title></html>' })
+    : route.fallback()
   try {
+    await page.route('**/*', resetDocument)
     await page.goto('/')
     await page.evaluate(() => {
       const keysToRemove = Object.keys(window.localStorage).filter((key) => (
@@ -160,6 +166,8 @@ export async function resetBrowserState(page: Page) {
     })
   } catch (e) {
     // ignore
+  } finally {
+    await page.unroute('**/*', resetDocument)
   }
 
   await page.addInitScript(({ injectedApiOrigin, resetToken, tenantId, userId, workspaceStateKeys }) => {
