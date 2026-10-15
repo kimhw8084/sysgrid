@@ -245,8 +245,9 @@ class Guard:
             (
                 "VITE_API_BASE_URL",
                 "VITE_IDENTITY_MODE",
-                "trusted_proxy",
-                "shouldAttachUserIdHeader",
+                "getIdentityMode() === 'development'",
+                "delete headers['x-user-id']",
+                "headers['X-Tenant-Id'] = getCurrentTenantId()",
                 "credentials:",
             ),
             "frontend-separate-service-url-contract",
@@ -257,9 +258,15 @@ class Guard:
             (
                 "VITE_API_BASE_URL",
                 "/api/v1/settings/bootstrap",
-                "Cross-origin deployment detected",
+                "shouldUseWebSocketSync(baseUrl)",
+                "startConfigurationSync(fetchConfig, socketUrl)",
             ),
             "frontend-bootstrap-routing-contract",
+        )
+        self.require_tokens(
+            "frontend/src/api/configurationSync.ts",
+            ("window.setInterval(sync, 60_000)", "CONFIG_UPDATED", "window.clearInterval(interval)", "socket?.close()"),
+            "frontend-configuration-convergence-contract",
         )
 
     def production_required_env_names(self) -> set[str]:

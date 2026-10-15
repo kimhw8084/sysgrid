@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { OPERATIONAL_GRID_CLASSES } from './OperationalGridContract'
 
@@ -33,6 +33,36 @@ export const OperationalGridMatrix = React.memo(({
   suppressRowClickSelection = true,
 }: any) => {
   const apiRef = useRef<any>(null)
+  const unpinFrame = useRef<number>()
+  // AG Grid detects pinned overflow inside ResizeObserver delivery. Defer its
+  // layout-changing unpin until the next frame to avoid same-frame resize loops.
+  const processUnpinnedColumns = useCallback(({ columns, api, viewportWidth }: any) => {
+    let overflowing = columns
+    if (columns.some((column: any) => column.getColId?.() === 'row_actions')) {
+      const left = api.getDisplayedLeftColumns()
+      const right = api.getDisplayedRightColumns()
+      let pinnedWidth = [...left, ...right].reduce((total, column) => total + column.getActualWidth(), 0)
+      // Keep row commands reachable on phones. Release other pinned columns
+      // first, retaining AG Grid's minimum 50px center viewport and width rules.
+      const candidates = [...right].reverse().filter(column => column.getColId() !== 'row_actions')
+        .concat([...left].reverse(), right.filter((column: any) => column.getColId() === 'row_actions'))
+      overflowing = []
+      for (const column of candidates) {
+        if (pinnedWidth < viewportWidth - 50) break
+        overflowing.push(column)
+        pinnedWidth -= column.getActualWidth()
+      }
+    }
+    if (unpinFrame.current !== undefined) cancelAnimationFrame(unpinFrame.current)
+    unpinFrame.current = requestAnimationFrame(() => {
+      unpinFrame.current = undefined
+      if (!api.isDestroyed()) api.setColumnsPinned(overflowing, null)
+    })
+    return []
+  }, [])
+  useEffect(() => () => {
+    if (unpinFrame.current !== undefined) cancelAnimationFrame(unpinFrame.current)
+  }, [])
 
   const defaultColDef = useMemo(() => ({
     sortable: true,
@@ -67,6 +97,7 @@ export const OperationalGridMatrix = React.memo(({
       rowData={rowData}
       columnDefs={columnDefs}
       autoSizeStrategy={autoSizeStrategy}
+      processUnpinnedColumns={processUnpinnedColumns}
       colResizeDefault={colResizeDefault}
       defaultColDef={defaultColDef}
       getRowId={getRowId}

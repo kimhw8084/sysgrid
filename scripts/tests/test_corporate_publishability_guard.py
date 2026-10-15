@@ -73,12 +73,20 @@ class CorporatePublishabilityGuardTests(unittest.TestCase):
             }),
             "frontend/src/api/apiClient.ts": (
                 "const a='VITE_API_BASE_URL'; const b='VITE_IDENTITY_MODE'; "
-                "const c='trusted_proxy'; const d='shouldAttachUserIdHeader'; "
+                "delete headers['x-user-id']; "
+                "if (getIdentityMode() === 'development') headers['X-User-Id'] = currentUser; "
+                "headers['X-Tenant-Id'] = getCurrentTenantId(); "
                 "fetch('/', { credentials: 'include' });"
             ),
             "frontend/src/main.tsx": (
                 "const a='VITE_API_BASE_URL'; const b='/api/v1/settings/bootstrap'; "
-                "const c='Cross-origin deployment detected';"
+                "if (shouldUseWebSocketSync(baseUrl)) socketUrl = target; "
+                "startConfigurationSync(fetchConfig, socketUrl);"
+            ),
+            "frontend/src/api/configurationSync.ts": (
+                "const interval = window.setInterval(sync, 60_000); "
+                "if (event.data === 'CONFIG_UPDATED') sync(); "
+                "window.clearInterval(interval); socket?.close();"
             ),
             "deploy/backend.env.production.example": "\n".join([
                 "ENVIRONMENT=production",
@@ -151,6 +159,26 @@ class CorporatePublishabilityGuardTests(unittest.TestCase):
         )
         statuses = self.statuses(root)
         self.assertEqual(statuses["frontend-separate-service-url-contract"], "FAIL")
+
+    def test_identity_contract_requires_development_only_browser_identity(self) -> None:
+        root = self.make_tree()
+        path = root / "frontend/src/api/apiClient.ts"
+        path.write_text(path.read_text().replace("getIdentityMode() === 'development'", "true"))
+        self.assertEqual(self.statuses(root)["frontend-separate-service-url-contract"], "FAIL")
+
+    def test_identity_contract_requires_removing_caller_identity(self) -> None:
+        root = self.make_tree()
+        path = root / "frontend/src/api/apiClient.ts"
+        path.write_text(path.read_text().replace("delete headers['x-user-id']", ""))
+        self.assertEqual(self.statuses(root)["frontend-separate-service-url-contract"], "FAIL")
+
+    def test_configuration_convergence_requires_polling_and_cleanup(self) -> None:
+        for token in ("window.setInterval(sync, 60_000)", "window.clearInterval(interval)", "socket?.close()"):
+            with self.subTest(token=token):
+                root = self.make_tree()
+                path = root / "frontend/src/api/configurationSync.ts"
+                path.write_text(path.read_text().replace(token, ""))
+                self.assertEqual(self.statuses(root)["frontend-configuration-convergence-contract"], "FAIL")
 
     def test_env_output_never_contains_values(self) -> None:
         root = self.make_tree()

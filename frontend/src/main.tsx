@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 import { apiFetch, setApiOverride, getApiBaseUrl } from './api/apiClient'
+import { startConfigurationSync } from './api/configurationSync'
 import { buildBootstrapFailureDiagnosis, buildBootstrapReport } from './api/bootstrapDiagnostics'
 import { AlertTriangle, Bug, Copy, Database, ExternalLink, Globe, RefreshCcw, ShieldAlert, UserCircle2, Wrench } from 'lucide-react'
 import { WorkspaceSectionCard, WorkspaceSectionBadge, WorkspaceEmptyState } from './components/shared/OperationalWorkspacePrimitives'
@@ -74,15 +75,15 @@ const Bootstrap = () => {
   const [initialTenantPreference] = useState(captureTenantPreference)
   const [error, setError] = useState<string | null>(null);
   const [failedUrl, setFailedUrl] = useState<string>("");
-  const [appKey, setAppKey] = useState(0);
+  const [, setConfigRevision] = useState(0);
   const [backendDiagnostics, setBackendDiagnostics] = useState<any>(null);
   const [errorDetails, setErrorDetails] = useState<any>(null);
   const [copyFeedback, setCopyFeedback] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
-    let ws: WebSocket | null = null;
-    let pollInterval: any = null;
+    let stopConfigSync: (() => void) | null = null;
+    let configLoaded = false;
     let retryTimeout: any = null;
 
     const sleep = (ms: number) => new Promise((resolve) => {
@@ -163,6 +164,7 @@ const Bootstrap = () => {
         }
         
         const config = await response.json();
+        if (!isMounted) return false;
         console.log("BOOTSTRAP: Configuration received", config);
         if (usedRelativeBootstrap) {
           const currentOverride = localStorage.getItem('SYSGRID_OVERRIDE_API_URL') || ''
@@ -181,9 +183,9 @@ const Bootstrap = () => {
             localStorage.setItem(lsKey, String(value));
           }
         });
-        if (changed && ready) {
+        if (changed && configLoaded) {
           console.log("BOOTSTRAP: Configuration updated, triggering re-render");
-          setAppKey(prev => prev + 1);
+          setConfigRevision(prev => prev + 1);
         }
         return true;
       } catch (err: any) {
@@ -221,40 +223,17 @@ const Bootstrap = () => {
           console.log("BOOTSTRAP: System ready, launching application layer");
           setReady(true);
         }
+        configLoaded = true;
 
-        // Use WebSocket only for same-origin/local routing. In forwarded/company cross-origin
-        // deployments, prefer polling to avoid noisy socket failures through port-forward layers.
+        // Poll all deployments for cross-worker convergence; same-origin sockets accelerate it.
         const baseUrl = getApiBaseUrl() || window.location.origin;
+        let socketUrl: string | null = null;
         if (shouldUseWebSocketSync(baseUrl)) {
           const wsProtocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
           const tenantId = getCurrentTenantId();
-          const wsUrl = baseUrl.replace(/^https?/, wsProtocol) + `/api/v1/ws/sync?tenant_id=${encodeURIComponent(tenantId)}`;
-          
-          console.log("BOOTSTRAP: Initializing WebSocket sync at " + wsUrl);
-          try {
-            ws = new WebSocket(wsUrl);
-            ws.onmessage = (event) => {
-              if (event.data === 'CONFIG_UPDATED') {
-                console.log("WS: CONFIG_UPDATED signal received");
-                fetchConfig().catch(() => {});
-              }
-            };
-            ws.onerror = (err) => {
-              console.warn("WS: Connection failed. Gracefully degrading to HTTP polling.", err);
-              if (!pollInterval) {
-                pollInterval = setInterval(() => fetchConfig().catch(() => {}), 60000); // 1 min fallback
-              }
-            };
-          } catch (e) {
-            console.warn("WS: Setup failed. Gracefully degrading to HTTP polling.", e);
-            pollInterval = setInterval(() => fetchConfig().catch(() => {}), 60000);
-          }
-        } else {
-          console.log("BOOTSTRAP: Cross-origin deployment detected, skipping WebSocket sync and using HTTP polling.");
-          if (!pollInterval) {
-            pollInterval = setInterval(() => fetchConfig().catch(() => {}), 60000);
-          }
+          socketUrl = baseUrl.replace(/^https?/, wsProtocol) + `/api/v1/ws/sync?tenant_id=${encodeURIComponent(tenantId)}`;
         }
+        stopConfigSync = startConfigurationSync(fetchConfig, socketUrl);
 
       } catch (err: any) {
         if (isMounted) {
@@ -268,8 +247,7 @@ const Bootstrap = () => {
     init();
     return () => { 
       isMounted = false; 
-      if (ws) ws.close();
-      if (pollInterval) clearInterval(pollInterval);
+      stopConfigSync?.();
       if (retryTimeout) clearTimeout(retryTimeout);
     };
   }, []); // Only run once on mount
@@ -611,7 +589,7 @@ const Bootstrap = () => {
     );
   }
 
-  return <App key={appKey} />;
+  return <App />;
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

@@ -279,9 +279,11 @@
 .workspace-toaster {
   position: fixed;
   z-index: 10000;
-  bottom: 20px;
-  left: 16px;
-  width: min(420px, calc(100vw - 32px));
+  top: 16px;
+  right: 16px;
+  bottom: auto;
+  left: auto;
+  width: min(420px, calc(100% - 32px));
   max-height: min(440px, calc(100dvh - 120px));
   display: flex;
   flex-direction: column;
@@ -301,26 +303,6 @@
   overflow: hidden;
   pointer-events: auto;
   animation: workspace-notice-in 160ms ease-out;
-}
-@media (max-width: 767px) {
-  .workspace-toaster { top: 80px; bottom: auto; }
-  .workspace-toaster:is([data-workspace-toaster-host='shell'], [data-workspace-toaster-host='modal']) {
-    position: relative;
-    inset: auto;
-    z-index: auto;
-    flex-shrink: 0;
-    width: calc(100% - 32px);
-    max-height: min(240px, max(96px, calc(100dvh - 300px)));
-    margin: 8px 16px 0;
-  }
-  .workspace-toaster[data-workspace-toaster-host='modal'] {
-    flex-shrink: 1;
-    min-height: 0;
-    max-height: min(160px, max(48px, calc(100dvh - 300px)));
-  }
-  .workspace-toaster:is([data-workspace-toaster-host='shell'], [data-workspace-toaster-host='modal']) .workspace-toast {
-    box-shadow: 0 2px 4px rgb(0 0 0 / 8%);
-  }
 }
 .workspace-toast[data-visible='false'] { display: none; }
 .workspace-toast-icon {

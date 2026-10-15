@@ -128,7 +128,7 @@ test('service save preserves the draft on failure and commits once after a stall
     await nameInput.press('Enter')
     expect(writes, 'Pending form submission must not send duplicate writes').toBe(1)
     releaseFailure()
-    await expect(dialog.getByText('Temporary service outage. Please retry.', { exact: true })).toBeVisible()
+    await expect(dialog.locator('#service-record-form').getByText('Temporary service outage. Please retry.', { exact: true })).toBeVisible()
     await expect(nameInput).toHaveValue(name)
     await expect(save).toBeEnabled()
     const beforeRetry = await request.get(`${apiBase}/logical-services`)
