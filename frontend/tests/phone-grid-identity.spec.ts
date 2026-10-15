@@ -28,6 +28,9 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     ] as const) {
       await page.goto(item.path)
       const root = page.locator('[data-golden-workspace-shell]:visible').filter({ has: page.getByRole('heading', { name: item.heading, exact: true }) }).first()
+      // Earlier tests leave additional records in this shared fixture. Use the
+      // real search control so the target is rendered by the virtualized grid.
+      await root.locator('[data-golden-page-toolbar]').getByRole('textbox').first().fill(item.label)
       const row = root.locator(`.ag-pinned-right-cols-container .ag-row[row-id="${item.id}"]`)
       await expect(row).toBeVisible()
       const caption = row.locator('[data-operational-row-identity]')

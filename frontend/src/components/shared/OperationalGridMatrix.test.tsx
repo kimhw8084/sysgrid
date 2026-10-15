@@ -76,7 +76,7 @@ it('gives phone identities and commands room and restores the configured desktop
     expect(captured.props.rowHeight).toBe(32)
     media.matches = true
     act(() => changed?.())
-    expect(captured.props.rowHeight).toBe(57)
+    expect(captured.props.rowHeight).toBe(61)
     unmount()
     expect(media.removeEventListener).toHaveBeenCalledWith('change', changed)
   } finally { match.mockRestore() }

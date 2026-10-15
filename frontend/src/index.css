@@ -318,6 +318,7 @@
     align-items: center;
     justify-content: center;
     gap: 2px;
+    padding-block: 2px;
   }
   .operational-grid-row-caption {
     display: block;
