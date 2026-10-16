@@ -33,6 +33,9 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await root.locator('[data-golden-page-toolbar]').getByRole('textbox').first().fill(item.label)
       const row = root.locator(`.ag-pinned-right-cols-container .ag-row[row-id="${item.id}"]`)
       await expect(row).toBeVisible()
+      // Phone toolbars and active filter chips can put the grid below the fold.
+      // Follow the normal scroll path before checking the row's full visibility.
+      await row.scrollIntoViewIfNeeded()
       const caption = row.locator('[data-operational-row-identity]')
       await expect(caption).toContainText(item.label)
       await expect(caption).toBeInViewport({ ratio: 1 })
