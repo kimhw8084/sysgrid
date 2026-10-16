@@ -180,7 +180,10 @@ export function useOperationalGridLayout(
   const syncColumnLayoutState = useCallback((api: any, _preserveWidths: boolean = preserveExplicitColumnWidths) => {
     const nextLayout = getOperationalColumnLayoutSnapshot(api, true)
     if (!nextLayout.length) return
-    setColumnLayoutState(nextLayout)
+    // Auto-sizing can emit repeated events with identical column state. Keep
+    // those events from rebuilding definitions, measuring cells and persisting
+    // the same preference again throughout a filter/detail interaction.
+    setColumnLayoutState(previous => JSON.stringify(previous) === JSON.stringify(nextLayout) ? previous : nextLayout)
   }, [preserveExplicitColumnWidths])
 
   const applyColumnLayoutState = useCallback((

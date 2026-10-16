@@ -1339,12 +1339,14 @@ export default function ServicesReal() {
   })
 
   useEffect(() => {
-    if (!displayedItemsInOrder.length) return
+    // Fit new source data and display settings. Search results retain their
+    // column widths instead of repeatedly measuring cells while typing.
+    if (!items.length) return
     const timer = window.setTimeout(() => {
       autoSizeServiceColumns()
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [autoSizeServiceColumns, displayedItemsInOrder, fontSize, hiddenColumns, isIntelligenceExpanded])
+  }, [autoSizeServiceColumns, items, fontSize, hiddenColumns, isIntelligenceExpanded])
 
   const selectedItems = useMemo(
     () => displayedItems.filter((item: any) => selectedIds.includes(item.id)),
@@ -2326,7 +2328,6 @@ export default function ServicesReal() {
             onSelectionChanged={(e) => handleSelectionChanged(e, 'raw')}
             getRowClass={getRowClass}
             onFirstDataRendered={handleGridDataUpdated}
-            onRowDataUpdated={handleGridDataUpdated}
             dataState={servicesDataState}
             noRowsLabel={servicesDataState.noRowsLabel}
             loading={isLoading}
@@ -2396,7 +2397,6 @@ export default function ServicesReal() {
                       onSelectionChanged={(e) => handleSelectionChanged(e, section.key)}
                       getRowClass={getRowClass}
                       onFirstDataRendered={handleGridDataUpdated}
-                      onRowDataUpdated={handleGridDataUpdated}
                       noRowsLabel="No service data found"
                       height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
                     />

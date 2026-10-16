@@ -48,7 +48,7 @@ export function WorkspaceCommandBar({
               <button
                 key={chip.id}
                 onClick={chip.onRemove}
-                className="min-h-10 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                className="min-h-10 min-w-0 max-w-full !whitespace-normal [overflow-wrap:anywhere] rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
               >
                 {chip.label}
               </button>

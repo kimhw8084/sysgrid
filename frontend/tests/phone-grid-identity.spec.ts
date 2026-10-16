@@ -30,7 +30,17 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       const root = page.locator('[data-golden-workspace-shell]:visible').filter({ has: page.getByRole('heading', { name: item.heading, exact: true }) }).first()
       // Earlier tests leave additional records in this shared fixture. Use the
       // real search control so the target is rendered by the virtualized grid.
-      await root.locator('[data-golden-page-toolbar]').getByRole('textbox').first().fill(item.label)
+      const search = root.locator('[data-golden-page-toolbar]').getByRole('textbox').first()
+      await search.fill(item.label)
+      if (item.workspace !== 'assets') {
+        const chip = root.locator('[data-golden-filter-chip-row]').getByRole('button', { name: `Search: ${item.label}`, exact: true })
+        await chip.scrollIntoViewIfNeeded()
+        await expect(chip).toBeInViewport({ ratio: 1 })
+        await expect.poll(() => chip.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBeTruthy()
+        await chip.click()
+        await expect(search).toHaveValue('')
+        await search.fill(item.label)
+      }
       const row = root.locator(`.ag-pinned-right-cols-container .ag-row[row-id="${item.id}"]`)
       await expect(row).toBeVisible()
       // Phone toolbars and active filter chips can put the grid below the fold.
