@@ -97,11 +97,10 @@ export function WorkspaceToaster({ portal = true }: { portal?: boolean }) {
   const { pausedAt } = useToasterStore()
   const hovered = useRef(false)
   const focused = useRef(false)
-  const covered = useRef(false)
   const paused = useRef(false)
   const hasVisible = toasts.some((t) => t.visible)
   const syncPause = () => {
-    const next = hasVisible && (hovered.current || focused.current || covered.current)
+    const next = hasVisible && (hovered.current || focused.current)
     if (next === paused.current) return
     paused.current = next
     if (next) handlers.startPause()
@@ -113,12 +112,13 @@ export function WorkspaceToaster({ portal = true }: { portal?: boolean }) {
     if (portal) return
     const phone = window.matchMedia('(max-width: 767px)')
     const modalSelector = '[aria-modal="true"]'
+    const modalLayer = (node: HTMLElement) => Number(getComputedStyle(node.closest('[data-workspace-modal-root]') || node).zIndex) || 0
     const updateCoverage = () => {
       const modal = Array.from(document.querySelectorAll<HTMLElement>(modalSelector))
         .filter(node => node.getClientRects().length > 0)
-        .sort((a, b) => (Number(getComputedStyle(a).zIndex) || 0) - (Number(getComputedStyle(b).zIndex) || 0)).at(-1)
+        .sort((a, b) => modalLayer(a) - modalLayer(b) || (a.contains(b) ? -1 : b.contains(a) ? 1 : 0)).at(-1)
       const modalHost = modal?.querySelector<HTMLElement>('[data-workspace-modal-notification-slot]')
-      const target = phone.matches ? modalHost || (modal ? document.body : shellHost.current) : document.body
+      const target = modalHost || modal || (phone.matches ? shellHost.current : document.body)
       if (target && container.parentNode !== target) {
         const active = document.activeElement
         const restore = active instanceof HTMLElement && container.contains(active) ? active : null
@@ -128,8 +128,7 @@ export function WorkspaceToaster({ portal = true }: { portal?: boolean }) {
           restore?.focus({ preventScroll: true })
         } finally { container.removeAttribute('data-workspace-toast-moving') }
       }
-      setHost(phone.matches ? modalHost ? 'modal' : modal ? 'portal' : 'shell' : 'portal')
-      covered.current = phone.matches && !!modal
+      setHost(modal ? 'modal' : phone.matches ? 'shell' : 'portal')
       syncPauseRef.current()
     }
     const containsModal = (node: Node) => node instanceof Element && (node.matches(modalSelector) || !!node.querySelector(modalSelector))
@@ -145,7 +144,6 @@ export function WorkspaceToaster({ portal = true }: { portal?: boolean }) {
     return () => {
       observer.disconnect()
       phone.removeEventListener('change', updateCoverage)
-      covered.current = false
       hovered.current = false
       focused.current = false
       syncPauseRef.current()

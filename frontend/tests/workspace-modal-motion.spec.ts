@@ -31,8 +31,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         window.__sysgridModalMotionProof = result
         let stopped = false
         const sample = () => {
-          for (const element of document.querySelectorAll('[data-workspace-modal-root] > .glass-panel, [data-workspace-modal-root] [role="alertdialog"]')) {
-            const group = result[element.getAttribute('role') === 'alertdialog' ? 'confirm' : 'panel']
+          for (const element of document.querySelectorAll('[data-workspace-modal-root] > .glass-panel, [data-workspace-modal-confirm-panel]')) {
+            const group = result[element.hasAttribute('data-workspace-modal-confirm-panel') ? 'confirm' : 'panel']
             const style = getComputedStyle(element)
             const transformed = !new DOMMatrixReadOnly(style.transform).isIdentity
             const faded = Number(style.opacity) < 1
@@ -64,6 +64,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await close.click()
       const confirm = page.getByRole('alertdialog', { name: 'Unsaved Changes', exact: true })
       await expect(confirm).toHaveCSS('opacity', '1')
+      await expect(confirm.locator('[data-workspace-modal-confirm-panel]')).toHaveCSS('opacity', '1')
       await expect(confirm.getByRole('button', { name: 'Keep editing', exact: true })).toBeFocused()
       await page.keyboard.press('Tab')
       await expect(confirm.getByRole('button', { name: 'Discard Changes', exact: true })).toBeFocused()

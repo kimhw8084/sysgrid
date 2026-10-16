@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from typing import List, Optional, Any
 from math import isfinite
@@ -17,7 +18,7 @@ from ..domain.monitoring_contract import (
 )
 from ..models import models
 from ..schemas import schemas
-from .utils import filter_valid_columns
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor
 from .module_policy import require_module_access
 from .monitoring_purge import purge_monitoring
 
@@ -26,10 +27,20 @@ router = APIRouter(
     tags=["Monitoring Matrix"],
     dependencies=[Depends(require_module_access("monitoring"))],
 )
-IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "version"}
 MONITORING_SEVERITIES = {"Critical", "Warning", "Info"}
 MONITORING_STATUSES = {"Existing", "Planned", "Cancelled", "Decommissioned", "Deleted"}
 MONITORING_OWNER_ROLES = {"Primary Support", "Escalation", "Observer"}
+
+
+async def get_monitoring_db(db: AsyncSession = Depends(get_db)):
+    try:
+        yield db
+    except IntegrityError as exc:
+        await db.rollback()
+        if not str(exc.orig).startswith("UNIQUE constraint failed: monitoring_history.monitoring_item_id, monitoring_history.version"):
+            raise
+        raise HTTPException(409, "Monitoring write conflicts with the current record; reload and review before retrying") from exc
 
 
 def normalize_string(value: Any) -> Optional[str]:
@@ -486,7 +497,7 @@ async def build_monitoring_payload(
             data = schemas.MonitoringItemCreate.model_validate({**clean_data, "owners": resolved_owners or []})
         except ValidationError as exc:
             raise HTTPException(status_code=400, detail=f"Monitoring payload validation failed: {exc}") from exc
-        clean_data = data.model_dump(exclude={"owners"})
+        clean_data = data.model_dump(exclude={"owners"} | IMMUTABLE_MONITORING_FIELDS)
         resolved_owners = [owner.model_dump() for owner in data.owners]
     elif "logic_json" in clean_data:
         clean_data["logic_json"] = [schemas.MonitoringLogicEntry.model_validate(entry).model_dump() for entry in clean_data["logic_json"] or []]
@@ -549,15 +560,6 @@ async def save_monitoring_history(item_id: int, version: int, db: AsyncSession, 
     item = result.unique().scalar_one()
     snapshot = build_monitoring_snapshot(item)
 
-    # Clean up any existing history entry for this specific version to avoid UNIQUE constraints on retries
-    await db.execute(
-        delete(models.MonitoringHistory)
-        .where(
-            models.MonitoringHistory.monitoring_item_id == item_id,
-            models.MonitoringHistory.version == version
-        )
-    )
-
     history_obj = models.MonitoringHistory(
         monitoring_item_id=item_id,
         version=version,
@@ -568,8 +570,31 @@ async def save_monitoring_history(item_id: int, version: int, db: AsyncSession, 
     db.add(history_obj)
 
 
+async def record_monitoring_revision(request: Request, db: AsyncSession, item, previous, current, action: str):
+    await save_monitoring_history(item.id, item.version, db,
+        summarize_monitoring_snapshot_delta(previous, current, action_label=action.lower()), get_audit_actor(request))
+    changed_fields = sorted(key for key in set(previous or {}) | set(current)
+                            if (previous or {}).get(key) != current.get(key))
+    db.add(build_audit_log(request=request, action=action, target_table="monitoring_items", target_id=str(item.id),
+        description=f"{action.title()} monitoring record", changes={"changed_fields": changed_fields}))
+
+
+async def next_monitoring_version(db: AsyncSession, item) -> int:
+    latest = select(func.max(models.MonitoringHistory.version)).where(
+        models.MonitoringHistory.monitoring_item_id == item.id).scalar_subquery()
+    # Read the row version and history ceiling in one database snapshot. The
+    # unique history key rejects a peer that commits after this check, atomically
+    # rolling back its data/owner/audit changes instead of replacing history.
+    with db.no_autoflush:
+        current, recorded = (await db.execute(select(models.MonitoringItem.version, latest).where(
+            models.MonitoringItem.id == item.id))).one()
+    if current != item.version:
+        raise HTTPException(409, "Monitoring record changed during this request; reload and review before retrying")
+    return max(current or 0, recorded or 0) + 1
+
+
 @router.get("/{item_id}/history", response_model=List[schemas.MonitoringHistoryResponse])
-async def get_monitoring_history(item_id: int, db: AsyncSession = Depends(get_db)):
+async def get_monitoring_history(item_id: int, db: AsyncSession = Depends(get_monitoring_db)):
     result = await db.execute(
         select(models.MonitoringHistory)
         .filter(models.MonitoringHistory.monitoring_item_id == item_id)
@@ -671,11 +696,11 @@ async def get_monitoring_items(device_id: Optional[int] = None, include_deleted:
     return res
 
 @router.post("", response_model=schemas.MonitoringItemResponse)
-async def create_monitoring_item(data: schemas.MonitoringItemCreate, db: AsyncSession = Depends(get_db), user_id: str = Header(None, alias="X-User-Id")):
+async def create_monitoring_item(data: schemas.MonitoringItemCreate, request: Request, db: AsyncSession = Depends(get_monitoring_db)):
     item_data, owners_data = await build_monitoring_payload(db, data.model_dump(), partial=False)
     await ensure_monitoring_item_uniqueness(db, item_data=item_data)
 
-    db_obj = models.MonitoringItem(**item_data)
+    db_obj = models.MonitoringItem(**item_data, created_by_user_id=get_audit_actor(request))
     db.add(db_obj)
     await db.flush() # To get db_obj.id
 
@@ -684,13 +709,8 @@ async def create_monitoring_item(data: schemas.MonitoringItemCreate, db: AsyncSe
         db.add(db_owner)
 
     await db.flush()
-    await save_monitoring_history(
-        db_obj.id,
-        db_obj.version,
-        db,
-        summarize_monitoring_snapshot_delta(None, build_monitoring_snapshot_from_values(item_data, owners_data), action_label="create"),
-        user_id
-    )
+    await record_monitoring_revision(request, db, db_obj, None,
+        build_monitoring_snapshot_from_values(item_data, owners_data), "CREATE")
     await db.commit()
     
     # Reload with owners
@@ -698,7 +718,7 @@ async def create_monitoring_item(data: schemas.MonitoringItemCreate, db: AsyncSe
     return await to_monitoring_response(db, db_obj)
 
 @router.put("/{item_id}", response_model=schemas.MonitoringItemResponse)
-async def update_monitoring_item(item_id: int, data: dict, db: AsyncSession = Depends(get_db), user_id: str = Header(None, alias="X-User-Id")):
+async def update_monitoring_item(item_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_monitoring_db)):
     item = await load_monitoring_item(db, item_id)
     if not item: raise HTTPException(404, "Monitoring item not found")
     previous_snapshot = build_monitoring_snapshot(item)
@@ -741,7 +761,7 @@ async def update_monitoring_item(item_id: int, data: dict, db: AsyncSession = De
         setattr(item, k, v)
     
     # Increment version
-    item.version = (item.version or 0) + 1
+    item.version = await next_monitoring_version(db, item)
 
     if owners_data is not None:
         await db.execute(delete(models.MonitoringOwner).where(models.MonitoringOwner.monitoring_item_id == item_id))
@@ -750,13 +770,7 @@ async def update_monitoring_item(item_id: int, data: dict, db: AsyncSession = De
             db.add(db_owner)
             
     await db.flush()
-    await save_monitoring_history(
-        item_id,
-        item.version,
-        db,
-        summarize_monitoring_snapshot_delta(previous_snapshot, next_snapshot, action_label="update"),
-        user_id
-    )
+    await record_monitoring_revision(request, db, item, previous_snapshot, next_snapshot, "UPDATE")
     await db.commit()
     
     # Reload with owners
@@ -764,7 +778,7 @@ async def update_monitoring_item(item_id: int, data: dict, db: AsyncSession = De
     return await to_monitoring_response(db, item)
 
 @router.post("/bulk-action")
-async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(get_db)):
+async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(get_monitoring_db)):
     ids = data.get("ids", [])
     action = data.get("action")
     payload = data.get("payload", {})
@@ -795,14 +809,9 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
             previous_snapshot = build_monitoring_snapshot(item)
             item.is_deleted = True
             item.status = "Deleted"
-            item.version = (item.version or 0) + 1
+            item.version = await next_monitoring_version(db, item)
             await db.flush()
-            await save_monitoring_history(
-                item.id,
-                item.version,
-                db,
-                summarize_monitoring_snapshot_delta(previous_snapshot, build_monitoring_snapshot(item), action_label="delete"),
-            )
+            await record_monitoring_revision(request, db, item, previous_snapshot, build_monitoring_snapshot(item), "DELETE")
             changed_count += 1
     elif action == "restore":
         result = await db.execute(
@@ -818,14 +827,9 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
             previous_snapshot = build_monitoring_snapshot(item)
             item.is_deleted = False
             item.status = "Existing"
-            item.version = (item.version or 0) + 1
+            item.version = await next_monitoring_version(db, item)
             await db.flush()
-            await save_monitoring_history(
-                item.id,
-                item.version,
-                db,
-                summarize_monitoring_snapshot_delta(previous_snapshot, build_monitoring_snapshot(item), action_label="restore"),
-            )
+            await record_monitoring_revision(request, db, item, previous_snapshot, build_monitoring_snapshot(item), "RESTORE")
             changed_count += 1
     elif action == "update":
         if payload:
@@ -878,14 +882,9 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
                     await db.execute(delete(models.MonitoringOwner).where(models.MonitoringOwner.monitoring_item_id == item.id))
                     for owner in owners_data:
                         db.add(models.MonitoringOwner(**owner, monitoring_item_id=item.id))
-                item.version = (item.version or 0) + 1
+                item.version = await next_monitoring_version(db, item)
                 await db.flush()
-                await save_monitoring_history(
-                    item.id,
-                    item.version,
-                    db,
-                    summarize_monitoring_snapshot_delta(previous_snapshot, next_snapshot, action_label="update"),
-                )
+                await record_monitoring_revision(request, db, item, previous_snapshot, next_snapshot, "UPDATE")
                 changed_count += 1
                 changed_fields.update(
                     label
@@ -922,7 +921,7 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     }
 
 @router.delete("/{item_id}")
-async def delete_monitoring_item(item_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_monitoring_item(item_id: int, request: Request, db: AsyncSession = Depends(get_monitoring_db)):
     item = await load_monitoring_item(db, item_id)
     if not item: raise HTTPException(404, "Monitoring item not found")
     if item.is_deleted and item.status == "Deleted":
@@ -930,20 +929,15 @@ async def delete_monitoring_item(item_id: int, db: AsyncSession = Depends(get_db
     previous_snapshot = build_monitoring_snapshot(item)
     item.is_deleted = True
     item.status = "Deleted"
-    item.version = (item.version or 0) + 1
+    item.version = await next_monitoring_version(db, item)
     await db.flush()
-    await save_monitoring_history(
-        item.id,
-        item.version,
-        db,
-        summarize_monitoring_snapshot_delta(previous_snapshot, build_monitoring_snapshot(item), action_label="delete"),
-    )
+    await record_monitoring_revision(request, db, item, previous_snapshot, build_monitoring_snapshot(item), "DELETE")
     await db.commit()
     return {"status": "success"}
 
 
 @router.post("/{item_id}/restore/{history_id}", response_model=schemas.MonitoringItemResponse)
-async def restore_monitoring_history_version(item_id: int, history_id: int, db: AsyncSession = Depends(get_db)):
+async def restore_monitoring_history_version(item_id: int, history_id: int, request: Request, db: AsyncSession = Depends(get_monitoring_db)):
     item = await load_monitoring_item(db, item_id)
     if not item:
         raise HTTPException(404, "Monitoring item not found")
@@ -987,14 +981,9 @@ async def restore_monitoring_history_version(item_id: int, history_id: int, db: 
             role=normalize_string(owner.get("role")),
         ))
 
-    item.version = (item.version or 0) + 1
+    item.version = await next_monitoring_version(db, item)
     await db.flush()
-    await save_monitoring_history(
-        item.id,
-        item.version,
-        db,
-        summarize_monitoring_snapshot_delta(current_snapshot, target_snapshot, action_label="restore"),
-    )
+    await record_monitoring_revision(request, db, item, current_snapshot, target_snapshot, "RESTORE")
     await db.commit()
     item = await load_monitoring_item(db, item_id)
     return await to_monitoring_response(db, item)

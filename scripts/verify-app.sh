@@ -53,6 +53,8 @@ if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
     scripts/tests/test_production_data_guard.py \
     scripts/tests/test_production_lifecycle.py \
     scripts/tests/test_production_preflight.py \
+    scripts/tests/test_corporate_publishability_guard.py \
+    scripts/tests/test_production_operations.py \
     scripts/tests/test_verify_app_stages.py
   "$PYTHON_BIN" scripts/tests/test_application_ci_contract.py
   bash scripts/workstation-up.sh --self-test
@@ -92,12 +94,17 @@ BACKEND_QUALIFICATION_TESTS=(
   test_cross_module_integrations.py
   test_operational_actions.py
   test_settings_api_edges.py
+  test_settings_deployment_boundary.py
   test_settings_workflows.py
   test_settings_operator_input_integrity.py
   test_settings_sync_preview_integrity.py
   test_monitoring_query_and_bulk_edges.py
   test_monitoring_restore_edges.py
   test_monitoring_workflows.py
+  test_monitoring_history_authority.py
+  test_monitoring_domain_contract.py
+  test_monitoring_purge_authority.py
+  tests/test_monitoring_helpers.py
   test_network_workflows.py
   test_network_endpoint_authorization.py
   test_network_import_authorization.py

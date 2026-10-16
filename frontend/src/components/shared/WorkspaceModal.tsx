@@ -359,7 +359,6 @@ export function WorkspaceModal({
             onTabChange={onTabChange}
           />
 
-          <div data-workspace-modal-notification-slot style={{ display: 'contents' }} />
           <div data-workspace-modal-body className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain custom-scrollbar px-4 pb-6 sm:px-6 modal-content-spacing">
             {children}
           </div>
@@ -370,9 +369,16 @@ export function WorkspaceModal({
           />
         </motion.div>
 
+        <div data-workspace-modal-notification-slot style={{ display: 'contents' }} />
         <AnimatePresence>
           {isConfirmOpen ? (
             <motion.div
+              ref={confirmRef}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby={confirmTitleId}
+              aria-describedby={confirmMessageId}
+              tabIndex={-1}
               initial={reducedMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: reducedMotion ? 1 : 0 }}
@@ -380,12 +386,7 @@ export function WorkspaceModal({
               className={`absolute inset-0 ${WORKSPACE_MODAL_CONFIRM_LAYER_CLASS} flex items-center justify-center bg-[var(--overlay-scrim)] p-4 backdrop-blur-sm`}
             >
               <motion.div
-                ref={confirmRef}
-                role="alertdialog"
-                aria-modal="true"
-                aria-labelledby={confirmTitleId}
-                aria-describedby={confirmMessageId}
-                tabIndex={-1}
+                data-workspace-modal-confirm-panel
                 initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: 12 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={reducedMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
@@ -405,6 +406,7 @@ export function WorkspaceModal({
                   </ToolbarButton>
                 </div>
               </motion.div>
+              <div data-workspace-modal-notification-slot style={{ display: 'contents' }} />
             </motion.div>
           ) : null}
         </AnimatePresence>

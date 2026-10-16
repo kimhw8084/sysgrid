@@ -92,9 +92,12 @@ export default function AuditLogs() {
   }, [logs])
 
   React.useEffect(() => {
-    if (gridRef.current?.api) {
-      setTimeout(() => gridRef.current.api.autoSizeAllColumns(), 100)
-    }
+    const api = gridRef.current?.api
+    if (!api) return
+    const timer = window.setTimeout(() => {
+      if (gridRef.current?.api === api && !api.isDestroyed()) api.autoSizeAllColumns()
+    }, 100)
+    return () => window.clearTimeout(timer)
   }, [fontSize, rowDensity, logs, showCharts])
 
   const handleExportCSV = () => {

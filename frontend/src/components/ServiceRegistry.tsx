@@ -682,7 +682,14 @@ export default function ServiceRegistry() {
     setSearchParams(nextParams, { replace: true })
   }
 
-  useEffect(() => { if (gridRef.current?.api) setTimeout(() => gridRef.current.api.autoSizeAllColumns(), 100); }, [fontSize, rowDensity, services]);
+  useEffect(() => {
+    const api = gridRef.current?.api
+    if (!api) return
+    const timer = window.setTimeout(() => {
+      if (gridRef.current?.api === api && !api.isDestroyed()) api.autoSizeAllColumns()
+    }, 100)
+    return () => window.clearTimeout(timer)
+  }, [fontSize, rowDensity, services])
   const { data: devices } = useQuery({ queryKey: ["devices"], queryFn: async () => (await (await apiFetch("/api/v1/devices/")).json()) })
 
   const mutation = useMutation({

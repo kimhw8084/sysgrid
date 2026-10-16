@@ -13,7 +13,8 @@ const advance = (ms: number) => act(() => { vi.advanceTimersByTime(ms) })
 const visible = () => document.querySelectorAll('[data-workspace-toast][data-visible="true"]')
 
 describe('unified notifications', () => {
-  it('moves the persistent recovery notice into a modal slot and back without resetting confirmation', async () => {
+  it.each([true, false])('moves the persistent recovery notice into a modal slot and back without resetting confirmation (phone: %s)', async (phone) => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: phone, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
     const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)
     const modal = document.createElement('div'), slot = document.createElement('div')
     modal.setAttribute('aria-modal', 'true')
@@ -31,12 +32,12 @@ describe('unified notifications', () => {
       advance(10000)
       expect(screen.getByRole('button', { name: 'Confirm Undo?' })).toBe(confirm)
       await act(async () => modal.remove())
-      expect(container).toContainElement(confirm)
+      expect(phone ? container : document.body).toContainElement(confirm)
       expect(screen.getByRole('button', { name: 'Confirm Undo?' })).toBe(confirm)
     } finally { modal.remove(); rectangles.mockRestore() }
   })
 
-  it('pauses newly arriving notices behind an existing phone modal and releases its clock on unmount', async () => {
+  it('expires newly arriving reachable notices normally while a modal stays open', async () => {
     vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
     const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)
     const modal = document.createElement('div')
@@ -45,8 +46,9 @@ describe('unified notifications', () => {
     try {
       const host = render(<WorkspaceToaster portal={false} />)
       act(() => toast.success('Arrived while covered'))
-      advance(10000)
-      expect(visible()).toHaveLength(1)
+      advance(4100)
+      expect(visible()).toHaveLength(0)
+      expect(modal.isConnected).toBe(true)
       host.unmount()
       render(<WorkspaceToaster />)
       advance(4100)
@@ -81,7 +83,7 @@ describe('unified notifications', () => {
     expect(host.getByText('Independent error')).toBeVisible()
   })
 
-  it('pauses a covered phone notice through stacked modals and preserves an overlapping hover pause', async () => {
+  it('pauses a focused notice through stacked modals and preserves an overlapping hover pause', async () => {
     const media = { matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }
     vi.stubGlobal('matchMedia', vi.fn(() => media))
     const rectangles = vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList)
@@ -91,6 +93,8 @@ describe('unified notifications', () => {
       render(<WorkspaceToaster portal={false} />)
       act(() => toast.success('Covered notice'))
       advance(1000)
+      const dismiss = screen.getByRole('button', { name: 'Dismiss notification' })
+      act(() => dismiss.focus())
       const stack = screen.getByRole('region', { name: 'Notifications' })
       const gauge = document.querySelector('[data-toast-gauge] > div') as HTMLElement
       await act(async () => { document.body.append(first, second) })
@@ -102,6 +106,7 @@ describe('unified notifications', () => {
       expect(visible()).toHaveLength(1)
       fireEvent.mouseEnter(stack)
       await act(async () => second.remove())
+      fireEvent.blur(dismiss, { relatedTarget: document.body })
       advance(10000)
       expect(visible()).toHaveLength(1)
       expect(parseFloat(gauge.style.width)).toBe(75)

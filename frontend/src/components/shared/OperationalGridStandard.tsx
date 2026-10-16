@@ -146,6 +146,13 @@ export function renderOperationalActiveDotCell({
   )
 }
 
+export function renderOperationalRowActions(children: React.ReactNode, label?: string) {
+  return <div className="operational-grid-row-actions">
+    {label && <span data-operational-row-identity className="operational-grid-row-caption" title={label}>{label}</span>}
+    {children}
+  </div>
+}
+
 export function renderOperationalActionButtons(children: React.ReactNode) {
   const normalizedChildren = React.Children.map(children, (child) => {
     if (!React.isValidElement(child)) return child
@@ -210,7 +217,7 @@ export function createOperationalActionColumnDefinition({
     headerClass: OPERATIONAL_GRID_CLASSES.actionHeader,
     sortable: false,
     filter: false,
-    cellRenderer: (p: any) => p.data ? renderActions(p.data) : null,
+    cellRenderer: (p: any) => p.data ? renderOperationalRowActions(renderActions(p.data), p.data.name || p.data.title) : null,
     lockVisible: true,
   }, width)
 }

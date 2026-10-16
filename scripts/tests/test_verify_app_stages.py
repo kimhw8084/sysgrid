@@ -109,10 +109,22 @@ def test_checks_stage_retains_canonical_backend_startup_and_frontend_coverage(st
     assert result.returncode == 0, result.stderr
     tests = shlex.split(re.search(r'BACKEND_QUALIFICATION_TESTS=\((.*?)\)', VERIFIER.read_text(), re.S).group(1))
     backend = next(event for event in events if 'test_migration_graph.py' in event['args'])
-    assert backend['args'] == ['-m', 'pytest', '-q', *tests] and len(tests) == 62
+    assert backend['args'] == ['-m', 'pytest', '-q', *tests] and len(tests) == 67
+    assert 'test_settings_deployment_boundary.py' in tests
+    assert {'test_monitoring_history_authority.py', 'test_monitoring_domain_contract.py',
+            'test_monitoring_purge_authority.py', 'tests/test_monitoring_helpers.py'} <= set(tests)
     startup = next(event for event in events if 'scripts/tests/test_safe_startup.py' in event['args'])
-    assert len([arg for arg in startup['args'] if arg.endswith('.py')]) == 7
-    assert 'scripts/tests/test_verify_app_stages.py' in startup['args']
+    assert [arg for arg in startup['args'] if arg.endswith('.py')] == [
+        'scripts/tests/test_safe_startup.py',
+        'scripts/tests/test_runtime_origin_config.py',
+        'scripts/tests/test_verify_runtime_ownership.py',
+        'scripts/tests/test_production_data_guard.py',
+        'scripts/tests/test_production_lifecycle.py',
+        'scripts/tests/test_production_preflight.py',
+        'scripts/tests/test_corporate_publishability_guard.py',
+        'scripts/tests/test_production_operations.py',
+        'scripts/tests/test_verify_app_stages.py',
+    ]
     assert any(event['command'] == 'python' and event['args'] == ['scripts/tests/test_application_ci_contract.py'] for event in events)
     assert any(event['command'] == 'bash' and event['args'] == ['scripts/workstation-up.sh', '--self-test'] for event in events)
     assert [event['args'] for event in events if event['command'] == 'npm'] == [

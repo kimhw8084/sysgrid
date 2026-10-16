@@ -941,6 +941,12 @@ test.describe('Network workflows', () => {
     })
     await expect(deleteReceipt).toBeVisible({ timeout: 15000 })
     await deleteReceipt.getByRole('button', { name: 'Close bulk receipt', exact: true }).click()
+
+    // The persistent top-right recovery notice covers the view toggle until dismissed.
+    const archiveNotice = page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: /archived/i })
+    await expect(archiveNotice).toBeVisible()
+    await archiveNotice.getByRole('button', { name: 'Dismiss notification', exact: true }).click()
+    await expect(archiveNotice).not.toBeVisible()
     
     // Switch to Deleted tab dynamically by waiting for row count in Active grid viewport to settle at 0
     await expect(page.locator('.ag-center-cols-container .ag-row')).toHaveCount(0, { timeout: 10000 })

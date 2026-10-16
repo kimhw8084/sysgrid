@@ -95,28 +95,27 @@ export const applyOperationalColumnSizing = (
   layout: Record<string, any> | undefined,
   preserveExplicitWidths: boolean
 ) => {
-  if (column.operationalLockWidth) return column
-
   const nextColumn: Record<string, any> = { ...column }
 
-  if (nextColumn.width !== undefined) {
+  if (!column.operationalLockWidth && nextColumn.width !== undefined) {
     nextColumn.initialWidth = nextColumn.width
     if (!preserveExplicitWidths) delete nextColumn.width
   }
 
-  if (nextColumn.flex !== undefined) {
+  if (!column.operationalLockWidth && nextColumn.flex !== undefined) {
     nextColumn.initialFlex = nextColumn.flex
     if (!preserveExplicitWidths) delete nextColumn.flex
   }
 
   if (!layout) return nextColumn
 
-  nextColumn.pinned = layout.pinned ?? nextColumn.pinned
+  // null is AG Grid's explicit unpinned state, including viewport overflow.
+  if (layout.pinned !== undefined) nextColumn.pinned = layout.pinned
   if (nextColumn.hide === undefined) {
     nextColumn.hide = layout.hide
   }
 
-  if (preserveExplicitWidths) {
+  if (preserveExplicitWidths && !column.operationalLockWidth) {
     nextColumn.width = layout.width ?? nextColumn.width
     nextColumn.flex = layout.flex ?? nextColumn.flex
   }
