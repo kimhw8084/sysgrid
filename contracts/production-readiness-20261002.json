@@ -8,8 +8,44 @@
     "catalog_sha256": "793965f0979cc7ad58949e65c188167d3c0307a82ea2c7791477b4439074e53f"
   },
   "baseline_main": "d3860311f11bcb176e108391a35c348280a8de61",
-  "as_of_utc": "2026-10-14",
+  "as_of_utc": "2026-10-16",
   "production_accepted": false,
+  "checkpoint_authority": "Recorded integrated checkpoints are verified historical delivery receipts. Later source requires its own exact-head CI and integration proof. The older verified_checkpoint and ci_history entries remain historical evidence; their old pending-integration text does not describe current main. Current execution status is maintained on the live SysGrid Project OS page and in SHA-bound GitHub checks.",
+  "recorded_integrated_checkpoints": [
+    {
+      "main": "78658eed04d340ceaa24cdbe6beabc67c9a80489",
+      "previous_main": "0b40801799bd5c8352e08618611cbf79ddfb4c94",
+      "accepted_head": "7d98f8f3a2c3366cea380002ce70b79496fa2ccb",
+      "tree": "d76ee7d2af6a8e9cb62deb512e1af770f4dda476",
+      "pr": "https://github.com/kimhw8084/sysgrid/pull/34",
+      "pr_run": "https://github.com/kimhw8084/sysgrid/actions/runs/38833346320",
+      "main_run": "https://github.com/kimhw8084/sysgrid/actions/runs/38836571708",
+      "merged_at": "2026-10-16T01:42:33Z",
+      "main_ci_completed_at": "2026-10-16T02:16:33Z",
+      "conclusion": "success",
+      "counts": {
+        "startup_and_recovery": 125,
+        "subtests": 26,
+        "backend": 1975,
+        "frontend": 945,
+        "frontend_files": 166,
+        "normal_browser": 349,
+        "normal_browser_preexisting_skips": 2,
+        "desktop_browser": 35,
+        "root_preview_browser": 6,
+        "supplemental_three_engine": 120
+      },
+      "original_provider_archives_verified": 5,
+      "browser_retried_attempts": 0,
+      "main_ci_receipt_sha256": "8dc7d4a81c47bbfa43e0b3c3eb46ce80c435d08e149bc24996f9f249b4a7bfbb",
+      "browser_receipt_sha256": "7b051a8466c27c88b8060f2373c8e4cc4c3057d5201c3c9877d53828ea6b97e7",
+      "source_zip_sha256": "3673ac6535e9c4965c5833a6062a0d371eb47ca88636699ceefaa3fb87cdadb9",
+      "integration_route": "Owner-authorized expected-head GitHub PR merge after terminal-success barrier and source review; exact parents/tree and clean local fast-forward verified.",
+      "canonical_fabric_integration": false,
+      "production_accepted": false,
+      "proof_boundary": "Matching application bytes pass a 15.2-minute session and ten synthetic recovery checks under Node 22. Matching backend bytes pass 901.954 seconds on four workers with 20 synthetic users, 1000 assets, 8188 reads and 666 writes, zero timed failures, and read/write p95 135.656/39.677 ms. This does not qualify company deployment/capacity, cross-module stale-client protection, the complete visual/AT/zoom state atlas, real providers or the authentic engineer pilot. A later UI performance repair has separate local evidence and requires fresh hosted qualification."
+    }
+  ],
   "verified_checkpoint": {
     "candidate": "02785ddd4b034e6c5de900a0adbd76dc82dd38a2",
     "pr": "https://github.com/kimhw8084/sysgrid/pull/33",
@@ -1657,12 +1693,13 @@
           "title": "Review and integrate the existing UI repairs",
           "outcome": "The reviewed, tested changes reach main, so your work-environment pull actually receives them.",
           "approval": "yes",
-          "status": "awaiting_integration",
+          "status": "implemented",
           "reviewed_commits": [
             "944c8709",
-            "38c82a58"
+            "38c82a58",
+            "78658eed04d340ceaa24cdbe6beabc67c9a80489"
           ],
-          "remaining": "PR32 exact-head CI passed at c27ea47c; main remains unchanged pending the explicit direct-candidate integration exception."
+          "remaining": "The historical UI repairs are integrated through main 78658eed04d340ceaa24cdbe6beabc67c9a80489 with exact-parent/tree postflight, successful PR/main hosted qualification and clean local synchronization. Each later candidate still requires its own source review, current-head checks and integration evidence; this delivery does not grant production acceptance."
         },
         {
           "id": "A2",
@@ -1703,7 +1740,7 @@
             "3a89ac99e54b31749a9f68d7c6491110c630c80e",
             "513577a34fd89eaa59e1c0ec07c302da9da9fb79"
           ],
-          "remaining": "Checkpoint29 preserves all 51 decisions/statuses, 149 reviewed archives and 154 inventory source hashes. Latest green checkpoint27 remains distinct from checkpoint28's verified hosted failure and later reviewed local recovery. Fresh hosted qualification, governed integration, company evidence and release reconciliation remain."
+          "remaining": "All 51 owner decisions and their snapshot/catalog bindings remain preserved. Recorded main 78658eed04d340ceaa24cdbe6beabc67c9a80489 has reviewed source, successful exact-head PR/main CI, verified original archives/browser reports and live Notion reconciliation. Older checkpoint records and their failed observations remain historical evidence. Later candidates require fresh receipts; complete documentation, company evidence and final release reconciliation remain open."
         },
         {
           "id": "A3",

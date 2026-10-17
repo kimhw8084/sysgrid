@@ -1371,12 +1371,14 @@ export default function MonitoringGrid() {
   }), [handleRowClicked, handleRowDoubleClicked])
 
   useEffect(() => {
-    if (!displayedItemsInOrder.length) return
+    // Fit new source data and display settings. Search results retain their
+    // column widths instead of repeatedly measuring cells while typing.
+    if (!items.length) return
     const timer = window.setTimeout(() => {
       autoSizeMonitoringColumns()
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [autoSizeMonitoringColumns, displayedItemsInOrder, fontSize, hiddenColumns, isIntelligenceExpanded])
+  }, [autoSizeMonitoringColumns, items, fontSize, hiddenColumns, isIntelligenceExpanded])
 
   const selectedItems = useMemo(
     () => displayedItems.filter((item: any) => isSelected(item.id)),
@@ -2208,7 +2210,6 @@ export default function MonitoringGrid() {
           contextMenu={monitoringContextMenu}
           onSelectionChanged={(e) => handleSelectionChanged(e, 'raw')}
           onFirstDataRendered={handleGridDataUpdated}
-          onRowDataUpdated={handleGridDataUpdated}
           context={gridContext}
           selectionScopeKey={selectionScopeKey}
           quickFilterText={searchTerm}
@@ -2277,7 +2278,6 @@ export default function MonitoringGrid() {
                     contextMenu={monitoringContextMenu}
                     onSelectionChanged={(e) => handleSelectionChanged(e, section.key)}
                     onFirstDataRendered={handleGridDataUpdated}
-                    onRowDataUpdated={handleGridDataUpdated}
                     context={gridContext}
                     selectionScopeKey={selectionScopeKey}
                     quickFilterText={searchTerm}
