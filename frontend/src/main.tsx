@@ -5,6 +5,7 @@ import App from './App'
 import './index.css'
 import { apiFetch, setApiOverride, getApiBaseUrl } from './api/apiClient'
 import { startConfigurationSync } from './api/configurationSync'
+import { replaceBootstrapConfigurationCache } from './api/bootstrapCache'
 import { buildBootstrapFailureDiagnosis, buildBootstrapReport } from './api/bootstrapDiagnostics'
 import { AlertTriangle, Bug, Copy, Database, ExternalLink, Globe, RefreshCcw, ShieldAlert, UserCircle2, Wrench } from 'lucide-react'
 import { WorkspaceSectionCard, WorkspaceSectionBadge, WorkspaceEmptyState } from './components/shared/OperationalWorkspacePrimitives'
@@ -165,7 +166,7 @@ const Bootstrap = () => {
         
         const config = await response.json();
         if (!isMounted) return false;
-        console.log("BOOTSTRAP: Configuration received", config);
+        console.log("BOOTSTRAP: Configuration received");
         if (usedRelativeBootstrap) {
           const currentOverride = localStorage.getItem('SYSGRID_OVERRIDE_API_URL') || ''
           const currentOrigin = window.location.origin.replace(/\/$/, '')
@@ -175,14 +176,7 @@ const Bootstrap = () => {
             setApiOverride(null)
           }
         }
-        let changed = false;
-        Object.entries(config).forEach(([key, value]) => {
-          const lsKey = `SYSGRID_CONFIG_${key}`;
-          if (localStorage.getItem(lsKey) !== String(value)) {
-            changed = true;
-            localStorage.setItem(lsKey, String(value));
-          }
-        });
+        const changed = replaceBootstrapConfigurationCache(config);
         if (changed && configLoaded) {
           console.log("BOOTSTRAP: Configuration updated, triggering re-render");
           setConfigRevision(prev => prev + 1);

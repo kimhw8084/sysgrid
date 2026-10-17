@@ -1049,10 +1049,6 @@ export default function SettingsPage() {
     queryFn: async () => {
       const res = await apiFetch("/api/v1/settings/global")
       const data = await res.json()
-      // Persist to local storage for bootstrap fallback
-      Object.entries(data).forEach(([k, v]) => {
-        localStorage.setItem(`SYSGRID_CONFIG_${k}`, String(v));
-      });
       return data
     },
     retry: 1,
