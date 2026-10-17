@@ -286,10 +286,11 @@ async def test_device_purge_rechecks_retired_traceability_added_after_preview(cl
                 legacy_models.AuditLog.target_table == "devices",
                 legacy_models.AuditLog.target_id == str(device_id),
             )
+            .order_by(legacy_models.AuditLog.id.asc())
         )).scalars().all()
         assert retained_device is not None and retained_device.is_deleted is True
         assert retained_software is not None and retained_software.name == "race sentinel"
-        assert [row.action for row in audit_rows] == ["ARCHIVE"]
+        assert [row.action for row in audit_rows] == ["CREATE", "ARCHIVE"]
 
 
 @pytest.mark.asyncio

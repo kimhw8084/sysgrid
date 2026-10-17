@@ -37,3 +37,38 @@ test('periodic configuration refresh survives a silent worker socket without res
   await expect(owner).toHaveAttribute('data-sync-draft-proof', 'original-node')
   await expect(dialog).toBeVisible()
 })
+
+test('bootstrap cache drops obsolete and legacy private entries while preserving unrelated preferences', async ({ page }) => {
+  await resetBrowserState(page)
+  await page.addInitScript(() => {
+    localStorage.setItem('SYSGRID_CONFIG_SCHEDULE_PREVIEW_SIGNING_KEY', 'synthetic-legacy-cache-value')
+    localStorage.setItem('SYSGRID_CONFIG_VITE_RETIRED_SETTING', 'obsolete-public-value')
+    localStorage.setItem('SYSGRID_CONFIG__raw_env', 'legacy-diagnostic-metadata')
+    localStorage.setItem('sysgrid_unrelated_cache_preference', 'preserved-preference')
+  })
+  await page.goto('/asset')
+  await expect(page.getByRole('heading', { name: 'Assets', exact: true })).toBeVisible()
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('SYSGRID_CONFIG_SCHEDULE_PREVIEW_SIGNING_KEY'))).toBeNull()
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('SYSGRID_CONFIG_VITE_RETIRED_SETTING'))).toBeNull()
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('SYSGRID_CONFIG__raw_env'))).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('sysgrid_unrelated_cache_preference'))).toBe('preserved-preference')
+  expect(await page.evaluate(() => localStorage.getItem('SYSGRID_CONFIG_DEFAULT_USER_ID'))).toBeTruthy()
+})
+
+test('settings reads do not copy private configuration into the bootstrap cache', async ({ page }) => {
+  await resetBrowserState(page)
+  await page.route('**/api/v1/settings/global', async route => {
+    const response = await route.fetch()
+    expect(response.ok()).toBe(true)
+    const data = await response.json()
+    await route.fulfill({ response, json: {
+      ...data,
+      PRIVATE_CACHE_PROBE: 'synthetic-private-cache-probe',
+      _metadata: { ...data._metadata, PRIVATE_CACHE_PROBE: { category: 'Infrastructure', description: 'Synthetic private configuration', file: 'Database', param: 'PRIVATE_CACHE_PROBE' } },
+    } })
+  })
+  await page.goto('/settings')
+  await expect(page.getByText('PRIVATE CACHE PROBE', { exact: true })).toBeVisible()
+  expect(await page.evaluate(() => localStorage.getItem('SYSGRID_CONFIG_PRIVATE_CACHE_PROBE'))).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('SYSGRID_CONFIG__metadata'))).toBeNull()
+})
