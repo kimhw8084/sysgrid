@@ -14,7 +14,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from ..database import get_db, get_config_db, Base
 from ..models import models
 from ..models.config import Tenant, UserTenantAccess, GlobalSetting
-from ..core.config import PRODUCTION_REQUIRED_ENV, settings
+from ..core.config import DEPLOYMENT_OWNED_GLOBAL_KEYS, settings
 from ..runtime_diagnostics import (
     build_import_export_contract_summary,
     frontend_build_version_hint,
@@ -921,7 +921,9 @@ async def get_bootstrap_config(config_db: AsyncSession = Depends(get_config_db))
     try:
         # 1. Fetch public settings from the config DB so bootstrap works even when tenant routing is broken.
         res = await config_db.execute(select(GlobalSetting).filter(GlobalSetting.is_public == True))
-        db_settings = {s.key: s.value for s in res.scalars().all()}
+        # Legacy public flags must not override the deployment boundary or
+        # publish values that the runtime settings writer now rejects.
+        db_settings = {s.key: s.value for s in res.scalars().all() if s.key not in DEPLOYMENT_OWNED_GLOBAL_KEYS}
         
         # 2. Extract from Environment/Config (as fallback)
         env_settings = {
@@ -1199,7 +1201,7 @@ async def get_global_settings(
         raise HTTPException(status_code=403, detail="Privileged Access Required: Raw configuration analysis restricted to administrators.")
 
     res = await config_db.execute(select(GlobalSetting))
-    settings_list = res.scalars().all()
+    settings_list = [s for s in res.scalars().all() if s.key not in DEPLOYMENT_OWNED_GLOBAL_KEYS]
     
     # Return as a simple key-value map for the UI, plus metadata if needed
     config = {s.key: s.value for s in settings_list}
@@ -1268,35 +1270,13 @@ async def update_global_settings(
     if not operator or not operator.is_admin:
         raise HTTPException(status_code=403, detail="Privileged Access Required: Configuration updates restricted to administrators.")
 
-    protected_keys = set(PRODUCTION_REQUIRED_ENV) | {
-        "DATABASE_URL",
-        "CONFIG_DATABASE_URL",
-        "TENANT_STORAGE_ROOT",
-        "BACKEND_ENV_FILE_PATH",
-        "FRONTEND_ENV_FILE_PATH",
-        "DEFAULT_TENANT_NAME",
-        "DEFAULT_USER_ID",
-        "AUTO_ADMIN_USER_IDS",
-        "SYSTEM_ROOT_USER_IDS",
-        "CONTROL_PLANE_ADMIN_USER_IDS",
-        "MODULE_STAGE_OVERRIDES",
-        "PV1_RELEASE_CANDIDATE_SHA",
-        "PV1_RELEASE_ID",
-        "DEFAULT_EMAIL_DOMAIN",
-        "USER_ID_ENV_VAR",
-        "PUBLIC_READONLY_TENANT_NAME",
-        "RATE_LIMIT_ENABLED",
-        "RATE_LIMIT_REQUESTS",
-        "RATE_LIMIT_WINDOW_SECONDS",
-        "API_V1_STR",
-    }
-
     # Validate the whole request before changing either persistent or in-memory
     # configuration. Security boundaries are deployment-owned, in every mode.
     for key in data:
-        if key in protected_keys:
+        if key in DEPLOYMENT_OWNED_GLOBAL_KEYS:
             raise HTTPException(status_code=400, detail=f"{key} is a deploy-time setting and must be changed through environment/bootstrap configuration, not runtime global settings.")
 
+    pending_hot_reload = {}
     for key, value in data.items():
         if key.startswith("_"): continue # Skip metadata
         res = await config_db.execute(select(GlobalSetting).filter(GlobalSetting.key == key))
@@ -1316,7 +1296,7 @@ async def update_global_settings(
                         new_val = int(value)
                     else:
                         new_val = str(value)
-                    setattr(settings, key, new_val)
+                    pending_hot_reload[key] = new_val
                 except Exception as e:
                     print(f"Failed to hot-reload {key}: {e}")
         else:
@@ -1359,6 +1339,11 @@ async def update_global_settings(
         await config_db.rollback()
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
+
+    # Publish runtime values only after persistence succeeds. A failed commit
+    # must leave the process on its previously committed configuration.
+    for key, value in pending_hot_reload.items():
+        setattr(settings, key, value)
     
     # Notify all connected clients via WebSocket
     if hasattr(request.app.state, 'ws_manager'):
@@ -1376,7 +1361,14 @@ async def get_env_history(
     db: AsyncSession = Depends(get_db),
 ):
     res = await db.execute(select(models.EnvHistory).filter(models.EnvHistory.field == field).order_by(models.EnvHistory.timestamp.desc(), models.EnvHistory.id.desc()))
-    return res.scalars().all()
+    rows = res.scalars().all()
+    if field not in DEPLOYMENT_OWNED_GLOBAL_KEYS:
+        return rows
+    # Keep the immutable event identity/order while withholding legacy values.
+    payload = jsonable_encoder(rows)
+    for row in payload:
+        row['old_value'] = row['new_value'] = '[redacted]'
+    return payload
 
 @router.get("/operators")
 async def get_operators(db: AsyncSession = Depends(get_db)):

@@ -72,6 +72,8 @@ BACKEND_QUALIFICATION_TESTS=(
   test_firewall_integrity.py
   test_asset_write_boundary.py
   test_asset_write_audit.py
+  test_devices_api_edges.py
+  test_asset_architecture_traceability.py
   test_hardware_integrity.py
   test_asset_link_integrity.py
   test_asset_date_integrity.py
@@ -95,6 +97,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_operational_actions.py
   test_settings_api_edges.py
   test_settings_deployment_boundary.py
+  test_settings_legacy_boundary.py
   test_settings_workflows.py
   test_settings_operator_input_integrity.py
   test_settings_sync_preview_integrity.py

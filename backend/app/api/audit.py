@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.config import DEPLOYMENT_OWNED_GLOBAL_KEYS
 from ..database import get_db
 from ..models import models
 from .module_policy import require_module_access
@@ -43,6 +44,9 @@ def _day_start(day: date) -> datetime:
 
 
 def _audit_log_payload(log: models.AuditLog) -> dict[str, Any]:
+    changes = log.changes
+    if log.target_table == 'GLOBAL_SETTING' and log.target_id in DEPLOYMENT_OWNED_GLOBAL_KEYS:
+        changes = {'old': '[redacted]', 'new': '[redacted]'}
     return {
         "id": log.id,
         "timestamp": log.timestamp,
@@ -51,7 +55,7 @@ def _audit_log_payload(log: models.AuditLog) -> dict[str, Any]:
         "target_table": log.target_table,
         "target_id": log.target_id,
         "description": log.description,
-        "changes": log.changes,
+        "changes": changes,
     }
 
 

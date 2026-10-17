@@ -31,6 +31,22 @@ PRODUCTION_REQUIRED_ENV = (
     "ALLOW_AUTO_MIGRATE_IN_PRODUCTION",
 )
 
+# Runtime settings, discovery and audit projections share this deployment
+# boundary, including legacy rows written before runtime writes were blocked.
+DEPLOYMENT_OWNED_GLOBAL_KEYS = frozenset(PRODUCTION_REQUIRED_ENV) | {
+    "BACKEND_ENV_FILE_PATH",
+    "FRONTEND_ENV_FILE_PATH",
+    "DEFAULT_TENANT_NAME",
+    "MODULE_STAGE_OVERRIDES",
+    "DEFAULT_EMAIL_DOMAIN",
+    "USER_ID_ENV_VAR",
+    "PUBLIC_READONLY_TENANT_NAME",
+    "RATE_LIMIT_ENABLED",
+    "RATE_LIMIT_REQUESTS",
+    "RATE_LIMIT_WINDOW_SECONDS",
+    "API_V1_STR",
+}
+
 _UNRESOLVED_PRODUCTION_VALUE = re.compile(
     r"(?:<[^>]+>|placeholder|replace[-_ ]?(?:me|with)|example|todo|change[-_ ]?me|"
     r"operator[-_ ]supplied|inject[-_ ])",
