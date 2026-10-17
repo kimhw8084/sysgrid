@@ -236,7 +236,7 @@ sysgrid_require_free_port "$BACKEND_PORT"
 sysgrid_require_free_port "$FRONTEND_PORT"
 LOCAL_DATA_ACTION="$(sysgrid_local_data_action "$DATA_MODE" "$LOCAL_CONFIG_DB" "$LOCAL_TENANT_DB" "$LOCAL_TENANT_ROOT")"
 LOCAL_BACKEND_ENV_FILE="$BACKEND_DIR/.env.local.runtime"
-BACKEND_ENV_BACKUP_FILE="$(mktemp -t sysgrid-backend-env)"
+BACKEND_ENV_BACKUP_FILE="$(mktemp "${TMPDIR:-/tmp}/sysgrid-backend-env.XXXXXX")"
 BACKEND_ENV_EXISTED="false"
 BACKEND_ENV_RESTORED="false"
 if [[ -e "$LOCAL_BACKEND_ENV_FILE" ]]; then
@@ -318,8 +318,8 @@ EOF_FAILURE
 
 wait_for_backend_contract() {
   local body_file header_file status_code body_text request_id allow_origin
-  body_file="$(mktemp -t sysgrid-health-body)"
-  header_file="$(mktemp -t sysgrid-health-headers)"
+  body_file="$(mktemp "${TMPDIR:-/tmp}/sysgrid-health-body.XXXXXX")"
+  header_file="$(mktemp "${TMPDIR:-/tmp}/sysgrid-health-headers.XXXXXX")"
   trap 'rm -f "$body_file" "$header_file"; cleanup' EXIT INT TERM
 
   for _ in $(seq 1 60); do
@@ -383,11 +383,11 @@ wait_for_frontend() {
 probe_public_frontend() {
   [[ "$PUBLIC_FRONTEND_PROBE" == "true" ]] || return 0
   local header_file body_file status_code content_type location
-  header_file="$(mktemp -t sysgrid-public-frontend-headers)"
-  body_file="$(mktemp -t sysgrid-public-frontend-body)"
+  header_file="$(mktemp "${TMPDIR:-/tmp}/sysgrid-public-frontend-headers.XXXXXX")"
+  body_file="$(mktemp "${TMPDIR:-/tmp}/sysgrid-public-frontend-body.XXXXXX")"
   status_code="$(curl -sS --max-time 12 -D "$header_file" -o "$body_file" -w '%{http_code}' "$FRONTEND_ORIGIN" 2>/dev/null || true)"
-  content_type="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/ {sub(/\r$/,"",$0); sub(/^[^:]+:[[:space:]]*/,"",$0); print; exit}' "$header_file")"
-  location="$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/,"",$0); sub(/^[^:]+:[[:space:]]*/,"",$0); print; exit}' "$header_file")"
+  content_type="$(awk 'tolower($0) ~ /^content-type:/ {sub(/\r$/,"",$0); sub(/^[^:]+:[[:space:]]*/,"",$0); print; exit}' "$header_file")"
+  location="$(awk 'tolower($0) ~ /^location:/ {sub(/\r$/,"",$0); sub(/^[^:]+:[[:space:]]*/,"",$0); print; exit}' "$header_file")"
   rm -f "$header_file" "$body_file"
 
   if [[ "$status_code" == "200" && "$content_type" == *"text/html"* ]]; then
@@ -481,7 +481,7 @@ echo "Preparing SysGrid development/UAT environment..."
 if [[ "$RUN_TYPECHECK" == "true" ]]; then
   echo "Running frontend typecheck..."
   TYPECHECK_LOG="${RUNTIME_LOG_DIR:+$RUNTIME_LOG_DIR/typecheck.log}"
-  [[ -n "$TYPECHECK_LOG" ]] || TYPECHECK_LOG="$(mktemp -t sysgrid-typecheck)"
+  [[ -n "$TYPECHECK_LOG" ]] || TYPECHECK_LOG="$(mktemp "${TMPDIR:-/tmp}/sysgrid-typecheck.XXXXXX")"
   if (
     cd "$FRONTEND_DIR"
     npx tsc --noEmit
