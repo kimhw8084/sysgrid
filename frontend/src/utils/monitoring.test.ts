@@ -12,6 +12,8 @@ describe('sanitizeMonitoringPayload', () => {
       created_at: 'now',
       updated_at: 'later',
       version: 2,
+      edit_revision: 'server-owned-revision',
+      expected_revision: 'stale-untrusted-input',
       is_deleted: false,
       device_name: 'db-01',
       recovery_doc_titles: ['Runbook'],

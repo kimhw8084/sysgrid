@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, update, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import StaleDataError
 from typing import List, Optional, Any
 from math import isfinite
 from urllib.parse import urlparse
@@ -27,7 +28,7 @@ router = APIRouter(
     tags=["Monitoring Matrix"],
     dependencies=[Depends(require_module_access("monitoring"))],
 )
-IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "version"}
+IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "version", "edit_revision"}
 MONITORING_SEVERITIES = {"Critical", "Warning", "Info"}
 MONITORING_STATUSES = {"Existing", "Planned", "Cancelled", "Decommissioned", "Deleted"}
 MONITORING_OWNER_ROLES = {"Primary Support", "Escalation", "Observer"}
@@ -36,6 +37,9 @@ MONITORING_OWNER_ROLES = {"Primary Support", "Escalation", "Observer"}
 async def get_monitoring_db(db: AsyncSession = Depends(get_db)):
     try:
         yield db
+    except StaleDataError as exc:
+        await db.rollback()
+        raise HTTPException(409, "Monitoring record changed during this request; reload and review before retrying") from exc
     except IntegrityError as exc:
         await db.rollback()
         if not str(exc.orig).startswith("UNIQUE constraint failed: monitoring_history.monitoring_item_id, monitoring_history.version"):
@@ -721,6 +725,12 @@ async def create_monitoring_item(data: schemas.MonitoringItemCreate, request: Re
 async def update_monitoring_item(item_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_monitoring_db)):
     item = await load_monitoring_item(db, item_id)
     if not item: raise HTTPException(404, "Monitoring item not found")
+    if "expected_revision" in data:
+        expected = data["expected_revision"]
+        if not isinstance(expected, str) or len(expected) != 32 or any(char not in "0123456789abcdef" for char in expected):
+            raise HTTPException(400, "expected_revision must be a monitoring edit revision")
+        if expected != item.edit_revision:
+            raise HTTPException(409, "This monitor changed after you opened it. Your draft is preserved. Copy your changes, then close and reopen the monitor to review the latest version.")
     previous_snapshot = build_monitoring_snapshot(item)
     
     merged_payload = {

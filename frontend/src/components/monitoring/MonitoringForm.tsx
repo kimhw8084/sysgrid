@@ -102,7 +102,10 @@ const normalizeMonitoringControlledFields = (value: any) => {
   }
 }
 
-export function MonitoringForm({ item, devices, categories, severities, platforms, teams, operators, notificationMethods, ownerRoles, onClose, onSuccess, onDirtyChange }: any) {
+export function MonitoringForm({ item: incomingItem, devices, categories, severities, platforms, teams, operators, notificationMethods, ownerRoles, onClose, onSuccess, onDirtyChange }: any) {
+  // A refreshed parent must not pair a newer revision with an older draft.
+  // The parent keys this form by record ID, so another record opens a new form.
+  const [item] = useState(incomingItem)
   useBodyModalFlag()
   const [activeTab, setActiveTab] = useState<'context' | 'logic' | 'alerting'>('context')
   const [recoverySearch, setRecoverySearch] = useState('')
@@ -289,13 +292,18 @@ export function MonitoringForm({ item, devices, categories, severities, platform
   }, [knowledgeEntries, recoverySearch])
 
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async (data: any) => {
       const url = item ? `/api/v1/monitoring/${item.id}` : '/api/v1/monitoring/'
       const method = item ? 'PUT' : 'POST'
-      const res = await apiFetch(url, { method, body: JSON.stringify(sanitizeMonitoringPayload(data)) })
+      if (item && !/^[0-9a-f]{32}$/.test(item.edit_revision || '')) {
+        throw new Error('The monitor edit revision is unavailable. Your draft is preserved. Copy your changes, then reload and reopen the monitor before saving.')
+      }
+      const payload = sanitizeMonitoringPayload(data)
+      const res = await apiFetch(url, { method, body: JSON.stringify(item ? { ...payload, expected_revision: item.edit_revision } : payload) })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new Error(err.detail || 'Failed to save monitoring item')
+        throw Object.assign(new Error(err.detail || 'Failed to save monitoring item'), { status: res.status })
       }
       return res.json()
     },
@@ -314,7 +322,7 @@ export function MonitoringForm({ item, devices, categories, severities, platform
       setFormErrors(fieldErrors)
       const message = generalError || e.message || 'Failed to save monitoring item'
       setGeneralError(message)
-      showWorkspaceToast(message, { type: 'error' })
+      showWorkspaceToast(e.status === 409 ? 'Monitor changed; your draft is preserved.' : message, { type: 'error' })
       if (message.toLowerCase().includes('recovery')) setActiveTab('alerting')
       else if (message.toLowerCase().includes('owner') || message.toLowerCase().includes('team')) setActiveTab('context')
       else if (message.toLowerCase().includes('interval') || message.toLowerCase().includes('logic')) setActiveTab('logic')

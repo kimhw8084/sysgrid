@@ -4,6 +4,8 @@ export const sanitizeMonitoringPayload = (item: any) => {
   delete next.created_at
   delete next.updated_at
   delete next.version
+  delete next.edit_revision
+  delete next.expected_revision
   delete next.is_deleted
   delete next.device_name
   delete next.recovery_doc_titles

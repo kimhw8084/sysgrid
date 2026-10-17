@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, JSON, Text, Table, UniqueConstraint, CheckConstraint, Index
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import func
+from uuid import uuid4
 from ..database_base import Base
 
 class BaseMixin:
@@ -439,6 +440,11 @@ class OperationalActionEvidence(Base):
 
 class MonitoringItem(Base, BaseMixin):
     __tablename__ = "monitoring_items"
+    edit_revision = Column(String(32), nullable=False, default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {
+        "version_id_col": edit_revision,
+        "version_id_generator": lambda previous: uuid4().hex,
+    }
     device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=True)
     category = Column(String, index=True) # Hardware, Log, Network, App, Synthetic
     status = Column(String, index=True) # Existing, Planned, Cancelled, Deleted
