@@ -280,6 +280,7 @@ class MonitoringItemCreate(MonitoringItemBase):
         return value
 
 class MonitoringItemResponse(MonitoringItemBase, BaseSchema):
+    edit_revision: str
     is_deleted: bool = False
     device_name: Optional[str] = None
     monitored_service_names: List[str] = Field(default_factory=list) # Optional, for UI convenience

@@ -105,6 +105,8 @@ BACKEND_QUALIFICATION_TESTS=(
   test_monitoring_restore_edges.py
   test_monitoring_workflows.py
   test_monitoring_history_authority.py
+  test_monitoring_stale_form.py
+  test_monitoring_edit_migration.py
   test_monitoring_domain_contract.py
   test_monitoring_purge_authority.py
   tests/test_monitoring_helpers.py

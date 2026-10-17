@@ -9,6 +9,7 @@ export default defineConfig({
     /(^|[\\/])notification-layout\.spec\.ts$/,
     /(^|[\\/])notification-keyboard\.spec\.ts$/,
     /(^|[\\/])configuration-sync\.spec\.ts$/,
+    /(^|[\\/])monitoring-stale-form\.spec\.ts$/,
     /(^|[\\/])browser-reset-isolation\.spec\.ts$/,
     /(^|[\\/])phone-grid-identity\.spec\.ts$/,
     /(^|[\\/])operational-diagnostics\.spec\.ts$/,
