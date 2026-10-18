@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import path from 'node:path'
-import { expect, type APIRequestContext, type Locator, type Page, type Route } from '@playwright/test'
+import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const apiOrigin = apiBase.replace(/\/api\/v1$/, '')
@@ -39,6 +39,8 @@ const browserStateKeys = [
   'sysgrid_monitoring_watch_v1',
   'sysgrid_monitoring_session_init',
 ].join('|')
+
+const browserResetPages = new WeakSet<Page>()
 
 async function post(request: APIRequestContext, path: string, data: Record<string, any>) {
   const response = await request.post(`${apiBase}${path}`, { 
@@ -103,7 +105,6 @@ export async function requireSettingOption(
 }
 
 export async function resetBrowserState(page: Page) {
-  const testResetToken = `pw-reset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   const cleanState = {
     savedViews: [],
     activeViewId: null,
@@ -146,15 +147,9 @@ export async function resetBrowserState(page: Page) {
     console.error('Failed to clear backend settings:', e)
   }
 
-  // Direct clean up of localStorage and sessionStorage on the app origin
-  // An inert same-origin document gives storage access without starting an app
-  // that the caller immediately tears down while bootstrap requests are active.
-  const resetDocument = (route: Route) => route.request().isNavigationRequest() && route.request().resourceType() === 'document'
-    ? route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html lang="en"><title>Storage reset</title></html>' })
-    : route.fallback()
+  // Clear an existing app document without navigating or starting another app.
+  // On a fresh opaque page, the init script performs cleanup on the first real navigation.
   try {
-    await page.route('**/*', resetDocument)
-    await page.goto('/')
     await page.evaluate(() => {
       const keysToRemove = Object.keys(window.localStorage).filter((key) => (
         key.startsWith('sysgrid_') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_')
@@ -165,16 +160,19 @@ export async function resetBrowserState(page: Page) {
         .forEach((key) => window.sessionStorage.removeItem(key))
     })
   } catch (e) {
-    // ignore
-  } finally {
-    await page.unroute('**/*', resetDocument)
+    // Storage is unavailable before the first same-origin document.
   }
 
+  // One script per page keeps later navigations from replaying older reset tokens.
+  if (browserResetPages.has(page)) return
+  const testResetToken = `pw-reset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   await page.addInitScript(({ injectedApiOrigin, resetToken, tenantId, userId, workspaceStateKeys }) => {
     const workspaceKeys = new Set(workspaceStateKeys.split('|'))
     const removeWorkspaceState = (storage: Storage) => {
       Array.from({ length: storage.length }, (_, index) => storage.key(index))
-        .filter((key): key is string => Boolean(key) && workspaceKeys.has(key))
+        .filter((key): key is string => key !== null && (
+          workspaceKeys.has(key) || key.startsWith('sysgrid_') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_')
+        ))
         .forEach((key) => storage.removeItem(key))
     }
     const appliedToken = window.sessionStorage.getItem('__sysgrid_pw_bootstrap__')
@@ -187,6 +185,7 @@ export async function resetBrowserState(page: Page) {
     window.localStorage.setItem('SYSGRID_TENANT_ID', tenantId)
     window.localStorage.setItem('SYSGRID_USER_ID', userId)
   }, { injectedApiOrigin: apiOrigin, resetToken: testResetToken, tenantId: testTenantId, userId: testUserId, workspaceStateKeys: browserStateKeys })
+  browserResetPages.add(page)
 }
 
 export async function createAsset(request: APIRequestContext, payload: Record<string, any>) {

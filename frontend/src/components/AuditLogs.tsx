@@ -198,9 +198,9 @@ export default function AuditLogs() {
     {
         headerName: 'ACTIONS',
         colId: 'audit-actions',
-        width: 88,
-        minWidth: 88,
-        maxWidth: 88,
+        width: 104,
+        minWidth: 104,
+        maxWidth: 104,
         pinned: 'right' as const,
         cellRenderer: (params: any) => {
           const target = resolveOperationalObjectReference(params.data?.target_table, params.data?.target_id)

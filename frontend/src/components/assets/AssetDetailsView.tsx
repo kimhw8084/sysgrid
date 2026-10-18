@@ -414,14 +414,14 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
             <div className="w-full min-w-0 flex-1 space-y-6">
                 <div className="rounded-lg border border-blue-500/20 bg-gradient-to-r from-blue-600/10 to-transparent p-5">
                     <div className="flex flex-wrap items-start justify-between gap-6">
-                        <div className="flex items-center space-x-6">
-                           <div className="bg-blue-600 p-2.5 rounded-lg text-white shadow-xl shadow-blue-500/20 ring-4 ring-blue-500/10 shrink-0">
+                        <div className="flex w-full min-w-0 flex-col gap-4 sm:w-auto sm:flex-row sm:items-center sm:gap-6">
+                           <div className="bg-blue-600 p-2.5 rounded-lg text-white shadow-xl shadow-blue-500/20 ring-4 ring-blue-500/10 shrink-0 self-start sm:self-auto">
                               <Box size={32} />
                            </div>
-                           <div className="grid grid-cols-3 gap-6">
+                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
                                <div className="flex flex-col">
                                   <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Operational State</span>
-                                  <span className={`px-3 py-0.5 rounded-lg text-[10px] font-bold uppercase border w-fit ${
+                                  <span className={`px-3 py-0.5 rounded-lg text-[10px] font-bold uppercase border w-fit whitespace-nowrap ${
                                     device.status === 'Active' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' :
                                     device.status === 'Maintenance' ? 'text-amber-400 border-amber-500/20 bg-amber-500/5' :
                                     'text-rose-400 border-rose-500/20 bg-rose-500/5'
