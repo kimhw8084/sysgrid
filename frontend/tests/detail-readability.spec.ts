@@ -24,7 +24,10 @@ async function singleReadableLine(element: Locator, description: string, testInf
 async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, description: string) {
   const timestamp = page.locator('.ag-row[row-index="0"] [col-id="timestamp"] span[title]').first()
   await expect(timestamp).toBeVisible()
-  const geometry = await timestamp.evaluate(node => {
+  const geometry = await timestamp.evaluateAll(nodes => {
+    // Resolve and measure in one browser operation: grid autosizing can replace a cell.
+    const node = nodes[0]
+    if (!node) return { lines: 0, width: 0, scrollWidth: 0, withinCell: false, completeTitle: false, connected: false }
     const range = document.createRange()
     range.selectNodeContents(node)
     const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0)
@@ -32,10 +35,11 @@ async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, descript
     return { lines: new Set(rects.map(rect => Math.round(rect.top))).size,
       width: node.clientWidth, scrollWidth: node.scrollWidth,
       withinCell: rects.every(rect => rect.top >= cell.top - 1 && rect.bottom <= cell.bottom + 1),
-      completeTitle: node.getAttribute('title') === node.textContent }
+      completeTitle: node.getAttribute('title') === node.textContent, connected: node.isConnected }
   })
   await testInfo.attach(`audit-timestamp-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
   expect(geometry.lines, 'The timestamp must stay on one readable row').toBe(1)
+  expect(geometry.connected, 'The measured timestamp must belong to the current grid').toBeTruthy()
   expect(geometry.withinCell, 'Timestamp text must not bleed into another audit row').toBeTruthy()
   expect(geometry.completeTitle, 'The complete value must remain available when visually truncated').toBeTruthy()
   expect(geometry.width).toBeGreaterThan(0)
@@ -62,6 +66,11 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       }
       await expect(dialog.getByRole('button', { name: 'Close', exact: true }).last()).toBeInViewport({ ratio: 1 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
+      const changeHeading = dialog.getByText('Change & Maintenance', { exact: true })
+      await changeHeading.scrollIntoViewIfNeeded()
+      await expect(changeHeading).toBeInViewport({ ratio: 1 })
+      await page.screenshot({ path: testInfo.outputPath('asset-change-heading.png'), animations: 'disabled' })
+      await expectReadableGridText(page, testInfo, `asset-change-heading-${theme}-${width}`, '[role="dialog"] p:has(> span:text-is("Change & Maintenance"))')
     })
 
     test(`audit action header and commands stay readable in ${theme} at ${width}`, async ({ page, sysApi }, testInfo) => {

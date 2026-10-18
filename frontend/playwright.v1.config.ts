@@ -4,6 +4,8 @@ import baseConfig from './playwright.config'
 export default defineConfig({
   ...baseConfig,
   testMatch: [
+    /(^|[\\/])api-client-transport\.spec\.ts$/,
+    /(^|[\\/])monitoring-preference-race\.spec\.ts$/,
     /(^|[\\/])overlay-audit\.spec\.ts$/,
     /(^|[\\/])monitoring-logic-editor\.spec\.ts$/,
     /(^|[\\/])notification-layout\.spec\.ts$/,

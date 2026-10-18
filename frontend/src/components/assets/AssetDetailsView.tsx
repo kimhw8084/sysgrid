@@ -593,7 +593,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
 
                 {/* CHANGE & CARE */}
                 <div className="rounded-lg border border-white/10 bg-black/40 p-5 space-y-4 shadow-xl">
-                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-fuchsia-400 flex items-center justify-between">
+                    <p className="text-[9px] font-black uppercase tracking-[0.22em] text-fuchsia-800 [.dark_&]:text-fuchsia-400 flex items-center justify-between">
                        <span>Change & Maintenance</span>
                        <Settings size={12} />
                     </p>
