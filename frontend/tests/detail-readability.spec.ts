@@ -1,20 +1,44 @@
-import { expect, type Locator } from '@playwright/test'
+import { expect, type Locator, type Page, type TestInfo } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { clickResilientButton, createAsset, createMonitoring, createService, resetBrowserState } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
-async function singleReadableLine(element: Locator, description: string) {
+async function singleReadableLine(element: Locator, description: string, testInfo: TestInfo) {
   await expect(element).toBeVisible()
   const geometry = await element.evaluate(node => {
     const range = document.createRange()
     range.selectNodeContents(node)
     const lines = new Set(Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0).map(rect => Math.round(rect.top)))
-    return { lines: lines.size, width: node.clientWidth, scrollWidth: node.scrollWidth }
+    const style = getComputedStyle(node)
+    return { lines: lines.size, width: node.clientWidth, scrollWidth: node.scrollWidth,
+      fontFamily: style.fontFamily, fontSize: style.fontSize, whiteSpace: style.whiteSpace,
+      wordBreak: style.wordBreak, overflowWrap: style.overflowWrap, fontsStatus: document.fonts.status }
   })
+  await testInfo.attach(`readability-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
   expect(geometry.lines, `${description} must not split into narrow fragments`).toBe(1)
   expect(geometry.scrollWidth, `${description} must be fully readable`).toBeLessThanOrEqual(geometry.width + 1)
+}
+
+async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, description: string) {
+  const timestamp = page.locator('.ag-row[row-index="0"] [col-id="timestamp"] span[title]').first()
+  await expect(timestamp).toBeVisible()
+  const geometry = await timestamp.evaluate(node => {
+    const range = document.createRange()
+    range.selectNodeContents(node)
+    const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0)
+    const cell = node.closest('.ag-cell')!.getBoundingClientRect()
+    return { lines: new Set(rects.map(rect => Math.round(rect.top))).size,
+      width: node.clientWidth, scrollWidth: node.scrollWidth,
+      withinCell: rects.every(rect => rect.top >= cell.top - 1 && rect.bottom <= cell.bottom + 1),
+      completeTitle: node.getAttribute('title') === node.textContent }
+  })
+  await testInfo.attach(`audit-timestamp-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
+  expect(geometry.lines, 'The timestamp must stay on one readable row').toBe(1)
+  expect(geometry.withinCell, 'Timestamp text must not bleed into another audit row').toBeTruthy()
+  expect(geometry.completeTitle, 'The complete value must remain available when visually truncated').toBeTruthy()
+  expect(geometry.width).toBeGreaterThan(0)
 }
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
@@ -31,10 +55,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(dialog).toBeVisible()
       await page.screenshot({ path: testInfo.outputPath('asset-summary.png'), animations: 'disabled' })
       for (const label of ['Operational State', 'Network IP', 'Management IP']) {
-        await singleReadableLine(dialog.getByText(label, { exact: true }), label)
+        await singleReadableLine(dialog.getByText(label, { exact: true }), label, testInfo)
       }
       for (const value of ['Maintenance', '192.0.2.10', 'Not configured']) {
-        await singleReadableLine(dialog.getByText(value, { exact: true }), value)
+        await singleReadableLine(dialog.getByText(value, { exact: true }), value, testInfo)
       }
       await expect(dialog.getByRole('button', { name: 'Close', exact: true }).last()).toBeInViewport({ ratio: 1 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
@@ -51,10 +75,41 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       const row = page.locator('.ag-pinned-right-cols-container .ag-row').first()
       await expect(row).toBeVisible()
       await page.screenshot({ path: testInfo.outputPath('audit-actions.png'), animations: 'disabled' })
-      await singleReadableLine(page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text'), 'Audit Actions header')
+      await singleReadableLine(page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text'), 'Audit Actions header', testInfo)
       await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 1 })
       await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 1 })
+      await singleLineAuditTimestamp(page, testInfo, 'default-font')
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
+      for (const boundary of [{ key: 'ArrowLeft', value: '8' }, { key: 'ArrowRight', value: '14' }]) {
+        await page.getByRole('button', { name: 'Toggle density controls', exact: true }).click()
+        const fontSize = page.getByRole('slider', { name: 'Audit font size', exact: true })
+        const density = page.locator('[data-audit-density]')
+        await density.scrollIntoViewIfNeeded()
+        await expect(density).toBeInViewport({ ratio: 1 })
+        await expect(fontSize).toBeInViewport({ ratio: 1 })
+        await expect(page.getByRole('slider', { name: 'Audit row density', exact: true })).toBeInViewport({ ratio: 1 })
+        await fontSize.focus()
+        for (let step = 0; step < 6; step++) await page.keyboard.press(boundary.key)
+        await expect(fontSize).toHaveValue(boundary.value)
+        await density.scrollIntoViewIfNeeded()
+        await expect(density).toBeInViewport({ ratio: 1 })
+        await page.screenshot({ path: testInfo.outputPath(`audit-density-font-${boundary.value}.png`), animations: 'disabled' })
+        await expectReadableGridText(page, testInfo, `audit-density-font-${boundary.value}`, '[data-audit-density] span')
+        for (const name of ['Audit font size', 'Audit row density']) {
+          await singleReadableLine(density.locator(`input[aria-label="${name}"] + span`), `${name} value at font ${boundary.value}`, testInfo)
+        }
+        await page.getByRole('button', { name: 'Close density controls', exact: true }).click()
+        await expect(fontSize).toBeHidden()
+        await row.scrollIntoViewIfNeeded()
+        const header = page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text')
+        await expect(header).toBeInViewport({ ratio: 1 })
+        await page.screenshot({ path: testInfo.outputPath(`audit-actions-font-${boundary.value}.png`), animations: 'disabled' })
+        await singleReadableLine(header, `Audit Actions header at font ${boundary.value}`, testInfo)
+        await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 1 })
+        await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 1 })
+        await singleLineAuditTimestamp(page, testInfo, `font-${boundary.value}`)
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
+      }
     })
   }
 
