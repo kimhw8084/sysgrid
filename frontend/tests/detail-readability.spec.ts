@@ -5,20 +5,115 @@ import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
+test.describe('readability measurement controls', () => {
+  test('measures the current label after replacement during locator resolution', async ({ page }, testInfo) => {
+    await page.setContent('<span id="readability-control" style="display:inline-block;font:14px Arial;white-space:nowrap">Audit Actions</span>')
+    const label = page.locator('#readability-control')
+    const replace = () => label.evaluate(node => node.replaceWith(node.cloneNode(true)))
+    const controlled = new Proxy(label, {
+      get(target, property) {
+        if (property === 'evaluate') return async (operation: any, argument: any) => {
+          const handle = await target.elementHandle()
+          expect(handle).not.toBeNull()
+          await replace()
+          try { return await handle!.evaluate(operation, argument) } finally { await handle!.dispose() }
+        }
+        if (property === 'evaluateAll') return async (operation: any, argument: any) => {
+          await replace()
+          return target.evaluateAll(operation, argument)
+        }
+        const value = Reflect.get(target, property)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    try {
+      await singleReadableLine(controlled, 'replacement control', testInfo)
+    } finally {
+      await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+      await expect(label).toHaveCount(0)
+    }
+  })
+
+  test('keeps sound geometry valid when its diagnostic provider fails', async ({ page }, testInfo) => {
+    await page.setContent('<span id="readability-control" style="display:inline-block;font:14px Arial;white-space:nowrap">Audit Actions</span>')
+    const label = page.locator('#readability-control')
+    const provider = { attach: async () => { throw new Error('controlled diagnostic failure') } } as unknown as TestInfo
+    try { await singleReadableLine(label, 'sound control', provider) } finally {
+      await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+      await expect(label).toHaveCount(0)
+    }
+    await testInfo.attach('readability-provider-control', { body: 'sound geometry retained; cleanup complete', contentType: 'text/plain' })
+  })
+
+  for (const fault of ['wrapped', 'clipped'] as const) {
+    for (const providerFails of [false, true]) {
+      test(`rejects ${fault} text with diagnostic failure ${providerFails}`, async ({ page }, testInfo) => {
+        const whiteSpace = fault === 'wrapped' ? 'normal' : 'nowrap'
+        await page.setContent(`<span id="readability-control" style="display:inline-block;width:45px;font:14px Arial;white-space:${whiteSpace};overflow:hidden">Audit Actions</span>`)
+        const label = page.locator('#readability-control')
+        let measured: { lines: number; width: number; scrollWidth: number } | undefined
+        const provider = { attach: async (_name: string, options: { body: string }) => {
+          measured = JSON.parse(options.body)
+          if (providerFails) throw new Error('controlled diagnostic failure')
+        } } as unknown as TestInfo
+        try {
+          await expect(singleReadableLine(label, `${fault} control`, provider)).rejects.toThrow(fault === 'wrapped' ? 'must not split into narrow fragments' : 'must be fully readable')
+          expect(measured).toBeDefined()
+          if (fault === 'wrapped') expect(measured!.lines).toBeGreaterThan(1)
+          else {
+            expect(measured!.lines).toBe(1)
+            expect(measured!.scrollWidth).toBeGreaterThan(measured!.width + 1)
+          }
+          await testInfo.attach('readability-fault-control', { body: JSON.stringify({ fault, providerFails, measured }), contentType: 'application/json' })
+        } finally {
+          await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+          await expect(label).toHaveCount(0)
+        }
+      })
+    }
+  }
+
+  test('rejects a label removed before atomic measurement', async ({ page }, testInfo) => {
+    await page.setContent('<span id="readability-control">Audit Actions</span>')
+    const label = page.locator('#readability-control')
+    const controlled = new Proxy(label, {
+      get(target, property) {
+        if (property === 'evaluateAll') return async (operation: any, argument: any) => {
+          await target.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+          return target.evaluateAll(operation, argument)
+        }
+        const value = Reflect.get(target, property)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    try {
+      await expect(singleReadableLine(controlled, 'missing control', testInfo)).rejects.toThrow('must not split into narrow fragments')
+    } finally {
+      await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+      await expect(label).toHaveCount(0)
+    }
+  })
+})
+
 async function singleReadableLine(element: Locator, description: string, testInfo: TestInfo) {
   await expect(element).toBeVisible()
-  const geometry = await element.evaluate(node => {
+  const geometry = await element.evaluateAll(nodes => {
+    // Resolve and measure together: grid updates can replace an already resolved label.
+    const node = nodes[0]
+    if (nodes.length !== 1 || !node) return { lines: 0, width: 0, scrollWidth: 0, connected: false }
     const range = document.createRange()
     range.selectNodeContents(node)
     const lines = new Set(Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0).map(rect => Math.round(rect.top)))
     const style = getComputedStyle(node)
     return { lines: lines.size, width: node.clientWidth, scrollWidth: node.scrollWidth,
       fontFamily: style.fontFamily, fontSize: style.fontSize, whiteSpace: style.whiteSpace,
-      wordBreak: style.wordBreak, overflowWrap: style.overflowWrap, fontsStatus: document.fonts.status }
+      wordBreak: style.wordBreak, overflowWrap: style.overflowWrap, fontsStatus: document.fonts.status, connected: node.isConnected }
   })
   await testInfo.attach(`readability-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
   expect(geometry.lines, `${description} must not split into narrow fragments`).toBe(1)
   expect(geometry.scrollWidth, `${description} must be fully readable`).toBeLessThanOrEqual(geometry.width + 1)
+  expect(geometry.connected, `${description} must belong to the current document`).toBeTruthy()
+  expect(geometry.width, `${description} must have a visible width`).toBeGreaterThan(0)
 }
 
 async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, description: string) {
