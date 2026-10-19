@@ -12,6 +12,7 @@ export default defineConfig({
     /(^|[\\/])notification-keyboard\.spec\.ts$/,
     /(^|[\\/])configuration-sync\.spec\.ts$/,
     /(^|[\\/])monitoring-stale-form\.spec\.ts$/,
+    /(^|[\\/])service-stale-form\.spec\.ts$/,
     /(^|[\\/])rack-elevation-contrast\.spec\.ts$/,
     /(^|[\\/])detail-readability\.spec\.ts$/,
     /(^|[\\/])browser-reset-isolation\.spec\.ts$/,

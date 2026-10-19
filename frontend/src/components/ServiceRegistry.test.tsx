@@ -3,6 +3,20 @@ import { describe, expect, it, vi } from 'vitest'
 import { ServiceForm } from './ServiceRegistry'
 
 describe('ServiceForm host selector parity', () => {
+  it('retains the draft, input node and original revision when the same record refreshes', () => {
+    const initialData = { id: 7, name: 'Shared service', device_id: 11, purpose: 'Original', edit_revision: 'a'.repeat(32) }
+    const onSave = vi.fn()
+    const props = { options: [], devices: [{ id: 11, name: 'Host' }], onSave }
+    const { container, rerender } = render(<ServiceForm key={7} {...props} initialData={initialData} />)
+    const purpose = screen.getByLabelText('Purpose')
+    fireEvent.change(purpose, { target: { value: 'Retained local draft' } })
+    rerender(<ServiceForm key={7} {...props} initialData={{ ...initialData, purpose: 'New peer data', edit_revision: 'b'.repeat(32) }} />)
+    expect(screen.getByLabelText('Purpose')).toBe(purpose)
+    expect(purpose).toHaveValue('Retained local draft')
+    fireEvent.submit(container.querySelector('form')!)
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ purpose: 'Retained local draft', edit_revision: 'a'.repeat(32) }))
+  })
+
   const accessibleFields = [
     ['name', /^Name/], ['installation_date', 'Deployment Date'], ['version', 'Version'], ['purpose', 'Purpose'],
     ['expiry_date', 'Expiry Date'], ['manufacturer', 'Manufacturer'], ['supplier', 'Supplier'], ['cost', 'Cost'],

@@ -91,6 +91,7 @@ GENERIC_EXCLUDE_COLUMNS = {
     "created_at",
     "updated_at",
     "created_by_user_id",
+    "edit_revision",
     "hardware_age",
     "open_incident_count",
 }
@@ -1992,7 +1993,7 @@ async def download_snapshot(table_name: str, request: Request, export_token: Opt
         df = pd.DataFrame(data, columns=columns)
     else:
         mapper = inspect(model)
-        exclude = {"id", "created_at", "updated_at", "created_by_user_id"}
+        exclude = {"id", "created_at", "updated_at", "created_by_user_id", "edit_revision"}
         cols = [column.name for column in mapper.columns if column.name not in exclude]
         if model is models.Device:
             cols = [field.name for field in profile.fields]

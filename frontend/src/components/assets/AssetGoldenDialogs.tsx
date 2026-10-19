@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
-import { Eye } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Database, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { AssetDetailsView } from './AssetDetailsView'
 import AssetGoldenQuickLookPanel from './AssetGoldenQuickLookPanel'
@@ -8,10 +8,13 @@ import { AssetRecordFormModal, NetworkConnectionForm } from '../AssetReal'
 import { OperationalImportModal } from '../shared/OperationalImportModal'
 import { ConfirmationModal } from '../shared/ConfirmationModal'
 import { WorkspaceModal } from '../shared/WorkspaceModal'
+import { WorkspaceDossierShell } from '../shared/WorkspaceModalShells'
 import { ToolbarButton } from '../shared/LayoutPrimitives'
 import { ConfigRegistryModal } from '../ConfigRegistry'
 import { ServiceDetailsView, ServiceForm } from '../ServiceRegistry'
 import { apiFetch } from '../../api/apiClient'
+import { withServiceEditRevision } from '../../utils/serviceRevision'
+import { parseOperationalApiValidationError } from '../shared/OperationalFieldValidation'
 
 function AssetDetailsDialog({ detailAsset, onCloseDetails, options, setServiceDetails, setServiceEdit, onCloseLinkEdit, onCloseLinkDetails }: any) {
   const [draftDirty, setDraftDirty] = useState(false)
@@ -37,13 +40,20 @@ function AssetServiceDialogs({
   options,
 }: any) {
   const queryClient = useQueryClient()
+  const [serviceSaveError, setServiceSaveError] = useState('')
+  const [serviceDraftDirty, setServiceDraftDirty] = useState(false)
+  useEffect(() => {
+    setServiceSaveError('')
+    setServiceDraftDirty(false)
+  }, [activeEdit?.id])
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async (payload: any) => {
       const response = await apiFetch(`/api/v1/logical-services/${payload.id}`, {
         method: 'PUT',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(withServiceEditRevision(payload, payload)),
       })
-      if (!response.ok) throw new Error(await response.text())
+      if (!response.ok) throw Object.assign(new Error(await response.text()), { status: response.status })
       return response.json()
     },
     onSuccess: async () => {
@@ -52,7 +62,11 @@ function AssetServiceDialogs({
       onRefresh()
       onCloseEdit()
     },
-    onError: (error: any) => toast.error(error?.message || 'Service update failed'),
+    onError: (error: any) => {
+      const message = parseOperationalApiValidationError(error).generalError || 'Service update failed'
+      setServiceSaveError(message)
+      toast.error(error.status === 409 ? 'Service changed; your draft is preserved.' : message)
+    },
   })
 
   return (
@@ -71,20 +85,35 @@ function AssetServiceDialogs({
 
       <WorkspaceModal
         isOpen={Boolean(activeEdit)}
-        onClose={onCloseEdit}
+        onClose={() => {
+          if (mutation.isPending) { toast('Wait for the current save to finish.'); return }
+          onCloseEdit()
+        }}
         size="workspace"
         title="Edit Service"
-        subtitle="Service registry donor workflow"
+        subtitle={activeEdit ? `Service ID ${activeEdit.id} · ${activeEdit.device_name || 'Floating host'}` : ''}
+        icon={<Database size={20} />}
+        isDirty={serviceDraftDirty && !mutation.isPending}
+        dirtyConfirmTitle="Discard Service Changes?"
+        dirtyConfirmMessage="You have unsaved service changes. Close this window and discard them?"
+        footerRight={<ToolbarButton variant="primary" disabled={mutation.isPending}
+          onClick={() => (document.getElementById('asset-service-record-form') as HTMLFormElement | null)?.requestSubmit()}>
+          Save Service
+        </ToolbarButton>}
       >
         {activeEdit ? (
-          <div className="pt-6">
-            <ServiceForm
+          <WorkspaceDossierShell body={<ServiceForm
+              key={activeEdit.id}
+              formId="asset-service-record-form"
               initialData={activeEdit}
               onSave={mutation.mutate}
+              isPending={mutation.isPending}
+              backendGeneralError={serviceSaveError}
+              onDirtyChange={setServiceDraftDirty}
+              renderActions={false}
               options={options}
               devices={devices}
-            />
-          </div>
+            />} />
         ) : null}
       </WorkspaceModal>
     </>
