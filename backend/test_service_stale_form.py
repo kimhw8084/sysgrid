@@ -149,6 +149,48 @@ async def test_inflight_peer_write_returns_conflict_and_rolls_back_all_side_effe
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('peer_write', ['update', 'delete'])
+async def test_mount_peer_race_is_a_bounded_conflict(service_scope, setup_db, monkeypatch, peer_write):
+    c = service_scope
+    identity = c['rows']['owned']
+    loaded, release = asyncio.Event(), asyncio.Event()
+    original = logical_services._get_owned_service
+    held = False
+
+    async def hold_one_reader(request, db, service_id):
+        nonlocal held
+        service = await original(request, db, service_id)
+        if not held:
+            held = True
+            loaded.set()
+            await asyncio.wait_for(release.wait(), 5)
+        return service
+
+    monkeypatch.setattr(logical_services, '_get_owned_service', hold_one_reader)
+    pending = asyncio.create_task(c['client'].post(
+        f"/api/v1/logical-services/{identity}/mount/{c['devices']['peer']}", headers=c['headers']))
+    try:
+        await asyncio.wait_for(loaded.wait(), 5)
+        async with _tenant_db(setup_db, c['tenant']) as db:
+            if peer_write == 'update':
+                await db.execute(update(models.LogicalService).where(models.LogicalService.id == identity).values(purpose='Committed peer mount control'))
+            else:
+                await db.execute(delete(models.LogicalService).where(models.LogicalService.id == identity))
+            await db.commit()
+        before = await snapshot(c, setup_db)
+    finally:
+        release.set()
+    response, error = None, None
+    try:
+        response = await pending
+    except Exception as exc:
+        error = f'{type(exc).__name__}: {exc}'
+    assert await snapshot(c, setup_db) == before, 'Mount conflict must roll back host/service/audit side effects'
+    assert error is None, f'Mount must return HTTP409 instead of an uncaught exception: {error}'
+    assert response.status_code == 409, response.text
+
+
+@pytest.mark.asyncio
 async def test_delete_and_recreate_identity_cannot_reuse_an_old_snapshot(service_scope, setup_db):
     c = service_scope
     created = await c['client'].post('/api/v1/logical-services', headers=c['headers'], json={'name': 'ABA original', 'service_type': 'Application'})

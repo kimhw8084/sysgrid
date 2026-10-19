@@ -604,7 +604,7 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
     return {"status": "success", **summary}
 
 @router.post("/{service_id}/mount/{device_id}")
-async def mount_service(service_id: int, device_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+async def mount_service(service_id: int, device_id: int, request: Request, db: AsyncSession = Depends(get_service_db)):
     svc = await _get_owned_service(request, db, service_id)
     await require_relationship_asset(request, db, device_id, active=True)
     if svc.device_id == device_id:
