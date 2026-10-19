@@ -3,7 +3,7 @@ import { ChaosController } from './chaosController.ts';
 import { InteractionChaos } from './chaosInteractions.ts';
 import { NetworkChaos } from './chaosNetwork.ts';
 import { StateChaos } from './chaosState.ts';
-import { testApiHeaders } from './sysgrid.ts';
+import { createTestApiClient } from './test-api-client.ts';
 
 // Extend the base test to include a globally pre-configured API client and ChaosController
 export const test = base.extend<{ 
@@ -37,53 +37,7 @@ export const test = base.extend<{
   sysApi: async ({ request, baseURL }, use) => {
     // We wrap the raw Playwright request with our deterministic headers
     // ensuring no test ever forgets the tenant or user context.
-    const customRequest = {
-      post: async (path: string, options?: any) => {
-        return request.post(path, {
-          ...options,
-          headers: {
-            ...testApiHeaders,
-            ...options?.headers
-          }
-        });
-      },
-      get: async (path: string, options?: any) => {
-        return request.get(path, {
-          ...options,
-          headers: {
-            ...testApiHeaders,
-            ...options?.headers
-          }
-        });
-      },
-      patch: async (path: string, options?: any) => {
-        return request.patch(path, {
-          ...options,
-          headers: {
-            ...testApiHeaders,
-            ...options?.headers
-          }
-        });
-      },
-      delete: async (path: string, options?: any) => {
-        return request.delete(path, {
-          ...options,
-          headers: {
-            ...testApiHeaders,
-            ...options?.headers
-          }
-        });
-      },
-      put: async (path: string, options?: any) => {
-        return request.put(path, {
-          ...options,
-          headers: {
-            ...testApiHeaders,
-            ...options?.headers
-          }
-        });
-      }
-    };
+    const customRequest = createTestApiClient(request);
     await use(customRequest as any);
   }
 });

@@ -590,10 +590,11 @@ async def next_monitoring_version(db: AsyncSession, item) -> int:
     # unique history key rejects a peer that commits after this check, atomically
     # rolling back its data/owner/audit changes instead of replacing history.
     with db.no_autoflush:
-        current, recorded = (await db.execute(select(models.MonitoringItem.version, latest).where(
-            models.MonitoringItem.id == item.id))).one()
-    if current != item.version:
+        row = (await db.execute(select(models.MonitoringItem.version, latest).where(
+            models.MonitoringItem.id == item.id))).one_or_none()
+    if row is None or row[0] != item.version:
         raise HTTPException(409, "Monitoring record changed during this request; reload and review before retrying")
+    current, recorded = row
     return max(current or 0, recorded or 0) + 1
 
 

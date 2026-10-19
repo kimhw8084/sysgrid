@@ -606,6 +606,7 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
                                       <button
                                         key={svc.id}
                                         type="button"
+                                        aria-pressed={formData.monitored_services?.includes(svc.id) || false}
                                         onClick={() => {
                                             const current = [...(formData.monitored_services || [])]
                                             const idx = current.indexOf(svc.id)
@@ -616,10 +617,10 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
                                             }
                                             updateFormData({ ...formData, monitored_services: current })
                                         }}
-                                        className={`rounded-lg border px-2.5 py-1.5 text-[9px] font-black transition-all ${
+                                        className={`max-w-full min-w-0 !whitespace-normal rounded-lg border px-2.5 py-1.5 text-left text-[9px] font-black [overflow-wrap:anywhere] transition-all ${
                                           formData.monitored_services?.includes(svc.id)
-                                            ? 'border-blue-500/40 bg-blue-500/12 text-blue-200'
-                                            : 'border-white/10 bg-slate-950/60 text-slate-500 hover:border-white/20 hover:text-slate-200'
+                                            ? 'border-[var(--action-primary)] bg-[var(--action-primary)] text-white'
+                                            : 'border-[var(--grid-border)] bg-[var(--surface-base)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
                                         }`}
                                       >
                                         {svc.name}

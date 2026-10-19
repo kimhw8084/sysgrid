@@ -4,7 +4,7 @@ import base from './playwright.config'
 // Supplemental rendered interaction qualification; the complete Chromium V1 gate remains required.
 export default defineConfig({
   ...base,
-  testMatch: /(^|[\\/])(notification-(layout|keyboard)|configuration-sync|monitoring-stale-form|browser-reset-isolation|phone-grid-identity|eight-route-smoke|asset-form-safety|grid-contrast)\.spec\.ts$/,
+  testMatch: /(^|[\\/])(notification-(layout|keyboard)|configuration-sync|monitoring-stale-form|monitoring-preference-race|rack-elevation-contrast|detail-readability|browser-reset-isolation|phone-grid-identity|eight-route-smoke|asset-form-safety|grid-contrast)\.spec\.ts$/,
   outputDir: 'test-results-ui-engines',
   projects: ['chromium', 'firefox', 'webkit'].map(browserName => ({
     name: browserName,

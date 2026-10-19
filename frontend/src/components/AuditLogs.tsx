@@ -125,12 +125,16 @@ export default function AuditLogs() {
       pinned: 'left' as const,
       cellClass: 'text-center font-bold text-blue-400', 
       headerClass: 'text-center', 
-      cellRenderer: (p: any) => p.value ? (
-        <div className="flex items-center gap-2">
-           <Clock size={12} className="opacity-40" />
-           <span>{formatAppDate(p.value)}</span>
-        </div>
-      ) : <span className="text-slate-500 font-bold uppercase">N/A</span> 
+      cellRenderer: (p: any) => {
+        if (!p.value) return <span className="text-slate-500 font-bold uppercase">N/A</span>
+        const timestamp = formatAppDate(p.value)
+        return (
+          <div className="flex min-w-0 items-center gap-2">
+             <Clock size={12} className="shrink-0 opacity-40" />
+             <span className="block min-w-0 truncate whitespace-nowrap" title={timestamp}>{timestamp}</span>
+          </div>
+        )
+      }
     },
     { 
       field: 'action', 
@@ -198,10 +202,13 @@ export default function AuditLogs() {
     {
         headerName: 'ACTIONS',
         colId: 'audit-actions',
-        width: 88,
-        minWidth: 88,
-        maxWidth: 88,
+        width: 104,
+        minWidth: 104,
+        maxWidth: 104,
         pinned: 'right' as const,
+        sortable: false,
+        filter: false,
+        suppressHeaderMenuButton: true,
         cellRenderer: (params: any) => {
           const target = resolveOperationalObjectReference(params.data?.target_table, params.data?.target_id)
           return (
@@ -375,42 +382,42 @@ export default function AuditLogs() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-indigo-600/10 border-b border-indigo-500/20"
+            className="shrink-0 overflow-hidden border-b border-[var(--grid-border)] bg-[var(--surface-elevated)]" data-audit-density="true"
           >
             <div className="px-3 py-4 flex flex-col items-start gap-3 backdrop-blur-md sm:px-8 sm:flex-row sm:items-center sm:justify-between">
                <div className="flex w-full flex-col items-start gap-3 sm:w-auto sm:flex-row sm:items-center sm:space-x-12">
                   <div className="flex items-center space-x-3">
-                     <Activity size={16} className="text-indigo-400" />
-                     <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">View Density Laboratory</span>
+                     <Activity size={16} className="text-[var(--accent-primary)]" />
+                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)]">View Density Laboratory</span>
                   </div>
                   
                   <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:space-x-6">
                      <div className="flex items-center space-x-4">
-                        <span className="text-[9px] font-black text-slate-500 uppercase">Font Size</span>
+                        <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase">Font Size</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="8" max="14" step="1" 
+                            type="range" min="8" max="14" step="1" aria-label="Audit font size"
                             value={fontSize} onChange={e => setFontSize(Number(e.target.value))}
-                            className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+                            className="w-32 accent-[var(--accent-primary)] h-1.5 bg-[var(--grid-border)] rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-white w-4 font-bold tabular-nums">{fontSize}px</span>
+                            <span className="text-[10px] text-[var(--text-primary)] w-8 shrink-0 font-bold tabular-nums">{fontSize}px</span>
                         </div>
                      </div>
 
-                     <div className="flex items-center space-x-4 border-l border-white/10 pl-6">
-                        <span className="text-[9px] font-black text-slate-500 uppercase">Row Density</span>
+                     <div className="flex items-center space-x-4 border-l border-[var(--grid-border)] pl-6">
+                        <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase">Row Density</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="0" max="24" step="2" 
+                            type="range" min="0" max="24" step="2" aria-label="Audit row density"
                             value={rowDensity} onChange={e => setRowDensity(Number(e.target.value))}
-                            className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+                            className="w-32 accent-[var(--accent-primary)] h-1.5 bg-[var(--grid-border)] rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-white w-4 font-bold tabular-nums">{rowDensity}px</span>
+                            <span className="text-[10px] text-[var(--text-primary)] w-8 shrink-0 font-bold tabular-nums">{rowDensity}px</span>
                         </div>
                      </div>
                   </div>
                </div>
-               <button onClick={() => setShowStyleLab(false)} className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg"><X size={16}/></button>
+               <button aria-label="Close density controls" onClick={() => setShowStyleLab(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2 hover:bg-[var(--surface-hover)] rounded-lg"><X size={16}/></button>
             </div>
           </motion.div>
         )}
@@ -508,6 +515,11 @@ export default function AuditLogs() {
             font-size: ${Math.max(10, fontSize - 1)}px !important;
             justify-content: center !important; 
             color: var(--text-secondary) !important;
+        }
+        [data-audit-ledger] .ag-header-cell[col-id="audit-actions"] .ag-header-cell-text {
+            white-space: nowrap !important;
+            word-break: normal !important;
+            overflow-wrap: normal !important;
         }
         [data-audit-ledger] .ag-header-cell-pinned::after {
             background-color: rgba(59, 130, 246, 0.2) !important;

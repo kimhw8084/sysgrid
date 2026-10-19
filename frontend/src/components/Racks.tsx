@@ -63,7 +63,7 @@ const STATUS_CONFIG: Record<string, { color: string; dot: string; badge: string 
 }
 
 const TYPE_CONFIG: Record<string, { color: string; short: string }> = {
-  physical: { color: 'text-violet-400', short: 'PHY' },
+  physical: { color: 'text-violet-800 [.dark_&]:text-violet-200', short: 'PHY' },
   virtual:  { color: 'text-blue-400',   short: 'VM'  },
   storage:  { color: 'text-amber-400',  short: 'STO' },
   switch:   { color: 'text-rose-400',   short: 'NET' },
@@ -614,8 +614,8 @@ const RackUnit = ({ uNumber, loc, isTop, isBottom, highlight, onSelect, onManage
 
         {!device && !isDiff && (
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center pl-10 pointer-events-none">
-            <Plus size={8} className="text-blue-500/70 mr-1" />
-            <span className="text-[7px] text-blue-500/60 font-bold uppercase tracking-widest">Mount / Reserve</span>
+            <Plus size={8} className="text-[var(--accent-primary)] mr-1" />
+            <span className="text-[7px] text-[var(--accent-primary)] font-bold uppercase tracking-widest">Mount / Reserve</span>
           </div>
         )}
       </div>

@@ -3,8 +3,10 @@ import asyncio
 import re
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete, select, update
 
+from app.main import app
 from app.models import models
 from app.api import monitoring
 from test_chg13_authorization_security import _tenant_db
@@ -156,3 +158,58 @@ async def test_reused_sqlite_identity_never_reuses_an_edit_revision(seeded_admin
     rejected = await client.put(f"/api/v1/monitoring/{replacement['id']}", headers=headers,
         json={'purpose': 'Old identity draft', 'expected_revision': original['edit_revision']})
     assert rejected.status_code == 409
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('conditional', [False, True])
+async def test_peer_delete_after_load_returns_conflict_without_resurrection(seeded_admin_tenant, setup_db, monkeypatch, conditional):
+    client = seeded_admin_tenant['client']
+    tenant_id = seeded_admin_tenant['tenant_id']
+    headers = {'X-User-Id': 'admin_root', 'X-Tenant-Id': str(tenant_id)}
+    item = await create(client, headers)
+    loaded = asyncio.Event()
+    release = asyncio.Event()
+    original = monitoring.load_monitoring_item
+    held = False
+
+    async def hold_one_reader(db, item_id):
+        nonlocal held
+        row = await original(db, item_id)
+        if item_id == item['id'] and not held:
+            held = True
+            loaded.set()
+            await asyncio.wait_for(release.wait(), 5)
+        return row
+
+    async def persisted_state():
+        async with _tenant_db(setup_db, tenant_id) as db:
+            retained = await db.get(models.MonitoringItem, item['id'])
+            history = (await db.scalars(select(models.MonitoringHistory.id).where(
+                models.MonitoringHistory.monitoring_item_id == item['id']))).all()
+            owners = (await db.scalars(select(models.MonitoringOwner.id).where(
+                models.MonitoringOwner.monitoring_item_id == item['id']))).all()
+            audits = (await db.scalars(select(models.AuditLog.id).where(
+                models.AuditLog.target_table == 'monitoring_items',
+                models.AuditLog.target_id == str(item['id'])))).all()
+            return retained, list(history), list(owners), list(audits)
+
+    monkeypatch.setattr(monitoring, 'load_monitoring_item', hold_one_reader)
+    payload = {'purpose': 'In-flight draft must not resurrect the monitor'}
+    if conditional:
+        payload['expected_revision'] = item['edit_revision']
+    async with AsyncClient(transport=ASGITransport(app=app, raise_app_exceptions=False), base_url='http://test') as wire:
+        stale = asyncio.create_task(wire.put(f"/api/v1/monitoring/{item['id']}", headers=headers, json=payload))
+        try:
+            await asyncio.wait_for(loaded.wait(), 5)
+            async with _tenant_db(setup_db, tenant_id) as db:
+                result = await db.execute(delete(models.MonitoringItem).where(models.MonitoringItem.id == item['id']))
+                assert result.rowcount == 1
+                await db.commit()
+            before = await persisted_state()
+            assert before[0] is None
+        finally:
+            release.set()
+        response = await stale
+    after = await persisted_state()
+    assert after == before, 'The stale editor must not add data, owners, history or audit rows'
+    assert response.status_code == 409, {'status': response.status_code, 'body': response.text}
