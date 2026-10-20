@@ -59,3 +59,61 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     })
   }
 }
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+  for (const localState of ['absent', 'partial', 'malformed', 'empty']) {
+    test(`Services restore server preferences with ${localState} browser state in ${theme}`, async ({ page, sysApi }, testInfo) => {
+      await resetBrowserState(page)
+      await page.goto('/')
+      await page.evaluate(({ theme, localState }) => {
+        for (const key of Object.keys(localStorage)) if (key.startsWith('sysgrid_services_')) localStorage.removeItem(key)
+        localStorage.setItem('sysgrid-theme', theme)
+        if (localState === 'partial') {
+          localStorage.setItem('sysgrid_services_ui_state_v1', JSON.stringify({ rowDensity: 12 }))
+          localStorage.setItem('sysgrid_services_favorites_v1', '[]')
+        }
+        if (localState === 'malformed') {
+          localStorage.setItem('sysgrid_services_ui_state_v1', '{broken')
+          localStorage.setItem('sysgrid_services_views_v1', '{}')
+          localStorage.setItem('sysgrid_services_favorites_v1', 'null')
+          localStorage.setItem('sysgrid_services_watch_v1', '{broken')
+        }
+        if (localState === 'empty') {
+          localStorage.setItem('sysgrid_services_ui_state_v1', JSON.stringify({ searchTerm: '' }))
+          localStorage.setItem('sysgrid_services_views_v1', '[]')
+          localStorage.setItem('sysgrid_services_favorites_v1', '[]')
+          localStorage.setItem('sysgrid_services_watch_v1', '[]')
+        }
+      }, { theme, localState })
+      const name = `Remote Service ${theme} ${localState} ${Date.now()}`
+      const service = await createService(sysApi, { name, service_type: 'Database', status: 'Active' })
+      const viewName = `Server Service view ${localState}`
+      expect((await sysApi.patch(`${apiBase}/settings/user/settings`, { data: {
+        theme,
+        services_workspace_state_v1: {
+          version: 2, savedViews: [{ id: 'server-custom', name: viewName, config: {} }], activeViewId: null,
+          favoriteIds: [service.id], watchIds: [service.id],
+          uiState: { searchTerm: name, rowDensity: 9, fontSize: 14, groupBy: 'raw', showFilterBar: true, hiddenColumns: ['created_at', 'updated_at'] },
+        },
+      } })).ok()).toBeTruthy()
+      const loaded = page.waitForResponse(response => response.url().endsWith('/api/v1/settings/user/settings') && response.request().method() === 'GET')
+      await page.goto('/services')
+      expect((await loaded).ok()).toBeTruthy()
+      const desiredSearch = localState === 'empty' ? '' : name
+      await expect(page.getByPlaceholder('Search services, hosts, or metadata...', { exact: true })).toHaveValue(desiredSearch)
+      if (localState !== 'empty') await expect(page.locator('.ag-center-cols-container .ag-row')).toHaveCount(1)
+      const expectedUi = { searchTerm: desiredSearch, rowDensity: localState === 'partial' ? 12 : 9, fontSize: 14 }
+      await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('sysgrid_services_ui_state_v1') || '{}'))).toMatchObject(expectedUi)
+      await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('sysgrid_services_favorites_v1') || '[]'))).toEqual(['partial', 'empty'].includes(localState) ? [] : [service.id])
+      await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('sysgrid_services_watch_v1') || '[]'))).toEqual(localState === 'empty' ? [] : [service.id])
+      await page.getByRole('button', { name: 'Views', exact: true }).click()
+      if (localState === 'empty') await expect(page.getByText(viewName, { exact: true })).toHaveCount(0)
+      else await expect(page.getByText(viewName, { exact: true })).toBeVisible()
+      await expect.poll(async () => {
+        const settings = await (await sysApi.get(`${apiBase}/settings/user/settings`)).json()
+        return settings.services_workspace_state_v1?.uiState
+      }).toMatchObject(expectedUi)
+      await page.screenshot({ path: testInfo.outputPath(`service-restore-${localState}-${theme}.png`), animations: 'disabled' })
+    })
+  }
+}

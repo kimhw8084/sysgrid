@@ -52,7 +52,7 @@ import { WorkspaceFlyoutActionCard, WorkspaceFlyoutDropdownEditor } from './shar
 import { StatusPill } from './shared/StatusPill'
 import { parseCommaSeparatedValues } from '../utils/dataParsers'
 import { HeaderScopeSwitch, ToolbarButton, ToolbarGroup, ToolbarIconButton, ToolbarSearch } from './shared/LayoutPrimitives'
-import { useOperationalDetailRoute, useOperationalGridRuntime, usePersistentJsonState, useWorkspaceOverlayController, useWorkspaceSessionValue } from './shared/OperationalWorkspaceHooks'
+import { useOperationalDetailRoute, useOperationalGridRuntime, usePersistentJsonState, useWorkspaceOverlayController, useWorkspacePreferencePresence, useWorkspaceSessionValue } from './shared/OperationalWorkspaceHooks'
 import {
   useOperationalRowInteractions,
   useOperationalContextMenu,
@@ -480,29 +480,27 @@ export default function ServicesReal() {
     [userSettings]
   )
   const localWorkspaceState = useMemo(() => readServiceWorkspaceStateFromLocalStorage(), [])
-  const hasStoredFavoriteIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(SERVICE_FAVORITES_STORAGE_KEY) !== null,
-    []
-  )
-  const hasStoredWatchIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(SERVICE_WATCH_STORAGE_KEY) !== null,
-    []
-  )
+  const { localUiStateKeys, hasStoredSavedViews, hasStoredFavoriteIds, hasStoredWatchIds } = useWorkspacePreferencePresence({
+    uiState: SERVICE_UI_STATE_KEY,
+    savedViews: SERVICE_VIEW_STORAGE_KEY,
+    favoriteIds: SERVICE_FAVORITES_STORAGE_KEY,
+    watchIds: SERVICE_WATCH_STORAGE_KEY,
+  })
   const initialWorkspaceState = useMemo(() => {
     if (!remoteWorkspaceState) return localWorkspaceState
     if (!localWorkspaceState) return remoteWorkspaceState
     return {
       ...remoteWorkspaceState,
-      savedViews: localWorkspaceState.savedViews?.length ? localWorkspaceState.savedViews : remoteWorkspaceState.savedViews,
+      savedViews: hasStoredSavedViews ? localWorkspaceState.savedViews : remoteWorkspaceState.savedViews,
       activeViewId: localWorkspaceState.activeViewId ?? remoteWorkspaceState.activeViewId,
       favoriteIds: hasStoredFavoriteIds ? (localWorkspaceState.favoriteIds ?? []) : remoteWorkspaceState.favoriteIds,
       watchIds: hasStoredWatchIds ? (localWorkspaceState.watchIds ?? []) : remoteWorkspaceState.watchIds,
       uiState: {
         ...remoteWorkspaceState.uiState,
-        ...localWorkspaceState.uiState,
+        ...Object.fromEntries(Object.entries(localWorkspaceState.uiState).filter(([key]) => localUiStateKeys.includes(key))),
       },
     }
-  }, [hasStoredFavoriteIds, hasStoredWatchIds, localWorkspaceState, remoteWorkspaceState])
+  }, [hasStoredFavoriteIds, hasStoredWatchIds, hasStoredSavedViews, localUiStateKeys, localWorkspaceState, remoteWorkspaceState])
   const persistedUiState = initialWorkspaceState?.uiState ?? null
   
   // --- STYLE LABORATORY STATE ---
@@ -548,14 +546,14 @@ export default function ServicesReal() {
   const [gridSortModel, setGridSortModel] = useState<any[]>([{ colId: 'favorite', sort: 'desc' }])
   const [savedViews, setSavedViews] = usePersistentJsonState<any[]>(SERVICE_VIEW_STORAGE_KEY, () => {
     return initialWorkspaceState?.savedViews ?? normalizeServiceSavedViews([])
-  })
+  }, normalizeServiceSavedViews)
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_services_session_init',
     null,
     () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(SERVICE_ACTIVE_VIEW_KEY))
   )
-  const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(SERVICE_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
-  const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(SERVICE_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
+  const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(SERVICE_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [], normalizeServiceIdList)
+  const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(SERVICE_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [], normalizeServiceIdList)
   const [quickFilters, setQuickFilters] = useState(persistedUiState?.quickFilters ?? { status: [] as string[], environment: [] as string[], service_type: [] as string[], device_name: [] as string[] })
   const [searchTerm, setSearchTermState] = useState(persistedUiState?.searchTerm ?? '')
   const searchChangedRef = useRef(false)
@@ -716,6 +714,7 @@ export default function ServicesReal() {
       const payload = initialWorkspaceState ?? normalizeServiceWorkspaceState(remoteWorkspaceState)
       const serialized = JSON.stringify(payload)
       servicePreferenceSyncRef.current = serialized
+      setSavedViews(payload?.savedViews ?? normalizeServiceSavedViews([]))
       setActiveViewId(payload?.activeViewId ?? null)
       setFavoriteIds(hasStoredFavoriteIds ? (localWorkspaceState?.favoriteIds ?? []) : (payload?.favoriteIds ?? []))
       setWatchIds(hasStoredWatchIds ? (localWorkspaceState?.watchIds ?? []) : (payload?.watchIds ?? []))
@@ -753,6 +752,7 @@ export default function ServicesReal() {
     setActiveViewId,
     setColumnLayoutState,
     setFavoriteIds,
+    setSavedViews,
     setWatchIds,
   ])
 
@@ -981,6 +981,7 @@ export default function ServicesReal() {
 
   const collaborativeViews = useCollaborativeWorkspaceViews({
     workspaceKey: 'services',
+    migrationReady: hasUserSettings && (!remoteWorkspaceState || servicePreferenceHydratedRef.current),
     migrationKey: SERVICE_COLLABORATIVE_VIEW_MIGRATION_KEY,
     systemViewIds: DEFAULT_SERVICE_VIEW_IDS,
     currentViews: savedViews,
