@@ -54,6 +54,13 @@ function remoteRecord(overrides: Partial<WorkspaceViewApiRecord<Config>> = {}): 
   }
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason: unknown) => void
+  const promise = new Promise<T>((done, fail) => { resolve = done; reject = fail })
+  return { promise, resolve, reject }
+}
+
 function useHarness({
   initialViews,
   activeViewId,
@@ -219,6 +226,72 @@ describe('useCollaborativeWorkspaceViews', () => {
     }))
     await waitFor(() => expect(second.result.current.collaborative.status).toBe('synced'))
     expect(post).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps newer canonical views when an older hydration succeeds late', async () => {
+    const older = deferred<{ views: WorkspaceViewApiRecord<Config>[] }>()
+    const newer = deferred<{ views: WorkspaceViewApiRecord<Config>[] }>()
+    const get = vi.spyOn(apiClient, 'get').mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise)
+    const { result, rerender } = renderHook(({ ready }) => useHarness({
+      initialViews: [], activeViewId: null, currentDefinition: { groupBy: 'raw' }, migrationReady: ready,
+    }), { initialProps: { ready: false } })
+    rerender({ ready: true })
+    expect(get).toHaveBeenCalledTimes(2)
+    await act(async () => { newer.resolve({ views: [remoteRecord()] }) })
+    expect(result.current.views.map(view => view.id)).toEqual(['9'])
+    await act(async () => { older.resolve({ views: [] }) })
+    expect(result.current.views.map(view => view.id)).toEqual(['9'])
+    expect(result.current.collaborative.status).toBe('synced')
+  })
+
+  it('ignores an older hydration error after a newer hydration succeeds', async () => {
+    const older = deferred<{ views: WorkspaceViewApiRecord<Config>[] }>()
+    vi.spyOn(apiClient, 'get').mockReturnValueOnce(older.promise).mockResolvedValueOnce({ views: [remoteRecord()] })
+    const { result, rerender } = renderHook(({ ready }) => useHarness({
+      initialViews: [], activeViewId: null, currentDefinition: { groupBy: 'raw' }, migrationReady: ready,
+    }), { initialProps: { ready: false } })
+    rerender({ ready: true })
+    await waitFor(() => expect(result.current.collaborative.status).toBe('synced'))
+    await act(async () => { older.reject({ status: 0, data: { detail: 'Old request went offline' } }) })
+    expect(result.current.collaborative.status).toBe('synced')
+    expect(result.current.collaborative.lastError).toBeNull()
+    expect(result.current.views.map(view => view.id)).toEqual(['9'])
+  })
+
+  it('does not start legacy migration after a pending hydration is unmounted', async () => {
+    const pending = deferred<{ views: WorkspaceViewApiRecord<Config>[] }>()
+    vi.spyOn(apiClient, 'get').mockReturnValue(pending.promise)
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue(remoteRecord())
+    const onActiveViewIdChange = vi.fn()
+    const { unmount } = renderHook(() => useHarness({
+      initialViews: [{ id: 'legacy', name: 'Legacy', config: { groupBy: 'raw' } }],
+      activeViewId: 'legacy', currentDefinition: { groupBy: 'raw' }, onActiveViewIdChange,
+    }))
+    unmount()
+    await act(async () => { pending.resolve({ views: [] }) })
+    expect(post).not.toHaveBeenCalled()
+    expect(onActiveViewIdChange).not.toHaveBeenCalled()
+    expect(localStorage.getItem('test-collaborative-migration-v1')).toBeNull()
+  })
+
+  it('does not continue legacy migration after an in-flight create is unmounted', async () => {
+    const pending = deferred<WorkspaceViewApiRecord<Config>>()
+    vi.spyOn(apiClient, 'get').mockResolvedValue({ views: [] })
+    const post = vi.spyOn(apiClient, 'post').mockReturnValue(pending.promise)
+    const onActiveViewIdChange = vi.fn()
+    const { unmount } = renderHook(() => useHarness({
+      initialViews: [
+        { id: 'legacy', name: 'Legacy', config: { groupBy: 'raw' } },
+        { id: 'legacy-second', name: 'Second', config: { groupBy: 'status' } },
+      ],
+      activeViewId: 'legacy', currentDefinition: { groupBy: 'raw' }, onActiveViewIdChange,
+    }))
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1))
+    unmount()
+    await act(async () => { pending.resolve(remoteRecord({ name: 'Legacy' })) })
+    expect(post).toHaveBeenCalledTimes(1)
+    expect(onActiveViewIdChange).not.toHaveBeenCalled()
+    expect(localStorage.getItem('test-collaborative-migration-v1')).toBeNull()
   })
 
   it('sanitizes remote definitions before they are applied to client state', async () => {
