@@ -3,7 +3,7 @@ import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-li
 import { Link, createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useOperationalDetailRoute, usePersistentJsonState, useWorkspaceOverlayController } from './OperationalWorkspaceHooks'
+import { useOperationalDetailRoute, usePersistentJsonState, useWorkspaceOverlayController, useWorkspacePreferencePresence } from './OperationalWorkspaceHooks'
 import { WorkspaceModal } from './WorkspaceModal'
 
 function DirtyModalHarness({ isDirty }: { isDirty: boolean }) {
@@ -83,6 +83,55 @@ function deferred<T>() {
   })
   return { promise, resolve }
 }
+
+describe('workspace preference ownership', () => {
+  const keys = { uiState: 'presence-ui', savedViews: 'presence-views', favoriteIds: 'presence-favorites', watchIds: 'presence-watch' }
+  const clear = () => Object.values(keys).forEach(key => localStorage.removeItem(key))
+
+  it('captures overrides before persistence effects write defaults and retains the snapshot on rerender', () => {
+    clear()
+    const { result, rerender, unmount } = renderHook(() => {
+      const presence = useWorkspacePreferencePresence(keys)
+      usePersistentJsonState(keys.favoriteIds, [])
+      usePersistentJsonState(keys.uiState, { rowDensity: 8 })
+      return presence
+    })
+    const snapshot = result.current
+    expect(localStorage.getItem(keys.favoriteIds)).toBe('[]')
+    expect(snapshot.hasStoredFavoriteIds).toBe(false)
+    expect(snapshot.localUiStateKeys).toEqual([])
+    rerender()
+    expect(result.current).toBe(snapshot)
+    unmount()
+    const next = renderHook(() => useWorkspacePreferencePresence(keys))
+    expect(next.result.current.hasStoredFavoriteIds).toBe(true)
+    expect(next.result.current.localUiStateKeys).toEqual(['rowDensity'])
+  })
+
+  it('preserves explicit empty collections, empty search and false flags without owning absent fields', () => {
+    clear()
+    localStorage.setItem(keys.uiState, JSON.stringify({ searchTerm: '', showFilterBar: false }))
+    for (const key of [keys.savedViews, keys.favoriteIds, keys.watchIds]) localStorage.setItem(key, '[]')
+    const { result } = renderHook(() => useWorkspacePreferencePresence(keys))
+    expect(result.current).toEqual({ localUiStateKeys: ['searchTerm', 'showFilterBar'], hasStoredSavedViews: true, hasStoredFavoriteIds: true, hasStoredWatchIds: true })
+    expect(result.current.localUiStateKeys).not.toContain('fontSize')
+  })
+
+  it.each(['null', '{}', '{broken', '"invalid"', '0'])('does not let invalid stored collections %s own server preferences', raw => {
+    clear()
+    for (const key of Object.values(keys)) localStorage.setItem(key, raw)
+    const { result } = renderHook(() => useWorkspacePreferencePresence(keys))
+    expect(result.current).toEqual({ localUiStateKeys: [], hasStoredSavedViews: false, hasStoredFavoriteIds: false, hasStoredWatchIds: false })
+  })
+
+  it('treats unavailable browser storage as no local override', () => {
+    const get = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('Storage blocked', 'SecurityError') })
+    try {
+      const { result } = renderHook(() => useWorkspacePreferencePresence(keys))
+      expect(result.current).toEqual({ localUiStateKeys: [], hasStoredSavedViews: false, hasStoredFavoriteIds: false, hasStoredWatchIds: false })
+    } finally { get.mockRestore() }
+  })
+})
 
 describe('validated persistent state', () => {
   it.each(['null', '{}', '"invalid"', '[1,"2",null]'])('normalizes stored %s before rendering and persisting', (raw) => {

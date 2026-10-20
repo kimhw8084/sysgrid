@@ -76,6 +76,7 @@ import {
   useOperationalGridRuntime,
   useOperationalSelection,
   usePersistentJsonState,
+  useWorkspacePreferencePresence,
   useWorkspaceSessionValue,
   useWorkspaceOverlayController,
   useOperationalWorkspaceController,
@@ -632,24 +633,12 @@ export default function NetworkReal() {
     [userSettings]
   )
   const localWorkspaceState = useMemo(() => readNetworkWorkspaceStateFromLocalStorage(), [])
-  // Capture actual stored fields before mount effects persist their defaults.
-  // Normalized fallback values must not override preferences from another browser.
-  const localUiStateKeys = useMemo(() => {
-    const stored = readJsonStorage<unknown>(NETWORK_UI_STATE_KEY, null)
-    return stored && typeof stored === 'object' && !Array.isArray(stored) ? Object.keys(stored) : []
-  }, [])
-  const hasStoredSavedViews = useMemo(
-    () => Array.isArray(readJsonStorage<unknown>(NETWORK_VIEW_STORAGE_KEY, null)),
-    []
-  )
-  const hasStoredFavoriteIds = useMemo(
-    () => Array.isArray(readJsonStorage<unknown>(NETWORK_FAVORITES_STORAGE_KEY, null)),
-    []
-  )
-  const hasStoredWatchIds = useMemo(
-    () => Array.isArray(readJsonStorage<unknown>(NETWORK_WATCH_STORAGE_KEY, null)),
-    []
-  )
+  const { localUiStateKeys, hasStoredSavedViews, hasStoredFavoriteIds, hasStoredWatchIds } = useWorkspacePreferencePresence({
+    uiState: NETWORK_UI_STATE_KEY,
+    savedViews: NETWORK_VIEW_STORAGE_KEY,
+    favoriteIds: NETWORK_FAVORITES_STORAGE_KEY,
+    watchIds: NETWORK_WATCH_STORAGE_KEY,
+  })
   const initialWorkspaceState = useMemo(() => {
     if (!remoteWorkspaceState) return localWorkspaceState
     if (!localWorkspaceState) return remoteWorkspaceState

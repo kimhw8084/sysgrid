@@ -59,15 +59,18 @@ function useHarness({
   activeViewId,
   currentDefinition,
   onActiveViewIdChange,
+  migrationReady,
 }: {
   initialViews: View[]
   activeViewId: string | null
   currentDefinition: Config
   onActiveViewIdChange?: (id: string | null) => void
+  migrationReady?: boolean
 }) {
   const [views, setViews] = useState(initialViews)
   const collaborative = useCollaborativeWorkspaceViews({
     workspaceKey: 'monitoring',
+    migrationReady,
     migrationKey: 'test-collaborative-migration-v1',
     systemViewIds: SYSTEM_VIEW_IDS,
     currentViews: views,
@@ -158,6 +161,31 @@ describe('useCollaborativeWorkspaceViews', () => {
       expect(toast.error).toHaveBeenCalledTimes(1)
       expect(result.current.collaborative.copyingLink).toBe(false)
     })
+  })
+
+  it('reads canonical views while waiting for legacy preferences and migrates only after they are ready', async () => {
+    const get = vi.spyOn(apiClient, 'get').mockResolvedValue({ views: [remoteRecord()] })
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue(remoteRecord({ id: 10, name: 'Restored legacy view' }))
+    const { result, rerender } = renderHook(({ enabled }) => useHarness({
+      initialViews: [{ id: 'legacy-restored', name: 'Restored legacy view', config: { groupBy: 'status' } }],
+      activeViewId: null,
+      currentDefinition: { groupBy: 'raw' },
+      migrationReady: enabled,
+    }), { initialProps: { enabled: false } })
+    await waitFor(() => expect(result.current.collaborative.status).toBe('synced'))
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(post).not.toHaveBeenCalled()
+    expect(localStorage.getItem('test-collaborative-migration-v1')).toBeNull()
+    expect(result.current.views.some(view => view.id === '9')).toBe(true)
+    rerender({ enabled: true })
+    await waitFor(() => expect(result.current.collaborative.status).toBe('synced'))
+    expect(post).toHaveBeenCalledTimes(1)
+    expect(post).toHaveBeenCalledWith('/api/v1/workspaces/monitoring/views', expect.objectContaining({ name: 'Restored legacy view' }))
+    expect(result.current.views.some(view => view.id === '10')).toBe(true)
+    expect(localStorage.getItem('test-collaborative-migration-v1')).toBe('1')
+    rerender({ enabled: true })
+    expect(get).toHaveBeenCalledTimes(2)
+    expect(post).toHaveBeenCalledTimes(1)
   })
 
   it('hydrates remote views and migrates each local view only once', async () => {

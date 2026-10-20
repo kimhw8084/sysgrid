@@ -215,6 +215,7 @@ export function useCollaborativeWorkspaceViews<
 >({
   workspaceKey,
   migrationKey,
+  migrationReady = true,
   scope = 'personal',
   teamId = null,
   systemViewIds,
@@ -228,6 +229,7 @@ export function useCollaborativeWorkspaceViews<
 }: {
   workspaceKey: string
   migrationKey: string
+  migrationReady?: boolean
   scope?: CollaborativeViewScope
   teamId?: number | null
   systemViewIds: ReadonlySet<string>
@@ -297,7 +299,7 @@ export function useCollaborativeWorkspaceViews<
       }
 
       const migrationComplete = scope === 'team' || (typeof window !== 'undefined' && window.localStorage.getItem(migrationKey) === '1')
-      if (!migrationComplete) {
+      if (!migrationComplete && migrationReady) {
         const existingNames = new Set(remoteViews.map((view) => view.name.trim().toLocaleLowerCase()))
         const candidates = currentViewsRef.current
           .filter((view) => !systemViewIds.has(view.id) && !isRemoteWorkspaceViewId(view.id))
@@ -324,7 +326,7 @@ export function useCollaborativeWorkspaceViews<
       setLastError(workspaceViewErrorMessage(error))
       setBaseStatus(isWorkspaceViewOfflineError(error) ? 'offline' : 'synced')
     }
-  }, [createRemote, migrationKey, onActiveViewIdChange, scope, setMergedViews, systemViewIds, teamId, workspaceKey])
+  }, [createRemote, migrationKey, migrationReady, onActiveViewIdChange, scope, setMergedViews, systemViewIds, teamId, workspaceKey])
 
   useEffect(() => {
     void hydrate()

@@ -7,6 +7,33 @@ import {
   isOperationalAutoResizeSource,
 } from './OperationalGridSizing'
 
+export function useWorkspacePreferencePresence(keys: {
+  uiState: string
+  savedViews: string
+  favoriteIds: string
+  watchIds: string
+}) {
+  const { uiState, savedViews, favoriteIds, watchIds } = keys
+  return useMemo(() => {
+    const read = (key: string): unknown => {
+      if (typeof window === 'undefined') return null
+      try {
+        const raw = window.localStorage.getItem(key)
+        return raw === null ? null : JSON.parse(raw)
+      } catch {
+        return null
+      }
+    }
+    const storedUi = read(uiState)
+    return {
+      localUiStateKeys: storedUi && typeof storedUi === 'object' && !Array.isArray(storedUi) ? Object.keys(storedUi) : [],
+      hasStoredSavedViews: Array.isArray(read(savedViews)),
+      hasStoredFavoriteIds: Array.isArray(read(favoriteIds)),
+      hasStoredWatchIds: Array.isArray(read(watchIds)),
+    }
+  }, [uiState, savedViews, favoriteIds, watchIds])
+}
+
 export function usePersistentJsonState<T>(
   storageKey: string,
   fallback: T | (() => T),
