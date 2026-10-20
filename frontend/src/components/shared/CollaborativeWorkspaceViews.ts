@@ -242,6 +242,7 @@ export function useCollaborativeWorkspaceViews<
   currentDefinition: TConfig
 }) {
   const currentViewsRef = useRef(currentViews)
+  const hydrationGenerationRef = useRef(0)
   const copyInFlight = useRef(false)
   const [copyingLink, setCopyingLink] = useState(false)
   const copyNoticeId = useId()
@@ -279,9 +280,12 @@ export function useCollaborativeWorkspaceViews<
   }, [sanitizeDefinition, scope, teamId, workspaceKey])
 
   const hydrate = useCallback(async () => {
+    const generation = ++hydrationGenerationRef.current
+    const isCurrentHydration = () => generation === hydrationGenerationRef.current
     setBaseStatus('loading')
     try {
       const payload = await apiClient.get(buildWorkspaceViewsListPath(workspaceKey, scope, teamId)) as { views?: WorkspaceViewApiRecord<TConfig>[] }
+      if (!isCurrentHydration()) return
       let remoteViews = Array.isArray(payload?.views)
         ? payload.views.map((record) => mapWorkspaceViewRecord(record, sanitizeDefinition) as TView)
         : []
@@ -308,6 +312,7 @@ export function useCollaborativeWorkspaceViews<
         const migrated: TView[] = []
         for (const candidate of candidates) {
           const migratedView = await createRemote(candidate.name, candidate.config)
+          if (!isCurrentHydration()) return
           migrated.push(migratedView)
           if (candidate.id === activeId) migratedActiveViewId = migratedView.id
         }
@@ -323,6 +328,7 @@ export function useCollaborativeWorkspaceViews<
       setLastError(null)
       setBaseStatus('synced')
     } catch (error: any) {
+      if (!isCurrentHydration()) return
       setLastError(workspaceViewErrorMessage(error))
       setBaseStatus(isWorkspaceViewOfflineError(error) ? 'offline' : 'synced')
     }
@@ -330,6 +336,7 @@ export function useCollaborativeWorkspaceViews<
 
   useEffect(() => {
     void hydrate()
+    return () => { hydrationGenerationRef.current += 1 }
   }, [hydrate])
 
   useEffect(() => {
