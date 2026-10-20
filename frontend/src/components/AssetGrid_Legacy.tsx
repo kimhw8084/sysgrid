@@ -14,6 +14,8 @@ import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { PageHeader, PageToolbar, ToolbarGroup, ToolbarSearch, ToolbarButton } from "./shared/LayoutPrimitives"
 import { WorkspaceEmptyState, WorkspaceSectionCard, WorkspaceSelectField, WorkspaceTabStrip } from "./shared/OperationalWorkspacePrimitives"
 import { ServiceDetailsView, ServiceForm } from "./ServiceRegistry"
+import { withServiceEditRevision } from '../utils/serviceRevision'
+import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { CredentialValue, credentialUpdatePayload } from './shared/CredentialValue'
 
 const SharedServiceModals = ({ 
@@ -27,11 +29,15 @@ const SharedServiceModals = ({
 }: any) => {
   const queryClient = useQueryClient()
   const [isMaximized, setIsMaximized] = useState(false)
+  const [serviceSaveError, setServiceSaveError] = useState('')
+  useEffect(() => setServiceSaveError(''), [activeEdit?.id])
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async (data: any) => {
       const url = `/api/v1/logical-services/${data.id}`
       const method = "PUT"
-      const res = await apiFetch(url, { method, body: JSON.stringify(data) })
+      const res = await apiFetch(url, { method, body: JSON.stringify(withServiceEditRevision(data, data)) })
+      if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })
       return res.json()
     },
     onSuccess: () => { 
@@ -41,7 +47,11 @@ const SharedServiceModals = ({
       setActiveEdit(null)
       onServiceUpdate?.()
     },
-    onError: (e: any) => toast.error(e.message)
+    onError: (e: any) => {
+      const message = parseOperationalApiValidationError(e).generalError || 'Service update failed'
+      setServiceSaveError(message)
+      toast.error(e.status === 409 ? 'Service changed; your draft is preserved.' : message)
+    }
   })
 
   return (
@@ -60,7 +70,7 @@ const SharedServiceModals = ({
         }
       >
         <div className="pt-6">
-          <ServiceForm initialData={activeEdit} onSave={mutation.mutate} options={options} devices={devices} />
+          <ServiceForm key={activeEdit?.id || 'new'} initialData={activeEdit} onSave={mutation.mutate} isPending={mutation.isPending} options={options} devices={devices} backendGeneralError={serviceSaveError} />
         </div>
       </WorkspaceModal>
 

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import StaleDataError
 from typing import List, Optional
 from datetime import datetime
 import json
@@ -25,13 +26,33 @@ router = APIRouter(
     tags=["Logical Services"],
     dependencies=[Depends(require_module_access("services"))],
 )
-IMMUTABLE_SERVICE_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+IMMUTABLE_SERVICE_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "edit_revision"}
 SERVICE_BULK_UPDATE_FIELDS = {"status", "service_type", "environment", "version", "device_id"}
 SERVICE_DATE_FIELDS = ("installation_date", "purchase_date", "expiry_date")
 SERVICE_TEXT_FIELDS = (
     "name", "service_type", "status", "version", "environment", "purpose", "documentation_link",
     "purchase_type", "license_key", "currency", "manufacturer", "supplier",
 )
+
+
+async def get_service_db(db: AsyncSession = Depends(get_db)):
+    try:
+        yield db
+    except StaleDataError as exc:
+        await db.rollback()
+        raise HTTPException(409, "Service changed during this request; your draft is preserved. Close and reopen it to review the latest version.") from exc
+
+
+def require_service_edit_revision(data: dict, service: models.LogicalService) -> None:
+    # Omission retains compatibility for existing integrations. An explicitly
+    # supplied invalid precondition must never become an unconditional write.
+    if "expected_revision" not in data:
+        return
+    expected = data["expected_revision"]
+    if not isinstance(expected, str) or len(expected) != 32 or any(char not in '0123456789abcdef' for char in expected):
+        raise HTTPException(400, "expected_revision must be a service edit revision")
+    if expected != service.edit_revision:
+        raise HTTPException(409, "This service changed after you opened it. Your draft is preserved. Copy your changes, then close and reopen the service to review the latest version.")
 
 
 def normalize_service_values(data: dict) -> None:
@@ -144,6 +165,7 @@ def serialize_service(service: models.LogicalService, device_name: str, *, inclu
     return {
         "id": service.id,
         "name": service.name,
+        "edit_revision": service.edit_revision,
         "service_type": service.service_type,
         "status": canonicalize_service_status(service.status),
         "version": service.version,
@@ -177,6 +199,7 @@ def summarize_service(service: models.LogicalService, device_name: str):
     return {
         "id": service.id,
         "name": service.name,
+        "edit_revision": service.edit_revision,
         "service_type": service.service_type,
         "status": canonicalize_service_status(service.status),
         "version": service.version,
@@ -394,8 +417,9 @@ async def create_service(data: dict, request: Request, db: AsyncSession = Depend
         raise
 
 @router.put("/{service_id}")
-async def update_service(service_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_service(service_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_service_db)):
     svc = await _get_owned_service(request, db, service_id)
+    require_service_edit_revision(data, svc)
     previous_device_id = svc.device_id
     
     clean_data = normalize_service_payload(data)
@@ -427,7 +451,9 @@ async def update_service(service_id: int, data: dict, request: Request, db: Asyn
         .options(joinedload(models.LogicalService.secrets))
         .filter(models.LogicalService.id == service_id)
     )
-    refreshed = result.unique().scalar_one()
+    refreshed = result.unique().scalar_one_or_none()
+    if refreshed is None:
+        raise HTTPException(409, "Service changed during this request; close and reopen it to review the latest version.")
     device_name = None
     if refreshed.device_id:
         device_name = await db.scalar(select(models.Device.name).filter(models.Device.id == refreshed.device_id))
@@ -578,7 +604,7 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
     return {"status": "success", **summary}
 
 @router.post("/{service_id}/mount/{device_id}")
-async def mount_service(service_id: int, device_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+async def mount_service(service_id: int, device_id: int, request: Request, db: AsyncSession = Depends(get_service_db)):
     svc = await _get_owned_service(request, db, service_id)
     await require_relationship_asset(request, db, device_id, active=True)
     if svc.device_id == device_id:

@@ -499,6 +499,11 @@ export function useAssetGoldenWorkspace() {
     return source.map(normalizeAsset)
   }, [includeDeletedAssets, liveAssets])
 
+  const selectableDevices = useMemo(
+    () => allAssets.filter((asset) => !asset.is_deleted),
+    [allAssets],
+  )
+
   const visiblePool = useMemo(
     () => allAssets.filter((asset) => activeTab === 'deleted' ? asset.is_deleted : !asset.is_deleted),
     [activeTab, allAssets]
@@ -912,7 +917,7 @@ export function useAssetGoldenWorkspace() {
     dataState,
     detailAsset,
     detailLink,
-    devices: Array.isArray(liveDevicesQuery.data) ? liveDevicesQuery.data : [],
+    devices: selectableDevices,
     editingAsset,
     editingLink,
     exportSnapshot,

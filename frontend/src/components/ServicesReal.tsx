@@ -16,6 +16,7 @@ import {
   Download, Copy, ChevronDown, ChevronUp, Layers, RefreshCcw, Tag, Sliders, Clipboard, Lightbulb, Maximize2, Minimize2, GitCompare, Undo2, List, LayoutGrid, Upload, Terminal, History as HistoryIcon, Edit2 as EditIcon, Star
 } from 'lucide-react'
 import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
+import { withServiceEditRevision } from '../utils/serviceRevision'
 import { AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { showWorkspaceRevertToast, showWorkspaceToast } from './shared/WorkspaceToast'
@@ -556,7 +557,12 @@ export default function ServicesReal() {
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(SERVICE_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(SERVICE_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
   const [quickFilters, setQuickFilters] = useState(persistedUiState?.quickFilters ?? { status: [] as string[], environment: [] as string[], service_type: [] as string[], device_name: [] as string[] })
-  const [searchTerm, setSearchTerm] = useState(persistedUiState?.searchTerm ?? '')
+  const [searchTerm, setSearchTermState] = useState(persistedUiState?.searchTerm ?? '')
+  const searchChangedRef = useRef(false)
+  const setSearchTerm = useCallback((value: string) => {
+    searchChangedRef.current = true
+    setSearchTermState(value)
+  }, [])
   const [groupBy, setGroupBy] = useState<string>(persistedUiState?.groupBy ?? 'raw')
   const [bulkDraft, setBulkDraft] = useState({ status: '', service_type: '', environment: '' })
   const [bulkOperationPreview, setBulkOperationPreview] = useState<{
@@ -721,7 +727,7 @@ export default function ServicesReal() {
       setQuickFilters(payload?.uiState.quickFilters ?? normalizeServiceQuickFilters(null))
       setGroupBy(payload?.uiState.groupBy ?? 'raw')
       setColumnLayoutState(payload?.uiState.columnLayoutState ?? [])
-      setSearchTerm(payload?.uiState.searchTerm ?? '')
+      if (!searchChangedRef.current) setSearchTermState(payload?.uiState.searchTerm ?? '')
       return
     }
 
@@ -2999,8 +3005,8 @@ function ServiceRecordForm({ item, devices, options, onClose, onSuccess }: any) 
       const sanitized = sanitizeServicePayload(payload)
       const url = item?.id ? `/api/v1/logical-services/${item.id}` : '/api/v1/logical-services/'
       const method = item?.id ? 'PUT' : 'POST'
-      const res = await apiFetch(url, { method, body: JSON.stringify(sanitized) })
-      if (!res.ok) throw new Error(await res.text())
+      const res = await apiFetch(url, { method, body: JSON.stringify(withServiceEditRevision(sanitized, payload)) })
+      if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })
       return res.json()
     },
     onSuccess: async () => {
@@ -3016,7 +3022,7 @@ function ServiceRecordForm({ item, devices, options, onClose, onSuccess }: any) 
         ? 'Fix the highlighted service fields before saving.'
         : 'Failed to save service record')
       setBackendGeneralError(message)
-      showWorkspaceToast(message, { type: 'error' })
+      showWorkspaceToast(e.status === 409 ? 'Service changed; your draft is preserved.' : message, { type: 'error' })
     },
   })
   const formTitle = item?.id ? getServiceTitle(item) : 'Create Service'

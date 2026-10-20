@@ -5,39 +5,207 @@ import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
-async function singleReadableLine(element: Locator, description: string, testInfo: TestInfo) {
+test.describe('readability measurement controls', () => {
+  test('measures the current label after replacement during locator resolution', async ({ page }, testInfo) => {
+    await page.setContent('<span id="readability-control" style="display:inline-block;font:14px Arial;white-space:nowrap">Audit Actions</span>')
+    const label = page.locator('#readability-control')
+    const replace = () => label.evaluate(node => node.replaceWith(node.cloneNode(true)))
+    const controlled = new Proxy(label, {
+      get(target, property) {
+        if (property === 'evaluate') return async (operation: any, argument: any) => {
+          const handle = await target.elementHandle()
+          expect(handle).not.toBeNull()
+          await replace()
+          try { return await handle!.evaluate(operation, argument) } finally { await handle!.dispose() }
+        }
+        if (property === 'evaluateAll') return async (operation: any, argument: any) => {
+          const handle = await target.page().evaluateHandle(() => Array.from(document.querySelectorAll('#readability-control')))
+          await replace()
+          try { return await handle.evaluate(operation, argument) } finally { await handle.dispose() }
+        }
+        if (property === 'page') return () => new Proxy(target.page(), {
+          get(currentPage, method) {
+            if (method === 'evaluate') return async (operation: any, argument: any) => {
+              await replace()
+              return currentPage.evaluate(operation, argument)
+            }
+            const value = Reflect.get(currentPage, method)
+            return typeof value === 'function' ? value.bind(currentPage) : value
+          },
+        })
+        const value = Reflect.get(target, property)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    try {
+      await singleReadableLine(controlled, 'replacement control', testInfo, { selector: '#readability-control' })
+    } finally {
+      await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+      await expect(label).toHaveCount(0)
+    }
+  })
+
+  test('measures the current timestamp after replacement during locator resolution', async ({ page }, testInfo) => {
+    const selector = '.ag-row[row-index="0"] [col-id="timestamp"] span[title]'
+    await page.setContent('<div class="ag-row" row-index="0"><div class="ag-cell" col-id="timestamp" style="width:240px;height:32px"><span style="display:inline-block;white-space:nowrap;font:14px Arial" title="2026-10-20 00:00:00">2026-10-20 00:00:00</span></div></div>')
+    const timestamp = page.locator(selector).first()
+    const replace = () => page.locator('.ag-row').evaluate(node => node.replaceWith(node.cloneNode(true)))
+    const controlledTimestamp: Locator = new Proxy(timestamp, {
+      get(target, property) {
+        if (property === 'first') return () => controlledTimestamp
+        if (property === 'evaluateAll') return async (operation: any, argument: any) => {
+          const handle = await page.evaluateHandle(selector => Array.from(document.querySelectorAll(selector)), selector)
+          await replace()
+          try { return await handle.evaluate(operation, argument) } finally { await handle.dispose() }
+        }
+        const value = Reflect.get(target, property)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    const controlledPage = new Proxy(page, {
+      get(target, property) {
+        if (property === 'locator') return () => controlledTimestamp
+        if (property === 'evaluate') return async (operation: any, argument: any) => {
+          await replace()
+          return target.evaluate(operation, argument)
+        }
+        const value = Reflect.get(target, property)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    try {
+      await singleLineAuditTimestamp(controlledPage, testInfo, 'replacement-control')
+    } finally {
+      await page.locator('.ag-row').evaluateAll(nodes => nodes.forEach(node => node.remove()))
+      await expect(timestamp).toHaveCount(0)
+    }
+  })
+
+  test('keeps sound geometry valid when its diagnostic provider fails', async ({ page }, testInfo) => {
+    await page.setContent('<span id="readability-control" style="display:inline-block;font:14px Arial;white-space:nowrap">Audit Actions</span>')
+    const label = page.locator('#readability-control')
+    const provider = { attach: async () => { throw new Error('controlled diagnostic failure') } } as unknown as TestInfo
+    try { await singleReadableLine(label, 'sound control', provider, { selector: '#readability-control' }) } finally {
+      await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+      await expect(label).toHaveCount(0)
+    }
+    await testInfo.attach('readability-provider-control', { body: 'sound geometry retained; cleanup complete', contentType: 'text/plain' })
+  })
+
+  for (const fault of ['wrapped', 'clipped'] as const) {
+    for (const providerFails of [false, true]) {
+      test(`rejects ${fault} text with diagnostic failure ${providerFails}`, async ({ page }, testInfo) => {
+        const whiteSpace = fault === 'wrapped' ? 'normal' : 'nowrap'
+        await page.setContent(`<span id="readability-control" style="display:inline-block;width:45px;font:14px Arial;white-space:${whiteSpace};overflow:hidden">Audit Actions</span>`)
+        const label = page.locator('#readability-control')
+        let measured: { lines: number; width: number; scrollWidth: number } | undefined
+        const provider = { attach: async (_name: string, options: { body: string }) => {
+          measured = JSON.parse(options.body)
+          if (providerFails) throw new Error('controlled diagnostic failure')
+        } } as unknown as TestInfo
+        try {
+          await expect(singleReadableLine(label, `${fault} control`, provider, { selector: '#readability-control' })).rejects.toThrow(fault === 'wrapped' ? 'must not split into narrow fragments' : 'must be fully readable')
+          expect(measured).toBeDefined()
+          if (fault === 'wrapped') expect(measured!.lines).toBeGreaterThan(1)
+          else {
+            expect(measured!.lines).toBe(1)
+            expect(measured!.scrollWidth).toBeGreaterThan(measured!.width + 1)
+          }
+          await testInfo.attach('readability-fault-control', { body: JSON.stringify({ fault, providerFails, measured }), contentType: 'application/json' })
+        } finally {
+          await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+          await expect(label).toHaveCount(0)
+        }
+      })
+    }
+  }
+
+  test('rejects a label removed before atomic measurement', async ({ page }, testInfo) => {
+    await page.setContent('<span id="readability-control">Audit Actions</span>')
+    const label = page.locator('#readability-control')
+    const controlled = new Proxy(label, {
+      get(target, property) {
+        if (property === 'evaluateAll') return async (operation: any, argument: any) => {
+          await target.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+          return target.evaluateAll(operation, argument)
+        }
+        if (property === 'page') return () => new Proxy(target.page(), {
+          get(currentPage, method) {
+            if (method === 'evaluate') return async (operation: any, argument: any) => {
+              await target.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+              return currentPage.evaluate(operation, argument)
+            }
+            const value = Reflect.get(currentPage, method)
+            return typeof value === 'function' ? value.bind(currentPage) : value
+          },
+        })
+        const value = Reflect.get(target, property)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    try {
+      await expect(singleReadableLine(controlled, 'missing control', testInfo, { selector: '#readability-control' })).rejects.toThrow('must not split into narrow fragments')
+    } finally {
+      await label.evaluateAll(nodes => nodes.forEach(node => node.remove()))
+      await expect(label).toHaveCount(0)
+    }
+  })
+})
+
+async function attachGeometry(testInfo: TestInfo, name: string, geometry: unknown) {
+  await testInfo.attach(name, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
+}
+
+type ReadabilityTarget = { selector: string; scope?: string; text?: string }
+
+async function singleReadableLine(element: Locator, description: string, testInfo: TestInfo, target: ReadabilityTarget) {
   await expect(element).toBeVisible()
-  const geometry = await element.evaluate(node => {
+  const geometry = await element.page().evaluate(target => {
+    // Query inside this synchronous callback; locator array handles can already be stale.
+    const visible = (node: Element) => {
+      const rect = node.getBoundingClientRect()
+      const style = getComputedStyle(node)
+      return node.isConnected && rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.visibility !== 'collapse'
+    }
+    const root = target.scope ? Array.from(document.querySelectorAll(target.scope)).filter(visible).at(-1) : document
+    const normalize = (text: string) => text.replace(/\s+/g, ' ').trim()
+    const matchesText = (node: Element) => normalize(node.textContent || '') === target.text
+    const nodes = Array.from(root?.querySelectorAll<HTMLElement>(target.selector) || []).filter(node =>
+      visible(node) && (target.text === undefined || (matchesText(node) && !Array.from(node.children).some(matchesText))))
+    const node = nodes[0]
+    if (nodes.length !== 1 || !node) return { lines: 0, width: 0, scrollWidth: 0, connected: false, matchingNodes: nodes.length }
     const range = document.createRange()
     range.selectNodeContents(node)
     const lines = new Set(Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0).map(rect => Math.round(rect.top)))
     const style = getComputedStyle(node)
     return { lines: lines.size, width: node.clientWidth, scrollWidth: node.scrollWidth,
       fontFamily: style.fontFamily, fontSize: style.fontSize, whiteSpace: style.whiteSpace,
-      wordBreak: style.wordBreak, overflowWrap: style.overflowWrap, fontsStatus: document.fonts.status }
-  })
-  await testInfo.attach(`readability-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
+      wordBreak: style.wordBreak, overflowWrap: style.overflowWrap, fontsStatus: document.fonts.status, connected: node.isConnected }
+  }, target)
+  await attachGeometry(testInfo, `readability-${description}`, geometry)
   expect(geometry.lines, `${description} must not split into narrow fragments`).toBe(1)
   expect(geometry.scrollWidth, `${description} must be fully readable`).toBeLessThanOrEqual(geometry.width + 1)
+  expect(geometry.connected, `${description} must belong to the current document`).toBeTruthy()
+  expect(geometry.width, `${description} must have a visible width`).toBeGreaterThan(0)
 }
 
 async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, description: string) {
   const timestamp = page.locator('.ag-row[row-index="0"] [col-id="timestamp"] span[title]').first()
   await expect(timestamp).toBeVisible()
-  const geometry = await timestamp.evaluateAll(nodes => {
-    // Resolve and measure in one browser operation: grid autosizing can replace a cell.
-    const node = nodes[0]
-    if (!node) return { lines: 0, width: 0, scrollWidth: 0, withinCell: false, completeTitle: false, connected: false }
+  const geometry = await page.evaluate(() => {
+    const node = document.querySelector<HTMLElement>('.ag-row[row-index="0"] [col-id="timestamp"] span[title]')
+    const cellNode = node?.closest('.ag-cell')
+    if (!node || !cellNode) return { lines: 0, width: 0, scrollWidth: 0, withinCell: false, completeTitle: false, connected: false }
     const range = document.createRange()
     range.selectNodeContents(node)
     const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0)
-    const cell = node.closest('.ag-cell')!.getBoundingClientRect()
+    const cell = cellNode.getBoundingClientRect()
     return { lines: new Set(rects.map(rect => Math.round(rect.top))).size,
       width: node.clientWidth, scrollWidth: node.scrollWidth,
       withinCell: rects.every(rect => rect.top >= cell.top - 1 && rect.bottom <= cell.bottom + 1),
       completeTitle: node.getAttribute('title') === node.textContent, connected: node.isConnected }
   })
-  await testInfo.attach(`audit-timestamp-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
+  await attachGeometry(testInfo, `audit-timestamp-${description}`, geometry)
   expect(geometry.lines, 'The timestamp must stay on one readable row').toBe(1)
   expect(geometry.connected, 'The measured timestamp must belong to the current grid').toBeTruthy()
   expect(geometry.withinCell, 'Timestamp text must not bleed into another audit row').toBeTruthy()
@@ -59,10 +227,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(dialog).toBeVisible()
       await page.screenshot({ path: testInfo.outputPath('asset-summary.png'), animations: 'disabled' })
       for (const label of ['Operational State', 'Network IP', 'Management IP']) {
-        await singleReadableLine(dialog.getByText(label, { exact: true }), label, testInfo)
+        await singleReadableLine(dialog.getByText(label, { exact: true }), label, testInfo, { scope: '[role="dialog"]', selector: '*', text: label })
       }
       for (const value of ['Maintenance', '192.0.2.10', 'Not configured']) {
-        await singleReadableLine(dialog.getByText(value, { exact: true }), value, testInfo)
+        await singleReadableLine(dialog.getByText(value, { exact: true }), value, testInfo, { scope: '[role="dialog"]', selector: '*', text: value })
       }
       await expect(dialog.getByRole('button', { name: 'Close', exact: true }).last()).toBeInViewport({ ratio: 1 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
@@ -83,8 +251,32 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(page.getByRole('heading', { name: 'Audit Ledger', exact: true })).toBeVisible()
       const row = page.locator('.ag-pinned-right-cols-container .ag-row').first()
       await expect(row).toBeVisible()
+      const paginationLayout = await page.evaluate(() => {
+        const ledger = document.querySelector('[data-audit-ledger]')!
+        const pager = ledger.querySelector('.ag-paging-panel')!
+        return {
+          ledgerBottom: ledger.getBoundingClientRect().bottom,
+          pagerBottom: pager.getBoundingClientRect().bottom,
+          dates: Array.from(ledger.querySelectorAll<HTMLInputElement>('input[type="date"]')).map(input => {
+            const rect = input.getBoundingClientRect()
+            const group = input.parentElement!.parentElement!.getBoundingClientRect()
+            return { width: input.clientWidth, scrollWidth: input.scrollWidth,
+              withinGroup: rect.left >= group.left && rect.right <= group.right }
+          }),
+        }
+      })
+      await attachGeometry(testInfo, 'audit-pagination-layout', paginationLayout)
+      expect(paginationLayout.pagerBottom, 'Audit pagination must fit above the app footer').toBeLessThanOrEqual(paginationLayout.ledgerBottom + 1)
+      expect(paginationLayout.dates).toHaveLength(2)
+      for (const input of paginationLayout.dates) {
+        expect(input.withinGroup, 'Native date controls must stay inside the filter group').toBeTruthy()
+        expect(input.scrollWidth, 'Native date controls must remain fully readable').toBeLessThanOrEqual(input.width + 1)
+      }
+      for (const selector of ['.ag-paging-page-size', '.ag-paging-row-summary-panel', '.ag-paging-page-summary-panel']) {
+        await expect(page.locator(`[data-audit-ledger] ${selector}`)).toBeInViewport({ ratio: 1 })
+      }
       await page.screenshot({ path: testInfo.outputPath('audit-actions.png'), animations: 'disabled' })
-      await singleReadableLine(page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text'), 'Audit Actions header', testInfo)
+      await singleReadableLine(page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text'), 'Audit Actions header', testInfo, { selector: '.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text' })
       await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 1 })
       await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 1 })
       await singleLineAuditTimestamp(page, testInfo, 'default-font')
@@ -105,7 +297,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         await page.screenshot({ path: testInfo.outputPath(`audit-density-font-${boundary.value}.png`), animations: 'disabled' })
         await expectReadableGridText(page, testInfo, `audit-density-font-${boundary.value}`, '[data-audit-density] span')
         for (const name of ['Audit font size', 'Audit row density']) {
-          await singleReadableLine(density.locator(`input[aria-label="${name}"] + span`), `${name} value at font ${boundary.value}`, testInfo)
+          await singleReadableLine(density.locator(`input[aria-label="${name}"] + span`), `${name} value at font ${boundary.value}`, testInfo, { selector: `[data-audit-density] input[aria-label="${name}"] + span` })
         }
         await page.getByRole('button', { name: 'Close density controls', exact: true }).click()
         await expect(fontSize).toBeHidden()
@@ -113,7 +305,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         const header = page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text')
         await expect(header).toBeInViewport({ ratio: 1 })
         await page.screenshot({ path: testInfo.outputPath(`audit-actions-font-${boundary.value}.png`), animations: 'disabled' })
-        await singleReadableLine(header, `Audit Actions header at font ${boundary.value}`, testInfo)
+        await singleReadableLine(header, `Audit Actions header at font ${boundary.value}`, testInfo, { selector: '.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text' })
         await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 1 })
         await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 1 })
         await singleLineAuditTimestamp(page, testInfo, `font-${boundary.value}`)

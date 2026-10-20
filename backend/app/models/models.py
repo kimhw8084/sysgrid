@@ -124,6 +124,11 @@ class Device(Base, BaseMixin):
 
 class LogicalService(Base, BaseMixin):
     __tablename__ = "logical_services"
+    edit_revision = Column(String(32), nullable=False, default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {
+        "version_id_col": edit_revision,
+        "version_id_generator": lambda _previous: uuid4().hex,
+    }
     device_id = Column(Integer, ForeignKey("devices.id", ondelete="SET NULL"), nullable=True) # Nullable if service is floating/clustered
     name = Column(String, index=True) # Service Name
     service_type = Column(String, index=True) # Database, Web, Middleware, Container, ToolStack, Other

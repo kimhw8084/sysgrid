@@ -17,8 +17,9 @@ import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY } from './shared/OperationalGridSiz
 import { StyledSelect } from "./shared/StyledSelect"
 import { AppDropdown } from "./shared/AppDropdown"
 import { OperationalAssetSelector } from './shared/OperationalAssetSelector'
-import { mergeOperationalFieldErrors } from './shared/OperationalFieldValidation'
+import { mergeOperationalFieldErrors, parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { useOperationalFormDirty } from './shared/OperationalFormContracts'
+import { withServiceEditRevision } from '../utils/serviceRevision'
 
 const SERVICE_LICENSE_OPTIONS = ["One-time", "Subscription", "OEM", "Free"]
 const SERVICE_CURRENCY_OPTIONS = ["USD", "EUR", "KRW", "JPY", "GBP"]
@@ -312,7 +313,7 @@ export const ServiceDetailsView = ({ service, options, devices }: { service: any
 }
 
 export const ServiceForm = ({
-  initialData,
+  initialData: incomingData,
   onSave,
   isPending,
   options,
@@ -324,6 +325,9 @@ export const ServiceForm = ({
   clearBackendFieldError,
   renderActions = true,
 }: any) => {
+  // A refreshed parent must not attach a newer revision to an older draft.
+  // Each caller keys the mounted editor by record identity.
+  const [initialData] = useState(incomingData || {})
   const controlPrefix = React.useId()
   const buildInitialFormData = useCallback((initialData: any = {}) => {
     const nextData = {
@@ -481,12 +485,12 @@ export const ServiceForm = ({
       className="space-y-6 py-2"
     >
       <WorkspaceValidationBanner message={bannerMessage} />
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         <section className="space-y-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.05] p-5 shadow-inner">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-blue-400">Core Service Identity</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2 space-y-1.5">
               <label htmlFor={`${controlPrefix}-name`} className="block px-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Name <span className="text-rose-400">*</span></label>
               <input {...controlAttributes('name')} aria-required="true" value={formData.name || ''} onChange={(e) => updateField('name', e.target.value)} className={serviceFieldClass(fieldErrors.name)} placeholder="e.g. ERP DB Prod 01" />
@@ -537,7 +541,7 @@ export const ServiceForm = ({
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-400">Runtime & Licensing</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <AppDropdown
                 label="Status"
@@ -642,6 +646,8 @@ export default function ServiceRegistry() {
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([])
 
   const [activeModal, setActiveModal] = useState<any>(null)
+  const [serviceSaveError, setServiceSaveError] = useState('')
+  useEffect(() => setServiceSaveError(''), [activeModal?.id])
   const [activeDetails, setActiveDetails] = useState<any>(null)
   const [isMaximized, setIsMaximized] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
@@ -693,13 +699,19 @@ export default function ServiceRegistry() {
   const { data: devices } = useQuery({ queryKey: ["devices"], queryFn: async () => (await (await apiFetch("/api/v1/devices/")).json()) })
 
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async (data: any) => {
       const url = data.id ? `/api/v1/logical-services/${data.id}` : "/api/v1/logical-services/"
-      const res = await apiFetch(url, { method: data.id ? "PUT" : "POST", body: JSON.stringify(data) })
+      const res = await apiFetch(url, { method: data.id ? "PUT" : "POST", body: JSON.stringify(withServiceEditRevision(data, data)) })
+      if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })
       return res.json()
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["logical-services"] }); toast.success("Registry Updated"); setActiveModal(null); },
-    onError: (e: any) => toast.error(e.message || 'Failed to update registry')
+    onError: (e: any) => {
+      const message = parseOperationalApiValidationError(e).generalError || 'Failed to update registry'
+      setServiceSaveError(message)
+      toast.error(e.status === 409 ? 'Service changed; your draft is preserved.' : message)
+    }
   })
 
   const bulkMutation = useMutation({
@@ -857,7 +869,7 @@ export default function ServiceRegistry() {
         }
       >
         <div className="pt-6">
-          <ServiceForm initialData={activeModal} onSave={mutation.mutate} isPending={mutation.isPending} options={options} devices={devices} />
+          <ServiceForm key={activeModal?.id || 'new'} initialData={activeModal} onSave={mutation.mutate} isPending={mutation.isPending} options={options} devices={devices} backendGeneralError={serviceSaveError} />
         </div>
       </WorkspaceModal>
 

@@ -124,6 +124,8 @@ BACKEND_QUALIFICATION_TESTS=(
   test_service_relationship_authority.py
   test_service_import_integrity.py
   test_service_write_receipts.py
+  test_service_stale_form.py
+  test_service_edit_migration.py
   test_service_date_integrity.py
   test_service_value_integrity.py
   test_racks_api_edges.py

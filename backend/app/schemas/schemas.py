@@ -330,6 +330,7 @@ class LogicalServiceBase(BaseModel):
 
 class LogicalServiceCreate(LogicalServiceBase): pass
 class LogicalServiceResponse(LogicalServiceBase, BaseSchema):
+    edit_revision: str
     device_name: Optional[str] = None
     is_deleted: bool = False
     secrets: List[ServiceSecretResponse] = []
