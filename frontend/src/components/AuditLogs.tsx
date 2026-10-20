@@ -282,7 +282,7 @@ export default function AuditLogs() {
           }
           right={
             <>
-              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--grid-border)] bg-[var(--surface-base)] px-3 py-2">
+              <div data-audit-date-range="true" className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--grid-border)] bg-[var(--surface-base)] px-3 py-2">
                 <Calendar size={14} className="ml-1 text-blue-500" />
                 <div className="flex flex-col">
                   <span className="text-xs text-[var(--text-secondary)]">Start</span>
@@ -543,6 +543,23 @@ export default function AuditLogs() {
             font-size: 11px !important;
             font-weight: 500 !important;
             height: 40px !important;
+        }
+        @media (max-width: 639px) {
+          [data-audit-ledger] [data-audit-date-range] {
+            display: grid;
+            grid-template-columns: 14px minmax(0, 1fr) 1px minmax(0, 1fr);
+            gap: 8px;
+          }
+          [data-audit-ledger] [data-audit-date-range] > div {
+            min-width: 0;
+            margin-left: 0;
+            margin-right: 0;
+          }
+          [data-audit-ledger] [data-audit-date-range] > svg { margin-left: 0; }
+          [data-audit-ledger] [data-audit-date-range] input[type="date"] {
+            width: 100%;
+            min-width: 0;
+          }
         }
         @media (max-width: 640px) {
           [data-audit-ledger] .ag-paging-panel {

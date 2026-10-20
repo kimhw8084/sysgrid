@@ -152,6 +152,10 @@ test.describe('readability measurement controls', () => {
   })
 })
 
+async function attachGeometry(testInfo: TestInfo, name: string, geometry: unknown) {
+  await testInfo.attach(name, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
+}
+
 type ReadabilityTarget = { selector: string; scope?: string; text?: string }
 
 async function singleReadableLine(element: Locator, description: string, testInfo: TestInfo, target: ReadabilityTarget) {
@@ -178,7 +182,7 @@ async function singleReadableLine(element: Locator, description: string, testInf
       fontFamily: style.fontFamily, fontSize: style.fontSize, whiteSpace: style.whiteSpace,
       wordBreak: style.wordBreak, overflowWrap: style.overflowWrap, fontsStatus: document.fonts.status, connected: node.isConnected }
   }, target)
-  await testInfo.attach(`readability-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
+  await attachGeometry(testInfo, `readability-${description}`, geometry)
   expect(geometry.lines, `${description} must not split into narrow fragments`).toBe(1)
   expect(geometry.scrollWidth, `${description} must be fully readable`).toBeLessThanOrEqual(geometry.width + 1)
   expect(geometry.connected, `${description} must belong to the current document`).toBeTruthy()
@@ -201,7 +205,7 @@ async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, descript
       withinCell: rects.every(rect => rect.top >= cell.top - 1 && rect.bottom <= cell.bottom + 1),
       completeTitle: node.getAttribute('title') === node.textContent, connected: node.isConnected }
   })
-  await testInfo.attach(`audit-timestamp-${description}`, { body: JSON.stringify(geometry), contentType: 'application/json' }).catch(() => { /* Preserve the original oracle if diagnostics are unavailable. */ })
+  await attachGeometry(testInfo, `audit-timestamp-${description}`, geometry)
   expect(geometry.lines, 'The timestamp must stay on one readable row').toBe(1)
   expect(geometry.connected, 'The measured timestamp must belong to the current grid').toBeTruthy()
   expect(geometry.withinCell, 'Timestamp text must not bleed into another audit row').toBeTruthy()
@@ -247,6 +251,30 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await expect(page.getByRole('heading', { name: 'Audit Ledger', exact: true })).toBeVisible()
       const row = page.locator('.ag-pinned-right-cols-container .ag-row').first()
       await expect(row).toBeVisible()
+      const paginationLayout = await page.evaluate(() => {
+        const ledger = document.querySelector('[data-audit-ledger]')!
+        const pager = ledger.querySelector('.ag-paging-panel')!
+        return {
+          ledgerBottom: ledger.getBoundingClientRect().bottom,
+          pagerBottom: pager.getBoundingClientRect().bottom,
+          dates: Array.from(ledger.querySelectorAll<HTMLInputElement>('input[type="date"]')).map(input => {
+            const rect = input.getBoundingClientRect()
+            const group = input.parentElement!.parentElement!.getBoundingClientRect()
+            return { width: input.clientWidth, scrollWidth: input.scrollWidth,
+              withinGroup: rect.left >= group.left && rect.right <= group.right }
+          }),
+        }
+      })
+      await attachGeometry(testInfo, 'audit-pagination-layout', paginationLayout)
+      expect(paginationLayout.pagerBottom, 'Audit pagination must fit above the app footer').toBeLessThanOrEqual(paginationLayout.ledgerBottom + 1)
+      expect(paginationLayout.dates).toHaveLength(2)
+      for (const input of paginationLayout.dates) {
+        expect(input.withinGroup, 'Native date controls must stay inside the filter group').toBeTruthy()
+        expect(input.scrollWidth, 'Native date controls must remain fully readable').toBeLessThanOrEqual(input.width + 1)
+      }
+      for (const selector of ['.ag-paging-page-size', '.ag-paging-row-summary-panel', '.ag-paging-page-summary-panel']) {
+        await expect(page.locator(`[data-audit-ledger] ${selector}`)).toBeInViewport({ ratio: 1 })
+      }
       await page.screenshot({ path: testInfo.outputPath('audit-actions.png'), animations: 'disabled' })
       await singleReadableLine(page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text'), 'Audit Actions header', testInfo, { selector: '.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text' })
       await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 1 })

@@ -557,7 +557,12 @@ export default function ServicesReal() {
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(SERVICE_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(SERVICE_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
   const [quickFilters, setQuickFilters] = useState(persistedUiState?.quickFilters ?? { status: [] as string[], environment: [] as string[], service_type: [] as string[], device_name: [] as string[] })
-  const [searchTerm, setSearchTerm] = useState(persistedUiState?.searchTerm ?? '')
+  const [searchTerm, setSearchTermState] = useState(persistedUiState?.searchTerm ?? '')
+  const searchChangedRef = useRef(false)
+  const setSearchTerm = useCallback((value: string) => {
+    searchChangedRef.current = true
+    setSearchTermState(value)
+  }, [])
   const [groupBy, setGroupBy] = useState<string>(persistedUiState?.groupBy ?? 'raw')
   const [bulkDraft, setBulkDraft] = useState({ status: '', service_type: '', environment: '' })
   const [bulkOperationPreview, setBulkOperationPreview] = useState<{
@@ -722,7 +727,7 @@ export default function ServicesReal() {
       setQuickFilters(payload?.uiState.quickFilters ?? normalizeServiceQuickFilters(null))
       setGroupBy(payload?.uiState.groupBy ?? 'raw')
       setColumnLayoutState(payload?.uiState.columnLayoutState ?? [])
-      setSearchTerm(payload?.uiState.searchTerm ?? '')
+      if (!searchChangedRef.current) setSearchTermState(payload?.uiState.searchTerm ?? '')
       return
     }
 
