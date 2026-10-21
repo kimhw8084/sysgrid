@@ -162,6 +162,29 @@ class LogicalService(Base, BaseMixin):
     device = relationship("Device", back_populates="logical_services")
     secrets = relationship("ServiceSecret", back_populates="service", cascade="all, delete-orphan")
 
+class ServiceBulkReceipt(Base):
+    """Service-owned replay and compensation state, committed with its writes."""
+
+    __tablename__ = "service_bulk_receipts"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "actor_id", "operation_id", name="uq_service_bulk_receipts_operation"),
+        Index("ix_service_bulk_receipts_tenant_created", "tenant_id", "created_at"),
+    )
+    id = Column(String(32), primary_key=True, default=lambda: uuid4().hex)
+    tenant_id = Column(Integer, nullable=False)
+    actor_id = Column(String(200), nullable=False)
+    operation_id = Column(String(32), nullable=False)
+    request_hash = Column(String(64), nullable=False)
+    schema_version = Column(Integer, nullable=False, default=1)
+    before_state = Column(JSON, nullable=False)
+    post_state = Column(JSON, nullable=False)
+    projection_state = Column(JSON, nullable=False)
+    result = Column(JSON, nullable=False)
+    undo_result = Column(JSON, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    reverted_at = Column(DateTime, nullable=True)
+
+
 class ServiceSecret(Base, BaseMixin):
     __tablename__ = "service_secrets"
     service_id = Column(Integer, ForeignKey("logical_services.id", ondelete="CASCADE"))

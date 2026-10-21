@@ -125,6 +125,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_service_import_integrity.py
   test_service_write_receipts.py
   test_service_stale_form.py
+  test_service_bulk_concurrency.py
   test_service_edit_migration.py
   test_service_date_integrity.py
   test_service_value_integrity.py

@@ -107,18 +107,10 @@ import {
   buildOperationalGridColumnDefinitions,
   renderOperationalActionButtons,
 } from './shared/OperationalGridStandard'
-import {
-  countSemanticBulkChanges,
-  resolveBulkFieldLabel,
-  showOperationalBulkErrorToast,
-  showOperationalBulkRevertErrorToast,
-  showOperationalBulkResultToast,
-  showOperationalBulkRevertedToast,
-} from './shared/OperationalBulkContract'
+import { useOperationalBulkWorkflow } from './shared/useOperationalBulkWorkflow'
+import { createServiceBulkClient } from '../api/serviceBulk'
 import {
   OperationalBulkPreviewModal,
-  type OperationalBulkPreview,
-  type OperationalBulkResult,
 } from './shared/OperationalBulkPreviewModal'
 import { useCollaborativeWorkspaceViews } from './shared/CollaborativeWorkspaceViews'
 
@@ -563,18 +555,6 @@ export default function ServicesReal() {
   }, [])
   const [groupBy, setGroupBy] = useState<string>(persistedUiState?.groupBy ?? 'raw')
   const [bulkDraft, setBulkDraft] = useState({ status: '', service_type: '', environment: '' })
-  const [bulkOperationPreview, setBulkOperationPreview] = useState<{
-    action: string
-    payload: Record<string, any>
-    ids: number[]
-    actionLabel: string
-    fieldLabel?: string
-    nextValue?: string
-    preview: OperationalBulkPreview
-    result?: OperationalBulkResult
-    onRevert?: () => Promise<void>
-  } | null>(null)
-  const [isBulkReverting, setIsBulkReverting] = useState(false)
   const [expandedBulkSection, setExpandedBulkSection] = useState<'status' | 'service_type' | 'environment' | null>(null)
   const [lastVisitedAt] = useState<number>(() => persistedUiState?.lastVisitedAt ?? 0)
   const [pendingIds, setPendingIds] = useState<number[]>([])
@@ -582,7 +562,6 @@ export default function ServicesReal() {
   const { triggerRef: displayMenuButtonRef, panelRef: displayMenuPanelRef, panelStyle: displayMenuStyle } = useWorkspaceAnchoredLayer(showDisplayMenu, { minWidth: 320 })
   const { triggerRef: viewsMenuButtonRef, panelRef: viewsMenuPanelRef, panelStyle: viewsMenuStyle } = useWorkspaceAnchoredLayer(showViewsMenu, { minWidth: 420 })
   const { triggerRef: bulkMenuButtonRef, panelRef: bulkMenuPanelRef, panelStyle: bulkMenuStyle } = useWorkspaceAnchoredLayer(showBulkMenu, { minWidth: 340 })
-  const lastUndoRef = useRef<any>(null)
   const [newViewName, setNewViewName] = useState('')
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({})
   const autoSizeFrameRef = useRef<number | null>(null)
@@ -1521,109 +1500,32 @@ export default function ServicesReal() {
     queryFn: async () => (await apiFetch('/api/v1/devices/')).json()
   })
 
-  const runUndo = async () => {
-    const undo = lastUndoRef.current
-    if (!undo) return
-    if (undo.mode === 'bulk') {
-      const res = await apiFetch('/api/v1/logical-services/bulk-action', {
-        method: 'POST',
-        body: JSON.stringify({
-          ids: undo.ids,
-          action: undo.action === 'restore' ? 'restore' : 'delete',
-        })
-      })
-      if (!res.ok) throw new Error(await res.text())
-    } else if (undo.mode === 'restore_snapshots') {
-      for (const snapshot of undo.snapshots || []) {
-        if (!snapshot?.id) continue
-        const restorePayload: Record<string, any> = {}
-        Object.keys(undo.payload || {}).forEach((key) => {
-          restorePayload[key] = snapshot[key]
-        })
-        const res = await apiFetch(`/api/v1/logical-services/${snapshot.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(restorePayload)
-        })
-        if (!res.ok) throw new Error(await res.text())
-      }
-    }
-    lastUndoRef.current = null
-    queryClient.invalidateQueries({ queryKey: ['logical-services'] })
-  }
-
-  const bulkPreviewMutation = useMutation({
-    mutationFn: async ({ action, payload = {}, ids: overrideIds }: any) => {
-      const idsToUse = overrideIds ?? selectedIds
-      const res = await apiFetch('/api/v1/logical-services/bulk-action', {
-        method: 'POST',
-        body: JSON.stringify({ ids: idsToUse, action, payload, dry_run: true }),
-      })
-      if (!res.ok) throw new Error(await res.text())
-      const preview = await res.json() as OperationalBulkPreview
-      const fieldLabel = action === 'update' ? resolveBulkFieldLabel(payload, SERVICES_BULK_FIELD_LABELS) : undefined
-      const actionLabel = action === 'delete'
-        ? 'Archive selection'
-        : action === 'restore'
-          ? 'Restore selection'
-          : `Apply ${fieldLabel || 'change'}`
-      const nextValue = action === 'update'
-        ? String(Object.values(payload).find((value) => value !== undefined) ?? '')
-        : undefined
-      return { action, payload, ids: idsToUse, actionLabel, fieldLabel, nextValue, preview }
+  const serviceRowsRef = useRef<any[]>([])
+  serviceRowsRef.current = Array.isArray(allItems) ? allItems : []
+  const serviceBulkClient = useMemo(() => createServiceBulkClient(() => serviceRowsRef.current), [])
+  const {
+    bulkMutation, bulkPreviewMutation, bulkOperationPreview, isBulkReverting,
+    requestBulkPreview, runBulkReceiptRevert, setBulkOperationPreview,
+  } = useOperationalBulkWorkflow({
+    selectedIds,
+    fieldLabels: SERVICES_BULK_FIELD_LABELS,
+    selectionErrorMessage: 'Select at least one Service first',
+    previewErrorMessage: 'Service preview failed',
+    executionErrorMessage: 'Service operation failed',
+    revertErrorMessage: 'Service bulk undo failed',
+    getSnapshots: (ids) => serviceRowsRef.current.filter((item) => ids.includes(Number(item.id))).map((item) => ({ ...item })),
+    ...serviceBulkClient,
+    includePreviewInExecution: true,
+    refresh: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['logical-services'] }),
+        queryClient.invalidateQueries({ queryKey: ['devices'] }),
+      ])
     },
-    onSuccess: (nextPreview) => {
-      setBulkOperationPreview(nextPreview)
-      closeOverlay('bulk')
-    },
-    onError: (error: any) => showOperationalBulkErrorToast(error.message),
-  })
-
-  const requestBulkPreview = (variables: { action: string; payload?: Record<string, any>; ids?: number[] }) => {
-    bulkPreviewMutation.mutate(variables)
-  }
-
-  const bulkMutation = useMutation({
-    onMutate: ({ action, ids: overrideIds }: any) => {
-      const idsToUse = overrideIds ?? selectedIds
-      setPendingIds(prev => [...new Set([...prev, ...idsToUse])])
-    },
-    onSettled: (data: any, error: any, variables: any) => {
-      const idsToUse = variables.ids ?? selectedIds
-      setPendingIds(prev => prev.filter(id => !idsToUse.includes(id)))
-    },
-    mutationFn: async ({ action, payload = {}, ids: overrideIds }: any) => {
-      const idsToUse = overrideIds ?? selectedIds
-      const previousSnapshots = (allItems || []).filter((item: any) => idsToUse.includes(item.id)).map((item: any) => ({ ...item }))
-      let effectivePayload = payload
-      let res
-      if (action === 'update') {
-        const directPayload = {
-          ...(payload.status ? { status: payload.status } : {}),
-          ...(payload.service_type ? { service_type: payload.service_type } : {}),
-          ...(payload.environment ? { environment: payload.environment } : {}),
-        }
-        effectivePayload = directPayload
-        res = await apiFetch('/api/v1/logical-services/bulk-action', {
-          method: 'POST',
-          body: JSON.stringify({ ids: idsToUse, action: 'update', payload: directPayload })
-        })
-      } else if (action === 'restore') {
-        res = await apiFetch('/api/v1/logical-services/bulk-action', {
-          method: 'POST',
-          body: JSON.stringify({ ids: idsToUse, action: 'restore' })
-        })
-      } else {
-        res = await apiFetch('/api/v1/logical-services/bulk-action', {
-          method: 'POST',
-          body: JSON.stringify({ ids: idsToUse, action: 'delete' })
-        })
-      }
-      if (!res.ok) throw new Error(await res.text())
-      const result = await res.json()
-      return { result, action, payload: effectivePayload, idsToUse, previousSnapshots }
-    },
-    onSuccess: ({ result, action, payload, idsToUse, previousSnapshots }: any) => {
-      queryClient.invalidateQueries({ queryKey: ['logical-services'] })
+    onPreviewAccepted: () => closeOverlay('bulk'),
+    onExecutionStart: (ids) => setPendingIds((previous) => [...new Set([...previous, ...ids])]),
+    onExecutionSettled: (ids) => setPendingIds((previous) => previous.filter((id) => !ids.includes(id))),
+    onExecutionSuccess: () => {
       closeOverlay('bulk')
       setExpandedBulkSection(null)
       setBulkDraft({ status: '', service_type: '', environment: '' })
@@ -1631,61 +1533,7 @@ export default function ServicesReal() {
       setIsBulkStatusOpen(false)
       setIsBulkSeverityOpen(false)
       setIsBulkNotifyOpen(false)
-      const totalSelected = idsToUse.length
-      const parsedChangedCount = Number(result?.changed_count ?? result?.changed)
-      const changedCount = Number.isFinite(parsedChangedCount)
-        ? parsedChangedCount
-        : action === 'update'
-          ? countSemanticBulkChanges(previousSnapshots, payload)
-          : action === 'delete'
-            ? previousSnapshots.filter((snapshot: any) => !snapshot?.is_deleted).length
-            : action === 'restore'
-              ? previousSnapshots.filter((snapshot: any) => !!snapshot?.is_deleted).length
-              : totalSelected
-      const parsedUnchangedCount = Number(result?.unchanged_count)
-      const unchangedCount = Number.isFinite(parsedUnchangedCount)
-        ? parsedUnchangedCount
-        : Math.max(0, totalSelected - changedCount)
-      const fieldLabel = resolveBulkFieldLabel(payload, SERVICES_BULK_FIELD_LABELS)
-
-      if (changedCount <= 0) lastUndoRef.current = null
-      else if (action === 'delete') lastUndoRef.current = { mode: 'bulk', ids: idsToUse, action: 'restore' }
-      else if (action === 'restore') lastUndoRef.current = { mode: 'bulk', ids: idsToUse, action: 'delete' }
-      else if (action === 'update') lastUndoRef.current = { mode: 'restore_snapshots', snapshots: previousSnapshots, payload }
-      else lastUndoRef.current = null
-
-      const receiptRevert = lastUndoRef.current ? async () => {
-        try {
-          await runUndo()
-          showOperationalBulkRevertedToast()
-          setBulkOperationPreview(null)
-        } catch (error: any) {
-          showOperationalBulkRevertErrorToast(error.message || 'Bulk revert failed')
-          throw error
-        }
-      } : undefined
-
-      setBulkOperationPreview((current) => current ? {
-        ...current,
-        result: {
-          selected_count: totalSelected,
-          changed_count: changedCount,
-          unchanged_count: unchangedCount,
-          can_revert: Boolean(receiptRevert),
-        },
-        onRevert: receiptRevert,
-      } : null)
-
-      showOperationalBulkResultToast({
-        action: action === 'delete' ? 'archive' : action,
-        totalSelected,
-        changedCount,
-        unchangedCount,
-        fieldLabel,
-        onRevert: receiptRevert,
-      })
     },
-    onError: (e: any) => showOperationalBulkErrorToast(e.message)
   })
 
   const columnDefs = useMemo(() => {
@@ -2304,6 +2152,7 @@ export default function ServicesReal() {
                             tone: 'danger' as OperationalRowActionTone,
                             variant: 'inline' as OperationalRowActionVariant,
                             confirming: rowDeleteConfirmId === rowActionMenu.item.id,
+                            confirmLabel: OPERATIONAL_ACTION_LABELS.archiveConfirm,
                             onClick: () => {
                                 if (rowDeleteConfirmId !== rowActionMenu.item.id) { setRowDeleteConfirmId(rowActionMenu.item.id); return }
                                 bulkMutation.mutate({ action: 'delete', ids: [rowActionMenu.item.id] });
@@ -2427,14 +2276,7 @@ export default function ServicesReal() {
         isExecuting={bulkMutation.isPending}
         isReverting={isBulkReverting}
         onClose={() => setBulkOperationPreview(null)}
-        onRevert={bulkOperationPreview?.onRevert ? async () => {
-          setIsBulkReverting(true)
-          try {
-            await bulkOperationPreview.onRevert?.()
-          } finally {
-            setIsBulkReverting(false)
-          }
-        } : undefined}
+        onRevert={bulkOperationPreview?.onRevert ? runBulkReceiptRevert : undefined}
         onConfirm={() => {
           if (!bulkOperationPreview) return
           bulkMutation.mutate({

@@ -432,4 +432,38 @@ describe('useOperationalBulkWorkflow', () => {
     expect(workflow.result.current.bulkOperationPreview).toBeNull()
     expect(showOperationalBulkRevertedToast).toHaveBeenCalledTimes(1)
   })
+
+  it('passes only a matching current preview to an opted-in guarded execution', async () => {
+    const workflow = renderWorkflow({ includePreviewInExecution: true })
+    act(() => workflow.result.current.requestBulkPreview({ action: 'update', payload: { country: 'USA' } }))
+    await waitFor(() => expect(workflow.result.current.bulkOperationPreview).not.toBeNull())
+    await act(async () => { await workflow.result.current.bulkMutation.mutateAsync({ action: 'update', ids: [1, 2], payload: { country: 'USA' } }) })
+    expect(workflow.executeRequest).toHaveBeenCalledWith({ action: 'update', ids: [1, 2], payload: { country: 'USA' } }, preview)
+  })
+
+  it('reports a failed receipt button Undo without an unhandled rejection and retains retry', async () => {
+    const executeRequest = vi.fn().mockResolvedValueOnce({ changed_count: 1, changed_ids: [2] }).mockRejectedValueOnce(new Error('Peer changed this record'))
+    const workflow = renderWorkflow({ executeRequest })
+    const revert = await prepareReceipt(workflow)
+    await act(async () => { await expect(workflow.result.current.runBulkReceiptRevert()).resolves.toBeUndefined() })
+    expect(showOperationalBulkRevertErrorToast).toHaveBeenCalledWith('Peer changed this record')
+    expect(workflow.result.current.bulkOperationPreview?.onRevert).toBe(revert)
+    expect(workflow.result.current.isBulkReverting).toBe(false)
+  })
+
+  it.each(['selection', 'action', 'payload', 'dismissed', 'new-preview-pending'] as const)('never carries retired preview metadata after %s', async (kind) => {
+    const workflow = renderWorkflow({ includePreviewInExecution: true })
+    act(() => workflow.result.current.requestBulkPreview({ action: 'update', payload: { country: 'USA' } }))
+    await waitFor(() => expect(workflow.result.current.bulkOperationPreview).not.toBeNull())
+    if (kind === 'dismissed') act(() => workflow.result.current.setBulkOperationPreview(null))
+    if (kind === 'new-preview-pending') {
+      const pending = deferred<typeof preview>()
+      vi.mocked(workflow.previewRequest).mockReturnValueOnce(pending.promise)
+      act(() => workflow.result.current.requestBulkPreview({ action: 'delete', ids: [1] }))
+    }
+    const variables = { action: kind === 'action' ? 'delete' : 'update', ids: kind === 'selection' ? [1] : [1, 2],
+      payload: { country: kind === 'payload' ? 'Canada' : 'USA' } }
+    await act(async () => { await workflow.result.current.bulkMutation.mutateAsync(variables) })
+    expect(workflow.executeRequest).toHaveBeenCalledWith(variables, null)
+  })
 })
