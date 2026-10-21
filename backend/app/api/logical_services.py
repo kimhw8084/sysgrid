@@ -20,6 +20,7 @@ from .operational_bulk import (
 )
 from .module_policy import require_module_access
 from .asset_links import require_relationship_asset
+from .service_bulk import guarded_service_bulk, service_bulk_precondition
 
 router = APIRouter(
     prefix="/logical-services",
@@ -488,8 +489,7 @@ async def delete_service(service_id: int, request: Request, db: AsyncSession = D
     await db.commit()
     return {"status": "success"}
 
-@router.post("/bulk-action")
-async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+def normalize_service_bulk(data: dict):
     ids = normalize_operational_bulk_ids(data.get("ids"))
     action = str(data.get("action") or "").strip().lower()
     payload = normalize_operational_bulk_payload(data.get("payload"))
@@ -499,18 +499,22 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
     if action not in {"delete", "restore", "update"}:
         raise HTTPException(status_code=400, detail=f"Unsupported bulk action: {action}")
 
-    services_res = await db.execute(select(models.LogicalService).where(models.LogicalService.id.in_(ids), _service_scope(request)))
-    affected_services = services_res.scalars().all()
-    services_by_id = {service.id: service for service in affected_services}
-
     clean_update: dict = {}
     if action == "update":
         clean_update = normalize_service_payload({key: value for key, value in payload.items() if key in SERVICE_BULK_UPDATE_FIELDS})
-        if "device_id" in clean_update:
-            if clean_update["device_id"] is not None and any(service.device_id != clean_update["device_id"] for service in affected_services):
-                await require_relationship_asset(request, db, clean_update["device_id"], active=True)
         if not clean_update:
             raise HTTPException(status_code=400, detail="Bulk update requires a supported field")
+    return ids, action, clean_update
+
+
+async def plan_service_bulk(data: dict, request: Request, db: AsyncSession, *, lock: bool = False):
+    ids, action, clean_update = normalize_service_bulk(data)
+    query = select(models.LogicalService).where(models.LogicalService.id.in_(ids), _service_scope(request)).order_by(models.LogicalService.id)
+    if lock:
+        query = query.with_for_update()
+    services_by_id = {service.id: service for service in (await db.scalars(query)).all()}
+    if clean_update.get("device_id") is not None and any(service.device_id != clean_update["device_id"] for service in services_by_id.values()):
+        await require_relationship_asset(request, db, clean_update["device_id"], active=True)
 
     changed_ids: list[int] = []
     unchanged_ids: list[int] = []
@@ -533,9 +537,21 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
         changed_ids=changed_ids,
         unchanged_ids=unchanged_ids,
     )
-    if dry_run:
-        return {"status": "preview", **summary}
+    return ids, action, clean_update, services_by_id, summary
 
+
+@router.post("/bulk-action")
+async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+    if "precondition" in data or "operation_id" in data or str(data.get("action") or "").strip().lower() == "undo":
+        return await guarded_service_bulk(data, request, db)
+    ids, action, clean_update, services_by_id, summary = await plan_service_bulk(data, request, db)
+    affected_services = list(services_by_id.values())
+    if data.get("dry_run", False):
+        return {"status": "preview", **summary,
+                "precondition": service_bulk_precondition(request, ids, action, clean_update, services_by_id),
+                "versions": {str(identity): service.edit_revision for identity, service in services_by_id.items()}}
+
+    changed_ids = summary["changed_ids"]
     require_executable_operational_bulk(summary)
     if not changed_ids:
         return {"status": "no_op", **summary}

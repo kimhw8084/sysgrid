@@ -14,6 +14,7 @@ export default defineConfig({
     /(^|[\\/])configuration-sync\.spec\.ts$/,
     /(^|[\\/])monitoring-stale-form\.spec\.ts$/,
     /(^|[\\/])service-stale-form\.spec\.ts$/,
+    /(^|[\\/])service-bulk-concurrency\.spec\.ts$/,
     /(^|[\\/])rack-elevation-contrast\.spec\.ts$/,
     /(^|[\\/])detail-readability\.spec\.ts$/,
     /(^|[\\/])browser-reset-isolation\.spec\.ts$/,

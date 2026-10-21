@@ -75,15 +75,15 @@ type OperationalBulkPreviewModalProps = {
 
 const SummaryCard = ({ label, value, tone }: { label: string; value: number; tone: 'neutral' | 'success' | 'warning' | 'danger' }) => {
   const toneClass = tone === 'success'
-    ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200'
+    ? 'border-emerald-500/20 bg-emerald-500/10 text-[var(--state-success)]'
     : tone === 'warning'
-      ? 'border-amber-500/20 bg-amber-500/10 text-amber-200'
+      ? 'border-amber-500/20 bg-amber-500/10 text-[var(--state-warning)]'
       : tone === 'danger'
-        ? 'border-rose-500/20 bg-rose-500/10 text-rose-200'
-        : 'border-white/10 bg-white/[0.04] text-slate-200'
+        ? 'border-rose-500/20 bg-rose-500/10 text-[var(--state-danger)]'
+        : 'border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-primary)]'
   return (
-    <div className={`rounded-xl border px-4 py-3 ${toneClass}`}>
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">{label}</p>
+    <div className={`rounded-xl border px-2 py-3 sm:px-4 ${toneClass}`}>
+      <p className="whitespace-nowrap text-[10px] font-bold uppercase tracking-normal text-[var(--text-secondary)] sm:tracking-[0.16em]">{label}</p>
       <p className="pt-1 text-2xl font-semibold" data-testid={`bulk-preview-${label.toLowerCase().replace(/\s+/g, '-')}`}>{value}</p>
     </div>
   )
@@ -169,7 +169,7 @@ export function OperationalBulkPreviewModal({
       <div className="space-y-5 pt-2" data-testid={isComplete ? 'operational-bulk-result' : 'operational-bulk-preview'}>
         {isLoading ? <p role="status" className="text-sm text-slate-300">Loading the current impact…</p> : null}
         {error ? (
-          <div role="alert" className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">
+          <div role="alert" className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-[var(--state-danger)]">
             <p>{error}</p>
             {onRefresh ? <ToolbarButton onClick={onRefresh} disabled={isLoading || isExecuting}>Review fresh preview</ToolbarButton> : null}
           </div>
@@ -193,11 +193,11 @@ export function OperationalBulkPreviewModal({
             data-testid="operational-purge-impact"
             className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-500/[0.06] px-4 py-4"
           >
-            <div className="flex items-start gap-3 text-rose-100">
+            <div className="flex items-start gap-3 text-[var(--state-danger)]">
               <AlertTriangle size={17} className="mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-semibold">Permanent removal</p>
-                <p className="pt-1 text-xs text-rose-100/75">
+                <p className="pt-1 text-xs text-[var(--text-secondary)]">
                   {purgeImpact.permanent && !purgeImpact.recovery_supported
                     ? 'This purge cannot be restored or reverted.'
                     : 'Review the lifecycle recovery policy before confirming.'}
@@ -247,16 +247,16 @@ export function OperationalBulkPreviewModal({
 
         {isComplete ? (
           <>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-3">
               <SummaryCard label="Selected" value={result?.selected_count || 0} tone="neutral" />
               <SummaryCard label="Changed" value={result?.changed_count || 0} tone="success" />
               <SummaryCard label="Unchanged" value={result?.unchanged_count || 0} tone="warning" />
             </div>
-            <div className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+            <div className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-[var(--state-success)]">
               <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold">Bulk operation completed.</p>
-                <p className="pt-1 text-xs text-emerald-200/80">
+                <p className="pt-1 text-xs text-[var(--text-secondary)]">
                   {result?.changed_count || 0} record{result?.changed_count === 1 ? '' : 's'} changed and {result?.unchanged_count || 0} already matched the requested state.
                 </p>
               </div>
@@ -272,7 +272,7 @@ export function OperationalBulkPreviewModal({
             </div>
 
             {preview && preview.changed_count === 0 && !hasBlockingIssues ? (
-              <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-[var(--state-warning)]">
                 <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
                 Every matched record already has the requested state. Nothing will be written.
               </div>
@@ -280,10 +280,10 @@ export function OperationalBulkPreviewModal({
 
             {preview?.missing_ids?.length ? (
               <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-rose-100">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[var(--state-danger)]">
                   <AlertTriangle size={16} /> Selection changed
                 </div>
-                <p className="pt-2 text-xs text-rose-200/80">
+                <p className="pt-2 text-xs text-[var(--text-secondary)]">
                   These records no longer exist or are unavailable: {preview.missing_ids.join(', ')}. Refresh the workspace and preview again.
                 </p>
               </div>
@@ -294,8 +294,8 @@ export function OperationalBulkPreviewModal({
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Blocked records</p>
                 {preview.blockers.map((blocker) => (
                   <div key={`${blocker.id}-${blocker.reason}`} className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3">
-                    <p className="text-sm font-semibold text-rose-100">{blocker.name || `Record ${blocker.id}`}</p>
-                    <p className="pt-1 text-xs text-rose-200/80">{blocker.reason}</p>
+                    <p className="text-sm font-semibold text-[var(--state-danger)]">{blocker.name || `Record ${blocker.id}`}</p>
+                    <p className="pt-1 text-xs text-[var(--text-secondary)]">{blocker.reason}</p>
                   </div>
                 ))}
               </div>

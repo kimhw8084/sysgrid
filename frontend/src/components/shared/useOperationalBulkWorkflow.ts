@@ -78,7 +78,8 @@ type UseOperationalBulkWorkflowOptions<TSnapshot> = {
   revertErrorMessage: string
   getSnapshots: (ids: readonly number[]) => TSnapshot[]
   previewRequest: (request: OperationalBulkRequest) => Promise<OperationalBulkPreview>
-  executeRequest: (request: OperationalBulkRequest) => Promise<OperationalBulkExecutionResult>
+  executeRequest: (request: OperationalBulkRequest, preview?: OperationalBulkPreview | null) => Promise<OperationalBulkExecutionResult>
+  includePreviewInExecution?: boolean
   refresh: () => void | Promise<unknown>
   buildRevertRequest: (context: OperationalBulkRevertContext<TSnapshot>) => OperationalBulkRevertRequest | null
   onPreviewAccepted?: (state: OperationalBulkOperationState) => void | Promise<void>
@@ -115,6 +116,13 @@ const getChangedIds = (result: OperationalBulkExecutionResult, selectedIds: read
   return isExact ? responseIds : []
 }
 
+const matchesPreview = (state: OperationalBulkOperationState | null, request: OperationalBulkRequest) => Boolean(
+  state && !state.result && state.action === request.action
+  && state.ids.length === request.ids.length && state.ids.every((id) => request.ids.includes(id))
+  && Object.keys(state.payload).length === Object.keys(request.payload).length
+  && Object.keys(request.payload).every((key) => Object.is(state.payload[key], request.payload[key])),
+)
+
 export function useOperationalBulkWorkflow<TSnapshot>({
   selectedIds,
   fieldLabels,
@@ -125,6 +133,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
   getSnapshots,
   previewRequest,
   executeRequest,
+  includePreviewInExecution = false,
   refresh,
   buildRevertRequest,
   onPreviewAccepted,
@@ -136,12 +145,14 @@ export function useOperationalBulkWorkflow<TSnapshot>({
   const [bulkOperationPreview, updateBulkOperationPreview] = useState<OperationalBulkOperationState | null>(null)
   const [isBulkReverting, setIsBulkReverting] = useState(false)
   const previewGeneration = useRef(0)
+  const acceptedPreview = useRef<{ state: OperationalBulkOperationState; generation: number } | null>(null)
 
   useEffect(() => () => { previewGeneration.current += 1 }, [])
 
   const setBulkOperationPreview = useCallback((state: SetStateAction<OperationalBulkOperationState | null>) => {
     // Dismissal also invalidates requests that have not produced a dialog yet.
     previewGeneration.current += 1
+    acceptedPreview.current = null
     updateBulkOperationPreview(state)
   }, [])
 
@@ -168,6 +179,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
     },
     onSuccess: async (state, variables) => {
       if (variables.generation !== previewGeneration.current) return
+      acceptedPreview.current = { state, generation: variables.generation }
       updateBulkOperationPreview(state)
       await onPreviewAccepted?.(state)
     },
@@ -182,11 +194,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
     onMutate: ({ action, ids: overrideIds, payload = {} }: OperationalBulkVariables) => {
       const ids = uniqueIds(overrideIds ?? selectedIds)
       const executionStartContext = ids.length ? onExecutionStart?.(ids, action) : undefined
-      const ownsPreview = bulkOperationPreview?.action === action
-        && bulkOperationPreview.ids.length === ids.length
-        && bulkOperationPreview.ids.every((id) => ids.includes(id))
-        && Object.keys(bulkOperationPreview.payload).length === Object.keys(payload).length
-        && Object.keys(payload).every((key) => Object.is(bulkOperationPreview.payload[key], payload[key]))
+      const ownsPreview = matchesPreview(bulkOperationPreview, { action, ids, payload })
       return {
         ids,
         executionStartContext,
@@ -197,7 +205,13 @@ export function useOperationalBulkWorkflow<TSnapshot>({
     mutationFn: async ({ action, ids: overrideIds, payload = {}, targetLabels }: OperationalBulkVariables) => {
       const ids = resolveIds(overrideIds)
       const previousSnapshots = getSnapshots(ids)
-      const result = await executeRequest({ action, ids, payload })
+      const request = { action, ids, payload }
+      const accepted = acceptedPreview.current
+      const preview = accepted && accepted.generation === previewGeneration.current && matchesPreview(accepted.state, request)
+        ? accepted.state.preview : null
+      // Existing consumers retain their request contract. Server-guarded
+      // consumers explicitly receive only the currently matching preview.
+      const result = includePreviewInExecution ? await executeRequest(request, preview) : await executeRequest(request)
       return { result, action, ids, payload, targetLabels, previousSnapshots }
     },
     onSuccess: async ({ result, action, ids, payload, targetLabels, previousSnapshots }, _variables, context) => {
@@ -220,6 +234,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
       }
 
       await onExecutionSuccess?.(successContext)
+      if (acceptedPreview.current?.state === context?.preview) acceptedPreview.current = null
 
       const revertRequest = changedCount > 0 && action !== 'purge' && changedIds.length === changedCount
         ? buildRevertRequest({ ...successContext, changedSnapshots })
@@ -293,6 +308,9 @@ export function useOperationalBulkWorkflow<TSnapshot>({
     setIsBulkReverting(true)
     try {
       await bulkOperationPreview.onRevert()
+    } catch {
+      // The receipt callback already reports the error and retains its retry.
+      // A button event must not also create an unhandled promise rejection.
     } finally {
       setIsBulkReverting(false)
     }
