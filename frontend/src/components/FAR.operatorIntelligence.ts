@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react
 import { parseAppDate } from '../utils/dateUtils'
 import { useOperationalRowInteractions } from './shared/OperationalGridInteractions'
 import { usePersistentJsonState } from './shared/OperationalWorkspaceHooks'
+import { readOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import type { FarGroupBy, FarQuickFilters } from './FAR.workspaceModel'
 
 export const FAR_FAVORITES_STORAGE_KEY = 'sysgrid_far_favorites_v1'
@@ -62,7 +63,7 @@ export function useFarOperatorIntelligence({
   const [isIntelligenceExpanded, setIsIntelligenceExpanded] = useState(false)
   const [lastVisitedAt] = useState<number>(() => {
     if (typeof window === 'undefined') return 0
-    const value = Number(window.localStorage.getItem(FAR_LAST_VISITED_STORAGE_KEY))
+    const value = Number(readOptionalStorage(FAR_LAST_VISITED_STORAGE_KEY))
     return Number.isFinite(value) && value > 0 ? value : 0
   })
 
@@ -111,7 +112,7 @@ export function useFarOperatorIntelligence({
   }, [gridRef, normalizedFavoriteIds, normalizedWatchIds])
 
   useEffect(() => () => {
-    if (typeof window !== 'undefined') window.localStorage.setItem(FAR_LAST_VISITED_STORAGE_KEY, String(Date.now()))
+    if (typeof window !== 'undefined') writeOptionalStorage(FAR_LAST_VISITED_STORAGE_KEY, String(Date.now()))
   }, [])
 
   const utilityColumnsConfig = useMemo(() => ({

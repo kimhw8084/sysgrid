@@ -9,7 +9,12 @@
     <title>SysGrid - Build 2</title>
     <script>
       (function() {
-        const theme = localStorage.getItem('sysgrid-theme') || 'nordic-frost-v1';
+        let theme = 'nordic-frost-v1';
+        try {
+          theme = localStorage.getItem('sysgrid-theme') || theme;
+        } catch (error) {
+          if (!(error instanceof DOMException && ['SecurityError', 'QuotaExceededError', 'NS_ERROR_DOM_QUOTA_REACHED'].includes(error.name))) throw error;
+        }
         document.documentElement.setAttribute('data-theme', theme);
         if (theme === 'pure-clarity') {
           document.documentElement.classList.remove('dark');

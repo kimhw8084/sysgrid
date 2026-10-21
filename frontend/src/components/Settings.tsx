@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from 'react-hot-toast'
 import { showWorkspaceToast } from './shared/WorkspaceToast'
+import { readOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import { apiFetch, setApiOverride, getApiBaseUrl, getRequestScopeKey } from "../api/apiClient"
 import { formatAppDate, parseAppDate } from "../utils/dateUtils"
 import { 
@@ -1018,7 +1019,7 @@ export default function SettingsPage() {
     }
   });
 
-  const currentTheme = normalizeTheme(userSettings?.theme || localStorage.getItem('sysgrid-theme'));
+  const currentTheme = normalizeTheme(userSettings?.theme || readOptionalStorage('sysgrid-theme'));
 
   const userSettingsMutation = useMutation({
     mutationFn: async (settings: any) => {
@@ -1034,7 +1035,7 @@ export default function SettingsPage() {
 
   const changeTheme = (themeId: string) => {
     const normalizedTheme = normalizeTheme(themeId)
-    localStorage.setItem('sysgrid-theme', normalizedTheme)
+    writeOptionalStorage('sysgrid-theme', normalizedTheme)
     document.documentElement.setAttribute('data-theme', normalizedTheme)
     const isLight = normalizedTheme === 'pure-clarity'
     if (isLight) document.documentElement.classList.remove('dark')
@@ -1922,7 +1923,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('sysgrid-permission-team-filters-v1')
+      const raw = readOptionalStorage('sysgrid-permission-team-filters-v1')
       if (raw) setSavedTeamFilters(JSON.parse(raw))
     } catch {
       setSavedTeamFilters([])
@@ -1930,7 +1931,7 @@ export default function SettingsPage() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('sysgrid-permission-team-filters-v1', JSON.stringify(savedTeamFilters))
+    writeOptionalStorage('sysgrid-permission-team-filters-v1', JSON.stringify(savedTeamFilters))
   }, [savedTeamFilters])
 
   useEffect(() => {

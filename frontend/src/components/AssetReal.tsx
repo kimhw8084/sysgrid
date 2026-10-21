@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { showWorkspaceToast } from './shared/WorkspaceToast'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import {
   computeFloatingPanelRect,
 } from './shared/OperationalGridInteractions'
@@ -245,7 +246,7 @@ const NETWORK_DEFAULT_COLUMN_ORDER_MAP = ASSET_DEFAULT_COLUMN_ORDER_MAP
 const readJsonStorage = <T,>(storageKey: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback
   try {
-    const raw = window.localStorage.getItem(storageKey)
+    const raw = readOptionalStorage(storageKey)
     return raw == null ? fallback : JSON.parse(raw) as T
   } catch {
     return fallback
@@ -344,7 +345,7 @@ const normalizeMonitoringWorkspaceState = (value: any) => {
 
 const readMonitoringWorkspaceStateFromLocalStorage = () => normalizeMonitoringWorkspaceState({
   savedViews: readJsonStorage<any[]>(MONITORING_VIEW_STORAGE_KEY, []),
-  activeViewId: typeof window === 'undefined' ? null : window.localStorage.getItem(MONITORING_ACTIVE_VIEW_KEY),
+  activeViewId: readOptionalStorage(MONITORING_ACTIVE_VIEW_KEY),
   favoriteIds: readJsonStorage<number[]>(MONITORING_FAVORITES_STORAGE_KEY, []),
   watchIds: readJsonStorage<number[]>(MONITORING_WATCH_STORAGE_KEY, []),
   uiState: readJsonStorage(MONITORING_UI_STATE_KEY, null),
@@ -640,11 +641,11 @@ export default function AssetReal() {
   )
   const localWorkspaceState = useMemo(() => readMonitoringWorkspaceStateFromLocalStorage(), [])
   const hasStoredFavoriteIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(MONITORING_FAVORITES_STORAGE_KEY) !== null,
+    () => readOptionalStorage(MONITORING_FAVORITES_STORAGE_KEY) !== null,
     []
   )
   const hasStoredWatchIds = useMemo(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(MONITORING_WATCH_STORAGE_KEY) !== null,
+    () => readOptionalStorage(MONITORING_WATCH_STORAGE_KEY) !== null,
     []
   )
   const initialWorkspaceState = useMemo(() => {
@@ -705,7 +706,7 @@ export default function AssetReal() {
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_asset_real_session_init',
     null,
-    () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(MONITORING_ACTIVE_VIEW_KEY))
+    () => initialWorkspaceState?.activeViewId ?? readOptionalStorage(MONITORING_ACTIVE_VIEW_KEY)
   )
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(MONITORING_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(MONITORING_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
@@ -1236,7 +1237,7 @@ export default function AssetReal() {
     setGridSortModel((config.sortModel && config.sortModel.length > 0) ? config.sortModel : [{ colId: 'favorite', sort: 'desc' }])
     setActiveViewId(viewId)
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, viewId)
+      writeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY, viewId)
     }
     requestAnimationFrame(() => {
       if (gridRef.current?.api) {
@@ -1259,8 +1260,8 @@ export default function AssetReal() {
     setSavedViews(nextViews)
     setActiveViewId(viewId)
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(MONITORING_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
-      window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, viewId)
+      writeOptionalStorage(MONITORING_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
+      writeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY, viewId)
     }
     showWorkspaceToast(`Saved current table to ${nextViews.find((view) => view.id === viewId)?.name}`)
   }
@@ -1287,8 +1288,8 @@ export default function AssetReal() {
     setActiveViewId(nextId)
     setNewViewName('')
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(MONITORING_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
-      window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, nextId)
+      writeOptionalStorage(MONITORING_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
+      writeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY, nextId)
     }
     showWorkspaceToast(`Saved new view ${trimmed}`)
   }
@@ -1297,7 +1298,7 @@ export default function AssetReal() {
     setActiveViewId(null)
     setTransientManualColumnWidths(false)
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(MONITORING_ACTIVE_VIEW_KEY)
+      removeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY)
     }
     setFontSize(11)
     setRowDensity(8)
@@ -1330,11 +1331,11 @@ export default function AssetReal() {
         if (activeViewId === viewId) {
           setActiveViewId(null)
           if (typeof window !== 'undefined') {
-             window.localStorage.removeItem(MONITORING_ACTIVE_VIEW_KEY)
+             removeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY)
           }
         }
         if (typeof window !== 'undefined') {
-          window.localStorage.setItem(MONITORING_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
+          writeOptionalStorage(MONITORING_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
         }
         showWorkspaceToast(`Deleted view ${view.name}`)
       }
@@ -1623,7 +1624,7 @@ export default function AssetReal() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(MONITORING_UI_STATE_KEY, JSON.stringify({
+    writeOptionalStorage(MONITORING_UI_STATE_KEY, JSON.stringify({
       activeTab,
       fontSize,
       rowDensity,
@@ -1677,7 +1678,7 @@ export default function AssetReal() {
     return () => {
       if (typeof window === 'undefined') return
       const current = readMonitoringUiState() || {}
-      window.localStorage.setItem(MONITORING_UI_STATE_KEY, JSON.stringify({
+      writeOptionalStorage(MONITORING_UI_STATE_KEY, JSON.stringify({
         ...current,
         lastVisitedAt: Date.now()
       }))

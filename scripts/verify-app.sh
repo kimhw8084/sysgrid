@@ -137,6 +137,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_asset_vendor_bulk_workflows.py
   test_import_workflows.py
   test_revert_logic.py
+  test_audit_integrity.py
 )
 
 if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then

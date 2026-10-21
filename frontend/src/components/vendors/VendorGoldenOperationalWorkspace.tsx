@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { showWorkspaceToast } from '../shared/WorkspaceToast'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from '../shared/optionalStorage'
 import {
   FLOATING_PANEL_EDGE,
   useOperationalGroupedSelection,
@@ -151,7 +152,7 @@ function buildVendorCountryOptions(configuredOptions: unknown, currentCountry?: 
 const readJsonStorage = <T,>(storageKey: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback
   try {
-    const raw = window.localStorage.getItem(storageKey)
+    const raw = readOptionalStorage(storageKey)
     return raw == null ? fallback : JSON.parse(raw) as T
   } catch {
     return fallback
@@ -225,7 +226,7 @@ const normalizeVendorWorkspaceState = (value: any) => {
 
 const readVendorWorkspaceStateFromLocalStorage = () => normalizeVendorWorkspaceState({
   savedViews:    readJsonStorage<any[]>(VENDOR_VIEW_STORAGE_KEY, []),
-  activeViewId:  typeof window === 'undefined' ? null : window.localStorage.getItem(VENDOR_ACTIVE_VIEW_KEY),
+  activeViewId: readOptionalStorage(VENDOR_ACTIVE_VIEW_KEY),
   favoriteIds:   readJsonStorage<number[]>(VENDOR_FAVORITES_STORAGE_KEY, []),
   watchIds:      readJsonStorage<number[]>(VENDOR_WATCH_STORAGE_KEY, []),
   uiState:       readJsonStorage(VENDOR_UI_STATE_KEY, null),
@@ -376,8 +377,8 @@ export default function VendorsReal() {
     [userSettings]
   )
   const localWorkspaceState  = useMemo(() => readVendorWorkspaceStateFromLocalStorage(), [])
-  const hasStoredFavoriteIds = useMemo(() => typeof window !== 'undefined' && window.localStorage.getItem(VENDOR_FAVORITES_STORAGE_KEY) !== null, [])
-  const hasStoredWatchIds    = useMemo(() => typeof window !== 'undefined' && window.localStorage.getItem(VENDOR_WATCH_STORAGE_KEY)    !== null, [])
+  const hasStoredFavoriteIds = useMemo(() => readOptionalStorage(VENDOR_FAVORITES_STORAGE_KEY) !== null, [])
+  const hasStoredWatchIds    = useMemo(() => readOptionalStorage(VENDOR_WATCH_STORAGE_KEY) !== null, [])
   const initialWorkspaceState = useMemo(() => {
     if (!remoteWorkspaceState) return localWorkspaceState
     if (!localWorkspaceState)  return remoteWorkspaceState
@@ -436,7 +437,7 @@ export default function VendorsReal() {
   )
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_vendor_session_init', null,
-    () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(VENDOR_ACTIVE_VIEW_KEY))
+    () => initialWorkspaceState?.activeViewId ?? readOptionalStorage(VENDOR_ACTIVE_VIEW_KEY)
   )
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(VENDOR_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
   const [watchIds,    setWatchIds]    = usePersistentJsonState<number[]>(VENDOR_WATCH_STORAGE_KEY,     initialWorkspaceState?.watchIds    ?? [])
@@ -637,7 +638,7 @@ export default function VendorsReal() {
     setQuickFilters(config.quickFilters ?? { country: [] as string[], contractStatus: [] as string[] })
     setGridFilterModel(config.filterModel ?? {}); setGridSortModel((config.sortModel?.length > 0) ? config.sortModel : [{ colId: 'favorite', sort: 'desc' }])
     setActiveViewId(viewId)
-    if (typeof window !== 'undefined') window.localStorage.setItem(VENDOR_ACTIVE_VIEW_KEY, viewId)
+    if (typeof window !== 'undefined') writeOptionalStorage(VENDOR_ACTIVE_VIEW_KEY, viewId)
     requestAnimationFrame(() => {
       if (!gridRef.current?.api) return
       if (Array.isArray(config.columnLayoutState) && config.columnLayoutState.length) applyOperationalColumnState(gridRef.current.api, config.columnLayoutState, true)
@@ -648,7 +649,7 @@ export default function VendorsReal() {
   const saveCurrentToView = (viewId: string) => {
     const nextViews = savedViews.map((view) => view.id === viewId ? { ...view, config: buildCurrentViewConfig() } : view)
     setSavedViews(nextViews); setActiveViewId(viewId)
-    if (typeof window !== 'undefined') { window.localStorage.setItem(VENDOR_VIEW_STORAGE_KEY, JSON.stringify(nextViews)); window.localStorage.setItem(VENDOR_ACTIVE_VIEW_KEY, viewId) }
+    if (typeof window !== 'undefined') { writeOptionalStorage(VENDOR_VIEW_STORAGE_KEY, JSON.stringify(nextViews)); writeOptionalStorage(VENDOR_ACTIVE_VIEW_KEY, viewId) }
     showWorkspaceToast(`Saved current table to ${nextViews.find(v => v.id === viewId)?.name}`)
   }
   const createViewFromCurrent = () => {
@@ -658,12 +659,12 @@ export default function VendorsReal() {
     while (savedViews.some((view) => view.id === nextId)) nextId = `${slugifyViewId(trimmed)}-${suffix++}`
     const nextViews = [...savedViews, { id: nextId, name: trimmed, config: buildCurrentViewConfig() }]
     setSavedViews(nextViews); setActiveViewId(nextId); setNewViewName('')
-    if (typeof window !== 'undefined') { window.localStorage.setItem(VENDOR_VIEW_STORAGE_KEY, JSON.stringify(nextViews)); window.localStorage.setItem(VENDOR_ACTIVE_VIEW_KEY, nextId) }
+    if (typeof window !== 'undefined') { writeOptionalStorage(VENDOR_VIEW_STORAGE_KEY, JSON.stringify(nextViews)); writeOptionalStorage(VENDOR_ACTIVE_VIEW_KEY, nextId) }
     showWorkspaceToast(`Saved new view ${trimmed}`)
   }
   const applySystemDefault = () => {
     setActiveViewId(null); setTransientManualColumnWidths(false)
-    if (typeof window !== 'undefined') window.localStorage.removeItem(VENDOR_ACTIVE_VIEW_KEY)
+    if (typeof window !== 'undefined') removeOptionalStorage(VENDOR_ACTIVE_VIEW_KEY)
     setFontSize(11); setRowDensity(8); setHiddenColumns([]); setGroupBy('raw'); setShowFilterBar(true)
     setColumnLayoutState([]); setSearchTermFromInteraction(''); setQuickFilters({ country: [] as string[], contractStatus: [] as string[] })
     setGridSortModel([{ colId: 'favorite', sort: 'desc' }])
@@ -676,8 +677,8 @@ export default function VendorsReal() {
     openConfirm(`Delete View: ${view.name}?`, 'Remove this saved layout?', () => {
       const nextViews = savedViews.filter((v) => v.id !== viewId)
       setSavedViews(nextViews)
-      if (activeViewId === viewId) { setActiveViewId(null); if (typeof window !== 'undefined') window.localStorage.removeItem(VENDOR_ACTIVE_VIEW_KEY) }
-      if (typeof window !== 'undefined') window.localStorage.setItem(VENDOR_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
+      if (activeViewId === viewId) { setActiveViewId(null); if (typeof window !== 'undefined') removeOptionalStorage(VENDOR_ACTIVE_VIEW_KEY) }
+      if (typeof window !== 'undefined') writeOptionalStorage(VENDOR_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
       showWorkspaceToast(`Deleted view ${view.name}`)
     })
   }
@@ -903,13 +904,13 @@ export default function VendorsReal() {
   }, [displayedItems, selectedIds])
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(VENDOR_UI_STATE_KEY, JSON.stringify({ fontSize, rowDensity, hiddenColumns, quickFilters, groupBy, showFilterBar, columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false), lastVisitedAt, searchTerm }))
+    writeOptionalStorage(VENDOR_UI_STATE_KEY, JSON.stringify({ fontSize, rowDensity, hiddenColumns, quickFilters, groupBy, showFilterBar, columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false), lastVisitedAt, searchTerm }))
   }, [columnLayoutState, fontSize, groupBy, hiddenColumns, lastVisitedAt, quickFilters, rowDensity, searchTerm, showFilterBar])
   useEffect(() => {
     return () => {
       if (typeof window === 'undefined') return
       const current = readVendorUiState() || {}
-      window.localStorage.setItem(VENDOR_UI_STATE_KEY, JSON.stringify({ ...current, lastVisitedAt: Date.now() }))
+      writeOptionalStorage(VENDOR_UI_STATE_KEY, JSON.stringify({ ...current, lastVisitedAt: Date.now() }))
     }
   }, [])
 

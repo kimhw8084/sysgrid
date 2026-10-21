@@ -20,6 +20,7 @@ import { withServiceEditRevision } from '../utils/serviceRevision'
 import { AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { showWorkspaceRevertToast, showWorkspaceToast } from './shared/WorkspaceToast'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import { apiFetch } from '../api/apiClient'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
@@ -236,7 +237,7 @@ const SERVICE_DEFAULT_COLUMN_ORDER_MAP = new Map(SERVICE_DEFAULT_COLUMN_ORDER.ma
 const readJsonStorage = <T,>(storageKey: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback
   try {
-    const raw = window.localStorage.getItem(storageKey)
+    const raw = readOptionalStorage(storageKey)
     return raw == null ? fallback : JSON.parse(raw) as T
   } catch {
     return fallback
@@ -327,7 +328,7 @@ const normalizeServiceWorkspaceState = (value: any) => {
 
 const readServiceWorkspaceStateFromLocalStorage = () => normalizeServiceWorkspaceState({
   savedViews: readJsonStorage<any[]>(SERVICE_VIEW_STORAGE_KEY, []),
-  activeViewId: typeof window === 'undefined' ? null : window.localStorage.getItem(SERVICE_ACTIVE_VIEW_KEY),
+  activeViewId: readOptionalStorage(SERVICE_ACTIVE_VIEW_KEY),
   favoriteIds: readJsonStorage<number[]>(SERVICE_FAVORITES_STORAGE_KEY, []),
   watchIds: readJsonStorage<number[]>(SERVICE_WATCH_STORAGE_KEY, []),
   uiState: readJsonStorage(SERVICE_UI_STATE_KEY, null),
@@ -542,7 +543,7 @@ export default function ServicesReal() {
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_services_session_init',
     null,
-    () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(SERVICE_ACTIVE_VIEW_KEY))
+    () => initialWorkspaceState?.activeViewId ?? readOptionalStorage(SERVICE_ACTIVE_VIEW_KEY)
   )
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(SERVICE_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [], normalizeServiceIdList)
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(SERVICE_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [], normalizeServiceIdList)
@@ -953,8 +954,8 @@ export default function ServicesReal() {
   const setCollaborativeActiveViewId = useCallback((id: string | null) => {
     setActiveViewId(id)
     if (typeof window !== 'undefined') {
-      if (id) window.localStorage.setItem(SERVICE_ACTIVE_VIEW_KEY, id)
-      else window.localStorage.removeItem(SERVICE_ACTIVE_VIEW_KEY)
+      if (id) writeOptionalStorage(SERVICE_ACTIVE_VIEW_KEY, id)
+      else removeOptionalStorage(SERVICE_ACTIVE_VIEW_KEY)
     }
   }, [])
 
@@ -998,7 +999,7 @@ export default function ServicesReal() {
     setActiveViewId(viewId)
     collaborativeViews.setViewLink(viewId)
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(SERVICE_ACTIVE_VIEW_KEY, viewId)
+      writeOptionalStorage(SERVICE_ACTIVE_VIEW_KEY, viewId)
     }
     requestAnimationFrame(() => {
       if (gridRef.current?.api) {
@@ -1049,9 +1050,9 @@ export default function ServicesReal() {
       setActiveViewId(result.view.id)
       collaborativeViews.setViewLink(result.view.id)
       setNewViewName('')
-      if (typeof window !== 'undefined') window.localStorage.setItem(SERVICE_ACTIVE_VIEW_KEY, result.view.id)
+      if (typeof window !== 'undefined') writeOptionalStorage(SERVICE_ACTIVE_VIEW_KEY, result.view.id)
     }
-    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `Saved ${trimmed} locally; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
+    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `${trimmed} is available in this tab; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const applySystemDefault = async () => {
@@ -1060,7 +1061,7 @@ export default function ServicesReal() {
     collaborativeViews.setViewLink(null)
     setTransientManualColumnWidths(false)
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(SERVICE_ACTIVE_VIEW_KEY)
+      removeOptionalStorage(SERVICE_ACTIVE_VIEW_KEY)
     }
     setFontSize(11)
     setRowDensity(8)
@@ -1112,7 +1113,7 @@ export default function ServicesReal() {
     if (activeViewId === viewId) {
       setActiveViewId(null)
       collaborativeViews.setViewLink(null)
-      if (typeof window !== 'undefined') window.localStorage.removeItem(SERVICE_ACTIVE_VIEW_KEY)
+      if (typeof window !== 'undefined') removeOptionalStorage(SERVICE_ACTIVE_VIEW_KEY)
     }
     showWorkspaceToast(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`, { id: collaborativeViews.successNoticeId })
   }
@@ -1395,7 +1396,7 @@ export default function ServicesReal() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(SERVICE_UI_STATE_KEY, JSON.stringify({
+    writeOptionalStorage(SERVICE_UI_STATE_KEY, JSON.stringify({
       activeTab,
       fontSize,
       rowDensity,
@@ -1449,7 +1450,7 @@ export default function ServicesReal() {
     return () => {
       if (typeof window === 'undefined') return
       const current = readServiceUiState() || {}
-      window.localStorage.setItem(SERVICE_UI_STATE_KEY, JSON.stringify({
+      writeOptionalStorage(SERVICE_UI_STATE_KEY, JSON.stringify({
         ...current,
         lastVisitedAt: Date.now()
       }))

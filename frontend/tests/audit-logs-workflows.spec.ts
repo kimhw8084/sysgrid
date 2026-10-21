@@ -3,6 +3,7 @@ import { AuditLogsView } from './pom/AuditLogsView';
 import { createAsset, createConnection, resetBrowserState, seedOperationalScenario, seedRackScenario } from './helpers/sysgrid';
 import { test } from './helpers/sysgrid-test';
 import { expectReadableGridText } from './helpers/grid-contrast';
+import { readFile } from 'node:fs/promises';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1';
 
@@ -180,4 +181,106 @@ test.describe('Audit Logs Workflows', () => {
     await expect(page).toHaveURL(new RegExp(`/racks\\?id=${rackA1.id}$`));
     await expect(page.getByText(`${rackA1.name} Summary`, { exact: true })).toBeVisible();
   });
+});
+
+for (const zone of ['America/Chicago', 'Asia/Seoul', 'UTC']) test.describe(`Audit local calendar in ${zone}`, () => {
+  test.use({ timezoneId: zone });
+  for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [390, 1440]) {
+    test(`native Audit dates preserve displayed days, DST bounds and loaded export in ${theme} at ${width}px`, async ({ page, sysApi: request }, testInfo) => {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await resetBrowserState(page);
+      expect((await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy();
+      await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme);
+      const device = await createAsset(request, { name: `Calendar ${zone} ${theme} ${width} ${Date.now()}`, system: 'Calendar range proof' });
+      const response = await request.get(`${apiBase}/audit?target_table=devices&target_id=${device.id}`);
+      expect(response.ok()).toBeTruthy();
+      const original = await response.json();
+      expect(original.length).toBeGreaterThan(0);
+      const errors: string[] = [];
+      const queries: URL[] = [];
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('request', outgoing => { if (new URL(outgoing.url()).pathname === '/api/v1/audit') queries.push(new URL(outgoing.url())); });
+      await page.goto(`/logs?target_table=devices&target_id=${device.id}`);
+      const rows = page.locator('.ag-center-cols-container .ag-row');
+      await expect(rows).toHaveCount(original.length);
+      const day = await page.evaluate(timestamp => {
+        const value = new Date(timestamp.endsWith('Z') ? timestamp : `${timestamp}Z`);
+        return `${String(value.getFullYear()).padStart(4, '0')}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+      }, original[0].timestamp);
+      const start = page.getByLabel('Audit start date', { exact: true });
+      const end = page.getByLabel('Audit end date', { exact: true });
+      await end.fill(day);
+      const selected = page.waitForResponse(incoming => {
+        const url = new URL(incoming.url());
+        return url.pathname === '/api/v1/audit' && Boolean(url.searchParams.get('start_at')) && Boolean(url.searchParams.get('end_before'));
+      });
+      await start.fill(day);
+      expect((await selected).status()).toBe(200);
+      await expect(rows).toHaveCount(original.length);
+      await expect(page.getByText('Complete matching scope', { exact: true })).toBeVisible();
+      const downloadPromise = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'Export loaded CSV', exact: true }).click();
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toMatch(/^SysGrid_AuditLoadedResult_\d{4}-\d{2}-\d{2}\.csv$/);
+      const csv = await readFile((await download.path())!, 'utf8');
+      const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+      const exported = csv.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+      expect(exported.slice(1)).toEqual(original.map((log: any) => [log.timestamp, log.action, log.user_id, log.target_table, log.target_id, log.description, ''].map(quote).join(',')));
+
+      const historicalDays = zone === 'America/Chicago' ? [
+        ['2024-03-10', '2024-03-10T06:00:00.000Z', '2024-03-11T05:00:00.000Z'],
+        ['2024-11-03', '2024-11-03T05:00:00.000Z', '2024-11-04T06:00:00.000Z'],
+      ] : zone === 'Asia/Seoul' ? [
+        ['2024-03-10', '2024-03-09T15:00:00.000Z', '2024-03-10T15:00:00.000Z'],
+        ['2024-11-03', '2024-11-02T15:00:00.000Z', '2024-11-03T15:00:00.000Z'],
+      ] : [
+        ['2024-03-10', '2024-03-10T00:00:00.000Z', '2024-03-11T00:00:00.000Z'],
+        ['2024-11-03', '2024-11-03T00:00:00.000Z', '2024-11-04T00:00:00.000Z'],
+      ];
+      for (const [calendar, lower, upper] of historicalDays) {
+        await start.fill('');
+        await end.fill(calendar);
+        const pending = page.waitForResponse(incoming => {
+          const url = new URL(incoming.url());
+          return url.pathname === '/api/v1/audit' && url.searchParams.get('start_at') === lower && url.searchParams.get('end_before') === upper;
+        });
+        await start.fill(calendar);
+        const filtered = await pending;
+        expect(filtered.status()).toBe(200);
+        expect((await filtered.json()).map((log: any) => log.id)).toEqual(original.filter((log: any) => {
+          const instant = Date.parse(log.timestamp.endsWith('Z') ? log.timestamp : `${log.timestamp}Z`);
+          return instant >= Date.parse(lower) && instant < Date.parse(upper);
+        }).map((log: any) => log.id));
+        await expect(rows).toHaveCount(0); // These fixed 2024 days precede this release's newly written history.
+      }
+      const beforeInvalid = queries.length;
+      await start.fill('2024-11-04');
+      await expect(page.getByRole('alert').filter({ hasText: 'Start date must be on or before end date.' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Export loaded CSV', exact: true })).toBeDisabled();
+      await expect(start).toHaveAttribute('aria-invalid', 'true');
+      await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+      expect(queries).toHaveLength(beforeInvalid);
+      expect(queries.every(url => !url.searchParams.has('start_date') && !url.searchParams.has('end_date'))).toBe(true);
+      const geometry = await page.locator('[data-audit-date-range]').evaluate(group => {
+        const box = group.getBoundingClientRect();
+        return { documentWidth: document.documentElement.scrollWidth, viewport: innerWidth, inputs: [...group.querySelectorAll('input')].map(input => {
+          const child = input.getBoundingClientRect();
+          return { withinGroup: child.left >= box.left && child.right <= box.right, overflow: input.scrollWidth > input.clientWidth + 1 };
+        }) };
+      });
+      await testInfo.attach('audit-local-calendar-geometry', { body: JSON.stringify(geometry), contentType: 'application/json' });
+      expect(geometry.documentWidth).toBeLessThanOrEqual(width);
+      expect(geometry.inputs).toHaveLength(2);
+      expect(geometry.inputs.every(input => input.withinGroup && !input.overflow)).toBe(true);
+      await expectReadableGridText(page, testInfo, 'Audit local calendar', '[data-audit-date-range] span, #audit-date-range-error');
+      await page.screenshot({ path: testInfo.outputPath(`audit-calendar-${zone.replace('/', '-')}-${theme}-${width}.png`), animations: 'disabled' });
+      await start.fill('');
+      await end.fill('');
+      await expect(page.locator('#audit-date-range-error')).toHaveCount(0);
+      await expect(rows).toHaveCount(original.length);
+      await expect(page.getByRole('button', { name: 'Export loaded CSV', exact: true })).toBeEnabled();
+      expect(errors).toEqual([]);
+    });
+  }
 });

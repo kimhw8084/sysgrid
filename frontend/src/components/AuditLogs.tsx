@@ -13,7 +13,7 @@ import { ModulePolicyButton } from '../policy/ModulePolicy'
 import {
   buildAuditQueryUrl,
   buildAuditExportFileName,
-  createAuditQueryDescriptor,
+  createLocalAuditQueryDescriptor,
   getAuditQueryKey,
   parseAuditResponse,
 } from './audit/auditQuery'
@@ -46,7 +46,7 @@ export default function AuditLogs() {
   }, [])
 
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
-  const auditQuery = useMemo(() => createAuditQueryDescriptor({
+  const auditQuery = useMemo(() => createLocalAuditQueryDescriptor({
     start_date: dateRange.start,
     end_date: dateRange.end,
     target_table: targetTableParam,
@@ -57,6 +57,7 @@ export default function AuditLogs() {
 
   const { data: auditResult, isLoading } = useQuery({
     queryKey: getAuditQueryKey(auditQuery),
+    enabled: !auditQuery.range_error,
     queryFn: async () => {
       const res = await apiFetch(buildAuditQueryUrl(auditQuery))
       return parseAuditResponse<any>(res, auditQuery)
@@ -64,7 +65,7 @@ export default function AuditLogs() {
   })
   const logs = auditResult?.items || []
   const scope = auditResult?.scope
-  const scopeText = scope?.complete
+  const scopeText = auditQuery.range_error ? 'Date range requires review' : scope?.complete
     ? 'Complete matching scope'
     : `Loaded ${logs.length} records${scope?.hasMore ? ' · more matching records' : ' · matching scope is bounded'}`
 
@@ -122,7 +123,7 @@ export default function AuditLogs() {
       width: 180, 
       sortable: true, 
       filter: 'agDateColumnFilter', 
-      pinned: 'left' as const,
+      pinned: isMobileLayout ? null : 'left' as const,
       cellClass: 'text-center font-bold text-blue-400', 
       headerClass: 'text-center', 
       cellRenderer: (p: any) => {
@@ -140,6 +141,7 @@ export default function AuditLogs() {
       field: 'action', 
       headerName: 'OPERATION', 
       width: 120,
+      minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 8),
       filter: true,
       cellClass: 'text-center',
       headerClass: 'text-center',
@@ -162,6 +164,8 @@ export default function AuditLogs() {
         field: 'user_id', 
         headerName: 'ADMINISTRATOR', 
         width: 140, 
+        // Short actor values must not let autosizing clip the full heading.
+        minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 11),
         filter: true, 
         cellClass: 'text-center font-bold text-white', 
         headerClass: 'text-center',
@@ -223,14 +227,14 @@ export default function AuditLogs() {
               >
                 <Search size={14} />
               </ModulePolicyButton>
-              <button onClick={() => setActiveLog(params.data)} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload" aria-label="View change payload">
+              <button onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setActiveLog(params.data) }} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload" aria-label="View change payload">
                 <Layers size={14} />
               </button>
             </div>
           )
         }
     }
-  ], [navigate])
+  ], [navigate, isMobileLayout, fontSize])
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col overflow-y-auto bg-[var(--surface-base)]" data-audit-ledger="true">
@@ -282,19 +286,19 @@ export default function AuditLogs() {
           }
           right={
             <>
-              <div data-audit-date-range="true" className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--grid-border)] bg-[var(--surface-base)] px-3 py-2">
+              <div data-audit-date-range="true" role="group" aria-label="Filter by local calendar dates" className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--grid-border)] bg-[var(--surface-base)] px-3 py-2">
                 <Calendar size={14} className="ml-1 text-blue-500" />
                 <div className="flex flex-col">
                   <span className="text-xs text-[var(--text-secondary)]">Start</span>
-                  <input type="date" aria-label="Audit start date" value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="min-h-9 bg-transparent text-xs text-[var(--text-primary)]" />
+                  <input type="date" min="0001-01-01" max="9999-12-31" aria-label="Audit start date" aria-invalid={Boolean(auditQuery.range_error)} aria-describedby={auditQuery.range_error ? 'audit-date-range-error' : undefined} value={dateRange.start} onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="min-h-9 bg-transparent text-xs text-[var(--text-primary)]" />
                 </div>
                 <div className="mx-1 h-6 w-px bg-white/5" />
                 <div className="flex flex-col">
                   <span className="text-xs text-[var(--text-secondary)]">End</span>
-                  <input type="date" aria-label="Audit end date" value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="min-h-9 bg-transparent text-xs text-[var(--text-primary)]" />
+                  <input type="date" min="0001-01-01" max="9999-12-31" aria-label="Audit end date" aria-invalid={Boolean(auditQuery.range_error)} aria-describedby={auditQuery.range_error ? 'audit-date-range-error' : undefined} value={dateRange.end} onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="min-h-9 bg-transparent text-xs text-[var(--text-primary)]" />
                 </div>
               </div>
-              <ToolbarButton onClick={handleExportCSV} variant="primary" className="px-5 py-3">
+              <ToolbarButton onClick={handleExportCSV} disabled={Boolean(auditQuery.range_error)} variant="primary" className="px-5 py-3">
                 <span className="flex items-center gap-2">
                   <Download size={14} /> Export loaded CSV
                 </span>
@@ -302,6 +306,7 @@ export default function AuditLogs() {
             </>
           }
         />
+        {auditQuery.range_error && <p id="audit-date-range-error" role="alert" className="mt-2 text-sm font-medium text-[var(--state-danger)]">{auditQuery.range_error}</p>}
       </div>
 
       <AnimatePresence>
@@ -516,7 +521,9 @@ export default function AuditLogs() {
             justify-content: center !important; 
             color: var(--text-secondary) !important;
         }
-        [data-audit-ledger] .ag-header-cell[col-id="audit-actions"] .ag-header-cell-text {
+        [data-audit-ledger] .ag-header-cell[col-id="audit-actions"] .ag-header-cell-text,
+        [data-audit-ledger] .ag-header-cell[col-id="action"] .ag-header-cell-text,
+        [data-audit-ledger] .ag-header-cell[col-id="user_id"] .ag-header-cell-text {
             white-space: nowrap !important;
             word-break: normal !important;
             overflow-wrap: normal !important;

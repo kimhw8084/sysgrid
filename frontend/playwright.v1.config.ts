@@ -7,6 +7,7 @@ export default defineConfig({
     /(^|[\\/])api-client-transport\.spec\.ts$/,
     /(^|[\\/])monitoring-preference-race\.spec\.ts$/,
     /(^|[\\/])service-preference-race\.spec\.ts$/,
+    /(^|[\\/])workspace-storage-recovery\.spec\.ts$/,
     /(^|[\\/])overlay-audit\.spec\.ts$/,
     /(^|[\\/])monitoring-logic-editor\.spec\.ts$/,
     /(^|[\\/])notification-layout\.spec\.ts$/,

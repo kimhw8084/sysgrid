@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useSearchParams } from 'react-router-dom'
 import { usePageLeaveGuard } from './workspaceDeparture'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './optionalStorage'
 import {
   applyOperationalColumnState,
   getOperationalColumnLayoutSnapshot,
@@ -18,7 +19,7 @@ export function useWorkspacePreferencePresence(keys: {
     const read = (key: string): unknown => {
       if (typeof window === 'undefined') return null
       try {
-        const raw = window.localStorage.getItem(key)
+        const raw = readOptionalStorage(key)
         return raw === null ? null : JSON.parse(raw)
       } catch {
         return null
@@ -44,7 +45,7 @@ export function usePersistentJsonState<T>(
       return typeof fallback === 'function' ? (fallback as () => T)() : fallback
     }
     try {
-      const raw = window.localStorage.getItem(storageKey)
+      const raw = readOptionalStorage(storageKey)
       if (raw == null) {
         return typeof fallback === 'function' ? (fallback as () => T)() : fallback
       }
@@ -57,7 +58,7 @@ export function usePersistentJsonState<T>(
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(storageKey, JSON.stringify(value))
+    writeOptionalStorage(storageKey, JSON.stringify(value))
   }, [storageKey, value])
 
   return [value, setValue] as const
@@ -91,17 +92,17 @@ export function useOperationalWorkspaceViewState<TSavedView, TWorkingState>({
     null,
     () => {
       if (typeof window === 'undefined') return null
-      return window.localStorage.getItem(activeViewStorageKey)
+      return readOptionalStorage(activeViewStorageKey)
     }
   )
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (activeViewId) {
-      window.localStorage.setItem(activeViewStorageKey, activeViewId)
+      writeOptionalStorage(activeViewStorageKey, activeViewId)
       return
     }
-    window.localStorage.removeItem(activeViewStorageKey)
+    removeOptionalStorage(activeViewStorageKey)
   }, [activeViewId, activeViewStorageKey])
 
   return {
@@ -121,9 +122,9 @@ export function useWorkspaceSessionValue<T>(
 ) {
   const [value, setValue] = useState<T>(() => {
     if (typeof window === 'undefined') return nextValueFactory()
-    const isFirstLoad = !window.sessionStorage.getItem(sessionKey)
+    const isFirstLoad = !readOptionalStorage(sessionKey, 'sessionStorage')
     if (isFirstLoad) {
-      window.sessionStorage.setItem(sessionKey, 'true')
+      writeOptionalStorage(sessionKey, 'true', 'sessionStorage')
       return initialValue
     }
     return nextValueFactory()

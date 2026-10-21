@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { showWorkspaceRevertToast, showWorkspaceToast } from './shared/WorkspaceToast'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import { apiFetch } from '../api/apiClient'
 import { buildMonitoringFormErrors, getMonitoringTabErrorCounts } from '../utils/monitoringValidation'
 import {
@@ -205,7 +206,7 @@ const MONITORING_PERSISTED_COLUMN_IDS = new Set([
 const readJsonStorage = <T,>(storageKey: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback
   try {
-    const raw = window.localStorage.getItem(storageKey)
+    const raw = readOptionalStorage(storageKey)
     return raw == null ? fallback : JSON.parse(raw) as T
   } catch {
     return fallback
@@ -300,7 +301,7 @@ const normalizeMonitoringWorkspaceState = (value: any) => {
 
 const readMonitoringWorkspaceStateFromLocalStorage = () => normalizeMonitoringWorkspaceState({
   savedViews: readJsonStorage<any[]>(MONITORING_VIEW_STORAGE_KEY, []),
-  activeViewId: typeof window === 'undefined' ? null : window.localStorage.getItem(MONITORING_ACTIVE_VIEW_KEY),
+  activeViewId: readOptionalStorage(MONITORING_ACTIVE_VIEW_KEY),
   favoriteIds: readJsonStorage<number[]>(MONITORING_FAVORITES_STORAGE_KEY, []),
   watchIds: readJsonStorage<number[]>(MONITORING_WATCH_STORAGE_KEY, []),
   uiState: readJsonStorage(MONITORING_UI_STATE_KEY, null),
@@ -521,7 +522,7 @@ export default function MonitoringGrid() {
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_monitoring_session_init',
     null,
-    () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(MONITORING_ACTIVE_VIEW_KEY))
+    () => initialWorkspaceState?.activeViewId ?? readOptionalStorage(MONITORING_ACTIVE_VIEW_KEY)
   )
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(MONITORING_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [])
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(MONITORING_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [])
@@ -1014,8 +1015,8 @@ export default function MonitoringGrid() {
   const setCollaborativeActiveViewId = useCallback((id: string | null) => {
     setActiveViewId(id)
     if (typeof window !== 'undefined') {
-      if (id) window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, id)
-      else window.localStorage.removeItem(MONITORING_ACTIVE_VIEW_KEY)
+      if (id) writeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY, id)
+      else removeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY)
     }
   }, [])
 
@@ -1058,7 +1059,7 @@ export default function MonitoringGrid() {
     setActiveViewId(viewId)
     collaborativeViews.setViewLink(viewId)
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, viewId)
+      writeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY, viewId)
     }
     requestAnimationFrame(() => {
       if (gridRef.current?.api) {
@@ -1109,9 +1110,9 @@ export default function MonitoringGrid() {
       setActiveViewId(result.view.id)
       collaborativeViews.setViewLink(result.view.id)
       setNewViewName('')
-      if (typeof window !== 'undefined') window.localStorage.setItem(MONITORING_ACTIVE_VIEW_KEY, result.view.id)
+      if (typeof window !== 'undefined') writeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY, result.view.id)
     }
-    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `Saved ${trimmed} locally; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
+    showWorkspaceToast(result.persisted ? `Saved personal view ${trimmed}` : `${trimmed} is available in this tab; server unavailable`, { type: result.persisted ? 'success' : 'error', id: result.persisted ? collaborativeViews.successNoticeId : undefined })
   }
 
   const applySystemDefault = async () => {
@@ -1120,7 +1121,7 @@ export default function MonitoringGrid() {
     collaborativeViews.setViewLink(null)
     setTransientManualColumnWidths(false)
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(MONITORING_ACTIVE_VIEW_KEY)
+      removeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY)
     }
     setFontSize(11)
     setRowDensity(8)
@@ -1172,7 +1173,7 @@ export default function MonitoringGrid() {
     if (activeViewId === viewId) {
       setActiveViewId(null)
       collaborativeViews.setViewLink(null)
-      if (typeof window !== 'undefined') window.localStorage.removeItem(MONITORING_ACTIVE_VIEW_KEY)
+      if (typeof window !== 'undefined') removeOptionalStorage(MONITORING_ACTIVE_VIEW_KEY)
     }
     showWorkspaceToast(result.persisted ? `Deleted ${view.name}` : `Removed local fallback ${view.name}`, { id: collaborativeViews.successNoticeId })
   }
@@ -1231,8 +1232,8 @@ export default function MonitoringGrid() {
        // @ts-ignore
        window.__DEBUG_ALL_ITEMS__ = allItems
        try {
-         window.sessionStorage.setItem(MONITORING_DETAIL_CACHE_KEY, JSON.stringify(allItems))
-         window.localStorage.setItem(MONITORING_DETAIL_CACHE_KEY, JSON.stringify(allItems))
+         writeOptionalStorage(MONITORING_DETAIL_CACHE_KEY, JSON.stringify(allItems), 'sessionStorage')
+         writeOptionalStorage(MONITORING_DETAIL_CACHE_KEY, JSON.stringify(allItems))
        } catch {
          // Session storage is an optimization for deep-link recovery only.
        }
@@ -1446,7 +1447,7 @@ export default function MonitoringGrid() {
   }, [bulkDraft, expandedBulkSection, selectedItems])
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(MONITORING_UI_STATE_KEY, JSON.stringify({
+    writeOptionalStorage(MONITORING_UI_STATE_KEY, JSON.stringify({
       activeTab,
       fontSize,
       rowDensity,
@@ -1500,7 +1501,7 @@ export default function MonitoringGrid() {
     return () => {
       if (typeof window === 'undefined') return
       const current = readMonitoringUiState() || {}
-      window.localStorage.setItem(MONITORING_UI_STATE_KEY, JSON.stringify({
+      writeOptionalStorage(MONITORING_UI_STATE_KEY, JSON.stringify({
         ...current,
         lastVisitedAt: Date.now()
       }))

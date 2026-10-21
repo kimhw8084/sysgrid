@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { showWorkspaceToast } from './shared/WorkspaceToast'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import {
   useOperationalRowInteractions,
   useOperationalGroupedSelection,
@@ -252,7 +253,7 @@ const NETWORK_DEFAULT_COLUMN_ORDER_MAP = new Map(NETWORK_DEFAULT_COLUMN_ORDER.ma
 const readJsonStorage = <T,>(storageKey: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback
   try {
-    const raw = window.localStorage.getItem(storageKey)
+    const raw = readOptionalStorage(storageKey)
     return raw == null ? fallback : JSON.parse(raw) as T
   } catch {
     return fallback
@@ -356,7 +357,7 @@ const normalizeNetworkWorkspaceState = (value: any) => {
 
 const readNetworkWorkspaceStateFromLocalStorage = () => normalizeNetworkWorkspaceState({
   savedViews: readJsonStorage<any[]>(NETWORK_VIEW_STORAGE_KEY, []),
-  activeViewId: typeof window === 'undefined' ? null : window.localStorage.getItem(NETWORK_ACTIVE_VIEW_KEY),
+  activeViewId: readOptionalStorage(NETWORK_ACTIVE_VIEW_KEY),
   favoriteIds: readJsonStorage<number[]>(NETWORK_FAVORITES_STORAGE_KEY, []),
   watchIds: readJsonStorage<number[]>(NETWORK_WATCH_STORAGE_KEY, []),
   uiState: readJsonStorage(NETWORK_UI_STATE_KEY, null),
@@ -721,7 +722,7 @@ export default function NetworkReal() {
   const [activeViewId, setActiveViewId] = useWorkspaceSessionValue<string | null>(
     'sysgrid_network_session_init',
     null,
-    () => initialWorkspaceState?.activeViewId ?? (typeof window === 'undefined' ? null : window.localStorage.getItem(NETWORK_ACTIVE_VIEW_KEY))
+    () => initialWorkspaceState?.activeViewId ?? readOptionalStorage(NETWORK_ACTIVE_VIEW_KEY)
   )
   const [favoriteIds, setFavoriteIds] = usePersistentJsonState<number[]>(NETWORK_FAVORITES_STORAGE_KEY, initialWorkspaceState?.favoriteIds ?? [], normalizeNetworkIdList)
   const [watchIds, setWatchIds] = usePersistentJsonState<number[]>(NETWORK_WATCH_STORAGE_KEY, initialWorkspaceState?.watchIds ?? [], normalizeNetworkIdList)
@@ -1149,7 +1150,7 @@ export default function NetworkReal() {
     setGridSortModel((config.sortModel && config.sortModel.length > 0) ? config.sortModel : [{ colId: 'favorite', sort: 'desc' }])
     setActiveViewId(viewId)
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(NETWORK_ACTIVE_VIEW_KEY, viewId)
+      writeOptionalStorage(NETWORK_ACTIVE_VIEW_KEY, viewId)
     }
     requestAnimationFrame(() => {
       if (gridRef.current?.api) {
@@ -1172,8 +1173,8 @@ export default function NetworkReal() {
     setSavedViews(nextViews)
     setActiveViewId(viewId)
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(NETWORK_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
-      window.localStorage.setItem(NETWORK_ACTIVE_VIEW_KEY, viewId)
+      writeOptionalStorage(NETWORK_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
+      writeOptionalStorage(NETWORK_ACTIVE_VIEW_KEY, viewId)
     }
     showWorkspaceToast(`Saved current table to ${nextViews.find((view) => view.id === viewId)?.name}`)
   }
@@ -1200,8 +1201,8 @@ export default function NetworkReal() {
     setActiveViewId(nextId)
     setNewViewName('')
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(NETWORK_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
-      window.localStorage.setItem(NETWORK_ACTIVE_VIEW_KEY, nextId)
+      writeOptionalStorage(NETWORK_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
+      writeOptionalStorage(NETWORK_ACTIVE_VIEW_KEY, nextId)
     }
     showWorkspaceToast(`Saved new view ${trimmed}`)
   }
@@ -1210,7 +1211,7 @@ export default function NetworkReal() {
     setActiveViewId(null)
     setTransientManualColumnWidths(false)
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(NETWORK_ACTIVE_VIEW_KEY)
+      removeOptionalStorage(NETWORK_ACTIVE_VIEW_KEY)
     }
     setFontSize(11)
     setRowDensity(8)
@@ -1244,11 +1245,11 @@ export default function NetworkReal() {
         if (activeViewId === viewId) {
           setActiveViewId(null)
           if (typeof window !== 'undefined') {
-             window.localStorage.removeItem(NETWORK_ACTIVE_VIEW_KEY)
+             removeOptionalStorage(NETWORK_ACTIVE_VIEW_KEY)
           }
         }
         if (typeof window !== 'undefined') {
-          window.localStorage.setItem(NETWORK_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
+          writeOptionalStorage(NETWORK_VIEW_STORAGE_KEY, JSON.stringify(nextViews))
         }
         showWorkspaceToast(`Deleted view ${view.name}`)
       }
@@ -1554,7 +1555,7 @@ export default function NetworkReal() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(NETWORK_UI_STATE_KEY, JSON.stringify({
+    writeOptionalStorage(NETWORK_UI_STATE_KEY, JSON.stringify({
       activeTab,
       fontSize,
       rowDensity,
@@ -1608,7 +1609,7 @@ export default function NetworkReal() {
     return () => {
       if (typeof window === 'undefined') return
       const current = readNetworkUiState() || {}
-      window.localStorage.setItem(NETWORK_UI_STATE_KEY, JSON.stringify({
+      writeOptionalStorage(NETWORK_UI_STATE_KEY, JSON.stringify({
         ...current,
         lastVisitedAt: Date.now()
       }))
