@@ -1,11 +1,48 @@
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { clickResilientButton, createAsset, createMonitoring, createService, resetBrowserState } from './helpers/sysgrid'
+import { clickResilientButton, createAsset, createMonitoring, createService, expectHeaderBodyAligned, resetBrowserState } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
 test.describe('readability measurement controls', () => {
+  test('alignment measurement observes one grid revision during resizing', async ({ page }) => {
+    await page.setContent('<div class="ag-header-cell" col-id="user_id" style="position:absolute;left:20px;top:20px;width:150px;height:30px">Heading</div><div class="ag-row" row-index="0"><div class="ag-cell" col-id="user_id" style="position:absolute;left:20px;top:60px;width:150px;height:30px">Actor</div></div>')
+    const resize = () => page.evaluate(() => document.querySelectorAll<HTMLElement>('[col-id="user_id"]').forEach(node => {
+      node.style.left = '40px'
+      node.style.width = '166px'
+    }))
+    const wrap = (locator: Locator): Locator => new Proxy(locator, {
+      get(target, key) {
+        if (key === 'first') return () => wrap(target.first())
+        if (key === 'evaluate') return async (operation: any, argument: any) => {
+          const value = await target.evaluate(operation, argument)
+          await resize()
+          return value
+        }
+        const value = Reflect.get(target, key)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    const controlled = new Proxy(page, {
+      get(target, key) {
+        if (key === 'locator') return (selector: string) => wrap(target.locator(selector))
+        if (key === 'evaluate') return async (operation: any, argument: any) => {
+          await resize()
+          return target.evaluate(operation, argument)
+        }
+        const value = Reflect.get(target, key)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    await expectHeaderBodyAligned(controlled, 'user_id', 1, 1)
+  })
+
+  for (const fault of ['position', 'width']) test(`alignment measurement rejects a real ${fault} mismatch`, async ({ page }) => {
+    await page.setContent(`<div class="ag-header-cell" col-id="user_id" style="position:absolute;left:20px;top:20px;width:150px;height:30px">Heading</div><div class="ag-row" row-index="0"><div class="ag-cell" col-id="user_id" style="position:absolute;left:${fault === 'position' ? 25 : 20}px;top:60px;width:${fault === 'width' ? 155 : 150}px;height:30px">Actor</div></div>`)
+    await expect(expectHeaderBodyAligned(page, 'user_id', 1, 1)).rejects.toThrow('Header/Body alignment mismatch')
+  })
+
   test('measures the current label after replacement during locator resolution', async ({ page }, testInfo) => {
     await page.setContent('<span id="readability-control" style="display:inline-block;font:14px Arial;white-space:nowrap">Audit Actions</span>')
     const label = page.locator('#readability-control')
@@ -211,6 +248,110 @@ async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, descript
   expect(geometry.withinCell, 'Timestamp text must not bleed into another audit row').toBeTruthy()
   expect(geometry.completeTitle, 'The complete value must remain available when visually truncated').toBeTruthy()
   expect(geometry.width).toBeGreaterThan(0)
+}
+
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [1440, 390, 320]) {
+  test(`audit Administrator and Operation headers stay whole through empty and populated results in ${theme} at ${width}`, async ({ page, sysApi }, testInfo) => {
+    await page.setViewportSize({ width, height: width <= 390 ? 844 : 1000 })
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+    await resetBrowserState(page)
+    expect((await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const asset = await createAsset(sysApi, { name: `Administrator heading ${theme}-${width}-${Date.now()}`, system: 'Audit heading proof' })
+    await page.goto(`/logs?target_table=devices&target_id=${asset.id}`)
+    const rows = page.locator('.ag-center-cols-container .ag-row')
+    await expect(rows).toHaveCount(1)
+    const end = page.getByLabel('Audit end date', { exact: true })
+    const emptyResponse = page.waitForResponse(response => {
+      const url = new URL(response.url())
+      return url.pathname === '/api/v1/audit' && url.searchParams.get('target_id') === String(asset.id) && url.searchParams.has('end_before')
+    })
+    await end.fill('2000-01-01')
+    const response = await emptyResponse
+    expect(response.ok()).toBeTruthy()
+    expect(await response.json()).toEqual([])
+    await expect(rows).toHaveCount(0)
+    await page.waitForLoadState('networkidle')
+    const checkHeader = async (state: string) => {
+      await expect(page.locator('.ag-pinned-left-header .ag-header-cell[col-id="timestamp"]')).toHaveCount(page.viewportSize()!.width < 768 ? 0 : 1)
+      await page.locator('[data-audit-ledger] .ag-header').scrollIntoViewIfNeeded()
+      for (const [columnId, label, stem] of [['user_id', 'ADMINISTRATOR', 'administrator'], ['action', 'OPERATION', 'operation']]) {
+        const header = page.locator(`.ag-header-cell[col-id="${columnId}"] .ag-header-cell-text`)
+        await page.evaluate(columnId => {
+          const cell = document.querySelector<HTMLElement>(`.ag-header-cell[col-id="${columnId}"]`)!
+          const scroller = document.querySelector<HTMLElement>('.ag-center-cols-viewport')!
+          scroller.scrollLeft = cell.offsetLeft
+        }, columnId)
+        await expect(header).toHaveText(label)
+        await expect(header).toBeInViewport({ ratio: 1 })
+        if (await rows.count()) {
+          await expectHeaderBodyAligned(page, columnId, 1, 1)
+        }
+        await page.screenshot({ path: testInfo.outputPath(`audit-${stem}-${state}.png`), animations: 'disabled' })
+        await singleReadableLine(header, `${label} header ${state}`, testInfo, { selector: `.ag-header-cell[col-id="${columnId}"] .ag-header-cell-text` })
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
+    }
+    await checkHeader('empty-default')
+    for (const boundary of [{ key: 'ArrowLeft', value: '8' }, { key: 'ArrowRight', value: '14' }]) {
+      await page.getByRole('button', { name: 'Toggle density controls', exact: true }).click()
+      const font = page.getByRole('slider', { name: 'Audit font size', exact: true })
+      await font.scrollIntoViewIfNeeded()
+      await font.focus()
+      for (let step = 0; step < 6; step++) await page.keyboard.press(boundary.key)
+      await expect(font).toHaveValue(boundary.value)
+      await page.getByRole('button', { name: 'Close density controls', exact: true }).click()
+      await expect(font).toBeHidden()
+      await checkHeader(`empty-font-${boundary.value}`)
+      await end.clear()
+      await expect(rows).toHaveCount(1)
+      await page.waitForLoadState('networkidle')
+      await checkHeader(`populated-font-${boundary.value}`)
+      await end.fill('2000-01-01')
+      await expect(rows).toHaveCount(0)
+      await page.waitForLoadState('networkidle')
+      await checkHeader(`empty-again-font-${boundary.value}`)
+    }
+    await end.clear()
+    await expect(rows).toHaveCount(1)
+    await page.waitForLoadState('networkidle')
+    await checkHeader('repopulated')
+    await page.setViewportSize({ width: width <= 390 ? 1440 : 390, height: width <= 390 ? 1000 : 844 })
+    await checkHeader('resized')
+    await page.setViewportSize({ width, height: width <= 390 ? 844 : 1000 })
+    await checkHeader('original-viewport')
+    const actorHeader = page.locator('.ag-header-cell[col-id="user_id"]')
+    await page.evaluate(() => {
+      const cell = document.querySelector<HTMLElement>('.ag-header-cell[col-id="user_id"]')!
+      const scroller = document.querySelector<HTMLElement>('.ag-center-cols-viewport')!
+      scroller.scrollLeft = Math.max(0, cell.offsetLeft + cell.offsetWidth - scroller.clientWidth + 40)
+    })
+    const resize = actorHeader.locator('.ag-header-cell-resize')
+    await expect(resize).toBeInViewport({ ratio: 1 })
+    const originalWidth = (await actorHeader.boundingBox())!.width
+    const handle = await resize.boundingBox()
+    expect(handle).not.toBeNull()
+    await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(handle!.x + handle!.width / 2 + 20, handle!.y + handle!.height / 2, { steps: 5 })
+    await page.mouse.up()
+    const manualWidth = (await actorHeader.boundingBox())!.width
+    expect(manualWidth).toBeGreaterThan(originalWidth)
+    const filtered = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/audit'
+      && new URL(response.url()).searchParams.get('target_id') === String(asset.id)
+      && new URL(response.url()).searchParams.get('end_before')?.startsWith('2001-') === true)
+    await end.fill('2001-01-01')
+    expect((await filtered).ok()).toBeTruthy()
+    await expect(rows).toHaveCount(0)
+    await page.waitForLoadState('networkidle')
+    expect((await actorHeader.boundingBox())!.width).toBe(manualWidth)
+    await end.clear()
+    await expect(rows).toHaveCount(1)
+    await page.waitForLoadState('networkidle')
+    expect((await actorHeader.boundingBox())!.width).toBe(manualWidth)
+    expect(errors).toEqual([])
+  })
 }
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {

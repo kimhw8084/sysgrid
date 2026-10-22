@@ -19,6 +19,7 @@ import { WorkspaceModal } from './shared/WorkspaceModal'
 import { WorkspaceEmptyState, WorkspaceSectionBadge } from './shared/OperationalWorkspacePrimitives'
 import { OperationalWorkspaceShell } from './shared/OperationalWorkspaceShells'
 import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
+import { readOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import { StatusPill } from './shared/StatusPill'
 import {
   PROJECT_PRIMARY_VIEWS,
@@ -218,9 +219,9 @@ const dueLabel = (value?: string | null) => {
 const readStoredState = () => {
   if (typeof window === 'undefined') return {}
   try {
-    const current = window.localStorage.getItem(STORAGE_KEY)
+    const current = readOptionalStorage(STORAGE_KEY)
     if (current) return JSON.parse(current)
-    const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY)
+    const legacy = readOptionalStorage(LEGACY_STORAGE_KEY)
     return legacy ? JSON.parse(legacy) : {}
   } catch { return {} }
 }
@@ -669,7 +670,7 @@ export default function ProjectsGolden() {
   const closeCreateProject = () => { setIsCreateOpen(false); if (projectsRoute.kind === 'new') navigate('/projects', { replace: true }) }
   const linkedSavedViewIdRef = useRef(projectSavedViewLinkedRemoteId(searchParams.get('saved_view'))); const linkedSavedViewResolvedRef = useRef(false); const linkedSavedViewInteractionRef = useRef(false); const linkedSavedViewBaselineRef = useRef<string | null>(null); const [taskHistory, setTaskHistory] = useState<Record<string, { undo: any[][]; redo: any[][] }>>({}); const [governanceModal, setGovernanceModal] = useState<{ mode: 'raid' | 'decision' | 'gate' | 'benefits'; initial?: any } | null>(null); const [outcomeMeasurementOpen, setOutcomeMeasurementOpen] = useState(false)
 
-  useEffect(() => { if (typeof window !== 'undefined') window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ search, statusFilter, priorityFilter, sortMode, timelineZoom, watchedOnly, watchedIds, recentIds, railScope, swimlane, myOwner, savedViews, lastProjectId: selectedProjectId, lastView: view })) }, [search, statusFilter, priorityFilter, sortMode, timelineZoom, watchedOnly, watchedIds, recentIds, railScope, swimlane, myOwner, savedViews, selectedProjectId, view])
+  useEffect(() => { if (typeof window !== 'undefined') writeOptionalStorage(STORAGE_KEY, JSON.stringify({ search, statusFilter, priorityFilter, sortMode, timelineZoom, watchedOnly, watchedIds, recentIds, railScope, swimlane, myOwner, savedViews, lastProjectId: selectedProjectId, lastView: view })) }, [search, statusFilter, priorityFilter, sortMode, timelineZoom, watchedOnly, watchedIds, recentIds, railScope, swimlane, myOwner, savedViews, selectedProjectId, view])
 
   const { data: projects = [], isLoading, isError, error, refetch, isFetching } = useQuery({ queryKey: ['projects'], queryFn: async () => { const response = await apiFetch('/api/v1/projects'); if (!response.ok) throw new Error(await response.text()); return response.json() }, placeholderData: (previous) => previous })
   const { data: personalSavedViewPayload, isError: isPersonalSavedViewError, error: personalSavedViewError, isFetched: isPersonalSavedViewFetched } = useQuery({ queryKey: PROJECT_PERSONAL_SAVED_VIEW_QUERY_KEY, queryFn: async () => { const response = await apiFetch('/api/v1/workspaces/projects/views'); if (!response.ok) { const body = await response.text(); const error: any = new Error(body); error.status = response.status; error.silent = response.status === 404 && body.includes('Saved views are not supported by this server.'); throw error } return response.json() }, staleTime: 30_000, retry: 1 })

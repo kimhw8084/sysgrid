@@ -20,7 +20,7 @@ from .operational_bulk import (
 )
 from .module_policy import require_module_access
 from .asset_links import require_relationship_asset
-from .service_bulk import guarded_service_bulk, service_bulk_precondition
+from .service_bulk import guarded_service_bulk, guarded_service_table_edit, service_bulk_precondition
 
 router = APIRouter(
     prefix="/logical-services",
@@ -618,6 +618,11 @@ async def bulk_action(data: dict, request: Request, db: AsyncSession = Depends(g
     ))
     await db.commit()
     return {"status": "success", **summary}
+
+
+@router.post('/table-edit')
+async def table_edit(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+    return await guarded_service_table_edit(data, request, db)
 
 @router.post("/{service_id}/mount/{device_id}")
 async def mount_service(service_id: int, device_id: int, request: Request, db: AsyncSession = Depends(get_service_db)):

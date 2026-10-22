@@ -8,6 +8,7 @@ import { dismissWorkspaceToasts, showWorkspaceToast } from '../shared/WorkspaceT
 import { useOperationalBulkWorkflow } from '../shared/useOperationalBulkWorkflow'
 import { ASSET_GOLDEN_ALLOWED_COLUMN_FIELDS } from './assetGoldenColumns'
 import { usePersistentJsonState } from '../shared/OperationalWorkspaceHooks'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from '../shared/optionalStorage'
 
 export type AssetTab = 'inventory' | 'deleted'
 export type AssetViewMode = 'grid' | 'report' | 'map'
@@ -297,12 +298,12 @@ const readStorage = () => {
   try {
     const storageKeys = [STORAGE_KEY, ...STORAGE_MIGRATION_KEYS]
     for (const key of storageKeys) {
-      const raw = window.localStorage.getItem(key)
+      const raw = readOptionalStorage(key)
       if (!raw) continue
       const parsed = JSON.parse(raw)
       const storedVersion = Number(parsed?.schemaVersion || 0)
       if (key === STORAGE_KEY && !VALID_STORAGE_VERSIONS.has(storedVersion)) {
-        window.localStorage.removeItem(key)
+        removeOptionalStorage(key)
         continue
       }
       const normalized = normalizeStoredWorkspace(
@@ -310,8 +311,8 @@ const readStorage = () => {
           ? parsed
           : { ...parsed, savedViews: mergeSavedViewsForMigration(parsed?.savedViews) }
       )
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized))
-      if (key !== STORAGE_KEY) window.localStorage.removeItem(key)
+      const saved = writeOptionalStorage(STORAGE_KEY, JSON.stringify(normalized))
+      if (saved && key !== STORAGE_KEY) removeOptionalStorage(key)
       return normalized
     }
     return null
@@ -322,7 +323,7 @@ const readStorage = () => {
 
 const writeStorage = (value: any) => {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  writeOptionalStorage(STORAGE_KEY, JSON.stringify({
     ...value,
     schemaVersion: STORAGE_SCHEMA_VERSION,
   }))

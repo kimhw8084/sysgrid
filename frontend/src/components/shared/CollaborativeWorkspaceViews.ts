@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import toast from 'react-hot-toast'
 import { apiClient } from '../../api/apiClient'
+import { readOptionalStorageEntry, writeOptionalStorage } from './optionalStorage'
 
 export type CollaborativeViewScope = 'personal' | 'team'
 export type CollaborativeViewSyncStatus = 'loading' | 'synced' | 'saving' | 'unsaved' | 'offline' | 'conflict'
@@ -290,6 +291,8 @@ export function useCollaborativeWorkspaceViews<
         ? payload.views.map((record) => mapWorkspaceViewRecord(record, sanitizeDefinition) as TView)
         : []
       let migratedActiveViewId: string | null = null
+      // Canonical hydration must survive a failed local migration/checkpoint.
+      setMergedViews(remoteViews)
 
       const activeId = activeViewIdRef.current
       const activeLocalView = activeId && !systemViewIds.has(activeId) && !isRemoteWorkspaceViewId(activeId)
@@ -302,22 +305,28 @@ export function useCollaborativeWorkspaceViews<
         if (matchingRemote) migratedActiveViewId = matchingRemote.id
       }
 
-      const migrationComplete = scope === 'team' || (typeof window !== 'undefined' && window.localStorage.getItem(migrationKey) === '1')
-      if (!migrationComplete && migrationReady) {
-        const existingNames = new Set(remoteViews.map((view) => view.name.trim().toLocaleLowerCase()))
-        const candidates = currentViewsRef.current
+      const marker = scope === 'team' ? { available: true, value: '1' } : readOptionalStorageEntry(migrationKey)
+      const existingNames = new Set(remoteViews.map((view) => view.name.trim().toLocaleLowerCase()))
+      const candidates = currentViewsRef.current
           .filter((view) => !systemViewIds.has(view.id) && !isRemoteWorkspaceViewId(view.id))
           .filter((view) => !existingNames.has(view.name.trim().toLocaleLowerCase()))
           .slice(0, MAX_LOCAL_MIGRATION_VIEWS)
+      let migrationDeferred = scope === 'personal' && migrationReady && candidates.length > 0 && (!marker.available || marker.value === 'pending')
+      if (marker.available && marker.value === null && migrationReady) {
+        // Persist intent before any remote creates. If storage is blocked, keep
+        // local views for explicit Save instead. A pending attempt is never
+        // automatically replayed after reload, even if a created view was deleted.
+        const canMigrate = candidates.length === 0 || writeOptionalStorage(migrationKey, 'pending')
         const migrated: TView[] = []
-        for (const candidate of candidates) {
+        for (const candidate of canMigrate ? candidates : []) {
           const migratedView = await createRemote(candidate.name, candidate.config)
           if (!isCurrentHydration()) return
           migrated.push(migratedView)
           if (candidate.id === activeId) migratedActiveViewId = migratedView.id
         }
         remoteViews = [...remoteViews, ...migrated]
-        if (scope === 'personal' && typeof window !== 'undefined') window.localStorage.setItem(migrationKey, '1')
+        if (canMigrate) writeOptionalStorage(migrationKey, '1')
+        else migrationDeferred = candidates.length > 0
       }
 
       setMergedViews(remoteViews)
@@ -325,7 +334,7 @@ export function useCollaborativeWorkspaceViews<
         onActiveViewIdChange?.(migratedActiveViewId)
       }
       setConflict(null)
-      setLastError(null)
+      setLastError(migrationDeferred ? 'Local views remain available. Save each personal view to synchronize it.' : null)
       setBaseStatus('synced')
     } catch (error: any) {
       if (!isCurrentHydration()) return

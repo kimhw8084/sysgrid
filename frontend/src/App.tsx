@@ -56,6 +56,7 @@ function MonitoringRoute() {
 import { QueryCache, MutationCache } from "@tanstack/react-query"
 
 import { showWorkspaceToast, WorkspaceToaster } from "./components/shared/WorkspaceToast"
+import { readOptionalStorage, writeOptionalStorage } from './components/shared/optionalStorage'
 import { PatchNotesModal, LinuxEnvModal } from './components/shared/ShellDialogs'
 
 const queryClient = new QueryClient({
@@ -179,7 +180,7 @@ function MainLayout() {
   const [showPatchNotes, setShowPatchNotes] = useState(false);
   const [showLinuxEnv, setShowLinuxEnv] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState(normalizeTheme(localStorage.getItem('sysgrid-theme')));
+  const [currentTheme, setCurrentTheme] = useState(normalizeTheme(readOptionalStorage('sysgrid-theme')));
   const modulePolicy = useModulePolicy()
 
   useRouteFocus(location, mainContentRef)
@@ -248,7 +249,7 @@ function MainLayout() {
       document.documentElement.classList.add('dark');
     }
     
-    localStorage.setItem('sysgrid-theme', normalizedTheme);
+    writeOptionalStorage('sysgrid-theme', normalizedTheme);
     toast.success(`Theme changed to ${THEMES.find(t => t.id === normalizedTheme)?.label}`);
     
     // Attempt to sync with backend if possible

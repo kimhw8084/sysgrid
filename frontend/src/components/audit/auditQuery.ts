@@ -10,6 +10,11 @@ export const buildAuditExportFileName = (date = new Date()) => (
 export interface AuditQueryDescriptor {
   start_date: string
   end_date: string
+  start_at: string
+  end_before: string
+  local_start_date: string
+  local_end_date: string
+  range_error: string
   target_table: string
   target_id: string
   limit: number
@@ -40,6 +45,11 @@ export const createAuditQueryDescriptor = (
 ): AuditQueryDescriptor => ({
   start_date: normalizeText(query.start_date),
   end_date: normalizeText(query.end_date),
+  start_at: normalizeText(query.start_at),
+  end_before: normalizeText(query.end_before),
+  local_start_date: normalizeText(query.local_start_date),
+  local_end_date: normalizeText(query.local_end_date),
+  range_error: normalizeText(query.range_error),
   target_table: normalizeText(query.target_table),
   target_id: normalizeText(query.target_id),
   limit: Math.min(AUDIT_MAX_LIMIT, normalizeInteger(query.limit, AUDIT_DEFAULT_LIMIT, AUDIT_MIN_LIMIT)),
@@ -50,6 +60,11 @@ export const getAuditQueryKey = (descriptor: AuditQueryDescriptor) => [
   'audit',
   descriptor.start_date,
   descriptor.end_date,
+  descriptor.start_at,
+  descriptor.end_before,
+  descriptor.local_start_date,
+  descriptor.local_end_date,
+  descriptor.range_error,
   descriptor.target_table,
   descriptor.target_id,
   descriptor.limit,
@@ -57,14 +72,68 @@ export const getAuditQueryKey = (descriptor: AuditQueryDescriptor) => [
 ] as const
 
 export const buildAuditQueryUrl = (descriptor: AuditQueryDescriptor) => {
+  if (descriptor.range_error) throw new Error(descriptor.range_error)
+  if ((descriptor.start_at || descriptor.end_before) && (descriptor.start_date || descriptor.end_date)) {
+    throw new Error('Use either calendar dates or explicit instants, not both')
+  }
   const params = new URLSearchParams()
   if (descriptor.start_date) params.set('start_date', descriptor.start_date)
   if (descriptor.end_date) params.set('end_date', descriptor.end_date)
+  if (descriptor.start_at) params.set('start_at', descriptor.start_at)
+  if (descriptor.end_before) params.set('end_before', descriptor.end_before)
   if (descriptor.target_table) params.set('target_table', descriptor.target_table)
   if (descriptor.target_id) params.set('target_id', descriptor.target_id)
   params.set('limit', String(descriptor.limit))
   params.set('offset', String(descriptor.offset))
   return `/api/v1/audit?${params.toString()}`
+}
+
+const parseCalendarDay = (value: string) => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!parts) return null
+  const [year, month, day] = parts.slice(1).map(Number)
+  if (year < 1) return null
+  const date = new Date(0)
+  date.setUTCFullYear(year, month - 1, day)
+  date.setUTCHours(0, 0, 0, 0)
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day ? date : null
+}
+
+const localMidnight = (calendar: Date, dayOffset: number) => {
+  const day = new Date(calendar.getTime())
+  day.setUTCDate(day.getUTCDate() + dayOffset)
+  const local = new Date(0)
+  local.setFullYear(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate())
+  local.setHours(0, 0, 0, 0)
+  return local
+}
+
+const utcYearBoundary = (year: number) => {
+  const date = new Date(0)
+  date.setUTCFullYear(year, 0, 1)
+  date.setUTCHours(0, 0, 0, 0)
+  return date.getTime()
+}
+
+export const createLocalAuditQueryDescriptor = (query: Partial<AuditQueryDescriptor> = {}): AuditQueryDescriptor => {
+  const start = normalizeText(query.start_date)
+  const end = normalizeText(query.end_date)
+  const startDay = start ? parseCalendarDay(start) : null
+  const endDay = end ? parseCalendarDay(end) : null
+  const error = (start && !startDay) || (end && !endDay)
+    ? 'Choose valid calendar dates within years 1–9999.'
+    : start && end && start > end ? 'Start date must be on or before end date.' : ''
+  const descriptor = createAuditQueryDescriptor({ ...query, start_date: '', end_date: '', start_at: '', end_before: '', local_start_date: start, local_end_date: end, range_error: error })
+  if (error) return descriptor
+  const minimum = utcYearBoundary(1)
+  if (startDay) descriptor.start_at = new Date(Math.max(minimum, localMidnight(startDay, 0).getTime())).toISOString()
+  if (endDay) {
+    const upper = localMidnight(endDay, 1).getTime()
+    // No representable backend instant reaches the following UTC year.
+    // Omitting this upper bound preserves the final stored microsecond.
+    if (upper < utcYearBoundary(10000)) descriptor.end_before = new Date(Math.max(minimum, upper)).toISOString()
+  }
+  return descriptor
 }
 
 const parseHeaderInteger = (headers: Headers, name: string, fallback: number, minimum: number, maximum?: number) => {

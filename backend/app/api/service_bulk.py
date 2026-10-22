@@ -18,6 +18,7 @@ from .utils import build_audit_log, get_audit_actor
 
 POST_FIELDS = ('edit_revision', 'status', 'service_type', 'environment', 'version', 'device_id', 'is_deleted')
 REVERSIBLE_FIELDS = frozenset(POST_FIELDS) - {'edit_revision', 'device_id'}
+TABLE_FIELDS = frozenset({'status', 'service_type', 'environment', 'purpose', 'cost', 'currency', 'purchase_type', 'installation_date'})
 
 
 def _hash(value) -> str:
@@ -239,6 +240,101 @@ async def guarded_service_bulk(data: dict, request: Request, db: AsyncSession):
         state = getattr(exc.orig, 'sqlstate', None) or getattr(exc.orig, 'pgcode', None)
         if (isinstance(code, int) and (code & 0xFF) in {5, 6}) or state in {'40001', '40P01', '55P03'}:
             raise HTTPException(409, 'Service data is busy. Review the latest records and try again.') from exc
+        raise
+    except Exception:
+        await db.rollback()
+        raise
+
+
+async def guarded_service_table_edit(data: dict, request: Request, db: AsyncSession):
+    from .logical_services import _service_scope, normalize_service_payload, require_service_edit_revision
+    try:
+        if set(data) != {'operation_id', 'rows'} or not isinstance(data['rows'], list):
+            raise HTTPException(400, 'A Service table edit requires operation_id and rows.')
+        operation_id = _token(data['operation_id'], 32, 'operation_id')
+        drafts = data['rows']
+        if not drafts or len(drafts) > 250:
+            raise HTTPException(400, 'Service table edits require between 1 and 250 rows.')
+        for draft in drafts:
+            if not isinstance(draft, dict) or set(draft) != {'id', 'expected_revision', 'changes'}:
+                raise HTTPException(400, 'Each Service draft requires id, expected_revision and changes.')
+            if isinstance(draft['id'], bool) or not isinstance(draft['id'], int):
+                raise HTTPException(400, 'Service draft ids must be positive integers.')
+            _token(draft['expected_revision'], 32, 'expected_revision')
+            if not isinstance(draft['changes'], dict) or not set(draft['changes']) <= TABLE_FIELDS:
+                raise HTTPException(400, 'Service table changes contain an unsupported field.')
+        ids = normalize_operational_bulk_ids([draft['id'] for draft in drafts])
+        if len(ids) != len(drafts):
+            raise HTTPException(400, 'Service table drafts must have unique ids.')
+        try:
+            request_hash = _hash({'contract': 'service-table-edit-v1', 'rows': sorted(drafts, key=lambda draft: draft['id'])})
+        except (ValueError, TypeError, OverflowError) as exc:
+            raise HTTPException(422, 'Service drafts must contain finite JSON values.') from exc
+        await _reserve_writer(request, db)
+        previous = await _operation_receipt(request, db, operation_id)
+        if previous is not None:
+            if previous.request_hash != request_hash:
+                raise HTTPException(409, 'operation_id already belongs to a different Service request.')
+            result = _replayed_result(previous)
+            await db.rollback()
+            return result
+        rows = {row.id: row for row in (await db.scalars(select(models.LogicalService).where(
+            models.LogicalService.id.in_(ids), _service_scope(request)).order_by(models.LogicalService.id).with_for_update())).all()}
+        # A same-operation PostgreSQL writer can finish while these row locks wait.
+        previous = await _operation_receipt(request, db, operation_id)
+        if previous is not None:
+            if previous.request_hash != request_hash:
+                raise HTTPException(409, 'operation_id already belongs to a different Service request.')
+            result = _replayed_result(previous)
+            await db.rollback()
+            return result
+        if set(rows) != set(ids):
+            raise HTTPException(404, 'One or more Services are unavailable. Nothing was changed.')
+        # Validate every revision and field before making any domain mutation.
+        changes = {}
+        for draft in drafts:
+            row = rows[draft['id']]
+            require_service_edit_revision(draft, row)
+            if row.is_deleted:
+                raise HTTPException(409, 'A selected Service was archived. Nothing was changed; reopen the table.')
+            clean = normalize_service_payload(draft['changes'])
+            changes[row.id] = {field: value for field, value in clean.items() if getattr(row, field) != value}
+        devices = {row.device_id for identity, row in rows.items() if changes[identity] and row.device_id
+                   and (row.service_type == 'OS' or changes[identity].get('service_type') == 'OS')}
+        identity = uuid4().hex
+        for service_id, fields in changes.items():
+            if not fields: continue
+            row = rows[service_id]
+            for field, value in fields.items(): setattr(row, field, value)
+            db.add(build_audit_log(request=request, action='UPDATE', target_table='logical_services', target_id=str(service_id),
+                description=f'Updated service configuration: {row.name}', changes={'device_id': row.device_id,
+                    'service_type': row.service_type, 'status': row.status, 'changed_fields': sorted(fields), 'receipt_id': identity}))
+        await db.flush()
+        await _sync_devices(db, devices)
+        changed = [service_id for service_id in ids if changes[service_id]]
+        result = {'status': 'success' if changed else 'no_op', 'selected_ids': ids, 'receipt_id': identity, 'can_revert': False,
+            **build_operational_bulk_summary(action='table_edit', selected_ids=ids, matched_ids=ids,
+                changed_ids=changed, unchanged_ids=[service_id for service_id in ids if not changes[service_id]])}
+        db.add(models.ServiceBulkReceipt(id=identity, tenant_id=request.state.tenant_id, actor_id=get_audit_actor(request),
+            operation_id=operation_id, request_hash=request_hash, schema_version=1,
+            before_state={}, post_state={}, projection_state={'device_ids': [], 'fingerprint': None}, result=result))
+        try:
+            await db.commit()
+        except IntegrityError:
+            await db.rollback()
+            previous = await _operation_receipt(request, db, operation_id)
+            if previous is None or previous.request_hash != request_hash: raise
+            return _replayed_result(previous)
+        return result
+    except StaleDataError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Services changed during this request. Nothing was changed; reopen the table.') from exc
+    except OperationalError as exc:
+        await db.rollback()
+        code = getattr(exc.orig, 'sqlite_errorcode', None)
+        state = getattr(exc.orig, 'sqlstate', None) or getattr(exc.orig, 'pgcode', None)
+        if (isinstance(code, int) and (code & 0xFF) in {5, 6}) or state in {'40001', '40P01', '55P03'}:
+            raise HTTPException(409, 'Service data is busy. Your draft is preserved; review the latest records and try again.') from exc
         raise
     except Exception:
         await db.rollback()

@@ -652,7 +652,10 @@ export async function expectColumnRenderedWidth(page: Page, colId: string, min: 
 }
 
 export async function expectHeaderBodyAligned(page: Page, colId: string, tolerancePx = 2, maxRowsToCheck = 2) {
-  const headerBox = await getGridHeaderBox(page, colId)
+  const header = page.locator(`.ag-header-cell[col-id="${colId}"]`).first()
+  await expect(header).toBeAttached({ timeout: 10000 })
+  await expect(header).toBeVisible({ timeout: 10000 })
+  const rows: number[] = []
   
   // Check multiple rows when available
   for (let r = 0; r < maxRowsToCheck; r++) {
@@ -667,7 +670,31 @@ export async function expectHeaderBodyAligned(page: Page, colId: string, toleran
       break
     }
     
-    const cellBox = await getGridCellBox(page, colId, r)
+    await expect(cellLoc).toBeAttached({ timeout: 10000 })
+    await expect(cellLoc).toBeVisible({ timeout: 10000 })
+    rows.push(r)
+  }
+
+  // Column autosizing must not occur between the header and body snapshots.
+  const geometry = await page.evaluate(({ colId, rows }) => {
+    const read = (node: Element | null) => {
+      if (!node) return null
+      const rect = node.getBoundingClientRect()
+      const style = getComputedStyle(node)
+      if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) return null
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+    }
+    return {
+      header: read(document.querySelector(`.ag-header-cell[col-id="${colId}"]`)),
+      cells: rows.map(row => read(document.querySelector(`.ag-row[row-index="${row}"] .ag-cell[col-id="${colId}"]`))),
+    }
+  }, { colId, rows })
+  const headerBox = geometry.header
+  if (!headerBox) throw new Error(`Header cell for col-id="${colId}" is not attached, hidden, or has zero width/height.`)
+  for (let index = 0; index < rows.length; index++) {
+    const r = rows[index]
+    const cellBox = geometry.cells[index]
+    if (!cellBox) throw new Error(`Body cell for col-id="${colId}" at rowIndex=${r} is not attached, hidden, or has zero width/height.`)
     const xDiff = Math.abs(headerBox.x - cellBox.x)
     const wDiff = Math.abs(headerBox.width - cellBox.width)
 

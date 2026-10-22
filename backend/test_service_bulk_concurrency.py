@@ -15,6 +15,137 @@ from test_service_stale_form import read_service
 
 
 PATH = '/api/v1/logical-services/bulk-action'
+TABLE_PATH = '/api/v1/logical-services/table-edit'
+
+
+async def table_request(c, changes):
+    rows = []
+    for identity, values in changes:
+        row = await read_service(c, identity)
+        rows.append({'id': identity, 'expected_revision': row['edit_revision'], 'changes': values})
+    return {'operation_id': uuid4().hex, 'rows': rows}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('failure', ['stale', 'invalid', 'missing', 'archived', 'foreign'])
+async def test_table_edit_rejects_whole_draft_before_any_write(service_scope, setup_db, failure):
+    c = service_scope
+    a, b = c['rows']['owned'], c['rows']['floating']
+    data = await table_request(c, [(a, {'purpose': 'Draft A'}), (b, {'purpose': 'Draft B'})])
+    expected = 409
+    if failure == 'stale':
+        peer = await c['client'].put(f'/api/v1/logical-services/{b}', headers=c['headers'], json={'purpose': 'Peer'})
+        assert peer.status_code == 200
+    elif failure == 'invalid': data['rows'][1]['changes'] = {'cost': -1}; expected = 422
+    elif failure == 'missing': data['rows'][1]['id'] = 99999999; expected = 404
+    elif failure == 'archived': data['rows'][1]['id'] = c['rows']['deleted']
+    else: data['rows'][1]['id'] = c['rows']['foreign']; expected = 404
+    before = await state(c, setup_db)
+    response = await c['client'].post(TABLE_PATH, headers=c['headers'], json=data)
+    assert response.status_code == expected, response.text
+    assert await state(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+async def test_table_edit_changes_only_supplied_fields_and_replays_without_writes(service_scope, setup_db):
+    c = service_scope
+    a, b = c['rows']['owned'], c['rows']['floating']
+    before = await snapshot(c, setup_db)
+    data = await table_request(c, [(a, {'purpose': 'New purpose'}), (b, {'cost': 17.5, 'installation_date': '2024-02-29'})])
+    response = await c['client'].post(TABLE_PATH, headers=c['headers'], json=data)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result['changed_ids'] == [a, b] and result['can_revert'] is False
+    after = await state(c, setup_db)
+    assert after['domain']['service_secrets'] == before['service_secrets']
+    for previous, current in zip(before['logical_services'], after['domain']['logical_services']):
+        allowed = {'purpose'} if previous['id'] == a else {'cost', 'installation_date'} if previous['id'] == b else set()
+        changed_fields = {field for field in previous if previous[field] != current[field]}
+        assert changed_fields <= allowed | ({'updated_at', 'edit_revision'} if allowed else set())
+    assert len(after['domain']['audit_logs']) == len(before['audit_logs']) + 2
+    replay = await c['client'].post(TABLE_PATH, headers=c['headers'], json=data)
+    assert replay.status_code == 200 and replay.json() == result
+    assert await state(c, setup_db) == after
+    data['rows'][0]['changes']['purpose'] = 'Different payload'
+    collision = await c['client'].post(TABLE_PATH, headers=c['headers'], json=data)
+    assert collision.status_code == 409
+    assert await state(c, setup_db) == after
+
+
+@pytest.mark.asyncio
+async def test_table_noop_preserves_revisions_projections_and_audits(service_scope, setup_db):
+    c = service_scope
+    data = await table_request(c, [(c['rows']['owned'], {})])
+    before = await snapshot(c, setup_db)
+    response = await c['client'].post(TABLE_PATH, headers=c['headers'], json=data)
+    assert response.status_code == 200 and response.json()['changed_count'] == 0, response.text
+    assert await snapshot(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('kind', ['revision', 'duplicate', 'field', 'boolean-id', 'operation'])
+async def test_table_invalid_envelopes_fail_without_receipts(service_scope, setup_db, kind):
+    c = service_scope
+    data = await table_request(c, [(c['rows']['owned'], {'purpose': 'Draft'})])
+    if kind == 'revision': data['rows'][0]['expected_revision'] = None
+    elif kind == 'duplicate': data['rows'] *= 2
+    elif kind == 'field': data['rows'][0]['changes']['device_id'] = c['devices']['owned']
+    elif kind == 'boolean-id': data['rows'][0]['id'] = True
+    else: data['operation_id'] = 'invalid'
+    before = await state(c, setup_db)
+    response = await c['client'].post(TABLE_PATH, headers=c['headers'], json=data)
+    assert response.status_code == 400, response.text
+    assert await state(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('failure', ['audit', 'host'])
+async def test_table_failures_roll_back_all_rows_audits_hosts_and_receipts(service_scope, setup_db, monkeypatch, failure):
+    c = service_scope
+    data = await table_request(c, [(c['rows']['owned'], {'purpose': 'OS purpose'}), (c['rows']['floating'], {'purpose': 'Other purpose'})])
+    before = await state(c, setup_db)
+    def fail_audit(session, *_):
+        if any(isinstance(row, models.AuditLog) and row.target_table == 'logical_services' for row in session.new):
+            raise RuntimeError('controlled table audit failure')
+    original = logical_services.sync_device_os_state
+    async def fail_host(identity, db):
+        await original(identity, db)
+        await db.flush()
+        raise RuntimeError('controlled table host failure')
+    if failure == 'audit': event.listen(Session, 'before_flush', fail_audit)
+    else: monkeypatch.setattr(logical_services, 'sync_device_os_state', fail_host)
+    try:
+        with pytest.raises(RuntimeError, match='controlled table ' + failure + ' failure'):
+            await c['client'].post(TABLE_PATH, headers=c['headers'], json=data)
+    finally:
+        if failure == 'audit': event.remove(Session, 'before_flush', fail_audit)
+    assert await state(c, setup_db) == before
+
+
+@pytest.mark.asyncio
+async def test_overlapping_table_requests_replay_one_atomic_receipt(service_scope, setup_db):
+    c = service_scope
+    data = await table_request(c, [(c['rows']['floating'], {'purpose': 'One durable edit'})])
+    before = await snapshot(c, setup_db)
+    responses = await asyncio.gather(*(c['client'].post(TABLE_PATH, headers=c['headers'], json=data) for _ in range(2)))
+    assert [response.status_code for response in responses] == [200, 200], [response.text for response in responses]
+    assert responses[0].json() == responses[1].json()
+    assert len(await receipt_rows(c, setup_db)) == 1
+    assert len((await snapshot(c, setup_db))['audit_logs']) == len(before['audit_logs']) + 1
+
+
+@pytest.mark.asyncio
+async def test_table_requires_current_module_write_permission(service_scope, setup_db):
+    from test_chg13_authorization_security import _grant_access, _seed_operator
+    c = service_scope
+    actor = 'table-read-only'
+    await _grant_access(setup_db, tenant_id=c['tenant'], user_id=actor, role='VIEWER')
+    await _seed_operator(setup_db, c['tenant'], actor, role_permissions={'services': 1})
+    data = await table_request(c, [(c['rows']['owned'], {'purpose': 'Forbidden'})])
+    before = await state(c, setup_db)
+    response = await c['client'].post(TABLE_PATH, headers={**c['headers'], 'X-User-Id': actor}, json=data)
+    assert response.status_code == 403, response.text
+    assert await state(c, setup_db) == before
 
 
 async def preview(c, ids, action='update', payload=None):
