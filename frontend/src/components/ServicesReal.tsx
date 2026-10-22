@@ -109,7 +109,7 @@ import {
   renderOperationalActionButtons,
 } from './shared/OperationalGridStandard'
 import { useOperationalBulkWorkflow } from './shared/useOperationalBulkWorkflow'
-import { createServiceBulkClient } from '../api/serviceBulk'
+import { createServiceBulkClient, createServiceTableEditClient } from '../api/serviceBulk'
 import {
   OperationalBulkPreviewModal,
 } from './shared/OperationalBulkPreviewModal'
@@ -464,7 +464,7 @@ export default function ServicesReal() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const gridRef = React.useRef<any>(null)
-  const { data: userSettings, isSuccess: hasUserSettings } = useQuery({
+  const { data: userSettings, isSuccess: hasUserSettings, isPending: userSettingsPending } = useQuery({
     queryKey: ['user-settings'],
     queryFn: async () => (await (await apiFetch('/api/v1/settings/user/settings')).json()),
   })
@@ -536,7 +536,14 @@ export default function ServicesReal() {
   const hasRowActionMenu = activeOverlay === 'rowAction' && !!rowActionMenu
   const [isIntelligenceExpanded, setIsIntelligenceExpanded] = useState(false)
   const [gridFilterModel, setGridFilterModel] = useState<Record<string, any>>({})
-  const [gridSortModel, setGridSortModel] = useState<any[]>([{ colId: 'favorite', sort: 'desc' }])
+  const [gridSortModel, setGridSortModel] = useState<any[]>(() => {
+    const layout = persistedUiState?.columnLayoutState
+    return layout?.length
+      ? sanitizeOperationalSortModel(layout.filter((column: any) => column.sort)
+        .sort((a: any, b: any) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0)), SERVICE_PERSISTED_COLUMN_IDS)
+      : [{ colId: 'favorite', sort: 'desc' }]
+  })
+  const appliedRequestedViewRef = useRef<string | null>(null)
   const [savedViews, setSavedViews] = usePersistentJsonState<any[]>(SERVICE_VIEW_STORAGE_KEY, () => {
     return initialWorkspaceState?.savedViews ?? normalizeServiceSavedViews([])
   }, normalizeServiceSavedViews)
@@ -984,6 +991,7 @@ export default function ServicesReal() {
     if (!await allowViewSwitch(viewId)) return
     const nextView = savedViews.find((view) => view.id === viewId)
     if (!nextView) return
+    appliedRequestedViewRef.current = viewId
     const config = sanitizeServiceViewConfig(nextView.config)
     setFontSize(config.fontSize ?? 11)
     setRowDensity(config.rowDensity ?? 8)
@@ -995,7 +1003,7 @@ export default function ServicesReal() {
     setSearchTerm(config.quickFilter ?? '')
     setQuickFilters(config.quickFilters ?? { status: [] as string[], environment: [] as string[], service_type: [] as string[], device_name: [] as string[] })
     setGridFilterModel(config.filterModel ?? {})
-    setGridSortModel((config.sortModel && config.sortModel.length > 0) ? config.sortModel : [{ colId: 'favorite', sort: 'desc' }])
+    setGridSortModel(config.sortModel ?? [])
     setActiveViewId(viewId)
     collaborativeViews.setViewLink(viewId)
     if (typeof window !== 'undefined') {
@@ -1009,15 +1017,19 @@ export default function ServicesReal() {
           applyColumnLayoutState(gridRef.current.api)
         }
         gridRef.current.api.setFilterModel(config.filterModel ?? {})
+        gridRef.current.api.applyColumnState({
+          state: config.sortModel ?? [], defaultState: { sort: null }, applyOrder: false,
+        })
       }
     })
   }
 
   useEffect(() => {
     const requested = collaborativeViews.requestedViewId
-    if (!requested || requested === activeViewId || !savedViews.some((view) => view.id === requested)) return
+    if (!requested) { appliedRequestedViewRef.current = null; return }
+    if (userSettingsPending || appliedRequestedViewRef.current === requested || !savedViews.some((view) => view.id === requested)) return
     applySavedView(requested)
-  }, [activeViewId, collaborativeViews.requestedViewId, savedViews])
+  }, [activeViewId, collaborativeViews.requestedViewId, savedViews, userSettingsPending])
 
   const saveCurrentToView = async (viewId: string) => {
     const view = savedViews.find((entry) => entry.id === viewId)
@@ -2614,6 +2626,7 @@ function BulkActionModals({ isStatusOpen, isSeverityOpen, isNotifyOpen, onClose,
 function BulkEditTableModal({ items, serviceTypeOptions, environmentOptions, purchaseTypeOptions, onClose, onSuccess }: any) {
   const [rows, setRows] = useState(() => items.map((item: any) => ({
     id: item.id,
+    expected_revision: item.edit_revision,
     name: item.name || `Service ${item.id}`,
     status: item.status || '',
     service_type: item.service_type || '',
@@ -2627,6 +2640,8 @@ function BulkEditTableModal({ items, serviceTypeOptions, environmentOptions, pur
   })))
   const [isMaximized, setIsMaximized] = useState(false)
   const initialDirtySnapshot = useMemo(() => JSON.stringify(rows), [])
+  const initialRows = useMemo(() => new Map<number, any>(rows.map((row: any) => [row.id, row])), [])
+  const saveTable = useMemo(() => createServiceTableEditClient(), [])
   const isDirty = useMemo(() => JSON.stringify(rows) !== initialDirtySnapshot, [rows, initialDirtySnapshot])
 
   const mergeOptionsWithCurrentValue = useCallback((options: Array<{ value: string; label: string }>, value: string) => {
@@ -2640,26 +2655,22 @@ function BulkEditTableModal({ items, serviceTypeOptions, environmentOptions, pur
 
   const mutation = useMutation({
     mutationFn: async () => {
-      for (const row of rows) {
-        const payload = {
-          status: row.status,
-          service_type: row.service_type || 'Database',
-          environment: row.environment || 'Production',
-          purpose: row.purpose || null,
-          cost: row.cost === '' ? 0 : Number(row.cost),
-          currency: row.currency || 'USD',
-          purchase_type: row.purchase_type || 'One-time',
-          installation_date: row.installation_date || null,
-        }
-        const res = await apiFetch(`/api/v1/logical-services/${row.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(payload)
-        })
-        await res.json()
-      }
+      const fields = ['status', 'service_type', 'environment', 'purpose', 'cost', 'currency', 'purchase_type', 'installation_date']
+      const drafts = rows.map((row: any) => {
+        const initial = initialRows.get(row.id)
+        const changes = Object.fromEntries(fields.filter(field => String(row[field] ?? '') !== String(initial[field] ?? '')).map(field => {
+          const value = field === 'cost' ? (row.cost === '' ? null : Number(row.cost)) : (row[field] || null)
+          if (field === 'cost' && value !== null && !Number.isFinite(value)) throw new Error('Cost must be a finite number zero or greater.')
+          return [field, value]
+        }))
+        return { id: row.id, expected_revision: row.expected_revision, changes }
+      }).filter((row: any) => Object.keys(row.changes).length > 0)
+      if (!drafts.length) return { changed_count: 0 }
+      return saveTable(drafts)
     },
-    onSuccess: () => {
-      showWorkspaceToast(`Updated ${rows.length} service${rows.length === 1 ? '' : 's'}`)
+    onSuccess: (result) => {
+      const count = result.changed_count ?? 0
+      showWorkspaceToast(count ? `Updated ${count} service${count === 1 ? '' : 's'}` : 'No Service changes to save')
       onSuccess()
     },
     onError: (error: any) => showWorkspaceToast(error.message || 'Bulk edit failed', { type: 'error' }),

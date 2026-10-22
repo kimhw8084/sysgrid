@@ -22,7 +22,11 @@ function storageOperation<T>(area: StorageArea, operation: (storage: Storage) =>
 // Only optional preferences/caches belong here. Identity, tenant selection and
 // unsaved primary data must retain their own failure handling.
 export function readOptionalStorage(key: string, area: StorageArea = 'localStorage'): string | null {
-  return storageOperation(area, storage => storage.getItem(key), null)
+  return readOptionalStorageEntry(key, area).value
+}
+
+export function readOptionalStorageEntry(key: string, area: StorageArea = 'localStorage'): { available: boolean; value: string | null } {
+  return storageOperation<{ available: boolean; value: string | null }>(area, storage => ({ available: true, value: storage.getItem(key) }), { available: false, value: null })
 }
 
 function persistOptionalStorage(area: StorageArea, operation: (storage: Storage) => void): boolean {

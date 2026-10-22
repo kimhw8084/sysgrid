@@ -321,6 +321,35 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [14
     await checkHeader('resized')
     await page.setViewportSize({ width, height: width <= 390 ? 844 : 1000 })
     await checkHeader('original-viewport')
+    const actorHeader = page.locator('.ag-header-cell[col-id="user_id"]')
+    await page.evaluate(() => {
+      const cell = document.querySelector<HTMLElement>('.ag-header-cell[col-id="user_id"]')!
+      const scroller = document.querySelector<HTMLElement>('.ag-center-cols-viewport')!
+      scroller.scrollLeft = Math.max(0, cell.offsetLeft + cell.offsetWidth - scroller.clientWidth + 40)
+    })
+    const resize = actorHeader.locator('.ag-header-cell-resize')
+    await expect(resize).toBeInViewport({ ratio: 1 })
+    const originalWidth = (await actorHeader.boundingBox())!.width
+    const handle = await resize.boundingBox()
+    expect(handle).not.toBeNull()
+    await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(handle!.x + handle!.width / 2 + 20, handle!.y + handle!.height / 2, { steps: 5 })
+    await page.mouse.up()
+    const manualWidth = (await actorHeader.boundingBox())!.width
+    expect(manualWidth).toBeGreaterThan(originalWidth)
+    const filtered = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/audit'
+      && new URL(response.url()).searchParams.get('target_id') === String(asset.id)
+      && new URL(response.url()).searchParams.get('end_before')?.startsWith('2001-') === true)
+    await end.fill('2001-01-01')
+    expect((await filtered).ok()).toBeTruthy()
+    await expect(rows).toHaveCount(0)
+    await page.waitForLoadState('networkidle')
+    expect((await actorHeader.boundingBox())!.width).toBe(manualWidth)
+    await end.clear()
+    await expect(rows).toHaveCount(1)
+    await page.waitForLoadState('networkidle')
+    expect((await actorHeader.boundingBox())!.width).toBe(manualWidth)
     expect(errors).toEqual([])
   })
 }

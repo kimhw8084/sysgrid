@@ -440,7 +440,7 @@ export default function MonitoringGrid() {
   const knowledgeAction = useModuleActionPolicy('knowledge')
   const gridRef = React.useRef<any>(null)
   const [showMonitoringDataDiagnostic, setShowMonitoringDataDiagnostic] = useState(false)
-  const { data: userSettings, isSuccess: hasUserSettings } = useQuery({
+  const { data: userSettings, isSuccess: hasUserSettings, isPending: userSettingsPending } = useQuery({
     queryKey: ['user-settings'],
     queryFn: async () => (await (await apiFetch('/api/v1/settings/user/settings')).json()),
   })
@@ -515,7 +515,14 @@ export default function MonitoringGrid() {
     initialFilterModel: {},
     initialQuickFilters: persistedUiState?.quickFilters ?? { status: [] as string[], severity: [] as string[], platform: [] as string[], owner: [] as string[] },
   })
-  const [gridSortModel, setGridSortModel] = useState<any[]>([{ colId: 'favorite', sort: 'desc' }])
+  const [gridSortModel, setGridSortModel] = useState<any[]>(() => {
+    const layout = persistedUiState?.columnLayoutState
+    return layout?.length
+      ? sanitizeOperationalSortModel(layout.filter((column: any) => column.sort)
+        .sort((a: any, b: any) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0)), MONITORING_PERSISTED_COLUMN_IDS)
+      : [{ colId: 'favorite', sort: 'desc' }]
+  })
+  const appliedRequestedViewRef = useRef<string | null>(null)
   const [savedViews, setSavedViews] = usePersistentJsonState<any[]>(MONITORING_VIEW_STORAGE_KEY, () => {
     return readMonitoringWorkspaceStateFromLocalStorage()?.savedViews ?? normalizeMonitoringSavedViews([])
   })
@@ -1044,6 +1051,7 @@ export default function MonitoringGrid() {
     if (!await allowViewSwitch(viewId)) return
     const nextView = savedViews.find((view) => view.id === viewId)
     if (!nextView) return
+    appliedRequestedViewRef.current = viewId
     const config = sanitizeMonitoringViewConfig(nextView.config)
     setFontSize(config.fontSize ?? 11)
     setRowDensity(config.rowDensity ?? 8)
@@ -1055,7 +1063,7 @@ export default function MonitoringGrid() {
     setSearchTerm(config.quickFilter ?? '')
     setQuickFilters(config.quickFilters ?? { status: [] as string[], severity: [] as string[], platform: [] as string[], owner: [] as string[] })
     setGridFilterModel(config.filterModel ?? {})
-    setGridSortModel((config.sortModel && config.sortModel.length > 0) ? config.sortModel : [{ colId: 'favorite', sort: 'desc' }])
+    setGridSortModel(config.sortModel ?? [])
     setActiveViewId(viewId)
     collaborativeViews.setViewLink(viewId)
     if (typeof window !== 'undefined') {
@@ -1069,15 +1077,19 @@ export default function MonitoringGrid() {
           applyColumnLayoutState(gridRef.current.api)
         }
         gridRef.current.api.setFilterModel(config.filterModel ?? {})
+        gridRef.current.api.applyColumnState({
+          state: config.sortModel ?? [], defaultState: { sort: null }, applyOrder: false,
+        })
       }
     })
   }
 
   useEffect(() => {
     const requested = collaborativeViews.requestedViewId
-    if (!requested || requested === activeViewId || !savedViews.some((view) => view.id === requested)) return
+    if (!requested) { appliedRequestedViewRef.current = null; return }
+    if (userSettingsPending || appliedRequestedViewRef.current === requested || !savedViews.some((view) => view.id === requested)) return
     applySavedView(requested)
-  }, [activeViewId, collaborativeViews.requestedViewId, savedViews])
+  }, [activeViewId, collaborativeViews.requestedViewId, savedViews, userSettingsPending])
 
   const saveCurrentToView = async (viewId: string) => {
     const view = savedViews.find((entry) => entry.id === viewId)

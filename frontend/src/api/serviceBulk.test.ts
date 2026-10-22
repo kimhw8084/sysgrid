@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('./apiClient', () => ({ apiClient: { post: vi.fn() }, getRequestScopeKey: vi.fn() }))
 import { apiClient, getRequestScopeKey } from './apiClient'
-import { createServiceBulkClient } from './serviceBulk'
+import { createServiceBulkClient, createServiceTableEditClient } from './serviceBulk'
 
 const request = { action: 'update', ids: [1, 2], payload: { environment: 'Development' } }
 const rowRevision = 'a'.repeat(32)
@@ -12,6 +12,27 @@ const client = () => createServiceBulkClient(() => [{ id: 1, edit_revision: rowR
 
 describe('native Service bulk adapter', () => {
   beforeEach(() => { vi.resetAllMocks(); vi.mocked(getRequestScopeKey).mockReturnValue('actor::tenant') })
+
+  it('reuses a table operation after response loss and creates a new identity only for a changed draft', async () => {
+    const save = createServiceTableEditClient()
+    const rows = [{ id: 1, expected_revision: rowRevision, changes: { purpose: 'Draft', cost: 0 } }]
+    vi.mocked(apiClient.post).mockRejectedValueOnce(new Error('Response lost')).mockResolvedValue({ changed_count: 1 })
+    await expect(save(rows)).rejects.toThrow('Response lost')
+    await save([{ ...rows[0], changes: { cost: 0, purpose: 'Draft' } }])
+    const calls = vi.mocked(apiClient.post).mock.calls
+    expect(calls[0][1].operation_id).toBe(calls[1][1].operation_id)
+    await save([{ ...rows[0], changes: { purpose: 'New draft' } }])
+    expect(calls[2][1].operation_id).not.toBe(calls[0][1].operation_id)
+    expect(calls.every(call => call[0] === '/api/v1/logical-services/table-edit')).toBe(true)
+  })
+
+  it('blocks table drafts after actor/tenant changes or without a loaded revision', async () => {
+    const save = createServiceTableEditClient()
+    await expect(save([{ id: 1, expected_revision: '', changes: { purpose: 'Draft' } }])).rejects.toThrow('revisions are unavailable')
+    vi.mocked(getRequestScopeKey).mockReturnValue('other::tenant')
+    await expect(save([{ id: 1, expected_revision: rowRevision, changes: { purpose: 'Draft' } }])).rejects.toThrow('different session')
+    expect(apiClient.post).not.toHaveBeenCalled()
+  })
 
   it('binds a reviewed preview and response-loss retry to one immutable operation identity', async () => {
     const api = client(), reviewed = makePreview()

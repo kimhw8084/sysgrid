@@ -9,6 +9,20 @@ type ServiceRow = { id: number; edit_revision?: string }
 type ServicePreview = OperationalBulkPreview & { precondition: string; versions: Record<string, string> }
 const token = (value: unknown, length: number): value is string => typeof value === 'string' && new RegExp(`^[0-9a-f]{${length}}$`).test(value)
 
+export function createServiceTableEditClient() {
+  const scope = getRequestScopeKey()
+  let pending: { binding: string; operationId: string } | null = null
+  return async (rows: Array<{ id: number; expected_revision: string; changes: Record<string, unknown> }>) => {
+    if (scope !== getRequestScopeKey()) throw new Error('The Service draft belongs to a different session. Close and reopen the table.')
+    if (rows.some(row => !token(row.expected_revision, 32))) throw new Error('Service revisions are unavailable. Close and reopen the table.')
+    const binding = JSON.stringify(rows.map(row => ({ ...row,
+      changes: Object.fromEntries(Object.entries(row.changes).sort(([a], [b]) => a.localeCompare(b))),
+    })).sort((a, b) => a.id - b.id))
+    if (!pending || pending.binding !== binding) pending = { binding, operationId: crypto.randomUUID().replace(/-/g, '') }
+    return apiClient.post('/api/v1/logical-services/table-edit', { rows, operation_id: pending.operationId }) as Promise<OperationalBulkExecutionResult>
+  }
+}
+
 export function createServiceBulkClient(getRows: () => readonly ServiceRow[]) {
   const previews = new WeakMap<OperationalBulkPreview, { operationId: string; scope: string; binding: string }>()
   const binding = ({ action, ids, payload }: OperationalBulkRequest) => JSON.stringify({

@@ -1,6 +1,7 @@
 import { WorkspaceDialogFrame } from './shared/WorkspaceDialogFrame'
 import React, { useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
+import type { ColDef } from 'ag-grid-community'
 import { useQuery } from '@tanstack/react-query'
 import { Activity, Calendar, RefreshCcw, Zap, Layers, X, Search, Filter, Download, BarChart2, Clock } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -20,6 +21,13 @@ import {
 import { resolveOperationalObjectReference } from './shared/OperationalObjectReference'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
+
+const AUDIT_DEFAULT_COLUMN_DEF: ColDef = {
+  resizable: true,
+  filter: true,
+  sortable: true,
+  menuTabs: ['filterMenuTab', 'generalMenuTab'],
+}
 
 export default function AuditLogs() {
   const reducedMotion = useReducedMotion()
@@ -99,7 +107,7 @@ export default function AuditLogs() {
       if (gridRef.current?.api === api && !api.isDestroyed()) api.autoSizeAllColumns()
     }, 100)
     return () => window.clearTimeout(timer)
-  }, [fontSize, rowDensity, logs, showCharts])
+  }, [fontSize, rowDensity, showCharts]) // Filtering preserves manual widths and horizontal position.
 
   const handleExportCSV = () => {
     if (gridRef.current?.api) {
@@ -141,7 +149,7 @@ export default function AuditLogs() {
       field: 'action', 
       headerName: 'OPERATION', 
       width: 120,
-      minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 8),
+      minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 'OPERATION'.length),
       filter: true,
       cellClass: 'text-center',
       headerClass: 'text-center',
@@ -165,7 +173,7 @@ export default function AuditLogs() {
         headerName: 'ADMINISTRATOR', 
         width: 140, 
         // Short actor values must not let autosizing clip the full heading.
-        minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 11),
+        minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 'ADMINISTRATOR'.length),
         filter: true, 
         cellClass: 'text-center font-bold text-white', 
         headerClass: 'text-center',
@@ -444,12 +452,7 @@ export default function AuditLogs() {
             const leftColumns = api.getColumns()?.filter(column => column.getPinned() === 'left') || []
             return leftColumns.length ? leftColumns : columns
           }}
-          defaultColDef={{ 
-              resizable: true, 
-              filter: true, 
-              sortable: true,
-              menuTabs: ['filterMenuTab', 'generalMenuTab']
-          }}
+          defaultColDef={AUDIT_DEFAULT_COLUMN_DEF}
           animateRows={true}
           enableCellTextSelection={true}
           rowSelection="multiple"

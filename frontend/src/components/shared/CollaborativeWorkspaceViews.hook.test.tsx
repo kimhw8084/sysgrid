@@ -10,6 +10,7 @@ import {
 } from './CollaborativeWorkspaceViews'
 
 vi.mock('react-hot-toast', () => ({ default: { success: vi.fn(), error: vi.fn(), remove: vi.fn() } }))
+vi.mock('./WorkspaceToast', () => ({ showWorkspaceToast: vi.fn() }))
 
 type Config = {
   groupBy: string
@@ -228,6 +229,69 @@ describe('useCollaborativeWorkspaceViews', () => {
     expect(post).toHaveBeenCalledTimes(1)
   })
 
+  it.each(['read', 'checkpoint'])('hydrates canonical views and retains local drafts when the migration %s is blocked', async mode => {
+    vi.spyOn(apiClient, 'get').mockResolvedValue({ views: [remoteRecord()] })
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue(remoteRecord({ id: 11, name: 'Local retained' }))
+    const key = 'test-collaborative-migration-v1'
+    const get = localStorage.getItem.bind(localStorage)
+    const set = localStorage.setItem.bind(localStorage)
+    vi.spyOn(localStorage, 'getItem').mockImplementation(name => {
+      if (mode === 'read' && name === key) throw new DOMException('Blocked', 'SecurityError')
+      return get(name)
+    })
+    vi.spyOn(localStorage, 'setItem').mockImplementation((name, value) => {
+      if (mode === 'checkpoint' && name === key) throw new DOMException('Full', 'QuotaExceededError')
+      return set(name, value)
+    })
+    const { result } = renderHook(() => useHarness({
+      initialViews: [{ id: 'local-retained', name: 'Local retained', config: { groupBy: 'raw' } }],
+      activeViewId: null, currentDefinition: { groupBy: 'raw' },
+    }))
+    await waitFor(() => expect(result.current.collaborative.status).toBe('synced'))
+    expect(result.current.views.map(view => view.id)).toEqual(['9', 'local-retained'])
+    expect(post).not.toHaveBeenCalled()
+    expect(result.current.collaborative.lastError).toContain('Local views remain available')
+    await act(async () => { await result.current.collaborative.updateView('local-retained', 'Local retained', { groupBy: 'status' }) })
+    expect(result.current.views.map(view => view.id)).toEqual(['9', '11'])
+    expect(post).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps migrated views hydrated when the completion marker fails and never resurrects deleted views on remount', async () => {
+    const get = vi.spyOn(apiClient, 'get').mockResolvedValue({ views: [remoteRecord()] })
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValue(remoteRecord({ id: 10, name: 'Legacy local' }))
+    const set = localStorage.setItem.bind(localStorage)
+    vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === 'test-collaborative-migration-v1' && value === '1') throw new DOMException('Full', 'QuotaExceededError')
+      return set(key, value)
+    })
+    const props = { initialViews: [{ id: 'legacy-local', name: 'Legacy local', config: { groupBy: 'raw' } }], activeViewId: null, currentDefinition: { groupBy: 'raw' } }
+    const first = renderHook(() => useHarness(props))
+    await waitFor(() => expect(first.result.current.views.map(view => view.id)).toEqual(['9', '10']))
+    expect(first.result.current.collaborative.status).toBe('synced')
+    expect(localStorage.getItem('test-collaborative-migration-v1')).toBe('pending')
+    first.unmount()
+    get.mockResolvedValue({ views: [remoteRecord()] }) // A peer deleted view 10.
+    const second = renderHook(() => useHarness(props))
+    await waitFor(() => expect(second.result.current.collaborative.status).toBe('synced'))
+    expect(second.result.current.views.map(view => view.id)).toEqual(['9', 'legacy-local'])
+    expect(post).toHaveBeenCalledTimes(1)
+  })
+
+  it('retains canonical views and a durable pending marker after a partial migration fails', async () => {
+    vi.spyOn(apiClient, 'get').mockResolvedValue({ views: [remoteRecord()] })
+    const post = vi.spyOn(apiClient, 'post').mockResolvedValueOnce(remoteRecord({ id: 10, name: 'Local A' })).mockRejectedValueOnce(new Error('Offline'))
+    const props = { initialViews: ['A', 'B'].map(name => ({ id: `local-${name}`, name: `Local ${name}`, config: { groupBy: 'raw' } })), activeViewId: null, currentDefinition: { groupBy: 'raw' } }
+    const first = renderHook(() => useHarness(props))
+    await waitFor(() => expect(first.result.current.collaborative.status).toBe('offline'))
+    expect(first.result.current.views.some(view => view.id === '9')).toBe(true)
+    expect(localStorage.getItem('test-collaborative-migration-v1')).toBe('pending')
+    first.unmount()
+    const second = renderHook(() => useHarness(props))
+    await waitFor(() => expect(second.result.current.collaborative.status).toBe('synced'))
+    expect(post).toHaveBeenCalledTimes(2)
+    expect(second.result.current.views.map(view => view.id)).toEqual(['9', 'local-A', 'local-B'])
+  })
+
   it('keeps newer canonical views when an older hydration succeeds late', async () => {
     const older = deferred<{ views: WorkspaceViewApiRecord<Config>[] }>()
     const newer = deferred<{ views: WorkspaceViewApiRecord<Config>[] }>()
@@ -291,7 +355,7 @@ describe('useCollaborativeWorkspaceViews', () => {
     await act(async () => { pending.resolve(remoteRecord({ name: 'Legacy' })) })
     expect(post).toHaveBeenCalledTimes(1)
     expect(onActiveViewIdChange).not.toHaveBeenCalled()
-    expect(localStorage.getItem('test-collaborative-migration-v1')).toBeNull()
+    expect(localStorage.getItem('test-collaborative-migration-v1')).toBe('pending')
   })
 
   it('sanitizes remote definitions before they are applied to client state', async () => {
