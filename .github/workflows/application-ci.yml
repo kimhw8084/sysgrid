@@ -16,15 +16,22 @@ concurrency:
 
 jobs:
   qualification:
-    name: qualification (${{ matrix.stage }})
+    name: qualification (${{ matrix.label }})
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        stage: [checks, normal-v1, desktop, root-preview]
+        include:
+          - {stage: checks, label: checks, artifact: checks, shard: ""}
+          - {stage: normal-v1, label: normal-v1 shard 1/3, artifact: normal-v1-1, shard: "1/3"}
+          - {stage: normal-v1, label: normal-v1 shard 2/3, artifact: normal-v1-2, shard: "2/3"}
+          - {stage: normal-v1, label: normal-v1 shard 3/3, artifact: normal-v1-3, shard: "3/3"}
+          - {stage: desktop, label: desktop, artifact: desktop, shard: ""}
+          - {stage: root-preview, label: root-preview, artifact: root-preview, shard: ""}
     env:
       QUALIFICATION_STAGE: ${{ matrix.stage }}
+      SYSGRID_VERIFY_SHARD: ${{ matrix.shard }}
       SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID: ci-system-root
       SYSGRID_VERIFY_KEEP_LOGS: "1"
       CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -182,6 +189,7 @@ jobs:
               "python_bin": os.environ["PYTHON_BIN_USED"],
               "python_version": os.environ["PYTHON_VERSION"],
               "qualification_stage": os.environ["QUALIFICATION_STAGE"],
+              "qualification_shard": os.environ.get("SYSGRID_VERIFY_SHARD") or None,
               "qualification_result": os.environ["QUALIFICATION_RESULT"],
           }
           Path("ci-evidence/ci-identity.json").write_text(
@@ -219,14 +227,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: application-ci-${{ env.QUALIFICATION_STAGE }}-evidence-${{ env.CANDIDATE_SHA }}
+          name: application-ci-${{ matrix.artifact }}-evidence-${{ env.CANDIDATE_SHA }}
           path: ci-evidence
           if-no-files-found: error
           include-hidden-files: false
           retention-days: 14
 
-  required:
-    name: required
+  normal_v1:
+    name: qualification (normal-v1)
     needs: qualification
     if: always()
     runs-on: ubuntu-24.04
@@ -235,12 +243,47 @@ jobs:
       QUALIFICATION_RESULT: ${{ needs.qualification.result }}
       CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
     steps:
+      - name: Checkout exact qualification source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Download original normal browser shard evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: application-ci-normal-v1-*-evidence-${{ env.CANDIDATE_SHA }}
+          path: normal-shards
+
+      - name: Require complete nonoverlapping browser coverage
+        shell: bash
+        run: python3 scripts/verify-ci-shards.py normal-shards ci-evidence
+
+      - name: Upload verified normal browser union
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: application-ci-normal-v1-evidence-${{ env.CANDIDATE_SHA }}
+          path: ci-evidence
+          if-no-files-found: error
+          retention-days: 14
+
+  required:
+    name: required
+    needs: [qualification, normal_v1]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      QUALIFICATION_RESULT: ${{ needs.qualification.result }}
+      NORMAL_V1_RESULT: ${{ needs.normal_v1.result }}
+      CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+    steps:
       - name: Require every qualification stage
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "$QUALIFICATION_RESULT" != success ]]; then
-            echo "Application qualification is incomplete: $QUALIFICATION_RESULT" >&2
+          if [[ "$QUALIFICATION_RESULT" != success || "$NORMAL_V1_RESULT" != success ]]; then
+            echo "Application qualification is incomplete: stages=$QUALIFICATION_RESULT browser-union=$NORMAL_V1_RESULT" >&2
             exit 1
           fi
 
@@ -276,6 +319,7 @@ jobs:
               },
               "runtime_provenance": "Each stage receipt records the Node and Python versions actually used.",
               "qualification_result": os.environ["QUALIFICATION_RESULT"],
+              "normal_v1_result": os.environ["NORMAL_V1_RESULT"],
               "final_required_gate_result": os.environ["FINAL_REQUIRED_GATE_RESULT"],
           }
           Path("ci-evidence").mkdir(exist_ok=True)
