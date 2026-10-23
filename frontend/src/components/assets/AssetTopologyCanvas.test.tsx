@@ -13,6 +13,25 @@ vi.mock('react-force-graph-2d', async () => {
 })
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); captured.fit.mockClear() })
 
+it('uses the active theme color for links and both arrow directions', () => {
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} })
+  const root = document.documentElement
+  root.style.setProperty('--topology-network', '#087f8c')
+  root.style.setProperty('--topology-dependency', '#6d28d9')
+  try {
+    render(<AssetTopologyCanvas graph={{ nodes: [], links: [] }} />)
+    const props = captured.current
+    expect(props.linkColor({ category: 'network' })).toBe('#087f8c')
+    expect(props.linkColor({ category: 'relationship' })).toBe('#6d28d9')
+    const context = { beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(), fill: vi.fn(), fillStyle: '' } as any
+    props.linkCanvasObject({ source: { x: 0, y: 0 }, target: { x: 40, y: 0 }, direction: 'reverse', category: 'network' }, context)
+    expect(context.fillStyle).toBe('#087f8c')
+  } finally {
+    root.style.removeProperty('--topology-network')
+    root.style.removeProperty('--topology-dependency')
+  }
+})
+
 it('refits a settled graph after the real canvas size arrives and preserves navigation during selection', () => {
   let resize = () => {}
   let canvasResize = () => {}

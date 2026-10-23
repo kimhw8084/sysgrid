@@ -21,7 +21,9 @@ for (const family of families) {
   }
 }
 for (const theme of ['pure-clarity', 'nordic-frost-v1']) {
+  assert(names.includes(`desktop form guide keyboard ${theme}`), `Missing desktop guide keyboard ${theme}`)
   for (const width of [1024, 1280, 1440, 1920]) {
+    assert(names.includes(`desktop Report and Map ${theme} ${width}`), `Missing desktop Report/Map ${theme} ${width}`)
     assert(names.includes(`visual foundation ${theme} ${width}`), `Missing ${theme} ${width} desktop foundation`)
   }
   for (const surface of ['assets', 'network', 'service-detail', 'monitoring-detail']) {

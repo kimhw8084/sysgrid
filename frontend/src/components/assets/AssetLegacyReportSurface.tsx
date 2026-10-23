@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, Box, Calendar, Cpu as CpuIcon, Edit2, Eye, ExternalLink, Layers, Network, Search, Shield } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { formatAppDate, formatAppDay } from '../../utils/dateUtils'
 import { buildAssetTopology } from './assetTopology'
 import { AssetTopologyCanvas } from './AssetTopologyCanvas'
 import { WorkspaceEmptyState } from '../shared/OperationalWorkspacePrimitives'
+import { StatusPill } from '../shared/StatusPill'
+import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES, assetFilterOptions } from './assetRecordOptions'
 import { AssetServicesTable, MetadataViewer, MiniMonitoringTable } from '../AssetGrid_Legacy'
 import { HWTable, RelationshipsTab, SecretsTable } from './AssetDetailsView'
 
@@ -38,31 +39,6 @@ const REPORT_SECTION_LINKS = [
   { id: 'relationships', label: 'Relationships' },
 ] as const
 
-const STATUS_ITEMS = [
-  { value: 'Active', label: 'Active' },
-  { value: 'Maintenance', label: 'Maintenance' },
-  { value: 'Failed', label: 'Failed' },
-  { value: 'Provisioning', label: 'Provisioning' },
-  { value: 'Reserved', label: 'Reserved' },
-  { value: 'Offline', label: 'Offline' },
-]
-
-const ENVIRONMENT_ITEMS = [
-  { value: 'Production', label: 'Production' },
-  { value: 'Staging', label: 'Staging' },
-  { value: 'Development', label: 'Development' },
-  { value: 'Lab', label: 'Lab' },
-]
-
-const ASSET_TYPES = [
-  { value: 'Physical', label: 'Physical' },
-  { value: 'Virtual', label: 'Virtual' },
-  { value: 'Storage', label: 'Storage' },
-  { value: 'Switch', label: 'Switch' },
-  { value: 'Firewall', label: 'Firewall' },
-  { value: 'Load Balancer', label: 'Load Balancer' },
-]
-
 function ConnectionMap({ deviceId, type, devices, relationships, connections }: {
   deviceId: number; type: 'dependency' | 'network'; devices: any[]; relationships: any[]; connections: any[]
 }) {
@@ -94,7 +70,7 @@ export function AssetLegacyReportSurface({
   const controlled = selectedAssetId !== undefined
   const selectedId = controlled ? selectedAssetId : localSelectedId
   const [filter, setFilter] = useState({ name: '', system: '', type: '', status: '', env: '' })
-  const reportSectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const reportSectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
   const filteredAssets = useMemo(() => {
     return assets.filter((asset: any) => {
@@ -122,16 +98,31 @@ export function AssetLegacyReportSurface({
     if (!focusSection) return
     const sectionNode = reportSectionRefs.current[focusSection]
     if (sectionNode) {
-      sectionNode.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
+      scrollToSection(focusSection)
       onFocusSectionHandled?.()
     }
   }, [focusSection, onFocusSectionHandled, selectedAsset])
 
   const getOptions = (category: string) => Array.isArray(options) ? options.filter((item: any) => item.category === category) : []
+  const filterOptions = (field: 'system' | 'type' | 'status' | 'environment', category: string, defaults: string[] = []) => (
+    assetFilterOptions(defaults, getOptions(category), assets.map(asset => asset[field]))
+  )
   const selectedConsoleUrl = selectedAsset ? getConsoleUrl?.(selectedAsset) || null : null
 
   const scrollToSection = (sectionId: string) => {
-    reportSectionRefs.current[sectionId]?.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
+    const section = reportSectionRefs.current[sectionId]
+    if (!section) return
+    const behavior = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    const pane = section.closest<HTMLElement>('.asset-report-content')
+    if (pane && ['auto', 'scroll'].includes(getComputedStyle(pane).overflowY)) {
+      const viewport = pane.closest<HTMLElement>('#sg-main-content')
+      if (viewport) {
+        const bounds = pane.getBoundingClientRect(), available = viewport.getBoundingClientRect()
+        if (bounds.bottom > available.bottom) viewport.scrollTo({ top: viewport.scrollTop + bounds.bottom - available.bottom + 16, behavior: 'auto' })
+      }
+      const navigationHeight = pane.querySelector('nav')?.getBoundingClientRect().height || 0
+      pane.scrollTo({ top: Math.max(0, pane.scrollTop + section.getBoundingClientRect().top - pane.getBoundingClientRect().top - navigationHeight - 16), behavior })
+    } else section.scrollIntoView({ behavior, block: 'start' })
   }
 
   return (
@@ -151,21 +142,21 @@ export function AssetLegacyReportSurface({
           <div className="grid grid-cols-2 gap-2">
             <select aria-label="Report system" value={filter.system} onChange={(event) => setFilter((current) => ({ ...current, system: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Systems</option>
-              {getOptions('LogicalSystem').map((item: any) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              {filterOptions('system', 'LogicalSystem').map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
             <select aria-label="Report asset type" value={filter.type} onChange={(event) => setFilter((current) => ({ ...current, type: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Types</option>
-              {ASSET_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              {filterOptions('type', 'DeviceType', ASSET_TYPES).map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <select aria-label="Report status" value={filter.status} onChange={(event) => setFilter((current) => ({ ...current, status: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Statuses</option>
-              {STATUS_ITEMS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              {filterOptions('status', 'Status', ASSET_STATUSES.filter(value => value !== 'Deleted')).map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
             <select aria-label="Report environment" value={filter.env} onChange={(event) => setFilter((current) => ({ ...current, env: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Envs</option>
-              {ENVIRONMENT_ITEMS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              {filterOptions('environment', 'Environment', ASSET_ENVIRONMENTS).map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
         </div>
@@ -183,25 +174,14 @@ export function AssetLegacyReportSurface({
                   onSelectAsset?.(asset)
                 }
               }}
-              className={`group relative w-full overflow-hidden rounded-lg p-3 text-left transition-all ${selectedAsset?.id === asset.id ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5'}`}
+              className={`group relative w-full overflow-hidden rounded-lg p-3 text-left ${selectedAsset?.id === asset.id ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5'}`}
             >
-              <div className="mb-1 flex items-center justify-between">
-                <span className="truncate pr-2 text-[11px] font-bold uppercase tracking-tighter">{asset.name}</span>
-                <span className={`rounded-lg border px-1.5 py-0.5 text-[11px] font-bold ${
-                  asset.status === 'Active' ? 'border-emerald-500/20 bg-emerald-500/20 text-emerald-400' :
-                  asset.status === 'Maintenance' ? 'border-amber-500/20 bg-amber-500/20 text-amber-400' :
-                  asset.status === 'Failed' ? 'border-rose-500/20 bg-rose-500/20 text-rose-400' :
-                  'border-white/10 bg-white/5 text-slate-400'
-                } ${selectedAsset?.id === asset.id ? 'border-white/40 text-white' : ''}`}>
-                  {asset.status}
-                </span>
+              <div className="asset-report-rail-name">{asset.name}</div>
+              <div className="asset-report-rail-meta">
+                <span title={[asset.system, asset.type].filter(Boolean).join(' · ')}>{[asset.system, asset.type].filter(Boolean).join(' · ')}</span>
+                <span data-report-status><StatusPill value={asset.status} fontSize={12} /></span>
               </div>
-              <div className="flex items-center space-x-2 text-[11px] font-bold opacity-60">
-                <span>{asset.system}</span>
-                <span className="h-1 w-1 rounded-full bg-current opacity-30" />
-                <span>{asset.type}</span>
-              </div>
-              {selectedAsset?.id === asset.id ? <motion.div layoutId="asset-report-active-indicator" className="absolute bottom-0 left-0 top-0 w-1 bg-white" /> : null}
+              {selectedAsset?.id === asset.id ? <span aria-hidden="true" className="absolute bottom-0 left-0 top-0 w-1 bg-white" /> : null}
             </button>
           ))}
           {!filteredAssets.length ? <WorkspaceEmptyState title="No matching assets" description="Adjust your filters or add new assets to the matrix." /> : null}
@@ -210,105 +190,33 @@ export function AssetLegacyReportSurface({
 
       <div className="asset-report-content custom-scrollbar min-w-0 flex-1 overflow-y-auto rounded-lg border border-white/5 bg-[#0a0c14]/40">
         {selectedAsset ? (
-          <div className="space-y-8 p-6 lg:p-8 xl:p-10">
-            <div className="sticky top-0 z-20 -mx-6 border-b border-white/5 bg-[#0a0c14]/95 px-6 py-4 backdrop-blur-xl lg:hidden">
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[8px] font-black uppercase tracking-[0.24em] text-blue-400">{selectedAsset.system}</p>
-                  <h2 className="truncate text-sm font-black uppercase tracking-[0.08em] text-white">{selectedAsset.name}</h2>
-                </div>
-                <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[9px] font-bold uppercase text-slate-300">
-                  {selectedAsset.status}
-                </span>
-              </div>
-              <div className="custom-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
-                <ReportQuickAction label="Modify Config" icon={<Edit2 size={14} />} onClick={() => onEdit(selectedAsset)} />
-                {onOpenDetails ? <ReportQuickAction label="Details" icon={<Box size={14} />} onClick={() => onOpenDetails(selectedAsset)} /> : null}
-                {onOpenQuickLook ? <ReportQuickAction label="Quick Look" icon={<Eye size={14} />} onClick={() => onOpenQuickLook(selectedAsset)} /> : null}
-                {selectedConsoleUrl ? <ReportQuickAction label="Quick Console" icon={<ExternalLink size={14} />} href={selectedConsoleUrl} /> : null}
-              </div>
-              <div className="custom-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
-                {REPORT_SECTION_LINKS.map((section) => (
-                  <button
-                    key={section.id}
-                    type="button"
-                    onClick={() => scrollToSection(section.id)}
-                    className="shrink-0 rounded-lg border border-white/10 bg-black/20 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-300 transition-all hover:border-blue-500/30 hover:text-white"
-                  >
-                    {section.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div ref={(node) => { reportSectionRefs.current.overview = node }} data-report-section="overview" className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-              <div className="min-w-0 flex-1 space-y-6">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
-                  <div className="w-fit rounded-lg bg-blue-600 p-3 text-white shadow-xl shadow-blue-500/20 ring-4 ring-blue-500/10">
-                    <Box size={28} />
-                  </div>
-                  <div className="min-w-0">
-                    <h1 className="break-words text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">{selectedAsset.name}</h1>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 md:gap-4">
-                      <span className="text-[14px] font-bold uppercase tracking-[0.3em] text-blue-400">{selectedAsset.system}</span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-white/10" />
-                      <span className="break-words text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500">{selectedAsset.type} // {selectedAsset.environment} // {selectedAsset.owner || 'NO OWNER'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="asset-report-addresses grid gap-4 rounded-lg border border-white/5 bg-black/40 p-5">
-                  <div className="flex flex-col">
-                    <span className="mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">Operational State</span>
-                    <span className={`w-fit rounded-lg border px-4 py-1 text-[11px] font-bold uppercase ${
-                      selectedAsset.status === 'Active' ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' :
-                      selectedAsset.status === 'Maintenance' ? 'border-amber-500/20 bg-amber-500/5 text-amber-400' :
-                      'border-rose-500/20 bg-rose-500/5 text-rose-400'
-                    }`}>{selectedAsset.status}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">Primary Network IP</span>
-                    <span className="break-words text-base font-bold text-blue-400">{selectedAsset.primary_ip || 'Not recorded'}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">Management OOB IP</span>
-                    <span className="break-words text-base font-bold text-indigo-400">{selectedAsset.management_ip || 'Not recorded'}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex w-full shrink-0 flex-col gap-3 xl:w-auto xl:items-end">
-                <button type="button" onClick={() => onEdit(selectedAsset)} className="flex w-full items-center justify-center space-x-3 rounded-lg bg-blue-600 px-6 py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-500 xl:w-auto">
-                  <Edit2 size={16} />
-                  <span>Modify Config</span>
-                </button>
-                <div className="hidden flex-wrap items-center justify-end gap-2 lg:flex">
-                  {onOpenQuickLook ? (
-                    <button type="button" onClick={() => onOpenQuickLook(selectedAsset)} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-300 transition-all hover:border-white/20 hover:text-white">
-                      Quick Look
-                    </button>
-                  ) : null}
-                  {onOpenDetails ? (
-                    <button type="button" onClick={() => onOpenDetails(selectedAsset)} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-300 transition-all hover:border-white/20 hover:text-white">
-                      Details
-                    </button>
-                  ) : null}
-                  {selectedConsoleUrl ? (
-                    <a href={selectedConsoleUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-300 transition-all hover:border-white/20 hover:text-white">
-                      Quick Console
-                    </a>
-                  ) : null}
-                </div>
-                <div className="text-left xl:text-right">
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Record updated</p>
-                  <p className="text-[10px] font-mono text-slate-400">{selectedAsset.updated_at ? formatAppDate(selectedAsset.updated_at) : 'Not recorded'}</p>
-                </div>
-              </div>
-            </div>
-
-            <nav aria-label="Report sections" className="hidden flex-wrap gap-2 lg:flex">
-              {REPORT_SECTION_LINKS.map(section => <button key={section.id} type="button" onClick={() => scrollToSection(section.id)} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300">{section.label}</button>)}
+          <div className="asset-report-body space-y-6 p-4 lg:p-5">
+            <nav aria-label="Report sections" className="asset-report-sections">
+              {REPORT_SECTION_LINKS.map(section => <button key={section.id} type="button" onClick={() => scrollToSection(section.id)}>{section.label}</button>)}
             </nav>
+            <section ref={(node) => { reportSectionRefs.current.overview = node }} data-report-section="overview" className="asset-report-overview">
+              <header className="asset-report-record-header">
+                <div className="asset-report-record-identity">
+                  <span className="asset-report-record-icon"><Box size={22} aria-hidden="true" /></span>
+                  <div>
+                    <h1>{selectedAsset.name}</h1>
+                    <p><strong>{selectedAsset.system || 'Unassigned system'}</strong><span>{selectedAsset.type} · {selectedAsset.environment} · {selectedAsset.owner || 'Unassigned owner'}</span></p>
+                  </div>
+                </div>
+                <div className="asset-report-record-actions">
+                  <button type="button" onClick={() => onEdit(selectedAsset)} className="asset-report-edit"><Edit2 size={15} aria-hidden="true" />Modify Config</button>
+                  {onOpenDetails ? <ReportQuickAction label="Details" icon={<Box size={14} aria-hidden="true" />} onClick={() => onOpenDetails(selectedAsset)} /> : null}
+                  {onOpenQuickLook ? <ReportQuickAction label="Quick Look" icon={<Eye size={14} aria-hidden="true" />} onClick={() => onOpenQuickLook(selectedAsset)} /> : null}
+                  {selectedConsoleUrl ? <ReportQuickAction label="Quick Console" icon={<ExternalLink size={14} aria-hidden="true" />} href={selectedConsoleUrl} /> : null}
+                </div>
+              </header>
+              <div className="asset-report-addresses grid gap-3 rounded-lg border border-white/5 bg-black/40 p-3">
+                <div className="flex flex-col"><span className="mb-1 text-xs text-slate-500">Operational State</span><span data-report-status><StatusPill value={selectedAsset.status} fontSize={12} /></span></div>
+                <div className="flex flex-col"><span className="mb-1 text-xs text-slate-500">Primary Network IP</span><span className="break-words font-semibold text-blue-400">{selectedAsset.primary_ip || 'Not recorded'}</span></div>
+                <div className="flex flex-col"><span className="mb-1 text-xs text-slate-500">Management OOB IP</span><span className="break-words font-semibold text-indigo-400">{selectedAsset.management_ip || 'Not recorded'}</span></div>
+              </div>
+              <p className="asset-report-updated">Record updated <span>{selectedAsset.updated_at ? formatAppDate(selectedAsset.updated_at) : 'Not recorded'}</span></p>
+            </section>
             <div className="grid gap-4 rounded-lg border border-white/5 bg-white/5 p-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
               <Metric label="Power Avg/Max" value={`${selectedAsset.power_typical_w || 0}W / ${selectedAsset.power_max_w || 0}W`} />
               <Metric label="Site Location" value={selectedAsset.site_name || 'UNPLACED'} tone="text-blue-400" />
@@ -466,7 +374,7 @@ function ReportQuickAction({
   onClick?: () => void
   href?: string
 }) {
-  const className = 'inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-200 transition-all hover:border-blue-500/30 hover:bg-white/10 hover:text-white'
+  const className = 'asset-report-quick-action'
 
   if (href) {
     return (

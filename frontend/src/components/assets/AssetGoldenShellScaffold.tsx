@@ -39,7 +39,7 @@ export default function AssetGoldenShellScaffold({
   return (
     <OperationalWorkspaceShell
       workspace="assets"
-      className="relative overflow-hidden"
+      className={`relative overflow-hidden${viewMode === 'report' ? ' asset-report-workspace' : ''}`}
       header={{
         eyebrow: 'Infrastructure',
         title: (

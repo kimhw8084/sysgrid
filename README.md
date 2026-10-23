@@ -12,6 +12,10 @@ product has production acceptance.
 
 SysGrid is a multi-tenant infrastructure operations platform. This guide covers the supported development startup, disposable seeding, forwarded/remote environments, health checks, recovery, and bug reporting.
 
+The product experience is desktop-only. UI qualification targets desktop browser
+windows, short laptop screens, both themes, keyboard use and accessibility zoom.
+Phone and tablet product design are outside the release scope.
+
 ## 1. Prerequisites
 
 - Python 3.12+; Application CI qualifies Python 3.14

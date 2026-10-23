@@ -19,6 +19,7 @@ export function revealFormSection(id: string) {
     parent = parent.parentElement
   }
   element.scrollIntoView?.({ block: 'nearest', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  element.querySelector<HTMLElement>('input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])')?.focus({ preventScroll: true })
 }
 
 export function focusFormIssue(root: HTMLElement | null) {
@@ -34,16 +35,19 @@ export function focusFormIssue(root: HTMLElement | null) {
 }
 
 export function FormGuide({ steps, summary }: { steps: FormGuideStep[]; summary: React.ReactNode }) {
+  const id = React.useId()
   return <div className="form-guide">
     <div className="form-guide-summary">{summary}</div>
     <nav aria-label="Form guide" className="form-guide-steps">
       {steps.map((step, index) => <button key={step.id} type="button" data-tone={step.tone || 'blue'}
+        aria-label={`${step.title}${step.complete ? '. Complete' : ''}`}
+        aria-describedby={`${id}-${index}-hint`}
         className="form-guide-step" onClick={() => {
           step.onNavigate?.()
           requestAnimationFrame(() => revealFormSection(step.id))
         }}>
         <span className="form-guide-number" aria-hidden="true">{step.complete ? <Check size={15} /> : index + 1}</span>
-        <span><strong>{step.title}</strong><small>{step.hint}</small></span>
+        <span><strong>{step.title}</strong><small id={`${id}-${index}-hint`}>{step.hint}</small></span>
         <ChevronRight size={14} aria-hidden="true" />
       </button>)}
     </nav>

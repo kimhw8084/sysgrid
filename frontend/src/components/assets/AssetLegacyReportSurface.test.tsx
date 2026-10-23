@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { AssetLegacyReportSurface } from './AssetLegacyReportSurface'
 
@@ -10,6 +10,26 @@ const assets = [1, 2].map(id => ({ id, name: `Asset ${id}`, type: 'Physical', st
 const props = { assets, allAssets: assets, options: [], connections: [], relationships: [], onEdit: vi.fn(), onViewServiceDetails: vi.fn(), onEditService: vi.fn() }
 
 describe('Asset report selection ownership', () => {
+  it('can filter valid creation choices and recorded legacy values without silently losing records', () => {
+    const records = [
+      { id: 1, name: 'Standby power', type: 'PDU', status: 'Standby', environment: 'Dev' },
+      { id: 2, name: 'Planned recovery', type: 'UPS', status: 'Planned', environment: 'DR' },
+      { id: 3, name: 'Historical appliance', type: 'Appliance', status: 'Retired state', environment: 'Legacy zone' },
+    ]
+    render(<AssetLegacyReportSurface {...props} assets={records} allAssets={records} />)
+    for (const [label, values] of [
+      ['Report asset type', ['PDU', 'UPS', 'Console-Server', 'Patch Panel', 'Appliance']],
+      ['Report status', ['Planned', 'Standby', 'Decommissioned', 'Retired state']],
+      ['Report environment', ['Dev', 'QA', 'DR', 'Sandbox', 'Legacy', 'Legacy zone']],
+    ] as const) {
+      const select = screen.getByRole('combobox', { name: label })
+      for (const value of values) expect(within(select).getByRole('option', { name: value })).toHaveValue(value)
+    }
+    fireEvent.change(screen.getByRole('combobox', { name: 'Report environment' }), { target: { value: 'DR' } })
+    expect(screen.getByRole('heading', { name: 'Planned recovery', level: 1 })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Standby power/ })).not.toBeInTheDocument()
+  })
+
   it('selects another entry once without a parent/child feedback loop', () => {
     const changes = vi.fn()
     function Controlled() {

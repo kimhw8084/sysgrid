@@ -4,12 +4,16 @@
   --guide-teal: #5eead4;
   --guide-violet: #c4b5fd;
   --guide-amber: #fcd34d;
+  --topology-network: #2dd4bf;
+  --topology-dependency: #a78bfa;
 }
 :is([data-theme='pure-clarity'], [data-theme='light']) {
   --guide-blue: #1d4ed8;
   --guide-teal: #0f766e;
   --guide-violet: #6d28d9;
   --guide-amber: #92400e;
+  --topology-network: #087f8c;
+  --topology-dependency: #6d28d9;
 }
 [data-tone='blue'] { --section-ink: var(--guide-blue); }
 [data-tone='teal'] { --section-ink: var(--guide-teal); }
@@ -148,13 +152,46 @@
 .asset-report h2 { color: var(--text-primary); }
 .asset-report [class*='text-[8px]'], .asset-report [class*='text-[9px]'], .asset-report [class*='text-[10px]'] { font-size: .75rem; letter-spacing: .025em; line-height: 1.5; }
 .asset-report input, .asset-report select { min-height: 2.5rem; min-width: 0; color: var(--text-primary); }
-.asset-report-sidebar button > div:first-child { gap: .5rem; }
-.asset-report-sidebar button > div:first-child > span:last-child { flex-shrink: 0; }
-.asset-report-sidebar .opacity-60 { opacity: 1; }
-.asset-report-sidebar button > div:first-child > span:first-child { font-size: .8125rem; font-weight: 650; text-transform: none; letter-spacing: normal; }
+.asset-report-rail-name { color: var(--text-primary); font-size: .8125rem; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
+.asset-report-rail-meta { display: flex; gap: .5rem; align-items: center; margin-top: .375rem; font-size: .6875rem; color: var(--text-secondary); }
+.asset-report-rail-meta > span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.asset-report-rail-meta > span:last-child { flex-shrink: 0; }
+.asset-report-sidebar button, .asset-report-sidebar button * { transition: none; }
 .asset-report .asset-report-addresses { grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); }
 .asset-report-addresses > div > span:last-child { font-size: .875rem; }
 .asset-report-addresses > div:first-child > span:last-child { white-space: nowrap; }
+.asset-report-record-header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.asset-report-record-identity { display: flex; align-items: flex-start; gap: .75rem; min-width: 0; flex: 1 1 18rem; }
+.asset-report-record-identity > div { min-width: 0; }
+.asset-report-record-identity h1 { color: var(--text-primary); font-size: 1.25rem; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.asset-report-record-identity p { display: flex; flex-wrap: wrap; gap: .25rem .75rem; font-size: .75rem; line-height: 1.5; color: var(--text-secondary); margin-top: .375rem; }
+.asset-report-record-identity p strong { color: var(--guide-blue); }
+.asset-report-record-icon { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: .6rem; background: var(--action-primary); color: white; flex-shrink: 0; }
+.asset-report-record-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.asset-report-edit, .asset-report-quick-action { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 2.25rem; padding: .5rem .75rem; border: 1px solid var(--border-default); border-radius: .5rem; background: var(--surface-elevated); color: var(--text-primary); font-size: .75rem; font-weight: 600; }
+.asset-report-edit { background: var(--action-primary); border-color: var(--action-primary); color: white; }
+.asset-report-edit:hover { filter: brightness(1.1); }
+.asset-report-quick-action:hover { background: var(--surface-hover); border-color: var(--guide-blue); }
+.asset-report-overview { display: grid; gap: .875rem; }
+.asset-report-updated { color: var(--text-secondary); font-size: .75rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+.asset-report-updated span { color: var(--text-primary); }
+.asset-report-sections { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: .375rem; padding: .5rem 0; border-bottom: 1px solid var(--border-default); background: var(--surface-elevated); }
+.asset-report-sections button { min-height: 2rem; padding: .375rem .625rem; border: 1px solid var(--border-default); border-radius: .5rem; color: var(--text-secondary); font-size: .75rem; font-weight: 600; background: var(--input-bg); }
+.asset-report-sections button:hover { color: var(--guide-blue); border-color: var(--guide-blue); background: var(--surface-hover); }
+.asset-report [data-report-section] { scroll-margin-top: 7rem; }
+.asset-report [data-report-status] [data-sg-status-pill] { width: auto; min-width: 5rem; height: 1.5rem; padding: 0 .5rem; white-space: nowrap; }
+@media (min-width: 1024px) {
+  /* Only the content panes scroll; section/focus jumps must not scroll away the app header. */
+  html .sg-app-shell { overflow: clip; }
+  .sg-app-shell > [data-sg-app-sidebar], .sg-app-shell > main { min-height: 0; max-height: 100%; }
+  .asset-report .asset-report-sidebar { width: 16rem; min-width: 16rem; }
+  .asset-report .asset-report-content { min-height: 0; }
+}
+@media (min-width: 1024px) and (max-height: 760px), (min-width: 1024px) and (max-width: 1279px) {
+  /* Keep enough record space when desktop chrome wraps; the workspace viewport owns the outer scroll. */
+  .sg-app-shell:not([data-sg-projects-app='true']) [data-golden-workspace-shell].asset-report-workspace { height: auto; flex: 1 0 auto; }
+  .sg-app-shell .asset-report { flex: 0 0 360px; height: 360px; }
+}
 .asset-report-sidebar button[aria-pressed='true'] { background: var(--action-primary); color: white; }
 .asset-report .asset-report-sidebar button[aria-pressed='true'] :is(span, div) { color: white; }
 .asset-report-sidebar button[aria-pressed='true'] span[class*='rounded-lg'] { border-color: #ffffff80; background: #00000026; }
