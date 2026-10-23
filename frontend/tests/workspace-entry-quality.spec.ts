@@ -13,6 +13,59 @@ for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] 
     await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
   })
 
+  test('Map automatically frames every painted asset at initial and resized canvas sizes', async ({ page, sysApi: request }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.addInitScript(() => {
+      const prototype = CanvasRenderingContext2D.prototype
+      const clear = prototype.clearRect
+      const arc = prototype.arc
+      prototype.clearRect = function (...args) {
+        if (this.canvas.closest('[data-asset-map]')) (this.canvas as any).topologyPaint = []
+        return clear.apply(this, args)
+      }
+      prototype.arc = function (...args) {
+        if (this.canvas.closest('[data-asset-map]') && [5, 7].includes(args[2])) {
+          const matrix = this.getTransform(), ratio = this.canvas.clientWidth / this.canvas.width
+          const [x, y, radius] = args
+          const paint = (this.canvas as any).topologyPaint ||= []
+          paint.push({ x: (matrix.a * x + matrix.c * y + matrix.e) * ratio, y: (matrix.b * x + matrix.d * y + matrix.f) * ratio, radius: radius * Math.hypot(matrix.a, matrix.b) * ratio })
+        }
+        return arc.apply(this, args)
+      }
+    })
+    const stamp = `Framing-${Date.now()}`
+    const center = await createAsset(request, { name: `${stamp}-Center`, system: 'Framing proof' })
+    for (let index = 0; index < 8; index++) {
+      const peer = await createAsset(request, { name: `${stamp}-Peer-${index}`, system: 'Framing proof' })
+      await createConnection(request, { source_device_id: center.id, target_device_id: peer.id, source_port: `frame-${index}`, target_port: 'eth0', link_type: 'Data' })
+    }
+    await page.goto('/asset')
+    await fillGridSearch(page, 'Scan asset matrix...', stamp)
+    await page.getByRole('button', { name: 'Report', exact: true }).click()
+    await page.locator('.asset-report-sidebar').getByRole('button', { name: new RegExp(center.name) }).click()
+    await page.getByRole('button', { name: 'Map', exact: true }).click()
+    const canvas = page.locator('[data-asset-map] canvas')
+    await expect(canvas).toBeVisible()
+    const expectPaintWithinCanvas = async () => {
+      await expect.poll(() => canvas.evaluate(element => {
+        const paints = (element as any).topologyPaint || []
+        const centerX = (Math.min(...paints.map((node: any) => node.x - node.radius)) + Math.max(...paints.map((node: any) => node.x + node.radius))) / 2
+        const centerY = (Math.min(...paints.map((node: any) => node.y - node.radius)) + Math.max(...paints.map((node: any) => node.y + node.radius))) / 2
+        const host = element.closest('.asset-map-canvas-host')!
+        return { count: paints.length,
+          measured: Math.abs(element.clientWidth - host.clientWidth) <= 1 && Math.abs((element as HTMLCanvasElement).width / devicePixelRatio - element.clientWidth) <= 1,
+          centered: Math.abs(centerX - element.clientWidth / 2) <= 4 && Math.abs(centerY - element.clientHeight / 2) <= 4,
+          inside: paints.every((node: any) => node.x - node.radius >= 0 && node.y - node.radius >= 0 && node.x + node.radius <= element.clientWidth && node.y + node.radius <= element.clientHeight) }
+      })).toEqual({ count: 9, measured: true, centered: true, inside: true })
+    }
+    await expectPaintWithinCanvas()
+    for (const resizedWidth of [900, 390, 1440]) {
+      await page.setViewportSize({ width: resizedWidth, height: 900 })
+      await expectPaintWithinCanvas()
+    }
+    await page.screenshot({ path: testInfo.outputPath('map-auto-framing.png'), animations: 'disabled' })
+  })
+
   test('Report selection stays stable and Map can be cleared and navigated by keyboard', async ({ page, sysApi: request }, testInfo) => {
     const stamp = `Report-map-${Date.now()}`
     const primary = await createAsset(request, { name: `${stamp}-A`, system: 'Quality proof' })

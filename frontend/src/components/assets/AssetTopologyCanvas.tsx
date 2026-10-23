@@ -33,6 +33,17 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
     return () => observer.disconnect()
   }, [])
   const fit = () => engine.current?.zoomToFit(duration, 56)
+  useEffect(() => {
+    const canvas = host.current?.querySelector('canvas')
+    if (!canvas) return
+    // The graph engine can receive its new width before the canvas reaches
+    // layout. Fit only after that displayed size changes, not on selection.
+    const observer = new ResizeObserver(() => {
+      if (lastFit.current === graph) engine.current?.zoomToFit(duration, 56)
+    })
+    observer.observe(canvas)
+    return () => observer.disconnect()
+  }, [graph, duration])
   const safeLabel = (value: string) => {
     const label = document.createElement('span')
     label.textContent = value

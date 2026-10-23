@@ -94,6 +94,8 @@
 .asset-topology-canvas { position: relative; min-width: 0; height: 300px; overflow: hidden; background: var(--input-bg); }
 .asset-map-full-canvas { height: clamp(340px, 48vh, 600px); }
 .asset-map-canvas-host { width: 100%; height: 100%; overflow: hidden; }
+/* The graph engine owns bitmap/CSS sizing; global max-width rescaling skews its camera. */
+.asset-map-canvas-host canvas { max-width: none; }
 .asset-map-canvas-tools { position: absolute; z-index: 2; top: .75rem; right: .75rem; display: flex; gap: .25rem; padding: .25rem; border: 1px solid var(--border-default); border-radius: .6rem; background: var(--surface-overlay); }
 .asset-map-canvas-tools button { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .375rem; color: var(--text-primary); }
 .asset-map-canvas-tools button:hover { background: var(--surface-hover); color: var(--guide-blue); }
