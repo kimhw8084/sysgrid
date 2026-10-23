@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useWorkspacePopupDismiss } from "./WorkspaceOverlay"
 import { ChevronDown } from 'lucide-react'
@@ -46,6 +46,7 @@ export function OperationalAssetSelector({
   allFilterLabel = 'All Systems',
   selectedAssetLabel = defaultSelectedAssetLabel,
 }: OperationalAssetSelectorProps) {
+  const id = useId()
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [systemFilter, setSystemFilter] = useState('ALL')
@@ -63,9 +64,13 @@ export function OperationalAssetSelector({
 
   return (
     <div className="space-y-1.5">
-      <WorkspaceFieldLabel label={label} required={required} />
+      <WorkspaceFieldLabel label={label} required={required} htmlFor={id} />
       <div>
         <button
+          id={id}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
+          aria-label={selectedAsset ? `${label}: ${selectedAssetLabel(selectedAsset)}` : label}
           type="button"
           onClick={() => setIsOpen((current) => !current)}
           ref={(node) => {
@@ -94,8 +99,9 @@ export function OperationalAssetSelector({
                   placeholder={allFilterLabel}
                 />
                 <div className="space-y-1.5">
-                  <WorkspaceFieldLabel label="Search Asset" />
+                  <WorkspaceFieldLabel label="Search Asset" htmlFor={`${id}-search`} />
                   <input
+                    id={`${id}-search`}
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={searchPlaceholder}
@@ -135,7 +141,7 @@ export function OperationalAssetSelector({
           document.body
         )}
       </div>
-      <WorkspaceFieldError message={error} />
+      <WorkspaceFieldError message={error} id={`${id}-error`} />
     </div>
   )
 }

@@ -17,6 +17,9 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { showWorkspaceToast } from './shared/WorkspaceToast'
+import { FormGuide, focusFormIssue } from './shared/FormGuide'
+import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
+import { Calendar } from 'lucide-react'
 import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import {
   computeFloatingPanelRect,
@@ -557,10 +560,8 @@ const sanitizeAssetPayload = (item: any) => ({
 })
 const NETWORK_LINK_TYPES = ['Physical', 'Virtual', 'Storage', 'Switch', 'Firewall', 'Load Balancer', 'PDU', 'UPS', 'Console-Server', 'Patch Panel']
 const NETWORK_DIRECTIONS = ['Primary', 'Secondary', 'Out-of-band']
-const NETWORK_UNITS = ['W', 'U']
 const NETWORK_STATUSES = ASSET_STATUSES
 const getNetworkConnectionTitle = getAssetTitle
-const sanitizeNetworkConnectionPayload = sanitizeAssetPayload
 
 const ObservabilityHUD = ({ items }: any) => {
   const stats = useMemo(() => {
@@ -3495,14 +3496,15 @@ type AssetRecordFieldProps = {
   label: string; value: string | number; onChange: (value: string) => void; error?: string;
   required?: boolean; disabled?: boolean; multiline?: boolean; type?: React.HTMLInputTypeAttribute;
   min?: number; max?: number; step?: string;
+  placeholder?: string; hint?: string;
 }
 
-function AssetRecordField({ label, value, onChange, error, required, disabled, multiline, type = 'text', min, max, step }: AssetRecordFieldProps) {
+function AssetRecordField({ label, value, onChange, error, required, disabled, multiline, type = 'text', min, max, step, placeholder, hint }: AssetRecordFieldProps) {
   const id = React.useId()
   const inputProps = {
-    id, value, required, disabled,
+    id, value, required, disabled, placeholder,
     onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(event.target.value),
-    'aria-invalid': Boolean(error), 'aria-describedby': error ? `${id}-error` : undefined,
+    'aria-invalid': Boolean(error), 'aria-describedby': [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(' ') || undefined,
     className: monitoringInputClass(error),
   }
   return <div>
@@ -3510,15 +3512,19 @@ function AssetRecordField({ label, value, onChange, error, required, disabled, m
     {multiline ? <textarea {...inputProps} className={`${inputProps.className} min-h-[180px] font-mono text-[11px]`} />
       : <input {...inputProps} type={type} min={min} max={max} step={step} />}
     <FieldError id={`${id}-error`} message={error} />
+    {hint && <p id={`${id}-hint`} className="form-field-hint">{hint}</p>}
   </div>
 }
 
-export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
+export function AssetRecordFormModal({ item: incomingItem, onClose, onSuccess }: any) {
+  const [item] = useState(incomingItem)
   useBodyModalFlag()
   const queryClient = useQueryClient()
   const [isMaximized, setIsMaximized] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [generalError, setGeneralError] = useState('')
+  const formBodyRef = useRef<HTMLDivElement>(null)
   const initialMetadataJsonText = useMemo(() => JSON.stringify(item?.metadata_json || {}, null, 2), [item])
   const initialFormData = useMemo(() => ({
     name: item?.name || '',
@@ -3558,6 +3564,7 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
   const updateField = useCallback((field: string, value: any) => {
     if (isSaving) return
     setFormData((current) => ({ ...current, [field]: value }))
+    setGeneralError('')
     setFormErrors((current) => {
       if (!current[field]) return current
       const next = { ...current }
@@ -3573,7 +3580,8 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
     if (!String(formData.serial_number || '').trim()) nextErrors.serial_number = 'Serial number is required.'
     if (!String(formData.asset_tag || '').trim()) nextErrors.asset_tag = 'Asset tag is required.'
     try {
-      JSON.parse(metadataJsonText || '{}')
+      const metadata = JSON.parse(metadataJsonText || '{}')
+      if (metadata === null || Array.isArray(metadata) || typeof metadata !== 'object') nextErrors.metadata_json = 'Metadata must be a JSON object with named keys.'
     } catch {
       nextErrors.metadata_json = 'Metadata JSON must be valid.'
     }
@@ -3581,28 +3589,34 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
   }, [formData, metadataJsonText])
 
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async () => {
       setIsSaving(true)
-      const payload = {
-        ...sanitizeAssetPayload({
+      const normalized = sanitizeAssetPayload({
           ...formData,
           metadata_json: JSON.parse(metadataJsonText || '{}'),
-        }),
-      }
+        })
+      const baseline = sanitizeAssetPayload({ ...initialFormData, metadata_json: JSON.parse(initialMetadataJsonText) })
+      const payload = item?.id ? Object.fromEntries(Object.entries(normalized).filter(([key, value]) => !isDeepEqual(value, baseline[key]))) : normalized
       const url = item?.id ? `/api/v1/devices/${item.id}` : '/api/v1/devices'
       const method = item?.id ? 'PUT' : 'POST'
       const res = await apiFetch(url, { method, body: JSON.stringify(payload) })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })
       return res.json()
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['asset-real-devices'] })
       setIsSaving(false)
+      showWorkspaceToast(item?.id ? 'Asset updated.' : 'Asset registered.', { type: 'success' })
       onSuccess?.()
     },
     onError: (error: any) => {
       setIsSaving(false)
-      showWorkspaceToast(error?.message || 'Failed to save asset', { type: 'error' })
+      const { fieldErrors, generalError: message } = parseOperationalApiValidationError(error)
+      setFormErrors(fieldErrors)
+      setGeneralError(message || 'Review the highlighted fields. Your asset draft is preserved.')
+      showWorkspaceToast(message || 'The asset was not saved. Your draft is preserved.', { type: 'error' })
+      requestAnimationFrame(() => focusFormIssue(formBodyRef.current))
     },
   })
 
@@ -3612,6 +3626,7 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
     setFormErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       showWorkspaceToast('Fix the highlighted asset fields before saving.', { type: 'error' })
+      requestAnimationFrame(() => focusFormIssue(formBodyRef.current))
       return
     }
     mutation.mutate()
@@ -3628,12 +3643,14 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
     <AssetRecordField label={label} value={formData[field]} onChange={value => updateField(field, value)}
       error={formErrors[field]} disabled={isSaving} {...props} />
   )
+  const requiredFilled = [formData.name, formData.system, formData.serial_number, formData.asset_tag].filter(value => String(value || '').trim()).length
   const formTitle = item?.id ? getAssetTitle(item) : 'Create Asset'
 
   return (
     <WorkspaceModal
       isOpen={true}
       onClose={handleClose}
+      hideFooterClose
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
@@ -3657,6 +3674,7 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
       }
       footerRight={
         <div className="flex items-center gap-3">
+          <ToolbarButton onClick={handleClose} disabled={isSaving}>Cancel</ToolbarButton>
           <ToolbarButton onClick={handleSave} disabled={isSaving} variant="primary">
             {isSaving ? 'Saving...' : 'Save Asset'}
           </ToolbarButton>
@@ -3665,49 +3683,58 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
     >
       <WorkspaceDossierShell
         body={
-          <div className="space-y-6">
+          <div ref={formBodyRef} className="space-y-6">
+            <WorkspaceValidationBanner message={generalError} />
+            <FormGuide summary={<><strong>{requiredFilled} of 4 required fields filled.</strong> Identify the asset first. The rest can be added later.</>}
+              steps={[
+                { id: 'asset-form-identity', title: 'Identify', hint: 'Hostname, system and inventory IDs', complete: requiredFilled === 4 },
+                { id: 'asset-form-classification', title: 'Classify', hint: 'Type, status and environment', tone: 'teal', complete: Boolean(formData.type && formData.status && formData.environment) },
+                { id: 'asset-form-management', title: 'Enrich', hint: 'Optional access and hardware', tone: 'violet' },
+              ]} />
             <section className="grid gap-4 xl:grid-cols-3">
-              <WorkspaceSectionCard title="Identity">
+              <WorkspaceSectionCard id="asset-form-identity" title="1 · Asset identity" description="Four fields to register a traceable asset." icon={<Tag size={18} />}>
                 <div className="space-y-4">
-                  {renderField('name', 'Hostname', { required: true })}
-                  {renderField('role', 'Role / Description')}
-                  {renderField('system', 'Logical System', { required: true })}
-                  {renderField('owner', 'Owner')}
-                  {renderField('business_unit', 'Business Unit')}
+                  {renderField('name', 'Hostname', { required: true, placeholder: 'e.g. APP-PROD-01', hint: 'Use the name operators recognize.' })}
+                  {renderField('system', 'Logical System', { required: true, placeholder: 'e.g. ERP or Manufacturing' })}
+                  {renderField('serial_number', 'Serial Number', { required: true, placeholder: 'Serial from the device or inventory' })}
+                  {renderField('asset_tag', 'Asset Tag', { required: true, placeholder: 'Your organization’s unique inventory tag' })}
                 </div>
               </WorkspaceSectionCard>
-              <WorkspaceSectionCard title="Classification">
+              <WorkspaceSectionCard id="asset-form-classification" title="2 · Classification" tone="teal" icon={<Layers size={18} />} description="Review the defaults before saving.">
                 <div className="space-y-4">
                   <AppDropdown disabled={isSaving} label="Asset Type" value={formData.type} onChange={(value) => updateField('type', value)} options={['Physical', 'Virtual', 'Storage', 'Switch', 'Firewall', 'Load Balancer', 'PDU', 'UPS', 'Console-Server', 'Patch Panel'].map((value) => ({ value, label: value }))} />
                   <AppDropdown disabled={isSaving} label="Status" value={formData.status} onChange={(value) => updateField('status', value)} options={ASSET_STATUSES.filter((value) => value !== 'Deleted').map((value) => ({ value, label: value }))} />
                   <AppDropdown disabled={isSaving} label="Environment" value={formData.environment} onChange={(value) => updateField('environment', value)} options={ASSET_ENVIRONMENTS.map((value) => ({ value, label: value }))} />
-                  <AppDropdown disabled={isSaving} label="Depth" value={formData.depth} onChange={(value) => updateField('depth', value)} options={ASSET_DEPTHS.map((value) => ({ value, label: value }))} />
-                  <AppDropdown disabled={isSaving} label="Mount Orientation" value={formData.mount_orientation} onChange={(value) => updateField('mount_orientation', value)} options={ASSET_MOUNT_ORIENTATIONS.map((value) => ({ value, label: value }))} />
-                  {renderField('size_u', 'Size (U)', { type: 'number', min: 1, max: Number.MAX_SAFE_INTEGER, step: '1' })}
+                  {renderField('role', 'Role / Description', { placeholder: 'e.g. Application server' })}
+                  {renderField('owner', 'Owner', { placeholder: 'Responsible person or team' })}
+                  {renderField('business_unit', 'Business Unit')}
                 </div>
               </WorkspaceSectionCard>
-              <WorkspaceSectionCard title="Management">
+              <WorkspaceSectionCard id="asset-form-management" title="3 · Access & platform" tone="violet" icon={<Network size={18} />} description="Optional. Add what is known; leave the rest blank.">
                 <div className="space-y-4">
-                  {renderField('primary_ip', 'Primary IP')}
-                  {renderField('management_ip', 'Management IP')}
-                  {renderField('management_url', 'Management URL')}
+                  {renderField('primary_ip', 'Primary IP', { placeholder: 'e.g. 192.0.2.10' })}
+                  {renderField('management_ip', 'Management IP', { placeholder: 'e.g. 192.0.2.11' })}
+                  {renderField('management_url', 'Management URL', { placeholder: 'https://console.example.com', type: 'url' })}
                   {renderField('os_name', 'OS Name')}
                   {renderField('os_version', 'OS Version')}
                 </div>
               </WorkspaceSectionCard>
             </section>
+            <details className="form-optional" open={Boolean(formErrors.metadata_json)}>
+              <summary>Optional · Rack fit, hardware, lifecycle & metadata</summary>
             <section className="grid gap-4 xl:grid-cols-2">
-              <WorkspaceSectionCard title="Hardware & Inventory">
+              <WorkspaceSectionCard title="Rack fit & hardware" tone="amber" icon={<Cpu size={18} />}>
                 <div className="grid gap-4 sm:grid-cols-2">
+                  <AppDropdown disabled={isSaving} label="Depth" value={formData.depth} onChange={(value) => updateField('depth', value)} options={ASSET_DEPTHS.map((value) => ({ value, label: value }))} />
+                  <AppDropdown disabled={isSaving} label="Mount Orientation" value={formData.mount_orientation} onChange={(value) => updateField('mount_orientation', value)} options={ASSET_MOUNT_ORIENTATIONS.map((value) => ({ value, label: value }))} />
+                  {renderField('size_u', 'Size (U)', { type: 'number', min: 1, max: Number.MAX_SAFE_INTEGER, step: '1' })}
                   {renderField('manufacturer', 'Manufacturer')}
                   {renderField('model', 'Model')}
-                  {renderField('serial_number', 'Serial Number', { required: true })}
-                  {renderField('asset_tag', 'Asset Tag', { required: true })}
                   {renderField('power_typical_w', 'Typical Power (W)', { type: 'number', min: 0, step: 'any' })}
                   {renderField('power_max_w', 'Max Power (W)', { type: 'number', min: 0, step: 'any' })}
                 </div>
               </WorkspaceSectionCard>
-              <WorkspaceSectionCard title="Lifecycle & Metadata">
+              <WorkspaceSectionCard title="Lifecycle & metadata" tone="violet" icon={<Calendar size={18} />}>
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     {renderField('purchase_date', 'Purchase Date', { type: 'date' })}
@@ -3720,6 +3747,7 @@ export function AssetRecordFormModal({ item, onClose, onSuccess }: any) {
                 </div>
               </WorkspaceSectionCard>
             </section>
+            </details>
           </div>
         }
       />
@@ -4063,343 +4091,8 @@ const isMonitoringFieldRequired = (fieldName: string) => MONITORING_REQUIRED_FIE
 
 const monitoringInputClass = (error?: string) => getWorkspaceInputClass(error)
 
-export function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeOptions, farmOptions, cableTypeOptions }: any) {
-  useEscapeDismiss(onClose)
-  useBodyModalFlag()
-  const queryClient = useQueryClient()
-  const [isSaving, setIsSaving] = useState(false)
-  const [isMaximized, setIsMaximized] = useState(false)
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
-  const [formData, setFormData] = useState(() => ({
-    source_device_id: item?.source_device_id ?? '',
-    source_port: item?.source_port ?? '',
-    source_ip: item?.source_ip ?? '',
-    source_mac: item?.source_mac ?? '',
-    source_vlan: item?.source_vlan ?? '',
-    target_device_id: item?.target_device_id ?? '',
-    target_port: item?.target_port ?? '',
-    target_ip: item?.target_ip ?? '',
-    target_mac: item?.target_mac ?? '',
-    target_vlan: item?.target_vlan ?? '',
-    link_type: item?.link_type || 'Data',
-    purpose: item?.purpose || '',
-    speed_gbps: item?.speed_gbps ?? 10,
-    unit: item?.unit || 'Gbps',
-    direction: item?.direction || 'Bidirectional',
-    cable_type: item?.cable_type || '',
-    status: item?.status || 'Active',
-    farm: item?.farm || '',
-    request_link: item?.request_link || '',
-  }))
-
-  const deviceOptions = useMemo(() => (devices || []).map((device: any) => ({ value: String(device.id), label: device.name })), [devices])
-  const mergedLinkPurposeOptions = useMemo(() => {
-    const current = item?.link_type ? [{ value: item.link_type, label: item.link_type }] : []
-    return Array.from(new Map([...(linkPurposeOptions || []), ...current].map((option: any) => [option.value, option])).values())
-  }, [item?.link_type, linkPurposeOptions])
-  const mergedFarmOptions = useMemo(() => {
-    const current = item?.farm ? [{ value: item.farm, label: item.farm }] : []
-    return Array.from(new Map([...(farmOptions || []), ...current].map((option: any) => [option.value, option])).values())
-  }, [farmOptions, item?.farm])
-  const mergedCableTypeOptions = useMemo(() => {
-    const current = item?.cable_type ? [{ value: item.cable_type, label: item.cable_type }] : []
-    return Array.from(new Map([...(cableTypeOptions || []), ...current].map((option: any) => [option.value, option])).values())
-  }, [cableTypeOptions, item?.cable_type])
-
-  const clearFieldError = useCallback((field: string) => {
-    setFormErrors((current) => {
-      if (!current[field]) return current
-      const next = { ...current }
-      delete next[field]
-      return next
-    })
-  }, [])
-
-  const updateField = useCallback((field: string, value: any) => {
-    setFormData((current) => ({ ...current, [field]: value }))
-    clearFieldError(field)
-  }, [clearFieldError])
-
-  const validateForm = useCallback((draft = formData) => {
-    const nextErrors: Record<string, string> = {}
-    const sourceDeviceId = Number(draft.source_device_id)
-    const targetDeviceId = Number(draft.target_device_id)
-    const sourcePort = String(draft.source_port || '').trim()
-    const targetPort = String(draft.target_port || '').trim()
-    const sourceIp = String(draft.source_ip || '').trim()
-    const targetIp = String(draft.target_ip || '').trim()
-    const requestLink = String(draft.request_link || '').trim()
-    const speed = draft.speed_gbps === '' || draft.speed_gbps == null ? null : Number(draft.speed_gbps)
-    const sourceVlan = draft.source_vlan === '' || draft.source_vlan == null ? null : Number(draft.source_vlan)
-    const targetVlan = draft.target_vlan === '' || draft.target_vlan == null ? null : Number(draft.target_vlan)
-
-    const isValidIp = (value: string) => {
-      if (!value) return true
-      if (/^(\d{1,3}\.){3}\d{1,3}$/.test(value)) {
-        return value.split('.').every((part) => Number(part) >= 0 && Number(part) <= 255)
-      }
-      return /^[0-9a-fA-F:]+$/.test(value) && value.includes(':')
-    }
-
-    const isValidUrl = (value: string) => {
-      if (!value) return true
-      try {
-        const parsed = new URL(value)
-        return ['http:', 'https:'].includes(parsed.protocol) && Boolean(parsed.hostname)
-      } catch {
-        return false
-      }
-    }
-
-    if (!Number.isFinite(sourceDeviceId) || sourceDeviceId <= 0) nextErrors.source_device_id = 'Source device is required.'
-    if (!Number.isFinite(targetDeviceId) || targetDeviceId <= 0) nextErrors.target_device_id = 'Peer device is required.'
-    if (!sourcePort) nextErrors.source_port = 'Source port is required.'
-    if (!targetPort) nextErrors.target_port = 'Peer port is required.'
-    if (!draft.link_type) nextErrors.link_type = 'Connection type is required.'
-    if (!draft.status) nextErrors.status = 'Status is required.'
-    if (!draft.direction) nextErrors.direction = 'Direction is required.'
-    if (!draft.unit) nextErrors.unit = 'Unit is required.'
-    if (sourceDeviceId === targetDeviceId && sourceDeviceId > 0) nextErrors.target_device_id = 'Peer device must be different from source.'
-    if (sourceIp && !isValidIp(sourceIp)) nextErrors.source_ip = 'Source IP must be a valid IPv4 or IPv6 address.'
-    if (targetIp && !isValidIp(targetIp)) nextErrors.target_ip = 'Peer IP must be a valid IPv4 or IPv6 address.'
-    if (requestLink && !isValidUrl(requestLink)) nextErrors.request_link = 'Request link must be a valid http/https URL.'
-    if (speed != null && (!Number.isFinite(speed) || speed <= 0)) nextErrors.speed_gbps = 'Speed must be greater than zero.'
-    if (sourceVlan != null && (!Number.isInteger(sourceVlan) || sourceVlan < 0 || sourceVlan > 4094)) nextErrors.source_vlan = 'Source VLAN must be between 0 and 4094.'
-    if (targetVlan != null && (!Number.isInteger(targetVlan) || targetVlan < 0 || targetVlan > 4094)) nextErrors.target_vlan = 'Peer VLAN must be between 0 and 4094.'
-    if (draft.farm && mergedFarmOptions.length > 0 && !mergedFarmOptions.some((option: any) => option.value === draft.farm)) nextErrors.farm = 'Select a valid farm.'
-    if (draft.cable_type && mergedCableTypeOptions.length > 0 && !mergedCableTypeOptions.some((option: any) => option.value === draft.cable_type)) nextErrors.cable_type = 'Select a valid cable type.'
-    if (draft.link_type && mergedLinkPurposeOptions.length > 0 && !mergedLinkPurposeOptions.some((option: any) => option.value === draft.link_type)) nextErrors.link_type = 'Select a valid connection type.'
-
-    return nextErrors
-  }, [formData, mergedCableTypeOptions, mergedFarmOptions, mergedLinkPurposeOptions])
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      setIsSaving(true)
-      const payload = sanitizeNetworkConnectionPayload(formData)
-      const url = item?.id ? `/api/v1/networks/connections/${item.id}` : '/api/v1/networks/connections'
-      const method = item?.id ? 'PUT' : 'POST'
-      const res = await apiFetch(url, { method, body: JSON.stringify(payload) })
-      if (!res.ok) throw new Error(await res.text())
-      return res.json()
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['network-connections'] })
-      setIsSaving(false)
-      onSuccess?.()
-    },
-    onError: (error: any) => {
-      setIsSaving(false)
-      showWorkspaceToast(error?.message || 'Failed to save network connection', { type: 'error' })
-    },
-  })
-
-  const handleSave = useCallback(() => {
-    const nextErrors = validateForm()
-    setFormErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) {
-      showWorkspaceToast('Fix the highlighted network fields before saving.', { type: 'error' })
-      return
-    }
-    mutation.mutate()
-  }, [mutation, validateForm])
-
-  const fieldClass = useCallback((field: string) => monitoringInputClass(formErrors[field]), [formErrors])
-  const formTitle = item?.id ? getNetworkConnectionTitle(item) : 'Create Network Connection'
-
-  return (
-    <WorkspaceModal
-      isOpen={true}
-      onClose={onClose}
-      size="workspace"
-      isMaximized={isMaximized}
-      onMaximizeToggle={() => setIsMaximized(!isMaximized)}
-      title={
-        <div className="flex items-center gap-3">
-          <span>{item?.id ? 'Edit Network Connection' : 'Create Network Connection'}</span>
-          {item?.id && <WorkspaceShareHeader id={String(item.id)} title={formTitle} />}
-        </div>
-      }
-      subtitle={item?.id ? `Connection ID ${item.id}` : 'Create a new network connection'}
-      icon={<Network size={20} />}
-      status={
-        <div className="flex items-center gap-2">
-          <StatusPill value={formData.status} />
-          <StatusPill value={formData.link_type || 'N/A'} />
-          <StatusPill value={formData.direction || 'N/A'} />
-        </div>
-      }
-      footerRight={
-        <div className="flex items-center gap-3">
-          <ToolbarButton onClick={onClose}>Cancel</ToolbarButton>
-          <ToolbarButton onClick={handleSave} disabled={isSaving} variant="primary">
-            {isSaving ? 'Saving...' : 'Save Connection'}
-          </ToolbarButton>
-        </div>
-      }
-    >
-      <WorkspaceDossierShell
-        body={
-          <div className="space-y-6">
-            <section className="grid gap-4 xl:grid-cols-2">
-              <WorkspaceSectionCard title="Source Endpoint">
-                <div className="space-y-4">
-                  <AppDropdown
-                    label="Source Device"
-                    required
-                    value={String(formData.source_device_id)}
-                    onChange={(value) => updateField('source_device_id', value)}
-                    options={deviceOptions}
-                    placeholder="Select source device"
-                  />
-                  <FieldError message={formErrors.source_device_id} />
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <FieldLabel label="Source Port" required />
-                      <input value={formData.source_port} onChange={(e) => updateField('source_port', e.target.value)} placeholder="Source port" className={fieldClass('source_port')} />
-                      <FieldError message={formErrors.source_port} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Source VLAN" />
-                      <input type="number" min="0" max="4094" step="1" value={formData.source_vlan} onChange={(e) => updateField('source_vlan', e.target.value)} placeholder="0-4094" className={fieldClass('source_vlan')} />
-                      <FieldError message={formErrors.source_vlan} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Source IP" />
-                      <input value={formData.source_ip} onChange={(e) => updateField('source_ip', e.target.value)} placeholder="192.168.1.10" className={fieldClass('source_ip')} />
-                      <FieldError message={formErrors.source_ip} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Source MAC" />
-                      <input value={formData.source_mac} onChange={(e) => updateField('source_mac', e.target.value)} placeholder="00:11:22:33:44:55" className={fieldClass('source_mac')} />
-                    </div>
-                  </div>
-                </div>
-              </WorkspaceSectionCard>
-
-              <WorkspaceSectionCard title="Peer Endpoint">
-                <div className="space-y-4">
-                  <AppDropdown
-                    label="Peer Device"
-                    required
-                    value={String(formData.target_device_id)}
-                    onChange={(value) => updateField('target_device_id', value)}
-                    options={deviceOptions}
-                    placeholder="Select peer device"
-                  />
-                  <FieldError message={formErrors.target_device_id} />
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <FieldLabel label="Peer Port" required />
-                      <input value={formData.target_port} onChange={(e) => updateField('target_port', e.target.value)} placeholder="Peer port" className={fieldClass('target_port')} />
-                      <FieldError message={formErrors.target_port} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Peer VLAN" />
-                      <input type="number" min="0" max="4094" step="1" value={formData.target_vlan} onChange={(e) => updateField('target_vlan', e.target.value)} placeholder="0-4094" className={fieldClass('target_vlan')} />
-                      <FieldError message={formErrors.target_vlan} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Peer IP" />
-                      <input value={formData.target_ip} onChange={(e) => updateField('target_ip', e.target.value)} placeholder="192.168.1.11" className={fieldClass('target_ip')} />
-                      <FieldError message={formErrors.target_ip} />
-                    </div>
-                    <div>
-                      <FieldLabel label="Peer MAC" />
-                      <input value={formData.target_mac} onChange={(e) => updateField('target_mac', e.target.value)} placeholder="00:11:22:33:44:66" className={fieldClass('target_mac')} />
-                    </div>
-                  </div>
-                </div>
-              </WorkspaceSectionCard>
-            </section>
-
-            <section className="grid gap-4">
-              <WorkspaceSectionCard title="Connection Metadata">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <AppDropdown
-                      label="Connection Type"
-                      value={formData.link_type}
-                      onChange={(value) => updateField('link_type', value)}
-                      options={mergedLinkPurposeOptions}
-                      placeholder="Select connection type"
-                    />
-                    <FieldError message={formErrors.link_type} />
-                  </div>
-                  <div>
-                    <AppDropdown
-                      label="Status"
-                      value={formData.status}
-                      onChange={(value) => updateField('status', value)}
-                      options={NETWORK_STATUSES.map((value) => ({ value, label: value }))}
-                      placeholder="Select status"
-                    />
-                    <FieldError message={formErrors.status} />
-                  </div>
-                  <div>
-                    <FieldLabel label="Speed" />
-                    <input type="number" step="0.1" min="0" value={formData.speed_gbps} onChange={(e) => updateField('speed_gbps', e.target.value)} placeholder="10" className={fieldClass('speed_gbps')} />
-                    <FieldError message={formErrors.speed_gbps} />
-                  </div>
-                  <div>
-                    <AppDropdown
-                      label="Unit"
-                      value={formData.unit}
-                      onChange={(value) => updateField('unit', value)}
-                      options={NETWORK_UNITS.map((value) => ({ value, label: value }))}
-                      placeholder="Select unit"
-                    />
-                    <FieldError message={formErrors.unit} />
-                  </div>
-                  <div>
-                    <AppDropdown
-                      label="Direction"
-                      value={formData.direction}
-                      onChange={(value) => updateField('direction', value)}
-                      options={NETWORK_DIRECTIONS.map((value) => ({ value, label: value }))}
-                      placeholder="Select direction"
-                    />
-                    <FieldError message={formErrors.direction} />
-                  </div>
-                  <div>
-                    <AppDropdown
-                      label="Farm"
-                      value={formData.farm}
-                      onChange={(value) => updateField('farm', value)}
-                      options={mergedFarmOptions}
-                      placeholder="Select farm"
-                    />
-                    <FieldError message={formErrors.farm} />
-                  </div>
-                  <div>
-                    <AppDropdown
-                      label="Cable Type"
-                      value={formData.cable_type}
-                      onChange={(value) => updateField('cable_type', value)}
-                      options={mergedCableTypeOptions}
-                      placeholder="Select cable type"
-                    />
-                    <FieldError message={formErrors.cable_type} />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <FieldLabel label="Request Link" />
-                    <input type="url" value={formData.request_link} onChange={(e) => updateField('request_link', e.target.value)} placeholder="https://..." className={fieldClass('request_link')} />
-                    <FieldError message={formErrors.request_link} />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <FieldLabel label="Purpose" />
-                    <textarea value={formData.purpose} onChange={(e) => updateField('purpose', e.target.value)} placeholder="Why this connection exists" className={`${fieldClass('purpose')} min-h-[110px]`} />
-                    <FieldError message={formErrors.purpose} />
-                  </div>
-                </div>
-              </WorkspaceSectionCard>
-            </section>
-          </div>
-        }
-      />
-    </WorkspaceModal>
-  )
-}
+// Assets and Network share one form, payload contract and validation owner.
+export { NetworkConnectionForm } from './NetworkReal'
 
 export function MonitoringAssetField({
   devices,

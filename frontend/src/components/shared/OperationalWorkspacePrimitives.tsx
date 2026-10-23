@@ -627,12 +627,25 @@ export function WorkspaceSelectField({
 export function WorkspaceSectionCard({
   children,
   className = '',
+  title,
+  description,
+  icon,
+  tone = 'blue',
   ...props
 }: React.HTMLAttributes<HTMLElement> & {
   children: React.ReactNode
   className?: string
+  description?: React.ReactNode
+  icon?: React.ReactNode
+  tone?: 'blue' | 'teal' | 'violet' | 'amber' | 'neutral'
 }) {
-  return <section {...props} className={`${OPERATIONAL_WORKSPACE_VISUALS.panelSurface} p-4 ${className}`}>{children}</section>
+  return <section {...props} data-workspace-section data-tone={tone} className={`${OPERATIONAL_WORKSPACE_VISUALS.panelSurface} workspace-section p-4 ${className}`}>
+    {title && <div className="workspace-section-heading">
+      {icon && <span className="workspace-section-icon" aria-hidden="true">{icon}</span>}
+      <div><h3>{title}</h3>{description && <p>{description}</p>}</div>
+    </div>}
+    {children}
+  </section>
 }
 
 export function WorkspaceStickyIdentityBar({

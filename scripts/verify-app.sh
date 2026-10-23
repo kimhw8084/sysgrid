@@ -127,6 +127,8 @@ BACKEND_QUALIFICATION_TESTS=(
   test_network_noop_receipts.py
   test_network_custom_ip_edit.py
   test_network_batch_history.py
+  test_network_legacy_edits.py
+  test_network_table_edits.py
   test_service_workflows.py
   test_service_field_preservation.py
   test_service_relationship_authority.py

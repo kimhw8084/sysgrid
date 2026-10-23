@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, delete, update, or_, and_, func
 from typing import List
+import hashlib
+import json
 from ..database import get_db
 from ..models import models
 from ..schemas import schemas
@@ -19,6 +21,30 @@ router = APIRouter(
 NETWORK_DIRECTION_VALUES = {"Bidirectional", "Unidirectional", "Source to Target", "Target to Source"}
 NETWORK_UNIT_VALUES = {"Gbps", "Mbps", "Kbps"}
 NETWORK_STATUS_VALUES = {"Active", "Maintenance", "Down", "Planned", "Requested", "Standby", "Offline", "Deleted"}
+
+
+def _connection_snapshot(conn):
+    return {column.name: getattr(conn, column.name) for column in models.PortConnection.__table__.columns}
+
+
+def _connection_revision(conn):
+    return hashlib.sha256(json.dumps(_connection_snapshot(conn), sort_keys=True, default=str).encode()).hexdigest()
+
+
+def _connection_response(conn):
+    return {**_connection_snapshot(conn), 'edit_revision': _connection_revision(conn)}
+
+
+async def _compare_and_write(db, conn, changed):
+    # Compare persisted values in the UPDATE itself, closing the read/write race.
+    # SQLite server timestamps may omit fractional seconds; compare business
+    # columns without re-encoding those immutable/derived timestamp strings.
+    predicates = [getattr(models.PortConnection, key) == value for key, value in _connection_snapshot(conn).items()
+                  if key not in {'created_at', 'updated_at'}]
+    result = await db.execute(update(models.PortConnection).where(*predicates).values(**changed).execution_options(synchronize_session=False))
+    if result.rowcount != 1:
+        await db.rollback()
+        raise HTTPException(409, 'Connection changed while editing; reload before saving. Your draft has not been applied.')
 
 
 async def _get_setting_values(db: AsyncSession, category: str) -> set[str]:
@@ -211,6 +237,7 @@ async def get_connections(request: Request, device_id: int = None, include_delet
     for conn, server_a, server_b, rack_a, slot_a, rack_b, slot_b in rows:
         final_result.append({
             "id": conn.id,
+            "edit_revision": _connection_revision(conn),
             "created_at": conn.created_at,
             "updated_at": conn.updated_at,
             "created_by_user_id": conn.created_by_user_id,
@@ -331,7 +358,7 @@ async def create_connection(data: schemas.NetworkConnectionCreate, request: Requ
         await db.rollback()
         raise
     await db.refresh(conn)
-    return conn
+    return _connection_response(conn)
 
 @router.post("/connections/bulk-status")
 async def bulk_update_status(data: schemas.NetworkConnectionBulkStatus, request: Request, db: AsyncSession = Depends(get_db)):
@@ -415,6 +442,36 @@ async def bulk_purge_connections(data: schemas.NetworkConnectionBulkIds, request
     )
     return {"status": "success", "count": len(deleted_ids), "changed": len(deleted_ids), "deleted_ids": deleted_ids, "summary": f"Purged {len(deleted_ids)} connections"}
 
+@router.post("/connections/table-edit")
+async def table_edit_connections(data: schemas.NetworkConnectionTableEdit, request: Request, db: AsyncSession = Depends(get_db)):
+    connections = {conn.id: conn for conn in await _get_connections_for_ids(request, db, [row.id for row in data.rows])}
+    staged = []
+    for row in data.rows:
+        conn = connections[row.id]
+        if _connection_revision(conn) != row.edit_revision:
+            raise HTTPException(409, 'A selected connection changed while editing; reload before saving. No rows were applied.')
+        payload = row.changes.model_dump(exclude_unset=True)
+        changed = {key: value for key, value in payload.items() if getattr(conn, key) != value}
+        if 'link_type' in changed and changed['link_type'] is None:
+            raise HTTPException(400, 'Connection type is required')
+        await _validate_network_enums(db, **{key: changed.get(key) for key in ('link_type', 'farm', 'cable_type', 'direction', 'status')})
+        if changed:
+            staged.append((conn, changed))
+    try:
+        for conn, changed in staged:
+            await _compare_and_write(db, conn, changed)
+            db.add(build_audit_log(request=request, action='BULK_UPDATE', target_table='port_connections', target_id=str(conn.id),
+                description='Edited network connection table', changes={'batch_count': len(staged), 'changed_fields': sorted(changed)}))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Network batch conflicts with current data; reload before saving') from exc
+    except Exception:
+        await db.rollback()
+        raise
+    return {'status': 'success', 'changed': len(staged), 'count': len(staged)}
+
+
 @router.put("/connections/{conn_id}")
 async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate, request: Request, db: AsyncSession = Depends(get_db)):
     conn = await _get_connection_by_id(request, db, conn_id)
@@ -422,6 +479,9 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
         raise HTTPException(status_code=404, detail="Connection not found")
 
     payload = data.model_dump(exclude_unset=True)
+    expected_revision = payload.pop('edit_revision', None)
+    if expected_revision is not None and expected_revision != _connection_revision(conn):
+        raise HTTPException(409, 'Connection changed while editing; reload before saving. Your draft has not been applied.')
     for field_name, label in (
         ("source_device_id", "Source device"),
         ("source_port", "Source port"),
@@ -434,40 +494,35 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
 
     changed = {key: value for key, value in payload.items() if getattr(conn, key) != value}
     if not changed:
-        return conn
+        return _connection_response(conn)
 
     source_device_id = payload.get('source_device_id', conn.source_device_id)
     source_port = payload.get('source_port', conn.source_port)
     target_device_id = payload.get('target_device_id', conn.target_device_id)
     target_port = payload.get('target_port', conn.target_port)
-    link_type = payload.get('link_type', conn.link_type)
-    direction_value = payload.get('direction', conn.direction)
-    status_value = payload.get('status', conn.status)
-    farm_value = payload.get('farm', conn.farm)
-    cable_type_value = payload.get('cable_type', conn.cable_type)
     unit_value = payload.get('unit', conn.unit or 'Gbps')
 
     for field_name in ('source_device_id', 'target_device_id'):
         if field_name in payload and payload[field_name] != getattr(conn, field_name):
             await require_relationship_asset(request, db, payload[field_name], active=True)
 
-    if unit_value not in NETWORK_UNIT_VALUES:
+    if 'unit' in changed and unit_value not in NETWORK_UNIT_VALUES:
         raise HTTPException(status_code=400, detail=f"Invalid unit '{unit_value}'")
     await _validate_network_enums(
         db,
-        link_type=link_type,
-        farm=farm_value,
-        cable_type=cable_type_value,
-        direction=direction_value,
-        status=status_value,
+        link_type=changed.get('link_type'),
+        farm=changed.get('farm'),
+        cable_type=changed.get('cable_type'),
+        direction=changed.get('direction'),
+        status=changed.get('status'),
     )
 
-    if source_device_id is not None and source_device_id == target_device_id:
+    if {'source_device_id', 'target_device_id'} & changed.keys() and source_device_id is not None and source_device_id == target_device_id:
         raise HTTPException(status_code=400, detail="Source and peer assets must be different")
 
     port_checks = []
-    for device_id, port in ((source_device_id, source_port), (target_device_id, target_port)):
-        if device_id is not None:
+    for side, device_id, port in (('source', source_device_id, source_port), ('target', target_device_id, target_port)):
+        if device_id is not None and ({f'{side}_device_id', f'{side}_port'} & changed.keys()):
             port_checks.extend([
                 and_(models.PortConnection.source_device_id == device_id, models.PortConnection.source_port == port),
                 and_(models.PortConnection.target_device_id == device_id, models.PortConnection.target_port == port),
@@ -480,31 +535,18 @@ async def update_connection(conn_id: int, data: schemas.NetworkConnectionUpdate,
         if dup_res.scalars().first():
             raise HTTPException(status_code=400, detail="One of the selected ports is already physically cross-connected")
 
-    conn.source_device_id = source_device_id
-    conn.source_port = source_port
-    conn.target_device_id = target_device_id
-    conn.target_port = target_port
-    if 'source_ip' in payload: conn.source_ip = payload['source_ip']
-    if 'source_mac' in payload: conn.source_mac = payload['source_mac']
-    if 'source_vlan' in payload: conn.source_vlan = payload['source_vlan']
-    if 'target_ip' in payload: conn.target_ip = payload['target_ip']
-    if 'target_mac' in payload: conn.target_mac = payload['target_mac']
-    if 'target_vlan' in payload: conn.target_vlan = payload['target_vlan']
-    if 'link_type' in payload: conn.link_type = payload['link_type']
-    if 'purpose' in payload: conn.purpose = payload['purpose']
-    if 'speed_gbps' in payload: conn.speed_gbps = payload['speed_gbps']
-    if 'unit' in payload: conn.unit = payload['unit']
-    if 'direction' in payload: conn.direction = payload['direction']
-    if 'cable_type' in payload: conn.cable_type = payload['cable_type']
-    if 'status' in payload: conn.status = payload['status']
-    if 'farm' in payload: conn.farm = payload['farm']
-    if 'request_link' in payload: conn.request_link = payload['request_link']
-
-    log = build_audit_log(request=request, action="UPDATE", target_table="port_connections", target_id=str(conn_id), description="Modified network link", changes={"changed_fields": sorted(changed)})
-    db.add(log)
-    await db.commit()
+    try:
+        await _compare_and_write(db, conn, changed)
+        db.add(build_audit_log(request=request, action="UPDATE", target_table="port_connections", target_id=str(conn_id), description="Modified network link", changes={"changed_fields": sorted(changed)}))
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'Network connection conflicts with current data; reload before saving') from exc
+    except Exception:
+        await db.rollback()
+        raise
     await db.refresh(conn)
-    return conn
+    return _connection_response(conn)
 
 @router.delete("/connections/{conn_id}")
 async def delete_connection(conn_id: int, request: Request, db: AsyncSession = Depends(get_db)):

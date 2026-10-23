@@ -4,6 +4,7 @@ import baseConfig from './playwright.config'
 export default defineConfig({
   ...baseConfig,
   testMatch: [
+    /(^|[\\/])workspace-entry-quality\.spec\.ts$/,
     /(^|[\\/])api-client-transport\.spec\.ts$/,
     /(^|[\\/])monitoring-preference-race\.spec\.ts$/,
     /(^|[\\/])service-preference-race\.spec\.ts$/,

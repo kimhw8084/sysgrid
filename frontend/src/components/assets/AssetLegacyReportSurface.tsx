@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, Box, Calendar, Cpu as CpuIcon, Edit2, Eye, ExternalLink, Layers, Network, Search, Shield } from 'lucide-react'
 import { motion } from 'framer-motion'
-import ForceGraph2D from 'react-force-graph-2d'
-import { formatAppDay } from '../../utils/dateUtils'
+import { formatAppDate, formatAppDay } from '../../utils/dateUtils'
+import { buildAssetTopology } from './assetTopology'
+import { AssetTopologyCanvas } from './AssetTopologyCanvas'
 import { WorkspaceEmptyState } from '../shared/OperationalWorkspacePrimitives'
 import { AssetServicesTable, MetadataViewer, MiniMonitoringTable } from '../AssetGrid_Legacy'
 import { HWTable, RelationshipsTab, SecretsTable } from './AssetDetailsView'
@@ -28,10 +29,12 @@ type AssetLegacyReportSurfaceProps = {
 const REPORT_SECTION_LINKS = [
   { id: 'overview', label: 'Overview' },
   { id: 'hardware-summary', label: 'Hardware' },
+  { id: 'lifecycle', label: 'Lifecycle' },
   { id: 'services', label: 'Services' },
   { id: 'monitoring', label: 'Monitoring' },
   { id: 'security', label: 'Secrets' },
   { id: 'metadata', label: 'Metadata' },
+  { id: 'components', label: 'Components' },
   { id: 'relationships', label: 'Relationships' },
 ] as const
 
@@ -60,102 +63,14 @@ const ASSET_TYPES = [
   { value: 'Load Balancer', label: 'Load Balancer' },
 ]
 
-function ConnectionMap({
-  deviceId,
-  type,
-  devices,
-  relationships,
-  connections,
-}: {
-  deviceId: number
-  type: 'dependency' | 'network'
-  devices: any[]
-  relationships: any[]
-  connections: any[]
+function ConnectionMap({ deviceId, type, devices, relationships, connections }: {
+  deviceId: number; type: 'dependency' | 'network'; devices: any[]; relationships: any[]; connections: any[]
 }) {
-  const centerDevice = devices.find((device) => Number(device.id) === Number(deviceId))
-
-  const graphData = useMemo(() => {
-    const nodes = [{ id: deviceId, name: centerDevice?.name, isCenter: true, type: centerDevice?.type }]
-    const links: any[] = []
-
-    const pool: any[] = type === 'dependency' ? relationships : connections
-    for (const entry of pool) {
-      const sourceId = Number(type === 'dependency' ? entry.source_device_id : entry.src_device_id)
-      const targetId = Number(type === 'dependency' ? entry.target_device_id : entry.dst_device_id)
-      if (sourceId !== Number(deviceId) && targetId !== Number(deviceId)) continue
-      const isSource = sourceId === Number(deviceId)
-      const peerId = isSource ? targetId : sourceId
-      const peer = devices.find((device) => Number(device.id) === Number(peerId))
-      if (!peer) continue
-      nodes.push({ id: peerId, name: peer.name, isCenter: false, type: peer.type })
-      links.push({
-        source: isSource ? deviceId : peerId,
-        target: isSource ? peerId : deviceId,
-        label: type === 'dependency' ? (entry.relationship_type || 'Relationship') : (entry.connection_type || 'Network'),
-      })
-    }
-
-    return { nodes, links }
-  }, [centerDevice?.name, centerDevice?.type, connections, deviceId, devices, relationships, type])
-
-  return (
-    <div className="h-[300px] w-full overflow-hidden rounded-lg border border-white/5 bg-black/20">
-      {graphData.nodes.length <= 1 ? (
-        <div className="flex h-full items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-600">
-          No active {type} vectors identified
-        </div>
-      ) : (
-        <ForceGraph2D
-          graphData={graphData}
-          height={300}
-          width={500}
-          cooldownTicks={100}
-          nodeColor={(node: any) => node.isCenter ? '#3b82f6' : '#64748b'}
-          nodeLabel={(node: any) => `${node.name} [${node.type}]`}
-          linkColor={() => 'rgba(255, 255, 255, 0.15)'}
-          linkDirectionalArrowLength={4}
-          linkDirectionalArrowRelPos={1}
-          nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-            const label = node.name
-            const fontSize = node.isCenter ? 12 / globalScale : 10 / globalScale
-            ctx.font = `${fontSize}px Inter`
-            ctx.fillStyle = node.isCenter ? '#3b82f6' : '#1e293b'
-            ctx.beginPath()
-            ctx.arc(node.x, node.y, node.isCenter ? 6 : 4, 0, 2 * Math.PI, false)
-            ctx.fill()
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillStyle = node.isCenter ? '#fff' : '#94a3b8'
-            ctx.fillText(label, node.x, node.y + (node.isCenter ? 12 : 10))
-          }}
-          linkCanvasObjectMode={() => 'after'}
-          linkCanvasObject={(link: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-            const start = link.source
-            const end = link.target
-            if (typeof start !== 'object' || typeof end !== 'object') return
-            const text = String(link.label || '')
-            const fontSize = Math.min(8, 10 / globalScale)
-            ctx.font = `${fontSize}px Inter`
-            const textWidth = ctx.measureText(text).width
-            const dims = [textWidth, fontSize].map((value) => value + fontSize * 0.2) as [number, number]
-            const relLink = { x: end.x - start.x, y: end.y - start.y }
-            const textPos = { x: start.x + relLink.x * 0.5, y: start.y + relLink.y * 0.5 }
-            ctx.save()
-            ctx.translate(textPos.x, textPos.y)
-            ctx.rotate(Math.atan2(relLink.y, relLink.x))
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.8)'
-            ctx.fillRect(-dims[0] / 2, -dims[1] / 2, dims[0], dims[1])
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillStyle = type === 'dependency' ? '#818cf8' : '#34d399'
-            ctx.fillText(text, 0, 0)
-            ctx.restore()
-          }}
-        />
-      )}
-    </div>
-  )
+  const graph = useMemo(() => buildAssetTopology({ assets: devices, rootIds: [Number(deviceId)],
+    relationships: type === 'dependency' ? relationships : [], connections: type === 'network' ? connections : [], depth: 1
+  }), [connections, deviceId, devices, relationships, type])
+  return graph.links.length ? <AssetTopologyCanvas graph={graph} selectedId={Number(deviceId)} controls={false} />
+    : <div className="report-map-empty">No registered {type === 'dependency' ? 'dependency' : 'network'} links.</div>
 }
 
 export function AssetLegacyReportSurface({
@@ -175,7 +90,9 @@ export function AssetLegacyReportSurface({
   onEditService,
   getConsoleUrl,
 }: AssetLegacyReportSurfaceProps) {
-  const [selectedId, setSelectedId] = useState<number | null>(selectedAssetId ?? assets[0]?.id ?? null)
+  const [localSelectedId, setLocalSelectedId] = useState<number | null>(assets[0]?.id ?? null)
+  const controlled = selectedAssetId !== undefined
+  const selectedId = controlled ? selectedAssetId : localSelectedId
   const [filter, setFilter] = useState({ name: '', system: '', type: '', status: '', env: '' })
   const reportSectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
@@ -196,28 +113,16 @@ export function AssetLegacyReportSurface({
   )
 
   useEffect(() => {
-    if (selectedAsset && selectedAsset.id !== selectedId) {
-      setSelectedId(selectedAsset.id)
-    }
-  }, [selectedAsset, selectedId])
-
-  useEffect(() => {
-    if (selectedAssetId && selectedAssetId !== selectedId) {
-      setSelectedId(selectedAssetId)
-    }
-  }, [selectedAssetId, selectedId])
-
-  useEffect(() => {
-    if (selectedAsset && onSelectAsset) {
-      onSelectAsset(selectedAsset)
-    }
-  }, [onSelectAsset, selectedAsset])
+    if (!selectedAsset || selectedAsset.id === selectedId) return
+    if (controlled) onSelectAsset?.(selectedAsset)
+    else setLocalSelectedId(selectedAsset.id)
+  }, [controlled, onSelectAsset, selectedAsset, selectedId])
 
   useEffect(() => {
     if (!focusSection) return
     const sectionNode = reportSectionRefs.current[focusSection]
     if (sectionNode) {
-      sectionNode.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      sectionNode.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
       onFocusSectionHandled?.()
     }
   }, [focusSection, onFocusSectionHandled, selectedAsset])
@@ -226,38 +131,39 @@ export function AssetLegacyReportSurface({
   const selectedConsoleUrl = selectedAsset ? getConsoleUrl?.(selectedAsset) || null : null
 
   const scrollToSection = (sectionId: string) => {
-    reportSectionRefs.current[sectionId]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    reportSectionRefs.current[sectionId]?.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden md:flex-row">
-      <div className="flex max-h-[22rem] w-full flex-col overflow-hidden rounded-lg border border-white/5 bg-black/20 md:max-h-none md:w-72 md:min-w-72 xl:w-80 xl:min-w-80">
+    <div data-asset-report className="asset-report flex min-h-0 flex-1 flex-col gap-4 overflow-hidden md:flex-row">
+      <div className="asset-report-sidebar flex max-h-[22rem] w-full flex-col overflow-hidden rounded-lg border border-white/5 bg-black/20 md:max-h-none md:w-72 md:min-w-72 xl:w-80 xl:min-w-80">
         <div className="space-y-3 border-b border-white/5 bg-white/5 p-4">
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               value={filter.name}
+              aria-label="Search report assets"
               onChange={(event) => setFilter((current) => ({ ...current, name: event.target.value }))}
               placeholder="Search Assets..."
               className="w-full rounded-lg border border-white/5 bg-black/40 py-2 pl-9 pr-4 text-[10px] font-bold uppercase outline-none transition-all focus:border-blue-500/50"
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <select value={filter.system} onChange={(event) => setFilter((current) => ({ ...current, system: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
+            <select aria-label="Report system" value={filter.system} onChange={(event) => setFilter((current) => ({ ...current, system: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Systems</option>
               {getOptions('LogicalSystem').map((item: any) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
-            <select value={filter.type} onChange={(event) => setFilter((current) => ({ ...current, type: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
+            <select aria-label="Report asset type" value={filter.type} onChange={(event) => setFilter((current) => ({ ...current, type: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Types</option>
               {ASSET_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <select value={filter.status} onChange={(event) => setFilter((current) => ({ ...current, status: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
+            <select aria-label="Report status" value={filter.status} onChange={(event) => setFilter((current) => ({ ...current, status: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Statuses</option>
               {STATUS_ITEMS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
-            <select value={filter.env} onChange={(event) => setFilter((current) => ({ ...current, env: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
+            <select aria-label="Report environment" value={filter.env} onChange={(event) => setFilter((current) => ({ ...current, env: event.target.value }))} className="rounded-lg border border-white/5 bg-black/40 px-2 py-1.5 text-[9px] font-bold uppercase text-slate-400 outline-none">
               <option value="">All Envs</option>
               {ENVIRONMENT_ITEMS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
@@ -269,7 +175,14 @@ export function AssetLegacyReportSurface({
             <button
               key={asset.id}
               type="button"
-              onClick={() => setSelectedId(asset.id)}
+              aria-pressed={selectedAsset?.id === asset.id}
+              onClick={() => {
+                if (controlled) onSelectAsset?.(asset)
+                else {
+                  setLocalSelectedId(asset.id)
+                  onSelectAsset?.(asset)
+                }
+              }}
               className={`group relative w-full overflow-hidden rounded-lg p-3 text-left transition-all ${selectedAsset?.id === asset.id ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5'}`}
             >
               <div className="mb-1 flex items-center justify-between">
@@ -295,7 +208,7 @@ export function AssetLegacyReportSurface({
         </div>
       </div>
 
-      <div className="custom-scrollbar min-w-0 flex-1 overflow-y-auto rounded-lg border border-white/5 bg-[#0a0c14]/40">
+      <div className="asset-report-content custom-scrollbar min-w-0 flex-1 overflow-y-auto rounded-lg border border-white/5 bg-[#0a0c14]/40">
         {selectedAsset ? (
           <div className="space-y-8 p-6 lg:p-8 xl:p-10">
             <div className="sticky top-0 z-20 -mx-6 border-b border-white/5 bg-[#0a0c14]/95 px-6 py-4 backdrop-blur-xl lg:hidden">
@@ -328,14 +241,14 @@ export function AssetLegacyReportSurface({
               </div>
             </div>
 
-            <div ref={(node) => { reportSectionRefs.current.overview = node }} className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+            <div ref={(node) => { reportSectionRefs.current.overview = node }} data-report-section="overview" className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0 flex-1 space-y-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
                   <div className="w-fit rounded-lg bg-blue-600 p-3 text-white shadow-xl shadow-blue-500/20 ring-4 ring-blue-500/10">
-                    <Box size={48} />
+                    <Box size={28} />
                   </div>
                   <div className="min-w-0">
-                    <h1 className="break-words text-3xl font-black uppercase tracking-tight text-white sm:text-4xl xl:text-5xl">{selectedAsset.name}</h1>
+                    <h1 className="break-words text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">{selectedAsset.name}</h1>
                     <div className="mt-2 flex flex-wrap items-center gap-3 md:gap-4">
                       <span className="text-[14px] font-bold uppercase tracking-[0.3em] text-blue-400">{selectedAsset.system}</span>
                       <span className="h-1.5 w-1.5 rounded-full bg-white/10" />
@@ -344,7 +257,7 @@ export function AssetLegacyReportSurface({
                   </div>
                 </div>
 
-                <div className="grid gap-4 rounded-lg border border-white/5 bg-black/40 p-5 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="asset-report-addresses grid gap-4 rounded-lg border border-white/5 bg-black/40 p-5">
                   <div className="flex flex-col">
                     <span className="mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">Operational State</span>
                     <span className={`w-fit rounded-lg border px-4 py-1 text-[11px] font-bold uppercase ${
@@ -355,11 +268,11 @@ export function AssetLegacyReportSurface({
                   </div>
                   <div className="flex flex-col">
                     <span className="mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">Primary Network IP</span>
-                    <span className="break-all text-xl font-bold text-blue-400">{selectedAsset.primary_ip || '---.---.---.---'}</span>
+                    <span className="break-words text-base font-bold text-blue-400">{selectedAsset.primary_ip || 'Not recorded'}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-500">Management OOB IP</span>
-                    <span className="break-all text-xl font-bold text-indigo-400">{selectedAsset.management_ip || '---.---.---.---'}</span>
+                    <span className="break-words text-base font-bold text-indigo-400">{selectedAsset.management_ip || 'Not recorded'}</span>
                   </div>
                 </div>
               </div>
@@ -387,12 +300,15 @@ export function AssetLegacyReportSurface({
                   ) : null}
                 </div>
                 <div className="text-left xl:text-right">
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Last Synced</p>
-                  <p className="text-[10px] font-mono text-slate-400">{new Date().toLocaleString()}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Record updated</p>
+                  <p className="text-[10px] font-mono text-slate-400">{selectedAsset.updated_at ? formatAppDate(selectedAsset.updated_at) : 'Not recorded'}</p>
                 </div>
               </div>
             </div>
 
+            <nav aria-label="Report sections" className="hidden flex-wrap gap-2 lg:flex">
+              {REPORT_SECTION_LINKS.map(section => <button key={section.id} type="button" onClick={() => scrollToSection(section.id)} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300">{section.label}</button>)}
+            </nav>
             <div className="grid gap-4 rounded-lg border border-white/5 bg-white/5 p-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
               <Metric label="Power Avg/Max" value={`${selectedAsset.power_typical_w || 0}W / ${selectedAsset.power_max_w || 0}W`} />
               <Metric label="Site Location" value={selectedAsset.site_name || 'UNPLACED'} tone="text-blue-400" />
@@ -403,12 +319,12 @@ export function AssetLegacyReportSurface({
             </div>
 
             <div className="grid items-stretch gap-8 2xl:grid-cols-2">
-              <div ref={(node) => { reportSectionRefs.current['hardware-summary'] = node }} className="flex h-full flex-col space-y-6">
+              <div ref={(node) => { reportSectionRefs.current['hardware-summary'] = node }} data-report-section="hardware-summary" className="flex h-full flex-col space-y-6">
                 <SectionTitle icon={<CpuIcon size={16} className="text-amber-400" />} title="Hardware & System Architecture" />
                 <div className="grid flex-1 gap-x-12 gap-y-8 rounded-lg border border-white/5 bg-black/20 p-6 lg:grid-cols-2 xl:p-8">
                   <div>
                     <p className="mb-1 text-[8px] font-bold uppercase tracking-[0.2em] text-slate-500">Platform Identity</p>
-                    <p className="text-sm font-bold uppercase text-white">{selectedAsset.manufacturer} {selectedAsset.model}</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">{[selectedAsset.manufacturer, selectedAsset.model].filter(Boolean).join(' ') || 'Not recorded'}</p>
                     <p className="mt-1 text-[10px] font-mono text-slate-500">SN: {selectedAsset.serial_number || 'UNKNOWN'}</p>
                   </div>
                   <div>
@@ -416,8 +332,8 @@ export function AssetLegacyReportSurface({
                     <p className="text-sm font-bold uppercase text-blue-400">{selectedAsset.os_name} {selectedAsset.os_version}</p>
                     <p className="mt-1 text-[10px] font-bold uppercase text-slate-500">Registry Depth: {selectedAsset.depth || 'Full'}</p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.2em] text-slate-500">Resource Utilization Summary</p>
+                  <div className="lg:col-span-2">
+                    <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.2em] text-slate-500">Hardware summary</p>
                     <div className="rounded-lg border border-white/5 bg-black/40 p-4">
                       <p className="text-xs font-bold uppercase leading-relaxed text-slate-300">{selectedAsset.hardware_summary || 'No hardware details registered for this unit.'}</p>
                     </div>
@@ -425,57 +341,57 @@ export function AssetLegacyReportSurface({
                 </div>
               </div>
 
-              <div className="flex h-full flex-col space-y-6">
+              <div ref={(node) => { reportSectionRefs.current.lifecycle = node }} data-report-section="lifecycle" className="flex h-full flex-col space-y-6">
                 <SectionTitle icon={<Calendar size={16} className="text-rose-400" />} title="Lifecycle & Logistics Registry" />
                 <div className="grid flex-1 gap-8 rounded-lg border border-white/5 bg-black/20 p-6 lg:grid-cols-2 xl:p-8">
                   <div className="space-y-8">
-                    <MetricBlock label="Deployment Phase" value={formatAppDay(selectedAsset.install_date)} meta={`Total Uptime Age: ${selectedAsset.hardware_age || 'N/A'}`} />
-                    <MetricBlock label="Warranty Coverage" value={selectedAsset.warranty_end ? formatAppDay(selectedAsset.warranty_end) : 'EXPIRED / NO TERM'} />
+                    <MetricBlock label="Deployment date" value={formatAppDay(selectedAsset.install_date)} meta={`Asset age: ${selectedAsset.hardware_age || 'Not recorded'}`} />
+                    <MetricBlock label="Warranty Coverage" value={selectedAsset.warranty_end ? formatAppDay(selectedAsset.warranty_end) : 'Not recorded'} />
                   </div>
                   <div className="space-y-8 lg:text-right">
                     <MetricBlock label="Acquisition Date" value={formatAppDay(selectedAsset.purchase_date)} />
-                    <MetricBlock label="Retirement EOL" value={selectedAsset.eol_date ? formatAppDay(selectedAsset.eol_date) : 'ACTIVE REIGN'} tone="text-rose-400" />
+                    <MetricBlock label="Retirement EOL" value={selectedAsset.eol_date ? formatAppDay(selectedAsset.eol_date) : 'No retirement date'} tone="text-rose-400" />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div ref={(node) => { reportSectionRefs.current.services = node }} className="space-y-6">
+            <div ref={(node) => { reportSectionRefs.current.services = node }} data-report-section="services" className="space-y-6">
               <SectionTitle icon={<Layers size={16} className="text-blue-400" />} title="Hosted Logical Services" />
               <div className="overflow-hidden rounded-lg border border-white/5 bg-black/10">
                 <AssetServicesTable deviceId={selectedAsset.id} onViewDetails={onViewServiceDetails} onEdit={onEditService} />
               </div>
             </div>
 
-            <div ref={(node) => { reportSectionRefs.current.monitoring = node }} className="space-y-6">
+            <div ref={(node) => { reportSectionRefs.current.monitoring = node }} data-report-section="monitoring" className="space-y-6">
               <SectionTitle icon={<Activity size={16} className="text-emerald-400" />} title="Monitoring & Telemetry Nodes" />
               <div className="overflow-hidden rounded-lg border border-white/5 bg-black/10">
                 <MiniMonitoringTable deviceId={selectedAsset.id} />
               </div>
             </div>
 
-            <div ref={(node) => { reportSectionRefs.current.security = node }} className="space-y-6">
+            <div ref={(node) => { reportSectionRefs.current.security = node }} data-report-section="security" className="space-y-6">
               <SectionTitle icon={<Shield size={16} className="text-amber-500" />} title="Security Credentials & Secrets" />
               <div className="overflow-hidden rounded-lg border border-white/5 bg-black/10">
                 <SecretsTable deviceId={selectedAsset.id} />
               </div>
             </div>
 
-            <div ref={(node) => { reportSectionRefs.current.metadata = node }} className="space-y-6">
+            <div ref={(node) => { reportSectionRefs.current.metadata = node }} data-report-section="metadata" className="space-y-6">
               <SectionTitle icon={<Box size={16} className="text-violet-400" />} title="Registry Metadata Payload" />
               <div className="rounded-lg border border-white/5 bg-black/20 p-8">
                 <MetadataViewer data={selectedAsset.metadata_json || {}} />
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div ref={(node) => { reportSectionRefs.current.components = node }} data-report-section="components" className="space-y-6">
               <SectionTitle icon={<CpuIcon size={16} className="text-cyan-400" />} title="Physical Component Inventory" />
               <div className="overflow-hidden rounded-lg border border-white/5 bg-black/10">
                 <HWTable deviceId={selectedAsset.id} />
               </div>
             </div>
 
-            <div ref={(node) => { reportSectionRefs.current.relationships = node }} className="space-y-6">
+            <div ref={(node) => { reportSectionRefs.current.relationships = node }} data-report-section="relationships" className="space-y-6">
               <SectionTitle icon={<Network size={16} className="text-indigo-400" />} title="Relationship, Dependency & Network Context" />
               <div className="grid gap-8 xl:grid-cols-2">
                 <div className="overflow-hidden rounded-lg border border-white/5 bg-black/10">
@@ -515,12 +431,12 @@ function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string })
   return (
     <div className="flex items-center space-x-3 border-b border-white/5 pb-2">
       {icon}
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400">{title}</h3>
+      <h3 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
     </div>
   )
 }
 
-function Metric({ label, value, tone = 'text-white' }: { label: string; value: string; tone?: string }) {
+function Metric({ label, value, tone = 'text-[var(--text-primary)]' }: { label: string; value: string; tone?: string }) {
   return (
     <div className="flex flex-col">
       <span className="mb-1 text-[8px] font-bold uppercase tracking-widest text-slate-500">{label}</span>
@@ -529,7 +445,7 @@ function Metric({ label, value, tone = 'text-white' }: { label: string; value: s
   )
 }
 
-function MetricBlock({ label, value, meta, tone = 'text-white' }: { label: string; value: string; meta?: string; tone?: string }) {
+function MetricBlock({ label, value, meta, tone = 'text-[var(--text-primary)]' }: { label: string; value: string; meta?: string; tone?: string }) {
   return (
     <div>
       <p className="mb-1 text-[8px] font-bold uppercase text-slate-500">{label}</p>

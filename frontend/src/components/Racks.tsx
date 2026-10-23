@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { WorkspaceTooltip } from './shared/WorkspaceTooltip'
 import { WorkspaceDialogFrame } from './shared/WorkspaceDialogFrame'
+import { FormGuide } from './shared/FormGuide'
 import { useWorkspaceDialogLayer, useWorkspacePopupDismiss, WORKSPACE_LAYER_Z } from './shared/WorkspaceOverlay'
 import { getPointFloatingStyle } from './shared/OperationalGridInteractions'
 import { AgGridReact } from 'ag-grid-react'
@@ -2782,9 +2783,11 @@ export default function Racks() {
 
   const rackMutation = useMutation({
     mutationFn: async (data: any) => {
+      const baseline = data.id ? JSON.parse(editorBaseline.current.rack || '{}') : {}
+      const payload = data.id ? Object.fromEntries(Object.entries(data).filter(([key, value]) => !Object.is(value, baseline[key]))) : data
       const res = data.id
-        ? await apiFetch(`/api/v1/racks/${data.id}`, { method: 'PUT', body: JSON.stringify(data) })
-        : await apiFetch('/api/v1/racks/', { method: 'POST', body: JSON.stringify(data) })
+        ? await apiFetch(`/api/v1/racks/${data.id}`, { method: 'PUT', body: JSON.stringify(payload) })
+        : await apiFetch('/api/v1/racks/', { method: 'POST', body: JSON.stringify(payload) })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }))
         throw new Error(err.detail || 'Failed to save rack')
@@ -3930,8 +3933,8 @@ export default function Racks() {
 
       {(isAddingSite || isEditingSite) && (
           <WorkspaceDialogFrame title={isEditingSite ? "Edit Site" : "Establish New Site"} onClose={closeSiteEditor}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              className="glass-panel w-[420px] p-8 rounded-lg space-y-6 border border-emerald-500/20 shadow-2xl">
+            <motion.form onSubmit={event => { event.preventDefault(); if (!siteMutation.isPending) siteMutation.mutate(isEditingSite || newSite) }} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="guided-entry glass-panel w-full max-w-[420px] p-5 sm:p-8 rounded-lg space-y-6 border border-emerald-500/20 shadow-2xl">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-emerald-500/15 rounded-lg border border-emerald-500/20">
                   <MapPin size={22} className="text-emerald-400" />
@@ -3945,15 +3948,15 @@ export default function Racks() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Site Name</label>
-                  <input value={isEditingSite ? isEditingSite.name : newSite.name}
+                  <label htmlFor="site-form-name" className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Site Name *</label>
+                  <input id="site-form-name" required value={isEditingSite ? isEditingSite.name : newSite.name}
                     onChange={e => isEditingSite ? setIsEditingSite({ ...isEditingSite, name: e.target.value }) : setNewSite({ ...newSite, name: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-500/60 transition-colors text-white font-bold"
                     placeholder="e.g. DATA-CENTER-01" />
                 </div>
                 <div>
-                  <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Physical Address</label>
-                  <input value={isEditingSite ? isEditingSite.address : newSite.address}
+                  <label htmlFor="site-form-address" className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Physical Address</label>
+                  <input id="site-form-address" value={isEditingSite ? isEditingSite.address : newSite.address}
                     onChange={e => isEditingSite ? setIsEditingSite({ ...isEditingSite, address: e.target.value }) : setNewSite({ ...newSite, address: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-500/60 transition-colors text-slate-300"
                     placeholder="123 Silicon Valley Way..." />
@@ -3963,6 +3966,7 @@ export default function Racks() {
                   <div className="flex flex-wrap gap-2 mb-3">
                     {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'].map(c => (
                       <button 
+                        type="button"
                         key={c}
                         onClick={() => isEditingSite ? setIsEditingSite({ ...isEditingSite, color: c }) : setNewSite({ ...newSite, color: c })}
                         className={`w-8 h-8 rounded-lg border-2 transition-all ${ (isEditingSite ? isEditingSite.color : newSite.color) === c ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100' }`}
@@ -3973,6 +3977,7 @@ export default function Racks() {
                     ))}
                   </div>
                   <input 
+                    aria-label="Site theme color" pattern="#[0-9a-fA-F]{6}" title="Six-digit hex color, e.g. #3b82f6"
                     type="text"
                     value={isEditingSite ? isEditingSite.color : newSite.color}
                     onChange={e => isEditingSite ? setIsEditingSite({ ...isEditingSite, color: e.target.value }) : setNewSite({ ...newSite, color: e.target.value })}
@@ -3981,21 +3986,26 @@ export default function Racks() {
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={closeSiteEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
-                <button onClick={() => siteMutation.mutate(isEditingSite || newSite)} disabled={siteMutation.isPending}
+                <button type="button" onClick={closeSiteEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
+                <button type="submit" disabled={siteMutation.isPending}
                   className="flex-1 py-3.5 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-wait">
                   {siteMutation.isPending ? 'Saving Site...' : isEditingSite ? 'Update Site' : 'Create Site'}
                 </button>
               </div>
-            </motion.div>
+            </motion.form>
           </WorkspaceDialogFrame>
         )}
 
         {/* Rack Create / Edit */}
         {(isAddingRack || isEditingRack) && (
           <WorkspaceDialogFrame title={isEditingRack ? "Configure Rack" : "Deploy New Rack"} onClose={closeRackEditor}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              className="glass-panel w-[500px] p-8 rounded-lg space-y-6 border border-blue-500/20 shadow-2xl my-auto">
+            <motion.form onSubmit={event => {
+                event.preventDefault()
+                if (rackMutation.isPending) return
+                if (!isEditingRack && !newRack.site_id) { toast.error('Site is required'); return }
+                rackMutation.mutate(isEditingRack || newRack)
+              }} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="guided-entry glass-panel w-full max-w-[500px] p-5 sm:p-8 rounded-lg space-y-6 border border-blue-500/20 shadow-2xl my-auto">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-500/15 rounded-lg border border-blue-500/20">
                   <Server size={22} className="text-blue-400" />
@@ -4008,6 +4018,12 @@ export default function Racks() {
                 </div>
               </div>
               <div className="space-y-4 relative z-10">
+                <FormGuide summary={<><strong>Choose a site and name the rack.</strong> Match capacity to the physical rack; power values are configured limits, not live readings.</>}
+                  steps={[
+                    { id: 'rack-form-identity', title: 'Location', hint: 'Site, name, aisle and row' },
+                    { id: 'rack-form-capacity', title: 'Capacity', hint: 'Rack units and power ceiling', tone: 'teal' },
+                    { id: 'rack-form-pdu', title: 'PDU limits', hint: 'Primary and redundant capacity', tone: 'amber' },
+                  ]} />
                 {!isEditingRack && (
                   <StyledSelect
                     label="Target Site"
@@ -4017,26 +4033,29 @@ export default function Racks() {
                     placeholder="Select deployment site..."
                   />
                 )}
-                <div className="grid grid-cols-3 gap-4">
+                <div id="rack-form-identity" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="col-span-1">
-                    <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Identifier</label>
+                    <label htmlFor="rack-form-name" className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Identifier *</label>
                     <input
+                      id="rack-form-name" required aria-required="true"
                       value={isEditingRack ? isEditingRack.name : newRack.name}
                       onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, name: e.target.value }) : setNewRack({ ...newRack, name: e.target.value })}
                       className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500/60 transition-colors text-white font-bold"
                       placeholder="e.g. A01" />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Aisle</label>
+                    <label htmlFor="rack-form-aisle" className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Aisle</label>
                     <input
+                      id="rack-form-aisle"
                       value={isEditingRack ? (isEditingRack.aisle || '') : newRack.aisle}
                       onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, aisle: e.target.value }) : setNewRack({ ...newRack, aisle: e.target.value })}
                       className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500/60 transition-colors text-slate-300"
                       placeholder="A1" />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Row</label>
+                    <label htmlFor="rack-form-row" className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Row</label>
                     <input
+                      id="rack-form-row"
                       value={isEditingRack ? (isEditingRack.row || '') : newRack.row}
                       onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, row: e.target.value }) : setNewRack({ ...newRack, row: e.target.value })}
                       className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500/60 transition-colors text-slate-300"
@@ -4044,17 +4063,17 @@ export default function Racks() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div id="rack-form-capacity" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Total Capacity (U)</label>
-                    <input type="number" min={1} max={100}
+                    <label htmlFor="rack-form-units" className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Total Capacity (U)</label>
+                    <input id="rack-form-units" required type="number" min={1} max={100}
                       value={isEditingRack ? isEditingRack.total_u : newRack.total_u}
                       onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, total_u: parseInt(e.target.value) }) : setNewRack({ ...newRack, total_u: parseInt(e.target.value) })}
                       className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500/60 transition-colors font-mono text-white" />
                   </div>
                   <div>
-                    <label className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Configured Rack Ceiling (kW)</label>
-                    <input type="number" min={0} max={1000} step={0.5}
+                    <label htmlFor="rack-form-ceiling" className="text-[9px] font-black text-slate-500 uppercase block mb-1.5 ml-1">Configured Rack Ceiling (kW)</label>
+                    <input id="rack-form-ceiling" required type="number" min={0} max={1000} step="any"
                       value={isEditingRack ? (isEditingRack.max_power_kw ?? 10.0) : newRack.max_power_kw}
                       onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, max_power_kw: parseFloat(e.target.value) }) : setNewRack({ ...newRack, max_power_kw: parseFloat(e.target.value) })}
                       className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-blue-500/60 transition-colors font-mono text-white" />
@@ -4062,7 +4081,7 @@ export default function Racks() {
                 </div>
 
                 {/* PDU Configuration Section */}
-                <div className="pt-2 border-t border-white/5 space-y-4">
+                <div id="rack-form-pdu" className="pt-2 border-t border-white/5 space-y-4">
                   <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
                     <Zap size={12} /> PDU Configuration
                   </h3>
@@ -4070,15 +4089,16 @@ export default function Racks() {
                     <div className="space-y-3">
                       <p className="text-[8px] font-black text-slate-600 uppercase tracking-tighter">PDU-A (Primary)</p>
                       <input 
+                        aria-label="PDU-A name"
                         value={isEditingRack ? (isEditingRack.pdu_a_name || '') : newRack.pdu_a_name}
                         onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, pdu_a_name: e.target.value }) : setNewRack({ ...newRack, pdu_a_name: e.target.value })}
                         className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-500/40 text-blue-300 font-bold"
                         placeholder="PDU-A Name"
                       />
                       <div className="flex items-center gap-2">
-                         <input type="number" step={0.1}
-                          value={isEditingRack ? (isEditingRack.pdu_a_cap_kw || 10) : newRack.pdu_a_cap_kw}
-                          onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, pdu_a_cap_kw: parseFloat(e.target.value) }) : setNewRack({ ...newRack, pdu_a_cap_kw: parseFloat(e.target.value) })}
+                         <input aria-label="PDU-A capacity in kW" type="number" min={0} step={0.1}
+                          value={isEditingRack ? (isEditingRack.pdu_a_cap_kw ?? '') : newRack.pdu_a_cap_kw}
+                          onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, pdu_a_cap_kw: e.target.value === '' ? null : parseFloat(e.target.value) }) : setNewRack({ ...newRack, pdu_a_cap_kw: e.target.value === '' ? null : parseFloat(e.target.value) })}
                           className="w-20 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-mono outline-none focus:border-blue-500/40 text-slate-300" 
                         />
                         <span className="text-[8px] font-black text-slate-600">kW CAP</span>
@@ -4087,15 +4107,16 @@ export default function Racks() {
                     <div className="space-y-3">
                       <p className="text-[8px] font-black text-slate-600 uppercase tracking-tighter">PDU-B (Redundant)</p>
                       <input 
+                        aria-label="PDU-B name"
                         value={isEditingRack ? (isEditingRack.pdu_b_name || '') : newRack.pdu_b_name}
                         onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, pdu_b_name: e.target.value }) : setNewRack({ ...newRack, pdu_b_name: e.target.value })}
                         className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-500/40 text-blue-300 font-bold"
                         placeholder="PDU-B Name"
                       />
                       <div className="flex items-center gap-2">
-                         <input type="number" step={0.1}
-                          value={isEditingRack ? (isEditingRack.pdu_b_cap_kw || 10) : newRack.pdu_b_cap_kw}
-                          onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, pdu_b_cap_kw: parseFloat(e.target.value) }) : setNewRack({ ...newRack, pdu_b_cap_kw: parseFloat(e.target.value) })}
+                         <input aria-label="PDU-B capacity in kW" type="number" min={0} step={0.1}
+                          value={isEditingRack ? (isEditingRack.pdu_b_cap_kw ?? '') : newRack.pdu_b_cap_kw}
+                          onChange={e => isEditingRack ? setIsEditingRack({ ...isEditingRack, pdu_b_cap_kw: e.target.value === '' ? null : parseFloat(e.target.value) }) : setNewRack({ ...newRack, pdu_b_cap_kw: e.target.value === '' ? null : parseFloat(e.target.value) })}
                           className="w-20 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-mono outline-none focus:border-blue-500/40 text-slate-300" 
                         />
                         <span className="text-[8px] font-black text-slate-600">kW CAP</span>
@@ -4115,18 +4136,15 @@ export default function Racks() {
                 )}
               </div>
               <div className="flex gap-3 pt-4 border-t border-white/5">
-                <button onClick={closeRackEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
+                <button type="button" onClick={closeRackEditor} className="flex-1 py-3.5 text-[10px] font-black uppercase text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
                 <button
+                  type="submit"
                   disabled={rackMutation.isPending}
-                  onClick={() => {
-                    if (!isEditingRack && !newRack.site_id) return toast.error('Site is required')
-                    rackMutation.mutate(isEditingRack || newRack)
-                  }}
                   className="flex-1 py-3.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-wait">
                   {rackMutation.isPending ? 'Saving Rack...' : isEditingRack ? 'Update Config' : 'Deploy Rack'}
                 </button>
               </div>
-            </motion.div>
+            </motion.form>
           </WorkspaceDialogFrame>
         )}
 

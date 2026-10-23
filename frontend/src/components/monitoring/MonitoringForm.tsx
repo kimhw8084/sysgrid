@@ -1,6 +1,7 @@
 
 import { WorkspaceModal } from '../shared/WorkspaceModal'
 import { parseOperationalApiValidationError } from '../shared/OperationalFieldValidation'
+import { FormGuide } from '../shared/FormGuide'
 import { 
   WorkspaceSplitView, 
   WorkspaceEmptyState,
@@ -309,10 +310,8 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
     },
     onSuccess: (data: any) => {
       setGeneralError('')
-      const action = item ? 'Synchronized' : 'Deployed';
-      const detail = item ? 'Changes propagated' : 'New monitor live';
       resetDirty(data ? { ...formData, ...data } : formData)
-      showWorkspaceToast(`${action} ${data.title || formData.title}`, {
+      showWorkspaceToast(`Monitoring saved: ${data.title || formData.title}`, {
         type: 'success'
       })
       onSuccess()
@@ -499,12 +498,20 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
         </div>
       }
     >
-      <div className="space-y-8 pt-6">
+      <div className="guided-entry space-y-8 pt-6">
+          <FormGuide summary={<><strong>Define the target, the check, and who receives alerts.</strong> Planned monitors stay paused until you mark them Existing and active.</>}
+            steps={[
+              { id: 'monitoring-context-root', title: 'Target & ownership', hint: 'Asset, scope and responsible team', tone: 'blue', onNavigate: () => setActiveTab('context') },
+              { id: 'monitoring-logic-root', title: 'Check logic', hint: 'Condition and execution interval', tone: 'teal', onNavigate: () => setActiveTab('logic') },
+              { id: 'monitoring-alerting-root', title: 'Alert routing', hint: 'Recipients and recovery guidance', tone: 'violet', onNavigate: () => setActiveTab('alerting') },
+            ]} />
           <div className="space-y-4">
             <div className="grid grid-cols-12 gap-6">
               <div id="monitoring-header-title" className="col-span-12 lg:col-span-6 space-y-2">
-                <FieldLabel label="Monitoring Item Title" required />
+                <FieldLabel label="Monitoring Item Title" htmlFor="monitoring-title-input" required />
                 <input
+                  id="monitoring-title-input"
+                  aria-invalid={Boolean(formErrors.title)}
                   value={formData.title ?? ''}
                   onChange={e => updateFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g. CORE-DB: High CPU Load Alert"
@@ -702,7 +709,7 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
                       </div>}
                     </WorkspaceSectionCard>
 
-                    <WorkspaceSectionCard id="monitoring-ownership-card">
+                    <WorkspaceSectionCard id="monitoring-ownership-card" tone="violet">
                       <WorkspaceCollapsibleHeader
                         title="Ownership"
                         subtitle="Team and individual ownership are both optional and can coexist."
