@@ -12,6 +12,13 @@ case "$VERIFY_STAGE" in
   all|checks|normal-v1|desktop|root-preview) ;;
   *) echo "Unknown application qualification stage: '$VERIFY_STAGE'." >&2; exit 2 ;;
 esac
+VERIFY_SHARD="${SYSGRID_VERIFY_SHARD:-}"
+if [[ -n "$VERIFY_SHARD" ]]; then
+  if [[ "$VERIFY_STAGE" != normal-v1 || ! "$VERIFY_SHARD" =~ ^[123]/3$ ]]; then
+    echo "SYSGRID_VERIFY_SHARD requires --stage normal-v1 and one of 1/3, 2/3, 3/3." >&2
+    exit 2
+  fi
+fi
 if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == root-preview ]]; then
   [[ -n "${SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID:-}" ]] || {
     echo "verify:app root-preview gate requires SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID; no identity is inferred." >&2
@@ -55,6 +62,7 @@ if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
     scripts/tests/test_production_preflight.py \
     scripts/tests/test_corporate_publishability_guard.py \
     scripts/tests/test_production_operations.py \
+    scripts/tests/test_ci_shards.py \
     scripts/tests/test_verify_app_stages.py
   "$PYTHON_BIN" scripts/tests/test_application_ci_contract.py
   bash scripts/workstation-up.sh --self-test
@@ -204,7 +212,15 @@ for gate in normal-v1 desktop root-preview; do
   verify_runtime_start
   (
     cd "$FRONTEND_DIR"
-    verify_runtime_run_command "$NODE_BIN" "$PLAYWRIGHT_BIN" test --config="$config"
+    if [[ -n "$VERIFY_SHARD" ]]; then
+      PLAYWRIGHT_JSON_OUTPUT_FILE="$FRONTEND_DIR/test-results/normal-v1-selection.json" \
+        verify_runtime_run_command "$NODE_BIN" "$PLAYWRIGHT_BIN" test --config="$config" --list --reporter=json
+      PLAYWRIGHT_JSON_OUTPUT_FILE="$FRONTEND_DIR/test-results/normal-v1-results.json" \
+        verify_runtime_run_command "$NODE_BIN" "$PLAYWRIGHT_BIN" test --config="$config" \
+          --shard="$VERIFY_SHARD" --reporter=list,html,json,./llm-reporter.ts
+    else
+      verify_runtime_run_command "$NODE_BIN" "$PLAYWRIGHT_BIN" test --config="$config"
+    fi
   )
   verify_runtime_cleanup
 done

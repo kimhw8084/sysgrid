@@ -37,22 +37,34 @@ def main() -> None:
     assert "group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}" in workflow
     assert "cancel-in-progress: true" in workflow
 
-    qualification_job, required_job = workflow.split("  qualification:\n", 1)[1].split("  required:\n", 1)
-    assert "    name: qualification (${{ matrix.stage }})\n" in qualification_job
+    qualification_job, remaining = workflow.split("  qualification:\n", 1)[1].split("  normal_v1:\n", 1)
+    normal_job, required_job = remaining.split("  required:\n", 1)
+    assert "    name: qualification (${{ matrix.label }})\n" in qualification_job
     assert "      fail-fast: false\n" in qualification_job
-    assert "        stage: [checks, normal-v1, desktop, root-preview]\n" in qualification_job
-    assert "exclude:" not in qualification_job and "include:" not in qualification_job
+    assert "exclude:" not in qualification_job
+    assert "        include:\n" in qualification_job
+    for stage in ['checks', 'desktop', 'root-preview']:
+        assert f'- {{stage: {stage}, label: {stage}, artifact: {stage}, shard: ""}}' in qualification_job
+    for index in range(1, 4):
+        assert f'- {{stage: normal-v1, label: normal-v1 shard {index}/3, artifact: normal-v1-{index}, shard: "{index}/3"}}' in qualification_job
     assert "continue-on-error" not in workflow
-    assert workflow.count("    timeout-minutes: 45\n") == 2
+    assert workflow.count("    timeout-minutes: 45\n") == 3
     assert "runs-on: ubuntu-24.04" in qualification_job
     assert "    name: required\n" in required_job
-    assert "    needs: qualification\n    if: always()\n" in required_job
+    assert "    needs: [qualification, normal_v1]\n    if: always()\n" in required_job
     assert "QUALIFICATION_RESULT: ${{ needs.qualification.result }}" in required_job
     job_env = qualification_job.split("    steps:\n", 1)[0]
     assert "runner" not in job_env
     assert "SYSGRID_VERIFY_TEMP_ROOT" not in job_env
     assert "CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" in job_env
     assert "QUALIFICATION_STAGE: ${{ matrix.stage }}" in job_env
+    assert "SYSGRID_VERIFY_SHARD: ${{ matrix.shard }}" in job_env
+    assert "    name: qualification (normal-v1)\n" in normal_job
+    assert "    needs: qualification\n    if: always()\n" in normal_job
+    assert 'run: python3 scripts/verify-ci-shards.py normal-shards ci-evidence' in normal_job
+    assert 'pattern: application-ci-normal-v1-*-evidence-${{ env.CANDIDATE_SHA }}' in normal_job
+    assert 'name: application-ci-normal-v1-evidence-${{ env.CANDIDATE_SHA }}' in normal_job
+    assert 'NORMAL_V1_RESULT: ${{ needs.normal_v1.result }}' in required_job
 
     decisive_steps = (
         "Check candidate whitespace",
@@ -127,11 +139,12 @@ def main() -> None:
     assert "frontend/test-results-root-preview" in qualification_job
     assert "frontend/playwright-report-desktop" in qualification_job
     assert "owned-runtime" in qualification_job
-    assert "application-ci-${{ env.QUALIFICATION_STAGE }}-evidence-${{ env.CANDIDATE_SHA }}" in qualification_job
+    assert "application-ci-${{ matrix.artifact }}-evidence-${{ env.CANDIDATE_SHA }}" in qualification_job
+    assert '"qualification_shard": os.environ.get("SYSGRID_VERIFY_SHARD") or None' in evidence_step
 
     barrier = step_block(required_job, "Require every qualification stage")
     assert "if:" not in barrier
-    assert 'if [[ "$QUALIFICATION_RESULT" != success ]]; then' in barrier and 'exit 1' in barrier
+    assert 'if [[ "$QUALIFICATION_RESULT" != success || "$NORMAL_V1_RESULT" != success ]]; then' in barrier and 'exit 1' in barrier
     aggregate = step_block(required_job, "Collect aggregate CI identity")
     assert '"schema_version": "sysgrid.application-ci.evidence.v2"' in aggregate
     assert '"tested_trigger_sha": os.environ["GITHUB_SHA"]' in aggregate
@@ -150,6 +163,7 @@ def main() -> None:
             "actions/setup-node",
             "actions/setup-python",
             "actions/upload-artifact",
+            "actions/download-artifact",
         )
     )
 

@@ -63,7 +63,7 @@ verify_runtime_cleanup() { "$FAKE_BIN/probe" cleanup; }
     def run(*args, root_user='test-system-root', **extra):
         env = os.environ.copy()
         for name in ['SYSGRID_VERIFY_PROFILE', 'SYSGRID_DESKTOP_ONLY', 'SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID',
-                     'SYSGRID_VERIFY_CONTROL_PLANE_ADMIN_USER_IDS', 'FAIL_COMMAND', 'FAIL_CONFIG']:
+                     'SYSGRID_VERIFY_CONTROL_PLANE_ADMIN_USER_IDS', 'SYSGRID_VERIFY_SHARD', 'FAIL_COMMAND', 'FAIL_CONFIG']:
             env.pop(name, None)
         env.update(PATH=str(binaries) + os.pathsep + env['PATH'], TRACE=str(trace), FAKE_BIN=str(binaries), **extra)
         if root_user is not None:
@@ -129,6 +129,7 @@ def test_checks_stage_retains_canonical_backend_startup_and_frontend_coverage(st
         'scripts/tests/test_production_preflight.py',
         'scripts/tests/test_corporate_publishability_guard.py',
         'scripts/tests/test_production_operations.py',
+        'scripts/tests/test_ci_shards.py',
         'scripts/tests/test_verify_app_stages.py',
     ]
     assert any(event['command'] == 'python' and event['args'] == ['scripts/tests/test_application_ci_contract.py'] for event in events)
@@ -168,15 +169,16 @@ def test_root_preview_never_infers_an_identity(staged_executor):
 
 
 @pytest.mark.parametrize('outcome', ['success', 'failure', 'cancelled', 'skipped', '', 'unknown'])
-def test_required_check_rejects_every_incomplete_qualification_outcome(outcome):
+@pytest.mark.parametrize('union_outcome', ['success', 'failure', 'cancelled', 'skipped'])
+def test_required_check_rejects_every_incomplete_qualification_outcome(outcome, union_outcome):
     workflow = (ROOT / '.github/workflows/application-ci.yml').read_text()
     required = workflow.split('\n  required:\n', 1)[1]
-    assert 'needs: qualification' in required and 'if: always()' in required
+    assert 'needs: [qualification, normal_v1]' in required and 'if: always()' in required
     block = required.split('      - name: Require every qualification stage\n', 1)[1].split('\n      - name: ', 1)[0]
     command = textwrap.dedent(block.split('        run: |\n', 1)[1])
-    env = {**os.environ, 'QUALIFICATION_RESULT': outcome}
+    env = {**os.environ, 'QUALIFICATION_RESULT': outcome, 'NORMAL_V1_RESULT': union_outcome}
     result = subprocess.run(['/bin/bash', '-c', command], env=env, text=True, capture_output=True, timeout=5)
-    assert (result.returncode == 0) == (outcome == 'success')
+    assert (result.returncode == 0) == (outcome == union_outcome == 'success')
 
 
 @pytest.mark.parametrize('outcome', ['success', 'failure', 'cancelled', 'skipped'])
@@ -190,14 +192,35 @@ def test_aggregate_receipt_binds_actual_outcome_candidate_trigger_and_every_stag
            'GITHUB_RUN_ID': '12345', 'GITHUB_EVENT_NAME': 'pull_request', 'GITHUB_SHA': 'b' * 40,
            'CANDIDATE_SHA': 'a' * 40, 'GITHUB_REF': 'refs/pull/33/merge', 'GITHUB_HEAD_REF': 'test-candidate',
            'GITHUB_REF_NAME': '33/merge', 'QUALIFICATION_RESULT': outcome,
-           'FINAL_REQUIRED_GATE_RESULT': 'success' if outcome == 'success' else 'failure', 'PR_BASE_SHA': pr_base or ''}
+           'FINAL_REQUIRED_GATE_RESULT': 'success' if outcome == 'success' else 'failure', 'PR_BASE_SHA': pr_base or '',
+           'NORMAL_V1_RESULT': outcome}
     result = subprocess.run([sys.executable, '-c', code], cwd=tmp_path, env=env, text=True, capture_output=True, timeout=5)
     assert result.returncode == 0, result.stderr
     receipt = json.loads((tmp_path / 'ci-evidence/ci-identity.json').read_text())
     assert receipt['candidate_sha'] == 'a' * 40 and receipt['tested_trigger_sha'] == receipt['github_sha'] == 'b' * 40
     assert receipt['qualification_stages'] == STAGES
     assert receipt['qualification_result'] == outcome
+    assert receipt['normal_v1_result'] == outcome
     assert receipt['final_required_gate_result'] == env['FINAL_REQUIRED_GATE_RESULT']
     assert receipt['pr_base_sha'] == pr_base and receipt['head_ref'] == 'test-candidate'
     assert receipt['stage_evidence_artifacts'] == {stage: f"application-ci-{stage}-evidence-{'a' * 40}" for stage in STAGES}
     assert 'actually used' in receipt['runtime_provenance']
+
+
+@pytest.mark.parametrize('shard', ['1/3', '2/3', '3/3'])
+def test_normal_shard_keeps_full_selection_and_adds_only_partition_argument(staged_executor, shard):
+    result, events, _ = staged_executor('--stage', 'normal-v1', SYSGRID_VERIFY_SHARD=shard)
+    assert result.returncode == 0, result.stderr
+    browser = [event['args'] for event in events if any(arg.startswith('--config=') for arg in event['args'])]
+    assert [args[1:] for args in browser] == [
+        ['test', '--config=playwright.v1.config.ts', '--list', '--reporter=json'],
+        ['test', '--config=playwright.v1.config.ts', f'--shard={shard}', '--reporter=list,html,json,./llm-reporter.ts'],
+    ]
+
+
+@pytest.mark.parametrize('stage,shard', [('normal-v1', '0/3'), ('normal-v1', '4/3'), ('normal-v1', '1/2'),
+                                     ('all', '1/3'), ('checks', '1/3'), ('desktop', '1/3'), ('root-preview', '1/3')])
+def test_invalid_shard_stops_before_evidence_reset_or_runtime(staged_executor, stage, shard):
+    result, events, sentinel = staged_executor('--stage', stage, SYSGRID_VERIFY_SHARD=shard)
+    assert result.returncode == 2 and not events
+    assert sentinel.read_text() == 'Unrelated previous evidence'
