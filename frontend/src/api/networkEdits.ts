@@ -14,4 +14,3 @@ export function networkTableChanges(row: Record<string, any>, baseline: Record<s
     key === 'speed_gbps' ? (row[key] === '' ? null : Number(row[key])) : (row[key] || null),
   ]))
 }
-
