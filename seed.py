@@ -604,18 +604,18 @@ async def seed_domain_data(tenant_db_url: str):
                 source_mac=f"aa:00:{idx:02x}:11:22:33",
                 source_vlan=100 + (idx % 8),
                 target_device_id=target.id,
-                target_port=f"xe-0/0/{idx % 32}",
+                target_port=f"xe-0/0/{idx // max(1, len(switch_devices))}",
                 target_ip=target.primary_ip,
                 target_mac=f"bb:00:{idx:02x}:44:55:66",
                 target_vlan=100 + (idx % 8),
-                link_type=random.choice(["Production", "Management", "Replication"]),
+                link_type=random.choice(["Data", "Management", "Storage"]),
                 purpose=random.choice(["North-south ingress", "East-west service mesh", "Storage replication", "Plant telemetry"]),
                 speed_gbps=random.choice([1.0, 10.0, 25.0, 40.0]),
                 unit="Gbps",
-                direction=random.choice(["Bidirectional", "Ingress", "Egress"]),
-                cable_type=random.choice(["DAC", "Fiber", "Cat6"]),
+                direction=random.choice(["Bidirectional", "Source to Target", "Target to Source"]),
+                cable_type=random.choice(["DAC", "Fiber", "Copper"]),
                 status=random.choice(["Active", "Maintenance", "Planned"]),
-                farm=random.choice(["FAB-08", "HQ-01", "DR-EAST"]),
+                farm=random.choice(["Prod", "Stage", "Lab"]),
                 request_link=f"https://netops.local/changes/{idx + 1000}",
             ))
             if idx < len(physical_devices) - 1:
@@ -1507,6 +1507,25 @@ async def validate_seed_api_contracts(*, tenant_db_url: str, seeded_domain_data:
 
     from app.api.logical_services import serialize_service
     from app.api.devices import get_devices
+    from app.api.networks import _validate_network_enums
+
+    async with session_factory() as session:
+        connections = (await session.execute(select(models.PortConnection).order_by(models.PortConnection.id))).scalars().all()
+        endpoints = set()
+        if not connections:
+            failures.append('network: no connections returned for validation')
+        for connection in connections:
+            try:
+                payload = {key: getattr(connection, key) for key in schemas.NetworkConnectionBase.model_fields}
+                draft = schemas.NetworkConnectionCreate.model_validate(payload)
+                await _validate_network_enums(session, **{key: getattr(draft, key) for key in ('link_type', 'farm', 'cable_type', 'direction', 'status')})
+                for endpoint in ((draft.source_device_id, draft.source_port), (draft.target_device_id, draft.target_port)):
+                    if endpoint in endpoints:
+                        raise ValueError('Physical port is connected more than once')
+                    endpoints.add(endpoint)
+            except Exception as exc:
+                failures.append(f'network connection {connection.id} failed write contract: {exc}')
+        validation_summary['network'] = len(connections)
 
     async with session_factory() as session:
         service_result = await session.execute(

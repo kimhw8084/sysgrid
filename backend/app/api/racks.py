@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload, selectinload
 from ..database import get_db
 from ..models import models
 from typing import List, Optional
+import math
 from .utils import build_audit_log
 from .module_policy import require_module_access
 
@@ -14,6 +15,38 @@ router = APIRouter(
     tags=["Racks"],
     dependencies=[Depends(require_module_access("racks"))],
 )
+
+
+def _validate_rack_configuration(data: dict, *, creating: bool = False) -> dict:
+    data = dict(data)
+    if creating or 'name' in data:
+        if not isinstance(data.get('name'), str) or not data['name'].strip():
+            raise HTTPException(400, 'Rack identifier is required')
+        data['name'] = data['name'].strip()
+    if 'total_u' in data:
+        value = data['total_u']
+        if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 100:
+            raise HTTPException(400, 'Rack capacity must be a whole number from 1 to 100 U')
+    for field in ('max_power_kw', 'pdu_a_cap_kw', 'pdu_b_cap_kw'):
+        if field not in data:
+            continue
+        value = data[field]
+        if value is None and field.startswith('pdu_'):
+            continue  # Unknown optional PDU limits remain unknown.
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 1000:
+            raise HTTPException(400, f'{field} must be a finite capacity from 0 to 1000 kW')
+    for field in ('site_id', 'new_site_id'):
+        if field == 'site_id' and not creating:
+            continue  # Read-only source location is not a relocation request.
+        if field not in data or (field == 'new_site_id' and data[field] is None):
+            continue
+        value = data[field]
+        if isinstance(value, str) and value.isascii() and value.isdigit():
+            value = int(value)
+        if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 2 ** 63 - 1:
+            raise HTTPException(400, 'Choose a valid site')
+        data[field] = value
+    return data
 
 @router.get("/plans")
 async def get_plans(db: AsyncSession = Depends(get_db)):
@@ -132,7 +165,7 @@ async def get_racks(site_id: Optional[str] = None, include_deleted: bool = False
             "aisle": rack.aisle,
             "row": rack.row,
             "total_u": rack.total_u_height,
-            "max_power_kw": rack.max_power_kw or 8.0,
+            "max_power_kw": rack.max_power_kw if rack.max_power_kw is not None else 8.0,
             "pdu_a_name": rack.pdu_a_name,
             "pdu_b_name": rack.pdu_b_name,
             "pdu_a_cap_kw": rack.pdu_a_cap_kw,
@@ -208,6 +241,7 @@ async def reorder_racks(data: dict, request: Request, db: AsyncSession = Depends
 
 @router.post("")
 async def create_rack(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+    data = _validate_rack_configuration(data, creating=True)
     site_id = data.get('site_id')
     if not site_id:
         raise HTTPException(status_code=400, detail="Site selection mandatory")
@@ -242,8 +276,7 @@ async def create_rack(data: dict, request: Request, db: AsyncSession = Depends(g
         order_index=max_order + 1
     )
     db.add(rack)
-    await db.commit()
-    await db.refresh(rack)
+    await db.flush()
     
     log = build_audit_log(
         request=request,
@@ -263,10 +296,12 @@ async def create_rack(data: dict, request: Request, db: AsyncSession = Depends(g
     )
     db.add(log)
     await db.commit()
+    await db.refresh(rack)
     return rack
 
 @router.put("/{rack_id}")
 async def update_rack(rack_id: int, data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+    data = _validate_rack_configuration(data)
     result = await db.execute(select(models.Rack).filter(models.Rack.id == rack_id))
     rack = result.scalar_one_or_none()
     if not rack:

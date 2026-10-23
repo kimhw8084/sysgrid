@@ -829,7 +829,39 @@ class NetworkConnectionCreate(NetworkConnectionBase):
 
 
 class NetworkConnectionUpdate(NetworkConnectionBase):
-    pass
+    edit_revision: Optional[str] = Field(default=None, pattern=r'^[a-f0-9]{64}$')
+
+
+NETWORK_TABLE_FIELDS = frozenset({
+    'status', 'link_type', 'direction', 'farm', 'purpose', 'speed_gbps', 'unit', 'cable_type', 'request_link',
+})
+
+
+class NetworkConnectionTableRow(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    id: int = Field(strict=True, ge=1, le=2 ** 63 - 1)
+    edit_revision: str = Field(pattern=r'^[a-f0-9]{64}$')
+    changes: NetworkConnectionUpdate
+
+    @model_validator(mode='before')
+    @classmethod
+    def restrict_table_fields(cls, value):
+        if isinstance(value, dict) and isinstance(value.get('changes'), dict):
+            keys = set(value['changes'])
+            if not keys or not keys <= NETWORK_TABLE_FIELDS:
+                raise ValueError('Table edits require supported connection metadata fields')
+        return value
+
+
+class NetworkConnectionTableEdit(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    rows: List[NetworkConnectionTableRow] = Field(min_length=1, max_length=200)
+
+    @model_validator(mode='after')
+    def unique_rows(self):
+        if len({row.id for row in self.rows}) != len(self.rows):
+            raise ValueError('Each connection can appear only once')
+        return self
 
 
 class NetworkConnectionBulkIds(BaseModel):

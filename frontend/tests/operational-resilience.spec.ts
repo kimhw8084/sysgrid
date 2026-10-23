@@ -100,7 +100,7 @@ test('service save preserves the draft on failure and commits once after a stall
   const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Create Service', exact: true }) })
   const nameInput = dialog.getByPlaceholder('e.g. ERP DB Prod 01')
   await nameInput.fill(name)
-  await dialog.getByRole('button', { name: 'Select host node', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Host', exact: true }).click()
   await page.getByPlaceholder('Search hostname or system...').fill(host.name)
   await page.getByRole('button', { name: new RegExp(host.name) }).click()
 

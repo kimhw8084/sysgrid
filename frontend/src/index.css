@@ -2,6 +2,7 @@
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
 @import './theme-compatibility.css';
+@import './workspace-experience.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -84,22 +85,23 @@
   --text-primary: #e1e1e1;
   --text-secondary: #c4c4c4;
   --text-muted: #acacac;
-  --accent-primary: #c8c8c8;
-  --accent-glow: color-mix(in srgb, #c8c8c8 12%, transparent);
+  --accent-primary: #93c5fd;
+  --accent-glow: rgb(59 130 246 / 12%);
   --sidebar-bg: #292929;
   --grid-bg: #2b2b2b;
   --grid-header-bg: #353535;
   --grid-border: #474747;
   --panel-item-bg: #303030;
   --input-bg: #252525;
-  --action-primary: #505050;
-  --action-ink: #c8c8c8;
-  --nav-active-bg: #484848;
-  --nav-active-text: #e1e1e1;
+  --action-primary: #2563eb;
+  --action-primary-hover: #1d4ed8;
+  --action-ink: #93c5fd;
+  --nav-active-bg: #233d5a;
+  --nav-active-text: #dbeafe;
   --state-success: #93d2ac;
   --state-warning: #e5c583;
   --state-danger: #e4a5a0;
-  --state-info: #b4c9cb;
+  --state-info: #7dd3fc;
 }
 
 /* Match legacy accent utilities to the shared dark palette without changing

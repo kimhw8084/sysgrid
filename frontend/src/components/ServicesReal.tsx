@@ -1729,6 +1729,7 @@ export default function ServicesReal() {
 
   return (
    <>{confirmation}<OperationalWorkspaceShell
+      workspace="services"
       archetype="table"
       className="overflow-hidden"
       header={{

@@ -167,13 +167,14 @@ export function AssetGoldenDialogs({
           setServiceDetails={setServiceDetails} setServiceEdit={setServiceEdit} onCloseLinkEdit={onCloseLinkEdit} onCloseLinkDetails={onCloseLinkDetails} />
       ) : null}
 
-      {editingAsset ? <AssetRecordFormModal item={editingAsset} onClose={onCloseEdit} onSuccess={() => { onCloseEdit(); onRefresh() }} /> : null}
+      {editingAsset ? <AssetRecordFormModal key={editingAsset.id ?? 'new'} item={editingAsset} onClose={onCloseEdit} onSuccess={() => { onCloseEdit(); onRefresh() }} /> : null}
       {editingLink ? (
         <NetworkConnectionForm
+          key={`edit-${editingLink.id ?? 'new'}`}
           item={editingLink}
           devices={devices}
           onClose={onCloseLinkEdit}
-          onSuccess={onRefresh}
+          onSuccess={() => { onCloseLinkEdit(); onRefresh() }}
           linkPurposeOptions={linkPurposeOptions}
           farmOptions={farmOptions}
           cableTypeOptions={cableTypeOptions}
@@ -181,10 +182,11 @@ export function AssetGoldenDialogs({
       ) : null}
       {detailLink ? (
         <NetworkConnectionForm
+          key={`detail-${detailLink.id}`}
           item={detailLink}
           devices={devices}
           onClose={onCloseLinkDetails}
-          onSuccess={onRefresh}
+          onSuccess={() => { onCloseLinkDetails(); onRefresh() }}
           linkPurposeOptions={linkPurposeOptions}
           farmOptions={farmOptions}
           cableTypeOptions={cableTypeOptions}

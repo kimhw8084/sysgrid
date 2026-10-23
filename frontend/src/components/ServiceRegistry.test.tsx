@@ -103,7 +103,7 @@ describe('ServiceForm host selector parity', () => {
     expect(screen.getByText('Host is required.')).toBeInTheDocument()
     expect(onSave).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Select host node' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Host' }))
     fireEvent.change(screen.getByPlaceholderText('Search hostname or system...'), { target: { value: 'APP-STAGE' } })
     fireEvent.click(await screen.findByRole('button', { name: /APP-STAGE/ }))
 

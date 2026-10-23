@@ -39,6 +39,9 @@ import {
 } from './shared/OperationalGridContract'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
 import { apiFetch } from '../api/apiClient'
+import { changedNetworkFields, networkOptionsWithCurrent, networkTableChanges } from '../api/networkEdits'
+import { FormGuide, focusFormIssue } from './shared/FormGuide'
+import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { ModulePolicyButton, useModuleActionPolicy } from '../policy/ModulePolicy'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
@@ -3083,94 +3086,52 @@ function BulkActionModals({ isStatusOpen, isSeverityOpen, isNotifyOpen, onClose,
 }
 
 function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmOptions, cableTypeOptions, severities, notificationMethods, onClose, onSuccess }: any) {
-  const [rows, setRows] = useState(() => items.map((item: any) => ({
-    id: item.id,
-    title: item.title || `${item.src_node || item.server_a || 'Unknown'} ↔ ${item.peer_node || item.server_b || 'Unknown'}`,
-    status: item.status || '',
-    link_type: item.link_type || item.category || '',
-    direction: item.direction || '',
-    farm: item.farm || '',
-    purpose: item.purpose || '',
-    speed_gbps: item.speed_gbps ?? '',
-    unit: item.unit || 'Gbps',
-    cable_type: item.cable_type || '',
-    request_link: item.request_link || '',
-    is_active: item.is_active !== false,
+  const [originals] = useState(() => items.map((item: any) => ({
+    id: item.id, edit_revision: item.edit_revision,
+    title: item.title || `${item.server_a || 'Custom IP'} ↔ ${item.server_b || 'Custom IP'}`,
+    status: item.status || '', link_type: item.link_type || item.category || '', direction: item.direction || '',
+    farm: item.farm || '', purpose: item.purpose || '', speed_gbps: item.speed_gbps ?? '',
+    unit: item.unit || 'Gbps', cable_type: item.cable_type || '', request_link: item.request_link || '',
   })))
+  const [rows, setRows] = useState(originals)
   const [isMaximized, setIsMaximized] = useState(false)
-
-  const isDirty = useMemo(() => {
-    return rows.some((row: any) => {
-      const original = items.find((item: any) => item.id === row.id)
-      if (!original) return false
-      
-      const origStatus = original.status || ''
-      const origLinkType = original.link_type || original.category || ''
-      const origDirection = original.direction || ''
-      const origFarm = original.farm || ''
-      const origPurpose = original.purpose || ''
-      const origSpeedGbps = original.speed_gbps ?? ''
-      const origUnit = original.unit || 'Gbps'
-      const origCableType = original.cable_type || ''
-      const origRequestLink = original.request_link || ''
-      const origIsActive = original.is_active !== false
-
-      return (
-        row.status !== origStatus ||
-        row.link_type !== origLinkType ||
-        row.direction !== origDirection ||
-        row.farm !== origFarm ||
-        row.purpose !== origPurpose ||
-        row.speed_gbps !== origSpeedGbps ||
-        row.unit !== origUnit ||
-        row.cable_type !== origCableType ||
-        row.request_link !== origRequestLink ||
-        row.is_active !== origIsActive
-      )
-    })
-  }, [rows, items])
-
-  const mergeOptionsWithCurrentValue = useCallback((options: Array<{ value: string; label: string }>, value: string) => {
-    const current = value ? [{ value, label: value }] : []
-    return Array.from(new Map([...(options || []), ...current].map((option: any) => [option.value, option])).values())
-  }, [])
-
+  const [saveError, setSaveError] = useState('')
+  const staged = rows.map((row: any) => ({ id: row.id, edit_revision: row.edit_revision,
+    changes: networkTableChanges(row, originals.find((original: any) => original.id === row.id)) }))
+    .filter((row: any) => Object.keys(row.changes).length > 0)
+  const isDirty = staged.length > 0
+  const mergeOptionsWithCurrentValue = networkOptionsWithCurrent
   const updateRow = (rowId: number, field: string, value: any) => {
+    if (mutation.isPending) return
+    setSaveError('')
     setRows((current: any[]) => current.map((row: any) => row.id === rowId ? { ...row, [field]: value } : row))
   }
-
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async () => {
-      for (const row of rows) {
-        const payload = {
-          status: row.status,
-          link_type: row.link_type || 'Data',
-          direction: row.direction || 'Bidirectional',
-          farm: row.farm || null,
-          speed_gbps: row.speed_gbps === '' ? null : Number(row.speed_gbps),
-          unit: row.unit || 'Gbps',
-          purpose: row.purpose || null,
-          cable_type: row.cable_type || null,
-          request_link: row.request_link || null,
-        }
-        const res = await apiFetch(`/api/v1/networks/connections/${row.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(payload)
-        })
-        await res.json()
-      }
+      if (!staged.length) return { changed: 0 }
+      if (staged.some((row: any) => !row.edit_revision)) throw new Error('Reload the connection list before editing. Your draft is preserved.')
+      const res = await apiFetch('/api/v1/networks/connections/table-edit', {
+        method: 'POST', body: JSON.stringify({ rows: staged }),
+      })
+      if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })
+      return res.json()
     },
-    onSuccess: () => {
-      showWorkspaceToast(`Updated ${rows.length} connection${rows.length === 1 ? '' : 's'}`)
+    onSuccess: (result: any) => {
+      showWorkspaceToast(`Updated ${result.changed} connection${result.changed === 1 ? '' : 's'}`)
       onSuccess()
     },
-    onError: (error: any) => showWorkspaceToast(error.message || 'Bulk edit failed', { type: 'error' }),
+    onError: (error: any) => {
+      const message = parseOperationalApiValidationError(error).generalError || 'The batch was not saved. Your draft is preserved.'
+      setSaveError(message)
+      showWorkspaceToast(message, { type: 'error' })
+    },
   })
-
+  const handleClose = () => { if (!mutation.isPending) onClose() }
   return (
     <WorkspaceModal
       isOpen={true}
-      onClose={onClose}
+      onClose={handleClose}
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
@@ -3185,7 +3146,7 @@ function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmO
         <div className="flex items-center gap-3">
           <ToolbarButton 
             onClick={() => mutation.mutate()} 
-            disabled={mutation.isPending} 
+            disabled={mutation.isPending || !isDirty}
             variant="primary"
             className="px-8 whitespace-nowrap"
           >
@@ -3198,9 +3159,10 @@ function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmO
       <div className="space-y-6">
         <div className="rounded-lg border border-white/10 bg-black/20 px-5 py-4">
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Selection</p>
-          <p className="mt-1 text-[12px] font-bold text-slate-200">{rows.length} rows staged for modification</p>
+          <p className="mt-1 text-[12px] font-bold text-slate-200">{staged.length} changed of {rows.length} selected · All rows save together</p>
         </div>
-
+        <WorkspaceValidationBanner message={saveError} />
+        <fieldset disabled={mutation.isPending} className="min-w-0">
         <div className="overflow-x-auto rounded-lg border border-white/10 bg-black/20 custom-scrollbar">
           <table className="min-w-full divide-y divide-white/10">
             <thead className="bg-slate-950/90 sticky top-0 z-10">
@@ -3215,7 +3177,6 @@ function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmO
                 <th className="min-w-[110px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Unit</th>
                 <th className="min-w-[160px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Cable Type</th>
                 <th className="min-w-[220px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Request Link</th>
-                <th className="min-w-[120px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Control</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -3224,27 +3185,19 @@ function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmO
                   <td className="px-4 py-3 text-[10px] font-bold text-slate-200">{row.title}</td>
                   <td className="px-2 py-2"><AppDropdown value={row.status} onChange={(value) => updateRow(row.id, 'status', value)} options={STATUSES.filter((status) => status.value !== 'Deleted').map((status) => ({ value: status.value, label: status.label }))} placeholder="Status" /></td>
                   <td className="px-2 py-2"><AppDropdown value={row.link_type} onChange={(value) => updateRow(row.id, 'link_type', value)} options={mergeOptionsWithCurrentValue(linkPurposeOptions, row.link_type)} placeholder="Type" /></td>
-                  <td className="px-2 py-2"><AppDropdown value={row.direction} onChange={(value) => updateRow(row.id, 'direction', value)} options={NETWORK_DIRECTIONS.map((value) => ({ value, label: value }))} placeholder="Direction" /></td>
+                  <td className="px-2 py-2"><AppDropdown value={row.direction} onChange={(value) => updateRow(row.id, 'direction', value)} options={mergeOptionsWithCurrentValue(NETWORK_DIRECTIONS.map((value) => ({ value, label: value })), row.direction)} placeholder="Direction" /></td>
                   <td className="px-2 py-2"><AppDropdown value={row.farm} onChange={(value) => updateRow(row.id, 'farm', value)} options={mergeOptionsWithCurrentValue(farmOptions, row.farm)} placeholder="Farm" /></td>
                   <td className="px-2 py-2"><input value={row.purpose} onChange={(event) => updateRow(row.id, 'purpose', event.target.value)} placeholder="Purpose" className={`${networkInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
                   <td className="px-2 py-2"><input type="number" value={row.speed_gbps} onChange={(event) => updateRow(row.id, 'speed_gbps', event.target.value)} placeholder="Speed" className={`${networkInputClass()} h-[42px] px-3 py-2 text-[10px] [appearance:textfield]`} /></td>
-                  <td className="px-2 py-2"><AppDropdown value={row.unit} onChange={(value) => updateRow(row.id, 'unit', value)} options={NETWORK_UNITS.map((value) => ({ value, label: value }))} placeholder="Unit" /></td>
+                  <td className="px-2 py-2"><AppDropdown value={row.unit} onChange={(value) => updateRow(row.id, 'unit', value)} options={mergeOptionsWithCurrentValue(NETWORK_UNITS.map((value) => ({ value, label: value })), row.unit)} placeholder="Unit" /></td>
                   <td className="px-2 py-2"><AppDropdown value={row.cable_type} onChange={(value) => updateRow(row.id, 'cable_type', value)} options={mergeOptionsWithCurrentValue(cableTypeOptions, row.cable_type)} placeholder="Cable type" /></td>
                   <td className="px-2 py-2"><input value={row.request_link} onChange={(event) => updateRow(row.id, 'request_link', event.target.value)} placeholder="Request link" className={`${networkInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
-                  <td className="px-4 py-2">
-                    <button
-                      type="button"
-                      onClick={() => updateRow(row.id, 'is_active', !row.is_active)}
-                      className={`w-full rounded-lg border px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${row.is_active ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-white/10 bg-black/20 text-slate-500'}`}
-                    >
-                      {row.is_active ? 'Active' : 'Paused'}
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        </fieldset>
       </div>
     </WorkspaceModal>
   )
@@ -3534,12 +3487,15 @@ const isNetworkFieldRequired = (fieldName: string) => NETWORK_REQUIRED_FIELD_NAM
 
 const networkInputClass = (error?: string) => getWorkspaceInputClass(error)
 
-function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeOptions, farmOptions, cableTypeOptions }: any) {
+export function NetworkConnectionForm({ item: incomingItem, devices, onClose, onSuccess, linkPurposeOptions, farmOptions, cableTypeOptions }: any) {
   useBodyModalFlag()
+  const [item] = useState(incomingItem)
   const queryClient = useQueryClient()
   const [isSaving, setIsSaving] = useState(false)
   const [isMaximized, setIsMaximized] = useState(false)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [generalError, setGeneralError] = useState('')
+  const formBodyRef = useRef<HTMLDivElement>(null)
   const initialFormState = useMemo(() => ({
     source_device_id: normalizeNetworkDeviceId(item?.source_device_id),
     source_port: item?.source_port ?? '',
@@ -3551,9 +3507,9 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
     target_ip: item?.target_ip ?? '',
     target_mac: item?.target_mac ?? '',
     target_vlan: item?.target_vlan ?? '',
-    link_type: item?.link_type || 'Data',
+    link_type: item?.link_type || linkPurposeOptions?.find((option: any) => option.value === 'Data')?.value || linkPurposeOptions?.[0]?.value || 'Data',
     purpose: item?.purpose || '',
-    speed_gbps: item?.speed_gbps ?? 10,
+    speed_gbps: item?.id ? item.speed_gbps ?? '' : 10,
     unit: item?.unit || 'Gbps',
     direction: item?.direction || 'Bidirectional',
     cable_type: item?.cable_type || '',
@@ -3563,6 +3519,14 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
   }), [item])
   const [formData, setFormData] = useState(initialFormState)
   const initialDirtySnapshotRef = useRef(JSON.stringify(sanitizeNetworkConnectionPayload(initialFormState)))
+  const linkTypeTouched = useRef(false)
+  useEffect(() => {
+    if (item?.id || linkTypeTouched.current || !linkPurposeOptions?.length) return
+    if (linkPurposeOptions.some((option: any) => option.value === formData.link_type)) return
+    const link_type = linkPurposeOptions.find((option: any) => option.value === 'Data')?.value || linkPurposeOptions[0].value
+    initialDirtySnapshotRef.current = JSON.stringify({ ...JSON.parse(initialDirtySnapshotRef.current), link_type })
+    setFormData(current => ({ ...current, link_type }))
+  }, [formData.link_type, item?.id, linkPurposeOptions])
 
   const isDirty = useMemo(() => (
     JSON.stringify(sanitizeNetworkConnectionPayload(formData)) !== initialDirtySnapshotRef.current
@@ -3577,16 +3541,13 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
     }))
     .filter((device) => Number.isFinite(device.id) && device.id > 0), [devices])
   const mergedLinkPurposeOptions = useMemo(() => {
-    const current = item?.link_type ? [{ value: item.link_type, label: item.link_type }] : []
-    return Array.from(new Map([...(linkPurposeOptions || []), ...current].map((option: any) => [option.value, option])).values())
+    return networkOptionsWithCurrent(linkPurposeOptions || [], item?.link_type)
   }, [item?.link_type, linkPurposeOptions])
   const mergedFarmOptions = useMemo(() => {
-    const current = item?.farm ? [{ value: item.farm, label: item.farm }] : []
-    return Array.from(new Map([...(farmOptions || []), ...current].map((option: any) => [option.value, option])).values())
+    return networkOptionsWithCurrent(farmOptions || [], item?.farm)
   }, [farmOptions, item?.farm])
   const mergedCableTypeOptions = useMemo(() => {
-    const current = item?.cable_type ? [{ value: item.cable_type, label: item.cable_type }] : []
-    return Array.from(new Map([...(cableTypeOptions || []), ...current].map((option: any) => [option.value, option])).values())
+    return networkOptionsWithCurrent(cableTypeOptions || [], item?.cable_type)
   }, [cableTypeOptions, item?.cable_type])
 
   const clearFieldError = useCallback((field: string) => {
@@ -3599,9 +3560,12 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
   }, [])
 
   const updateField = useCallback((field: string, value: any) => {
+    if (isSaving) return
+    if (field === 'link_type') linkTypeTouched.current = true
     setFormData((current) => ({ ...current, [field]: value }))
     clearFieldError(field)
-  }, [clearFieldError])
+    setGeneralError('')
+  }, [clearFieldError, isSaving])
 
   const validateForm = useCallback((draft = formData) => {
     const nextErrors: Record<string, string> = {}
@@ -3634,58 +3598,78 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
       }
     }
 
-    if (!Number.isFinite(sourceDeviceId) || sourceDeviceId <= 0) nextErrors.source_device_id = 'Source device is required.'
-    if (!Number.isFinite(targetDeviceId) || targetDeviceId <= 0) nextErrors.target_device_id = 'Peer device is required.'
-    if (!sourcePort) nextErrors.source_port = 'Source port is required.'
-    if (!targetPort) nextErrors.target_port = 'Peer port is required.'
+    const edits = item?.id ? changedNetworkFields(sanitizeNetworkConnectionPayload(draft), sanitizeNetworkConnectionPayload(initialFormState)) : null
+    const validateField = (key: string) => edits === null || Object.prototype.hasOwnProperty.call(edits, key)
+    if (validateField('device_a_id') && (!Number.isFinite(sourceDeviceId) || sourceDeviceId <= 0)) nextErrors.source_device_id = 'Source device is required.'
+    if (validateField('device_b_id') && (!Number.isFinite(targetDeviceId) || targetDeviceId <= 0)) nextErrors.target_device_id = 'Peer device is required.'
+    if (validateField('source_port') && !sourcePort) nextErrors.source_port = 'Source port is required.'
+    if (validateField('target_port') && !targetPort) nextErrors.target_port = 'Peer port is required.'
     if (!draft.link_type) nextErrors.link_type = 'Connection type is required.'
     if (!draft.status) nextErrors.status = 'Status is required.'
     if (!draft.direction) nextErrors.direction = 'Direction is required.'
     if (!draft.unit) nextErrors.unit = 'Unit is required.'
-    if (sourceDeviceId === targetDeviceId && sourceDeviceId > 0) nextErrors.target_device_id = 'Peer device must be different from source.'
-    if (sourceIp && !isValidIp(sourceIp)) nextErrors.source_ip = 'Source IP must be a valid IPv4 or IPv6 address.'
-    if (targetIp && !isValidIp(targetIp)) nextErrors.target_ip = 'Peer IP must be a valid IPv4 or IPv6 address.'
-    if (requestLink && !isValidUrl(requestLink)) nextErrors.request_link = 'Request link must be a valid http/https URL.'
-    if (speed != null && (!Number.isFinite(speed) || speed <= 0)) nextErrors.speed_gbps = 'Speed must be greater than zero.'
-    if (sourceVlan != null && (!Number.isInteger(sourceVlan) || sourceVlan < 0 || sourceVlan > 4094)) nextErrors.source_vlan = 'Source VLAN must be between 0 and 4094.'
-    if (targetVlan != null && (!Number.isInteger(targetVlan) || targetVlan < 0 || targetVlan > 4094)) nextErrors.target_vlan = 'Peer VLAN must be between 0 and 4094.'
+    if ((validateField('device_a_id') || validateField('device_b_id')) && sourceDeviceId === targetDeviceId && sourceDeviceId > 0) nextErrors.target_device_id = 'Peer device must be different from source.'
+    if (validateField('source_ip') && sourceIp && !isValidIp(sourceIp)) nextErrors.source_ip = 'Source IP must be a valid IPv4 or IPv6 address.'
+    if (validateField('target_ip') && targetIp && !isValidIp(targetIp)) nextErrors.target_ip = 'Peer IP must be a valid IPv4 or IPv6 address.'
+    if (validateField('request_link') && requestLink && !isValidUrl(requestLink)) nextErrors.request_link = 'Request link must be a valid http/https URL.'
+    if (validateField('speed_gbps') && speed != null && (!Number.isFinite(speed) || speed <= 0)) nextErrors.speed_gbps = 'Speed must be greater than zero.'
+    if (validateField('source_vlan') && sourceVlan != null && (!Number.isInteger(sourceVlan) || sourceVlan < 0 || sourceVlan > 4094)) nextErrors.source_vlan = 'Source VLAN must be between 0 and 4094.'
+    if (validateField('target_vlan') && targetVlan != null && (!Number.isInteger(targetVlan) || targetVlan < 0 || targetVlan > 4094)) nextErrors.target_vlan = 'Peer VLAN must be between 0 and 4094.'
     if (draft.farm && mergedFarmOptions.length > 0 && !mergedFarmOptions.some((option: any) => option.value === draft.farm)) nextErrors.farm = 'Select a valid farm.'
     if (draft.cable_type && mergedCableTypeOptions.length > 0 && !mergedCableTypeOptions.some((option: any) => option.value === draft.cable_type)) nextErrors.cable_type = 'Select a valid cable type.'
     if (draft.link_type && mergedLinkPurposeOptions.length > 0 && !mergedLinkPurposeOptions.some((option: any) => option.value === draft.link_type)) nextErrors.link_type = 'Select a valid connection type.'
 
     return nextErrors
-  }, [formData, mergedCableTypeOptions, mergedFarmOptions, mergedLinkPurposeOptions])
+  }, [formData, initialFormState, item?.id, mergedCableTypeOptions, mergedFarmOptions, mergedLinkPurposeOptions])
 
   const mutation = useMutation({
+    meta: { handlesErrorToast: true },
     mutationFn: async () => {
       setIsSaving(true)
-      const payload = sanitizeNetworkConnectionPayload(formData)
+      const normalized = sanitizeNetworkConnectionPayload(formData)
+      const payload = item?.id ? { ...changedNetworkFields(normalized, sanitizeNetworkConnectionPayload(initialFormState)),
+        ...(item.edit_revision ? { edit_revision: item.edit_revision } : {}) } : normalized
       const url = item?.id ? `/api/v1/networks/connections/${item.id}` : '/api/v1/networks/connections'
       const method = item?.id ? 'PUT' : 'POST'
       const res = await apiFetch(url, { method, body: JSON.stringify(payload) })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })
       return res.json()
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['network-connections'] })
       setIsSaving(false)
+      showWorkspaceToast(item?.id ? 'Connection updated.' : 'Connection created.', { type: 'success' })
       onSuccess?.()
     },
     onError: (error: any) => {
       setIsSaving(false)
-      showWorkspaceToast(error?.message || 'Failed to save network connection', { type: 'error' })
+      const { fieldErrors, generalError } = parseOperationalApiValidationError(error)
+      setFormErrors(fieldErrors)
+      if (fieldErrors.device_a_id || fieldErrors.device_b_id) setFormErrors({ ...fieldErrors,
+        source_device_id: fieldErrors.source_device_id || fieldErrors.device_a_id,
+        target_device_id: fieldErrors.target_device_id || fieldErrors.device_b_id })
+      const message = generalError || 'Fix the highlighted connection fields. Your draft is preserved.'
+      setGeneralError(message)
+      showWorkspaceToast(message, { type: 'error' })
+      requestAnimationFrame(() => focusFormIssue(formBodyRef.current))
     },
   })
 
   const handleSave = useCallback(() => {
+    if (isSaving || mutation.isPending) return
     const nextErrors = validateForm()
     setFormErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       showWorkspaceToast('Fix the highlighted network fields before saving.', { type: 'error' })
+      requestAnimationFrame(() => focusFormIssue(formBodyRef.current))
       return
     }
     mutation.mutate()
-  }, [mutation, validateForm])
+  }, [isSaving, mutation, validateForm])
+  const handleClose = () => {
+    if (isSaving) { showWorkspaceToast('Wait for the connection save to finish.', { type: 'error' }); return }
+    onClose()
+  }
 
   const fieldClass = useCallback((field: string) => networkInputClass(formErrors[field]), [formErrors])
   const formTitle = item?.id ? getNetworkConnectionTitle(item) : 'Create Network Connection'
@@ -3693,8 +3677,9 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
   return (
     <WorkspaceModal
       isOpen={true}
-      onClose={onClose}
+      onClose={handleClose}
       isDirty={isDirty}
+      hideFooterClose
       size="workspace"
       isMaximized={isMaximized}
       onMaximizeToggle={() => setIsMaximized(!isMaximized)}
@@ -3715,7 +3700,7 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
       }
       footerRight={
         <div className="flex items-center gap-3">
-          <ToolbarButton onClick={onClose}>Cancel</ToolbarButton>
+          <ToolbarButton onClick={handleClose} disabled={isSaving}>Cancel</ToolbarButton>
           <ToolbarButton onClick={handleSave} disabled={isSaving} variant="primary">
             {isSaving ? 'Saving...' : 'Save Connection'}
           </ToolbarButton>
@@ -3724,9 +3709,17 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
     >
       <WorkspaceDossierShell
         body={
-          <div className="space-y-6">
+          <div ref={formBodyRef} className="space-y-6">
+            <FormGuide summary={<><strong>Connect two endpoints, then review the link.</strong> IP, VLAN and cable details are optional.</>}
+              steps={[
+                { id: 'network-form-source', title: 'Source', hint: 'Asset + physical port', complete: Boolean(formData.source_device_id && formData.source_port) },
+                { id: 'network-form-peer', title: 'Peer', hint: 'The other end of the connection', tone: 'teal', complete: Boolean(formData.target_device_id && formData.target_port) },
+                { id: 'network-form-link', title: 'Link', hint: 'Purpose, speed and direction', tone: 'violet' },
+              ]} />
+            <WorkspaceValidationBanner message={generalError} />
+            <fieldset disabled={isSaving} className="min-w-0 space-y-6">
             <section className="grid gap-4 xl:grid-cols-2">
-              <WorkspaceSectionCard title="Source Endpoint">
+              <WorkspaceSectionCard id="network-form-source" title="1 · Source endpoint" icon={<Network size={18} />} description="Where the cable starts. Match the physical port label.">
                 <div className="space-y-4">
                   <OperationalAssetSelector
                     label="Source Device"
@@ -3740,29 +3733,29 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                   />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <FieldLabel label="Source Port" required />
-                      <input value={formData.source_port} onChange={(e) => updateField('source_port', e.target.value)} placeholder="Source port" className={fieldClass('source_port')} />
+                      <FieldLabel label="Source Port" htmlFor="connection-source-port" required />
+                      <input id="connection-source-port" aria-invalid={Boolean(formErrors.source_port)} value={formData.source_port} onChange={(e) => updateField('source_port', e.target.value)} placeholder="e.g. eth0" className={fieldClass('source_port')} />
                       <FieldError message={formErrors.source_port} />
                     </div>
                     <div>
-                      <FieldLabel label="Source VLAN" />
-                      <input type="number" min="0" max="4094" step="1" value={formData.source_vlan} onChange={(e) => updateField('source_vlan', e.target.value)} placeholder="0-4094" className={fieldClass('source_vlan')} />
+                      <FieldLabel label="Source VLAN" htmlFor="connection-source-vlan" />
+                      <input id="connection-source-vlan" aria-invalid={Boolean(formErrors.source_vlan)} type="number" min="0" max="4094" step="1" value={formData.source_vlan} onChange={(e) => updateField('source_vlan', e.target.value)} placeholder="0-4094" className={fieldClass('source_vlan')} />
                       <FieldError message={formErrors.source_vlan} />
                     </div>
                     <div>
-                      <FieldLabel label="Source IP" />
-                      <input value={formData.source_ip} onChange={(e) => updateField('source_ip', e.target.value)} placeholder="192.168.1.10" className={fieldClass('source_ip')} />
+                      <FieldLabel label="Source IP" htmlFor="connection-source-ip" />
+                      <input id="connection-source-ip" aria-invalid={Boolean(formErrors.source_ip)} value={formData.source_ip} onChange={(e) => updateField('source_ip', e.target.value)} placeholder="192.168.1.10" className={fieldClass('source_ip')} />
                       <FieldError message={formErrors.source_ip} />
                     </div>
                     <div>
-                      <FieldLabel label="Source MAC" />
-                      <input value={formData.source_mac} onChange={(e) => updateField('source_mac', e.target.value)} placeholder="00:11:22:33:44:55" className={fieldClass('source_mac')} />
+                      <FieldLabel label="Source MAC" htmlFor="connection-source-mac" />
+                      <input id="connection-source-mac" value={formData.source_mac} onChange={(e) => updateField('source_mac', e.target.value)} placeholder="00:11:22:33:44:55" className={fieldClass('source_mac')} />
                     </div>
                   </div>
                 </div>
               </WorkspaceSectionCard>
 
-              <WorkspaceSectionCard title="Peer Endpoint">
+              <WorkspaceSectionCard id="network-form-peer" title="2 · Peer endpoint" tone="teal" icon={<ArrowRightLeft size={18} />} description="Where the cable ends. Choose a different asset.">
                 <div className="space-y-4">
                   <OperationalAssetSelector
                     label="Peer Device"
@@ -3776,23 +3769,23 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                   />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <FieldLabel label="Peer Port" required />
-                      <input value={formData.target_port} onChange={(e) => updateField('target_port', e.target.value)} placeholder="Peer port" className={fieldClass('target_port')} />
+                      <FieldLabel label="Peer Port" htmlFor="connection-peer-port" required />
+                      <input id="connection-peer-port" aria-invalid={Boolean(formErrors.target_port)} value={formData.target_port} onChange={(e) => updateField('target_port', e.target.value)} placeholder="e.g. xe-0/0/1" className={fieldClass('target_port')} />
                       <FieldError message={formErrors.target_port} />
                     </div>
                     <div>
-                      <FieldLabel label="Peer VLAN" />
-                      <input type="number" min="0" max="4094" step="1" value={formData.target_vlan} onChange={(e) => updateField('target_vlan', e.target.value)} placeholder="0-4094" className={fieldClass('target_vlan')} />
+                      <FieldLabel label="Peer VLAN" htmlFor="connection-peer-vlan" />
+                      <input id="connection-peer-vlan" aria-invalid={Boolean(formErrors.target_vlan)} type="number" min="0" max="4094" step="1" value={formData.target_vlan} onChange={(e) => updateField('target_vlan', e.target.value)} placeholder="0-4094" className={fieldClass('target_vlan')} />
                       <FieldError message={formErrors.target_vlan} />
                     </div>
                     <div>
-                      <FieldLabel label="Peer IP" />
-                      <input value={formData.target_ip} onChange={(e) => updateField('target_ip', e.target.value)} placeholder="192.168.1.11" className={fieldClass('target_ip')} />
+                      <FieldLabel label="Peer IP" htmlFor="connection-peer-ip" />
+                      <input id="connection-peer-ip" aria-invalid={Boolean(formErrors.target_ip)} value={formData.target_ip} onChange={(e) => updateField('target_ip', e.target.value)} placeholder="192.168.1.11" className={fieldClass('target_ip')} />
                       <FieldError message={formErrors.target_ip} />
                     </div>
                     <div>
-                      <FieldLabel label="Peer MAC" />
-                      <input value={formData.target_mac} onChange={(e) => updateField('target_mac', e.target.value)} placeholder="00:11:22:33:44:66" className={fieldClass('target_mac')} />
+                      <FieldLabel label="Peer MAC" htmlFor="connection-peer-mac" />
+                      <input id="connection-peer-mac" value={formData.target_mac} onChange={(e) => updateField('target_mac', e.target.value)} placeholder="00:11:22:33:44:66" className={fieldClass('target_mac')} />
                     </div>
                   </div>
                 </div>
@@ -3800,11 +3793,12 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
             </section>
 
             <section className="grid gap-4">
-              <WorkspaceSectionCard title="Connection Metadata">
+              <WorkspaceSectionCard id="network-form-link" title="3 · Link details" tone="violet" icon={<Layers size={18} />} description="Review the defaults. Existing values remain unchanged unless you edit them.">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <AppDropdown
                       label="Connection Type"
+                      error={formErrors.link_type}
                       value={formData.link_type}
                       onChange={(value) => updateField('link_type', value)}
                       options={mergedLinkPurposeOptions}
@@ -3815,6 +3809,7 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                   <div>
                     <AppDropdown
                       label="Status"
+                      error={formErrors.status}
                       value={formData.status}
                       onChange={(value) => updateField('status', value)}
                       options={NETWORK_STATUSES.map((value) => ({ value, label: value }))}
@@ -3823,16 +3818,17 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                     <FieldError message={formErrors.status} />
                   </div>
                   <div>
-                    <FieldLabel label="Speed" />
-                    <input type="number" step="0.1" min="0" value={formData.speed_gbps} onChange={(e) => updateField('speed_gbps', e.target.value)} placeholder="10" className={fieldClass('speed_gbps')} />
+                    <FieldLabel label="Speed" htmlFor="connection-speed" />
+                    <input id="connection-speed" aria-invalid={Boolean(formErrors.speed_gbps)} type="number" step="any" min="0" value={formData.speed_gbps} onChange={(e) => updateField('speed_gbps', e.target.value)} placeholder="10" className={fieldClass('speed_gbps')} />
                     <FieldError message={formErrors.speed_gbps} />
                   </div>
                   <div>
                     <AppDropdown
                       label="Unit"
+                      error={formErrors.unit}
                       value={formData.unit}
                       onChange={(value) => updateField('unit', value)}
-                      options={NETWORK_UNITS.map((value) => ({ value, label: value }))}
+                      options={networkOptionsWithCurrent(NETWORK_UNITS.map((value) => ({ value, label: value })), item?.unit)}
                       placeholder="Select unit"
                     />
                     <FieldError message={formErrors.unit} />
@@ -3840,9 +3836,10 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                   <div>
                     <AppDropdown
                       label="Direction"
+                      error={formErrors.direction}
                       value={formData.direction}
                       onChange={(value) => updateField('direction', value)}
-                      options={NETWORK_DIRECTIONS.map((value) => ({ value, label: value }))}
+                      options={networkOptionsWithCurrent(NETWORK_DIRECTIONS.map((value) => ({ value, label: value })), item?.direction)}
                       placeholder="Select direction"
                     />
                     <FieldError message={formErrors.direction} />
@@ -3850,6 +3847,7 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                   <div>
                     <AppDropdown
                       label="Farm"
+                      error={formErrors.farm}
                       value={formData.farm}
                       onChange={(value) => updateField('farm', value)}
                       options={mergedFarmOptions}
@@ -3860,6 +3858,7 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                   <div>
                     <AppDropdown
                       label="Cable Type"
+                      error={formErrors.cable_type}
                       value={formData.cable_type}
                       onChange={(value) => updateField('cable_type', value)}
                       options={mergedCableTypeOptions}
@@ -3868,18 +3867,19 @@ function NetworkConnectionForm({ item, devices, onClose, onSuccess, linkPurposeO
                     <FieldError message={formErrors.cable_type} />
                   </div>
                   <div className="sm:col-span-2">
-                    <FieldLabel label="Request Link" />
-                    <input type="url" value={formData.request_link} onChange={(e) => updateField('request_link', e.target.value)} placeholder="https://..." className={fieldClass('request_link')} />
+                    <FieldLabel label="Request Link" htmlFor="connection-request-link" />
+                    <input id="connection-request-link" aria-invalid={Boolean(formErrors.request_link)} type="url" value={formData.request_link} onChange={(e) => updateField('request_link', e.target.value)} placeholder="https://..." className={fieldClass('request_link')} />
                     <FieldError message={formErrors.request_link} />
                   </div>
                   <div className="sm:col-span-2">
-                    <FieldLabel label="Purpose" />
-                    <textarea value={formData.purpose} onChange={(e) => updateField('purpose', e.target.value)} placeholder="Why this connection exists" className={`${fieldClass('purpose')} min-h-[110px]`} />
+                    <FieldLabel label="Purpose" htmlFor="connection-purpose" />
+                    <textarea id="connection-purpose" aria-invalid={Boolean(formErrors.purpose)} value={formData.purpose} onChange={(e) => updateField('purpose', e.target.value)} placeholder="Why this connection exists" className={`${fieldClass('purpose')} min-h-[110px]`} />
                     <FieldError message={formErrors.purpose} />
                   </div>
                 </div>
               </WorkspaceSectionCard>
             </section>
+            </fieldset>
           </div>
         }
       />

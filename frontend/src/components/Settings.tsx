@@ -1601,9 +1601,11 @@ export default function SettingsPage() {
     mutationFn: async (payload: any) => {
       const isUpdate = !!payload.id
       const url = isUpdate ? `/api/v1/settings/teams/${payload.id}` : "/api/v1/settings/teams"
+      const name = String(payload.name || '').trim()
+      if (!name) throw new Error('Enter a group name before saving.')
       const res = await apiFetch(url, {
         method: isUpdate ? "PATCH" : "POST",
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ ...payload, name })
       })
       if (!res.ok) throw new Error(await res.text())
       return res.json()
@@ -3235,17 +3237,19 @@ export default function SettingsPage() {
                 right={
                   <div className="flex h-9 w-full min-w-0 max-w-full items-center overflow-hidden rounded-lg border border-white/10 bg-black/20 sm:w-auto sm:max-w-none">
                     <input
+                      aria-label="New group name"
                       value={newTeamName}
                       onChange={e => setNewTeamName(e.target.value)}
                       placeholder="New group name..."
                       className="h-full w-0 min-w-0 flex-1 bg-transparent px-4 text-[11px] font-bold text-white outline-none placeholder:text-slate-600 sm:w-56 sm:flex-initial"
-                      onKeyDown={e => e.key === 'Enter' && teamMutation.mutate({ name: newTeamName, source: 'manual' })}
+                      onKeyDown={e => { if (e.key === 'Enter' && newTeamName.trim() && !teamMutation.isPending) teamMutation.mutate({ name: newTeamName.trim(), source: 'manual' }) }}
                     />
                     <button
+                      disabled={!newTeamName.trim() || teamMutation.isPending}
                       onClick={() => teamMutation.mutate({ name: newTeamName, source: 'manual' })}
                       className="h-full shrink-0 border-l border-white/10 px-3 text-[10px] font-black uppercase tracking-widest text-blue-400 transition-all hover:bg-blue-600/20 sm:px-5"
                     >
-                      Initialize
+                      {teamMutation.isPending ? 'Saving…' : 'Add Group'}
                     </button>
                   </div>
                 }

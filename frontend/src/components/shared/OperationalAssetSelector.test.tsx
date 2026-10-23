@@ -32,7 +32,7 @@ describe('OperationalAssetSelector', () => {
       />
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Select asset' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Registry Asset' }))
     fireEvent.click(await screen.findByRole('button', { name: 'All Systems' }))
     fireEvent.click(await screen.findByRole('button', { name: /^STAGE$/ }))
 
@@ -43,7 +43,7 @@ describe('OperationalAssetSelector', () => {
     fireEvent.click(await screen.findByRole('button', { name: /APP-STAGE/ }))
     expect(onChange).toHaveBeenCalledWith(22)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Select asset' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Registry Asset' }))
     fireEvent.click(await screen.findByRole('button', { name: 'No linked asset' }))
     expect(onChange).toHaveBeenLastCalledWith(null)
   })
@@ -68,7 +68,9 @@ describe('OperationalAssetSelector', () => {
     expect(screen.getByText('*')).toBeInTheDocument()
     expect(screen.getByText('Host is required.')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Select asset' }))
+    expect(screen.getByRole('button', { name: 'Host' })).toHaveAccessibleDescription('Host is required.')
+    expect(screen.getByRole('button', { name: 'Host' })).toHaveAttribute('aria-invalid', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'Host' }))
     expect(await screen.findByPlaceholderText('Search hostname or system...')).toBeInTheDocument()
     fireEvent.mouseDown(screen.getByRole('button', { name: 'Outside' }))
     expect(screen.queryByPlaceholderText('Search hostname or system...')).not.toBeInTheDocument()

@@ -20,6 +20,7 @@ import { OperationalAssetSelector } from './shared/OperationalAssetSelector'
 import { mergeOperationalFieldErrors, parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { useOperationalFormDirty } from './shared/OperationalFormContracts'
 import { withServiceEditRevision } from '../utils/serviceRevision'
+import { FormGuide, focusFormIssue } from './shared/FormGuide'
 
 const SERVICE_LICENSE_OPTIONS = ["One-time", "Subscription", "OEM", "Free"]
 const SERVICE_CURRENCY_OPTIONS = ["USD", "EUR", "KRW", "JPY", "GBP"]
@@ -329,6 +330,7 @@ export const ServiceForm = ({
   // Each caller keys the mounted editor by record identity.
   const [initialData] = useState(incomingData || {})
   const controlPrefix = React.useId()
+  const formRef = useRef<HTMLFormElement>(null)
   const buildInitialFormData = useCallback((initialData: any = {}) => {
     const nextData = {
       name: "",
@@ -454,6 +456,7 @@ export const ServiceForm = ({
     if (!validate()) {
       setGeneralError('Fix the highlighted service fields before saving')
       toast.error('Fix the highlighted service fields before saving')
+      requestAnimationFrame(() => focusFormIssue(formRef.current))
       return
     }
     setGeneralError('')
@@ -477,16 +480,23 @@ export const ServiceForm = ({
   }
   return (
     <form
+      ref={formRef}
       id={formId}
       onSubmit={(event) => {
         event.preventDefault()
         handleSave()
       }}
-      className="space-y-6 py-2"
+      className="guided-entry space-y-6 py-2"
     >
+      <FormGuide summary={<><strong>Name the service and choose its host.</strong> Review the defaults; licensing and metadata can be filled in when known.</>}
+        steps={[
+          { id: `${controlPrefix}-identity`, title: 'Identity', hint: 'Name, host and service type', complete: Boolean(formData.name?.trim() && formData.device_id) },
+          { id: `${controlPrefix}-runtime`, title: 'Runtime', hint: 'State, environment and licensing', tone: 'teal' },
+          { id: `${controlPrefix}-metadata`, title: 'Metadata', hint: 'Optional configuration details', tone: 'violet' },
+        ]} />
       <WorkspaceValidationBanner message={bannerMessage} />
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <section className="space-y-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.05] p-5 shadow-inner">
+        <section id={`${controlPrefix}-identity`} data-tone="blue" className="workspace-section space-y-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.05] p-5 shadow-inner">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-blue-400">Core Service Identity</p>
           </div>
@@ -537,7 +547,7 @@ export const ServiceForm = ({
           </div>
         </section>
 
-        <section className="space-y-4 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-5 shadow-inner">
+        <section id={`${controlPrefix}-runtime`} data-tone="teal" className="workspace-section space-y-4 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-5 shadow-inner">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-400">Runtime & Licensing</p>
           </div>
@@ -608,7 +618,7 @@ export const ServiceForm = ({
         </section>
       </div>
 
-      <section className="space-y-4 rounded-xl border border-white/8 bg-white/[0.03] p-5 shadow-inner">
+      <section id={`${controlPrefix}-metadata`} data-tone="violet" className="workspace-section space-y-4 rounded-xl border border-white/8 bg-white/[0.03] p-5 shadow-inner">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-400">Metadata</p>
           <p className="mt-1 text-[10px] font-bold text-slate-500">Configuration metadata keys follow the selected service type when definitions exist.</p>

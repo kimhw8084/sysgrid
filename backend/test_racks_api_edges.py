@@ -4,6 +4,63 @@ from sqlalchemy import select
 from app.api.settings import ensure_tenant_admin_async
 from app.database import ConfigSessionLocal
 from app.models.config import Tenant
+from app.api.racks import _validate_rack_configuration
+from fastapi import HTTPException
+from sqlalchemy import event
+from app.models import models
+
+
+@pytest.mark.parametrize('field,value', [
+    ('name', ''), ('name', '  '), ('name', None), ('total_u', True), ('total_u', 0), ('total_u', 1.5), ('total_u', 101),
+    ('max_power_kw', -1), ('max_power_kw', float('inf')), ('max_power_kw', True), ('max_power_kw', None),
+    ('pdu_a_cap_kw', -1), ('pdu_b_cap_kw', '10'), ('site_id', 'invalid'), ('site_id', True), ('site_id', 2 ** 63),
+])
+def test_rack_configuration_rejects_invalid_user_input(field, value):
+    with pytest.raises(HTTPException) as exc:
+        _validate_rack_configuration({'name': 'Valid rack', field: value}, creating=field == 'site_id')
+    assert exc.value.status_code == 400
+
+
+def test_existing_unassigned_location_is_not_a_relocation_request():
+    assert _validate_rack_configuration({'site_id': None, 'aisle': 'A'})['site_id'] is None
+    with pytest.raises(HTTPException):
+        _validate_rack_configuration({'name': 'New', 'site_id': None}, creating=True)
+
+
+@pytest.mark.asyncio
+async def test_new_rack_and_its_audit_commit_together(seeded_admin_tenant):
+    client = seeded_admin_tenant['client']
+    headers = {'X-User-Id': 'admin_root', 'X-Tenant-Id': str(seeded_admin_tenant['tenant_id'])}
+    site = await _create_site(client, headers, 'RACK-ATOMIC-SITE')
+    before = (await client.get('/api/v1/racks', headers=headers)).json()
+    def reject_audit(_mapper, _connection, row):
+        if row.target_table == 'racks':
+            raise RuntimeError('Controlled rack audit failure')
+    event.listen(models.AuditLog, 'before_insert', reject_audit)
+    try:
+        with pytest.raises(RuntimeError, match='Controlled rack audit failure'):
+            await client.post('/api/v1/racks', headers=headers, json={'site_id': site['id'], 'name': 'Must roll back'})
+    finally:
+        event.remove(models.AuditLog, 'before_insert', reject_audit)
+    assert (await client.get('/api/v1/racks', headers=headers)).json() == before
+
+
+@pytest.mark.asyncio
+async def test_rack_zero_power_limits_survive_create_read_and_edit(seeded_admin_tenant):
+    client = seeded_admin_tenant['client']
+    headers = {'X-User-Id': 'admin_root', 'X-Tenant-Id': str(seeded_admin_tenant['tenant_id'])}
+    site = await _create_site(client, headers, 'ZERO-POWER-SITE')
+    response = await client.post('/api/v1/racks', headers=headers, json={
+        'site_id': str(site['id']), 'name': '  ZERO-LIMIT  ', 'total_u': 42, 'max_power_kw': 0, 'pdu_a_cap_kw': 0, 'pdu_b_cap_kw': 0,
+    })
+    assert response.status_code == 200, response.text
+    rack_id = response.json()['id']
+    response = await client.put(f'/api/v1/racks/{rack_id}', headers=headers, json={'aisle': 'Edited'})
+    assert response.status_code == 200, response.text
+    loaded = await client.get('/api/v1/racks', headers=headers)
+    rack = next(row for row in loaded.json() if row['id'] == rack_id)
+    assert rack['name'] == 'ZERO-LIMIT'
+    assert (rack['max_power_kw'], rack['pdu_a_cap_kw'], rack['pdu_b_cap_kw']) == (0, 0, 0)
 
 
 async def _ensure_admin(seeded_admin_tenant):
