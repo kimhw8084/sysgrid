@@ -6,6 +6,10 @@ Local checks and synthetic capacity measurements do not grant production
 acceptance. Record the exact deployed commit and frontend build identity before
 collecting field evidence; retain the original failed observations as well.
 
+The supported product experience is desktop-only. Qualify desktop window resizing
+and short laptop screens; phone and tablet product design are outside release
+scope. Accessibility zoom and keyboard operation remain desktop requirements.
+
 ## Inputs the deployment owner supplies
 
 Use the guided `workstation-up.sh` configuration for a cloud terminal workspace,

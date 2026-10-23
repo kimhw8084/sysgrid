@@ -73,7 +73,7 @@ export function AssetMapSurface({ assets, visibleAssets, connections, relationsh
         </section>}
       </div>
       <details className="asset-map-legend"><summary>Color legend</summary>
-        <div>{Object.entries(ASSET_TOPOLOGY_COLORS).map(([type, color]) => <span key={type}><i style={{ backgroundColor: color }} />{type}</span>)}<span><i style={{ backgroundColor: '#2dd4bf' }} />Network link</span><span><i style={{ backgroundColor: '#a78bfa' }} />Dependency</span></div>
+        <div>{Object.entries(ASSET_TOPOLOGY_COLORS).map(([type, color]) => <span key={type}><i style={{ backgroundColor: color }} />{type}</span>)}<span><i style={{ backgroundColor: 'var(--topology-network)' }} />Network link</span><span><i style={{ backgroundColor: 'var(--topology-dependency)' }} />Dependency</span></div>
       </details>
     </div>
   </div>

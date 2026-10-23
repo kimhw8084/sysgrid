@@ -68,6 +68,7 @@ import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalGridMatrix } from './shared/OperationalGridMatrix'
 import { OperationalDisplayPanel, OperationalGridSurface, OperationalSavedViewsPanel, OperationalWorkspaceFrame } from './shared/OperationalWorkspaceShells'
 import { AssetDetailsView } from './assets/AssetDetailsView'
+import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES } from './assets/assetRecordOptions'
 import {
   applyOperationalColumnSizing,
   applyOperationalColumnState,
@@ -493,8 +494,6 @@ const sanitizeMonitoringPayload = (item: any) => {
   return next
 }
 
-const ASSET_STATUSES = ['Planned', 'Active', 'Maintenance', 'Standby', 'Failed', 'Decommissioned', 'Provisioning', 'Reserved', 'Deleted']
-const ASSET_ENVIRONMENTS = ['Production', 'Staging', 'QA', 'Dev', 'DR', 'Lab', 'Sandbox', 'Legacy']
 const ASSET_DEPTHS = ['Full', 'Half']
 const ASSET_MOUNT_ORIENTATIONS = ['Front', 'Rear']
 const getAssetTitle = (asset: any) => asset?.name || `Asset ${asset?.id ?? ''}`.trim()
@@ -3702,7 +3701,7 @@ export function AssetRecordFormModal({ item: incomingItem, onClose, onSuccess }:
               </WorkspaceSectionCard>
               <WorkspaceSectionCard id="asset-form-classification" title="2 · Classification" tone="teal" icon={<Layers size={18} />} description="Review the defaults before saving.">
                 <div className="space-y-4">
-                  <AppDropdown disabled={isSaving} label="Asset Type" value={formData.type} onChange={(value) => updateField('type', value)} options={['Physical', 'Virtual', 'Storage', 'Switch', 'Firewall', 'Load Balancer', 'PDU', 'UPS', 'Console-Server', 'Patch Panel'].map((value) => ({ value, label: value }))} />
+                  <AppDropdown disabled={isSaving} label="Asset Type" value={formData.type} onChange={(value) => updateField('type', value)} options={ASSET_TYPES.map((value) => ({ value, label: value }))} />
                   <AppDropdown disabled={isSaving} label="Status" value={formData.status} onChange={(value) => updateField('status', value)} options={ASSET_STATUSES.filter((value) => value !== 'Deleted').map((value) => ({ value, label: value }))} />
                   <AppDropdown disabled={isSaving} label="Environment" value={formData.environment} onChange={(value) => updateField('environment', value)} options={ASSET_ENVIRONMENTS.map((value) => ({ value, label: value }))} />
                   {renderField('role', 'Role / Description', { placeholder: 'e.g. Application server' })}

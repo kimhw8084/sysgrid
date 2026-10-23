@@ -10,7 +10,7 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
   const engine = useRef<any>(null)
   const lastFit = useRef<AssetTopology | null>(null)
   const [size, setSize] = useState({ width: 320, height: 300 })
-  const [ink, setInk] = useState('#e1e1e1')
+  const [appearance, setAppearance] = useState({ ink: '#e1e1e1', network: '#2dd4bf', dependency: '#a78bfa' })
   const reducedMotion = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
   const duration = reducedMotion ? 0 : 250
   useEffect(() => {
@@ -26,7 +26,14 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
     return () => observer.disconnect()
   }, [])
   useEffect(() => {
-    const update = () => setInk(getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#e1e1e1')
+    const update = () => {
+      const style = getComputedStyle(document.documentElement)
+      setAppearance({
+        ink: style.getPropertyValue('--text-primary').trim() || '#e1e1e1',
+        network: style.getPropertyValue('--topology-network').trim() || '#2dd4bf',
+        dependency: style.getPropertyValue('--topology-dependency').trim() || '#a78bfa',
+      })
+    }
     update()
     const observer = new MutationObserver(update)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
@@ -69,7 +76,7 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
         onNodeClick={(node: any) => onSelect?.(Number(node.id))}
         nodeLabel={(node: any) => safeLabel(`${node.name} · ${node.type || 'Asset'}`)}
         linkLabel={(link: any) => safeLabel(`${link.label} · ${link.direction === 'unspecified' ? 'Direction not recorded or unrecognized' : link.direction === 'both' ? 'Bidirectional' : link.direction === 'reverse' ? 'Target to Source' : 'Source to Target'}`)}
-        linkColor={(link: any) => link.category === 'network' ? '#2dd4bf99' : '#a78bfa99'}
+        linkColor={(link: any) => link.category === 'network' ? appearance.network : appearance.dependency} linkWidth={1.25}
         linkDirectionalArrowLength={(link: any) => ['forward', 'both'].includes(link.direction) ? 4 : 0} linkDirectionalArrowRelPos={1}
         linkCanvasObjectMode={() => 'after'}
         linkCanvasObject={(link: any, context: CanvasRenderingContext2D) => {
@@ -83,15 +90,15 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
           context.beginPath(); context.moveTo(x, y)
           context.lineTo(x + ux * 4 - uy * 1.6, y + uy * 4 + ux * 1.6)
           context.lineTo(x + ux * 4 + uy * 1.6, y + uy * 4 - ux * 1.6)
-          context.closePath(); context.fillStyle = link.category === 'network' ? '#2dd4bf' : '#a78bfa'; context.fill()
+          context.closePath(); context.fillStyle = link.category === 'network' ? appearance.network : appearance.dependency; context.fill()
         }}
         nodeCanvasObject={(node: any, context: CanvasRenderingContext2D, scale: number) => {
           const selected = Number(node.id) === selectedId
           context.beginPath(); context.arc(node.x, node.y, selected ? 7 : 5, 0, Math.PI * 2)
           context.fillStyle = ASSET_TOPOLOGY_COLORS[node.type] || '#94a3b8'; context.fill()
-          if (selected) { context.strokeStyle = ink; context.lineWidth = 2 / scale; context.stroke() }
+          if (selected) { context.strokeStyle = appearance.ink; context.lineWidth = 2 / scale; context.stroke() }
           context.font = `600 ${12 / scale}px Inter, sans-serif`
-          context.textAlign = 'center'; context.textBaseline = 'top'; context.fillStyle = ink
+          context.textAlign = 'center'; context.textBaseline = 'top'; context.fillStyle = appearance.ink
           context.fillText(String(node.name), node.x, node.y + 9)
         }} />
     </div>

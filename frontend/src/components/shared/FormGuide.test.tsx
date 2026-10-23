@@ -14,11 +14,13 @@ describe('Entry guidance', () => {
     const onNavigate = vi.fn()
     const frame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => { callback(0); return 1 })
     try {
-      const view = render(<form><FormGuide summary="Start here" steps={[{ id: 'optional-section', title: 'Details', hint: 'Optional fields', onNavigate }]} /><details><summary>Advanced</summary><section id="optional-section" /></details></form>)
+      const view = render(<form><FormGuide summary="Start here" steps={[{ id: 'optional-section', title: 'Details', hint: 'Optional fields', onNavigate, complete: true }]} /><details><summary>Advanced</summary><section id="optional-section"><input aria-label="Section field" /></section></details></form>)
       fireEvent.click(screen.getByRole('button', { name: /Details/ }))
       expect(onNavigate).toHaveBeenCalledOnce()
       expect(view.container.querySelector('details')).toHaveAttribute('open')
       expect(screen.getByRole('button')).toHaveAttribute('type', 'button')
+      expect(screen.getByRole('button', { name: 'Details. Complete' })).toHaveAccessibleDescription('Optional fields')
+      expect(screen.getByRole('textbox', { name: 'Section field' })).toHaveFocus()
     } finally { frame.mockRestore() }
   })
 })

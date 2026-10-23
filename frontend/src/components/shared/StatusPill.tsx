@@ -7,10 +7,11 @@ const colors: any = {
   Online: 'text-emerald-800 dark:text-emerald-400 border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-500/5',
   Existing: 'text-emerald-800 dark:text-emerald-400 border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-500/5',
   Maintenance: 'text-amber-800 dark:text-amber-400 border-amber-500/20 bg-amber-500/10 dark:bg-amber-500/5',
-  Decommissioned: 'text-rose-800 dark:text-rose-400 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
-  Deleted: 'text-rose-800 dark:text-rose-400 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
+  Decommissioned: 'text-rose-800 dark:text-rose-300 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
+  Deleted: 'text-rose-800 dark:text-rose-300 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
   Purged: 'text-rose-800 dark:text-rose-400 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
   Critical: 'text-rose-800 dark:text-rose-400 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
+  Failed: 'text-rose-800 dark:text-rose-300 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
   Warning: 'text-amber-800 dark:text-amber-400 border-amber-500/20 bg-amber-500/10 dark:bg-amber-500/5',
   Info: 'text-blue-800 dark:text-blue-400 border-blue-500/20 bg-blue-500/10 dark:bg-blue-500/5',
   Scheduled: 'text-amber-800 dark:text-amber-400 border-amber-500/20 bg-amber-500/10 dark:bg-amber-500/5',
@@ -38,7 +39,7 @@ const colors: any = {
   // Architecture specific
   'Up to date': 'text-emerald-800 dark:text-emerald-400 border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-500/5',
   'Deprecated': 'text-rose-800 dark:text-rose-400 border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5',
-  'Planned': 'text-blue-800 dark:text-blue-400 border-blue-500/20 bg-blue-500/10 dark:bg-blue-500/5',
+  'Planned': 'text-blue-800 dark:text-blue-300 border-blue-500/20 bg-blue-500/10 dark:bg-blue-500/5',
   'In Review': 'text-indigo-800 dark:text-indigo-400 border-indigo-500/20 bg-indigo-500/10 dark:bg-indigo-500/5',
   
   // Severity
