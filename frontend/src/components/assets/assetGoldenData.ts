@@ -488,7 +488,7 @@ export function useAssetGoldenWorkspace() {
     [liveDevicesQuery.data],
   )
   const hasLiveAssetData = Array.isArray(liveDevicesQuery.data)
-  const isUsingLiveFallback = !hasIncludeDeletedAssetData && hasLiveAssetData
+  const isUsingLiveFallback = devicesQuery.isError && !hasIncludeDeletedAssetData && hasLiveAssetData
   const assetQueryFallbackError = !hasIncludeDeletedAssetData && !hasLiveAssetData
     ? (devicesQuery.error || liveDevicesQuery.error || null)
     : (!hasIncludeDeletedAssetData && includeDeletedAssets.length === 0 && liveAssets.length === 0)
@@ -496,9 +496,9 @@ export function useAssetGoldenWorkspace() {
       : null
 
   const allAssets = useMemo(() => {
-    const source = includeDeletedAssets.length > 0 ? includeDeletedAssets : liveAssets
+    const source = hasIncludeDeletedAssetData ? includeDeletedAssets : isUsingLiveFallback ? liveAssets : []
     return source.map(normalizeAsset)
-  }, [includeDeletedAssets, liveAssets])
+  }, [hasIncludeDeletedAssetData, includeDeletedAssets, isUsingLiveFallback, liveAssets])
 
   const selectableDevices = useMemo(
     () => allAssets.filter((asset) => !asset.is_deleted),
@@ -553,7 +553,7 @@ export function useAssetGoldenWorkspace() {
     totalCount: allAssets.length,
     tabCount: visiblePool.length,
     visibleCount: filteredAssets.length,
-    emptyLabel: 'No assets have been registered yet.',
+    emptyLabel: devicesQuery.isLoading || liveDevicesQuery.isLoading ? 'Loading asset registry…' : 'No assets have been registered yet.',
     filteredLabel: 'No assets match the current filters.',
     tabEmptyKind: activeTab === 'deleted' ? 'deleted-empty' : 'active-empty',
     tabEmptyLabel: activeTab === 'deleted' ? 'No archived assets are available.' : 'No active assets are available.',
