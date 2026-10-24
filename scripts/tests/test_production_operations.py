@@ -13,6 +13,17 @@ SPEC.loader.exec_module(MODULE)
 
 
 class OperationsTests(unittest.TestCase):
+    def test_asset_replay_history_is_counted_and_never_deleted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'tenant.db'
+            with sqlite3.connect(path) as db:
+                db.executescript("CREATE TABLE asset_write_receipts (id TEXT); INSERT INTO asset_write_receipts VALUES ('retained-command');")
+            before = path.read_bytes()
+            result = MODULE.inspect_database(path, 0)
+            self.assertEqual(result['status'], 'PASS')
+            self.assertEqual(result['counts']['asset_command_records'], 1)
+            self.assertEqual(path.read_bytes(), before)
+
     def test_preserves_expired_deduplication_history_and_unresolved_attempts(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'tenant.db'

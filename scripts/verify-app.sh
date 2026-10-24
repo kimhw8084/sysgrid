@@ -62,6 +62,7 @@ if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
     scripts/tests/test_production_preflight.py \
     scripts/tests/test_corporate_publishability_guard.py \
     scripts/tests/test_production_operations.py \
+    scripts/tests/test_company_probe.py \
     scripts/tests/test_ci_shards.py \
     scripts/tests/test_verify_app_stages.py
   "$PYTHON_BIN" scripts/tests/test_application_ci_contract.py
@@ -79,6 +80,9 @@ BACKEND_QUALIFICATION_TESTS=(
   test_device_secret_boundary.py
   test_firewall_integrity.py
   test_asset_write_boundary.py
+  test_asset_stale_form.py
+  test_asset_commands.py
+  test_asset_write_migration.py
   test_asset_write_audit.py
   test_devices_api_edges.py
   test_asset_architecture_traceability.py
@@ -95,6 +99,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_sync_authorization.py
   test_production_startup_policy.py
   test_runtime_diagnostics.py
+  test_release_identity.py
   test_dashboard_metrics.py
   test_home_projection_integrity.py
   test_tenant_isolation.py

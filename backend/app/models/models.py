@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, JSON, Text, Table, UniqueConstraint, CheckConstraint, Index
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, JSON, Text, Table, UniqueConstraint, CheckConstraint, Index, DDL, event
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import func
 from uuid import uuid4
@@ -65,6 +65,11 @@ class InfrastructurePlan(Base, BaseMixin):
 
 class Device(Base, BaseMixin):
     __tablename__ = "devices"
+    edit_revision = Column(String(32), nullable=False, server_default='', default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {
+        "version_id_col": edit_revision,
+        "version_id_generator": lambda _previous: uuid4().hex,
+    }
     name = Column(String, index=True) # Hostname (Removed unique)
     system = Column(String, index=True) # Logical System name
     environment = Column(String)
@@ -121,6 +126,33 @@ class Device(Base, BaseMixin):
     logical_services = relationship("LogicalService", back_populates="device")
     monitoring_items = relationship("MonitoringItem", back_populates="device", cascade="all, delete-orphan")
     network_interfaces = relationship("NetworkInterface", back_populates="device", cascade="all, delete-orphan")
+
+# Keep revisions valid for legacy SQL writers as well as the ORM. The guarded
+# UPDATE does not recurse because its new revision differs from the old one.
+event.listen(Device.__table__, 'after_create', DDL("CREATE TRIGGER devices_revision_insert AFTER INSERT ON devices WHEN NEW.edit_revision = '' BEGIN UPDATE devices SET edit_revision = lower(hex(randomblob(16))) WHERE id = NEW.id; END").execute_if(dialect='sqlite'))
+event.listen(Device.__table__, 'after_create', DDL("CREATE TRIGGER devices_revision_update AFTER UPDATE ON devices WHEN NEW.edit_revision = OLD.edit_revision BEGIN UPDATE devices SET edit_revision = lower(hex(randomblob(16))) WHERE id = NEW.id; END").execute_if(dialect='sqlite'))
+
+
+class AssetWriteReceipt(Base):
+    """Actor/tenant-bound replay protection, independent of Asset lifetime."""
+    __tablename__ = 'asset_write_receipts'
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'actor_id', 'operation_id', name='uq_asset_write_receipts_operation'),
+        Index('ix_asset_write_receipts_tenant_created', 'tenant_id', 'created_at'),
+    )
+    id = Column(String(32), primary_key=True, default=lambda: uuid4().hex)
+    tenant_id = Column(Integer, nullable=False)
+    actor_id = Column(String(200), nullable=False)
+    operation_id = Column(String(32), nullable=False)
+    request_hash = Column(String(64), nullable=False)
+    schema_version = Column(Integer, nullable=False, default=1)
+    before_state = Column(JSON, nullable=False)
+    post_state = Column(JSON, nullable=False)
+    projection_state = Column(JSON, nullable=False)
+    undo_state = Column(JSON, nullable=False)
+    result = Column(JSON, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
 
 class LogicalService(Base, BaseMixin):
     __tablename__ = "logical_services"

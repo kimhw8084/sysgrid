@@ -15,7 +15,11 @@ const { apiFetchMock, showWorkspaceToastMock } = vi.hoisted(() => ({
   showWorkspaceToastMock: vi.fn(),
 }))
 
-vi.mock('../../api/apiClient', () => ({ apiFetch: apiFetchMock }))
+vi.mock('../../api/apiClient', () => ({
+  apiFetch: apiFetchMock,
+  apiClient: { post: async (path: string, data: unknown) => (await apiFetchMock(path, { method: 'POST', body: JSON.stringify(data) })).json() },
+  getRequestScopeKey: () => 'asset-recovery-test::tenant',
+}))
 vi.mock('../shared/WorkspaceToast', () => ({
   dismissWorkspaceToasts: vi.fn(),
   showWorkspaceToast: showWorkspaceToastMock,
@@ -125,10 +129,14 @@ describe('Asset lifecycle direct recovery guard', () => {
     } as Response)
 
     apiFetchMock.mockImplementation(async (path: string, options?: RequestInit) => {
-      if (!path.endsWith('/bulk-action')) return jsonResponse([])
+      if (!path.endsWith('/bulk-action')) return jsonResponse(path.includes('/devices') && !path.includes('/relationships')
+        ? [{ id: 11, name: 'Asset A', edit_revision: 'a'.repeat(32) }] : [])
       const body = JSON.parse(String(options?.body || '{}')) as { action?: string; dry_run?: boolean; ids?: number[] }
       if (body.action === 'purge' && body.dry_run !== true) return purgeResponse
-      return jsonResponse({ changed_count: body.ids?.length || 0, changed_ids: body.ids || [], unchanged_count: 0 })
+      return jsonResponse({ action: body.action, selected_count: body.ids?.length || 0, matched_count: body.ids?.length || 0,
+        changed_count: body.ids?.length || 0, changed_ids: body.ids || [], unchanged_count: 0, missing_count: 0,
+        blocked_count: 0, blockers: [], can_execute: true, versions: { '11': 'a'.repeat(32) },
+        precondition: 'b'.repeat(64), receipt_id: 'c'.repeat(32), can_revert: body.action !== 'purge' })
     })
 
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
@@ -141,11 +149,14 @@ describe('Asset lifecycle direct recovery guard', () => {
 
     try {
       await waitFor(() => expect(apiFetchMock).toHaveBeenCalledTimes(4))
+      await waitFor(() => expect(result.current.allAssets.map(row => row.id)).toEqual([11]))
       act(() => result.current.bulkMutation.mutate({ action: 'delete', ids: [11], targetLabels: ['Asset A'] }))
       await waitFor(() => expect(result.current.lastLifecycleOperation?.ids).toEqual([11]))
       const operation = result.current.lastLifecycleOperation!
       const staleExecuteRevert = result.current.executeRevert
 
+      act(() => result.current.performBulkAction('purge', [11], {}))
+      await waitFor(() => expect(result.current.bulkOperationPreview?.action).toBe('purge'))
       act(() => result.current.bulkMutation.mutate({ action: 'purge', ids: [11] }))
       await waitFor(() => expect(result.current.bulkMutation.isPending).toBe(true))
       expect(result.current.isLastLifecycleRecoveryBlocked).toBe(true)
@@ -153,8 +164,10 @@ describe('Asset lifecycle direct recovery guard', () => {
       await act(async () => { await staleExecuteRevert(operation) })
       const bulkRequests = apiFetchMock.mock.calls
         .filter(([path]) => path.endsWith('/bulk-action'))
-        .map(([, options]) => JSON.parse(String(options?.body || '{}')) as { action?: string; ids?: number[] })
+        .map(([, options]) => JSON.parse(String(options?.body || '{}')) as { action?: string; ids?: number[]; dry_run?: boolean; operation_id?: string; precondition?: string })
+        .filter(body => body.dry_run !== true)
       expect(bulkRequests.map(({ action }) => action)).toEqual(['delete', 'purge'])
+      expect(bulkRequests.every(body => /^[0-9a-f]{32}$/.test(body.operation_id || '') && /^[0-9a-f]{64}$/.test(body.precondition || ''))).toBe(true)
       expect(result.current.lastLifecycleOperation).toBe(operation)
       expect(showWorkspaceToastMock).toHaveBeenCalledWith(
         'Wait for the overlapping permanent purge to finish before reverting this asset operation',

@@ -21,9 +21,10 @@ for (const family of families) {
   }
 }
 for (const theme of ['pure-clarity', 'nordic-frost-v1']) {
-  for (const scenario of ['initial load', 'fallback recovery']) {
+  for (const scenario of ['initial load', 'fallback recovery', 'stale edit', 'command recovery']) {
     assert(names.includes(`desktop Asset ${scenario} ${theme}`), `Missing Asset ${scenario} ${theme}`)
   }
+  assert(names.includes(`desktop release identity ${theme}`), `Missing desktop release identity ${theme}`)
   for (const family of ['configured asset choices', 'configured choices recover without replacing drafts', 'singleton Map labels']) {
     assert(names.includes(`desktop ${family} ${theme}`), `Missing desktop ${family} ${theme}`)
   }

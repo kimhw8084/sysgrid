@@ -109,8 +109,9 @@ def test_checks_stage_retains_canonical_backend_startup_and_frontend_coverage(st
     assert result.returncode == 0, result.stderr
     tests = shlex.split(re.search(r'BACKEND_QUALIFICATION_TESTS=\((.*?)\)', VERIFIER.read_text(), re.S).group(1))
     backend = next(event for event in events if 'test_migration_graph.py' in event['args'])
-    assert backend['args'] == ['-m', 'pytest', '-q', *tests] and len(tests) == 78
-    assert len(set(tests)) == 78
+    assert backend['args'] == ['-m', 'pytest', '-q', *tests] and len(tests) == 82
+    assert {'test_asset_stale_form.py', 'test_asset_commands.py', 'test_asset_write_migration.py', 'test_release_identity.py'} <= set(tests)
+    assert len(set(tests)) == 82
     assert {'test_network_legacy_edits.py', 'test_network_table_edits.py'} <= set(tests)
     assert 'test_service_bulk_concurrency.py' in tests
     assert 'test_audit_integrity.py' in tests
@@ -130,6 +131,7 @@ def test_checks_stage_retains_canonical_backend_startup_and_frontend_coverage(st
         'scripts/tests/test_production_preflight.py',
         'scripts/tests/test_corporate_publishability_guard.py',
         'scripts/tests/test_production_operations.py',
+        'scripts/tests/test_company_probe.py',
         'scripts/tests/test_ci_shards.py',
         'scripts/tests/test_verify_app_stages.py',
     ]

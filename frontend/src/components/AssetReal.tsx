@@ -3602,7 +3602,13 @@ export function AssetRecordFormModal({ item: incomingItem, onClose, onSuccess }:
           metadata_json: JSON.parse(metadataJsonText || '{}'),
         })
       const baseline = sanitizeAssetPayload({ ...initialFormData, metadata_json: JSON.parse(initialMetadataJsonText) })
-      const payload = item?.id ? Object.fromEntries(Object.entries(normalized).filter(([key, value]) => !isDeepEqual(value, baseline[key]))) : normalized
+      const payload: Record<string, any> = item?.id ? Object.fromEntries(Object.entries(normalized).filter(([key, value]) => !isDeepEqual(value, baseline[key]))) : normalized
+      if (item?.id) {
+        if (typeof item.edit_revision !== 'string' || !/^[0-9a-f]{32}$/.test(item.edit_revision)) {
+          throw new Error('Reload Assets and reopen this record before saving. Your draft is preserved.')
+        }
+        payload.expected_revision = item.edit_revision
+      }
       const url = item?.id ? `/api/v1/devices/${item.id}` : '/api/v1/devices'
       const method = item?.id ? 'PUT' : 'POST'
       const res = await apiFetch(url, { method, body: JSON.stringify(payload) })
