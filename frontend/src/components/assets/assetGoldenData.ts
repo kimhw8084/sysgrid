@@ -9,6 +9,7 @@ import { useOperationalBulkWorkflow } from '../shared/useOperationalBulkWorkflow
 import { ASSET_GOLDEN_ALLOWED_COLUMN_FIELDS } from './assetGoldenColumns'
 import { usePersistentJsonState } from '../shared/OperationalWorkspaceHooks'
 import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from '../shared/optionalStorage'
+import { fetchAssetSettingOptions } from './assetRecordOptions'
 
 export type AssetTab = 'inventory' | 'deleted'
 export type AssetViewMode = 'grid' | 'report' | 'map'
@@ -467,7 +468,7 @@ export function useAssetGoldenWorkspace() {
   })
   const optionsQuery = useQuery({
     queryKey: ['settings-options'],
-    queryFn: async () => (await apiFetch('/api/v1/settings/options')).json(),
+    queryFn: fetchAssetSettingOptions,
   })
   const relationshipsQuery = useQuery({
     queryKey: ['asset-golden-relationships'],
@@ -594,7 +595,7 @@ export function useAssetGoldenWorkspace() {
       const optionSystems = Array.isArray(optionsQuery.data)
         ? optionsQuery.data.filter((item: any) => item.category === 'LogicalSystem').map((item: any) => item.value)
         : []
-      return optionSystems.length > 0 ? optionSystems : uniqueValues(allAssets, 'system')
+      return [...new Set([...optionSystems, ...uniqueValues(allAssets, 'system')])]
     },
     [allAssets, optionsQuery.data]
   )

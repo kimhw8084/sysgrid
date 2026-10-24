@@ -103,6 +103,152 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
     await expect(dialog.getByRole('button', { name: 'Save Asset', exact: true })).toBeInViewport({ ratio: 1 })
   })
 
+  test(`desktop configured asset choices ${theme}`, async ({ page, sysApi }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await resetBrowserState(page)
+    expect((await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const stamp = `Desktop-config-${Date.now()}`
+    const choices = [
+      { field: 'type', title: 'Asset Type', category: 'DeviceType', value: `${stamp}-appliance`, label: `Specialized appliance ${stamp.slice(-8)}` },
+      { field: 'status', title: 'Status', category: 'Status', value: `${stamp}-acceptance`, label: `Acceptance testing ${stamp.slice(-8)}` },
+      { field: 'environment', title: 'Environment', category: 'Environment', value: `${stamp}-validation`, label: `Validation environment ${stamp.slice(-8)}` },
+    ]
+    for (const { category, value, label } of choices) expect((await sysApi.post(`${apiBase}/settings/options`, { data: { category, value, label } })).ok()).toBeTruthy()
+    await page.goto('/asset')
+    await page.getByRole('button', { name: 'Register Asset', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Create Asset', exact: true })
+    for (const [label, value] of [['Hostname', stamp], ['Logical System', 'Desktop configuration proof'], ['Serial Number', stamp + '-SN'], ['Asset Tag', stamp + '-AT']]) await dialog.getByRole('textbox', { name: new RegExp(`^${label}`) }).fill(value)
+    for (const choice of choices) {
+      const dropdown = dialog.locator('label').filter({ hasText: choice.title }).locator('..').getByRole('button')
+      await dropdown.click()
+      const panel = page.locator('[data-workspace-panel="true"]').filter({ has: page.getByPlaceholder('Search options...') })
+      await panel.getByPlaceholder('Search options...').fill(choice.value)
+      await panel.getByRole('button', { name: choice.label, exact: true }).click()
+      await expect(dropdown).toHaveText(choice.label)
+    }
+    for (const choice of choices.filter(choice => choice.field !== 'type')) {
+      const badge = dialog.locator('[data-sg-status-pill]').filter({ hasText: choice.label })
+      await expect(badge).toHaveAttribute('title', choice.label)
+      expect(await badge.evaluate(element => {
+        const text = element.firstElementChild!, box = element.getBoundingClientRect(), bounds = text.getBoundingClientRect()
+        return bounds.left >= box.left && bounds.right <= box.right && bounds.top >= box.top && bounds.bottom <= box.bottom
+      })).toBe(true)
+    }
+    await expectReadableGridText(page, testInfo, 'configured-asset-editor', '[role="dialog"]')
+    await page.screenshot({ path: testInfo.outputPath('configured-asset-editor.png'), animations: 'disabled' })
+    const created = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/devices' && response.request().method() === 'POST')
+    await dialog.getByRole('button', { name: 'Save Asset', exact: true }).click()
+    const response = await created
+    expect(response.ok()).toBeTruthy()
+    const asset = await response.json()
+    await expect(dialog).toHaveCount(0)
+    const rows = await (await sysApi.get(`${apiBase}/devices`)).json()
+    expect(rows.find((row: any) => row.id === asset.id)).toMatchObject(Object.fromEntries(choices.map(choice => [choice.field, choice.value])))
+    await fillGridSearch(page, 'Scan asset matrix...', stamp)
+    const row = await getWorkspaceLogicalRowByText(page, 'assets', stamp)
+    await row.action('More actions').click()
+    await page.getByRole('button', { name: 'Edit Configuration', exact: true }).click()
+    const editor = page.getByRole('dialog', { name: 'Edit Asset', exact: true })
+    for (const choice of choices) await expect(editor.locator('label').filter({ hasText: choice.title }).locator('..').getByRole('button')).toHaveText(choice.label)
+    await editor.getByRole('textbox', { name: 'Owner', exact: true }).fill('Desktop configuration owner')
+    const updated = page.waitForResponse(response => new URL(response.url()).pathname === `/api/v1/devices/${asset.id}` && response.request().method() === 'PUT')
+    await editor.getByRole('button', { name: 'Save Asset', exact: true }).click()
+    const result = await updated
+    expect(result.ok()).toBeTruthy()
+    expect(result.request().postDataJSON()).toEqual({ owner: 'Desktop configuration owner' })
+    const savedRows = await (await sysApi.get(`${apiBase}/devices`)).json()
+    expect(savedRows.find((row: any) => row.id === asset.id)).toMatchObject({ ...Object.fromEntries(choices.map(choice => [choice.field, choice.value])), owner: 'Desktop configuration owner' })
+  })
+
+  test(`desktop configured choices recover without replacing drafts ${theme}`, async ({ page, sysApi }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await resetBrowserState(page)
+    expect((await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const asset = await createAsset(sysApi, { name: `Desktop-recorded-${Date.now()}`, system: 'Recorded configuration proof', type: 'Historical appliance', status: 'Historical status', environment: 'Historical environment' })
+    let recover = false, release!: () => void
+    const held = new Promise<void>(resolve => { release = resolve })
+    await page.route('**/api/v1/settings/options', async route => {
+      if (!recover) return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Controlled unavailable configuration' }) })
+      await held
+      return route.continue()
+    })
+    try {
+      await page.goto('/asset')
+      await fillGridSearch(page, 'Scan asset matrix...', asset.name)
+      const row = await getWorkspaceLogicalRowByText(page, 'assets', asset.name)
+      await row.action('More actions').click()
+      await page.getByRole('button', { name: 'Edit Configuration', exact: true }).click()
+      const editor = page.getByRole('dialog', { name: 'Edit Asset', exact: true })
+      await editor.getByRole('textbox', { name: 'Owner', exact: true }).fill('Draft survives configuration recovery')
+      await expect(editor.getByRole('alert')).toContainText('Configured choices could not be loaded.')
+      for (const [title, value] of [['Asset Type', asset.type], ['Status', asset.status], ['Environment', asset.environment]]) await expect(editor.locator('label').filter({ hasText: title }).locator('..').getByRole('button')).toHaveText(value)
+      recover = true
+      await editor.getByRole('button', { name: 'Retry configured choices', exact: true }).click()
+      await expect(editor.getByRole('status').filter({ hasText: 'Loading configured choices.' })).toBeVisible()
+      await expect(editor.getByRole('textbox', { name: 'Owner', exact: true })).toHaveValue('Draft survives configuration recovery')
+      release()
+      await expect(editor.getByRole('button', { name: 'Retry configured choices', exact: true })).toHaveCount(0)
+      await expect(editor.getByRole('status').filter({ hasText: 'Loading configured choices.' })).toHaveCount(0)
+      await expect(editor.getByRole('textbox', { name: 'Owner', exact: true })).toHaveValue('Draft survives configuration recovery')
+      for (const [title, value] of [['Asset Type', asset.type], ['Status', asset.status], ['Environment', asset.environment]]) await expect(editor.locator('label').filter({ hasText: title }).locator('..').getByRole('button')).toHaveText(value)
+      await editor.locator('label').filter({ hasText: 'Asset Type' }).locator('..').getByRole('button').click()
+      await expect(page.locator('[data-workspace-panel="true"]').getByRole('button', { name: asset.type, exact: true })).toBeVisible()
+    } finally { release() }
+  })
+
+  test(`desktop singleton Map labels ${theme}`, async ({ page, sysApi }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await resetBrowserState(page)
+    expect((await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => {
+      localStorage.setItem('sysgrid-theme', value)
+      const prototype = CanvasRenderingContext2D.prototype, clear = prototype.clearRect, fill = prototype.fillText
+      prototype.clearRect = function (...args) {
+        if (this.canvas.closest('[data-asset-map]')) (this.canvas as any).paintedLabels = []
+        return clear.apply(this, args)
+      }
+      prototype.fillText = function (text, x, y, ...rest: any[]) {
+        if (this.canvas.closest('[data-asset-map]')) {
+          const matrix = this.getTransform(), ratio = this.canvas.clientWidth / this.canvas.width
+          const width = this.measureText(String(text)).width * Math.hypot(matrix.a, matrix.b) * ratio
+          const px = (matrix.a * x + matrix.c * y + matrix.e) * ratio, py = (matrix.b * x + matrix.d * y + matrix.f) * ratio
+          ;((this.canvas as any).paintedLabels ||= []).push({ text, left: px - width / 2, right: px + width / 2, top: py, bottom: py + 12, zoom: Math.hypot(matrix.a, matrix.b) * ratio })
+        }
+        return fill.call(this, text, x, y, ...rest as [number])
+      }
+    }, theme)
+    const asset = await createAsset(sysApi, { name: `Desktop-singleton-${Date.now()}-${'regional-datacenter-asset-'.repeat(6)}`, system: 'Singleton proof' })
+    await page.goto('/asset')
+    await fillGridSearch(page, 'Scan asset matrix...', asset.name)
+    await page.getByRole('button', { name: 'Map', exact: true }).click()
+    const map = page.locator('[data-asset-map]'), canvas = map.locator('canvas')
+    await expect(map.locator('.asset-map-summary strong')).toHaveText('1 asset')
+    const expectFittedLabel = async () => {
+      await expect.poll(() => canvas.evaluate(element => {
+        const labels = (element as any).paintedLabels || [], host = element.closest('.asset-map-canvas-host')!
+        return { count: labels.length, measured: Math.abs(element.clientWidth - host.clientWidth) <= 1 && Math.abs((element as HTMLCanvasElement).width / devicePixelRatio - element.clientWidth) <= 1,
+          inside: labels.every((label: any) => label.left >= 0 && label.right <= element.clientWidth && label.top >= 0 && label.bottom <= element.clientHeight),
+          bounded: labels.every((label: any) => label.zoom <= 8 && label.right - label.left <= 160.5 && label.text.endsWith('…')) }
+      })).toEqual({ count: 1, measured: true, inside: true, bounded: true })
+    }
+    await expectFittedLabel()
+    for (const width of [1024, 1920]) {
+      await page.setViewportSize({ width, height: 900 })
+      await expectFittedLabel()
+      await map.getByRole('button', { name: 'Fit all assets', exact: true }).click()
+      await expectFittedLabel()
+    }
+    const connected = map.getByRole('region', { name: 'Connected assets' }).getByRole('button', { name: asset.name, exact: true })
+    await connected.focus()
+    await page.keyboard.press('Enter')
+    await expect(map.getByRole('region', { name: 'Selected asset' }).getByRole('heading', { name: asset.name, exact: true })).toBeVisible()
+    await expect(connected).toHaveAttribute('title', asset.name)
+    await page.screenshot({ path: testInfo.outputPath('singleton-map-label.png'), animations: 'disabled' })
+  })
+
   for (const scenario of ['initial load', 'fallback recovery'] as const) test(`desktop Asset ${scenario} ${theme}`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.emulateMedia({ reducedMotion: 'reduce' })

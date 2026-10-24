@@ -71,7 +71,7 @@ it('keeps painted nodes, arrow clipping, and pointer geometry consistent for eve
   const nodes = [{ id: 1, name: 'Selected', x: 0, y: 0 }, { id: 2, name: 'Peer', x: 40, y: 0 }]
   render(<AssetTopologyCanvas graph={{ nodes, links: [] }} selectedId={1} />)
   const props = captured.current
-  const context = { beginPath: vi.fn(), arc: vi.fn(), fill: vi.fn(), stroke: vi.fn(), fillText: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn() } as any
+  const context = { beginPath: vi.fn(), arc: vi.fn(), fill: vi.fn(), stroke: vi.fn(), fillText: vi.fn(), measureText: (value: string) => ({ width: value.length * 7 }), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn() } as any
   for (const node of nodes) {
     context.arc.mockClear()
     props.nodeCanvasObject(node, context, 1)
