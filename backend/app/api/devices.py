@@ -1053,9 +1053,6 @@ async def _asset_bulk(request: Request, data: dict, db: AsyncSession, receipt=No
         {'purge': purge_impact_plan['fingerprint'] if purge_impact_plan else None, 'os': projection_before})
     if dry_run:
         return compatibility
-    if receipt is not None and data['precondition'] != compatibility['precondition']:
-        raise HTTPException(409, 'Assets or their dependencies changed after this preview. Nothing was changed; review a fresh preview.')
-
     if action == "purge" and (summary["missing_ids"] or summary["blockers"]):
         raise HTTPException(
             status_code=409,
@@ -1064,6 +1061,8 @@ async def _asset_bulk(request: Request, data: dict, db: AsyncSession, receipt=No
                 "preview": {**summary, "status": "blocked", "purge_impact": purge_impact},
             },
         )
+    if receipt is not None and data['precondition'] != compatibility['precondition']:
+        raise HTTPException(409, 'Assets or their dependencies changed after this preview. Nothing was changed; review a fresh preview.')
     require_executable_operational_bulk(summary)
     if not changed_ids:
         if receipt is not None:

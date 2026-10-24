@@ -156,9 +156,11 @@ test('reversible notification confirms once and restores the actual archived rec
   await expect(toast.getByRole('button', { name: 'Confirm Undo?', exact: true })).toBeFocused()
   await page.setViewportSize({ width: 1440, height: 900 })
   await expect(toast.getByRole('button', { name: 'Confirm Undo?', exact: true })).toBeFocused()
-  const restored = page.waitForResponse(response => response.url().includes('/devices/bulk-action') && response.request().postDataJSON()?.action === 'restore')
+  const restored = page.waitForResponse(response => response.url().includes('/devices/bulk-action') && response.request().postDataJSON()?.action === 'undo')
   await toast.getByRole('button', { name: 'Confirm Undo?', exact: true }).click()
-  expect((await restored).ok()).toBeTruthy()
+  const restoredResponse = await restored
+  expect(restoredResponse.ok()).toBeTruthy()
+  expect(restoredResponse.request().postDataJSON()).toMatchObject({ action: 'undo', ids: [asset.id], receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/) })
   await expect(page.getByText('Bulk operation reverted.', { exact: true })).toBeVisible()
   await expect((await getWorkspaceLogicalRowByText(page, 'assets', asset.name)).center!).toBeVisible()
 })

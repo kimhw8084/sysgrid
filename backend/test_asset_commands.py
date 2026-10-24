@@ -106,6 +106,18 @@ async def test_asset_response_loss_replays_without_a_second_write_or_audit(comma
 
 
 @pytest.mark.asyncio
+async def test_guarded_purge_preserves_structured_missing_record_conflicts(command_context, setup_db):
+    context, ids = command_context
+    reviewed = await preview(context, ids, 'purge')
+    await apply(context, [ids[0]], 'purge')
+    before = await state(context, setup_db)
+    rejected = await context[0].post(PATH, headers=context[3], json=execution(reviewed, ids, 'purge'))
+    assert rejected.status_code == 409, rejected.text
+    assert rejected.json()['detail']['preview']['missing_ids'] == [ids[0]]
+    assert await state(context, setup_db) == before
+
+
+@pytest.mark.asyncio
 async def test_overlapping_asset_commands_have_one_durable_result(command_context, setup_db):
     context, ids = command_context
     request = execution(await preview(context, ids, payload={'owner': 'Concurrent batch'}), ids, payload={'owner': 'Concurrent batch'})
