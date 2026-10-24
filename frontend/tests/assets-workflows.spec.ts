@@ -669,7 +669,7 @@ test.describe('Assets workflows', () => {
     await revertConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
     const restoreRequest = await restoreRequestPromise
     await restoreResponsePromise
-    expect(restoreRequest.postDataJSON()).toMatchObject({ ids: [secondary.id], action: 'restore' })
+    expect(restoreRequest.postDataJSON()).toMatchObject({ ids: [secondary.id], action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/) })
     await expect((await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)).center!).toBeVisible()
     const refreshedPrimaryLifecycleRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)
     await expectWorkspaceLogicalRowSelected(refreshedPrimaryLifecycleRow)
@@ -961,16 +961,16 @@ test.describe('Assets workflows', () => {
     await attachEvidence(testInfo, 'asset-unrelated-recovery-control.png', await page.screenshot(), 'image/png')
     const restoreAResponsePromise = page.waitForResponse(response => (
       isBulkExecutionResponse(response)
-      && response.request().postDataJSON().action === 'restore'
+      && response.request().postDataJSON().action === 'undo'
     ))
     const restoreARequestPromise = page.waitForRequest(request => (
       request.url().includes('/api/v1/devices/bulk-action')
-      && request.postDataJSON()?.action === 'restore'
+      && request.postDataJSON()?.action === 'undo'
     ))
     await unrelatedConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
     const restoreARequest = await restoreARequestPromise
     const restoreAResponse = await restoreAResponsePromise
-    expect(restoreARequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [unrelatedA.id] })
+    expect(restoreARequest.postDataJSON()).toMatchObject({ action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/), ids: [unrelatedA.id] })
     expect(restoreAResponse.ok()).toBeTruthy()
     expect((await getDeviceFromBackend(request, unrelatedA.id)).is_deleted).toBe(false)
     expect(await getDeviceFromBackend(request, unrelatedB.id)).toBeUndefined()
@@ -993,16 +993,16 @@ test.describe('Assets workflows', () => {
     const partialConfirmationText = await partialConfirm.innerText()
     const restorePartialResponsePromise = page.waitForResponse(response => (
       isBulkExecutionResponse(response)
-      && response.request().postDataJSON().action === 'restore'
+      && response.request().postDataJSON().action === 'undo'
     ))
     const restorePartialRequestPromise = page.waitForRequest(request => (
       request.url().includes('/api/v1/devices/bulk-action')
-      && request.postDataJSON()?.action === 'restore'
+      && request.postDataJSON()?.action === 'undo'
     ))
     await partialConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
     const restorePartialRequest = await restorePartialRequestPromise
     const restorePartialResponse = await restorePartialResponsePromise
-    expect(restorePartialRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [partialA.id] })
+    expect(restorePartialRequest.postDataJSON()).toMatchObject({ action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/), ids: [partialA.id] })
     expect(restorePartialResponse.ok()).toBeTruthy()
     expect((await getDeviceFromBackend(request, partialA.id)).is_deleted).toBe(false)
     expect(await getDeviceFromBackend(request, partialB.id)).toBeUndefined()
@@ -1052,16 +1052,16 @@ test.describe('Assets workflows', () => {
     await expect(revertConfirm).toContainText(`for ${target.name}?`)
     const restoreResponsePromise = page.waitForResponse(response => (
       isBulkExecutionResponse(response)
-      && response.request().postDataJSON().action === 'restore'
+      && response.request().postDataJSON().action === 'undo'
     ))
     const restoreRequestPromise = page.waitForRequest(request => (
       request.url().includes('/api/v1/devices/bulk-action')
-      && request.postDataJSON()?.action === 'restore'
+      && request.postDataJSON()?.action === 'undo'
     ))
     await revertConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
     const restoreRequest = await restoreRequestPromise
     const restoreResponse = await restoreResponsePromise
-    expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [target.id] })
+    expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/), ids: [target.id] })
     expect(restoreResponse.ok()).toBeTruthy()
     expect((await getDeviceFromBackend(request, target.id)).is_deleted).toBe(false)
     await attachEvidence(testInfo, 'asset-blocked-purge-preserved-recovery.json', JSON.stringify({
@@ -1098,7 +1098,7 @@ test.describe('Assets workflows', () => {
     const countRestoreRequests = (browserRequest: any) => {
       if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
       try {
-        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+        if (browserRequest.postDataJSON()?.action === 'undo') restoreRequestCount += 1
       } catch { /* Ignore non-JSON requests to the same endpoint. */ }
     }
     page.on('request', countRestoreRequests)
@@ -1139,15 +1139,15 @@ test.describe('Assets workflows', () => {
       await expect(confirmation).not.toContainText(assetB.name)
       const restoreRequestPromise = page.waitForRequest(browserRequest => (
         browserRequest.url().includes('/api/v1/devices/bulk-action')
-        && browserRequest.postDataJSON()?.action === 'restore'
+        && browserRequest.postDataJSON()?.action === 'undo'
       ))
       const restoreResponsePromise = page.waitForResponse(response => (
-        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'undo'
       ))
       await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
       const restoreRequest = await restoreRequestPromise
       const restoreResponse = await restoreResponsePromise
-      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/), ids: [assetA.id] })
       expect(restoreResponse.ok()).toBeTruthy()
       expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
       expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
@@ -1212,15 +1212,15 @@ test.describe('Assets workflows', () => {
       await expect(confirmation).not.toContainText(assetB.name)
       const restoreRequestPromise = page.waitForRequest(browserRequest => (
         browserRequest.url().includes('/api/v1/devices/bulk-action')
-        && browserRequest.postDataJSON()?.action === 'restore'
+        && browserRequest.postDataJSON()?.action === 'undo'
       ))
       const restoreResponsePromise = page.waitForResponse(response => (
-        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'undo'
       ))
       await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
       const restoreRequest = await restoreRequestPromise
       const restoreResponse = await restoreResponsePromise
-      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/), ids: [assetA.id] })
       expect(restoreResponse.ok()).toBeTruthy()
       expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
 
@@ -1266,7 +1266,7 @@ test.describe('Assets workflows', () => {
     const countRestoreRequests = (browserRequest: any) => {
       if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
       try {
-        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+        if (browserRequest.postDataJSON()?.action === 'undo') restoreRequestCount += 1
       } catch { /* Ignore non-JSON requests to the same endpoint. */ }
     }
     page.on('request', countRestoreRequests)
@@ -1307,15 +1307,15 @@ test.describe('Assets workflows', () => {
       await expect(confirmation).toContainText(`for ${assetA.name}?`)
       const restoreRequestPromise = page.waitForRequest(browserRequest => (
         browserRequest.url().includes('/api/v1/devices/bulk-action')
-        && browserRequest.postDataJSON()?.action === 'restore'
+        && browserRequest.postDataJSON()?.action === 'undo'
       ))
       const restoreResponsePromise = page.waitForResponse(response => (
-        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'restore'
+        isBulkExecutionResponse(response) && response.request().postDataJSON().action === 'undo'
       ))
       await confirmation.getByRole('button', { name: 'Confirm Action', exact: true }).click()
       const restoreRequest = await restoreRequestPromise
       const restoreResponse = await restoreResponsePromise
-      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'restore', ids: [assetA.id] })
+      expect(restoreRequest.postDataJSON()).toMatchObject({ action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/), ids: [assetA.id] })
       expect(restoreResponse.ok()).toBeTruthy()
       expect((await getDeviceFromBackend(request, assetA.id)).is_deleted).toBe(false)
       expect(await getDeviceFromBackend(request, assetB.id)).toBeUndefined()
@@ -1357,7 +1357,7 @@ test.describe('Assets workflows', () => {
     const countRestoreRequests = (browserRequest: any) => {
       if (!browserRequest.url().includes('/api/v1/devices/bulk-action')) return
       try {
-        if (browserRequest.postDataJSON()?.action === 'restore') restoreRequestCount += 1
+        if (browserRequest.postDataJSON()?.action === 'undo') restoreRequestCount += 1
       } catch { /* Ignore non-JSON requests to the same endpoint. */ }
     }
     page.on('request', countRestoreRequests)

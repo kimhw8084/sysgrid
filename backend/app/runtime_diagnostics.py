@@ -2,11 +2,25 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import hashlib
 from pathlib import Path
 from typing import Any
 
 from .api.import_engine import EXTERNAL_IMPORT_SCHEMA_VERSION, IMPORT_PROFILES, build_snapshot_manifest
 from .core.config import settings
+
+
+def backend_source_fingerprint() -> str:
+    root = Path(__file__).resolve().parent
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob('*.py')):
+        digest.update(path.relative_to(root).as_posix().encode() + b'\0' + path.read_bytes() + b'\0')
+    return digest.hexdigest()
+
+
+# Capture at process startup, so replacing files cannot make an old process
+# advertise the new source. No configuration values enter this fingerprint.
+BACKEND_SOURCE_SHA256 = backend_source_fingerprint()
 
 
 def frontend_metadata_path() -> Path:
@@ -56,6 +70,10 @@ def build_readiness_payload() -> dict[str, Any]:
     return {
         "status": "ready",
         "alive": True,
+        "production_mode": settings.is_production,
+        "identity_mode": settings.IDENTITY_MODE,
+        "release_candidate_sha": settings.PV1_RELEASE_CANDIDATE_SHA or None,
+        "backend_source_sha256": BACKEND_SOURCE_SHA256,
         "api_prefix": settings.API_V1_STR,
         "api_version": settings.API_V1_STR.strip("/").split("/")[-1] or "v1",
         "server_timestamp": datetime.now(timezone.utc).isoformat(),

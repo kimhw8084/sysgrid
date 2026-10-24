@@ -47,7 +47,7 @@ test.describe('Assets Revert lifecycle', () => {
     const revertConfirm = page.getByRole('dialog').filter({ has: page.getByText('Revert asset operation', { exact: true }) })
     await expect(revertConfirm).toContainText('completed archive operation')
     await revertConfirm.getByRole('button', { name: 'Confirm Action', exact: true }).click()
-    expect((await restoreRequest).postDataJSON()).toMatchObject({ ids: [secondary.id], action: 'restore' })
+    expect((await restoreRequest).postDataJSON()).toMatchObject({ ids: [secondary.id], action: 'undo', receipt_id: expect.stringMatching(/^[0-9a-f]{32}$/) })
     await restoreResponse
     await expect((await getWorkspaceLogicalRowByText(page, 'assets', secondary.name)).center!).toBeVisible()
     const refreshedPrimaryRow = await getWorkspaceLogicalRowByText(page, 'assets', primary.name)

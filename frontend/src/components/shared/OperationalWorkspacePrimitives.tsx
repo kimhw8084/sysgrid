@@ -695,7 +695,7 @@ export function WorkspaceTabStrip({
 export function WorkspaceValidationBanner({ message }: { message?: string }) {
   if (!message) return null
   return (
-    <div className={`mb-6 ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-rose-500/20 bg-rose-500/10 px-4 py-3`}>
+    <div role="alert" className={`mb-6 ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-rose-500/20 bg-rose-500/10 px-4 py-3`}>
       <p className="text-[10px] font-semibold text-rose-300">{message}</p>
     </div>
   )

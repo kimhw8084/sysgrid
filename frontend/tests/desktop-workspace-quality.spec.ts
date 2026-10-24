@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
-import { createAsset, createConnection, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState } from './helpers/sysgrid'
+import { createAsset, createConnection, fillGridSearch, getWorkspaceLogicalRowByText, resetBrowserState, selectWorkspaceLogicalRow } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
@@ -156,7 +156,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
     await editor.getByRole('button', { name: 'Save Asset', exact: true }).click()
     const result = await updated
     expect(result.ok()).toBeTruthy()
-    expect(result.request().postDataJSON()).toEqual({ owner: 'Desktop configuration owner' })
+    expect(result.request().postDataJSON()).toEqual({ owner: 'Desktop configuration owner', expected_revision: asset.edit_revision })
     const savedRows = await (await sysApi.get(`${apiBase}/devices`)).json()
     expect(savedRows.find((row: any) => row.id === asset.id)).toMatchObject({ ...Object.fromEntries(choices.map(choice => [choice.field, choice.value])), owner: 'Desktop configuration owner' })
   })
@@ -247,6 +247,93 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
     await expect(map.getByRole('region', { name: 'Selected asset' }).getByRole('heading', { name: asset.name, exact: true })).toBeVisible()
     await expect(connected).toHaveAttribute('title', asset.name)
     await page.screenshot({ path: testInfo.outputPath('singleton-map-label.png'), animations: 'disabled' })
+  })
+
+  test(`desktop Asset stale edit ${theme}`, async ({ page, sysApi }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await resetBrowserState(page)
+    expect((await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const name = `Desktop-stale-${Date.now()}`
+    const asset = await createAsset(sysApi, { name, system: 'Conflict proof', serial_number: name, asset_tag: name, owner: 'Original owner' })
+    await page.goto('/asset')
+    await fillGridSearch(page, 'Scan asset matrix...', name)
+    const row = await getWorkspaceLogicalRowByText(page, 'assets', name)
+    await row.action('More actions').click()
+    await page.getByRole('button', { name: 'Edit Configuration', exact: true }).click()
+    const editor = page.getByRole('dialog', { name: 'Edit Asset', exact: true })
+    await editor.getByRole('textbox', { name: 'Owner', exact: true }).fill('My retained draft')
+    expect((await sysApi.put(`${apiBase}/devices/${asset.id}`, { data: { owner: 'Peer saved owner' } })).ok()).toBeTruthy()
+    const response = page.waitForResponse(value => new URL(value.url()).pathname === `/api/v1/devices/${asset.id}` && value.request().method() === 'PUT')
+    await editor.getByRole('button', { name: 'Save Asset', exact: true }).click()
+    const rejected = await response
+    expect(rejected.status()).toBe(409)
+    expect(rejected.request().postDataJSON().expected_revision).toBe(asset.edit_revision)
+    await expect(editor.getByRole('alert')).toContainText('draft is preserved')
+    await expect(editor.getByRole('textbox', { name: 'Owner', exact: true })).toHaveValue('My retained draft')
+    const rows = await (await sysApi.get(`${apiBase}/devices`)).json()
+    expect(rows.find((value: any) => value.id === asset.id).owner).toBe('Peer saved owner')
+    await page.screenshot({ path: testInfo.outputPath('asset-stale-draft-retained.png'), animations: 'disabled' })
+  })
+
+  test(`desktop Asset command recovery ${theme}`, async ({ page, sysApi }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await resetBrowserState(page)
+    expect((await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme } })).ok()).toBeTruthy()
+    await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
+    const name = `Desktop-response-loss-${Date.now()}`
+    const asset = await createAsset(sysApi, { name, system: 'Command recovery', status: 'Active' })
+    await page.goto('/asset')
+    await fillGridSearch(page, 'Scan asset matrix...', name)
+    const row = await getWorkspaceLogicalRowByText(page, 'assets', name)
+    await selectWorkspaceLogicalRow(row)
+    await page.getByTitle('Bulk actions', { exact: true }).click()
+    await page.getByText('Set Status', { exact: true }).click()
+    await page.getByRole('button', { name: 'Choose status', exact: true }).click()
+    await page.getByRole('button', { name: 'Offline', exact: true }).click()
+    await page.getByRole('button', { name: 'Preview Status Change', exact: true }).click()
+    const preview = page.getByRole('dialog', { name: 'Assets bulk preview' })
+    const commands: any[] = []
+    await page.route('**/api/v1/devices/bulk-action', async route => {
+      const body = route.request().postDataJSON()
+      if (body?.action !== 'update' || body.dry_run === true) return route.continue()
+      const committed = await route.fetch()
+      expect(committed.ok()).toBeTruthy()
+      commands.push(body)
+      if (commands.length === 1) return route.abort('failed')
+      return route.fulfill({ response: committed })
+    })
+    const lost = page.waitForEvent('requestfailed', { predicate: request => request.url().includes('/devices/bulk-action') })
+    await preview.getByRole('button', { name: /^Confirm / }).click()
+    await lost
+    await expect(preview.getByRole('button', { name: /^Confirm / })).toBeEnabled()
+    const afterLoss = await (await sysApi.get(`${apiBase}/devices`)).json()
+    expect(afterLoss.find((value: any) => value.id === asset.id).status).toBe('Offline')
+    await preview.getByRole('button', { name: /^Confirm / }).click()
+    const receipt = page.getByRole('dialog', { name: 'Assets bulk complete' })
+    await expect(receipt).toBeVisible()
+    expect(commands).toHaveLength(2)
+    expect(commands[1]).toEqual(commands[0])
+    expect(commands[0].operation_id).toMatch(/^[0-9a-f]{32}$/)
+    const undone = page.waitForResponse(response => response.url().includes('/devices/bulk-action') && response.request().postDataJSON()?.action === 'undo')
+    await receipt.getByRole('button', { name: 'Undo bulk changes', exact: true }).click()
+    expect((await undone).ok()).toBeTruthy()
+    const restored = await (await sysApi.get(`${apiBase}/devices`)).json()
+    expect(restored.find((value: any) => value.id === asset.id).status).toBe('Active')
+    await expect(receipt.getByRole('button', { name: 'Undo bulk changes', exact: true })).toHaveCount(0)
+    await page.screenshot({ path: testInfo.outputPath('asset-command-recovered.png'), animations: 'disabled' })
+  })
+
+  test(`desktop release identity ${theme}`, async ({ page, sysApi }) => {
+    await page.goto('/asset')
+    const buildResponse = await page.request.get(new URL('/sysgrid-build.json', page.url()).toString())
+    expect(buildResponse.ok()).toBeTruthy()
+    const build = await buildResponse.json()
+    expect(build.schema_version).toBe(1)
+    expect(build.source_sha256).toMatch(/^[0-9a-f]{64}$/)
+    const ready = await (await sysApi.get(`${apiBase}/readiness`)).json()
+    expect(ready.backend_source_sha256).toMatch(/^[0-9a-f]{64}$/)
+    expect(typeof ready.production_mode).toBe('boolean')
   })
 
   for (const scenario of ['initial load', 'fallback recovery'] as const) test(`desktop Asset ${scenario} ${theme}`, async ({ page }, testInfo) => {

@@ -134,6 +134,7 @@ for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] 
     await expect(dialog).toHaveCount(0)
     const update = await request.put(`${apiBase}/devices/${asset.id}`, { data: { purchase_date: '2026-01-02T13:45:30', management_ip: null } })
     expect(update.ok()).toBeTruthy()
+    const updatedAsset = await update.json()
     await page.reload()
     await fillGridSearch(page, 'Scan asset matrix...', name)
     const row = await getWorkspaceLogicalRowByText(page, 'assets', name)
@@ -145,7 +146,7 @@ for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] 
     await editor.getByRole('button', { name: 'Save Asset', exact: true }).click()
     const savedResponse = await saved
     expect(savedResponse.ok()).toBeTruthy()
-    expect(savedResponse.request().postDataJSON()).toEqual({ owner: 'Quality owner' })
+    expect(savedResponse.request().postDataJSON()).toEqual({ owner: 'Quality owner', expected_revision: updatedAsset.edit_revision })
     const records = await (await request.get(`${apiBase}/devices`)).json()
     expect(records.find((row: any) => row.id === asset.id)).toMatchObject({ owner: 'Quality owner', purchase_date: '2026-01-02T13:45:30', management_ip: null })
   })

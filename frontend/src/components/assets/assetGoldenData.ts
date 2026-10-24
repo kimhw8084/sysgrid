@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { apiFetch } from '../../api/apiClient'
+import { createAssetBulkClient } from '../../api/assetBulk'
 import { downloadOperationalImportFile } from '../shared/OperationalImportExport'
 import { resolveOperationalDataState } from '../shared/OperationalDataState'
 import { dismissWorkspaceToasts, showWorkspaceToast } from '../shared/WorkspaceToast'
@@ -41,6 +42,7 @@ export type AssetLifecycleOperation = Readonly<{
   originalAction: 'delete' | 'restore'
   inverseAction: 'restore' | 'delete'
   targetLabels: readonly string[]
+  receiptId?: string
 }>
 
 type PendingAssetBulkMutation = {
@@ -695,6 +697,9 @@ export function useAssetGoldenWorkspace() {
     () => queryClient.invalidateQueries({ queryKey: ['asset-golden-devices'] }),
     [queryClient],
   )
+  const assetRowsRef = useRef(allAssets)
+  assetRowsRef.current = allAssets
+  const assetBulkClient = useMemo(() => createAssetBulkClient(() => assetRowsRef.current), [])
 
   const {
     bulkMutation,
@@ -714,34 +719,9 @@ export function useAssetGoldenWorkspace() {
     getSnapshots: (ids) => allAssets
       .filter((asset) => ids.includes(asset.id))
       .map((asset) => ({ ...asset })),
-    previewRequest: async ({ action, ids, payload }) => {
-      const response = await apiFetch('/api/v1/devices/bulk-action', {
-        method: 'POST',
-        body: JSON.stringify({ action, ids, payload, dry_run: true }),
-      })
-      if (!response.ok) throw new Error(await response.text())
-      return response.json()
-    },
-    executeRequest: async ({ action, ids, payload }) => {
-      const response = await apiFetch('/api/v1/devices/bulk-action', {
-        method: 'POST',
-        body: JSON.stringify({ action, ids, ...(Object.keys(payload).length ? { payload } : {}) }),
-      })
-      if (!response.ok) throw new Error(await response.text())
-      return response.json()
-    },
+    ...assetBulkClient,
+    includePreviewInExecution: true,
     refresh: refreshAssetLifecycle,
-    buildRevertRequest: ({ action, payload, changedIds, changedSnapshots }) => {
-      if (action === 'delete' || action === 'restore') {
-        return { action: action === 'delete' ? 'restore' : 'delete', ids: changedIds }
-      }
-      const updateKeys = Object.keys(payload)
-      if (action !== 'update' || updateKeys.length !== 1) return null
-      const key = updateKeys[0]
-      const previousValues = Array.from(new Set(changedSnapshots.map((snapshot: any) => snapshot[key])))
-      if (previousValues.length !== 1 || previousValues[0] === null || previousValues[0] === undefined) return null
-      return { action: 'update', ids: changedIds, payload: { [key]: previousValues[0] } }
-    },
     onExecutionStart: (_ids, action) => {
       if (action !== 'purge') return undefined
       // Every entry point (row menu, receipt, bulk toolbar) invalidates transient undo.
@@ -749,7 +729,7 @@ export function useAssetGoldenWorkspace() {
       dismissWorkspaceToasts()
       return { recoveryGeneration: lifecycleRecoveryGenerationRef.current }
     },
-    onExecutionSuccess: ({ action, ids, changedIds, targetLabels, previousSnapshots, executionStartContext }) => {
+    onExecutionSuccess: ({ action, ids, changedIds, targetLabels, previousSnapshots, executionStartContext, result }) => {
       setRowActionMenu(null)
       setSelectedIds([])
       setSelectionResetVersion(version => version + 1)
@@ -769,6 +749,7 @@ export function useAssetGoldenWorkspace() {
           originalAction: action,
           inverseAction: action === 'delete' ? 'restore' : 'delete',
           targetLabels: Object.freeze(changedIds.map((id) => labelsById.get(id) || String(id))),
+          ...(typeof result.receipt_id === 'string' ? { receiptId: result.receipt_id } : {}),
         }) as AssetLifecycleOperation
         setLifecycleOperation(nextOperation)
       } else if (action === 'purge' && changedIds.length > 0) {
@@ -804,11 +785,8 @@ export function useAssetGoldenWorkspace() {
     }
     setIsReverting(true)
     try {
-      const response = await apiFetch('/api/v1/devices/bulk-action', {
-        method: 'POST',
-        body: JSON.stringify({ action: operation.inverseAction, ids: operation.ids }),
-      })
-      if (!response.ok) throw new Error(await response.text())
+      if (!operation.receiptId) throw new Error('The original recovery receipt is unavailable. Review the latest assets before changing their lifecycle.')
+      await assetBulkClient.executeRequest({ action: 'undo', ids: [...operation.ids], payload: { receipt_id: operation.receiptId } })
       await refreshAssetLifecycle()
       setLifecycleOperation(null)
       showWorkspaceToast('Reverted asset operation', { type: 'success' })
@@ -817,7 +795,7 @@ export function useAssetGoldenWorkspace() {
     } finally {
       setIsReverting(false)
     }
-  }, [refreshAssetLifecycle])
+  }, [assetBulkClient, refreshAssetLifecycle])
 
   const toggleColumn = useCallback((field: string) => {
     setHiddenColumns((current) => current.includes(field) ? current.filter((entry) => entry !== field) : [...current, field])

@@ -26,6 +26,7 @@ COUNTS = {
     'pending_outbox': ('pv1_outbox_events', 'SELECT COUNT(*) FROM pv1_outbox_events WHERE published_at IS NULL'),
     'expired_command_records': ('pv1_idempotency_keys', "SELECT COUNT(*) FROM pv1_idempotency_keys WHERE expires_at < CURRENT_TIMESTAMP"),
     'expired_architecture_commands': ('pv1_architecture_commands', "SELECT COUNT(*) FROM pv1_architecture_commands WHERE expires_at < CURRENT_TIMESTAMP"),
+    'asset_command_records': ('asset_write_receipts', 'SELECT COUNT(*) FROM asset_write_receipts'),
 }
 
 

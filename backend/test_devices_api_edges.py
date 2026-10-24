@@ -267,7 +267,9 @@ async def test_devices_create_update_and_bulk_actions(seeded_admin_tenant, setup
     restore_conflict = await client.post("/api/v1/devices/bulk-action", json={"ids": [device["id"]], "action": "restore"}, headers=headers)
     assert restore_conflict.status_code == 409
     assert restore_conflict.json()["detail"]["preview"]["blockers"][0]["id"] == device["id"]
-    assert [row.action for row in await _device_audit_rows(tenant_session_factory, device["id"])] == ["ARCHIVE", "UPDATE", "CREATE"]
+    audit_rows = await _device_audit_rows(tenant_session_factory, device["id"])
+    assert [row.action for row in audit_rows] == ["ARCHIVE", "UPDATE", "UPDATE", "CREATE"]
+    assert audit_rows[1].changes == {"changed_fields": ["owner"]}
     archived_rows = await client.get("/api/v1/devices?include_deleted=true", headers=headers)
     assert any(row["id"] == device["id"] and row["is_deleted"] for row in archived_rows.json())
 

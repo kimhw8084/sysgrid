@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm.exc import StaleDataError
 from sqlalchemy import select, delete, update, or_, and_, func
 from datetime import datetime
 from math import isfinite
 from typing import Optional
+import json
 from ..database import get_db
 from ..models import models
 from ..database_base import Base
@@ -21,10 +23,11 @@ from .authorization import require_capability, resolve_current_operator
 from .secret_vault import can_manage_vault, commit_vault_audit, require_vault_device, scoped_vault_query, serialize_secret_vault_entry
 from .asset_hardware import HardwarePayload, commit_hardware_audit, hardware_update_payload, require_hardware_parent, scoped_hardware_query
 from .asset_links import RelationshipCreate, asset_link_update_payload, commit_asset_link_audit, get_asset_link, require_relationship_asset, scoped_relationship_query
+from .asset_commands import bulk_precondition, fingerprint, guarded_bulk, os_state, reserve_writer
 from fastapi.responses import JSONResponse
 
 _PURGE_IMPACT_ID_SAMPLE_LIMIT = 20
-_DEVICE_SERVER_FIELDS = {'id', 'tenant_id', 'created_at', 'updated_at', 'created_by_user_id', 'is_deleted'}
+_DEVICE_SERVER_FIELDS = {'id', 'tenant_id', 'created_at', 'updated_at', 'created_by_user_id', 'is_deleted', 'edit_revision'}
 _DEVICE_DATE_FIELDS = {'purchase_date', 'install_date', 'warranty_end', 'eol_date'}
 _DEVICE_TEXT_FIELDS = {
     'name', 'system', 'environment', 'status', 'type',
@@ -40,6 +43,32 @@ _DEVICE_WRITABLE_FIELDS = (
     _DEVICE_TEXT_FIELDS | _DEVICE_DATE_FIELDS | _DEVICE_INTEGER_MINIMUMS.keys()
     | _DEVICE_POWER_FIELDS | _DEVICE_BOOLEAN_FIELDS | {'metadata_json', 'reservation_info', 'logic_json'}
 )
+
+
+async def get_device_db(db: AsyncSession = Depends(get_db)):
+    try:
+        yield db
+    except StaleDataError as exc:
+        await db.rollback()
+        raise HTTPException(409, 'This asset changed during your request. Your draft is preserved; reopen it to review the latest version.') from exc
+    except OperationalError as exc:
+        await db.rollback()
+        code = getattr(exc.orig, 'sqlite_errorcode', None)
+        if isinstance(code, int) and (code & 0xFF) in {5, 6}:
+            raise HTTPException(409, 'Asset data is busy. Your draft is preserved; review the latest records before trying again.') from exc
+        raise
+
+
+def require_asset_edit_revision(data: dict, device: models.Device) -> None:
+    # Existing integrations may omit the guard; an explicit invalid guard must
+    # never turn into an unconditional write. Current editors always supply it.
+    if 'expected_revision' not in data:
+        return
+    value = data['expected_revision']
+    if not isinstance(value, str) or len(value) != 32 or any(char not in '0123456789abcdef' for char in value):
+        raise HTTPException(400, 'expected_revision must be an asset edit revision')
+    if value != device.edit_revision:
+        raise HTTPException(409, 'This asset changed after you opened it. Your draft is preserved; copy your changes, then close and reopen it to review the latest version.')
 
 
 def _device_write_data(data: dict, *, creating: bool = False) -> dict:
@@ -168,6 +197,7 @@ async def _collect_device_purge_impact(db: AsyncSession, devices: list[models.De
     pending_tables = set(relevant_tables)
     processed_tables = {device_table}
     ordered_tables = []
+    dependency_rows = []
     while pending_tables:
         ready_tables = sorted(
             (
@@ -197,14 +227,14 @@ async def _collect_device_purge_impact(db: AsyncSession, devices: list[models.De
 
             identity_columns = _device_purge_identity_columns(table)
             reference_columns = list(dict.fromkeys(foreign_key.parent for foreign_key, _, _ in references))
-            selected_columns = list(dict.fromkeys([*identity_columns, *reference_columns]))
+            selected_columns = list(table.columns)
             predicates = [foreign_key.parent.in_(list(parent_roots)) for foreign_key, _, parent_roots in references]
             dependency_query = select(*selected_columns).where(or_(*predicates))
             if lock_rows:
                 dependency_query = dependency_query.with_for_update()
-            result = await db.execute(dependency_query)
+            result = await db.stream(dependency_query.execution_options(yield_per=100))
 
-            for row in result.all():
+            async for row in result:
                 values = {column: row[index] for index, column in enumerate(selected_columns)}
                 identity_values = tuple(values[column] for column in identity_columns)
                 identity = _device_purge_identity(identity_values)
@@ -218,6 +248,7 @@ async def _collect_device_purge_impact(db: AsyncSession, devices: list[models.De
                         affected_devices.update(matched_roots)
                 if not matching:
                     continue
+                dependency_rows.append(fingerprint({'table': table.name, 'values': {column.name: value for column, value in values.items()}}))
 
                 actions = {action for _, action in matching}
                 if "RESTRICT" in actions:
@@ -277,6 +308,7 @@ async def _collect_device_purge_impact(db: AsyncSession, devices: list[models.De
         "delete_operations": [],
         "detach_operations": [],
         "delete_order": list(reversed(ordered_tables)),
+        "fingerprint": fingerprint(sorted(dependency_rows)),
     }
 
     for table, rows in deleted_by_table.items():
@@ -752,9 +784,10 @@ async def get_device_interfaces(request: Request, device_id: int, db: AsyncSessi
     return result
 
 @router.post("")
-async def create_device(request: Request, data: dict, db: AsyncSession = Depends(get_db)):
+async def create_device(request: Request, data: dict, db: AsyncSession = Depends(get_device_db)):
     tenant_id = request.state.tenant_id
     clean_data = _device_write_data(data, creating=True)
+    await reserve_writer(request, db)
     
     # Case-insensitive duplicate check
     dup_res = await db.execute(select(models.Device).filter(
@@ -776,11 +809,14 @@ async def create_device(request: Request, data: dict, db: AsyncSession = Depends
 
 
 @router.put("/{device_id}")
-async def update_device(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_db)):
+async def update_device(request: Request, device_id: int, data: dict, db: AsyncSession = Depends(get_device_db)):
     tenant_id = request.state.tenant_id
+    if 'name' in data:
+        await reserve_writer(request, db)
     result = await db.execute(select(models.Device).filter(models.Device.id == device_id, models.Device.tenant_id == tenant_id))
     db_device = result.scalar_one_or_none()
     if not db_device: raise HTTPException(404)
+    require_asset_edit_revision(data, db_device)
     clean_data = _device_write_data(data)
     
     if 'name' in clean_data and clean_data['name'].lower() != (db_device.name or '').lower():
@@ -811,7 +847,15 @@ async def update_device(request: Request, device_id: int, data: dict, db: AsyncS
     return db_device
 
 @router.post("/bulk-action")
-async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(get_db)):
+async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(get_device_db)):
+    if 'operation_id' in data or 'precondition' in data or str(data.get('action') or '').strip().lower() == 'undo':
+        return await guarded_bulk(data, request, db)
+    if data.get('dry_run', False) is False and data.get('ids'):
+        await reserve_writer(request, db)
+    return await _asset_bulk(request, data, db)
+
+
+async def _asset_bulk(request: Request, data: dict, db: AsyncSession, receipt=None):
     tenant_id = request.state.tenant_id
     if "dry_run" in data and not isinstance(data["dry_run"], bool):
         raise HTTPException(status_code=400, detail="dry_run must be a boolean")
@@ -871,6 +915,13 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
             raise HTTPException(status_code=400, detail=f"Unsupported asset bulk fields: {', '.join(unsupported)}")
         if not clean_update:
             raise HTTPException(status_code=400, detail="Asset bulk update requires at least one mutable field")
+        if 'name' in clean_update:
+            active_ids = [identity for identity in matched_ids if not by_id[identity].is_deleted]
+            duplicate = await db.scalar(select(models.Device.id).where(models.Device.tenant_id == tenant_id,
+                models.Device.is_deleted == False, ~models.Device.id.in_(active_ids),
+                func.lower(models.Device.name) == clean_update['name'].lower()))
+            if len(active_ids) > 1 or duplicate is not None:
+                raise HTTPException(409, 'The Asset hostname would conflict with an active record. Nothing was changed.')
         for record_id in matched_ids:
             device = by_id[record_id]
             if device.is_deleted:
@@ -891,7 +942,7 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
                 continue
             duplicate_query = select(models.Device.id).filter(
                 models.Device.tenant_id == tenant_id,
-                models.Device.name == device.name,
+                func.lower(models.Device.name) == device.name.lower(),
                 models.Device.is_deleted == False,
                 models.Device.id != device.id,
             )
@@ -902,6 +953,9 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
                 blockers.append({"id": record_id, "name": device.name, "reason": "An active asset already uses this hostname"})
             else:
                 changed_ids.append(record_id)
+        restoring_names = [by_id[identity].name.casefold() for identity in changed_ids]
+        if len(restoring_names) != len(set(restoring_names)):
+            raise HTTPException(409, 'The restore selection contains conflicting hostnames. Nothing was changed.')
     else:  # purge
         # Normalized traceability is historical record, so a hard purge is
         # blocked even when the link itself is retired. Soft delete remains
@@ -983,6 +1037,7 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     )
     compatibility = {
         **summary,
+        "selected_ids": ids,
         "status": "preview" if dry_run else "no_op",
         "count": summary["changed_count"],
         "changed": summary["changed_count"],
@@ -992,9 +1047,12 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
     if action == "restore":
         compatibility["restored"] = changed_ids
         compatibility["conflicts"] = [blocker["id"] for blocker in blockers]
+    projection_before = await os_state(db, matched_ids) if action == 'update' and set(clean_update) & {'os_name', 'os_version', 'environment'} else {}
+    compatibility['versions'] = {str(row.id): row.edit_revision for row in devices}
+    compatibility['precondition'] = bulk_precondition(request, ids, action, payload, devices,
+        {'purge': purge_impact_plan['fingerprint'] if purge_impact_plan else None, 'os': projection_before})
     if dry_run:
         return compatibility
-
     if action == "purge" and (summary["missing_ids"] or summary["blockers"]):
         raise HTTPException(
             status_code=409,
@@ -1003,8 +1061,15 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
                 "preview": {**summary, "status": "blocked", "purge_impact": purge_impact},
             },
         )
+    if receipt is not None and data['precondition'] != compatibility['precondition']:
+        raise HTTPException(409, 'Assets or their dependencies changed after this preview. Nothing was changed; review a fresh preview.')
     require_executable_operational_bulk(summary)
     if not changed_ids:
+        if receipt is not None:
+            compatibility.update(receipt_id=receipt.id, can_revert=False)
+            receipt.result = dict(compatibility)
+            db.add(receipt)
+            await db.commit()
         return compatibility
 
     audit_rows = []
@@ -1016,6 +1081,16 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
             _device_lifecycle_audit(request, "PURGE", by_id[record_id], purge_impact)
             for record_id in changed_ids
         ]
+    else:
+        audit_rows = [build_audit_log(request=request, action='UPDATE', target_table='devices', target_id=str(identity),
+            description='Updated Asset configuration.', changes={'changed_fields': sorted(key for key, value in clean_update.items() if getattr(by_id[identity], key) != value)}) for identity in changed_ids]
+
+    if receipt is not None and action != 'purge':
+        receipt.before_state = json.loads(json.dumps({str(identity):
+            ({key: getattr(by_id[identity], key) for key, value in clean_update.items() if getattr(by_id[identity], key) != value}
+             if action == 'update' else {'is_deleted': by_id[identity].is_deleted}) for identity in changed_ids}, default=str))
+        if len(json.dumps(receipt.before_state, ensure_ascii=False).encode()) > 2 * 1024 * 1024:
+            raise HTTPException(409, 'This selection exceeds the safe recovery-state limit. Nothing was changed; use a smaller selection.')
 
     try:
         if action == "update":
@@ -1023,7 +1098,8 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
                 device = by_id[record_id]
                 for key, value in clean_update.items():
                     setattr(device, key, value)
-                await sync_device_to_os(device, db)
+                if set(clean_update) & {'os_name', 'os_version', 'environment'}:
+                    await sync_device_to_os(device, db)
         elif action == "delete":
             for record_id in changed_ids:
                 by_id[record_id].is_deleted = True
@@ -1038,6 +1114,23 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
             ))
 
         db.add_all(audit_rows)
+        compatibility['status'] = 'success'
+        if action == 'purge':
+            compatibility['purge_impact_applied'] = purge_impact
+        if receipt is not None:
+            await db.flush()
+            receipt.post_state = {str(identity): by_id[identity].edit_revision for identity in changed_ids} if action != 'purge' else {}
+            projection_after = await os_state(db, changed_ids) if projection_before else {}
+            can_revert = action != 'purge'
+            for identity in changed_ids:
+                key = str(identity)
+                if key not in projection_before: continue
+                if {row['id'] for row in projection_before[key]} != {row['id'] for row in projection_after[key]}:
+                    can_revert = False
+                receipt.projection_state = {**receipt.projection_state, key: {'before': projection_before[key], 'post': fingerprint(projection_after[key])}}
+            compatibility.update(receipt_id=receipt.id, can_revert=can_revert)
+            receipt.result = dict(compatibility)
+            db.add(receipt)
         await db.commit()
     except Exception:
         await db.rollback()
@@ -1128,7 +1221,7 @@ async def add_relationship(request: Request, device_id: int, data: RelationshipC
     return rel
 
 @router.delete("/{device_id}")
-async def delete_device(request: Request, device_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_device(request: Request, device_id: int, db: AsyncSession = Depends(get_device_db)):
     tenant_id = request.state.tenant_id
     result = await db.execute(
         select(models.Device)
