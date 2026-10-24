@@ -58,7 +58,7 @@ export function AssetMapSurface({ assets, visibleAssets, connections, relationsh
       </div>
     </aside>
     <div className="asset-map-main">
-      <div className="asset-map-summary"><div><Network size={16} aria-hidden="true" /><strong>{graph.nodes.length} assets</strong><span>{graph.links.length} links</span></div><span>Drag to pan · scroll to zoom</span></div>
+      <div className="asset-map-summary"><div><Network size={16} aria-hidden="true" /><strong>{graph.nodes.length} {graph.nodes.length === 1 ? 'asset' : 'assets'}</strong><span>{graph.links.length} {graph.links.length === 1 ? 'link' : 'links'}</span></div><span>Drag to pan · scroll to zoom</span></div>
       {graph.nodes.length ? <AssetTopologyCanvas graph={graph} selectedId={selectedNodeId} onSelect={setSelectedNodeId} className="asset-map-full-canvas" />
         : <div className="asset-map-empty"><WorkspaceEmptyState title="Choose where to start" description="Select a starting asset or system, or search a hostname. Only its connected neighborhood is drawn." /></div>}
       <div className="asset-map-bottom">

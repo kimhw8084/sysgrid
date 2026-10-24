@@ -24,6 +24,9 @@ for (const theme of ['pure-clarity', 'nordic-frost-v1']) {
   for (const scenario of ['initial load', 'fallback recovery']) {
     assert(names.includes(`desktop Asset ${scenario} ${theme}`), `Missing Asset ${scenario} ${theme}`)
   }
+  for (const family of ['configured asset choices', 'configured choices recover without replacing drafts', 'singleton Map labels']) {
+    assert(names.includes(`desktop ${family} ${theme}`), `Missing desktop ${family} ${theme}`)
+  }
   assert(names.includes(`desktop form guide keyboard ${theme}`), `Missing desktop guide keyboard ${theme}`)
   for (const width of [1024, 1280, 1440, 1920]) {
     assert(names.includes(`desktop Report and Map ${theme} ${width}`), `Missing desktop Report/Map ${theme} ${width}`)

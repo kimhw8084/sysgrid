@@ -68,7 +68,7 @@ import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalGridMatrix } from './shared/OperationalGridMatrix'
 import { OperationalDisplayPanel, OperationalGridSurface, OperationalSavedViewsPanel, OperationalWorkspaceFrame } from './shared/OperationalWorkspaceShells'
 import { AssetDetailsView } from './assets/AssetDetailsView'
-import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES } from './assets/assetRecordOptions'
+import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES, assetFilterOptions, fetchAssetSettingOptions } from './assets/assetRecordOptions'
 import {
   applyOperationalColumnSizing,
   applyOperationalColumnState,
@@ -998,7 +998,7 @@ export default function AssetReal() {
 
   const { data: settingsOptions } = useQuery({
     queryKey: ['settings-options'],
-    queryFn: async () => (await (await apiFetch('/api/v1/settings/options')).json())
+    queryFn: fetchAssetSettingOptions,
   })
   const { data: operators } = useQuery({
     queryKey: ['operators'],
@@ -3524,6 +3524,7 @@ export function AssetRecordFormModal({ item: incomingItem, onClose, onSuccess }:
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [generalError, setGeneralError] = useState('')
   const formBodyRef = useRef<HTMLDivElement>(null)
+  const optionsQuery = useQuery({ queryKey: ['settings-options'], queryFn: fetchAssetSettingOptions })
   const initialMetadataJsonText = useMemo(() => JSON.stringify(item?.metadata_json || {}, null, 2), [item])
   const initialFormData = useMemo(() => ({
     name: item?.name || '',
@@ -3555,6 +3556,11 @@ export function AssetRecordFormModal({ item: incomingItem, onClose, onSuccess }:
   }), [item])
   const [metadataJsonText, setMetadataJsonText] = useState(() => initialMetadataJsonText)
   const [formData, setFormData] = useState(() => initialFormData)
+  const choices = (category: string, defaults: readonly string[], current: string) => assetFilterOptions(
+    defaults,
+    (Array.isArray(optionsQuery.data) ? optionsQuery.data : []).filter(option => option.category === category && (category !== 'Status' || option.value !== 'Deleted')),
+    [current],
+  )
   const isDirty = useMemo(
     () => !isDeepEqual(formData, initialFormData) || metadataJsonText !== initialMetadataJsonText,
     [formData, initialFormData, initialMetadataJsonText, metadataJsonText]
@@ -3667,8 +3673,8 @@ export function AssetRecordFormModal({ item: incomingItem, onClose, onSuccess }:
       status={
         <div className="flex items-center gap-2">
           {isSaving && <span role="status">Saving asset changes...</span>}
-          <StatusPill value={formData.status || 'Active'} />
-          <StatusPill value={formData.environment || 'Production'} />
+          <StatusPill value={formData.status || 'Active'} label={choices('Status', ASSET_STATUSES, formData.status).find(option => option.value === formData.status)?.label} />
+          <StatusPill value={formData.environment || 'Production'} label={choices('Environment', ASSET_ENVIRONMENTS, formData.environment).find(option => option.value === formData.environment)?.label} />
         </div>
       }
       footerRight={
@@ -3701,9 +3707,14 @@ export function AssetRecordFormModal({ item: incomingItem, onClose, onSuccess }:
               </WorkspaceSectionCard>
               <WorkspaceSectionCard id="asset-form-classification" title="2 · Classification" tone="teal" icon={<Layers size={18} />} description="Review the defaults before saving.">
                 <div className="space-y-4">
-                  <AppDropdown disabled={isSaving} label="Asset Type" value={formData.type} onChange={(value) => updateField('type', value)} options={ASSET_TYPES.map((value) => ({ value, label: value }))} />
-                  <AppDropdown disabled={isSaving} label="Status" value={formData.status} onChange={(value) => updateField('status', value)} options={ASSET_STATUSES.filter((value) => value !== 'Deleted').map((value) => ({ value, label: value }))} />
-                  <AppDropdown disabled={isSaving} label="Environment" value={formData.environment} onChange={(value) => updateField('environment', value)} options={ASSET_ENVIRONMENTS.map((value) => ({ value, label: value }))} />
+                  {optionsQuery.isFetching && <p role="status" className="form-field-hint">Loading configured choices. Your draft is kept.</p>}
+                  {optionsQuery.isError && <div role="alert" className="space-y-2">
+                    <p className="form-field-hint">Configured choices could not be loaded. Default and current values are available; your draft is kept.</p>
+                    <ToolbarButton onClick={() => { void optionsQuery.refetch() }} disabled={optionsQuery.isFetching}>Retry configured choices</ToolbarButton>
+                  </div>}
+                  <AppDropdown disabled={isSaving} label="Asset Type" value={formData.type} onChange={(value) => updateField('type', value)} options={choices('DeviceType', ASSET_TYPES, formData.type)} />
+                  <AppDropdown disabled={isSaving} label="Status" value={formData.status} onChange={(value) => updateField('status', value)} options={choices('Status', ASSET_STATUSES.filter(value => value !== 'Deleted'), formData.status)} />
+                  <AppDropdown disabled={isSaving} label="Environment" value={formData.environment} onChange={(value) => updateField('environment', value)} options={choices('Environment', ASSET_ENVIRONMENTS, formData.environment)} />
                   {renderField('role', 'Role / Description', { placeholder: 'e.g. Application server' })}
                   {renderField('owner', 'Owner', { placeholder: 'Responsible person or team' })}
                   {renderField('business_unit', 'Business Unit')}

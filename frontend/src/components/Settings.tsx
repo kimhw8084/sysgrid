@@ -2353,7 +2353,7 @@ export default function SettingsPage() {
                                {cat} Domain
                             </h3>
                             <div className="text-xs text-[var(--text-secondary)] bg-[var(--surface-elevated)] px-2 py-1 rounded-lg border border-[var(--grid-border)]">
-                              {filteredEnvEntries.filter(([key]) => localEnv._metadata?.[key]?.category === cat).length} parameters
+                              {filteredEnvEntries.filter(([key]) => localEnv._metadata?.[key]?.category === cat).length} {filteredEnvEntries.filter(([key]) => localEnv._metadata?.[key]?.category === cat).length === 1 ? 'parameter' : 'parameters'}
                             </div>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">

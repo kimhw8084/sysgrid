@@ -47,15 +47,16 @@ const colors: any = {
   Minor: 'text-blue-800 dark:text-blue-400 border-blue-500/20 bg-blue-500/10 dark:bg-blue-500/5',
 }
 
-export const StatusPill = ({ value, fontSize }: { value: string, fontSize?: number }) => {
-  const displayValue = value?.replace(/_/g, ' ') || 'N/A'
+export const StatusPill = ({ value, label, fontSize }: { value: string, label?: string, fontSize?: number }) => {
+  const displayValue = (label || value)?.replace(/_/g, ' ') || 'N/A'
   return (
     <span
       data-sg-status-pill
+      title={displayValue}
       style={fontSize ? { fontSize: `${fontSize}px` } : {}}
       className={`inline-flex items-center justify-center w-24 h-5 rounded-lg ${!fontSize ? 'text-[8px]' : ''} font-bold uppercase border tracking-tighter transition-colors duration-500 ${colors[value] || colors[displayValue] || 'text-slate-600 dark:text-slate-400 border-slate-500/20 bg-slate-500/10 dark:bg-slate-500/5'}`}
     >
-      {displayValue}
+      <span className="truncate">{displayValue}</span>
     </span>
   )
 }

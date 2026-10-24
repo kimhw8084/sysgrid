@@ -13,13 +13,13 @@ const archived = { ...active, id: 2, name: 'Archived host', is_deleted: true }
 const views: Array<() => void> = []
 afterEach(() => { views.splice(0).forEach(close => close()); localStorage.clear(); vi.clearAllMocks() })
 
-function workspace(primary: boolean | Promise<any[]> = false, cachedLive?: any[]) {
+function workspace(primary: boolean | Promise<any[]> = false, cachedLive?: any[], configured: any[] = []) {
   vi.mocked(apiFetch).mockImplementation(async path => {
     if (String(path).includes('include_deleted=true')) {
       if (primary === true) throw new Error('Primary query unavailable')
       return { ok: true, json: async () => primary instanceof Promise ? primary : [active, archived] } as Response
     }
-    return { ok: true, json: async () => String(path) === '/api/v1/devices/' ? [active] : [] } as Response
+    return { ok: true, json: async () => String(path) === '/api/v1/devices/' ? [active] : String(path) === '/api/v1/settings/options' ? configured : [] } as Response
   })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   if (cachedLive) client.setQueryData(['devices'], cachedLive)
@@ -36,6 +36,11 @@ it('supplies active hosts from the successful primary query while fallback stays
   await waitFor(() => expect(result.current.allAssets).toHaveLength(2))
   expect(result.current.devices.map((row: any) => row.id)).toEqual([1])
   expect(vi.mocked(apiFetch).mock.calls.some(([path]) => path === '/api/v1/devices/')).toBe(false)
+})
+
+it('keeps recorded logical systems available when configured systems also exist', async () => {
+  const { result } = workspace(false, undefined, [{ category: 'LogicalSystem', value: 'Configured system', label: 'Configured system' }])
+  await waitFor(() => expect(result.current.systemsList).toEqual(['Configured system', 'Host options']))
 })
 
 it('retains the existing live-query fallback when the primary query fails', async () => {

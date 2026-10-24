@@ -39,14 +39,14 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
     return () => observer.disconnect()
   }, [])
-  const fit = () => engine.current?.zoomToFit(duration, 56)
+  const fit = () => engine.current?.zoomToFit(duration, 96)
   useEffect(() => {
     const canvas = host.current?.querySelector('canvas')
     if (!canvas) return
     // The graph engine can receive its new width before the canvas reaches
     // layout. Fit only after that displayed size changes, not on selection.
     const observer = new ResizeObserver(() => {
-      if (lastFit.current === graph) engine.current?.zoomToFit(duration, 56)
+      if (lastFit.current === graph) engine.current?.zoomToFit(duration, 96)
     })
     observer.observe(canvas)
     return () => observer.disconnect()
@@ -70,6 +70,7 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
     </div>}
     <div ref={host} className="asset-map-canvas-host" role="img" aria-label={`Asset topology: ${graph.nodes.length} assets and ${graph.links.length} links. Select an asset from the connected-assets list for details.`}>
       <ForceGraph2D ref={engine} graphData={graph} width={size.width} height={size.height}
+        maxZoom={8}
         nodeRelSize={5} nodeVal={(node: any) => Number(node.id) === selectedId ? 49 / 25 : 1}
         cooldownTicks={reducedMotion ? 1 : 80} warmupTicks={reducedMotion ? 80 : 0} backgroundColor="rgba(0,0,0,0)"
         onEngineStop={() => { if (lastFit.current !== graph) { lastFit.current = graph; fit() } }}
@@ -99,7 +100,19 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
           if (selected) { context.strokeStyle = appearance.ink; context.lineWidth = 2 / scale; context.stroke() }
           context.font = `600 ${12 / scale}px Inter, sans-serif`
           context.textAlign = 'center'; context.textBaseline = 'top'; context.fillStyle = appearance.ink
-          context.fillText(String(node.name), node.x, node.y + 9)
+          let label = String(node.name)
+          const maxWidth = Math.min(160, Math.max(16, size.width - 32)) / scale
+          if (context.measureText(label).width > maxWidth) {
+            const characters = Array.from(label)
+            let low = 0, high = characters.length
+            while (low < high) {
+              const middle = Math.ceil((low + high) / 2)
+              if (context.measureText(characters.slice(0, middle).join('') + '…').width <= maxWidth) low = middle
+              else high = middle - 1
+            }
+            label = characters.slice(0, low).join('') + '…'
+          }
+          context.fillText(label, node.x, node.y + 9)
         }} />
     </div>
   </div>
