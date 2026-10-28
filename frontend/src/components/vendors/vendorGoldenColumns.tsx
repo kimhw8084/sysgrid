@@ -152,7 +152,7 @@ export function buildVendorGoldenColumns({
     // Reserve the header controls' space for the measured Vendor labels.
     columnConfigs: applyOperationalHeaderWidthBounds(columnConfigs, {
       country: { minWidth: 136, maxWidth: 136 },
-      primary_personnel_name: { minWidth: 192 },
+      primary_personnel_name: { minWidth: 192, maxWidth: 200 },
       personnel_count: { minWidth: 144 },
     }),
     columnLayoutState,

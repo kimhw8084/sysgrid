@@ -2077,7 +2077,7 @@ export default function NetworkReal() {
         resizable: true,
         filter: true,
         cellClass: 'text-center flex items-center justify-center',
-        headerClass: 'text-center',
+        headerClass: 'text-center network-direction-header',
         cellRenderer: (p: any) => renderText(p.value, 'text-slate-300'),
       },
       {

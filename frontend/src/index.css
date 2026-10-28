@@ -507,6 +507,18 @@
   padding-right: 10px !important;
 }
 
+.operational-grid-shell .ag-header-cell.network-direction-header .ag-header-cell-label {
+  padding-right: 4px !important;
+}
+
+.operational-grid-shell .ag-header-cell[col-id='src_port'] .ag-header-cell-label {
+  padding-right: 0 !important;
+}
+
+.operational-grid-shell .ag-header-cell[col-id='primary_personnel_name'] .ag-header-cell-label {
+  padding-right: 2px !important;
+}
+
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell,
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell-value,
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header-cell-label,
