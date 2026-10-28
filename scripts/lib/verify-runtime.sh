@@ -26,6 +26,10 @@ verify_runtime_configure_profile() {
       VERIFY_RUNTIME_SYSTEM_ROOT=""
       VERIFY_RUNTIME_TEST_USER="${SYSGRID_VERIFY_USER_ID:-haewon.kim}"
       ;;
+    role-matrix)
+      VERIFY_RUNTIME_SYSTEM_ROOT=""
+      VERIFY_RUNTIME_TEST_USER="${SYSGRID_VERIFY_USER_ID:-haewon.kim}"
+      ;;
     root-preview)
       [[ -n "${SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID:-}" ]] || {
         echo "root-preview requires SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID; identity is never inferred from a username." >&2
@@ -39,7 +43,7 @@ verify_runtime_configure_profile() {
       }
       ;;
     *)
-      echo "Unsupported SYSGRID_VERIFY_PROFILE '$VERIFY_RUNTIME_PROFILE'. Use normal-v1 or root-preview." >&2
+      echo "Unsupported SYSGRID_VERIFY_PROFILE '$VERIFY_RUNTIME_PROFILE'. Use normal-v1, role-matrix, or root-preview." >&2
       return 1
       ;;
   esac
@@ -97,14 +101,11 @@ EOF
 }
 
 verify_runtime_resolve_node() {
-  if [[ -n "$NODE_BIN" ]]; then
-    echo "Verification Node: $NODE_BIN ($($NODE_BIN --version 2>&1))"
-    return 0
-  fi
-
   local candidates=()
-  local candidate
-  if [[ -n "${SYSGRID_VERIFY_NODE:-}" ]]; then
+  local candidate node_dir node_version node_minor path_node_version
+  if [[ -n "$NODE_BIN" ]]; then
+    candidates+=("$NODE_BIN")
+  elif [[ -n "${SYSGRID_VERIFY_NODE:-}" ]]; then
     candidates+=("$SYSGRID_VERIFY_NODE")
   else
     while IFS= read -r candidate; do
@@ -113,17 +114,35 @@ verify_runtime_resolve_node() {
   fi
 
   for candidate in "${candidates[@]}"; do
-    [[ -x "$candidate" ]] || continue
-    if "$candidate" --version >/dev/null 2>&1; then
-      NODE_BIN="$candidate"
-      export NODE_BIN
-      echo "Verification Node: $NODE_BIN ($($NODE_BIN --version 2>&1))"
-      return 0
+    if [[ "$candidate" != */* ]]; then
+      candidate="$(command -v "$candidate" 2>/dev/null || true)"
     fi
-    echo "Node candidate rejected: $candidate" >&2
+    if [[ -z "$candidate" || ! -x "$candidate" ]]; then
+      echo "Node candidate rejected: executable is unavailable" >&2
+      continue
+    fi
+    node_dir="$(cd "$(dirname "$candidate")" && pwd -P)" || continue
+    candidate="$node_dir/${candidate##*/}"
+    node_version="$("$candidate" --version 2>/dev/null || true)"
+    if [[ "$node_version" =~ ^v22\.([0-9]+)\.([0-9]+)$ ]]; then
+      node_minor="${BASH_REMATCH[1]}"
+      if (( 10#$node_minor >= 13 )); then
+        # npm and package scripts invoke `node` via PATH. Ensure they use the
+        # selected supported toolchain, including when an override is supplied.
+        path_node_version="$("$node_dir/node" --version 2>/dev/null || true)"
+        if [[ "$path_node_version" == "$node_version" ]]; then
+          NODE_BIN="$candidate"
+          PATH="$node_dir:$PATH"
+          export NODE_BIN PATH
+          echo "Verification Node: $NODE_BIN ($node_version)"
+          return 0
+        fi
+      fi
+    fi
+    echo "Node candidate rejected: $candidate ($node_version); expected Node >=22.13.0 <23 with matching node on PATH" >&2
   done
 
-  echo "No usable verification Node was found. Set SYSGRID_VERIFY_NODE to a Node interpreter." >&2
+  echo "No supported verification Node was found. Set SYSGRID_VERIFY_NODE to Node >=22.13.0 <23." >&2
   return 1
 }
 
@@ -194,6 +213,8 @@ verify_runtime_wait_for_url() {
 }
 
 verify_runtime_prepare_environment() {
+  local resolved_runtime_user="$VERIFY_RUNTIME_TEST_USER"
+  if [[ "$VERIFY_RUNTIME_PROFILE" == "role-matrix" ]]; then resolved_runtime_user=""; fi
   VERIFY_RUNTIME_ENV=(
     env
     -u TESTING
@@ -212,7 +233,7 @@ verify_runtime_prepare_environment() {
     "CONTROL_PLANE_ADMIN_USER_IDS=${SYSGRID_VERIFY_CONTROL_PLANE_ADMIN_USER_IDS:-}"
     "SYSGRID_VERIFY_PROFILE=$VERIFY_RUNTIME_PROFILE"
     "USER_ID_ENV_VAR=$VERIFY_RUNTIME_USER_ENV_VAR"
-    "$VERIFY_RUNTIME_USER_ENV_VAR=$VERIFY_RUNTIME_TEST_USER"
+    "$VERIFY_RUNTIME_USER_ENV_VAR=$resolved_runtime_user"
     "DEFAULT_EMAIL_DOMAIN=sysgrid.test"
     "ENVIRONMENT=development"
     "IDENTITY_MODE=development"
@@ -246,6 +267,43 @@ verify_runtime_prepare_disposable_data() {
     cd "$VERIFY_RUNTIME_BACKEND_DIR"
     "${VERIFY_RUNTIME_ENV[@]}" "$PYTHON_BIN" -m app.reference_data
   )
+
+  if [[ "$VERIFY_RUNTIME_PROFILE" == "role-matrix" ]]; then
+    echo "Provisioning separate viewer and editor identities in the disposable tenant..."
+    (
+      cd "$VERIFY_RUNTIME_BACKEND_DIR"
+      "${VERIFY_RUNTIME_ENV[@]}" VERIFY_ROLE_TENANT_ID="$VERIFY_RUNTIME_TEST_TENANT" "$PYTHON_BIN" - <<'PYROLE'
+import asyncio
+import os
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from app.core.config import settings
+from app.models.config import UserTenantAccess
+from app.models.models import Operator, Role
+
+async def main():
+    config_engine = create_async_engine(settings.CONFIG_DATABASE_URL)
+    tenant_engine = create_async_engine(settings.DATABASE_URL)
+    config_factory = async_sessionmaker(config_engine, expire_on_commit=False)
+    tenant_factory = async_sessionmaker(tenant_engine, expire_on_commit=False)
+    identities = [('sysgrid.verify.viewer', 'VIEWER', 1), ('sysgrid.verify.editor', 'EDITOR', 2)]
+    async with tenant_factory() as session:
+        for user, _, level in identities:
+            role = Role(name=f'qualification-{user}', permissions={'all': level})
+            session.add(role)
+            await session.flush()
+            session.add(Operator(external_id=user, username=user, full_name=user, role_id=role.id, is_admin=False, registration_status='Active'))
+        await session.commit()
+    async with config_factory() as session:
+        for user, tenant_role, _ in identities:
+            session.add(UserTenantAccess(user_id=user, tenant_id=int(os.environ['VERIFY_ROLE_TENANT_ID']), role=tenant_role, is_selected=True))
+        await session.commit()
+    await config_engine.dispose()
+    await tenant_engine.dispose()
+
+asyncio.run(main())
+PYROLE
+    )
+  fi
 
   if [[ "$VERIFY_RUNTIME_PROFILE" == "root-preview" ]]; then
     echo "Provisioning explicit System Root preview capabilities for $VERIFY_RUNTIME_SYSTEM_ROOT..."
@@ -444,6 +502,19 @@ verify_runtime_run_command() {
     PW_API_BASE="$VERIFY_RUNTIME_BACKEND_ORIGIN/api/v1" \
     PW_TENANT_ID="$VERIFY_RUNTIME_TEST_TENANT" \
     USER_ID="$VERIFY_RUNTIME_TEST_USER" \
+    P05_USER_ID="$VERIFY_RUNTIME_TEST_USER" \
+    P11_USER_ID="$VERIFY_RUNTIME_TEST_USER" \
+    SYSGRID_P04_API_ORIGIN="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    SYSGRID_P05_API_ORIGIN="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    SYSGRID_P06_API_ORIGIN="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    SYSGRID_P07_API_ORIGIN="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    SYSGRID_P08_API_ORIGIN="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    SYSGRID_P09_API_ORIGIN="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    SYSGRID_P11_API_ORIGIN="$VERIFY_RUNTIME_BACKEND_ORIGIN" \
+    SYSGRID_P06_USER_ID="$VERIFY_RUNTIME_TEST_USER" \
+    SYSGRID_P07_USER_ID="$VERIFY_RUNTIME_TEST_USER" \
+    SYSGRID_P08_USER_ID="$VERIFY_RUNTIME_TEST_USER" \
+    SYSGRID_P09_USER_ID="$VERIFY_RUNTIME_TEST_USER" \
     PLAYWRIGHT_BASE_URL="$VERIFY_RUNTIME_FRONTEND_ORIGIN" \
     "$@" || command_status=$?
   return "$command_status"

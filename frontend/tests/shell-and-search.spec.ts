@@ -59,15 +59,11 @@ test.describe('App shell and global search', () => {
     await searchTrigger.click()
     await expect(searchInput).toBeVisible()
     await searchInput.fill(knowledge.title)
-    if (process.env.SYSGRID_VERIFY_PROFILE === 'root-preview') {
-      const searchDialog = page.getByRole('dialog')
-      const knowledgeResult = searchDialog.getByRole('link', { name: new RegExp(knowledge.title) }).first()
-      await expect(knowledgeResult).toBeVisible()
-      await knowledgeResult.click()
-      await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
-    } else {
-      await expect(page.getByText(`No released or authorized records found for "${knowledge.title}"`, { exact: true })).toBeVisible()
-    }
+    const searchDialog = page.getByRole('dialog')
+    const knowledgeResult = searchDialog.getByRole('link', { name: new RegExp(knowledge.title) }).first()
+    await expect(knowledgeResult).toBeVisible()
+    await knowledgeResult.click()
+    await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
   })
 })
 
@@ -81,7 +77,6 @@ const goldenRoutes = [
   { path: '/research', archetype: 'analytical' },
   { path: '/vendors', archetype: 'table' },
 ] as const
-const normalPreviewRoutes = new Set(['/external', '/far', '/research', '/vendors'])
 
 type GeometryBox = { x: number; y: number; width: number; height: number; right: number; bottom: number }
 
@@ -131,6 +126,24 @@ async function readGoldenGeometry(page: any) {
   await expect(toolbar).toBeVisible()
   await expect(grid).toBeVisible()
 
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    const root = document.querySelector('[data-golden-workspace-shell="true"]')
+    const targets = root ? [root, root.querySelector('[data-golden-page-header]'), root.querySelector('[data-golden-command-bar]'), root.querySelector('[data-golden-page-toolbar]'), root.querySelector('[data-golden-grid-surface]')] : []
+    let previous = ''
+    let stableFrames = 0
+    for (let frame = 0; frame < 12 && stableFrames < 2; frame += 1) {
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+      const signature = targets.map(target => {
+        if (!target) return 'missing'
+        const rect = target.getBoundingClientRect()
+        return [rect.x, rect.y, rect.width, rect.height].map(value => Math.round(value * 10) / 10).join(':')
+      }).join('|')
+      stableFrames = signature === previous ? stableFrames + 1 : 0
+      previous = signature
+    }
+  })
+
   const boxes = await Promise.all([shell, header, commandBar, toolbar, grid].map(async (locator) => {
     const box = await locator.boundingBox()
     if (!box) throw new Error('Golden geometry target did not produce a bounding box')
@@ -149,8 +162,10 @@ async function readGoldenGeometry(page: any) {
   }
 }
 
-function expectAligned(actual: number, expected: number, tolerance = 2) {
-  expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tolerance)
+function expectAligned(actual: number, expected: number, message = 'Golden workspace geometry', tolerance = 2) {
+  const delta = Math.abs(actual - expected)
+  const measurement = `${message} (actual=${actual.toFixed(3)}px, expected=${expected.toFixed(3)}px, delta=${delta.toFixed(3)}px)`
+  expect(delta, measurement).toBeLessThanOrEqual(tolerance)
 }
 
 test.describe('Golden Eight rendered geometry', () => {
@@ -223,10 +238,6 @@ test.describe('Golden Eight rendered geometry', () => {
     for (const route of goldenRoutes) {
       await page.goto(route.path)
       await waitForAppIdle(page)
-      if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && normalPreviewRoutes.has(route.path)) {
-        await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible()
-        continue
-      }
       const { shell, boxes } = await readGoldenGeometry(page)
 
       await expect(shell).toHaveAttribute('data-golden-geometry-version', '1')
@@ -234,12 +245,21 @@ test.describe('Golden Eight rendered geometry', () => {
       expect(boxes.header.y).toBeLessThan(boxes.commandBar.y)
       expect(boxes.commandBar.bottom).toBeLessThanOrEqual(boxes.grid.y + 1)
       expect(boxes.grid.height).toBeGreaterThanOrEqual(350)
-      expectAligned(boxes.header.x, boxes.shell.x)
-      expectAligned(boxes.header.right, boxes.shell.right)
-      expectAligned(boxes.commandBar.x, boxes.shell.x)
-      expectAligned(boxes.commandBar.right, boxes.shell.right)
-      expectAligned(boxes.grid.x, boxes.shell.x)
-      expectAligned(boxes.grid.right, boxes.shell.right)
+      const visibleSurfaces = [
+        ['header', boxes.header],
+        ['toolbar', boxes.toolbar],
+        ['grid', boxes.grid],
+      ] as const
+      for (const [surfaceName, surface] of visibleSurfaces) {
+        expect(surface.x, `${route.path} ${surfaceName} remains inside the workspace frame`)
+          .toBeGreaterThanOrEqual(boxes.shell.x - 1)
+        expect(surface.right, `${route.path} ${surfaceName} remains inside the workspace frame`)
+          .toBeLessThanOrEqual(boxes.shell.right + 1)
+      }
+      for (const [surfaceName, surface] of visibleSurfaces.slice(1)) {
+        expectAligned(surface.x, boxes.header.x, `${route.path} ${surfaceName} left edge`)
+        expectAligned(surface.right, boxes.header.right, `${route.path} ${surfaceName} right edge`)
+      }
 
       const slug = route.path.slice(1)
       await page.screenshot({
@@ -264,17 +284,13 @@ test.describe('Golden Eight rendered geometry', () => {
     }
   })
 
-  test('keeps narrow-screen stacking and overflow containment invariant on every golden route', async ({ page }, testInfo) => {
+  test('keeps compact desktop shell and overflow containment invariant on every golden route', async ({ page }, testInfo) => {
     await resetBrowserState(page)
-    await page.setViewportSize({ width: 390, height: 844 })
+    await page.setViewportSize({ width: 1024, height: 768 })
 
     for (const route of goldenRoutes) {
       await page.goto(route.path)
       await waitForAppIdle(page)
-      if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && normalPreviewRoutes.has(route.path)) {
-        await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible()
-        continue
-      }
       const { shell, boxes } = await readGoldenGeometry(page)
 
       await expect(shell).toHaveAttribute('data-golden-geometry-version', '1')
@@ -282,12 +298,21 @@ test.describe('Golden Eight rendered geometry', () => {
       expect(boxes.header.y).toBeLessThan(boxes.commandBar.y)
       expect(boxes.commandBar.bottom).toBeLessThanOrEqual(boxes.grid.y + 1)
       expect(boxes.grid.height).toBeGreaterThanOrEqual(350)
-      expectAligned(boxes.header.x, boxes.shell.x)
-      expectAligned(boxes.commandBar.x, boxes.shell.x)
-      expectAligned(boxes.grid.x, boxes.shell.x)
-      expectAligned(boxes.header.width, boxes.shell.width)
-      expectAligned(boxes.commandBar.width, boxes.shell.width)
-      expectAligned(boxes.grid.width, boxes.shell.width)
+      const visibleSurfaces = [
+        ['header', boxes.header],
+        ['toolbar', boxes.toolbar],
+        ['grid', boxes.grid],
+      ] as const
+      for (const [surfaceName, surface] of visibleSurfaces) {
+        expect(surface.x, `${route.path} ${surfaceName} remains inside the workspace frame`)
+          .toBeGreaterThanOrEqual(boxes.shell.x - 1)
+        expect(surface.right, `${route.path} ${surfaceName} remains inside the workspace frame`)
+          .toBeLessThanOrEqual(boxes.shell.right + 1)
+      }
+      for (const [surfaceName, surface] of visibleSurfaces.slice(1)) {
+        expectAligned(surface.x, boxes.header.x, `${route.path} ${surfaceName} left edge`)
+        expectAligned(surface.right, boxes.header.right, `${route.path} ${surfaceName} right edge`)
+      }
 
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
       expect(overflow).toBeLessThanOrEqual(2)

@@ -41,7 +41,7 @@ Status order: **S C F A D O R I V J P L U H**.
 | J | Scheduler, backup and delivered-failure-alert observations |
 | P | Included live providers, or explicitly registry-only scope |
 | L | Representative target capacity and sustained-session measurements |
-| U | Eight desktop workspaces, themes, keyboard, zoom and assistive technology |
+| U | Fifteen desktop workspaces, themes, keyboard, zoom and assistive technology |
 | H | Authentic engineer pilot and recorded participant count |
 
 **P** means an automated check passed; **F** failed; **U** remains unverified;

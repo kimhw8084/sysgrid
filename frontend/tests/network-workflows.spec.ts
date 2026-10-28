@@ -32,6 +32,70 @@ async function dragHeaderResize(page: any, colId: string, deltaX: number) {
 }
 
 test.describe('Network workflows', () => {
+  test('offers configured link purposes in the bulk Set Type control', async ({ page, sysApi: request }) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const customType = `PW-LINK-PURPOSE-${stamp}`
+    await ensureSettingOption(request, 'LinkPurpose', customType)
+    const source = await createAsset(request, {
+      name: `PW-LINK-SRC-${stamp}`, system: `PW-LINK-SYS-${stamp}`, status: 'Active', type: 'Physical',
+      serial_number: `PW-LINK-SRC-SN-${stamp}`, asset_tag: `PW-LINK-SRC-AT-${stamp}`,
+    })
+    const peer = await createAsset(request, {
+      name: `PW-LINK-PEER-${stamp}`, system: `PW-LINK-SYS-${stamp}`, status: 'Active', type: 'Physical',
+      serial_number: `PW-LINK-PEER-SN-${stamp}`, asset_tag: `PW-LINK-PEER-AT-${stamp}`,
+    })
+    const connection = await createConnection(request, {
+      device_a_id: source.id, source_port: 'eth0', device_b_id: peer.id, target_port: 'eth1',
+      link_type: 'Data', speed_gbps: 10, unit: 'Gbps', status: 'Active',
+    })
+
+    await page.goto('/network')
+    await expect(page.getByRole('heading', { name: 'Network', exact: true })).toBeVisible()
+    await expect(page.getByText('Scanning network matrix...')).not.toBeVisible({ timeout: 15000 })
+    await page.getByPlaceholder('Scan matrix...').fill(stamp)
+    const row = page.locator('.ag-center-cols-container .ag-row').first()
+    await expect(row).toBeVisible()
+    const pinnedRow = page.locator('.ag-pinned-left-cols-container .ag-row').first()
+    await pinnedRow.locator('.ag-selection-checkbox').first().click()
+    await expect(pinnedRow).toHaveClass(/ag-row-selected/)
+
+    await clickResilientButton(page, /Bulk Actions/i)
+    const bulkMenu = page.locator('.bulk-menu-container')
+    await expect(bulkMenu).toBeVisible()
+    await bulkMenu.getByRole('button', { name: 'Set Type', exact: true }).click()
+    await bulkMenu.getByRole('button', { name: 'Choose type', exact: true }).click()
+    const configuredOption = page.getByRole('button', { name: customType, exact: true })
+    await expect(configuredOption).toBeVisible()
+    await configuredOption.click()
+    await expect(bulkMenu.getByRole('button', { name: customType, exact: true })).toBeVisible()
+
+    await page.goto(`/network?id=${connection.id}`)
+    await expect(page.getByRole('heading', { name: 'Connection Forensics' })).toBeVisible()
+    await page.getByRole('button', { name: 'History', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Change History' })).toBeVisible()
+  })
+
+  test('shows source and peer endpoints together in the initial desktop grid viewport', async ({ page }) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/network')
+    await expect(page.locator('.ag-header-cell[col-id="peer_port"]')).toBeAttached()
+
+    const endpointVisibility = await page.evaluate(() => {
+      const grid = document.querySelector('.ag-root-wrapper')?.getBoundingClientRect()
+      const actions = document.querySelector('.ag-header-cell[col-id="row_actions"]')?.getBoundingClientRect()
+      if (!grid || !actions) return null
+      return ['src_node', 'src_port', 'peer_node', 'peer_port'].map((colId) => {
+        const box = document.querySelector(`.ag-header-cell[col-id="${colId}"]`)?.getBoundingClientRect()
+        return Boolean(box && box.width > 0 && box.left >= grid.left && box.right <= actions.left + 1)
+      })
+    })
+
+    expect(endpointVisibility).toEqual([true, true, true, true])
+  })
+
   test('opens exact source and peer assets from a connection and preserves network history', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
     const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -653,6 +717,21 @@ test.describe('Network workflows', () => {
       expect(headerNames).toContain(headerName)
     }
 
+    // Verify relative positions while the endpoint headers are in the default viewport.
+    const colLabels = [
+      { id: 'src_node', label: 'Source Node' },
+      { id: 'src_port', label: 'Source Port' },
+      { id: 'peer_node', label: 'Peer Node' },
+      { id: 'peer_port', label: 'Peer Port' }
+    ]
+    let lastX = -1
+    for (const col of colLabels) {
+      const box = await page.locator(`.ag-header-cell[col-id="${col.id}"]`).first().boundingBox()
+      if (!box) throw new Error(`Header for ${col.id} not found in DOM`)
+      expect(box.x).toBeGreaterThan(lastX)
+      lastX = box.x
+    }
+
     // Scroll Source Node and Source Rack Slot visible to ensure left columns are rendered in the DOM
     await page.evaluate(() => {
       // @ts-ignore
@@ -675,28 +754,13 @@ test.describe('Network workflows', () => {
       return api.getColumns().map((col: any) => col.getColId())
     })
     const domainColIds = [
-      'src_node', 'src_rack_slot', 'src_port', 'src_ip',
-      'peer_node', 'peer_rack_slot', 'peer_port', 'peer_ip',
-      'type', 'farm', 'status', 'speed', 'direction', 'purpose',
+      'src_node', 'src_port', 'peer_node', 'peer_port',
+      'type', 'status', 'speed', 'direction', 'purpose',
+      'src_rack_slot', 'peer_rack_slot', 'src_ip', 'peer_ip', 'farm',
       'created_at', 'updated_at'
     ]
     const filteredOrder = columnOrder.filter(id => domainColIds.includes(id))
     expect(filteredOrder).toEqual(domainColIds)
-
-    // Verify relative positions of the first few visible columns across pinned and center headers in the DOM
-    const colLabels = [
-      { id: 'src_node', label: 'Source Node' },
-      { id: 'src_rack_slot', label: 'Source Rack Slot' },
-      { id: 'src_port', label: 'Source Port' },
-      { id: 'src_ip', label: 'Source IP' }
-    ]
-    let lastX = -1
-    for (const col of colLabels) {
-      const box = await page.locator(`.ag-header-cell[col-id="${col.id}"]`).first().boundingBox()
-      if (!box) throw new Error(`Header for ${col.id} not found in DOM`)
-      expect(box.x).toBeGreaterThan(lastX)
-      lastX = box.x
-    }
 
     // 4. Verify column widths are sane & Status column is compact
     const statusWidth = await getColumnWidth(page, 'status')
@@ -767,6 +831,8 @@ test.describe('Network workflows', () => {
           el.dispatchEvent(new Event('scroll'))
         }
       }
+      const api = (window as any).__DEBUG_NETWORK_GRID_API__
+      if (api) api.ensureColumnVisible('src_ip')
     })
     await page.waitForFunction(() => {
       const el = document.querySelector('.ag-header-cell[col-id="src_ip"]')
@@ -778,64 +844,32 @@ test.describe('Network workflows', () => {
     const initialHeaderBox = await srcNodeHeader.boundingBox()
     if (!initialHeaderBox) throw new Error('No bounding box found for Source Node header')
 
-    const srcIpHeader = page.locator('.ag-header-cell[col-id="src_ip"]').first()
-    const srcIpBoxInit = await srcIpHeader.boundingBox()
-    if (!srcIpBoxInit) throw new Error('No bounding box found for Source IP header')
+    const centerScrollViewport = page.locator('.ag-center-cols-viewport').first()
+    const initialCenterScroll = await centerScrollViewport.evaluate(element => element.scrollLeft)
 
-    // Scroll horizontally natively with scroll event dispatch to prove freezing
+    // Move the center viewport through the grid API to prove pinned columns stay frozen.
     await page.evaluate(() => {
-      const targets = [
-        document.querySelector('.ag-center-cols-viewport'),
-        document.querySelector('.ag-body-horizontal-scroll-viewport'),
-        document.querySelector('.ag-body-viewport')
-      ]
-      for (const el of targets) {
-        if (el) {
-          el.scrollLeft = 150
-          el.dispatchEvent(new Event('scroll'))
-        }
-      }
+      const api = (window as any).__DEBUG_NETWORK_GRID_API__
+      if (api) api.ensureColumnVisible('updated_at')
     })
 
-    // Wait dynamically for scroll to complete by asserting Source IP header shifted left
-    await page.waitForFunction((initialX) => {
-      const cell = document.querySelector('.ag-header-cell[col-id="src_ip"]')
-      if (!cell) return false
-      const rect = cell.getBoundingClientRect()
-      return rect.x < initialX - 30
-    }, srcIpBoxInit.x)
+    // Verify the native center scroll position changed without relying on virtualized center headers.
+    await page.waitForFunction((initialScroll) => {
+      const viewport = document.querySelector('.ag-center-cols-viewport')
+      return Boolean(viewport && viewport.scrollLeft > initialScroll + 30)
+    }, initialCenterScroll)
 
-    // Assert coordinates are completely stable (Source Node remains frozen on screen left while Source IP has shifted)
+    // The pinned Source Node stays fixed while the center viewport scrolls.
     const scrolledHeaderBox = await srcNodeHeader.boundingBox()
     if (!scrolledHeaderBox) throw new Error('No bounding box found for scrolled Source Node header')
     expect(scrolledHeaderBox.x).toEqual(initialHeaderBox.x)
 
-    const scrolledSrcIpBox = await srcIpHeader.boundingBox()
-    if (!scrolledSrcIpBox) throw new Error('No bounding box found for scrolled Source IP header')
-    expect(scrolledSrcIpBox.x).toBeLessThan(srcIpBoxInit.x - 30)
-
-    // Scroll back to center natively
-    await page.evaluate(() => {
-      const targets = [
-        document.querySelector('.ag-center-cols-viewport'),
-        document.querySelector('.ag-body-horizontal-scroll-viewport'),
-        document.querySelector('.ag-body-viewport')
-      ]
-      for (const el of targets) {
-        if (el) {
-          el.scrollLeft = 0
-          el.dispatchEvent(new Event('scroll'))
-        }
-      }
-    })
-
-    // Wait dynamically for scrollback to settle
-    await page.waitForFunction((initialX) => {
-      const cell = document.querySelector('.ag-header-cell[col-id="src_ip"]')
-      if (!cell) return false
-      const rect = cell.getBoundingClientRect()
-      return Math.abs(rect.x - initialX) < 5
-    }, srcIpBoxInit.x)
+    // Restore the center viewport to its initial position for the remaining workflow checks.
+    await centerScrollViewport.evaluate((element, initialScroll) => { element.scrollLeft = initialScroll }, initialCenterScroll)
+    await page.waitForFunction((initialScroll) => {
+      const viewport = document.querySelector('.ag-center-cols-viewport')
+      return Boolean(viewport && Math.abs(viewport.scrollLeft - initialScroll) < 1)
+    }, initialCenterScroll)
 
     // 6. Context Menu Right-click, Structure & Separators Check
     const firstCell = page.locator('.ag-center-cols-container .ag-row').nth(0).locator('.ag-cell').nth(0)

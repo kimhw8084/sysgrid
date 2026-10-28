@@ -64,6 +64,7 @@ async function createVendorCandidateScenario(request: APIRequestContext) {
       name: vendorName,
       country: 'USA',
       primary_personnel_id: personnel.id,
+      edit_revision: vendor.edit_revision,
     },
     headers: defaultHeaders,
   })
@@ -364,4 +365,24 @@ test.describe('VendorsReal canonical runtime', () => {
     const detailDialog = await openVendorByDeepLink(page, '/vendors-real', scenario.vendor.id, scenario.vendorName)
     await expect(detailDialog.getByText(`Partner ID: ${scenario.vendor.id}`, { exact: false })).toBeVisible()
   })
+})
+
+
+test.describe('Vendor desktop column readability', () => {
+  for (const theme of ['Dark', 'Light'] as const) {
+    test(`keeps default column headings readable in ${theme} theme`, async ({ page, request }) => {
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await resetBrowserState(page)
+      await createVendorCandidateScenario(request)
+      await gotoView(page, '/vendors', 'Vendors')
+      await page.getByRole('button', { name: theme, exact: true }).click()
+      const fields = ['name', 'country', 'primary_personnel_name', 'primary_personnel_email', 'active_contract_count', 'contract_count']
+      for (const field of fields) {
+        await page.evaluate((id) => (window as any).__DEBUG_VENDORS_GRID_API__.ensureColumnVisible(id), field)
+        const text = page.locator(`.ag-header-cell[col-id="${field}"] .ag-header-cell-text`).first()
+        await expect(text).toBeVisible()
+        await expect.poll(() => text.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+      }
+    })
+  }
 })

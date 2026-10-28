@@ -1,3 +1,4 @@
+import { useModulePolicy } from '../policy/ModulePolicy'
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
@@ -66,6 +67,7 @@ import { OperationalImportModal } from './shared/OperationalImportModal'
 import { downloadOperationalImportFile } from './shared/OperationalImportExport'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
+import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail } from './shared/OperationalDataStatus'
 import { OPERATIONAL_ACTION_LABELS } from './shared/OperationalActionLabels'
 import { OperationalDisabledActionTooltip } from './shared/OperationalDisabledActionTooltip'
@@ -460,6 +462,9 @@ const ObservabilityHUD = ({ items }: any) => {
 }
 
 export default function ServicesReal() {
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.services?.actions?.write === true
+  const writeReason = policy.isLoading ? 'Checking service permissions' : 'Service edit permission is required'
   const { confirm: confirmWorkspaceAction, confirmation } = useWorkspaceConfirmation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -1166,9 +1171,9 @@ export default function ServicesReal() {
 
   // Removed manual menu position updates as they are now handled by useWorkspaceAnchoredLayer.
 
-  const { data: allItems, isLoading, isError, error } = useQuery({
+  const { data: allItems, isLoading, isFetching, isError, error, refetch: retryServiceRegistry } = useQuery({
     queryKey: ['logical-services'],
-    queryFn: async () => (await apiFetch('/api/v1/logical-services/?include_deleted=true')).json()
+    queryFn: () => fetchOperationalArray('/api/v1/logical-services/?include_deleted=true', 'Service registry'),
   })
 
 
@@ -1301,7 +1306,7 @@ export default function ServicesReal() {
   const servicesDataState = useMemo(
     () => resolveOperationalDataState({
       loading: isLoading,
-      error: isError ? error : null,
+      error: isError && !Array.isArray(allItems) ? error : null,
       totalCount: Array.isArray(allItems) ? allItems.length : 0,
       tabCount: items.length,
       visibleCount: displayedItemsInOrder.length,
@@ -1311,9 +1316,21 @@ export default function ServicesReal() {
       tabEmptyLabel: activeTab === 'deleted' ? 'No archived services found' : 'No active services found',
       errorTitle: 'Services data could not be loaded',
       errorDescription: 'The services registry request failed.',
+      degradedNotice: isError ? {
+        tone: 'warning',
+        title: 'Service registry refresh failed',
+        description: Array.isArray(allItems)
+          ? 'Showing the last loaded services. Retry to confirm the current registry.'
+          : 'The registry could not be confirmed. Retry before adding or importing services.',
+        actionLabel: 'Retry services',
+        onAction: () => { void retryServiceRegistry() },
+        isActionLoading: isFetching,
+      } : undefined,
     }),
-    [activeTab, allItems, displayedItemsInOrder.length, error, isError, isLoading, items.length]
+    [activeTab, allItems, displayedItemsInOrder.length, error, isError, isFetching, isLoading, items.length, retryServiceRegistry]
   )
+
+  const serviceRegistryBlocked = !Array.isArray(allItems)
 
   const activeServicesQueryError = isError ? error : null
 
@@ -1329,7 +1346,7 @@ export default function ServicesReal() {
     }
   }, [activeServicesQueryError])
 
-  const shouldRenderRawGrid = groupBy === 'raw' || servicesDataState.kind !== 'ready'
+  const shouldRenderRawGrid = groupBy === 'raw' || servicesDataState.kind !== 'ready' || isError
 
   const { handleRowClicked, handleRowDoubleClicked } = useOperationalRowInteractions({
     onRowDoubleClick: (item: any) => detailRoute.openDetail(item, { replace: false }),
@@ -1576,7 +1593,9 @@ export default function ServicesReal() {
         kind: 'plain',
         field: 'environment',
         headerName: 'Environment',
-        width: 140,
+        width: 160,
+        minWidth: 160,
+        maxWidth: 180,
         hide: hiddenColumns.includes('environment'),
       },
       {
@@ -1608,7 +1627,8 @@ export default function ServicesReal() {
         kind: 'plain',
         field: 'manufacturer',
         headerName: 'Manufacturer',
-        width: 160,
+        width: 190,
+        minWidth: 190,
         hide: hiddenColumns.includes('manufacturer'),
       },
       {
@@ -1745,7 +1765,7 @@ export default function ServicesReal() {
           <>
             <HeaderScopeSwitch
               label="Service Scope"
-              summary={`${lifecycleCounts.existing} active · ${lifecycleCounts.archived} deleted`}
+              summary={serviceRegistryBlocked ? (isLoading ? 'Loading registry…' : 'Registry unavailable') : `${lifecycleCounts.existing} active · ${lifecycleCounts.archived} deleted`}
               value={activeTab}
               onChange={(next) => {
                 setActiveTab(next as 'active' | 'deleted')
@@ -1778,6 +1798,7 @@ export default function ServicesReal() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search services, hosts, or metadata..."
+          ariaLabel="Search services"
         />
       )}
       toolbarControls={(
@@ -1810,7 +1831,7 @@ export default function ServicesReal() {
             </ToolbarIconButton>
           </ToolbarGroup>
           <ToolbarGroup>
-            <ToolbarButton onClick={() => setShowImportModal(true)} title="Import service rows">
+            <ToolbarButton onClick={() => setShowImportModal(true)} disabled={serviceRegistryBlocked || !canWrite} ariaLabel="Import service rows" title={!canWrite ? writeReason : serviceRegistryBlocked ? 'Retry the service registry before importing rows' : 'Import service rows'}>
               <span className="flex items-center gap-2">
                 <Upload size={14} />
                 Import
@@ -1892,7 +1913,7 @@ export default function ServicesReal() {
           )}
           <ToolbarButton
             onClick={() => togglePanel('bulk')}
-            disabled={selectedIds.length === 0}
+            disabled={serviceRegistryBlocked || !canWrite || selectedIds.length === 0}
             active={showBulkMenu}
             title="Bulk actions"
             className="bulk-menu-trigger"
@@ -1905,6 +1926,9 @@ export default function ServicesReal() {
           </ToolbarButton>
           <ToolbarButton
             onClick={() => { setEditingItem(null); setIsFormOpen(true); }}
+            disabled={serviceRegistryBlocked || !canWrite}
+            ariaLabel="+ Add Service"
+            title={!canWrite ? writeReason : serviceRegistryBlocked ? 'Retry the service registry before adding a service' : undefined}
             variant="primary"
             className="px-6 py-2"
           >
@@ -2674,6 +2698,7 @@ function BulkEditTableModal({ items, serviceTypeOptions, environmentOptions, pur
       showWorkspaceToast(count ? `Updated ${count} service${count === 1 ? '' : 's'}` : 'No Service changes to save')
       onSuccess()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message || 'Bulk edit failed', { type: 'error' }),
   })
 

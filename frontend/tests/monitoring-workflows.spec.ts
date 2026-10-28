@@ -105,9 +105,7 @@ test.describe('Monitoring workflows', () => {
     await resetBrowserState(page)
     const { stamp, primary, monitoring, knowledge } = await seedOperationalScenario(request)
 
-    const extraKnowledge = process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1'
-      ? null
-      : await createEmbeddedKnowledgeFixture(request, primary.id, `PW-RECOVERY-EXTRA-${stamp}`)
+    const extraKnowledge = await createEmbeddedKnowledgeFixture(request, primary.id, `PW-RECOVERY-EXTRA-${stamp}`)
 
     await page.goto(`/monitoring?id=${monitoring.id}`)
     await expectWorkspaceRoute(page, '/monitoring')
@@ -118,18 +116,16 @@ test.describe('Monitoring workflows', () => {
     await expect(recoveryDialog).toBeVisible()
     await expect(recoveryDialog.getByText(knowledge.title, { exact: true })).toBeVisible()
 
-    if (extraKnowledge) {
-      await clickResilientButton(page, 'Link Procedure')
-      await recoveryDialog.getByPlaceholder('Search Knowledge Base by title or category...').fill(extraKnowledge.title)
-      const extraKnowledgeButton = recoveryDialog.getByRole('button', { name: new RegExp(extraKnowledge.title, 'i') }).first()
-      await expect(extraKnowledgeButton).toBeVisible()
-      await extraKnowledgeButton.click()
-      await expect(page.getByText(extraKnowledge.title)).toBeVisible()
-      await recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true }).click()
-      await expectToast(page, 'Synchronized recovery procedures')
-      await expect(recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true })).toBeDisabled()
-      await clickResilientButton(page, /Close Search/i)
-    }
+    await clickResilientButton(page, 'Link Procedure')
+    await recoveryDialog.getByPlaceholder('Search Knowledge Base by title or category...').fill(extraKnowledge.title)
+    const extraKnowledgeButton = recoveryDialog.getByRole('button', { name: new RegExp(extraKnowledge.title, 'i') }).first()
+    await expect(extraKnowledgeButton).toBeVisible()
+    await extraKnowledgeButton.click()
+    await expect(page.getByText(extraKnowledge.title)).toBeVisible()
+    await recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true }).click()
+    await expectToast(page, 'Synchronized recovery procedures')
+    await expect(recoveryDialog.getByRole('button', { name: 'Synchronize Procedures', exact: true })).toBeDisabled()
+    await clickResilientButton(page, /Close Search/i)
     await page.getByRole('button').filter({ hasText: /^PW-RUNBOOK-/ }).click()
     await expect(page.getByText('Recovery procedure').first()).toBeVisible()
     const bkmDetailDialog = page.locator('[role="dialog"]').filter({ has: page.getByRole('heading', { name: knowledge.title, exact: true }) }).last()
@@ -137,11 +133,13 @@ test.describe('Monitoring workflows', () => {
     await expect(bkmDetailDialog).not.toBeVisible()
     await expect(recoveryDialog).toBeVisible()
     const standaloneRecoveryButton = recoveryDialog.getByTitle('Open Recovery BKM').first()
-    await expect(standaloneRecoveryButton).toBeDisabled()
-    await expect(standaloneRecoveryButton).toHaveAttribute('aria-disabled', 'true')
+    await expect(standaloneRecoveryButton).toBeEnabled()
     await expect(page).toHaveURL(/\/monitoring(?:\?.*)?$/)
     await expect(page.getByText(knowledge.title, { exact: true }).first()).toBeVisible()
     await expect(page.getByText('Recovery procedure').first()).toBeVisible()
+    await standaloneRecoveryButton.click()
+    await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
+    await expect(page.getByText(knowledge.title, { exact: true }).first()).toBeVisible()
   })
 
   test('supports bulk undo, compare, and persisted display state', async ({ page, request }) => {
@@ -709,5 +707,23 @@ test.describe('Monitoring permanent-purge authority', () => {
         expect(failedReads).toEqual([])
       })
     }
+  }
+})
+
+
+test.describe('Desktop operational heading readability', () => {
+  for (const theme of ['Dark', 'Light'] as const) {
+    test(`keeps monitoring severity heading readable in ${theme} theme`, async ({ page, request }) => {
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await resetBrowserState(page)
+      await seedOperationalScenario(request)
+      await page.goto('/monitoring')
+      await expect(page.getByRole('heading', { name: 'Monitoring', exact: true })).toBeVisible()
+      await page.getByRole('button', { name: theme, exact: true }).click()
+      await page.evaluate(() => (window as any).__DEBUG_MONITORING_GRID_API__.ensureColumnVisible('severity'))
+      const text = page.locator('.ag-header-cell[col-id="severity"] .ag-header-cell-text').first()
+      await expect(text).toBeVisible()
+      await expect.poll(() => text.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+    })
   }
 })

@@ -6,12 +6,6 @@ import sys
 from pathlib import Path
 
 
-LEGACY_SKIPS = {
-    'keeps knowledge, research, and projects CRUD durable through read-update-delete cycles',
-    'keeps network, external, and FAR CRUD flows stable with realistic payloads',
-}
-
-
 def require(condition, message):
     if not condition:
         raise ValueError(message)
@@ -72,7 +66,7 @@ def verify(root, env):
             result = test['results'][0]
             require(result['retry'] == 0 and result['errors'] == [], 'Retried or failed browser result')
             if result['status'] == 'skipped':
-                require(title in LEGACY_SKIPS and test['expectedStatus'] == 'skipped', 'Unexpected browser skip')
+                require(False, 'Unexpected browser skip')
                 skipped[key] = title
             else:
                 require(result['status'] == test['expectedStatus'] == 'passed' and test['status'] == 'expected',
@@ -83,7 +77,7 @@ def verify(root, env):
             raw = (folder / name).read_bytes()
             inventory.append({'path': folder.name + '/' + name, 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()})
     require(covered.keys() == selection.keys(), 'Browser shards omitted selected tests')
-    require(len(skipped) == 2 and set(skipped.values()) == LEGACY_SKIPS, 'Historical skip inventory changed')
+    require(not skipped, 'Browser shards unexpectedly skipped selected tests')
     return {
         **identities[0], 'schema_version': 'sysgrid.application-ci.browser-union.v1',
         'qualification_shard': None, 'shards': ['1/3', '2/3', '3/3'],
@@ -100,4 +94,4 @@ if __name__ == '__main__':
     output = Path(sys.argv[2])
     output.mkdir(parents=True, exist_ok=True)
     (output / 'ci-identity.json').write_text(json.dumps(proof, indent=2, sort_keys=True) + '\n')
-    print(f"Verified complete browser union: {proof['passed']} passed, {len(proof['skipped_titles'])} historical skips; no overlap, omissions or retries.")
+    print(f"Verified complete browser union: {proof['passed']} passed; no skips, overlap, omissions or retries.")

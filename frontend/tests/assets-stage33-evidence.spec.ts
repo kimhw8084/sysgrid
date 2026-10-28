@@ -119,9 +119,6 @@ type RouteEvidence = {
   warningRequestClassificationTable: ClassificationEntry[]
 }
 
-const CAPTURE_DIR = path.resolve(process.cwd(), 'stage33-evidence')
-const HTML_EVIDENCE_PATH = path.resolve(process.cwd(), 'OUT-26_ITERATION_35_STAGE33_EVIDENCE.html')
-const JSON_EVIDENCE_PATH = path.join(CAPTURE_DIR, 'stage33-evidence.json')
 const DESKTOP_FULL = { width: 1440, height: 1200 }
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 const EXACT_VIEWPORT = { width: 960, height: 720 }
@@ -722,9 +719,11 @@ const buildNotApplicableProof = (reason: string): InteractionProof => ({
 })
 
 test.describe('Assets Stage 33 evidence capture', () => {
-  test('captures stage33 lock-proof evidence', async ({ page, sysApi: request }) => {
+  test('captures stage33 lock-proof evidence', async ({ page, sysApi: request }, testInfo) => {
+    const CAPTURE_DIR = testInfo.outputPath('stage33-evidence')
+    const HTML_EVIDENCE_PATH = testInfo.outputPath('OUT-26_ITERATION_35_STAGE33_EVIDENCE.html')
+    const JSON_EVIDENCE_PATH = path.join(CAPTURE_DIR, 'stage33-evidence.json')
     test.setTimeout(240_000)
-    await fs.rm(CAPTURE_DIR, { recursive: true, force: true })
     await fs.mkdir(CAPTURE_DIR, { recursive: true })
 
     await resetBrowserState(page)

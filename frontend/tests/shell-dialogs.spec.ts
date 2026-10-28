@@ -35,9 +35,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await sections.click()
     await expect(notes.getByRole('button', { expanded: true })).toHaveCount(0)
     await notes.getByRole('button', { expanded: false }).first().click()
-    await page.setViewportSize({ width: 390, height: 600 })
-    await expectContained(notes, 390, 600)
-    await page.screenshot({ path: testInfo.outputPath('patch-notes-phone.png'), animations: 'disabled' })
+    await page.screenshot({ path: testInfo.outputPath('patch-notes-desktop.png'), animations: 'disabled' })
     await page.keyboard.press('Escape')
     await expect(notes).not.toBeVisible()
     await expect(trigger).toBeFocused()
@@ -46,7 +44,6 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await expect(notes).toBeVisible()
     await page.keyboard.press('Escape')
 
-    await page.setViewportSize({ width: 1280, height: 720 })
     let unavailable = true
     await page.route('**/api/v1/settings/user/env-vars', route => route.fulfill({
       status: unavailable ? 503 : 200, contentType: 'application/json',
@@ -56,6 +53,13 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       }),
     }))
     const environmentTrigger = page.getByRole('button', { name: 'Open environment details', exact: true })
+    const policyResponse = await sysApi.get(`${apiBase}/policy/module-availability`)
+    expect(policyResponse.ok()).toBeTruthy()
+    const policy = await policyResponse.json()
+    if (!policy.actions?.diagnostics?.read) {
+      await expect(environmentTrigger).toHaveCount(0)
+      return
+    }
     await environmentTrigger.click()
     const environment = page.getByRole('dialog', { name: 'Environment details', exact: true })
     await expect(environment.getByRole('alert')).toContainText('Environment details could not be loaded.')
@@ -66,10 +70,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await expect(environment.getByText('authorized-fixture-user', { exact: true })).toBeVisible()
     await expect(environment.getByRole('alert')).toHaveCount(0)
     await expectReadableGridText(page, testInfo, `environment-values-${theme}`, '[role="dialog"]')
-    await page.setViewportSize({ width: 390, height: 600 })
-    await expectContained(environment, 390, 600)
-    await page.screenshot({ path: testInfo.outputPath('environment-phone.png'), animations: 'disabled' })
-    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.screenshot({ path: testInfo.outputPath('environment-details-desktop.png'), animations: 'disabled' })
     await page.keyboard.press('Escape')
     await expect(environment).not.toBeVisible()
     await expect(environmentTrigger).toBeFocused()

@@ -17,7 +17,7 @@ describe('FAR golden column geometry', () => {
       { colId: 'severity', headerName: 'S', defaultWidth: 72, minWidth: 68, dynamicDefault: false },
       { colId: 'occurrence', headerName: 'O', defaultWidth: 72, minWidth: 68, dynamicDefault: false },
       { colId: 'detection', headerName: 'D', defaultWidth: 72, minWidth: 68, dynamicDefault: false },
-      { colId: 'rpn', headerName: 'RPN', defaultWidth: 84, minWidth: 80, dynamicDefault: false },
+      { colId: 'rpn', headerName: 'RPN', defaultWidth: 130, minWidth: 130, dynamicDefault: false },
       { colId: 'status', headerName: 'Maturity', defaultWidth: 164, minWidth: 152, dynamicDefault: false },
       { colId: 'vectors', headerName: 'Vectors', defaultWidth: 160, minWidth: 140, dynamicDefault: false },
       { colId: 'linked_rcas', headerName: 'Incidents', defaultWidth: 120, minWidth: 112, dynamicDefault: false },
@@ -65,11 +65,11 @@ describe('FAR golden column geometry', () => {
   it('builds a canonical geometry reset without encoding filters, search, lifecycle, or saved-view identity', () => {
     expect(buildFarGoldenGeometryResetState([
       { field: 'title', width: 312, pinned: null },
-      { field: 'rpn', width: 84 },
+      { field: 'rpn', width: 130 },
       { colId: 'row_actions', width: 112, pinned: 'right' },
     ])).toEqual([
       { colId: 'title', hide: false, pinned: null, width: 312 },
-      { colId: 'rpn', hide: false, pinned: null, width: 84 },
+      { colId: 'rpn', hide: false, pinned: null, width: 130 },
       { colId: 'row_actions' },
     ])
 

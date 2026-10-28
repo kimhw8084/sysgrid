@@ -16,21 +16,19 @@ SPEC.loader.exec_module(SHARDS)
 def evidence(tmp_path):
     env = {'QUALIFICATION_RESULT': 'success', 'CANDIDATE_SHA': 'a' * 40, 'GITHUB_SHA': 'b' * 40,
            'GITHUB_RUN_ID': '123', 'GITHUB_EVENT_NAME': 'pull_request', 'GITHUB_REF': 'refs/pull/54/merge'}
-    titles = ['first', 'second', 'third', *sorted(SHARDS.LEGACY_SKIPS)]
+    titles = ['first', 'second', 'third']
 
     def report(indices, shard=None, executed=False):
         specs = []
         for index in indices:
-            skip = titles[index] in SHARDS.LEGACY_SKIPS
-            test = {'projectId': '', 'expectedStatus': 'skipped' if skip else 'passed',
-                    'status': 'skipped' if skip else 'expected', 'results': []}
+            test = {'projectId': '', 'expectedStatus': 'passed', 'status': 'expected', 'results': []}
             if executed:
-                test['results'] = [{'retry': 0, 'errors': [], 'status': 'skipped' if skip else 'passed'}]
+                test['results'] = [{'retry': 0, 'errors': [], 'status': 'passed'}]
             specs.append({'id': str(index), 'title': titles[index], 'tests': [test]})
         return {'errors': [], 'suites': [{'specs': specs}],
                 'config': {'workers': 1, 'projects': [{'retries': 0}], 'shard': {'current': shard, 'total': 3}}}
 
-    for index, indices in enumerate([[0, 3], [1, 4], [2]], 1):
+    for index, indices in enumerate([[0], [1], [2]], 1):
         folder = tmp_path / f"application-ci-normal-v1-{index}-evidence-{env['CANDIDATE_SHA']}"
         (folder / 'frontend-test-results').mkdir(parents=True)
         identity = {'candidate_sha': env['CANDIDATE_SHA'], 'github_sha': env['GITHUB_SHA'],
@@ -39,7 +37,7 @@ def evidence(tmp_path):
                     'qualification_shard': f'{index}/3', 'candidate_base_sha': 'c' * 40, 'pr_base_sha': 'c' * 40,
                     'head_ref': 'candidate', 'repository': 'test/sysgrid', 'workflow_name': 'Application CI'}
         for name, value in [('ci-identity.json', identity),
-                            ('frontend-test-results/normal-v1-selection.json', report(range(5))),
+                            ('frontend-test-results/normal-v1-selection.json', report(range(3))),
                             ('frontend-test-results/normal-v1-results.json', report(indices, index, True))]:
             (folder / name).write_text(json.dumps(value))
 
@@ -55,8 +53,8 @@ def evidence(tmp_path):
 def test_accepts_only_complete_first_attempt_union_and_retains_report_hashes(evidence):
     root, env, _ = evidence
     proof = SHARDS.verify(root, env)
-    assert proof['full_selection_count'] == 5 and proof['passed'] == 3
-    assert set(proof['skipped_titles']) == SHARDS.LEGACY_SKIPS
+    assert proof['full_selection_count'] == 3 and proof['passed'] == 3
+    assert proof['skipped_titles'] == []
     assert len(proof['original_reports']) == 9
     assert proof['unexpected'] == proof['flaky'] == 0
     assert proof['candidate_sha'] == env['CANDIDATE_SHA'] and proof['qualification_shard'] is None
@@ -122,18 +120,14 @@ def test_rejects_cross_shard_overlap(evidence):
         SHARDS.verify(root, env)
 
 
-def test_rejects_extra_skip_even_when_its_title_matches_a_historical_skip(evidence):
+def test_rejects_any_skipped_browser_case(evidence):
     root, env, mutate = evidence
-    folder = root / f"application-ci-normal-v1-1-evidence-{env['CANDIDATE_SHA']}"
-    skipped = json.loads((folder / 'frontend-test-results/normal-v1-results.json').read_bytes())['suites'][0]['specs'][1]
-    def duplicate(item):
-        extra = copy.deepcopy(skipped)
-        extra['id'] = 'extra-skip'
-        item['suites'][0]['specs'].append(extra)
-    for index in range(1, 4):
-        mutate('frontend-test-results/normal-v1-selection.json', duplicate, index=index)
-    mutate('frontend-test-results/normal-v1-results.json', duplicate)
-    with pytest.raises(ValueError, match='skip inventory'):
+    def mark_skipped(item):
+        test = item['suites'][0]['specs'][0]['tests'][0]
+        test.update(expectedStatus='skipped', status='skipped',
+                    results=[{'retry': 0, 'errors': [], 'status': 'skipped'}])
+    mutate('frontend-test-results/normal-v1-results.json', mark_skipped)
+    with pytest.raises(ValueError, match='Unexpected browser skip'):
         SHARDS.verify(root, env)
 
 

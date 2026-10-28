@@ -13,11 +13,14 @@ const archived = { ...active, id: 2, name: 'Archived host', is_deleted: true }
 const views: Array<() => void> = []
 afterEach(() => { views.splice(0).forEach(close => close()); localStorage.clear(); vi.clearAllMocks() })
 
-function workspace(primary: boolean | Promise<any[]> = false, cachedLive?: any[], configured: any[] = []) {
+function workspace(primary: boolean | Promise<any[]> = false, cachedLive?: any[], configured: any[] = [], malformedGraph = false) {
   vi.mocked(apiFetch).mockImplementation(async path => {
     if (String(path).includes('include_deleted=true')) {
       if (primary === true) throw new Error('Primary query unavailable')
       return { ok: true, json: async () => primary instanceof Promise ? primary : [active, archived] } as Response
+    }
+    if (malformedGraph && ['/api/v1/devices/relationships/all', '/api/v1/networks/connections'].includes(String(path))) {
+      return { ok: true, json: async () => ({ detail: 'unexpected response shape' }) } as Response
     }
     return { ok: true, json: async () => String(path) === '/api/v1/devices/' ? [active] : String(path) === '/api/v1/settings/options' ? configured : [] } as Response
   })
@@ -46,6 +49,23 @@ it('keeps recorded logical systems available when configured systems also exist'
 it('retains the existing live-query fallback when the primary query fails', async () => {
   const { result } = workspace(true)
   await waitFor(() => expect(result.current.devices.map((row: any) => row.id)).toEqual([1]))
+  expect(result.current.assetRegistryBlocked).toBe(true)
+  expect(result.current.dataState.notice?.actionLabel).toBe('Retry full registry')
+  expect(result.current.dataState.notice?.onAction).toEqual(expect.any(Function))
+})
+
+it('uses the live fallback when the primary registry returns a malformed list payload', async () => {
+  const malformedPrimary = Promise.resolve({ detail: 'unexpected response shape' }) as unknown as Promise<any[]>
+  const { result } = workspace(malformedPrimary)
+  await waitFor(() => expect(result.current.dataState.notice?.title).toBe('Showing live fallback rows only'))
+  expect(result.current.allAssets.map((row: any) => row.id)).toEqual([1])
+})
+
+it('surfaces malformed relationship and connection payloads instead of treating them as empty graph data', async () => {
+  const { result } = workspace(false, undefined, [], true)
+  await waitFor(() => expect(result.current.relatedDataState.failedLabels).toEqual(['asset relationships', 'network connections']))
+  expect(result.current.relationships).toEqual([])
+  expect(result.current.connections).toEqual([])
 })
 
 it('does not report cached live devices as a failure while the primary request is pending', async () => {

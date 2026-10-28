@@ -80,6 +80,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
       setNewDescription("")
       showWorkspaceToast(`Added ${newValue}`, { type: 'success' })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message, { type: 'error' }),
   })
 
@@ -115,6 +116,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
       setEditDescription("")
       showWorkspaceToast(isTeamCategory ? "Team updated" : "Option updated", { type: 'success' })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message, { type: 'error' }),
   })
 
@@ -134,6 +136,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
       invalidateRegistry()
       // showWorkspaceToast(isTeamCategory ? "Team removed" : "Option removed", { type: 'success' })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message, { type: 'error' }),
   })
 

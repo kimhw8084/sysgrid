@@ -217,6 +217,28 @@ class ServiceBulkReceipt(Base):
     reverted_at = Column(DateTime, nullable=True)
 
 
+class ModuleBulkReceipt(Base):
+    """Durable idempotency key for External and Vendor bulk writes."""
+    __tablename__ = "module_bulk_receipts"
+    __table_args__ = (
+        UniqueConstraint("module", "tenant_id", "actor_id", "operation_id", name="uq_module_bulk_receipts_operation"),
+        Index("ix_module_bulk_receipts_module_tenant_created", "module", "tenant_id", "created_at"),
+    )
+    id = Column(String(32), primary_key=True, default=lambda: uuid4().hex)
+    module = Column(String(24), nullable=False)
+    target = Column(String(32), nullable=False)
+    tenant_id = Column(Integer, nullable=False)
+    actor_id = Column(String(200), nullable=False)
+    operation_id = Column(String(32), nullable=False)
+    request_hash = Column(String(64), nullable=False)
+    result = Column(JSON, nullable=False)
+    before_state = Column(JSON, nullable=False, default=dict)
+    post_state = Column(JSON, nullable=False, default=dict)
+    undo_result = Column(JSON, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    reverted_at = Column(DateTime, nullable=True)
+
+
 class ServiceSecret(Base, BaseMixin):
     __tablename__ = "service_secrets"
     service_id = Column(Integer, ForeignKey("logical_services.id", ondelete="CASCADE"))
@@ -643,6 +665,8 @@ class DataFlowHistory(Base, BaseMixin):
 
 class ExternalEntity(Base, BaseMixin):
     __tablename__ = "external_entities"
+    edit_revision = Column(String(32), nullable=False, server_default="", default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {"version_id_col": edit_revision, "version_id_generator": lambda _previous: uuid4().hex}
     name = Column(String, index=True)
     external_key = Column(String, unique=True, index=True)
     aliases_json = Column(JSON, default=list)
@@ -716,6 +740,8 @@ class ExternalLink(Base, BaseMixin):
             name="uq_external_link_shape_status",
         ),
     )
+    edit_revision = Column(String(32), nullable=False, server_default="", default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {"version_id_col": edit_revision, "version_id_generator": lambda _previous: uuid4().hex}
     external_entity_id = Column(Integer, ForeignKey("external_entities.id"))
     device_id = Column(Integer, ForeignKey("devices.id"))
     service_id = Column(Integer, ForeignKey("logical_services.id"), nullable=True)
@@ -750,6 +776,8 @@ class AuditLog(Base):
 
 class Vendor(Base, BaseMixin):
     __tablename__ = "vendors"
+    edit_revision = Column(String(32), nullable=False, server_default="", default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {"version_id_col": edit_revision, "version_id_generator": lambda _previous: uuid4().hex}
     name = Column(String, index=True)
     country = Column(String)
     primary_personnel_id = Column(Integer, ForeignKey("vendor_personnel.id", ondelete="SET NULL"), nullable=True)
@@ -763,6 +791,8 @@ class Vendor(Base, BaseMixin):
 
 class VendorPersonnel(Base, BaseMixin):
     __tablename__ = "vendor_personnel"
+    edit_revision = Column(String(32), nullable=False, server_default="", default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {"version_id_col": edit_revision, "version_id_generator": lambda _previous: uuid4().hex}
     vendor_id = Column(Integer, ForeignKey("vendors.id", ondelete="CASCADE"))
     name = Column(String, index=True)
     name_original = Column(String) # Added original name
@@ -783,6 +813,8 @@ class VendorPersonnel(Base, BaseMixin):
 
 class VendorContract(Base, BaseMixin):
     __tablename__ = "vendor_contracts"
+    edit_revision = Column(String(32), nullable=False, server_default="", default=lambda: uuid4().hex, onupdate=lambda: uuid4().hex)
+    __mapper_args__ = {"version_id_col": edit_revision, "version_id_generator": lambda _previous: uuid4().hex}
     vendor_id = Column(Integer, ForeignKey("vendors.id", ondelete="CASCADE"))
     title = Column(String, index=True)
     contract_id = Column(String, index=True)
@@ -1323,3 +1355,25 @@ class WorkspaceSavedView(Base, BaseMixin):
     revision = Column(Integer, nullable=False, default=1)
     is_favorite = Column(Boolean, nullable=False, default=False)
     is_default = Column(Boolean, nullable=False, default=False)
+
+
+for _revision_model in (ExternalEntity, ExternalLink, Vendor, VendorPersonnel, VendorContract):
+    _revision_table = _revision_model.__tablename__
+    event.listen(
+        _revision_model.__table__,
+        "after_create",
+        DDL(
+            f"CREATE TRIGGER IF NOT EXISTS {_revision_table}_revision_insert "
+            f"AFTER INSERT ON {_revision_table} WHEN NEW.edit_revision = '' BEGIN "
+            f"UPDATE {_revision_table} SET edit_revision = lower(hex(randomblob(16))) WHERE id = NEW.id; END"
+        ).execute_if(dialect="sqlite"),
+    )
+    event.listen(
+        _revision_model.__table__,
+        "after_create",
+        DDL(
+            f"CREATE TRIGGER IF NOT EXISTS {_revision_table}_revision_update "
+            f"AFTER UPDATE ON {_revision_table} WHEN NEW.edit_revision = OLD.edit_revision BEGIN "
+            f"UPDATE {_revision_table} SET edit_revision = lower(hex(randomblob(16))) WHERE id = NEW.id; END"
+        ).execute_if(dialect="sqlite"),
+    )

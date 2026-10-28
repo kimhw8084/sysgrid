@@ -13,7 +13,7 @@ export const FAR_GOLDEN_COLUMN_GEOMETRY: readonly FarGoldenColumnGeometry[] = [
   { colId: 'severity', headerName: 'S', defaultWidth: 72, minWidth: 68 },
   { colId: 'occurrence', headerName: 'O', defaultWidth: 72, minWidth: 68 },
   { colId: 'detection', headerName: 'D', defaultWidth: 72, minWidth: 68 },
-  { colId: 'rpn', headerName: 'RPN', defaultWidth: 84, minWidth: 80 },
+  { colId: 'rpn', headerName: 'RPN', defaultWidth: 130, minWidth: 130 },
   { colId: 'status', headerName: 'Maturity', defaultWidth: 164, minWidth: 152 },
   { colId: 'vectors', headerName: 'Vectors', defaultWidth: 160, minWidth: 140 },
   { colId: 'linked_rcas', headerName: 'Incidents', defaultWidth: 120, minWidth: 112 },

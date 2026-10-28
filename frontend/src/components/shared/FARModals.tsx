@@ -48,6 +48,7 @@ export function RootCauseFormModal({ isOpen, onClose, onSave, modeId, modeVersio
       queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       queryClient.invalidateQueries({ queryKey: ['far-failure-modes'] })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => toast.error(error?.message || 'Root cause mutation failed')
   })
 
@@ -145,6 +146,7 @@ export function MitigationFormModal({ isOpen, onClose, onSave, modeId, modeVersi
        queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
        queryClient.invalidateQueries({ queryKey: ['far-failure-modes'] })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => toast.error(error?.message || 'Mitigation mutation failed')
   })
 
@@ -299,6 +301,7 @@ export function PreventionFormModal({ isOpen, onClose, onSave, modeId, modeVersi
        queryClient.invalidateQueries({ queryKey: ['far-failure-modes'] })
        queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => toast.error(error?.message || 'Prevention project mutation failed')
   })
 
@@ -363,6 +366,7 @@ export function ResolutionManagerModal({ isOpen, onClose, cause, modeId, modeVer
       queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       if (onSave) onSave()
     },
+    meta: { handlesErrorToast: true },
     onError: (err: any) => toast.error(`Linking Failed: ${err.message}`)
   })
 
@@ -380,6 +384,7 @@ export function ResolutionManagerModal({ isOpen, onClose, cause, modeId, modeVer
       queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       if (onSave) onSave()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => toast.error(error?.message || 'Resolution unlink failed')
   })
 

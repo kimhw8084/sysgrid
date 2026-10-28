@@ -28,6 +28,7 @@ jobs:
           - {stage: normal-v1, label: normal-v1 shard 2/3, artifact: normal-v1-2, shard: "2/3"}
           - {stage: normal-v1, label: normal-v1 shard 3/3, artifact: normal-v1-3, shard: "3/3"}
           - {stage: desktop, label: desktop, artifact: desktop, shard: ""}
+          - {stage: role-matrix, label: role-matrix, artifact: role-matrix, shard: ""}
           - {stage: root-preview, label: root-preview, artifact: root-preview, shard: ""}
     env:
       QUALIFICATION_STAGE: ${{ matrix.stage }}
@@ -310,12 +311,12 @@ jobs:
               "tested_trigger_sha": os.environ["GITHUB_SHA"],
               "candidate_sha": os.environ["CANDIDATE_SHA"],
               "pr_base_sha": os.environ.get("PR_BASE_SHA") or None,
-              "qualification_stages": ["checks", "normal-v1", "desktop", "root-preview"],
+              "qualification_stages": ["checks", "normal-v1", "desktop", "role-matrix", "root-preview"],
               "ref": os.environ["GITHUB_REF"],
               "head_ref": os.environ.get("GITHUB_HEAD_REF") or os.environ["GITHUB_REF_NAME"],
               "stage_evidence_artifacts": {
                   stage: f"application-ci-{stage}-evidence-{os.environ['CANDIDATE_SHA']}"
-                  for stage in ["checks", "normal-v1", "desktop", "root-preview"]
+                  for stage in ["checks", "normal-v1", "desktop", "role-matrix", "root-preview"]
               },
               "runtime_provenance": "Each stage receipt records the Node and Python versions actually used.",
               "qualification_result": os.environ["QUALIFICATION_RESULT"],

@@ -994,6 +994,7 @@ export default function SettingsPage() {
       })
       showWorkspaceToast("Folder access verified")
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => {
       setTenantFolderCheck({ ok: false, message: error.message })
       showWorkspaceToast(error.message || "Folder access test failed", { type: 'error' })
@@ -1394,6 +1395,7 @@ export default function SettingsPage() {
       setTenantFolderCheck(null)
       showWorkspaceToast("New tenant database created and initialized")
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => {
       showWorkspaceToast(error.message || "Failed to create tenant", { type: 'error' })
     },
@@ -2301,6 +2303,7 @@ export default function SettingsPage() {
                        value={envSearch}
                        onChange={(e) => setEnvSearch(e.target.value)}
                        placeholder="Search parameter, path, category, or impact..."
+                       ariaLabel="Search system parameters"
                        className="max-w-2xl"
                      />
                      <ToolbarGroup>

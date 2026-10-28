@@ -6,31 +6,29 @@ const headers = {
   'X-Tenant-Id': process.env.PW_TENANT_ID || '1',
 }
 
-test.describe('CHG-120 root-preview release policy', () => {
-  test('opens only explicitly allowed preview modules through effective policy', async ({ page, request }) => {
+test.describe('CHG-120 System Root release policy', () => {
+  test('keeps all released modules available without preview labeling', async ({ page, request }) => {
     const response = await request.get(`${apiBase}/policy/module-availability`, { headers })
     expect(response.ok()).toBeTruthy()
     const policy = await response.json()
 
     expect(policy.identity.system_root).toBe(true)
-    for (const moduleId of ['home', 'assets', 'monitoring', 'services', 'network', 'racks', 'logs', 'settings', 'projects', 'far', 'knowledge', 'vendors', 'external', 'research', 'architecture']) {
-      expect(policy.modules[moduleId], moduleId).toMatchObject({ available: true })
-    }
-    for (const moduleId of ['projects', 'far', 'knowledge', 'vendors', 'external', 'research', 'architecture']) {
-      expect(policy.modules[moduleId].root_preview).toBe(true)
+    const moduleIds = ['home', 'projects', 'assets', 'monitoring', 'services', 'network', 'racks', 'logs', 'settings', 'far', 'knowledge', 'vendors', 'external', 'research', 'architecture']
+    for (const moduleId of moduleIds) {
+      expect(policy.modules[moduleId], moduleId).toMatchObject({ available: true, stage: 'production', root_preview: false })
     }
 
     await page.goto('/')
     await expect(page.getByText('Observed health history (24h)')).toBeVisible()
     expect(await page.locator('[data-sg-content-panel="true"] [data-module-action="far"]').count()).toBe(0)
 
-    const farTitle = `ROOT-PREVIEW-FAR-${Date.now()}`
+    const farTitle = `RELEASED-FAR-${Date.now()}`
     const farResponse = await request.post(`${apiBase}/far/modes`, {
       headers,
       data: {
-        system_name: 'ROOT-PREVIEW-SYSTEM',
+        system_name: 'RELEASED-SYSTEM',
         title: farTitle,
-        effect: 'Preview search proof',
+        effect: 'Released search proof',
         severity: 8,
         occurrence: 4,
         detection: 3,
@@ -43,10 +41,10 @@ test.describe('CHG-120 root-preview release policy', () => {
     await searchTrigger.click()
     const searchInput = page.getByPlaceholder(/Search released and authorized records/i)
     await searchInput.fill(farTitle)
-    const previewResult = page.getByRole('link', { name: new RegExp(farTitle) }).first()
-    await expect(previewResult).toBeVisible()
-    await expect(page.getByText('Preview / unreleased')).toBeVisible()
-    await previewResult.click()
+    const releasedResult = page.getByRole('link', { name: new RegExp(farTitle) }).first()
+    await expect(releasedResult).toBeVisible()
+    await expect(page.getByText('Preview / unreleased')).toHaveCount(0)
+    await releasedResult.click()
     await expect(page).toHaveURL(new RegExp(`/far\\?id=${far.id}`))
   })
 })

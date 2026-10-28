@@ -83,6 +83,29 @@ export const architectureSearch = (projection: ArchitectureProjection, query: st
 
 export const architecturePosition = (object: ArchitectureObject, index: number, membership?: ArchitectureMembership): { x: number; y: number; width: number; height: number } => membership ? { x: membership.x, y: membership.y, width: membership.width, height: membership.height } : { x: 24 + (index % 4) * 210, y: 24 + Math.floor(index / 4) * 120, width: 180, height: 80 }
 
+export const architectureDiagramBounds = (
+  positions: Iterable<{ x: number; y: number; width: number; height: number }>,
+  padding = 24,
+): { x: number; y: number; width: number; height: number } => {
+  const valid = Array.from(positions).filter((position) =>
+    Number.isFinite(position.x) && Number.isFinite(position.y) &&
+    Number.isFinite(position.width) && Number.isFinite(position.height) &&
+    position.width > 0 && position.height > 0
+  )
+  if (!valid.length) return { x: 0, y: 0, width: 980, height: 620 }
+
+  const left = Math.min(...valid.map((position) => position.x))
+  const top = Math.min(...valid.map((position) => position.y))
+  const right = Math.max(...valid.map((position) => position.x + position.width))
+  const bottom = Math.max(...valid.map((position) => position.y + position.height))
+  return {
+    x: left - padding,
+    y: top - padding,
+    width: right - left + padding * 2,
+    height: bottom - top + padding * 2,
+  }
+}
+
 export const architectureInventoryText = (projection: ArchitectureProjection): string => {
   const lines = [`${projection.model.name} · revision ${projection.model.revision}`, `Mode: ${projection.mode}`, 'Objects:']
   projection.objects.forEach((item) => lines.push(`- ${item.kind}: ${item.name} [${item.lifecycle}] (${item.id}, revision ${item.revision})`))

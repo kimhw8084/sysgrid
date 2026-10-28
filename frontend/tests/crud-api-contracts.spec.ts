@@ -87,7 +87,6 @@ test.describe('CRUD API contracts', () => {
   })
 
   test('keeps knowledge, research, and projects CRUD durable through read-update-delete cycles', async ({ sysApi: request }) => {
-    test.skip(process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1', 'Deferred preview-domain CRUD; exercised by the root-preview/full historical suite')
     const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
     const knowledgeCreate = await request.post(`${apiBase}/knowledge`, {
@@ -160,7 +159,6 @@ test.describe('CRUD API contracts', () => {
   })
 
   test('keeps network, external, and FAR CRUD flows stable with realistic payloads', async ({ sysApi: request }) => {
-    test.skip(process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1', 'Deferred external/FAR CRUD; exercised by the root-preview/full historical suite')
     const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
     const source = await createAsset(request, {
@@ -235,7 +233,8 @@ test.describe('CRUD API contracts', () => {
       }
     })
     expect(externalUpdate.ok()).toBeTruthy()
-    expect((await externalUpdate.json()).status).toBe('Maintenance')
+    const updatedExternalEntity = await externalUpdate.json()
+    expect(updatedExternalEntity.status).toBe('Maintenance')
 
     const farMode = await createFarMode(request, {
       system_name: `PW-CRUD-FAR-${stamp}`,
@@ -250,22 +249,35 @@ test.describe('CRUD API contracts', () => {
     const farUpdate = await request.put(`${apiBase}/far/modes/${farMode.id}`, {
       data: {
         ...farMode,
+        affected_assets: [source.id],
+        expected_version: farMode.version,
         severity: 8,
         occurrence: 4,
         detection: 2,
         effect: 'Updated contract failure mode'
       }
     })
-    expect(farUpdate.ok()).toBeTruthy()
-    expect((await farUpdate.json()).severity).toBe(8)
+    expect(farUpdate.ok(), await farUpdate.text()).toBeTruthy()
+    const updatedFarMode = await farUpdate.json()
+    expect(updatedFarMode.severity).toBe(8)
+    expect(updatedFarMode.version).toBe(farMode.version + 1)
 
     const connectionDelete = await request.delete(`${apiBase}/networks/connections/${connection.id}`)
     expect(connectionDelete.ok()).toBeTruthy()
 
-    const externalDelete = await request.delete(`${apiBase}/intelligence/entities/${externalEntity.id}`)
+    const externalDelete = await request.delete(
+      `${apiBase}/intelligence/entities/${externalEntity.id}?expected_revision=${encodeURIComponent(updatedExternalEntity.edit_revision)}`
+    )
     expect(externalDelete.ok()).toBeTruthy()
 
-    const farDelete = await request.delete(`${apiBase}/far/modes/${farMode.id}`)
-    expect(farDelete.ok()).toBeTruthy()
+    const farArchive = await request.post(`${apiBase}/far/modes/${farMode.id}/archive`, {
+      data: { expected_version: updatedFarMode.version }
+    })
+    expect(farArchive.ok(), await farArchive.text()).toBeTruthy()
+    expect(await farArchive.json()).toMatchObject({
+      status: 'success',
+      changed: true,
+      version: updatedFarMode.version + 1,
+    })
   })
 })

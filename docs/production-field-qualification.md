@@ -1,7 +1,9 @@
 # Company qualification and release decision
 
-The released V1 scope is Home, Assets, Monitoring, Services, Network, Racks,
-Audit Logs and Settings/Access. Preview modules keep their existing gates.
+The released V1 scope includes all 15 catalog modules: Home, Projects, Assets,
+Monitoring, Services, Network, Racks, External, Architecture, Research, FAR,
+Vendors, Knowledge, Audit Logs and Settings/Access. Each module still requires
+its assigned capability, and deployment overrides can disable a module.
 Local checks and synthetic capacity measurements do not grant production
 acceptance. Record the exact deployed commit and frontend build identity before
 collecting field evidence; retain the original failed observations as well.
@@ -32,7 +34,7 @@ the real gateway boundary.
 | Publish and identity | Real HTTPS browser reaches the exact candidate; sign-in, sign-out and expired identity behave as intended. Direct backend access and spoofed browser identity cannot bypass the gateway. |
 | Roles and tenants | Two real users with different roles see only assigned tenants. A viewer cannot mutate. Removing membership blocks later requests and sync access. |
 | Collaboration | Concurrent operators change the same representative record and independent records. Record the supported conflict behavior; never treat silent lost edits as acceptance. |
-| Eight workspaces | Perform representative create/edit/search/filter/detail/export and archive/restore workflows where supported, using actual tasks and approved test records. Check audit actor and target against the operation. |
+| Fifteen workspaces | Perform representative create/edit/search/filter/detail/export and archive/restore workflows where supported, using actual tasks and approved test records. Check audit actor and target against the operation. |
 | Visuals and interaction | Both themes, normal and short laptop viewports, keyboard navigation, 200% zoom, supported browsers and actual assistive technology. Include errors, empty states, pending saves and recovery. Notifications remain at the viewport top-right. |
 | Durability | Write an approved test record, restart/redeploy the same candidate without replacing its volume, and verify it remains. Rehearse recovery on isolated copies with agreed RPO/RTO. |
 | Capacity | Repeat representative work on the company host. Record concurrent users, estate size, workload mix, observation duration, p95 latency, failures and memory/resource trends. A local synthetic envelope is only a comparison point. |

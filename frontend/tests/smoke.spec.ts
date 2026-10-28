@@ -12,15 +12,7 @@ test.describe('Smoke Tests', () => {
     test(`Canonical Page Load: ${workspace.key} (${workspace.route})`, async ({ page }) => {
       await page.goto(workspace.route)
 
-      // Normal-v1 must prove deferred standalone routes fail before their
-      // preview component mounts; production routes retain their canonical
-      // workspace readiness assertion.
-      const previewKeys = new Set(['external', 'far', 'research', 'vendors'])
-      if (previewKeys.has(workspace.key)) {
-        await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible({ timeout: 30000 })
-      } else {
-        await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
-      }
+      await expect(page.locator(workspace.selector)).toBeVisible({ timeout: 30000 })
       
       // Ensure the URL matches the canonical route (allowing for query params)
       await expect(page).toHaveURL(new RegExp(workspace.route.split('?')[0]))
@@ -30,7 +22,7 @@ test.describe('Smoke Tests', () => {
   // Legacy/Dashboard coverage
   const otherRoutes = [
     { path: '/', expectedText: /Observed health history \(24h\)/i },
-    { path: '/projects', expectedText: /Access unavailable/i },
+    { path: '/projects', expectedText: /Projects/i },
     { path: '/racks', expectedText: /Racks/i },
   ]
 
@@ -40,4 +32,21 @@ test.describe('Smoke Tests', () => {
       await expect(page.locator('body')).toContainText(route.expectedText, { timeout: 30000 })
     })
   }
+})
+
+
+test('structured startup diagnostics remain visible when bootstrap fails', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.route('**/api/v1/settings/bootstrap', route => route.abort('failed'))
+  await page.route('**/api/v1/settings/startup-check', route => route.fulfill({
+    status: 503,
+    contentType: 'application/json',
+    headers: { 'Access-Control-Allow-Origin': '*'},
+    body: JSON.stringify({ detail: { code: 'STARTUP_UNAVAILABLE', message: 'Backend startup is unavailable' } }),
+  }))
+  await page.goto('/')
+  await expect(page.getByText('Backend startup is unavailable', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Retry/ }).first()).toBeVisible()
+  expect(errors).toEqual([])
 })

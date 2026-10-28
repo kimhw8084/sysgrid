@@ -24,6 +24,7 @@ export default function Intelligence() {
       setStatus('success')
       setTimeout(() => setStatus('idle'), 3000)
     },
+    meta: { handlesErrorToast: true },
     onError: (err: any) => {
       showWorkspaceToast(`Ingestion Error: ${err.message}`, { type: 'error' })
       setStatus('error')

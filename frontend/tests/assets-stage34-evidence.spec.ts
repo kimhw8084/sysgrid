@@ -119,9 +119,6 @@ type RouteEvidence = {
   warningRequestClassificationTable: ClassificationEntry[]
 }
 
-const CAPTURE_DIR = path.resolve(process.cwd(), 'stage34-evidence')
-const HTML_EVIDENCE_PATH = path.resolve(process.cwd(), 'OUT-26_ITERATION_36_STAGE34_EVIDENCE.html')
-const JSON_EVIDENCE_PATH = path.join(CAPTURE_DIR, 'stage34-evidence.json')
 const DESKTOP_FULL = { width: 1440, height: 1200 }
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 const EXACT_VIEWPORT = { width: 960, height: 720 }
@@ -741,10 +738,12 @@ const buildNotApplicableProof = (reason: string): InteractionProof => ({
 })
 
 test.describe('Assets Stage 34 evidence capture', () => {
-  test('captures stage34 lock-proof evidence', async ({ page, sysApi: request }) => {
+  test('captures stage34 lock-proof evidence', async ({ page, sysApi: request }, testInfo) => {
+    const CAPTURE_DIR = testInfo.outputPath('stage34-evidence')
+    const HTML_EVIDENCE_PATH = testInfo.outputPath('OUT-26_ITERATION_36_STAGE34_EVIDENCE.html')
+    const JSON_EVIDENCE_PATH = path.join(CAPTURE_DIR, 'stage34-evidence.json')
     test.setTimeout(180_000)
-    console.log(`[Harness] Cleaning existing and initializing stage34-evidence directory`)
-    await fs.rm(CAPTURE_DIR, { recursive: true, force: true })
+    console.log(`[Harness] Initializing isolated stage34 evidence directory`)
     await fs.mkdir(CAPTURE_DIR, { recursive: true })
 
     await resetBrowserState(page)

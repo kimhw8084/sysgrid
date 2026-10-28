@@ -7,6 +7,7 @@ export const projectsRootPreviewPolicy = {
   profile_id: PROJECTS_ROOT_PREVIEW_USER,
   identity: {
     authenticated: true,
+    user_id: PROJECTS_ROOT_PREVIEW_USER,
     tenant_id: 1,
     access_role: 'System Root',
     operator_role: null,

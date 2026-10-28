@@ -25,7 +25,7 @@ export type ProjectTimelineZoom = (typeof PROJECT_TIMELINE_ZOOMS)[number]
 export const PROJECT_EXECUTION_CONFIG_KEY = 'project_execution_config_v1'
 export const PROJECT_REPORTING_KEY = 'project_reporting_v1'
 export const PROJECT_UPDATES_KEY = 'project_updates_v1'
-export type ProjectHealth = 'green' | 'amber' | 'red'
+export type ProjectHealth = 'green' | 'amber' | 'red' | 'unknown'
 export type ProjectAttentionKind = 'blocked' | 'overdue' | 'due-soon' | 'unassigned' | 'high-priority' | 'review-congestion' | 'unknown-status'
 export type ProjectAttentionTone = 'rose' | 'amber' | 'blue' | 'slate'
 
@@ -48,7 +48,7 @@ export interface ProjectGovernanceState {
 
 const DAY_MS = 86_400_000
 const PROJECT_PRIORITY_RANK: Record<string, number> = { Highest: 4, High: 3, Medium: 2, Low: 1 }
-const HEALTH_RANK: Record<ProjectHealth, number> = { red: 3, amber: 2, green: 1 }
+const HEALTH_RANK: Record<ProjectHealth, number> = { red: 3, amber: 2, green: 1, unknown: 0 }
 
 const LEGACY_PROJECT_VIEW_ALIASES: Record<string, ProjectGoldenView> = {
   workspace: 'timeline',
@@ -333,9 +333,11 @@ export const getProjectHealth = (project: any, now: Date = new Date()): ProjectH
   if (scheduleVarianceDays != null && scheduleVarianceDays > 0) { score += scheduleVarianceDays >= 7 ? 4 : 2; reasons.push(`${scheduleVarianceDays}d schedule variance`) }
   if (unassigned) { score += Math.min(2, unassigned); reasons.push(`${unassigned} unassigned open task${unassigned === 1 ? '' : 's'}`) }
   if (review >= 4) { score += 2; reasons.push(`${review} tasks waiting in review`) }
-  if (!reasons.length) reasons.push('No deterministic execution risk detected')
+  const hasExecutionEvidence = (Array.isArray(project?.tasks) && project.tasks.length > 0) || milestones.length > 0 || scheduleVarianceDays != null
+  if (!hasExecutionEvidence) reasons.push('No execution plan recorded')
+  else if (!reasons.length) reasons.push('No deterministic execution risk detected')
   return {
-    level: score >= 7 ? 'red' : score >= 3 ? 'amber' : 'green',
+    level: !hasExecutionEvidence ? 'unknown' : score >= 7 ? 'red' : score >= 3 ? 'amber' : 'green',
     score,
     reasons,
     blocked,
@@ -463,6 +465,7 @@ export const buildPortfolioMetrics = (projects: any[], now: Date = new Date()) =
     projectAverageProgress,
     healthRed: health.filter((item) => item.level === 'red').length,
     healthAmber: health.filter((item) => item.level === 'amber').length,
+    healthUnknown: health.filter((item) => item.level === 'unknown').length,
     manHoursSaved: list.reduce((sum, project) => sum + (Number(project?.man_hours_saved) || 0), 0),
     stoplossMinutesSaved: list.reduce((sum, project) => sum + (Number(project?.stoploss_minutes_saved) || 0), 0),
     wafersGained: list.reduce((sum, project) => sum + (Number(project?.wafers_gained) || 0), 0),

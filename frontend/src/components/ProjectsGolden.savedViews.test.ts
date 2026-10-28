@@ -12,6 +12,7 @@ import {
   projectSavedViewStatesEqual,
   reconcileProjectSavedViewOptions,
   removeProjectRemoteSavedViewPayload,
+  resolveProjectCurrentOperator,
   resolveProjectCurrentTeamId,
   upsertProjectRemoteSavedViewPayload,
 } from './ProjectsGolden.savedViews'
@@ -124,6 +125,17 @@ describe('Projects shared saved-view integration', () => {
     expect(resolveProjectCurrentTeamId([{ username: 'admin_root', team_id: 42 }, { username: 'other', team_id: 99 }], 'admin_root')).toBe(42)
     expect(resolveProjectCurrentTeamId([{ username: 'admin_root', team_id: null }], 'admin_root')).toBeNull()
     expect(resolveProjectCurrentTeamId([{ username: 'other', team_id: 99 }], 'admin_root')).toBeNull()
+  })
+
+  it('resolves the authenticated operator by username or external identity', () => {
+    const operators = [
+      { external_id: 'company-user-42', username: 'haewon', team_id: 42 },
+      { external_id: 'company-user-99', username: 'other', team_id: 99 },
+    ]
+    expect(resolveProjectCurrentOperator(operators, 'company-user-42')).toEqual(operators[0])
+    expect(resolveProjectCurrentTeamId(operators, 'company-user-42')).toBe(42)
+    expect(resolveProjectCurrentOperator(operators, 'missing')).toBeNull()
+    expect(resolveProjectCurrentTeamId(operators, 'missing')).toBeNull()
   })
 
   it('builds collision-safe saved_view links while preserving Project route/deep-link params', () => {

@@ -87,7 +87,9 @@ test.describe('Research workflows', () => {
     await expect(intelligenceTab).toBeVisible()
     await intelligenceTab.click()
     await clickResilientButton(page, /Record Intelligence/i)
-    await expect(page.getByRole('paragraph').filter({ hasText: 'Intelligence pulse text is required' })).toBeVisible()
+    const pulseErrorToast = page.locator('[data-workspace-toast="error"][data-visible="true"]').filter({ hasText: 'Intelligence pulse text is required' })
+    await expect(pulseErrorToast).toHaveCount(1)
+    await expect(pulseErrorToast).toBeVisible()
 
     const pulseText = `Validated intelligence pulse ${stamp}`
     await page.getByPlaceholder('Capture logical system findings...').fill(pulseText)

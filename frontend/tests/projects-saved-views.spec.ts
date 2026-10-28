@@ -9,10 +9,22 @@ const currentUserId = testApiHeaders['X-User-Id']
 test.use({ viewport: { width: 900, height: 900 } })
 
 const installProjectState = async (page: any, state: Record<string, unknown>) => {
-  await page.evaluate(({ key, value }) => window.localStorage.setItem(key, JSON.stringify(value)), { key: storageKey, value: state })
+  await page.addInitScript(({ key, value }) => {
+    const marker = '__sysgrid_projects_workbench_seeded__'
+    if (window.sessionStorage.getItem(marker)) return
+    window.localStorage.setItem(key, JSON.stringify(value))
+    window.sessionStorage.setItem(marker, 'true')
+  }, { key: storageKey, value: state })
 }
 
 const readProjectState = async (page: any) => page.evaluate((key) => JSON.parse(window.localStorage.getItem(key) || '{}'), storageKey)
+const openWorkspaceActions = async (page: any) => {
+  const actions = page.locator("details.sg-workspace-actions")
+  if (!(await actions.evaluate((element: HTMLDetailsElement) => element.open))) {
+    await actions.locator("summary").click()
+  }
+}
+
 
 const listProjectViews = async (page: any, scope: 'personal' | 'team' = 'personal', teamId?: number) => {
   const query = scope === 'team' ? `?scope=team&team_id=${teamId}` : ''
@@ -75,6 +87,7 @@ test.describe('Projects shared saved views', () => {
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
     await expect(page.getByPlaceholder('Find projects, objectives, owners…')).toHaveValue('active local')
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Saved views', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Daily Focus · Personal', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Daily Focus · Local', exact: true })).toBeVisible()
@@ -98,6 +111,7 @@ test.describe('Projects shared saved views', () => {
 
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Saved views', exact: true }).click()
     await page.getByRole('button', { name: `${viewName} · Personal`, exact: true }).click()
 
@@ -112,13 +126,15 @@ test.describe('Projects shared saved views', () => {
 
     await page.goto('/projects?view=portfolio&section=roadmap')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Save view', exact: true }).click()
     await page.getByLabel('View name').fill('Iteration 6 Local Roadmap')
     await page.getByRole('button', { name: 'Save local', exact: true }).click()
     await expect.poll(async () => (await readProjectState(page)).savedViews?.some((view: any) => view.name === 'Iteration 6 Local Roadmap')).toBeTruthy()
 
-    await page.goto('/projects?view=portfolio&section=control')
+    await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Saved views', exact: true }).click()
     await page.getByRole('button', { name: 'Iteration 6 Local Roadmap · Local', exact: true }).click()
 
@@ -159,6 +175,7 @@ test.describe('Projects shared saved views', () => {
 
     await page.goto('/projects?view=portfolio&section=roadmap')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Saved views', exact: true }).click()
     await page.getByRole('button', { name: `${viewName} · Personal`, exact: true }).click()
 
@@ -181,6 +198,7 @@ test.describe('Projects shared saved views', () => {
 
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Save view', exact: true }).click()
     await page.getByLabel('View name').fill(viewName)
     await page.getByRole('button', { name: 'Save personal', exact: true }).click()
@@ -193,6 +211,8 @@ test.describe('Projects shared saved views', () => {
 
     await page.getByRole('button', { name: 'Delete synced', exact: true }).click()
     await page.getByRole('button', { name: 'Delete synced view', exact: true }).click()
+    await expect(page.getByText('Synced Project view deleted', { exact: true })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Delete Synced Project View', exact: true })).toBeHidden()
     await expect.poll(() => new URL(page.url()).searchParams.get('saved_view')).toBeNull()
     await expect(page).toHaveURL(/view=overview/)
   })
@@ -221,15 +241,16 @@ test.describe('Projects shared saved views', () => {
 
   test('preserves active state and local saved-view use when personal remote hydration fails', async ({ page }) => {
     await resetBrowserState(page)
-    await installProjectState(page, { search: 'active fallback', statusFilter: 'ALL', priorityFilter: 'ALL', sortMode: 'order', watchedOnly: false, savedViews: [{ id: 'local-7', name: 'Local Fallback', search: 'local saved search', statusFilter: 'Planning', priorityFilter: 'Medium', sortMode: 'health', watchedOnly: false, view: 'tasks' }], lastView: 'overview' })
+    await installProjectState(page, { search: 'active fallback', statusFilter: 'ALL', priorityFilter: 'ALL', sortMode: 'order', watchedOnly: false, savedViews: [{ id: 'local-7', name: 'Local Fallback', search: 'local saved search', statusFilter: 'Planning', priorityFilter: 'Medium', sortMode: 'health', watchedOnly: false, view: 'overview' }], lastView: 'overview' })
     await page.route('**/api/v1/workspaces/projects/views*', async (route) => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'proof outage' }) }))
 
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
     await expect(page.getByPlaceholder('Find projects, objectives, owners…')).toHaveValue('active fallback')
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Saved views', exact: true }).click()
     await page.getByRole('button', { name: 'Local Fallback · Local', exact: true }).click()
-    await expect(page).toHaveURL(/view=tasks/)
+    await expect(page).toHaveURL(/view=overview/)
     await expect(page.getByPlaceholder('Find projects, objectives, owners…')).toHaveValue('local saved search')
   })
 
@@ -238,6 +259,7 @@ test.describe('Projects shared saved views', () => {
     await installProjectState(page, { search: 'initial lens', statusFilter: 'ALL', priorityFilter: 'ALL', sortMode: 'order', watchedOnly: false, savedViews: [{ id: 'legacy-keep', name: 'Legacy Keep', search: 'local only', view: 'tasks' }], lastView: 'overview' })
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Save view', exact: true }).click()
     await page.getByLabel('View name').fill('Writable Focus')
     await page.getByRole('button', { name: 'Save personal', exact: true }).click()
@@ -251,7 +273,7 @@ test.describe('Projects shared saved views', () => {
     remote = await findRemoteView(page, 'Writable Focus')
     expect(remote.revision).toBe(2)
 
-    const externalUpdate = await page.request.put(`${apiBase}/workspaces/views/${remote.id}`, { headers: testApiHeaders, data: { name: remote.name, scope: 'personal', team_id: null, definition: projectViewDefinition('server newer', 'tasks', 'health'), schema_version: 1, revision: remote.revision } })
+    const externalUpdate = await page.request.put(`${apiBase}/workspaces/views/${remote.id}`, { headers: testApiHeaders, data: { name: remote.name, scope: 'personal', team_id: null, definition: projectViewDefinition('server newer', 'overview', 'health'), schema_version: 1, revision: remote.revision } })
     expect(externalUpdate.ok()).toBeTruthy()
     await page.getByPlaceholder('Find projects, objectives, owners…').fill('client draft')
     await page.getByRole('button', { name: 'Update synced', exact: true }).click()
@@ -269,6 +291,7 @@ test.describe('Projects shared saved views', () => {
     await installProjectState(page, { search: 'active local', statusFilter: 'ALL', priorityFilter: 'ALL', sortMode: 'order', watchedOnly: false, savedViews: [{ id: 'legacy-keep', name: 'Legacy Keep', search: 'local only', view: 'tasks' }], lastView: 'overview' })
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Saved views', exact: true }).click()
     await page.getByRole('button', { name: 'Conflict Source · Personal', exact: true }).click()
     await page.getByPlaceholder('Find projects, objectives, owners…').fill('copy draft')
@@ -282,6 +305,8 @@ test.describe('Projects shared saved views', () => {
     expect(copied.definition.searchTerm).toBe('copy draft')
     await page.getByRole('button', { name: 'Delete synced', exact: true }).click()
     await page.getByRole('button', { name: 'Delete synced view', exact: true }).click()
+    await expect(page.getByText('Synced Project view deleted', { exact: true })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Delete Synced Project View', exact: true })).toBeHidden()
     expect((await readProjectState(page)).savedViews).toEqual([{ id: 'legacy-keep', name: 'Legacy Keep', search: 'local only', view: 'tasks' }])
   })
 
@@ -294,6 +319,7 @@ test.describe('Projects shared saved views', () => {
 
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Save view', exact: true }).click()
     await page.getByLabel('View name').fill('Shared Focus')
     await expect(page.getByRole('button', { name: 'Save team', exact: true })).toBeVisible()
@@ -321,9 +347,11 @@ test.describe('Projects shared saved views', () => {
     await expect(page.getByRole('button', { name: 'Personal Peer · Personal', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Shared Focus · Team', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Legacy Team Local · Local', exact: true })).toBeVisible()
-    await page.keyboard.press('Escape')
+    await page.locator('[data-workspace-panel="true"]').getByRole('button', { name: 'Shared Focus copy · Team', exact: true }).click()
     await page.getByRole('button', { name: 'Delete synced', exact: true }).click()
     await page.getByRole('button', { name: 'Delete synced view', exact: true }).click()
+    await expect(page.getByText('Synced Project view deleted', { exact: true })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Delete Synced Project View', exact: true })).toBeHidden()
     expect((await listProjectViews(page, 'team', team.id)).views.some((row: any) => row.name === 'Shared Focus copy')).toBe(false)
     expect((await readProjectState(page)).savedViews).toEqual([{ id: 'legacy-team', name: 'Legacy Team Local', search: 'local team', view: 'tasks' }])
   })
@@ -343,6 +371,7 @@ test.describe('Projects shared saved views', () => {
 
     await page.goto('/projects?view=overview')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Save view', exact: true }).click()
     await page.getByLabel('View name').fill('Must Not Fake Share')
     await page.getByRole('button', { name: 'Save team', exact: true }).click()
@@ -360,6 +389,7 @@ test.describe('Projects shared saved views', () => {
     await installProjectState(page, { search: 'before link', statusFilter: 'ALL', priorityFilter: 'ALL', sortMode: 'order', watchedOnly: false, savedViews: [], lastView: 'portfolio' })
     await page.goto('/projects?view=portfolio&section=owners')
     await waitForAppIdle(page)
+    await openWorkspaceActions(page)
     await page.getByRole('button', { name: 'Saved views', exact: true }).click()
     await page.getByRole('button', { name: 'Linked Portfolio · Personal', exact: true }).click()
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])

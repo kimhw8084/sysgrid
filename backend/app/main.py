@@ -31,7 +31,7 @@ from .database import ConfigSessionLocal, config_engine, default_engine
 from .models.config import Tenant, UserTenantAccess
 from .api.utils import get_current_user_id
 from .runtime_diagnostics import build_readiness_payload
-from .observability import SlidingWindowRateLimiter, request_rate_limit_key, safe_request_metric
+from .observability import RequestMetricJsonFormatter, SlidingWindowRateLimiter, request_rate_limit_key, safe_request_metric, safe_route_template
 from .pv1 import models as pv1_models  # noqa: F401 - register PV1 tables with Base.metadata
 from .architecture import models as architecture_models  # noqa: F401 - register canonical Architecture tables
 
@@ -40,7 +40,16 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 logger = logging.getLogger("sysgrid.api")
-REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
+REQUEST_ID_PATTERN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", re.IGNORECASE)
+request_metric_logger = logging.getLogger("sysgrid.request_metrics")
+request_metric_logger.setLevel(logging.INFO)
+request_metric_logger.propagate = False
+request_metric_logger.disabled = False
+if not any(getattr(handler, "_sysgrid_request_metric", False) for handler in request_metric_logger.handlers):
+    metric_handler = logging.StreamHandler()
+    metric_handler.setFormatter(RequestMetricJsonFormatter())
+    setattr(metric_handler, "_sysgrid_request_metric", True)
+    request_metric_logger.addHandler(metric_handler)
 
 
 def _upgrade_database_schema(backend_dir: str) -> None:
@@ -175,7 +184,7 @@ async def request_context_and_export_headers(request: Request, call_next):
     metric = safe_request_metric(
         request_id=request_id,
         method=request.method,
-        path=request.url.path,
+        path=safe_route_template(request.scope),
         status_code=response.status_code,
         duration_ms=duration_ms,
         workspace=("projects" if request.url.path.startswith("/api/v2/projects") or request.url.path.startswith("/api/v1/projects") else "architecture" if "/architecture" in request.url.path or "/models" in request.url.path else "other"),
@@ -198,7 +207,7 @@ async def request_context_and_export_headers(request: Request, call_next):
         response.headers["X-Schedule-Calculation-Duration-Ms"] = str(metric["schedule_calculation_duration_ms"])
     if "schedule_cache_status" in metric:
         response.headers["X-Schedule-Cache-Status"] = str(metric["schedule_cache_status"])
-    logger.info("request_complete", extra={"pv1_metric": metric})
+    request_metric_logger.info("request_complete", extra={"pv1_metric": metric})
     if response.status_code == 200:
         response_header_names = {key.lower() for key in response.headers.keys()}
         if {
@@ -301,15 +310,16 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     request_id = getattr(request.state, "request_id", str(uuid4()))
+    route_path = safe_route_template(request.scope)
     logger.exception(
         "Unhandled request failure",
-        extra={"request_id": request_id, "path": request.url.path, "method": request.method},
+        extra={"request_id": request_id, "path": route_path, "method": request.method},
     )
     return JSONResponse(
         status_code=500,
         content={
             "detail": "Internal Server Error. Please consult system logs.",
-            "path": request.url.path,
+            "path": route_path,
             "request_id": request_id,
         },
         headers={"X-Request-ID": request_id},

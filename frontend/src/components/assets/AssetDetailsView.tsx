@@ -10,6 +10,7 @@ import { WorkspaceEmptyState } from '../shared/OperationalWorkspacePrimitives'
 import { AssetServicesTable, MetadataViewer, MiniMonitoringTable } from '../AssetGrid_Legacy'
 import { ModulePolicyButton } from '../../policy/ModulePolicy'
 import { CredentialValue, credentialUpdatePayload } from '../shared/CredentialValue'
+import { AssetDataState, fetchAssetArray } from './assetDataState'
 
 const getAssetConsoleUrl = (asset: any) => {
   if (asset?.management_url) {
@@ -249,16 +250,21 @@ const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { devic
 
 const NetworkingTab = ({ device, onEditLink, onViewLink }: { device: any, onEditLink: (l: any) => void, onViewLink: (l: any) => void }) => {
   const deviceId = device.id
-  const { data: connections, isLoading } = useQuery({
+  const connectionsQuery = useQuery({
     queryKey: ['asset-detail-network', deviceId],
-    queryFn: async () => (await apiFetch(`/api/v1/networks/connections?device_id=${deviceId}`)).json(),
+    queryFn: () => fetchAssetArray(`/api/v1/networks/connections?device_id=${deviceId}`),
     enabled: !!deviceId,
   })
 
-  if (isLoading) {
+  if (connectionsQuery.isLoading) {
     return <div className="p-8 text-center text-[10px] font-bold uppercase text-slate-500">Loading connectivity...</div>
   }
 
+  if (connectionsQuery.isError) {
+    return <div className="p-4"><AssetDataState label="Network connections" isError onRetry={() => void connectionsQuery.refetch()} isFetching={connectionsQuery.isFetching} /></div>
+  }
+
+  const connections = connectionsQuery.data || []
   const hasConnections = connections && connections.length > 0
 
   return (
@@ -343,58 +349,68 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
     const queryClient = useQueryClient()
 
     // --- FETCH RELATED CONTEXT ---
-    const { data: farModes } = useQuery({
+    const farModesQuery = useQuery({
       queryKey: ['far-modes-system', device.system],
-      queryFn: async () => (await (await apiFetch(`/api/v1/far/modes?system=${encodeURIComponent(device.system)}&embedded_consumer=assets`)).json()),
+      queryFn: () => fetchAssetArray(`/api/v1/far/modes?system=${encodeURIComponent(device.system)}&embedded_consumer=assets`),
       enabled: !!device.system
     })
 
-    const { data: hostedServices } = useQuery({
-      queryKey: ['logical-services', 'asset-workspace', device.id],
-      queryFn: async () => (await (await apiFetch(`/api/v1/logical-services?device_id=${device.id}`)).json()),
+    const hostedServicesQuery = useQuery({
+      queryKey: ['device-services', device.id],
+      queryFn: () => fetchAssetArray(`/api/v1/logical-services/?device_id=${device.id}`),
       enabled: !!device.id
     })
 
-    const { data: monitoringItems } = useQuery({
-      queryKey: ['monitoring-items', 'asset-workspace', device.id],
-      queryFn: async () => (await apiFetch(`/api/v1/monitoring?device_id=${device.id}`)).json(),
+    const monitoringQuery = useQuery({
+      queryKey: ['device-monitors', device.id],
+      queryFn: () => fetchAssetArray(`/api/v1/monitoring/?device_id=${device.id}`),
       enabled: !!device.id
     })
 
-    const { data: deviceConnections } = useQuery({
-      queryKey: ['asset-connections', 'workspace', device.id],
-      queryFn: async () => (await (await apiFetch(`/api/v1/networks/connections?device_id=${device.id}`)).json()),
-      enabled: !!device.id
-    })
-
-    const { data: relatedKnowledge } = useQuery({
+    const knowledgeQuery = useQuery({
       queryKey: ['asset-knowledge', device.id],
-      queryFn: async () => (await apiFetch(`/api/v1/knowledge?device_id=${device.id}&embedded_consumer=assets`)).json(),
+      queryFn: () => fetchAssetArray(`/api/v1/knowledge?device_id=${device.id}&embedded_consumer=assets`),
       enabled: !!device.id
     })
 
-    const primaryMonitoringId = Array.isArray(monitoringItems) && monitoringItems[0]?.id ? monitoringItems[0].id : null
-    const suggestedKnowledge = relatedKnowledge
+    const primaryMonitoringId = monitoringQuery.data?.[0]?.id || null
+    const suggestedKnowledge = knowledgeQuery.data
 
-    const { data: maintenanceWindows } = useQuery({
+    const maintenanceQuery = useQuery({
       queryKey: ['asset-maintenance', device.id],
-      queryFn: async () => (await apiFetch(`/api/v1/maintenance?device_id=${device.id}`)).json(),
+      queryFn: () => fetchAssetArray(`/api/v1/maintenance?device_id=${device.id}`),
       enabled: !!device.id
     })
 
-    const { data: recentAuditLogs } = useQuery({
+    const auditQuery = useQuery({
       queryKey: ['asset-audit', device.id],
-      queryFn: async () => (await apiFetch(`/api/v1/audit?target_table=devices&target_id=${device.id}`)).json(),
+      queryFn: () => fetchAssetArray(`/api/v1/audit?target_table=devices&target_id=${device.id}`),
       enabled: !!device.id
     })
+
+    const farModes = farModesQuery.data
+    const monitoringItems = monitoringQuery.data
+    const relatedKnowledge = knowledgeQuery.data
+    const maintenanceWindows = maintenanceQuery.data
+    const recentAuditLogs = auditQuery.data
+    const relatedQueries = [
+      { label: 'FAR risks', query: farModesQuery },
+      { label: 'services', query: hostedServicesQuery },
+      { label: 'monitoring', query: monitoringQuery },
+      { label: 'runbooks', query: knowledgeQuery },
+      { label: 'maintenance', query: maintenanceQuery },
+      { label: 'audit history', query: auditQuery },
+    ]
+    const failedRelatedQueries = relatedQueries.filter(({ query }) => query.isError)
+    const retryRelatedQueries = () => failedRelatedQueries.forEach(({ query }) => { void query.refetch() })
 
     const consoleUrl = getAssetConsoleUrl(device)
-    const monitoringCount = Array.isArray(monitoringItems) ? monitoringItems.length : 0
-    const serviceCount = Array.isArray(hostedServices) ? hostedServices.length : 0
-    const farCount = Array.isArray(farModes) ? farModes.length : 0
-    const connectionCount = Array.isArray(deviceConnections) ? deviceConnections.length : 0
-    const runbookCount = Array.isArray(relatedKnowledge) ? relatedKnowledge.length : 0
-    const maintenanceCount = Array.isArray(maintenanceWindows) ? maintenanceWindows.length : 0
+    const displayCount = (query: typeof monitoringQuery) => query.isError ? '—' : query.isPending ? '…' : query.data?.length ?? 0
+    const monitoringCount = displayCount(monitoringQuery)
+    const serviceCount = displayCount(hostedServicesQuery)
+    const farCount = displayCount(farModesQuery)
+    const runbookCount = displayCount(knowledgeQuery)
+    const maintenanceCount = displayCount(maintenanceQuery)
 
     const mutation = useMutation({
         mutationFn: async (data: any) => {
@@ -405,10 +421,22 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
             return res.json()
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['devices'] }); queryClient.invalidateQueries({ queryKey: ['racks-all'] }); toast.success('Asset synchronized') },
+        meta: { handlesErrorToast: true },
         onError: (e: any) => toast.error(e.message || 'Failed to update asset')
     })
 
     return (
+      <>
+        {failedRelatedQueries.length > 0 && (
+          <div role="alert" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3">
+            <p className="text-[10px] font-bold text-amber-200">
+              Related asset data is unavailable for {failedRelatedQueries.map(({ label }) => label).join(', ')}. Affected counts and links are unknown until recovered.
+            </p>
+            <button type="button" onClick={retryRelatedQueries} disabled={failedRelatedQueries.some(({ query }) => query.isFetching)} className="min-h-9 rounded-md border border-amber-400/30 px-3 text-[9px] font-black uppercase tracking-wider text-amber-200 hover:bg-amber-400/10 disabled:cursor-wait disabled:opacity-60">
+              {failedRelatedQueries.some(({ query }) => query.isFetching) ? 'Retrying…' : 'Retry unavailable data'}
+            </button>
+          </div>
+        )}
         <div className="flex flex-col xl:flex-row gap-6 items-start">
             {/* MAIN CONTENT AREA */}
             <div className="w-full min-w-0 flex-1 space-y-6">
@@ -474,7 +502,9 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                                 </p>
                               </ModulePolicyButton>
                             ))}
-                            {!suggestedKnowledge?.length && <p className="col-span-2 text-[10px] font-bold uppercase text-slate-600 italic">No linked runbooks identified</p>}
+                            {knowledgeQuery.isLoading && <p role="status" className="col-span-2 text-[10px] font-bold uppercase text-slate-500 italic">Loading linked runbooks…</p>}
+                            {knowledgeQuery.isError && <p className="col-span-2 text-[10px] font-bold uppercase text-amber-300 italic">Linked runbooks unavailable</p>}
+                            {!knowledgeQuery.isLoading && !knowledgeQuery.isError && !suggestedKnowledge?.length && <p className="col-span-2 text-[10px] font-bold uppercase text-slate-600 italic">No linked runbooks identified</p>}
                         </div>
                     </div>
                 </div>
@@ -540,7 +570,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                         <ModulePolicyButton
                           moduleId="far"
                           disabled={!farModes?.[0]?.id}
-                          disabledReason={!farModes?.[0]?.id ? 'No related FAR risk recorded.' : undefined}
+                          disabledReason={farModesQuery.isError ? 'FAR risk data unavailable; retry related asset data.' : !farModes?.[0]?.id ? 'No related FAR risk recorded.' : undefined}
                           onClick={() => farModes?.[0]?.id && navigate(`/far?id=${farModes[0].id}`)}
                           className="flex flex-col items-center justify-center p-3 rounded-lg border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 transition-all group disabled:opacity-30"
                         >
@@ -570,7 +600,9 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                             <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-500">{item.severity} // {item.status}</p>
                           </button>
                         ))}
-                        {!monitoringCount && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No linked monitors</p>}
+                        {monitoringQuery.isLoading && <p role="status" className="text-[10px] font-bold uppercase text-slate-500 italic">Loading monitors…</p>}
+                        {monitoringQuery.isError && <p className="text-[10px] font-bold uppercase text-amber-300 italic">Monitor data unavailable</p>}
+                        {!monitoringQuery.isLoading && !monitoringQuery.isError && !monitoringCount && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No linked monitors</p>}
                     </div>
                 </div>
 
@@ -587,7 +619,9 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                             <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-500">{entry.category} // {entry.status}</p>
                           </ModulePolicyButton>
                         ))}
-                        {!runbookCount && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No linked knowledge</p>}
+                        {knowledgeQuery.isLoading && <p role="status" className="text-[10px] font-bold uppercase text-slate-500 italic">Loading linked knowledge…</p>}
+                        {knowledgeQuery.isError && <p className="text-[10px] font-bold uppercase text-amber-300 italic">Linked knowledge unavailable</p>}
+                        {!knowledgeQuery.isLoading && !knowledgeQuery.isError && !runbookCount && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No linked knowledge</p>}
                     </div>
                 </div>
 
@@ -612,7 +646,8 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                             <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-500 truncate">{log.description || 'No description'}</p>
                           </div>
                         ))}
-                        {!maintenanceCount && !(recentAuditLogs?.length > 0) && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No recent care events</p>}
+                        {maintenanceQuery.isError || auditQuery.isError ? <p className="text-[10px] font-bold uppercase text-amber-300 italic">Some care events are unavailable</p> : null}
+                        {!maintenanceQuery.isLoading && !auditQuery.isLoading && !maintenanceQuery.isError && !auditQuery.isError && !maintenanceCount && !(recentAuditLogs?.length > 0) && <p className="text-[10px] font-bold uppercase text-slate-600 italic">No recent care events</p>}
                         <ModulePolicyButton moduleId="monitoring" onClick={() => navigate(`/monitoring?workspace=maintenance&device_id=${device.id}`)} className="min-h-10 text-xs font-semibold text-[var(--action-ink)] underline">Open maintenance history</ModulePolicyButton>
                     </div>
                     <button 
@@ -624,6 +659,7 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                 </div>
             </div>
         </div>
+      </>
     )
 }
 
@@ -660,13 +696,15 @@ const HWTab = ({ deviceId, draft: newComp, setDraft: setNewComp, onPendingChange
 
 export const HWTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
-  const { data: hardware } = useQuery({ queryKey: ['device-hw', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/hardware`)).json()) })
+  const hardwareQuery = useQuery({ queryKey: ['device-hw', deviceId], queryFn: () => fetchAssetArray(`/api/v1/devices/${deviceId}/hardware`) })
+  const hardware = hardwareQuery.data
   const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
   
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/hardware/${id}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] }); toast.success('Component removed') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to delete component')
   })
 
@@ -680,6 +718,7 @@ export const HWTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
         cancelEdit()
         toast.success('Component Updated')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to update component')
   })
 
@@ -707,6 +746,8 @@ export const HWTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
+          {hardwareQuery.isLoading && <tr><td colSpan={5} className="p-3"><AssetDataState label="Hardware components" isLoading /></td></tr>}
+          {hardwareQuery.isError && <tr><td colSpan={5} className="p-3"><AssetDataState label="Hardware components" isError isFetching={hardwareQuery.isFetching} onRetry={() => void hardwareQuery.refetch()} /></td></tr>}
           {hardware?.map((h: any) => (
             <tr key={h.id} className="hover:bg-white/5 transition-colors">
               <td className="px-4 py-2 text-center">
@@ -752,7 +793,7 @@ export const HWTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
               </td>
             </tr>
           ))}
-          {!hardware?.length && <tr><td colSpan={8}><WorkspaceEmptyState compact title="No hardware mappings found" /></td></tr>}
+          {!hardwareQuery.isLoading && !hardwareQuery.isError && !hardware?.length && <tr><td colSpan={5}><WorkspaceEmptyState compact title="No hardware mappings found" /></td></tr>}
         </tbody>
       </table>
       <ConfirmationModal
@@ -821,13 +862,15 @@ const SecretsTab = ({ deviceId, draft: newSec, setDraft: setNewSec, onPendingCha
 
 export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
-  const { data: secrets } = useQuery({ queryKey: ['device-secrets', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/secrets`)).json()) })
+  const secretsQuery = useQuery({ queryKey: ['device-secrets', deviceId], queryFn: () => fetchAssetArray(`/api/v1/devices/${deviceId}/secrets`) })
+  const secrets = secretsQuery.data
   const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
 
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/secrets/${id}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); toast.success('Credential removed') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to delete credential')
   })
 
@@ -836,6 +879,7 @@ export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & I
         method: 'PUT', body: JSON.stringify(credentialUpdatePayload(data))
     }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); cancelEdit(); toast.success('Credential updated') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to update credential')
   })
 
@@ -862,6 +906,8 @@ export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & I
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
+          {secretsQuery.isLoading && <tr><td colSpan={5} className="p-3"><AssetDataState label="Credentials" isLoading /></td></tr>}
+          {secretsQuery.isError && <tr><td colSpan={5} className="p-3"><AssetDataState label="Credentials" isError isFetching={secretsQuery.isFetching} onRetry={() => void secretsQuery.refetch()} /></td></tr>}
           {secrets?.map((s: any) => (
             <tr key={s.id} className="hover:bg-white/5 transition-colors">
               <td className="px-4 py-2 font-bold uppercase text-[var(--text-secondary)]">
@@ -907,7 +953,7 @@ export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & I
               </td>
             </tr>
           ))}
-          {!secrets?.length && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-600 font-bold uppercase ">No credentials stored</td></tr>}
+          {!secretsQuery.isLoading && !secretsQuery.isError && !secrets?.length && <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-600 font-bold uppercase ">No credentials stored</td></tr>}
         </tbody>
       </table>
       <ConfirmationModal
@@ -924,7 +970,8 @@ export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & I
 
 export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange, inlineDraft }: { deviceId: number } & Partial<DraftProps<ReturnType<typeof emptyRelationshipDraft>>> & InlineDraftProps) => {
   const queryClient = useQueryClient()
-  const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
+  const devicesQuery = useQuery({ queryKey: ['devices'], queryFn: () => fetchAssetArray('/api/v1/devices') })
+  const devices = devicesQuery.data
   
   const types = useMemo(() => [
     { label: 'Depends On', s: 'Consumer', t: 'Provider' },
@@ -1017,6 +1064,7 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange, i
             <div className="min-w-0">
                <StyledSelect
                   value={newRel.target_device_id}
+                  disabled={devicesQuery.isLoading || devicesQuery.isError}
                   onChange={e => setNewRel({...newRel, target_device_id: e.target.value})}
                   options={devices?.filter((d:any)=> d.id !== deviceId).map((d:any)=>({ value: String(d.id), label: `${d.name} [${d.type}]` })) || []}
                   label="Peer Asset (B)"
@@ -1024,6 +1072,8 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange, i
                />
             </div>
          </div>
+
+         <AssetDataState label="Asset choices" isLoading={devicesQuery.isLoading} isError={devicesQuery.isError} isFetching={devicesQuery.isFetching} onRetry={() => void devicesQuery.refetch()} />
 
          <div className="flex flex-col gap-3 pt-3 border-t border-white/5">
             <div className="flex flex-wrap items-center gap-2">
@@ -1051,8 +1101,10 @@ export const RelationshipsTab = ({ deviceId, draft, setDraft, onPendingChange, i
 
 const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & InlineDraftProps) => {
   const queryClient = useQueryClient()
-  const { data: relationships } = useQuery({ queryKey: ['device-rel', deviceId], queryFn: async () => (await (await apiFetch(`/api/v1/devices/${deviceId}/relationships`)).json()) })
-  const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
+  const relationshipsQuery = useQuery({ queryKey: ['device-rel', deviceId], queryFn: () => fetchAssetArray(`/api/v1/devices/${deviceId}/relationships`) })
+  const devicesQuery = useQuery({ queryKey: ['devices'], queryFn: () => fetchAssetArray('/api/v1/devices') })
+  const relationships = relationshipsQuery.data
+  const devices = devicesQuery.data
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
   const { editingId, editData, setEditData, beginEdit, cancelEdit } = useAssetInlineDraft(inlineDraft)
 
@@ -1061,6 +1113,7 @@ const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/relationships/${id}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); toast.success('Relationship removed') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to delete relationship')
   })
 
@@ -1069,6 +1122,7 @@ const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
         method: 'PUT', body: JSON.stringify(data)
     }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); cancelEdit(); toast.success('Relationship updated') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to update relationship')
   })
 
@@ -1076,6 +1130,9 @@ const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
 
   return (
     <div role="region" aria-label="Asset relationships" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
+      <div className="p-3">
+        <AssetDataState label="Asset names" isLoading={devicesQuery.isLoading} isError={devicesQuery.isError} isFetching={devicesQuery.isFetching} onRetry={() => void devicesQuery.refetch()} />
+      </div>
       <table aria-busy={updateMutation.isPending} className="w-full min-w-[36rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
@@ -1086,6 +1143,8 @@ const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
+          {relationshipsQuery.isLoading && <tr><td colSpan={4} className="p-3"><AssetDataState label="Relationships" isLoading /></td></tr>}
+          {relationshipsQuery.isError && <tr><td colSpan={4} className="p-3"><AssetDataState label="Relationships" isError isFetching={relationshipsQuery.isFetching} onRetry={() => void relationshipsQuery.refetch()} /></td></tr>}
           {relationships?.map((r: any) => {
             const isSource = r.source_device_id === deviceId;
             const peerId = isSource ? r.target_device_id : r.source_device_id;
@@ -1177,7 +1236,7 @@ const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
               </tr>
             )
           })}
-          {!relationships?.length && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-600 font-bold uppercase ">No relationships defined</td></tr>}
+          {!relationshipsQuery.isLoading && !relationshipsQuery.isError && !relationships?.length && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-600 font-bold uppercase ">No relationships defined</td></tr>}
         </tbody>
       </table>
       <ConfirmationModal

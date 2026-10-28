@@ -3,6 +3,7 @@ import type { OperationalColumnConfig } from '../shared/OperationalGridContract'
 import { OPERATIONAL_GRID_WIDTHS } from '../shared/OperationalGridContract'
 import { buildOperationalGridColumnDefinitions } from '../shared/OperationalGridStandard'
 import type { VendorTableRow } from './vendorGoldenTypes'
+import { applyOperationalHeaderWidthBounds } from '../shared/operationalHeaderWidthBounds'
 
 type VendorGoldenColumnOptions = {
   fontSize: number
@@ -36,16 +37,18 @@ export function buildVendorGoldenColumns({
       kind: 'identity',
       field: 'name',
       headerName: 'Vendor Name',
-      width: 240,
+      width: 220,
       minWidth: 180,
-      maxWidth: 360,
+      maxWidth: 220,
       hide: hiddenColumns.includes('name'),
     },
     {
       kind: 'plain',
       field: 'country',
       headerName: 'Country',
-      width: 140,
+      width: 120,
+      minWidth: 120,
+      maxWidth: 128,
       emptyValue: 'Unspecified',
       hide: hiddenColumns.includes('country'),
     },
@@ -54,6 +57,8 @@ export function buildVendorGoldenColumns({
       field: 'primary_personnel_name',
       headerName: 'Primary Contact',
       width: 180,
+      minWidth: 180,
+      maxWidth: 200,
       emptyValue: 'Unassigned',
       hide: hiddenColumns.includes('primary_personnel_name'),
     },
@@ -61,8 +66,9 @@ export function buildVendorGoldenColumns({
       kind: 'actionLink',
       field: 'primary_personnel_email',
       headerName: 'Contact Email',
-      width: 220,
-      minWidth: 170,
+      width: 190,
+      minWidth: 190,
+      maxWidth: 200,
       fontSize,
       emptyValue: 'No email',
       onActivate: (params) => {
@@ -75,7 +81,8 @@ export function buildVendorGoldenColumns({
       kind: 'plain',
       field: 'active_contract_count',
       headerName: 'Active Contracts',
-      width: 150,
+      width: 210,
+      minWidth: 210,
       filter: 'agNumberColumnFilter',
       emptyValue: '0',
       formatValue: (value) => String(value ?? 0),
@@ -86,7 +93,8 @@ export function buildVendorGoldenColumns({
       kind: 'plain',
       field: 'contract_count',
       headerName: 'Total Contracts',
-      width: 145,
+      width: 210,
+      minWidth: 210,
       filter: 'agNumberColumnFilter',
       emptyValue: '0',
       formatValue: (value) => String(value ?? 0),
@@ -141,7 +149,12 @@ export function buildVendorGoldenColumns({
       onToggleWatch,
       itemLabel: 'vendor',
     },
-    columnConfigs,
+    // Reserve the header controls' space for the measured Vendor labels.
+    columnConfigs: applyOperationalHeaderWidthBounds(columnConfigs, {
+      country: { minWidth: 128, maxWidth: 128 },
+      primary_personnel_name: { minWidth: 192 },
+      personnel_count: { minWidth: 144 },
+    }),
     columnLayoutState,
     preserveExplicitColumnWidths,
   })

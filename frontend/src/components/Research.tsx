@@ -1,3 +1,4 @@
+import { useModulePolicy } from '../policy/ModulePolicy'
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -102,11 +103,13 @@ export const PriorityGauge = ({ value, onChange, disabled, type }: { value: stri
         {priorities.map((p, idx) => (
           <button
             key={p.id}
+            type="button"
+            aria-pressed={idx === activeIdx}
             onClick={() => onChange(typeof value === 'number' ? p.val : p.id)}
             className={`p-2 rounded-lg transition-all border-2 flex flex-col items-center gap-1 group ${idx === activeIdx ? p.border + ' bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)]' : 'border-white/5 bg-white/5 hover:border-white/10'}`}
           >
             <div className={`w-6 h-0.5 rounded-lg ${idx === activeIdx ? p.color : 'bg-slate-800'}`} />
-            <span className={`text-[9px] font-bold uppercase tracking-widest transition-all ${idx === activeIdx ? p.text : 'text-slate-500 group-hover:text-slate-400'}`}>
+            <span className={`whitespace-nowrap text-[8px] font-bold uppercase tracking-[0.08em] leading-none transition-all ${idx === activeIdx ? p.text : 'text-slate-500 group-hover:text-slate-400'}`}>
               {p.label}
             </span>
           </button>
@@ -184,6 +187,8 @@ const getResearchRecordDate = (item: any) =>
     : (item.initiation_at || item.created_at)
 
 export default function Research() {
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.research?.actions?.write === true
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -279,6 +284,7 @@ export default function Research() {
       toast.success('System Intelligence Synchronized', { id: `sync-${variables.id || 'new'}` })
       setActiveModal(null)
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => {
       toast.error(`Synchronization Failure: ${error.message || 'Unknown Error'}`, { id: 'sync-error' })
     }
@@ -413,9 +419,9 @@ export default function Research() {
     },
     { 
       field: "involved_systems", 
-      headerName: "Involved System", 
+      headerName: "Systems",
       width: 140, 
-      minWidth: 140,
+      minWidth: 120,
       maxWidth: 240,
       filter: true, 
       cellClass: "font-bold text-center", 
@@ -581,7 +587,8 @@ export default function Research() {
     { 
       field: "created_by_user_id", 
       headerName: "Created By", 
-      width: 130, 
+      width: 154,
+      minWidth: 144,
       filter: true, 
       cellClass: 'text-center font-bold text-blue-400 uppercase', 
       headerClass: 'text-center',
@@ -600,9 +607,9 @@ export default function Research() {
     },
     {
       field: "actions",
-      headerName: "Action",
-      width: 100,
-      minWidth: 100,
+      headerName: "Actions",
+      width: 128,
+      minWidth: 128,
       pinned: 'right',
       cellClass: 'text-center',
       headerClass: 'text-center',
@@ -640,7 +647,12 @@ export default function Research() {
         subtitle: 'Unified System Intelligence & RCA Engine',
       }}
       toolbarSearch={(
-        <ToolbarSearch value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Scan research..." />
+        <ToolbarSearch
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Scan research..."
+          ariaLabel="Search investigations"
+        />
       )}
       toolbarControls={(
         <ToolbarGroup>
@@ -661,7 +673,7 @@ export default function Research() {
         <ToolbarGroup>
           <ToolbarIconButton onClick={handleExportCSV} title="Export CSV"><FileText size={16} /></ToolbarIconButton>
           <ToolbarIconButton onClick={handleCopyToClipboard} disabled={selectedRecordKeys.length === 0} title="Copy to Clipboard"><Clipboard size={16} /></ToolbarIconButton>
-          <ToolbarButton variant="primary" onClick={() => setActiveModal({ title: '', status: 'Open', priority: 'Low', type: null, problem_statement: '', systems: [], target_systems: [] })}>
+          <ToolbarButton variant="primary" disabled={!canWrite} ariaLabel="Add Research" title={!canWrite ? 'Research edit permission is required' : undefined} onClick={() => setActiveModal({ title: '', status: 'Open', priority: 'Low', type: null, problem_statement: '', systems: [], target_systems: [] })}>
             <PlusCircle size={14}/> Add Research
           </ToolbarButton>
         </ToolbarGroup>
@@ -984,11 +996,11 @@ function UnifiedResearchForm({ item, options, devices, onClose, onSave, isSaving
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-full max-w-xl p-8 rounded-lg border border-blue-500/30 space-y-6">
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} role="dialog" aria-modal="true" aria-labelledby="research-form-title" className="glass-panel w-full max-w-xl p-8 rounded-lg border border-blue-500/30 space-y-6">
         {step === 0 ? (
           <div className="space-y-6">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold uppercase text-white tracking-tighter">Initialize Research Flow</h2>
+              <h2 id="research-form-title" className="text-2xl font-bold uppercase text-white tracking-tighter">Initialize Research Flow</h2>
               <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Select the nature of this investigation</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -1014,7 +1026,7 @@ function UnifiedResearchForm({ item, options, devices, onClose, onSave, isSaving
         ) : (
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
-              <h2 className={`text-xl font-bold uppercase flex items-center gap-3 tracking-tighter ${formData.type === 'RCA' ? 'text-purple-400' : 'text-blue-400'}`}>
+              <h2 id="research-form-title" className={`text-xl font-bold uppercase flex items-center gap-3 tracking-tighter ${formData.type === 'RCA' ? 'text-purple-400' : 'text-blue-400'}`}>
                 {formData.type === 'RCA' ? <ShieldAlert size={20}/> : <Search size={20}/>} 
                 Initialize {formData.type}
               </h2>
@@ -1050,7 +1062,7 @@ function UnifiedResearchForm({ item, options, devices, onClose, onSave, isSaving
                       type="datetime-local" 
                       value={formData.type === 'RCA' ? (formData.occurrence_at?.slice(0, 16) || '') : (formData.initiation_at?.slice(0, 16) || '')} 
                       onChange={e => setFormData({...formData, [formData.type === 'RCA' ? 'occurrence_at' : 'initiation_at']: e.target.value})}
-                      className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-[11px] outline-none focus:border-blue-500 text-slate-300 font-bold [color-scheme:dark]" 
+                      className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-[11px] outline-none focus:border-blue-500 text-slate-300 font-bold"
                     />
                  </div>
               </div>
@@ -2189,6 +2201,7 @@ function ResearchDetails({ item, onClose, onSave, setConfirmModal, fontSize, row
       setNewLog({ entry_text: '', entry_type: 'DIAGNOSIS', poc: '', timestamp: new Date().toISOString() })
       toast.success('Intelligence Pulse Captured')
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to capture intelligence pulse')
     }

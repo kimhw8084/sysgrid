@@ -83,6 +83,7 @@ import {
 import { WorkspaceCompareShell, WorkspaceDetailFields, WorkspaceDetailSection, WorkspaceDossierShell, WorkspaceHistoryShell } from './shared/WorkspaceModalShells'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
+import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
 import { OPERATIONAL_ACTION_LABELS } from './shared/OperationalActionLabels'
 import {
@@ -544,15 +545,14 @@ export default function MonitoringGrid() {
   const [lastVisitedAt] = useState<number>(() => persistedUiState?.lastVisitedAt ?? 0)
   const [pendingIds, setPendingIds] = useState<number[]>([])
 
-  const { data: allItems, isLoading, isError, error } = useQuery({
+  const { data: allItems, isLoading, isFetching, isError, error, refetch: retryMonitoringRegistry } = useQuery({
     queryKey: ['monitoring-items'],
-    queryFn: async () => (await apiFetch('/api/v1/monitoring?include_deleted=true')).json()
+    queryFn: () => fetchOperationalArray('/api/v1/monitoring?include_deleted=true', 'Monitoring registry'),
   })
 
   const fetchMonitoringDetail = useCallback(async (id: string) => {
-    const response = await apiFetch('/api/v1/monitoring?include_deleted=true')
-    const items = await response.json()
-    return Array.isArray(items) ? items.find((item: any) => String(item.id) === id) : null
+    const items = await fetchOperationalArray('/api/v1/monitoring?include_deleted=true', 'Monitoring registry')
+    return items.find((item: any) => String(item.id) === id) || null
   }, [])
 
   useEffect(() => {
@@ -1357,10 +1357,11 @@ export default function MonitoringGrid() {
     selectionScopeKey,
   })
 
+  const monitoringRegistryBlocked = !Array.isArray(allItems)
   const monitoringDataState = useMemo(
     () => resolveOperationalDataState({
       loading: isLoading,
-      error: isError ? error : null,
+      error: isError && monitoringRegistryBlocked ? error : null,
       totalCount: Array.isArray(allItems) ? allItems.length : 0,
       tabCount: items.length,
       visibleCount: displayedItemsInOrder.length,
@@ -1370,11 +1371,21 @@ export default function MonitoringGrid() {
       tabEmptyLabel: activeTab === 'deleted' ? 'No archived monitoring items found' : 'No active monitoring items found',
       errorTitle: 'Monitoring data could not be loaded',
       errorDescription: 'The monitoring registry request failed.',
+      degradedNotice: isError ? {
+        tone: 'warning',
+        title: 'Monitoring registry refresh failed',
+        description: monitoringRegistryBlocked
+          ? 'The registry could not be confirmed. Retry before adding or importing monitoring records.'
+          : 'Showing the last loaded monitoring records. Retry to confirm the current registry.',
+        actionLabel: 'Retry monitoring',
+        onAction: () => { void retryMonitoringRegistry() },
+        isActionLoading: isFetching,
+      } : undefined,
     }),
-    [activeTab, allItems, displayedItemsInOrder.length, error, isError, isLoading, items.length]
+    [activeTab, allItems, displayedItemsInOrder.length, error, isError, isFetching, isLoading, items.length, monitoringRegistryBlocked, retryMonitoringRegistry]
   )
 
-  const shouldRenderRawGrid = groupBy === 'raw' || monitoringDataState.kind !== 'ready'
+  const shouldRenderRawGrid = groupBy === 'raw' || monitoringDataState.kind !== 'ready' || isError
 
   const { handleRowClicked, handleRowDoubleClicked } = useOperationalRowInteractions({
     onRowDoubleClick: useCallback((item) => {
@@ -1666,6 +1677,7 @@ export default function MonitoringGrid() {
         } : undefined,
       })
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => showOperationalBulkErrorToast(e.message)
   })
 
@@ -1722,7 +1734,10 @@ export default function MonitoringGrid() {
     {
       kind: 'activeDot',
       field: 'is_active',
-      headerName: 'Existing',
+      headerName: 'Active',
+      width: 112,
+      minWidth: 112,
+      maxWidth: 112,
       getIsDeleted: (p) => p.data?.is_deleted || p.data?.status === 'Deleted',
       hide: hiddenColumns.includes('is_active'),
     },
@@ -1730,7 +1745,8 @@ export default function MonitoringGrid() {
       kind: 'hoverSummary',
       field: 'monitored_service_names',
       headerName: 'Services',
-      width: 110,
+      width: 136,
+      minWidth: 136,
       fontSize,
       tone: 'blue',
       getItems: (p) => p.value || [],
@@ -1748,6 +1764,7 @@ export default function MonitoringGrid() {
       kind: 'mappedBadge',
       field: 'severity',
       headerName: 'Severity',
+      minWidth: 150,
       fontSize,
       colorMap: MONITORING_SEVERITY_COLORS,
       knownValues: MONITORING_SEVERITIES.map((entry) => entry.label),
@@ -1756,8 +1773,9 @@ export default function MonitoringGrid() {
     {
       kind: 'plain',
       field: 'check_interval',
-      headerName: 'Freq',
-      width: 80,
+      headerName: 'Frequency',
+      width: 140,
+      minWidth: 136,
       formatValue: (value) => value ? `${value}s` : null,
       hide: hiddenColumns.includes('check_interval'),
     },
@@ -1845,7 +1863,7 @@ export default function MonitoringGrid() {
             <ToolbarButton onClick={() => navigate('/monitoring?workspace=maintenance')}><Terminal size={14} aria-hidden="true" />Maintenance</ToolbarButton>
             <HeaderScopeSwitch
               label="Registry Scope"
-              summary={`${lifecycleCounts.existing} existing · ${lifecycleCounts.archived} archived`}
+              summary={monitoringRegistryBlocked ? (isLoading ? 'Loading registry…' : 'Registry unavailable') : `${lifecycleCounts.existing} existing · ${lifecycleCounts.archived} archived`}
               value={activeTab}
               onChange={(next) => {
                 setActiveTab(next as 'active' | 'deleted')
@@ -1882,6 +1900,7 @@ export default function MonitoringGrid() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Scan matrix..."
+          ariaLabel="Search monitoring records"
         />
       )}
       toolbarControls={(
@@ -1914,7 +1933,7 @@ export default function MonitoringGrid() {
             </ToolbarIconButton>
           </ToolbarGroup>
           <ToolbarGroup>
-            <ToolbarButton onClick={() => setShowImportModal(true)} title="Import monitoring rows">
+            <ToolbarButton onClick={() => setShowImportModal(true)} disabled={monitoringRegistryBlocked} title={monitoringRegistryBlocked ? 'Retry the monitoring registry before importing rows' : 'Import monitoring rows'}>
               <span className="flex items-center gap-2">
                 <Upload size={14} />
                 Import
@@ -1996,7 +2015,7 @@ export default function MonitoringGrid() {
           )}
           <ToolbarButton
             onClick={() => togglePanel('bulk')}
-            disabled={!hasSelection()}
+            disabled={monitoringRegistryBlocked || !hasSelection()}
             active={showBulkMenu}
             title="Bulk actions"
             className="bulk-menu-trigger"
@@ -2009,6 +2028,8 @@ export default function MonitoringGrid() {
           </ToolbarButton>
           <ToolbarButton
             onClick={() => { setEditingItem(null); setIsFormOpen(true); }}
+            disabled={monitoringRegistryBlocked}
+            title={monitoringRegistryBlocked ? 'Retry the monitoring registry before adding a monitor' : undefined}
             variant="primary"
             className="px-6 py-2"
             ariaLabel="Add Monitoring"
@@ -2655,6 +2676,7 @@ function BulkEditTableModal({ items, teams, operators, severities, notificationM
       showWorkspaceToast(`Updated ${rows.length} monitor${rows.length === 1 ? '' : 's'}`)
       onSuccess()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message || 'Bulk edit failed', { type: 'error' }),
   })
 

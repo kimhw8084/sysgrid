@@ -4,6 +4,39 @@ import { test } from './helpers/sysgrid-test';
 import { createAsset, resetBrowserState, seedRackScenario } from './helpers/sysgrid'
 
 test.describe('Racks workflows', () => {
+  test('keeps rack data unavailable distinct from an empty rack list and recovers on retry', async ({ page }, testInfo) => {
+    await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
+
+    let allowRecovery = false
+    let failedAttempts = 0
+    let recoveredAttempts = 0
+    await page.route(/\/api\/v1\/racks\/?\?include_deleted=true$/, async route => {
+      if (!allowRecovery) {
+        failedAttempts += 1
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Temporary rack service outage.' }) })
+        return
+      }
+      recoveredAttempts += 1
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    })
+
+    await page.goto('/racks')
+    const failure = page.getByRole('alert').filter({ hasText: 'Rack records could not be loaded' })
+    await expect(failure).toContainText('Rack records could not be loaded')
+    await expect(failure).toContainText('An empty result has not been confirmed')
+    await expect(page.getByText('No Racks in Scope', { exact: true })).not.toBeVisible()
+    await expect(page.getByRole('button', { name: 'Add', exact: true })).not.toBeVisible()
+    expect(failedAttempts).toBeGreaterThan(0)
+    await page.screenshot({ path: testInfo.outputPath('rack-data-unavailable.png'), animations: 'disabled' })
+
+    allowRecovery = true
+    await page.getByRole('button', { name: 'Retry rack records', exact: true }).click()
+    await expect(page.getByText('No Racks in Scope', { exact: true })).toBeVisible()
+    expect(recoveredAttempts).toBe(1)
+    await page.screenshot({ path: testInfo.outputPath('rack-empty-confirmed-after-retry.png'), animations: 'disabled' })
+  })
+
   test('opens authoritative rack deep links and keeps query/history state coherent', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
     const { rackA1 } = await seedRackScenario(request)

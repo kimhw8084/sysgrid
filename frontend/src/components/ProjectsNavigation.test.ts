@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { buildProjectsDestinationPath, canonicalQueryKeys, parseProjectsLocation, projectRouteForLegacyView } from './ProjectsNavigation'
+import { buildProjectsDestinationPath, canonicalQueryKeys, parseProjectsLocation, projectRouteForLegacyView, shouldPreserveLegacyProjectsPortfolioLocation } from './ProjectsNavigation'
 
 describe('PV1 Projects canonical navigation', () => {
+  it('preserves explicit legacy Portfolio and saved-view state while canonical Portfolio stays clean', () => {
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?view=overview')).toBe(true)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?view=portfolio&section=roadmap')).toBe(true)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?saved_view=sv-1')).toBe(true)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?view=portfolio&section=control')).toBe(false)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?view=portfolio')).toBe(false)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?parent=project-1')).toBe(false)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=overview')).toBe(false)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=overview&legacy_workspace=1')).toBe(true)
+    expect(parseProjectsLocation('/projects', '?id=42&view=overview&legacy_workspace=1')).toMatchObject({ source: 'legacy', kind: 'home', projectId: '42' })
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=tasks&legacy_workspace=1')).toBe(false)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&saved_view=sv-1')).toBe(false)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects/42', '?view=overview')).toBe(false)
+  })
+
   it('keeps portfolio, My day, and new-project routes distinct', () => {
     expect(parseProjectsLocation('/projects').kind).toBe('portfolio')
     expect(parseProjectsLocation('/projects/my-day').kind).toBe('my-day')

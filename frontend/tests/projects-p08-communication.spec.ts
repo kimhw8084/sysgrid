@@ -1,7 +1,7 @@
 import { expect, request, test, type APIRequestContext, type Page } from '@playwright/test'
 
 const apiOrigin = () => process.env.SYSGRID_P08_API_ORIGIN || ''
-const user = 'p08.communication'
+const user = process.env.SYSGRID_P08_USER_ID || 'p08.communication'
 
 async function setupJourney() {
   const api = await request.newContext({ baseURL: apiOrigin(), extraHTTPHeaders: { 'X-User-Id': user, 'X-Tenant-Id': '1' } })
@@ -29,7 +29,7 @@ async function setupJourney() {
 async function open(page: Page, path: string) {
   await page.addInitScript((origin) => {
     localStorage.setItem('SYSGRID_OVERRIDE_API_URL', origin)
-    localStorage.setItem('SYSGRID_USER_ID', 'p08.communication')
+    localStorage.setItem('SYSGRID_USER_ID', user)
     localStorage.setItem('SYSGRID_TENANT_ID', '1')
   }, apiOrigin())
   await page.goto(path)

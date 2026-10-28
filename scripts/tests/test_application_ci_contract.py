@@ -43,7 +43,7 @@ def main() -> None:
     assert "      fail-fast: false\n" in qualification_job
     assert "exclude:" not in qualification_job
     assert "        include:\n" in qualification_job
-    for stage in ['checks', 'desktop', 'root-preview']:
+    for stage in ['checks', 'desktop', 'role-matrix', 'root-preview']:
         assert f'- {{stage: {stage}, label: {stage}, artifact: {stage}, shard: ""}}' in qualification_job
     for index in range(1, 4):
         assert f'- {{stage: normal-v1, label: normal-v1 shard {index}/3, artifact: normal-v1-{index}, shard: "{index}/3"}}' in qualification_job
@@ -149,7 +149,7 @@ def main() -> None:
     assert '"schema_version": "sysgrid.application-ci.evidence.v2"' in aggregate
     assert '"tested_trigger_sha": os.environ["GITHUB_SHA"]' in aggregate
     assert '"candidate_sha": os.environ["CANDIDATE_SHA"]' in aggregate
-    assert '"qualification_stages": ["checks", "normal-v1", "desktop", "root-preview"]' in aggregate
+    assert '"qualification_stages": ["checks", "normal-v1", "desktop", "role-matrix", "root-preview"]' in aggregate
     assert '"ref": os.environ["GITHUB_REF"]' in aggregate
     assert '"head_ref": os.environ.get("GITHUB_HEAD_REF") or os.environ["GITHUB_REF_NAME"]' in aggregate
     assert '"stage_evidence_artifacts"' in aggregate and '"runtime_provenance"' in aggregate

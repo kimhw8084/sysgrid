@@ -11,9 +11,12 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from hashlib import sha256
+import json
+import logging
 from time import monotonic
-from typing import Deque
+from typing import Deque, Mapping
 
 
 @dataclass(frozen=True)
@@ -95,3 +98,37 @@ def safe_request_metric(*, request_id: str, method: str, path: str, status_code:
     if job_delivery_status:
         metric["job_delivery_status"] = str(job_delivery_status)[:40]
     return metric
+
+
+def safe_route_template(scope: Mapping[str, object]) -> str:
+    """Return a low-cardinality router template; never log an unmatched raw path."""
+    route = scope.get("route")
+    path = getattr(route, "path", None)
+    if (
+        not isinstance(path, str)
+        or not path.startswith("/")
+        or len(path) > 240
+        or any(ord(character) < 32 for character in path)
+    ):
+        return "/unmatched"
+    return path
+
+
+class RequestMetricJsonFormatter(logging.Formatter):
+    """Serialize only the explicitly approved, already-redacted metric fields."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        metric = getattr(record, "pv1_metric", None)
+        payload = dict(metric) if isinstance(metric, dict) else {}
+        payload["timestamp"] = datetime.fromtimestamp(
+            record.created, tz=timezone.utc
+        ).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+        payload["level"] = record.levelname
+        payload["event"] = record.getMessage()[:80]
+        return json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )

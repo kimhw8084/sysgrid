@@ -107,7 +107,9 @@ class ProductionLifecycleTests(unittest.TestCase):
 
 
 class RuntimeVersionTests(unittest.TestCase):
-    def check_runtime(self, node_version="v22.23.2", npm_version="10.9.8", *, missing=None, failed=None):
+    def check_runtime(self, node_version="v22.23.2", npm_version="10.9.8", *, python_version=(3, 12, 0), missing=None, failed=None):
+        Version = namedtuple("Version", "major minor micro")
+
         def locate(binary):
             return None if binary == missing else "/runtime/" + binary
 
@@ -116,9 +118,9 @@ class RuntimeVersionTests(unittest.TestCase):
             output = node_version if binary == "node" else npm_version
             return subprocess.CompletedProcess(argv, int(binary == failed), output, "")
 
-        with patch.object(MODULE.shutil, "which", side_effect=locate), patch.object(
-            MODULE.subprocess, "run", side_effect=version
-        ):
+        with patch.object(MODULE.sys, "version_info", Version(*python_version)), patch.object(
+            MODULE.shutil, "which", side_effect=locate
+        ), patch.object(MODULE.subprocess, "run", side_effect=version):
             return MODULE._runtime_versions()
 
     def test_accepts_qualified_lts_floor_and_current_patch(self):
@@ -151,10 +153,9 @@ class RuntimeVersionTests(unittest.TestCase):
         self.assertTrue(self.check_runtime(npm_version="9.0.0")[0])
 
     def test_python_floor_matches_the_locked_numpy_requirement(self):
-        Version = namedtuple("Version", "major minor micro")
         for minor, accepted in ((11, False), (12, True), (13, True), (14, True)):
-            with self.subTest(minor=minor), patch.object(MODULE.sys, "version_info", Version(3, minor, 0)):
-                self.assertEqual(self.check_runtime()[0], accepted)
+            with self.subTest(minor=minor):
+                self.assertEqual(self.check_runtime(python_version=(3, minor, 0))[0], accepted)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ export function buildAssetGoldenRowActionSections({
   onOpenMap,
   onOpenDetails,
   onOpenEdit,
+  canWrite = true,
   onOpenReportSection,
   onAddToCompare,
   onCloseMenu,
@@ -32,6 +33,7 @@ export function buildAssetGoldenRowActionSections({
   onOpenMap: (asset: any) => void
   onOpenDetails: (asset: any) => void
   onOpenEdit: (asset: any) => void
+  canWrite?: boolean
   onOpenReportSection: (asset: any, section?: string) => void
   onAddToCompare: (asset: any) => void
   onCloseMenu: () => void
@@ -302,6 +304,10 @@ export function buildAssetGoldenRowActionSections({
     },
   ].map((section) => ({
     ...section,
-    items: section.items.filter(Boolean),
+    items: section.items.filter(Boolean).map((item: any) => (
+      !canWrite && ['asset-edit', 'asset-delete', 'asset-restore', 'asset-purge'].includes(item.id)
+        ? { ...item, disabled: true, ariaLabel: item.label, disabledReason: 'Asset edit permission is required' }
+        : item
+    )),
   }))
 }

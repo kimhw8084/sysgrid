@@ -244,6 +244,26 @@ describe('runExternalExportContractCheck', () => {
     expect(result.layer).toBe('CORS expose headers')
     expect(result.wildcardExposeHeadersDetected).toBe(true)
   })
+
+  it.each([
+    'https://api.example.com.attacker.invalid/api/v1/import/snapshot/external_entities?export_token=2026-06-30_15-11-09',
+    '//attacker.invalid/api/v1/import/snapshot/external_entities?export_token=2026-06-30_15-11-09',
+    '/api/v1/import/snapshot/other?export_token=2026-06-30_15-11-09',
+  ])('rejects an untrusted manifest download URL before fetching it: %s', async (download_url) => {
+    const urls: string[] = []
+    const inner = createFetchImpl({ manifest: { ...validManifest, download_url } })
+    const fetchImpl = (async (input, init) => {
+      urls.push(String(input))
+      return inner(input, init)
+    }) as typeof fetch
+
+    const result = await runCheck(fetchImpl)
+
+    expect(result.status).toBe('FAIL')
+    expect(result.manifest.verdict).toBe('FAIL')
+    expect(result.manifest.message).toContain('configured External export endpoint')
+    expect(urls).toEqual(['https://api.example.com/api/v1/import/snapshot/external_entities/manifest'])
+  })
 })
 
 describe('formatExternalExportContractReport', () => {

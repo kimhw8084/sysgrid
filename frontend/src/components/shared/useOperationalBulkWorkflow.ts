@@ -183,6 +183,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
       updateBulkOperationPreview(state)
       await onPreviewAccepted?.(state)
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any, variables) => {
       if (variables.generation === previewGeneration.current) {
         showOperationalBulkErrorToast(error?.message || previewErrorMessage)
@@ -291,6 +292,7 @@ export function useOperationalBulkWorkflow<TSnapshot>({
         onRevert: receiptRevert,
       })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showOperationalBulkErrorToast(error?.message || executionErrorMessage),
     onSettled: (_data, _error, variables, context) => {
       const ids = context?.ids?.length ? context.ids : uniqueIds(variables.ids ?? selectedIds)

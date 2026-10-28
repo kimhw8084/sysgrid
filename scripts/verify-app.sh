@@ -5,11 +5,11 @@ VERIFY_STAGE=all
 if [[ $# -eq 2 && "$1" == "--stage" ]]; then
   VERIFY_STAGE="$2"
 elif [[ $# -ne 0 ]]; then
-  echo "Usage: verify-app.sh [--stage all|checks|normal-v1|desktop|root-preview]" >&2
+  echo "Usage: verify-app.sh [--stage all|checks|normal-v1|desktop|role-matrix|root-preview]" >&2
   exit 2
 fi
 case "$VERIFY_STAGE" in
-  all|checks|normal-v1|desktop|root-preview) ;;
+  all|checks|normal-v1|desktop|role-matrix|root-preview) ;;
   *) echo "Unknown application qualification stage: '$VERIFY_STAGE'." >&2; exit 2 ;;
 esac
 VERIFY_SHARD="${SYSGRID_VERIFY_SHARD:-}"
@@ -45,10 +45,17 @@ reset_generated_evidence() {
   mkdir -p "$BACKEND_DIR/test-results" "$FRONTEND_DIR/test-results"
 }
 
-reset_generated_evidence
 verify_runtime_resolve_python
 verify_runtime_resolve_node
-trap 'status=$?; verify_runtime_cleanup; exit "$status"' EXIT INT TERM
+reset_generated_evidence
+BACKEND_QUALIFICATION_ROOT=""
+cleanup_backend_qualification() {
+  if [[ -n "$BACKEND_QUALIFICATION_ROOT" && -f "$BACKEND_QUALIFICATION_ROOT/.sysgrid-owned" ]]; then
+    rm -rf -- "$BACKEND_QUALIFICATION_ROOT"
+  fi
+  BACKEND_QUALIFICATION_ROOT=""
+}
+trap 'status=$?; cleanup_backend_qualification; verify_runtime_cleanup; exit "$status"' EXIT INT TERM
 
 if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
 (
@@ -57,6 +64,7 @@ if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
     scripts/tests/test_safe_startup.py \
     scripts/tests/test_runtime_origin_config.py \
     scripts/tests/test_verify_runtime_ownership.py \
+    scripts/tests/test_verify_runtime_node.py \
     scripts/tests/test_production_data_guard.py \
     scripts/tests/test_production_lifecycle.py \
     scripts/tests/test_production_preflight.py \
@@ -120,6 +128,7 @@ BACKEND_QUALIFICATION_TESTS=(
   test_monitoring_history_authority.py
   test_monitoring_stale_form.py
   test_monitoring_edit_migration.py
+  test_external_vendor_revision_migration.py
   test_monitoring_domain_contract.py
   test_monitoring_purge_authority.py
   tests/test_monitoring_helpers.py
@@ -150,42 +159,150 @@ BACKEND_QUALIFICATION_TESTS=(
   test_workspace_views.py
   test_workspace_team_views.py
   test_asset_vendor_bulk_workflows.py
+  test_external_workflows.py
+  test_projects_workflows.py
+  tests/test_project_hierarchy.py
+  tests/test_projects_workspace_saved_views.py
+  test_pv1_domain_foundation.py
+  test_p04_creation_portfolio_home.py
+  test_p05_my_day_work_plan.py
+  test_p06_schedule_core.py
+  test_p06_timeline_scheduling.py
+  test_p06_schedule_performance.py
+  test_p07_architecture_engine.py
+  test_p08_updates_resources_reports.py
+  test_p09_outcomes_delivery_value.py
+  test_p10_cross_cutting_hardening.py
+  test_p11_project_portfolio_contract.py
   test_import_workflows.py
   test_revert_logic.py
   test_audit_integrity.py
 )
 
+BACKEND_QUALIFICATION_BATCH_SIZE=100
+run_backend_qualification_pytest() {
+  local temp_dir="$1"
+  shift
+  (
+    cd "$BACKEND_DIR"
+    env \
+      -u CONFIG_DATABASE_URL \
+      -u DATABASE_URL \
+      -u TENANT_STORAGE_ROOT \
+      -u DEFAULT_TENANT_NAME \
+      -u PUBLIC_READONLY_ENABLED \
+      -u DEFAULT_USER_ID \
+      -u AUTO_ADMIN_USER_IDS \
+      -u USER_ID_ENV_VAR \
+      -u SYSGRID_VERIFY_RUNTIME_USER_ID \
+      -u SYSGRID_VERIFY_USER_ID \
+      -u USER_ID \
+      -u user_name \
+      -u DEFAULT_EMAIL_DOMAIN \
+      -u ENVIRONMENT \
+      -u TESTING \
+      -u ALLOWED_HOSTS \
+      -u BACKEND_CORS_ORIGINS \
+      -u IDENTITY_MODE \
+      -u TRUSTED_PROXY_USER_HEADER \
+      TMPDIR="$temp_dir" \
+    "$PYTHON_BIN" -m pytest -q "$@"
+  )
+}
+
+run_backend_qualification_batch() {
+  local batch_number="$1"
+  shift
+  local batch_dir="$BACKEND_QUALIFICATION_ROOT/batch-$batch_number"
+  local batch_status=0
+  mkdir -p "$batch_dir"
+  echo "Backend qualification batch $batch_number: $# collected test cases."
+  if run_backend_qualification_pytest "$batch_dir" --basetemp="$batch_dir/pytest" "$@"; then
+    :
+  else
+    batch_status=$?
+  fi
+  rm -rf -- "$batch_dir"
+  return "$batch_status"
+}
+
+run_backend_qualification() {
+  local collect_dir="$BACKEND_QUALIFICATION_ROOT/collect"
+  local collection_output="$BACKEND_QUALIFICATION_ROOT/collection.txt"
+  local item item_path selected_test found batch_number=0
+  local -a backend_items=() batch_items=()
+  mkdir -p "$collect_dir"
+  if run_backend_qualification_pytest "$collect_dir" --collect-only --basetemp="$collect_dir/pytest" \
+    "${BACKEND_QUALIFICATION_TESTS[@]}" >"$collection_output" 2>&1; then
+    :
+  else
+    local collect_status=$?
+    cat "$collection_output"
+    return "$collect_status"
+  fi
+
+  while IFS= read -r item; do
+    [[ "$item" == *::* ]] || continue
+    item_path="${item%%::*}"
+    found=false
+    for selected_test in "${BACKEND_QUALIFICATION_TESTS[@]}"; do
+      if [[ "$item_path" == "$selected_test" ]]; then
+        found=true
+        break
+      fi
+    done
+    if [[ "$found" != true ]]; then
+      echo "Backend collection returned an unselected test path: $item_path" >&2
+      return 1
+    fi
+    backend_items+=("$item")
+  done < "$collection_output"
+  if [[ "${#backend_items[@]}" -eq 0 ]]; then
+    echo "Backend qualification collected no test cases." >&2
+    return 1
+  fi
+  for selected_test in "${BACKEND_QUALIFICATION_TESTS[@]}"; do
+    found=false
+    for item in "${backend_items[@]}"; do
+      if [[ "${item%%::*}" == "$selected_test" ]]; then
+        found=true
+        break
+      fi
+    done
+    if [[ "$found" != true ]]; then
+      echo "Backend qualification collected no cases from $selected_test." >&2
+      return 1
+    fi
+  done
+  rm -rf -- "$collect_dir"
+
+  for item in "${backend_items[@]}"; do
+    batch_items+=("$item")
+    if [[ "${#batch_items[@]}" -eq "$BACKEND_QUALIFICATION_BATCH_SIZE" ]]; then
+      batch_number=$((batch_number + 1))
+      run_backend_qualification_batch "$batch_number" "${batch_items[@]}"
+      batch_items=()
+    fi
+  done
+  if [[ "${#batch_items[@]}" -gt 0 ]]; then
+    batch_number=$((batch_number + 1))
+    run_backend_qualification_batch "$batch_number" "${batch_items[@]}"
+  fi
+}
+
 if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
-(
-  cd "$BACKEND_DIR"
-  env \
-    -u CONFIG_DATABASE_URL \
-    -u DATABASE_URL \
-    -u TENANT_STORAGE_ROOT \
-    -u DEFAULT_TENANT_NAME \
-    -u PUBLIC_READONLY_ENABLED \
-    -u DEFAULT_USER_ID \
-    -u AUTO_ADMIN_USER_IDS \
-    -u USER_ID_ENV_VAR \
-    -u SYSGRID_VERIFY_RUNTIME_USER_ID \
-    -u SYSGRID_VERIFY_USER_ID \
-    -u USER_ID \
-    -u user_name \
-    -u DEFAULT_EMAIL_DOMAIN \
-    -u ENVIRONMENT \
-    -u TESTING \
-    -u ALLOWED_HOSTS \
-    -u BACKEND_CORS_ORIGINS \
-    -u IDENTITY_MODE \
-    -u TRUSTED_PROXY_USER_HEADER \
-  "$PYTHON_BIN" -m pytest -q "${BACKEND_QUALIFICATION_TESTS[@]}"
-)
+  BACKEND_QUALIFICATION_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/sysgrid-backend-qualification.XXXXXX")"
+  : > "$BACKEND_QUALIFICATION_ROOT/.sysgrid-owned"
+  run_backend_qualification
+  cleanup_backend_qualification
 
 (
   cd "$FRONTEND_DIR"
   node scripts/check-theme-preference.mjs
   node scripts/check-dev-server-boundary.mjs
   node scripts/check-desktop-test-selection.mjs
+  node scripts/check-normal-release-selection.mjs
+  node scripts/check-role-matrix-selection.mjs
   npm run check:operational-contracts
   npm run typecheck
   npm run test:coverage
@@ -199,7 +316,7 @@ if [[ "$VERIFY_STAGE" != checks && ! -x "$PLAYWRIGHT_BIN" ]]; then
   exit 1
 fi
 
-for gate in normal-v1 desktop root-preview; do
+for gate in normal-v1 desktop role-matrix root-preview; do
   [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == "$gate" ]] || continue
   VERIFY_RUNTIME_CLEANED="false"
   VERIFY_RUNTIME_DIR=""
@@ -210,6 +327,7 @@ for gate in normal-v1 desktop root-preview; do
   case "$gate" in
     normal-v1) config=playwright.v1.config.ts ;;
     desktop) config=playwright.desktop.config.ts; export SYSGRID_DESKTOP_ONLY=1 ;;
+    role-matrix) config=playwright.role-matrix.config.ts; export SYSGRID_VERIFY_PROFILE=role-matrix; export SYSGRID_DESKTOP_ONLY=1 ;;
     root-preview)
       config=playwright.root-preview.config.ts
       export SYSGRID_VERIFY_PROFILE=root-preview

@@ -27,6 +27,7 @@ export type EffectiveModulePolicyProjection = {
   catalog_version: string
   profile_id: string
   identity: {
+    user_id: string | null
     authenticated: boolean
     tenant_id: number | string | null
     access_role: string | null
@@ -45,8 +46,11 @@ export function useModulePolicy() {
     queryFn: async () => (await apiFetch('/api/v1/policy/module-availability')).json(),
     staleTime: 30000,
     retry: 1,
+    refetchOnWindowFocus: 'always',
   })
 }
+
+export const effectiveIdentityChanged = (previous: string | null | undefined, current: string | null | undefined) => previous !== undefined && current !== undefined && previous !== current
 
 export function moduleIsReleased(policy: EffectiveModulePolicyProjection | undefined, moduleId: string) {
   const module = policy?.modules?.[moduleId]

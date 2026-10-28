@@ -279,6 +279,7 @@ export function OperationalImportModal({
         : ''
       showWorkspaceToast(`${ready}${correction}.`, { type: data.invalid_rows > 0 ? 'error' : 'info' })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any, lifecycle) => {
       if (!isOpen || lifecycle !== lifecycleRef.current) return
       showWorkspaceToast(error.message || 'Preview failed', { type: 'error' })
@@ -311,6 +312,7 @@ export function OperationalImportModal({
       showWorkspaceToast(`Imported ${data.count} row${data.count === 1 ? '' : 's'}`)
       onClose()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any, lifecycle) => {
       if (!isOpen || lifecycle !== lifecycleRef.current) return
       showWorkspaceToast(error.message || 'Import failed', { type: 'error' })

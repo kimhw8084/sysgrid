@@ -80,11 +80,6 @@ test.describe('Assets and Vendors authoritative bulk completion', () => {
       expect(assetsRestored.find((row: any) => row.id === asset.id)?.environment).toBe('Production')
     }
 
-    // Vendors remains deferred/preview-only for normal-v1. Keep the asset
-    // qualification above release-blocking and retain vendor coverage for the
-    // explicit root-preview and historical suites.
-    if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1') return
-
     const vendors = []
     for (const suffix of ['A', 'B']) {
       const response = await request.post(`${apiBase}/vendors`, {

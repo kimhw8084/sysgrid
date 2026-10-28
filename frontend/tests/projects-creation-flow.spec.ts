@@ -1,97 +1,73 @@
-import { clickResilientButton } from './helpers/sysgrid';
-import { expect } from '@playwright/test';
-import { test } from './helpers/sysgrid-test';
-import { resetBrowserState, seedOperationalScenario } from './helpers/sysgrid'
+import { expect } from '@playwright/test'
+import { test } from './helpers/sysgrid-test'
+import { clickResilientButton } from './helpers/sysgrid'
 
-test.describe('Projects Creation Workflow', () => {
-  test('should create a new project with cascading multi-selects and month/year dates', async ({ page, sysApi: request }) => {
-    // 1. Seed data
-    const seed = await seedOperationalScenario(request)
-    const nonce = seed.stamp
-    const systemName = seed.systemName
-    const assetName = seed.primary.name
-    const serviceName = seed.service.name
-    
-    // Seed the system option so it shows up in ProjectForm
-    await request.post('http://127.0.0.1:8000/api/v1/settings/options', {
+const apiOrigin = process.env.SYSGRID_P04_API_ORIGIN || 'http://127.0.0.1:8000'
+const userId = process.env.USER_ID || 'haewon.kim'
+const tenantId = process.env.PW_TENANT_ID || '1'
+const headers = { 'X-User-Id': userId, 'X-Tenant-Id': tenantId }
+
+test.describe('Projects guided creation workflow', () => {
+  test('creates, restores, and discards a server-backed project draft', async ({ page, request }) => {
+    const teamResponse = await request.post(`${apiOrigin}/api/v1/settings/teams`, {
+      headers,
       data: {
-        category: 'LogicalSystem',
-        label: systemName,
-        value: systemName
-      }
+        name: `PW-PROJECT-FLOW-${globalThis.crypto.randomUUID()}`,
+        description: 'Isolated guided-creation workflow fixture',
+      },
     })
-    
-    await resetBrowserState(page)
+    expect(teamResponse.ok(), await teamResponse.text()).toBeTruthy()
+    const team = await teamResponse.json()
+
+    const projectName = `PW-GUIDED-PROJECT-${globalThis.crypto.randomUUID()}`
+    const objective = 'Reduce review time while keeping decisions traceable.'
+    const problem = 'Manual reviews delay decisions and lose context between teams.'
+
+    await page.addInitScript(({ backend, actor, tenant }) => {
+      localStorage.setItem('SYSGRID_OVERRIDE_API_URL', backend)
+      localStorage.setItem('SYSGRID_USER_ID', actor)
+      localStorage.setItem('SYSGRID_TENANT_ID', tenant)
+      localStorage.setItem('sysgrid-theme', 'nordic-frost-v1')
+      localStorage.removeItem('sysgrid_projects_creation_recovery_v1')
+    }, { backend: apiOrigin, actor: userId, tenant: tenantId })
+
     await page.goto('/projects')
-    
-    // 2. Start project creation
-    const newVectorButton = page.getByRole('button', { name: 'New Vector', exact: true })
-    await expect(newVectorButton).toBeVisible({ timeout: 20000 })
-    await newVectorButton.click()
-    await expect(page.getByText('Strategic Matrix Configuration')).toBeVisible()
-    
-    const projectName = `PW-PROJECT-${nonce}`
-    await page.getByPlaceholder('Enter project name...').fill(projectName)
-    
-    // 3. Test month/year inputs for dates
-    // Initialization (Start Date)
-    const monthSelects = page.locator('select').filter({ has: page.locator('option', { hasText: 'JAN' }) })
-    const yearSelects = page.locator('select').filter({ has: page.locator('option', { hasText: '2026' }) })
-    
-    const startMonth = monthSelects.first()
-    const startYear = yearSelects.first()
-    
-    await startMonth.selectOption({ label: 'MAR' })
-    await startYear.selectOption({ label: '2026' })
-    
-    // Termination (End Date)
-    const endMonth = monthSelects.nth(1)
-    const endYear = yearSelects.nth(1)
-    
-    await endMonth.selectOption({ label: 'OCT' })
-    await endYear.selectOption({ label: '2027' })
-    
-    // 4. Test cascading multi-selects
-    // The cascading lists are independently scrollable. Trigger the native checkbox
-    // click directly so this test verifies React state propagation rather than pointer
-    // geometry inside nested scroll containers.
-    const selectCascadingOption = async (labelText: string) => {
-      const checkbox = page
-        .locator('label')
-        .filter({ hasText: labelText })
-        .locator('input[type="checkbox"]')
-        .first()
-      await expect(checkbox).toBeAttached({ timeout: 15000 })
-      await checkbox.evaluate((element: HTMLInputElement) => {
-        if (!element.checked) element.click()
-      })
-      await expect(checkbox).toBeChecked()
-    }
+    await expect(page.locator('[data-p04-portfolio="true"]')).toBeVisible()
+    await page.getByRole('link', { name: 'New project', exact: true }).first().click()
+    await expect(page).toHaveURL(/\/projects\/new$/)
 
-    await selectCascadingOption(systemName)
+    const purpose = page.locator('[data-p04-step="purpose"]')
+    await purpose.getByLabel('Team').selectOption(String(team.id))
+    await purpose.getByLabel(/Project name/).fill(projectName)
+    await purpose.getByLabel(/Objective/).fill(objective)
+    await purpose.getByLabel('Problem/context').fill(problem)
+    await purpose.getByRole('button', { name: /Automation/ }).click()
+    await clickResilientButton(page, /Next/)
 
-    // The asset becomes available only after its system is selected.
-    await selectCascadingOption(assetName)
+    await expect(page).toHaveURL(/\/projects\/new\?draft=/)
+    await expect(page.locator('[data-p04-step="success"]')).toBeVisible()
+    const draftId = new URL(page.url()).searchParams.get('draft')
+    expect(draftId).toBeTruthy()
 
-    // The service becomes available only after its asset is selected.
-    await selectCascadingOption(serviceName)
+    const draftResponse = await request.get(`${apiOrigin}/api/v2/projects/${draftId}`, { headers })
+    expect(draftResponse.ok(), await draftResponse.text()).toBeTruthy()
+    const draft = await draftResponse.json()
+    expect(draft).toMatchObject({ id: draftId, name: projectName, objective, team_id: team.id })
 
-    // 5. Commit Project
-    await clickResilientButton(page, 'Commit Strategic Vector')
-    
-    // 6. Verify success
-    await expect(page.getByText('Strategic Matrix Synchronized')).toBeVisible()
-    
-    // 7. Verify details in workbench (auto-redirect)
-    await expect(page.locator('h1').filter({ hasText: projectName })).toBeVisible()
-    
-    // 8. Verify project in rail
-    // The rail item has the project name as text
-    await expect(page.getByText(projectName, { exact: true }).first()).toBeVisible()
-    
-    // 9. Verify Strategic Context reflects seeded data
-    await expect(page.getByText(systemName)).toBeVisible()
-    await expect(page.getByText(assetName)).toBeVisible()
-    await expect(page.getByText(serviceName)).toBeVisible()
+    await page.reload()
+    await expect(page.locator('[data-p04-step="success"]')).toBeVisible()
+    await clickResilientButton(page, 'Back')
+    await expect(purpose.getByLabel(/Project name/)).toHaveValue(projectName)
+    await expect(purpose.getByLabel(/Objective/)).toHaveValue(objective)
+
+    await clickResilientButton(page, 'Discard')
+    const confirmation = page.getByRole('dialog')
+    await expect(confirmation).toBeVisible()
+    await confirmation.getByRole('button', { name: 'Discard draft', exact: true }).click()
+    await expect(page).toHaveURL(/\/projects$/)
+
+    const discardedResponse = await request.get(`${apiOrigin}/api/v2/projects/${draftId}`, { headers })
+    expect(discardedResponse.ok(), await discardedResponse.text()).toBeTruthy()
+    expect((await discardedResponse.json()).archived_at).toBeTruthy()
   })
 })

@@ -205,6 +205,7 @@ const ServiceSecretsTab = ({ serviceId }: { serviceId: number }) => {
       return res.json()
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['logical-services'] }); setNewSecret({ username: '', password: '', note: '' }); toast.success('Credential Added') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to add credential')
   })
 
@@ -214,6 +215,7 @@ const ServiceSecretsTab = ({ serviceId }: { serviceId: number }) => {
       return res.json()
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['logical-services'] }); toast.success('Credential Revoked') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to revoke credential')
   })
 
@@ -730,6 +732,7 @@ export default function ServiceRegistry() {
       return res.json()
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["logical-services"] }); setSelectedIds([]); setShowBulkMenu(false); setIsBulkStatusOpen(false); setIsBulkEnvOpen(false); setIsBulkHostOpen(false); toast.success('Operation Complete') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Bulk operation failed')
   })
 

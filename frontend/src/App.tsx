@@ -37,7 +37,7 @@ import { FatalErrorState, PermissionDeniedState } from "./components/shared/Shel
 import { SHELL_NAV_GROUPS, ShellNavGroup, ShellNavItem, isShellRouteActive } from "./components/shared/ShellNavigation"
 import { normalizeTheme } from "./components/shared/theme"
 import { useRouteFocus } from "./components/shared/routeFocus"
-import { ModulePolicyGate, useModulePolicy } from './policy/ModulePolicy'
+import { effectiveIdentityChanged, ModulePolicyGate, useModulePolicy } from './policy/ModulePolicy'
 
 const APP_VERSION = metadata.version
 const PATCH_HISTORY = metadata.patchHistory
@@ -347,7 +347,7 @@ function MainLayout() {
       <ProjectsNavigationBackdrop nav={projectNavigation} />
       <a href="#sg-main-content" className="skip-link">Skip to content</a>
       <motion.aside
-        initial={projectNavigation.active || projectNavigation.mobile ? false : undefined}
+        initial={false}
         transition={projectNavigation.active ? { duration: 0 } : undefined}
         animate={{ width: projectNavigation.sidebarExpanded ? 240 : 80 }}
         className="glass-panel relative z-20 flex shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--sidebar-bg)] shadow-xl"
@@ -522,6 +522,26 @@ function MainLayout() {
 import { ErrorSentinel } from './components/shared/ErrorSentinel'
 
 function ReconnectRefresh() {
+  const modulePolicy = useModulePolicy()
+  const lastServerUserId = React.useRef<string | null | undefined>(undefined)
+  const serverUserId = modulePolicy.data ? modulePolicy.data.identity.user_id : undefined
+  const clearWorkspaceQueries = React.useCallback(() => {
+    queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'module-policy' })
+    queryClient.getMutationCache().clear()
+  }, [])
+  React.useLayoutEffect(() => {
+    if (modulePolicy.isError && lastServerUserId.current !== undefined) {
+      lastServerUserId.current = undefined
+      clearWorkspaceQueries()
+      return
+    }
+    if (!effectiveIdentityChanged(lastServerUserId.current, serverUserId)) {
+      if (serverUserId !== undefined) lastServerUserId.current = serverUserId
+      return
+    }
+    lastServerUserId.current = serverUserId
+    clearWorkspaceQueries()
+  }, [serverUserId, modulePolicy.isError, clearWorkspaceQueries])
   React.useEffect(() => {
     const refresh = () => { void queryClient.invalidateQueries() }
     const handleScopeChange = () => {
@@ -540,12 +560,21 @@ function ReconnectRefresh() {
   return null
 }
 
+function EffectiveIdentityBoundary({ children }: { children: React.ReactNode }) {
+  const policy = useModulePolicy()
+  if (policy.isFetching) return <main className="min-h-screen p-8 text-center" role="status" aria-busy="true"><h1 className="text-lg font-semibold">Verifying your account</h1><p className="mt-2">Project and workspace data will appear after the authenticated account is confirmed.</p></main>
+  if (policy.isError || !policy.data?.identity?.user_id) return <main className="min-h-screen p-8 text-center" role="status"><h1 className="text-lg font-semibold">Account unavailable</h1><p className="mt-2">The authenticated account could not be verified, so workspace data is hidden.</p><button className="mt-4 rounded-lg border px-4 py-2 font-medium" onClick={() => void policy.refetch()}>Retry</button></main>
+  return <>{children}</>
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ReconnectRefresh />
       <ErrorSentinel>
-        <RouterProvider router={appRouter} />
+        <EffectiveIdentityBoundary>
+          <RouterProvider router={appRouter} />
+        </EffectiveIdentityBoundary>
       </ErrorSentinel>
     </QueryClientProvider>
   )

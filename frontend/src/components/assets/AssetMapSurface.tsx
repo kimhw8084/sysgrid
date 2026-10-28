@@ -48,8 +48,12 @@ export function AssetMapSurface({ assets, visibleAssets, connections, relationsh
         <input aria-label="Filter starting assets" value={assetSearch} onChange={event => setAssetSearch(event.target.value)} placeholder="Filter the asset list…" className="asset-map-list-search" />
         <div className="asset-map-asset-list">{choices.map(asset => <button type="button" key={asset.id} aria-pressed={selectedAssetIds.includes(Number(asset.id))} onClick={() => {
           const id = Number(asset.id)
-          setSelectedAssetIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
-          setSelectedNodeId(id)
+          const isSelected = selectedAssetIds.includes(id)
+          const nextSelectedAssetIds = isSelected
+            ? selectedAssetIds.filter(value => value !== id)
+            : [...selectedAssetIds, id]
+          setSelectedAssetIds(nextSelectedAssetIds)
+          setSelectedNodeId(current => !isSelected ? id : current === id ? nextSelectedAssetIds[0] ?? null : current)
         }}><Box size={14} aria-hidden="true" /><span>{asset.name}</span></button>)}{!choices.length && <p>No matching assets.</p>}</div>
       </details>
       <label className="asset-map-label" htmlFor="asset-map-depth">Connection depth <span>{depth} {depth === 1 ? 'hop' : 'hops'}</span></label>

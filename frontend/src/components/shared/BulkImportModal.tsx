@@ -53,6 +53,7 @@ export function BulkImportModal({ isOpen, onClose, tableName, displayName }: Bul
       setSelectedRowIndices(validIndices)
       setStep('audit')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => {
       toast.error(`Audit Failed: ${e.message}`)
     }
@@ -77,6 +78,7 @@ export function BulkImportModal({ isOpen, onClose, tableName, displayName }: Bul
         toast.error(`Ingestion Failed: ${data.errors?.join(", ")}`)
       }
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => {
       toast.error(`Ingestion Failed: ${e.message}`)
     }

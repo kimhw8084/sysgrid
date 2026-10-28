@@ -13,7 +13,15 @@ const fixture = vi.hoisted(() => ({
   rows: [{ id: 1, name: 'First', system: 'Selection', status: 'Active', type: 'Physical' }, { id: 2, name: 'Second', system: 'Selection', status: 'Active', type: 'Physical' }],
 }))
 
-vi.mock('../../api/apiClient', () => ({ apiFetch: vi.fn(async (path: string) => ({ ok: true, json: async () => path.includes('include_deleted=true') ? fixture.rows : [] })) }))
+vi.mock('../../api/apiClient', () => ({
+  apiFetch: vi.fn(async (path: string) => ({
+    ok: true,
+    json: async () => path === '/api/v1/policy/module-availability'
+      ? { modules: { assets: { actions: { write: true } } } }
+      : path.includes('include_deleted=true') ? fixture.rows : [],
+  })),
+  getRequestScopeKey: () => 'asset-selection-test',
+}))
 vi.mock('./AssetGoldenShellScaffold', () => ({ default: ({ children }: any) => children }))
 vi.mock('./AssetGoldenDialogs', () => ({ AssetGoldenDialogs: () => null }))
 vi.mock('../shared/OperationalBulkPreviewModal', () => ({ OperationalBulkPreviewModal: () => null }))

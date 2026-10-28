@@ -106,6 +106,7 @@ export const OperationalGridMatrix = React.memo(({
       rowData={rowData}
       columnDefs={columnDefs}
       autoSizeStrategy={autoSizeStrategy}
+      alwaysShowHorizontalScroll={true}
       processUnpinnedColumns={processUnpinnedColumns}
       colResizeDefault={colResizeDefault}
       defaultColDef={defaultColDef}

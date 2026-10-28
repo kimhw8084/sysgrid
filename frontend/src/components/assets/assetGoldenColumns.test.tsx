@@ -21,6 +21,34 @@ describe('AssetGoldenColumns Hardening', () => {
     }
   }
 
+  it('keeps the status column wide enough to show the longest operational state label', () => {
+    const statusColumn = buildAssetGoldenColumns(getMockArgs()).find((column: any) => column.field === 'status')
+    expect(statusColumn?.initialWidth).toBe(132)
+    expect(statusColumn?.minWidth).toBe(132)
+    expect(statusColumn?.maxWidth).toBe(144)
+  })
+
+  it('keeps the first six Asset columns within the initial desktop viewport budget', () => {
+    const columns = buildAssetGoldenColumns(getMockArgs())
+    const coreFields = ['name', 'system', 'type', 'status', 'environment', 'owner']
+    const totalMaximum = coreFields.reduce((total, field) => {
+      const column = columns.find((candidate: any) => candidate.field === field) as any
+      return total + Number(column?.maxWidth ?? column?.width ?? 0)
+    }, 0)
+    expect(totalMaximum).toBe(794)
+  })
+
+  it('renders a theme-aware, accessible health indicator when there are no open incidents', () => {
+    const healthColumn = buildAssetGoldenColumns(getMockArgs()).find((column: any) => column.field === 'open_incident_count')
+    const { cellRenderer } = healthColumn as any
+    render(<>{cellRenderer({ value: 0, data: { id: 42 } })}</>)
+
+    const indicator = screen.getByRole('img', { name: 'No open incidents' })
+    expect(indicator).toHaveTextContent('✔')
+    expect(indicator).toHaveClass('text-[var(--state-success)]')
+    expect(indicator).not.toHaveClass('text-emerald-500/40')
+  })
+
   it('proves name/Instance identity column renders a non-button plain text element and does not call details trigger on click', () => {
     const args = getMockArgs()
     const columns = buildAssetGoldenColumns(args)

@@ -20,6 +20,11 @@ import {
 } from './ProjectsStory.api'
 import {
   PROJECT_TEMPLATES,
+  hasPartialProjectResourceCoverage,
+  projectCreationRecoveryStorageKey,
+  projectCurrentOwnerId,
+  normalizeProjectOwnerIdForDisplay,
+  resolveProjectCurrentOperator,
   applyProjectTemplate,
   blankCreationDraft,
   homePrimaryAction,
@@ -32,13 +37,11 @@ import {
   type ProjectStoryItem,
   type ProjectTemplate,
 } from './ProjectsStory.model'
+import { useModulePolicy } from '../policy/ModulePolicy'
 import './ProjectsPV1.css'
 import './ProjectsStory.css'
 
 const inputClass = 'p04-input'
-const RECOVERY_KEY = 'sysgrid_projects_creation_recovery_v1'
-
-const localUserId = () => typeof window === 'undefined' ? 'admin_root' : localStorage.getItem('SYSGRID_USER_ID') || localStorage.getItem('SYSGRID_CONFIG_DEFAULT_USER_ID') || 'admin_root'
 const isoDate = (value?: string | null) => value ? new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(`${value.slice(0, 10)}T12:00:00`)) : 'Not scheduled'
 const relativeFreshness = (value?: string | null) => {
   if (!value) return 'Freshness unavailable'
@@ -49,7 +52,12 @@ const relativeFreshness = (value?: string | null) => {
   if (hours < 24) return `Updated ${hours}h ago`
   return `Updated ${Math.floor(hours / 24)}d ago`
 }
-const ownerLabel = (operators: any[], ownerId?: string | null) => operators.find((operator) => operator.username === ownerId || operator.external_id === ownerId)?.full_name || ownerId || 'Unassigned'
+const ownerLabel = (operators: any[], ownerId?: string | null) => {
+  const displayOwnerId = normalizeProjectOwnerIdForDisplay(ownerId)
+  return displayOwnerId
+    ? operators.find((operator) => operator.username === displayOwnerId || operator.external_id === displayOwnerId)?.full_name || displayOwnerId
+    : 'Unassigned'
+}
 const teamLabel = (teams: any[], teamId?: number | null) => teams.find((team) => Number(team.id) === Number(teamId))?.name || (teamId ? `Team ${teamId}` : 'No team')
 
 function StoryState({ title, description, action }: { title: string; description: string; action?: React.ReactNode }) {
@@ -90,11 +98,10 @@ function StoryShell({ children, active, project, projects = [], teams = [], team
 
 const summaryKeys = ['Planned', 'Active', 'Delivered', 'Paused', 'Cancelled', 'Needs attention', 'Measuring', 'Realized', 'Closed below target'] as const
 
-function PortfolioScreen() {
+function PortfolioScreen({ userId }: { userId: string }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [portfolioSearchParams] = useSearchParams()
-  const currentUserId = localUserId()
   const parentFocus = portfolioSearchParams.get('parent') || ''
   const [teamId, setTeamId] = useState('')
   const [search, setSearch] = useState('')
@@ -104,9 +111,10 @@ function PortfolioScreen() {
   const [mode, setMode] = useState<'table' | 'timeline'>('table')
   const [includeSubprojects, setIncludeSubprojects] = useState(Boolean(parentFocus))
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const portfolio = useQuery({ queryKey: ['pv1-projects-portfolio', teamId], queryFn: () => readPV1Portfolio(teamId ? Number(teamId) : undefined), placeholderData: (previous) => previous, staleTime: 30_000 })
-  const operators = useQuery({ queryKey: ['operators'], queryFn: readCreationOperators, staleTime: 60_000 })
-  const teams = useQuery({ queryKey: ['teams'], queryFn: readCreationTeams, staleTime: 60_000 })
+  const portfolio = useQuery({ queryKey: ['pv1-projects-portfolio', userId, teamId], queryFn: () => readPV1Portfolio(teamId ? Number(teamId) : undefined), staleTime: 30_000 })
+  const operators = useQuery({ queryKey: ['operators', userId], queryFn: readCreationOperators, staleTime: 60_000 })
+  const teams = useQuery({ queryKey: ['teams', userId], queryFn: readCreationTeams, staleTime: 60_000 })
+  const currentUserId = projectCurrentOwnerId(resolveProjectCurrentOperator(operators.data, userId), userId)
   const items = portfolio.data?.items || []
   const visible = useMemo(() => sortPortfolioItems(items.filter((project) => {
     if (!includeSubprojects && project.parent_project_id) return false
@@ -137,7 +145,7 @@ function PortfolioScreen() {
       {portfolioNotice ? <div className="p04-local-notice" role="status">{portfolioNotice}</div> : null}
       {invalidProjection ? <StoryState title="Portfolio unavailable" description={`Invalid project projection. ${apiFailureDescription(portfolio.error, 'The canonical Project response is incomplete; no projects were rendered.')}`} action={<button className="p04-button" onClick={() => portfolio.refetch()}>Retry</button>} /> : portfolio.isLoading && !portfolio.data ? <StoryState title="Loading Portfolio" description="Reading the canonical Project projection and rollups." /> : portfolio.isError && !portfolio.data ? <StoryState title="Portfolio unavailable" description={apiFailureDescription(portfolio.error, 'The project service did not return a usable response.')} action={<button className="p04-button" onClick={() => portfolio.refetch()}>Retry</button>} /> : <>
         {stalePortfolio ? <div className="p04-local-error" role="status">Showing stale cached project data. Refresh failed; editing availability may have changed. {apiFailureDescription(portfolio.error, '')}</div> : null}
-        {portfolio.data?.coverage?.resources === 'partial' ? <div className="p04-local-notice"><strong>Some project data unavailable.</strong> Resource coverage is partial; delivery and outcome rollups remain current.</div> : null}
+        {hasPartialProjectResourceCoverage(portfolio.data) ? <div className="p04-local-notice"><strong>Some project resource links may be unavailable.</strong> Delivery and outcome rollups remain current.</div> : null}
         <section className="p04-summary-strip" aria-label="Portfolio summary">{summaryKeys.map((key) => <button type="button" key={key} data-dimension={key === 'Needs attention' ? 'attention' : ['Measuring', 'Realized', 'Closed below target'].includes(key) ? 'outcome' : 'delivery'} aria-pressed={phase === key} onClick={() => { setPhase((current) => current === key ? 'All' : key); setHealth('All') }}><span>{key}</span><strong>{portfolio.data?.summary?.[key] ?? 0}</strong></button>)}</section>
         <section className="p04-toolbar" aria-label="Portfolio controls">
           <label className="p04-search"><Search size={16} /><span className="sr-only">Search projects</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects, objectives, owners…" /></label>
@@ -201,26 +209,26 @@ function PortfolioAttention({ projects }: { projects: ProjectStoryItem[] }) {
   return <section className="p04-attention" data-p04-attention="true"><header><div><p className="p04-eyebrow">Actionable attention</p><h2>Interventions</h2></div><span>{rows.length} open</span></header>{rows.length ? <div className="p04-attention-list">{rows.map(({ project, item }) => <article key={`${project.id}:${item.id}`}><span className="p04-attention-kind">{item.kind}</span><div><strong>{project.name}</strong><p>{item.reason}</p><small>Accountable: {item.accountable} · {item.due_date ? `Due ${isoDate(item.due_date)}` : 'No due date recorded'}</small></div><a className="p04-button" href={actionHref(project, item)}>{item.action}</a></article>)}</div> : <p className="p04-clear-state"><CheckCircle2 size={18} /> No intervention is currently recorded.</p>}</section>
 }
 
-function ProjectHomeScreen({ projectId }: { projectId: string }) {
+function ProjectHomeScreen({ projectId, userId }: { projectId: string; userId: string }) {
   const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
   const { ask, promptDialog } = useWorkspacePrompt()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const summary = useQuery({ queryKey: ['pv1-project-summary', projectId], queryFn: () => readPV1ProjectSummary(projectId), staleTime: 60_000 })
+  const summary = useQuery({ queryKey: ['pv1-project-summary', userId, projectId], queryFn: () => readPV1ProjectSummary(projectId), staleTime: 60_000 })
   // The first Home viewport needs the current project's canonical summary;
   // the complete Portfolio projection is only needed when the selector is
   // opened.  Avoid competing with the summary request for a large graph and
   // keep the selector's fetch on the existing authorized query path.
-  const portfolio = useQuery({ queryKey: ['pv1-projects-portfolio', ''], queryFn: () => readPV1Portfolio(), staleTime: 60_000, enabled: false })
-  const teams = useQuery({ queryKey: ['teams'], queryFn: readCreationTeams, staleTime: 60_000 })
-  const operators = useQuery({ queryKey: ['operators'], queryFn: readCreationOperators, staleTime: 60_000 })
+  const portfolio = useQuery({ queryKey: ['pv1-projects-portfolio', userId, ''], queryFn: () => readPV1Portfolio(), staleTime: 60_000, enabled: false })
+  const teams = useQuery({ queryKey: ['teams', userId], queryFn: readCreationTeams, staleTime: 60_000 })
+  const operators = useQuery({ queryKey: ['operators', userId], queryFn: readCreationOperators, staleTime: 60_000 })
   const project = summary.data?.project
   const story = summary.data?.story
   const loadProjectsForSelector = () => {
     if (!portfolio.data && !portfolio.isFetching) void portfolio.refetch()
   }
-  const readiness = useQuery({ queryKey: ['pv1-project-readiness', projectId, 'Proposed'], queryFn: () => readPV1Readiness(projectId, 'Proposed'), enabled: project?.phase === 'Draft' && !project.archived_at, staleTime: 15_000 })
-  const lifecycle = useMutation({ mutationFn: ({ type, payload }: { type: string; payload?: Record<string, unknown> }) => runPV1LifecycleCommand(project!, type, payload), onSuccess: (saved) => { queryClient.setQueryData(['pv1-project-summary', projectId], (current: any) => current ? { ...current, project: saved, story: saved.story, capabilities: saved.capabilities } : current); queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio'] }) } })
+  const readiness = useQuery({ queryKey: ['pv1-project-readiness', userId, projectId, 'Proposed'], queryFn: () => readPV1Readiness(projectId, 'Proposed'), enabled: project?.phase === 'Draft' && !project.archived_at, staleTime: 15_000 })
+  const lifecycle = useMutation({ mutationFn: ({ type, payload }: { type: string; payload?: Record<string, unknown> }) => runPV1LifecycleCommand(project!, type, payload), onSuccess: (saved) => { queryClient.setQueryData(['pv1-project-summary', userId, projectId], (current: any) => current ? { ...current, project: saved, story: saved.story, capabilities: saved.capabilities } : current); queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] }) } })
   if (summary.isLoading && !summary.data) return <StoryShell active="home"><StoryState title="Loading Project Home" description="Reading the canonical management story." /></StoryShell>
   if (summary.isError || !project || !story) return <StoryShell active="home"><StoryState title="Project unavailable" description={apiFailureDescription(summary.error, 'The project is unavailable or you do not have access.')} action={<><button className="p04-button" onClick={() => summary.refetch()}>Retry</button><button className="p04-button" onClick={() => navigate('/projects')}>Back to Portfolio</button></>} /></StoryShell>
   const primary = homePrimaryAction(project)
@@ -246,6 +254,7 @@ function ProjectHomeScreen({ projectId }: { projectId: string }) {
     <main className="p04-home" data-p04-project-home="true">
       {banner ? <div className={`p04-lifecycle-banner p04-lifecycle-${project.archived_at ? 'archived' : project.run_state.toLowerCase()}`}>{banner}</div> : null}
       <section className="p04-home-cover">
+        {project.legacy_project_id != null ? <div className="p04-local-notice flex flex-wrap items-center justify-between gap-3" data-p04-legacy-workspace={String(project.legacy_project_id)}><span><strong>Legacy Project.</strong> This migrated record is managed in its existing workspace.</span><a className="p04-button p04-button-primary" href={'/projects?view=overview&id=' + project.legacy_project_id + '&legacy_workspace=1'}>Open existing workspace</a></div> : null}
         <div className="p04-breadcrumb"><a href="/projects">Portfolio</a><span>/</span><span>{project.display_key}</span></div>
         <div className="p04-cover-row"><div><div className="p04-cover-kicker"><span>{project.archived_at ? 'Archived' : project.run_state === 'Active' ? project.phase : project.run_state}</span><span>{teamLabel(teams.data || [], project.team_id)}</span></div><h1>{project.name}</h1><p>{project.objective || 'Objective not recorded. Add the intended change before this project advances.'}</p><a href="#project-brief">Read brief</a></div><div className="p04-cover-actions"><a className="p04-button p04-button-primary" href={primary.href}>{primary.label}<ArrowRight size={16} /></a><details><summary className="p04-button">More <ChevronDown size={15} /></summary><div className="p04-menu">{can.edit ? <a href={`/projects/${project.id}/plan?section=brief`}>Edit project</a> : null}{can.manage_people ? <a href={`/projects/${project.id}/plan?section=people`}>Manage people</a> : null}<button onClick={() => navigator.clipboard?.writeText(window.location.href)}>Copy project link</button>{can.export ? <button onClick={() => window.print()}>Export summary</button> : null}{can.pause && project.run_state === 'Active' ? <button onClick={pauseProject}>Pause</button> : null}{can.pause && project.run_state === 'Paused' ? <button onClick={() => command('project.resume')}>Resume</button> : null}{can.cancel && project.run_state !== 'Cancelled' ? <button onClick={cancelProject}>Cancel</button> : null}{can.archive && (project.run_state === 'Cancelled' || (project.phase === 'Delivered' && project.outcome_result === 'Realized')) ? <button onClick={async () => { if (await confirmWorkspace({ title: 'Archive project?', message: 'It will leave the active Portfolio but remain recoverable.', confirmText: 'Archive', variant: 'warning' })) command('project.archive') }}>Archive</button> : null}{can.restore && project.archived_at ? <button onClick={() => command('project.restore')}>Restore</button> : null}</div></details></div></div>
         <div className="p04-property-band">{[
@@ -271,18 +280,18 @@ type CreationForm = {
 }
 type Recovery = { form: CreationForm; creation: CreationDraft; draftId: string | null; createCommandId: string; templateKey: string | null; updatedAt: string }
 const defaultForm = (ownerId: string): CreationForm => ({ name: '', objective: '', problem: '', owner_id: ownerId, team_id: '', priority: 'Medium', in_scope: '', out_of_scope: '', target_date: '', no_deadline_reason: '', architecture_assessment: 'Not assessed', architecture_rationale: '' })
-const readRecovery = (): Recovery | null => {
+const readRecovery = (recoveryKey: string): Recovery | null => {
   if (typeof window === 'undefined') return null
-  try { const value = JSON.parse(localStorage.getItem(RECOVERY_KEY) || 'null'); return value && value.form && value.creation ? value : null } catch { return null }
+  try { const value = JSON.parse(localStorage.getItem(recoveryKey) || 'null'); return value && value.form && value.creation ? value : null } catch { return null }
 }
 
-function NewProjectScreen() {
+function NewProjectScreen({ userId }: { userId: string }) {
   const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
-  const userId = localUserId()
-  const initialRecovery = useRef(readRecovery())
+  const recoveryKey = projectCreationRecoveryStorageKey(userId)
+  const initialRecovery = useRef(readRecovery(recoveryKey))
   const [form, setForm] = useState<CreationForm>(() => initialRecovery.current?.form || defaultForm(userId))
   const [creation, setCreation] = useState<CreationDraft>(() => initialRecovery.current?.creation || blankCreationDraft(userId))
   const [templateKey, setTemplateKey] = useState<string | null>(() => searchParams.get('template') || initialRecovery.current?.templateKey || null)
@@ -293,9 +302,9 @@ function NewProjectScreen() {
   const [transitionGaps, setTransitionGaps] = useState<Array<{ code: string; message: string; action: string }>>([])
   const createCommandId = useRef(initialRecovery.current?.createCommandId || crypto.randomUUID())
   const requestedDraftId = searchParams.get('draft') || initialRecovery.current?.draftId || ''
-  const serverDraft = useQuery({ queryKey: ['pv1-project-draft', requestedDraftId], queryFn: () => readPV1Project(requestedDraftId), enabled: Boolean(requestedDraftId), retry: 1 })
-  const teams = useQuery({ queryKey: ['teams'], queryFn: readCreationTeams, staleTime: 60_000 })
-  const operators = useQuery({ queryKey: ['operators'], queryFn: readCreationOperators, staleTime: 60_000 })
+  const serverDraft = useQuery({ queryKey: ['pv1-project-draft', userId, requestedDraftId], queryFn: () => readPV1Project(requestedDraftId), enabled: Boolean(requestedDraftId), retry: 1 })
+  const teams = useQuery({ queryKey: ['teams', userId], queryFn: readCreationTeams, staleTime: 60_000 })
+  const operators = useQuery({ queryKey: ['operators', userId], queryFn: readCreationOperators, staleTime: 60_000 })
   const hydrated = useRef(false)
 
   useEffect(() => {
@@ -306,17 +315,19 @@ function NewProjectScreen() {
   }, [serverDraft.data])
 
   useEffect(() => {
-    if (form.team_id || !operators.data?.length) return
-    const current = operators.data.find((operator: any) => operator.username === userId || operator.external_id === userId)
-    if (current?.team_id) setForm((value) => ({ ...value, team_id: String(current.team_id) }))
-  }, [operators.data, form.team_id, userId])
+    const current = resolveProjectCurrentOperator(operators.data, userId)
+    if (!current) return
+    const ownerId = projectCurrentOwnerId(current, userId)
+    setForm((value) => ({ ...value, owner_id: value.owner_id === userId ? ownerId : value.owner_id, team_id: value.team_id || (current.team_id ? String(current.team_id) : '') }))
+    setCreation((value) => ({ ...value, metric: { ...value.metric, steward_id: value.metric.steward_id === userId ? ownerId : value.metric.steward_id } }))
+  }, [operators.data, userId])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const recovery: Recovery = { form, creation: { ...creation, draft_step: step }, draftId: project?.id || requestedDraftId || null, createCommandId: createCommandId.current, templateKey, updatedAt: new Date().toISOString() }
-    localStorage.setItem(RECOVERY_KEY, JSON.stringify(recovery))
+    localStorage.setItem(recoveryKey, JSON.stringify(recovery))
     if (saveState === 'Saved') setSaveState('Not saved')
-  }, [form, creation, step, templateKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [form, creation, step, templateKey, recoveryKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedTemplate = PROJECT_TEMPLATES.find((template) => template.key === templateKey) || null
   const activeTeams = (teams.data || []).filter((team: any) => !team.is_archived)
@@ -337,8 +348,8 @@ function NewProjectScreen() {
       }
       const saved = await savePV1CreationDraft(current, { name: form.name.trim(), objective: form.objective.trim() || null, problem: form.problem.trim() || null, in_scope: form.in_scope.trim() || null, out_of_scope: form.out_of_scope.trim() || null, priority: form.priority, target_date: form.target_date || null, no_deadline_reason: form.no_deadline_reason.trim() || null, architecture_assessment: form.architecture_assessment, architecture_rationale: form.architecture_rationale.trim() || null, template_key: selectedTemplate?.key || null, template_version: selectedTemplate?.version || null }, draftValue)
       setProject(saved); setCreation(draftValue); setSaveState('Saved')
-      localStorage.setItem(RECOVERY_KEY, JSON.stringify({ form, creation: draftValue, draftId: saved.id, createCommandId: createCommandId.current, templateKey, updatedAt: new Date().toISOString() }))
-      queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio'] })
+      localStorage.setItem(recoveryKey, JSON.stringify({ form, creation: draftValue, draftId: saved.id, createCommandId: createCommandId.current, templateKey, updatedAt: new Date().toISOString() }))
+      queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] })
       return saved
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Draft save failed.'
@@ -360,8 +371,8 @@ function NewProjectScreen() {
       const readiness = await readPV1Readiness(saved.id, 'Proposed')
       if (!readiness.ready) { setTransitionGaps(readiness.gaps); return }
       const promoted = await promotePV1Draft(saved)
-      localStorage.removeItem(RECOVERY_KEY)
-      queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio'] })
+      localStorage.removeItem(recoveryKey)
+      queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] })
       navigate(`/projects/${encodeURIComponent(promoted.id)}/home`)
     } catch { /* visible save/readiness error owns recovery */ }
   }
@@ -374,7 +385,7 @@ function NewProjectScreen() {
   }
   const discard = async () => {
     if (!await confirmWorkspace({ title: 'Discard draft?', message: 'Its audit record is preserved, but it will leave the active Portfolio.', confirmText: 'Discard draft', variant: 'danger' })) return
-    try { if (project) await discardPV1Draft(project); localStorage.removeItem(RECOVERY_KEY); queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio'] }); navigate('/projects') } catch (error) { setSaveState('Save failed'); setSaveError(error instanceof Error ? error.message : 'Draft discard failed.') }
+    try { if (project) await discardPV1Draft(project); localStorage.removeItem(recoveryKey); queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] }); navigate('/projects') } catch (error) { setSaveState('Save failed'); setSaveError(error instanceof Error ? error.message : 'Draft discard failed.') }
   }
 
   const steps = ['Purpose', 'Success', 'Delivery plan', 'Review']
@@ -415,7 +426,8 @@ function ReviewStep({ form, creation, project, gaps, onGap }: { form: CreationFo
 
 export function shouldUseProjectsStory(pathname: string, search = ''): { kind: 'portfolio' | 'new' | 'home'; projectId?: string } | null {
   if (pathname === '/projects' || pathname === '/projects/') {
-    if (new URLSearchParams(search).has('id')) return null
+    const params = new URLSearchParams(search)
+    if (params.has('id') || params.has('view') || params.has('saved_view') || params.has('section')) return null
     return { kind: 'portfolio' }
   }
   if (pathname === '/projects/new' || pathname === '/projects/new/') return { kind: 'new' }
@@ -426,8 +438,14 @@ export function shouldUseProjectsStory(pathname: string, search = ''): { kind: '
 export default function ProjectsStory() {
   const location = useLocation()
   const route = shouldUseProjectsStory(location.pathname, location.search)
+  const policy = useModulePolicy()
   if (!route) return null
-  if (route.kind === 'portfolio') return <PortfolioScreen />
-  if (route.kind === 'new') return <NewProjectScreen />
-  return <ProjectHomeScreen projectId={route.projectId!} />
+  const userId = policy.data?.identity?.user_id
+  if (!userId) {
+    const active = route.kind === 'new' ? 'new' : route.kind === 'home' ? 'home' : 'portfolio'
+    return <StoryShell active={active}><StoryState title={policy.isLoading ? 'Checking Projects access' : 'Projects identity unavailable'} description={policy.isLoading ? 'Verifying the authenticated account before loading project data.' : 'The authenticated account could not be verified. No project data was loaded.'} action={!policy.isLoading ? <button className="p04-button" onClick={() => policy.refetch()}>Retry</button> : undefined} /></StoryShell>
+  }
+  if (route.kind === 'portfolio') return <PortfolioScreen key={userId} userId={userId} />
+  if (route.kind === 'new') return <NewProjectScreen key={userId} userId={userId} />
+  return <ProjectHomeScreen key={userId} projectId={route.projectId!} userId={userId} />
 }

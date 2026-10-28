@@ -3029,6 +3029,7 @@ export default function Projects() {
       }
       if (!selectedProjectId) syncSelectedProject(data.id)
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message)
   })
 
@@ -3060,6 +3061,7 @@ export default function Projects() {
       setPendingNav(null)
       toast.success('Project Decommissioned')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message)
   })
 

@@ -144,11 +144,11 @@ describe('PC-50 FAR operational workspace core + saved-view continuity exact G b
     ])
     expect(repaired.repairedColumnIds).toEqual(['title', 'rpn'])
     expect(repaired.layout.find((entry) => entry.colId === 'title')?.width).toBe(260)
-    expect(repaired.layout.find((entry) => entry.colId === 'rpn')?.width).toBe(84)
+    expect(repaired.layout.find((entry) => entry.colId === 'rpn')?.width).toBe(130)
     expect(repaired.layout.find((entry) => entry.colId === 'system_name')?.width).toBe(160)
 
     expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'title')).toMatchObject({ minWidth: 200, defaultWidth: 260 })
-    expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'rpn')).toMatchObject({ minWidth: 80, defaultWidth: 84 })
+    expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'rpn')).toMatchObject({ minWidth: 130, defaultWidth: 130 })
     expectAll(hooksSource, [
       'changedColumns.length !== 1',
       'setHasManualColumnWidths(true)',
@@ -177,7 +177,7 @@ describe('PC-50 FAR operational workspace core + saved-view continuity exact G b
       "field: 'severity', headerName: 'S', width: 72, minWidth: 68",
       "field: 'occurrence', headerName: 'O', width: 72, minWidth: 68",
       "field: 'detection', headerName: 'D', width: 72, minWidth: 68",
-      "field: 'rpn', headerName: 'RPN', width: 84, minWidth: 80",
+      "field: 'rpn', headerName: 'RPN', width: 130, minWidth: 130",
       "title: 'RPN Definition Matrix'",
       'createFarAnalyticalColumns({',
       'goldenWorkspace.gridRuntime',

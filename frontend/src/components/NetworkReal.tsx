@@ -42,7 +42,7 @@ import { apiFetch } from '../api/apiClient'
 import { changedNetworkFields, networkOptionsWithCurrent, networkTableChanges } from '../api/networkEdits'
 import { FormGuide, focusFormIssue } from './shared/FormGuide'
 import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
-import { ModulePolicyButton, useModuleActionPolicy } from '../policy/ModulePolicy'
+import { ModulePolicyButton, useModuleActionPolicy, useModulePolicy } from '../policy/ModulePolicy'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
 import { ConfigRegistryModal } from "./ConfigRegistry"
@@ -110,6 +110,8 @@ import {
 } from './shared/OperationalGridSizing'
 import { OPERATIONAL_ACTION_LABELS } from './shared/OperationalActionLabels'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail } from './shared/OperationalDataStatus'
+import { resolveOperationalDataState } from './shared/OperationalDataState'
+import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import { OperationalBulkPreviewModal } from './shared/OperationalBulkPreviewModal'
 import { useOperationalBulkWorkflow } from './shared/useOperationalBulkWorkflow'
 import { OperationalAssetSelector, type OperationalAssetRecord } from './shared/OperationalAssetSelector'
@@ -121,7 +123,7 @@ const NETWORK_FAVORITES_STORAGE_KEY = 'sysgrid_network_favorites_v1'
 const NETWORK_UI_STATE_KEY = 'sysgrid_network_ui_state_v1'
 const NETWORK_WATCH_STORAGE_KEY = 'sysgrid_network_watch_v1'
 const NETWORK_WORKSPACE_PREFERENCE_KEY = 'network_workspace_state_v1'
-const NETWORK_WORKSPACE_PREFERENCE_VERSION = 3
+const NETWORK_WORKSPACE_PREFERENCE_VERSION = 4
 const NETWORK_FIXED_WIDTH_COLUMN_IDS = new Set([
   'select',
   'id',
@@ -234,19 +236,19 @@ const NETWORK_DEFAULT_COLUMN_ORDER = [
   'favorite',
   'watch',
   'src_node',
-  'src_rack_slot',
   'src_port',
-  'src_ip',
   'peer_node',
-  'peer_rack_slot',
   'peer_port',
-  'peer_ip',
   'type',
-  'farm',
   'status',
   'speed',
   'direction',
   'purpose',
+  'src_rack_slot',
+  'peer_rack_slot',
+  'src_ip',
+  'peer_ip',
+  'farm',
   'created_at',
   'updated_at',
   'row_actions',
@@ -622,6 +624,9 @@ const ObservabilityHUD = ({ items }: any) => {
 }
 
 export default function NetworkReal() {
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.network?.actions?.write === true
+  const writeReason = policy.isLoading ? 'Checking network permissions' : 'Connection edit permission is required'
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const knowledgeAction = useModuleActionPolicy('knowledge')
@@ -1294,9 +1299,9 @@ export default function NetworkReal() {
     }
   }, [activeOverlay, dismissOverlays, rowActionMenu])
 
-  const { data: allItems, isLoading, isError, error } = useQuery({
+  const { data: allItems, isLoading, isFetching, isError, error, refetch: retryNetworkQuery } = useQuery({
     queryKey: ['network-connections'],
-    queryFn: async () => (await apiFetch('/api/v1/networks/connections?include_deleted=true')).json()
+    queryFn: () => fetchOperationalArray('/api/v1/networks/connections?include_deleted=true', 'Network registry'),
   })
 
   const activeNetworkQueryError = isError ? error : null
@@ -1427,6 +1432,31 @@ export default function NetworkReal() {
     // or we can just always use sortedItemsForGrouped for the rowData to keep it consistent.
     return sortedItemsForGrouped
   }, [sortedItemsForGrouped, groupBy])
+
+  const networkRegistryBlocked = !Array.isArray(allItems)
+  const networkDataState = useMemo(() => resolveOperationalDataState({
+    loading: isLoading,
+    error: isError && networkRegistryBlocked ? error : null,
+    totalCount: Array.isArray(allItems) ? allItems.length : 0,
+    tabCount: items.length,
+    visibleCount: displayedItemsInOrder.length,
+    emptyLabel: 'No network data found',
+    filteredLabel: 'No connections match the current filters',
+    tabEmptyKind: activeTab === 'deleted' ? 'deleted-empty' : 'active-empty',
+    tabEmptyLabel: activeTab === 'deleted' ? 'No archived connections found' : 'No active connections found',
+    errorTitle: 'Network connections unavailable',
+    errorDescription: 'The connection registry could not be loaded.',
+    degradedNotice: isError ? {
+      tone: 'warning',
+      title: 'Network registry refresh failed',
+      description: networkRegistryBlocked
+        ? 'The registry could not be confirmed. Retry before adding or importing connections.'
+        : 'Showing the last loaded connections. Retry to confirm the current registry.',
+      actionLabel: 'Retry connections',
+      onAction: () => { void retryNetworkQuery() },
+      isActionLoading: isFetching,
+    } : undefined,
+  }), [activeTab, allItems, displayedItemsInOrder.length, error, isError, isFetching, isLoading, items.length, networkRegistryBlocked, retryNetworkQuery])
 
   useEffect(() => {
     if (!displayedItemsInOrder.length) return
@@ -1880,10 +1910,11 @@ export default function NetworkReal() {
         field: 'src_node',
         colId: 'src_node',
         headerName: 'Source Node',
-        width: 170,
+        width: 160,
         minWidth: 120,
-        maxWidth: 280,
+        maxWidth: 180,
         pinned: 'left',
+        operationalSkipAutoSize: true,
         resizable: true,
         filter: true,
         cellClass: 'text-left flex items-center justify-start font-bold',
@@ -1894,8 +1925,8 @@ export default function NetworkReal() {
         field: 'src_rack_slot',
         colId: 'src_rack_slot',
         headerName: 'Source Rack Slot',
-        width: 150,
-        minWidth: 100,
+        width: 164,
+        minWidth: 152,
         maxWidth: 220,
         resizable: true,
         filter: true,
@@ -1907,9 +1938,10 @@ export default function NetworkReal() {
         field: 'src_port',
         colId: 'src_port',
         headerName: 'Source Port',
-        width: 130,
-        minWidth: 80,
-        maxWidth: 180,
+        width: 152,
+        minWidth: 152,
+        maxWidth: 164,
+        operationalSkipAutoSize: true,
         resizable: true,
         filter: true,
         cellClass: 'text-left flex items-center justify-start',
@@ -1933,9 +1965,10 @@ export default function NetworkReal() {
         field: 'peer_node',
         colId: 'peer_node',
         headerName: 'Peer Node',
-        width: 170,
+        width: 160,
         minWidth: 120,
-        maxWidth: 280,
+        maxWidth: 180,
+        operationalSkipAutoSize: true,
         resizable: true,
         filter: true,
         cellClass: 'text-left flex items-center justify-start',
@@ -1946,8 +1979,8 @@ export default function NetworkReal() {
         field: 'peer_rack_slot',
         colId: 'peer_rack_slot',
         headerName: 'Peer Rack Slot',
-        width: 150,
-        minWidth: 100,
+        width: 164,
+        minWidth: 152,
         maxWidth: 220,
         resizable: true,
         filter: true,
@@ -1959,9 +1992,10 @@ export default function NetworkReal() {
         field: 'peer_port',
         colId: 'peer_port',
         headerName: 'Peer Port',
-        width: 130,
-        minWidth: 80,
-        maxWidth: 180,
+        width: 144,
+        minWidth: 136,
+        maxWidth: 144,
+        operationalSkipAutoSize: true,
         resizable: true,
         filter: true,
         cellClass: 'text-left flex items-center justify-start',
@@ -2108,7 +2142,12 @@ export default function NetworkReal() {
     ]
   
   // Inject saved layout state (widths, pinned, sort) into definitions before first render
-  const mergedDefs = defs.map((col: any) => {
+  const orderedDefs = [...defs].sort((a: any, b: any) => {
+    const aId = a.colId || a.field
+    const bId = b.colId || b.field
+    return (NETWORK_DEFAULT_COLUMN_ORDER_MAP.get(aId) ?? Number.MAX_SAFE_INTEGER) - (NETWORK_DEFAULT_COLUMN_ORDER_MAP.get(bId) ?? Number.MAX_SAFE_INTEGER)
+  })
+  const mergedDefs = orderedDefs.map((col: any) => {
     if (col.children) {
       return {
         ...col,
@@ -2166,7 +2205,7 @@ export default function NetworkReal() {
           <>
             <HeaderScopeSwitch
               label="Connection Scope"
-              summary={`${lifecycleCounts.existing} active · ${lifecycleCounts.archived} deleted`}
+              summary={networkRegistryBlocked ? (isLoading ? 'Loading registry…' : 'Registry unavailable') : `${lifecycleCounts.existing} active · ${lifecycleCounts.archived} deleted`}
               value={activeTab}
               onChange={(next) => {
                 setActiveTab(next as 'active' | 'deleted')
@@ -2199,6 +2238,7 @@ export default function NetworkReal() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Scan matrix..."
+          ariaLabel="Search network connections"
         />
       )}
       toolbarControls={(
@@ -2231,7 +2271,7 @@ export default function NetworkReal() {
             </ToolbarIconButton>
           </ToolbarGroup>
           <ToolbarGroup>
-            <ToolbarButton onClick={() => setShowImportModal(true)} title="Import network rows">
+            <ToolbarButton onClick={() => setShowImportModal(true)} disabled={networkRegistryBlocked || !canWrite} ariaLabel="Import network rows" title={!canWrite ? writeReason : networkRegistryBlocked ? 'Retry the network registry before importing rows' : 'Import network rows'}>
               <span className="flex items-center gap-2">
                 <Upload size={14} />
                 Import
@@ -2313,7 +2353,7 @@ export default function NetworkReal() {
           )}
           <ToolbarButton
             onClick={toggleBulkWindow}
-            disabled={selectedIds.length === 0}
+            disabled={networkRegistryBlocked || !canWrite || selectedIds.length === 0}
             active={showBulkMenu}
             title="Bulk actions"
             className="bulk-menu-trigger"
@@ -2326,6 +2366,9 @@ export default function NetworkReal() {
           </ToolbarButton>
           <ToolbarButton
             onClick={() => { setEditingItem(null); setIsFormOpen(true); }}
+            disabled={networkRegistryBlocked || !canWrite}
+            ariaLabel="+ Add Connection"
+            title={!canWrite ? writeReason : networkRegistryBlocked ? 'Retry the network registry before adding a connection' : undefined}
             variant="primary"
             className="px-6 py-2"
           >
@@ -2455,7 +2498,7 @@ export default function NetworkReal() {
                         <WorkspaceFlyoutDropdownEditor
                           value={bulkDraft.link_type}
                           onChange={(value) => setBulkDraft((current) => ({ ...current, link_type: value }))}
-                          options={NETWORK_LINK_TYPES.map((value) => ({ value, label: value }))}
+                          options={linkPurposeOptions}
                           placeholder="Choose type"
                           actionLabel="Apply Type"
                           onApply={() => requestBulkPreview({ action: 'update', payload: { link_type: bulkDraft.link_type } })}
@@ -2607,7 +2650,7 @@ export default function NetworkReal() {
         </>
       }>
 
-      {groupBy === 'raw' ? (
+      {groupBy === 'raw' || networkDataState.kind !== 'ready' || isError ? (
         <OperationalDataGrid
           gridRef={gridRef}
           rows={displayedItemsInOrder}
@@ -2622,6 +2665,7 @@ export default function NetworkReal() {
           context={gridContext}
           fontSize={fontSize}
           rowDensity={rowDensity}
+          dataState={networkDataState}
           noRowsLabel="No network data found"
           loading={isLoading}
           loadingIcon={<RefreshCcw size={32} className="text-blue-400 animate-spin" />}
@@ -2768,8 +2812,10 @@ export default function NetworkReal() {
             item={detailItem}
             onClose={() => closeNetworkDetail()}
             onEdit={(connection: any) => { closeNetworkDetail(); setEditingItem(connection); setIsFormOpen(true); }}
-            onOpenHistory={() => {}}
-            onOpenBkm={() => {}}
+            onOpenHistory={(connection: any) => {
+              closeNetworkDetail()
+              setHistoryItem(connection)
+            }}
             onDelete={(connection: any) => {
               if (activeTab === 'deleted') {
                 openConfirm(
@@ -3203,7 +3249,7 @@ function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmO
   )
 }
 
-function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOpenKnowledge, deleteConfirm }: any) {
+function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOpenKnowledge, onOpenHistory, deleteConfirm }: any) {
   useEscapeDismiss(onClose)
   useBodyModalFlag()
   const [isMaximized, setIsMaximized] = useState(false)
@@ -3242,6 +3288,7 @@ function NetworkDetailModal({ item, onClose, onEdit, onDelete, onOpenAsset, onOp
       }
       footerRight={
         <div className="flex items-center gap-3">
+            <ToolbarButton onClick={() => onOpenHistory?.(item)}>History</ToolbarButton>
             <ToolbarButton onClick={() => onEdit?.(item)}>Edit Connection</ToolbarButton>
             <ToolbarButton 
               variant="danger" 
@@ -3892,9 +3939,13 @@ function NetworkHistoryModal({ item, onClose }: any) {
   useBodyModalFlag()
   const [isMaximized, setIsMaximized] = useState(false)
   const queryClient = useQueryClient()
-  const { data: history, isLoading } = useQuery({
+  const { data: history, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['network-history', item.id],
-    queryFn: async () => (await apiFetch(`/api/v1/networks/connections/${item.id}/history`)).json()
+    queryFn: async () => {
+      const response = await apiFetch(`/api/v1/networks/connections/${item.id}/history`)
+      if (!response.ok) throw new Error(await response.text() || 'Network history could not be loaded.')
+      return response.json()
+    }
   })
 
   const [selectedIndices, setSelectedIndices] = useState<number[]>([0])
@@ -3913,7 +3964,7 @@ function NetworkHistoryModal({ item, onClose }: any) {
     }
   }
 
-  const indexedVersions = (history || []).map((h: any, i: number) => ({
+  const indexedVersions = (Array.isArray(history) ? history : []).map((h: any, i: number) => ({
     ...h,
     v_num: h.version,
     label: formatAppDate(h.created_at)
@@ -3991,17 +4042,18 @@ function NetworkHistoryModal({ item, onClose }: any) {
                       <RefreshCcw size={24} className="animate-spin text-blue-500" />
                       <span className="text-[10px] font-black text-blue-500 animate-pulse uppercase tracking-widest">Syncing revisions...</span>
                    </div>
-                ) : (
+                ) : isError ? (
+                  <WorkspaceEmptyState compact icon={<HistoryIcon size={20} />} title="History unavailable" description={error instanceof Error ? error.message : 'Could not load connection revisions.'} action={<button type="button" onClick={() => void refetch()} className="rounded-lg border border-blue-500/30 px-3 py-2 text-xs font-semibold text-blue-400">Retry</button>} />
+                ) : indexedVersions.length ? (
                   indexedVersions.map((h: any, idx: number) => {
                     const isSelected = selectedIndices.includes(idx);
                     const isNewest = idx === Math.min(...selectedIndices);
                     return (
-                      <button 
+                      <div
                         key={h.id}
-                        onClick={() => toggleSelection(idx)}
-                        className={`w-full p-4 rounded-lg border text-left transition-all relative group overflow-hidden ${
-                          isSelected 
-                            ? isNewest ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/5' : 'bg-slate-800 border-slate-600' 
+                        className={`w-full rounded-lg border text-left transition-all relative group overflow-hidden ${
+                          isSelected
+                            ? isNewest ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/5' : 'bg-slate-800 border-slate-600'
                             : 'bg-white/5 border-white/5 hover:border-white/10'
                         }`}
                       >
@@ -4010,43 +4062,53 @@ function NetworkHistoryModal({ item, onClose }: any) {
                              {isNewest ? 'Primary' : 'Ref'}
                           </div>
                         )}
-                        <div className="flex items-center justify-between mb-2">
-                           <span className={`text-[11px] font-black tracking-tighter ${isSelected ? 'text-white' : 'text-blue-400'}`}>v{h.v_num}</span>
-                           <span className={`text-[9px] font-bold ${isSelected ? 'text-white/60' : 'text-slate-500'}`}>
-                              {formatAppDay(h.created_at)}
-                           </span>
-                        </div>
-                        <p className={`text-[10px] font-bold leading-tight line-clamp-2 ${isSelected ? 'text-white/90' : 'text-slate-300'}`}>
-                           {h.change_summary || 'Connection Modification'}
-                        </p>
-                        {Array.isArray(h.changed_labels) && h.changed_labels.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {h.changed_labels.slice(0, 3).map((label: string) => (
-                              <span key={label} className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-400">
-                                {label}
-                              </span>
-                            ))}
-                            {h.changed_labels.length > 3 && (
-                              <span className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-500">
-                                +{h.changed_labels.length - 3}
-                              </span>
-                            )}
+                        <button type="button" aria-pressed={isSelected} onClick={() => toggleSelection(idx)} className="w-full p-4 text-left">
+                          <div className="flex items-center justify-between mb-2">
+                             <span className={`text-[11px] font-black tracking-tighter ${isSelected ? 'text-white' : 'text-blue-400'}`}>v{h.v_num}</span>
+                             <span className={`text-[9px] font-bold ${isSelected ? 'text-white/60' : 'text-slate-500'}`}>
+                                {formatAppDay(h.created_at)}
+                             </span>
                           </div>
-                        )}
-                        <div className="mt-2 flex items-center space-x-2 justify-between">
+                          <p className={`text-[10px] font-bold leading-tight line-clamp-2 ${isSelected ? 'text-white/90' : 'text-slate-300'}`}>
+                             {h.change_summary || 'Connection Modification'}
+                          </p>
+                          {Array.isArray(h.changed_labels) && h.changed_labels.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {h.changed_labels.slice(0, 3).map((label: string) => (
+                                <span key={label} className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-400">
+                                  {label}
+                                </span>
+                              ))}
+                              {h.changed_labels.length > 3 && (
+                                <span className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-500">
+                                  +{h.changed_labels.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </button>
+                        <div className="flex items-center justify-between px-4 pb-4">
                            <div className="flex items-center space-x-2">
                              <Clock size={10} className={isSelected ? 'text-white/40' : 'text-slate-600'} />
                              <span className={`text-[8px] font-semibold ${isSelected ? 'text-white/40' : 'text-slate-600'}`}>
                                 {formatAppTime(h.created_at)}
                              </span>
                            </div>
-                           <button 
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               toast.promise(apiFetch(`/api/v1/networks/connections/${item.id}/restore/${h.id}`, { method: 'POST' }), {
-                                   loading: 'Restoring state...',
-                                   success: () => { queryClient.invalidateQueries({ queryKey: ['network-connections'] }); queryClient.invalidateQueries({ queryKey: ['network-history', item.id] }); return "Restored successfully"; },
-                                   error: "Restore failed"
+                           <button
+                             type="button"
+                             onClick={() => {
+                               const restoreVersion = async () => {
+                                 const response = await apiFetch(`/api/v1/networks/connections/${item.id}/restore/${h.id}`, { method: 'POST' })
+                                 if (!response.ok) throw new Error(await response.text() || 'Restore failed')
+                                 await Promise.all([
+                                   queryClient.invalidateQueries({ queryKey: ['network-connections'] }),
+                                   queryClient.invalidateQueries({ queryKey: ['network-history', item.id] }),
+                                 ])
+                               }
+                               void toast.promise(restoreVersion(), {
+                                 loading: 'Restoring state...',
+                                 success: 'Restored successfully',
+                                 error: (restoreError: any) => restoreError?.message || 'Restore failed',
                                })
                              }}
                              className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${isSelected ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/40' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
@@ -4054,9 +4116,11 @@ function NetworkHistoryModal({ item, onClose }: any) {
                              Restore
                            </button>
                         </div>
-                      </button>
+                      </div>
                     )
                   })
+                ) : (
+                  <WorkspaceEmptyState compact icon={<HistoryIcon size={20} />} title="No revisions yet" description="Changes to this connection will appear here." />
                 )}
               </div>
            </div>
@@ -4078,7 +4142,9 @@ function NetworkHistoryModal({ item, onClose }: any) {
               </div>
               
               <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-                 {diffs.length > 0 ? (
+                 {isError ? (
+                    <WorkspaceEmptyState icon={<HistoryIcon size={32} />} title="History unavailable" description={error instanceof Error ? error.message : 'Could not load connection revisions.'} action={<button type="button" onClick={() => void refetch()} className="rounded-lg border border-blue-500/30 px-3 py-2 text-xs font-semibold text-blue-400">Retry history</button>} />
+                 ) : diffs.length > 0 ? (
                     <div className="space-y-6">
                        <div className="overflow-hidden rounded-lg border border-white/5 bg-black/20">
                           <table className="w-full text-left border-collapse">

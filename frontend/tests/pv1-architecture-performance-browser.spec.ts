@@ -30,7 +30,7 @@ test('Large Architecture culling preserves full search/list access and bounded r
   const fixture = await setupLargeModel()
   try {
     await open(page, fixture.modelId)
-    await expect(page.getByRole('button', { name: 'P07 Large Architecture Object 00000' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^P07 Large Architecture Object 00000, Application\/Service, revision \d+$/ })).toBeVisible()
     await expect(page.getByText(/5000 objects/)).toBeVisible()
     await expect(page.getByText(/10000 relations/)).toBeVisible()
     const realizedObjects = await page.locator('[role="img"][aria-label="Architecture diagram projection"] svg g[role="button"]').count()

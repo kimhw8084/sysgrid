@@ -131,14 +131,14 @@ export function formatDiagnosticUrlForDisplay(url: string) {
 }
 
 function shouldAttachIdentityHeaders(targetUrl: string, frontendOrigin: string, apiBase: string) {
-  if (!targetUrl.startsWith('http')) return true
-  if (apiBase && targetUrl.startsWith(apiBase)) return true
   try {
     const resolved = new URL(targetUrl, frontendOrigin)
-    if (resolved.origin === frontendOrigin) return true
+    const frontend = new URL(frontendOrigin)
+    if (resolved.origin === frontend.origin) return true
+    if (apiBase && resolved.origin === new URL(apiBase, frontendOrigin).origin) return true
     return resolved.hostname === 'localhost' || resolved.hostname === '127.0.0.1'
   } catch {
-    return true
+    return false
   }
 }
 
@@ -313,13 +313,27 @@ async function requestRuntimeResource(
   }
 }
 
-function validateManifestPayload(manifest: ManifestPayload) {
+function validateManifestPayload(manifest: ManifestPayload, apiBase: string, frontendOrigin: string) {
   if (manifest.profile !== EXPECTED_PROFILE) return `Manifest profile was "${manifest.profile || 'missing'}".`
   if (manifest.schema_version !== EXPECTED_SCHEMA_VERSION) return `Manifest schema version was "${manifest.schema_version || 'missing'}".`
   if (manifest.scope !== EXPECTED_SCOPE) return `Manifest scope was "${manifest.scope || 'missing'}".`
   if (normalizeContentType(manifest.content_type) !== EXPECTED_CONTENT_TYPE) return `Manifest content type was "${manifest.content_type || 'missing'}".`
   if (!manifest.filename || !FILENAME_PATTERN.test(manifest.filename)) return 'Manifest filename did not match SysGrid_External_YYYY-MM-DD_HH-mm-ss.csv.'
-  if (!manifest.download_url) return 'Manifest did not include a download URL.'
+  if (typeof manifest.download_url !== 'string' || !manifest.download_url.trim()) return 'Manifest did not include a download URL.'
+  try {
+    const apiOrigin = new URL(apiBase || frontendOrigin, frontendOrigin).origin
+    const downloadUrl = new URL(manifest.download_url, apiOrigin)
+    const query = [...downloadUrl.searchParams.entries()]
+    if (
+      downloadUrl.origin !== apiOrigin ||
+      downloadUrl.pathname !== '/api/v1/import/snapshot/external_entities' ||
+      downloadUrl.username || downloadUrl.password || downloadUrl.hash ||
+      query.length !== 1 || query[0][0] !== 'export_token' ||
+      !/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/.test(query[0][1])
+    ) return 'Manifest download URL did not match the configured External export endpoint.'
+  } catch {
+    return 'Manifest download URL was invalid.'
+  }
   return null
 }
 
@@ -440,7 +454,7 @@ export async function runExternalExportContractCheck(options: RuntimeRequestOpti
   }
 
   const manifest = manifestResponse.json as ManifestPayload
-  const manifestValidationError = validateManifestPayload(manifest)
+  const manifestValidationError = validateManifestPayload(manifest, apiBase, frontendOrigin)
   if (manifestValidationError) {
     return buildFailureResult({
       ...baseResult,

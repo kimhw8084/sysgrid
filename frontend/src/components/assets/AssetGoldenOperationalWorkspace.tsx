@@ -38,6 +38,7 @@ import { WorkspaceFloatingPanel, useWorkspaceAnchoredLayer } from '../shared/Ope
 import { AssetBulkActionsPanel } from './AssetBulkActionsPanel'
 import { AssetCompareModal } from './AssetCompareModal'
 import { OperationalBulkPreviewModal } from '../shared/OperationalBulkPreviewModal'
+import { useModulePolicy } from '../../policy/ModulePolicy'
 
 const GROUP_OPTIONS = [
   { value: 'raw', label: 'Raw Table' },
@@ -52,6 +53,9 @@ const GROUP_OPTIONS = [
 
 export default function AssetGoldenOperationalWorkspace() {
   const workspace = useAssetGoldenWorkspace()
+  const policy = useModulePolicy()
+  const canWriteAssets = !policy.isError && policy.data?.modules.assets?.actions?.write === true
+  const assetWriteReason = policy.isLoading ? 'Checking asset permissions' : 'Asset edit permission is required'
   const {
     setDetailAsset,
     setSearchParams,
@@ -157,6 +161,7 @@ export default function AssetGoldenOperationalWorkspace() {
     onOpenQuickLook: setQuickLookAsset,
     onOpenDetails: openDetailAsset,
     onOpenEdit: setEditingAsset,
+    canWrite: canWriteAssets,
     getConsoleUrl: getAssetConsoleUrl,
     onOpenRowActions: (asset, event) => {
       event.stopPropagation()
@@ -172,6 +177,7 @@ export default function AssetGoldenOperationalWorkspace() {
     setQuickLookAsset,
     openDetailAsset,
     setEditingAsset,
+    canWriteAssets,
     getAssetConsoleUrl,
     openRowActionMenuAtPoint,
     toggleFavorite,
@@ -182,6 +188,7 @@ export default function AssetGoldenOperationalWorkspace() {
   const hasVisibleRows = workspace.visibleAssets.length > 0
   const hasRegistryRows = workspace.allAssets.length > 0
   const isGridLoading = workspace.dataState?.kind === 'loading'
+  const isAssetRegistryBlocked = workspace.assetRegistryBlocked
   const isSelected = useCallback((id: number) => workspace.selectedIds.includes(Number(id)), [workspace.selectedIds])
   const selectedAssets = useMemo(() => workspace.visibleAssets.filter((asset) => isSelected(asset.id)), [isSelected, workspace.visibleAssets])
   const compareItems = useMemo(() => {
@@ -207,6 +214,7 @@ export default function AssetGoldenOperationalWorkspace() {
     },
     onOpenDetails: openDetailAsset,
     onOpenEdit: workspace.setEditingAsset,
+    canWrite: canWriteAssets,
     onOpenReportSection: openReportSection,
     onAddToCompare: (asset) => {
       setCompareIds((current) => {
@@ -437,7 +445,7 @@ export default function AssetGoldenOperationalWorkspace() {
               </ToolbarIconButton>
             </ToolbarGroup>
             <ToolbarGroup>
-              <ToolbarButton onClick={() => { dismissWorkspaceMenus(); workspace.setShowImportModal(true) }} title="Import asset rows">
+              <ToolbarButton onClick={() => { dismissWorkspaceMenus(); workspace.setShowImportModal(true) }} disabled={isAssetRegistryBlocked || !canWriteAssets} ariaLabel="Import asset rows" title={!canWriteAssets ? assetWriteReason : isAssetRegistryBlocked ? 'Retry the full asset registry before importing rows' : 'Import asset rows'}>
                 <span className="flex items-center gap-2">
                   <Upload size={14} />
                   Import
@@ -461,6 +469,7 @@ export default function AssetGoldenOperationalWorkspace() {
         secondaryToolbar={secondaryToolbar}
         toolbarActions={(
           <>
+            {workspace.viewMode === 'grid' ? <>
             {workspace.lastLifecycleOperation ? (
               <ToolbarButton
                 onClick={() => {
@@ -472,7 +481,7 @@ export default function AssetGoldenOperationalWorkspace() {
                     () => { void workspace.executeRevert(operation) },
                   )
                 }}
-                disabled={workspace.isReverting || workspace.isLastLifecycleRecoveryBlocked}
+                disabled={!canWriteAssets || workspace.isReverting || workspace.isLastLifecycleRecoveryBlocked}
                 ariaLabel="Revert last completed asset lifecycle operation"
                 title={workspace.isLastLifecycleRecoveryBlocked
                   ? 'Wait for the overlapping permanent purge to finish before reverting this asset operation'
@@ -494,13 +503,14 @@ export default function AssetGoldenOperationalWorkspace() {
                 Compare
               </span>
             </ToolbarButton>
-            <ToolbarButton ref={bulkMenuButtonRef as any} onClick={() => toggleOverlay('bulk')} disabled={selectedCount === 0} active={showBulkMenu} title="Bulk actions">
+            <ToolbarButton ref={bulkMenuButtonRef as any} onClick={() => toggleOverlay('bulk')} disabled={!canWriteAssets || selectedCount === 0} active={showBulkMenu} title={!canWriteAssets ? assetWriteReason : 'Bulk actions'}>
               <span className="flex items-center gap-2">
                 <Zap size={14} />
                 Bulk Actions
               </span>
             </ToolbarButton>
-            <ToolbarButton onClick={() => { dismissWorkspaceMenus(); workspace.setEditingAsset({}) }} variant="primary" className="px-6 py-2">
+            </> : null}
+            <ToolbarButton onClick={() => { dismissWorkspaceMenus(); workspace.setEditingAsset({}) }} disabled={isAssetRegistryBlocked || !canWriteAssets} ariaLabel="Register Asset" title={!canWriteAssets ? assetWriteReason : isAssetRegistryBlocked ? 'Retry the full asset registry before registering an asset' : undefined} variant="primary" className="px-6 py-2">
               <Plus size={14} />
               Register Asset
             </ToolbarButton>
@@ -620,6 +630,16 @@ export default function AssetGoldenOperationalWorkspace() {
           </>
         )}
       >
+        {workspace.relatedDataState.failedLabels.length > 0 && (
+          <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3">
+            <p className="text-xs font-semibold text-amber-200">
+              {workspace.relatedDataState.failedLabels.join(' and ')} unavailable. Map and report links may be incomplete.
+            </p>
+            <button type="button" onClick={workspace.relatedDataState.retry} disabled={workspace.relatedDataState.isFetching} className="min-h-9 rounded-md border border-amber-400/30 px-3 text-[9px] font-black uppercase tracking-wider text-amber-200 hover:bg-amber-400/10 disabled:cursor-wait disabled:opacity-60">
+              {workspace.relatedDataState.isFetching ? 'Retrying…' : 'Retry linked data'}
+            </button>
+          </div>
+        )}
         <AssetGoldenFeatureSurfaces
           gridRef={gridRef}
           allAssets={workspace.allAssets}

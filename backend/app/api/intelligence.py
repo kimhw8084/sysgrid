@@ -1,30 +1,126 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, update, or_, func
+from sqlalchemy import select, delete, update, or_, func, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
+from sqlalchemy.orm.exc import StaleDataError
 from typing import List, Optional, Any, Dict
+from datetime import datetime, timezone
+import hashlib
 import json
 import re
+from uuid import uuid4
 from ..database import get_db
 from ..models import models
 from ..schemas import schemas
-from .utils import build_audit_log, filter_valid_columns
+from .utils import build_audit_log, filter_valid_columns, get_audit_actor
 from .operational_bulk import (
     build_operational_bulk_summary,
     normalize_operational_bulk_ids,
     normalize_operational_bulk_payload,
     require_executable_operational_bulk,
 )
-from .module_policy import require_module_access
+from .module_policy import ensure_module_access, require_module_access
 
 router = APIRouter(
     prefix="/intelligence",
     tags=["External Intelligence"],
     dependencies=[Depends(require_module_access("external"))],
 )
-IMMUTABLE_EXTERNAL_ENTITY_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id"}
+IMMUTABLE_EXTERNAL_ENTITY_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "edit_revision"}
 EXTERNAL_BULK_UPDATE_FIELDS = {"status", "environment", "criticality", "risk_rating"}
 EXTERNAL_BULK_RATING_VALUES = {"Critical", "High", "Medium", "Low"}
+
+
+def _external_bulk_precondition(request: Request, ids, action, payload, entities, linked_ids, secret_ids) -> str:
+    value = {
+        "contract": "external-bulk-preview-v1",
+        "tenant": request.state.tenant_id,
+        "actor": get_audit_actor(request),
+        "ids": sorted(ids),
+        "action": action,
+        "payload": payload,
+        "entities": [
+            {"id": identity, "revision": entities[identity].edit_revision, "is_deleted": entities[identity].is_deleted}
+            for identity in sorted(entities)
+        ],
+        "links": sorted(linked_ids),
+        "secrets": sorted(secret_ids),
+    }
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False, default=str).encode()).hexdigest()
+
+
+def _external_bulk_request_hash(action, ids, payload, precondition) -> str:
+    value = {"module": "external", "action": action, "ids": ids, "payload": payload, "precondition": precondition}
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False, default=str).encode()).hexdigest()
+
+
+async def _reserve_external_writer(request: Request, db: AsyncSession) -> None:
+    await db.rollback()
+    dialect = db.get_bind().dialect.name
+    if dialect == "sqlite":
+        await db.execute(text("BEGIN IMMEDIATE"))
+    elif dialect != "postgresql":
+        raise HTTPException(409, "Guarded External operations are unavailable for this database engine")
+    await ensure_module_access("external", request, db)
+
+
+async def _replay_external_receipt(request: Request, db: AsyncSession, operation_id: str, request_hash: str):
+    receipt = await db.scalar(select(models.ModuleBulkReceipt).where(
+        models.ModuleBulkReceipt.module == "external",
+        models.ModuleBulkReceipt.tenant_id == request.state.tenant_id,
+        models.ModuleBulkReceipt.actor_id == get_audit_actor(request),
+        models.ModuleBulkReceipt.operation_id == operation_id,
+    ))
+    if receipt is None:
+        return None
+    if receipt.request_hash != request_hash:
+        raise HTTPException(409, "This operation ID is already bound to a different External request")
+    if receipt.undo_result is not None:
+        return {**receipt.result, "status": "already_reverted", "changed_count": 0, "changed_ids": [], "can_revert": False}
+    return dict(receipt.result)
+
+
+async def _undo_external_receipt(request: Request, db: AsyncSession, receipt_id: str, ids: list[int]):
+    receipt = await db.scalar(select(models.ModuleBulkReceipt).where(
+        models.ModuleBulkReceipt.id == receipt_id,
+        models.ModuleBulkReceipt.module == "external",
+        models.ModuleBulkReceipt.tenant_id == request.state.tenant_id,
+        models.ModuleBulkReceipt.actor_id == get_audit_actor(request),
+    ).with_for_update())
+    if receipt is None:
+        raise HTTPException(404, "External operation receipt not found")
+    if sorted(ids) != sorted(receipt.result.get("changed_ids", [])):
+        raise HTTPException(400, "Undo selection must match the receipt's changed External records")
+    if receipt.undo_result is not None:
+        return dict(receipt.undo_result)
+    if receipt.target != "external_entities" or not receipt.result.get("can_revert"):
+        raise HTTPException(409, "This External operation cannot be reverted")
+
+    records = {row.id: row for row in (await db.execute(
+        select(models.ExternalEntity).where(models.ExternalEntity.id.in_(ids)).with_for_update()
+    )).scalars().all()}
+    if set(records) != set(ids):
+        raise HTTPException(409, "An External record from this operation no longer exists")
+    allowed_fields = EXTERNAL_BULK_UPDATE_FIELDS | {"is_deleted"}
+    for identity in ids:
+        if records[identity].edit_revision != receipt.post_state.get(str(identity)):
+            raise HTTPException(409, "An External record changed after this operation; undo was not applied")
+        before = receipt.before_state.get(str(identity), {})
+        if set(before) - allowed_fields:
+            raise HTTPException(409, "External receipt contains fields that cannot be safely restored")
+        for key, value in before.items():
+            setattr(records[identity], key, value)
+
+    db.add(build_audit_log(
+        request=request, action="UNDO", target_table="external_entities", target_id="bulk",
+        description="Reverted external entity operation", changes={"receipt_id": receipt.id, "ids": ids},
+    ))
+    await db.flush()
+    receipt.undo_result = {"status": "reverted", "receipt_id": receipt.id, "changed_count": len(ids), "changed_ids": ids, "can_revert": False}
+    receipt.reverted_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    await db.commit()
+    return dict(receipt.undo_result)
 
 async def log_audit(db: AsyncSession, request: Request, action: str, table: str, target_id: int, description: str, changes: Optional[Dict] = None):
     log = build_audit_log(
@@ -36,7 +132,6 @@ async def log_audit(db: AsyncSession, request: Request, action: str, table: str,
         changes=changes,
     )
     db.add(log)
-    await db.commit()
 
 
 async def _validate_internal_ownership(db: AsyncSession, payload: schemas.ExternalEntityBase):
@@ -115,6 +210,7 @@ async def _enrich_entity_response(db: AsyncSession, entity: models.ExternalEntit
         "created_at": entity.created_at,
         "updated_at": entity.updated_at,
         "created_by_user_id": entity.created_by_user_id,
+        "edit_revision": entity.edit_revision,
         "name": entity.name,
         "external_key": entity.external_key or re.sub(r"[^a-z0-9._:-]+", "-", (entity.name or "").strip().lower()).strip("-") or f"external-{entity.id}",
         "aliases_json": entity.aliases_json or [],
@@ -325,9 +421,14 @@ async def create_entity(data: schemas.ExternalEntityCreate, request: Request, db
     await _validate_unique_external_identity(db, data)
     db_obj = models.ExternalEntity(**_normalize_external_payload(data, team))
     db.add(db_obj)
-    await db.commit()
-    await db.refresh(db_obj)
-    await log_audit(db, request, "CREATE", "external_entities", db_obj.id, f"Created external entity: {db_obj.name}")
+    try:
+        await db.flush()
+        await db.refresh(db_obj)
+        await log_audit(db, request, "CREATE", "external_entities", db_obj.id, f"Created external entity: {db_obj.name}")
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, "External entity conflicts with an existing record; refresh and resolve it") from exc
     result = await db.execute(
         select(models.ExternalEntity)
         .filter(models.ExternalEntity.id == db_obj.id)
@@ -337,9 +438,13 @@ async def create_entity(data: schemas.ExternalEntityCreate, request: Request, db
 
 @router.put("/entities/{entity_id}", response_model=schemas.ExternalEntityResponse)
 async def update_entity(entity_id: int, data: schemas.ExternalEntityUpdate, request: Request, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id).options(selectinload(models.ExternalEntity.secrets)))
+    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id).options(selectinload(models.ExternalEntity.secrets)).with_for_update())
     obj = result.scalar_one_or_none()
     if not obj: raise HTTPException(404, "Entity not found")
+    if not data.edit_revision or data.edit_revision != obj.edit_revision:
+        raise HTTPException(status_code=409, detail="External record changed since it was loaded; reload and review your edit")
+    if obj.is_deleted:
+        raise HTTPException(status_code=409, detail="Restore this external record before editing it")
 
     team = await _validate_internal_ownership(db, data)
     await _validate_unique_external_key(db, data.external_key or "", entity_id)
@@ -358,12 +463,21 @@ async def update_entity(entity_id: int, data: schemas.ExternalEntityUpdate, requ
     if "ownership_mode" in sent_keys or "internal_team_id" in sent_keys or "internal_operator_id" in sent_keys:
         sent_keys.update(["owner_team", "internal_team_id", "internal_operator_id"])
     clean_data = {k: v for k, v in clean_data.items() if k in sent_keys}
+    changed_fields = sorted(key for key, value in clean_data.items() if getattr(obj, key) != value)
     for k, v in clean_data.items():
         setattr(obj, k, v)
-    
-    await db.commit()
-    await db.refresh(obj)
-    await log_audit(db, request, "UPDATE", "external_entities", entity_id, f"Updated external entity: {obj.name}", clean_data)
+    if changed_fields:
+        try:
+            await db.flush()
+            await db.refresh(obj)
+            await log_audit(db, request, "UPDATE", "external_entities", entity_id, f"Updated external entity: {obj.name}", {"changed_fields": changed_fields})
+            await db.commit()
+        except StaleDataError as exc:
+            await db.rollback()
+            raise HTTPException(status_code=409, detail="External record changed while saving; reload and review your edit") from exc
+        except IntegrityError as exc:
+            await db.rollback()
+            raise HTTPException(409, "External entity conflicts with an existing record; refresh and resolve it") from exc
     refreshed = await db.execute(
         select(models.ExternalEntity)
         .filter(models.ExternalEntity.id == entity_id)
@@ -379,8 +493,30 @@ async def bulk_entity_action(data: dict, request: Request, db: AsyncSession = De
     dry_run = data.get("dry_run", False)
     if not isinstance(dry_run, bool):
         raise HTTPException(status_code=400, detail="dry_run must be a boolean")
+    if action == "undo":
+        if dry_run:
+            raise HTTPException(400, "External undo does not support preview")
+        receipt_id = data.get("receipt_id")
+        if not isinstance(receipt_id, str) or not re.fullmatch(r"[0-9a-f]{32}", receipt_id):
+            raise HTTPException(400, "receipt_id must be a 32-character lowercase hexadecimal value")
+        await _reserve_external_writer(request, db)
+        return await _undo_external_receipt(request, db, receipt_id, ids)
     if action not in {"update", "delete", "restore", "purge"}:
         raise HTTPException(status_code=400, detail=f"Unsupported bulk action: {action}")
+
+    operation_id = data.get("operation_id")
+    reviewed_precondition = data.get("precondition")
+    request_hash = None
+    if not dry_run:
+        if not isinstance(operation_id, str) or not re.fullmatch(r"[0-9a-f]{32}", operation_id):
+            raise HTTPException(400, "operation_id must be a 32-character lowercase hexadecimal value")
+        if not isinstance(reviewed_precondition, str) or not re.fullmatch(r"[0-9a-f]{64}", reviewed_precondition):
+            raise HTTPException(400, "precondition must be a 64-character lowercase hexadecimal value")
+        request_hash = _external_bulk_request_hash(action, ids, payload, reviewed_precondition)
+        await _reserve_external_writer(request, db)
+        replay = await _replay_external_receipt(request, db, operation_id, request_hash)
+        if replay is not None:
+            return replay
 
     clean_update: dict[str, Any] = {}
     if action == "update":
@@ -396,7 +532,10 @@ async def bulk_entity_action(data: dict, request: Request, db: AsyncSession = De
             if field in clean_update and clean_update[field] not in EXTERNAL_BULK_RATING_VALUES:
                 raise HTTPException(status_code=400, detail=f"Unsupported {field.replace('_', ' ')} value")
 
-    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id.in_(ids)))
+    entity_query = select(models.ExternalEntity).filter(models.ExternalEntity.id.in_(ids))
+    if not dry_run:
+        entity_query = entity_query.with_for_update()
+    result = await db.execute(entity_query)
     entities = result.scalars().all()
     entities_by_id = {entity.id: entity for entity in entities}
 
@@ -423,7 +562,12 @@ async def bulk_entity_action(data: dict, request: Request, db: AsyncSession = De
             continue
         blocked = False
         if action == "update":
-            changed = any(getattr(entity, key) != value for key, value in clean_update.items())
+            if entity.is_deleted:
+                blockers.append({"id": entity.id, "name": entity.name, "reason": "Restore this external record before updating it"})
+                blocked = True
+                changed = False
+            else:
+                changed = any(getattr(entity, key) != value for key, value in clean_update.items())
         elif action == "delete":
             changed = not bool(entity.is_deleted)
         elif action == "restore":
@@ -458,25 +602,56 @@ async def bulk_entity_action(data: dict, request: Request, db: AsyncSession = De
         unchanged_ids=unchanged_ids,
         blockers=blockers,
     )
+    precondition = _external_bulk_precondition(request, ids, action, clean_update if action == "update" else payload, entities_by_id, linked_ids, secret_ids)
     if dry_run:
-        return {"status": "preview", **summary}
+        return {
+            "status": "preview",
+            **summary,
+            "precondition": precondition,
+            "operation_id": uuid4().hex,
+            "versions": {str(identity): entity.edit_revision for identity, entity in entities_by_id.items()},
+        }
+
+    if reviewed_precondition != precondition:
+        raise HTTPException(409, "External records or dependencies changed since preview; review a fresh preview before applying")
 
     require_executable_operational_bulk(summary)
     if not changed_ids:
-        return {"status": "no_op", **summary}
+        receipt_id = uuid4().hex
+        result_data = {"status": "no_op", **summary, "operation_id": operation_id, "receipt_id": receipt_id, "can_revert": False}
+        db.add(models.ModuleBulkReceipt(
+            id=receipt_id, module="external", target="external_entities", tenant_id=request.state.tenant_id, actor_id=get_audit_actor(request),
+            operation_id=operation_id, request_hash=request_hash, result=result_data,
+        ))
+        try:
+            await db.commit()
+        except IntegrityError:
+            await db.rollback()
+            replay = await _replay_external_receipt(request, db, operation_id, request_hash)
+            if replay is not None:
+                return replay
+            raise
+        return result_data
 
     if action == "update":
+        before_state = {
+            str(identity): {key: getattr(entities_by_id[identity], key) for key in clean_update}
+            for identity in changed_ids
+        }
         for entity_id in changed_ids:
             entity = entities_by_id[entity_id]
             for key, value in clean_update.items():
                 setattr(entity, key, value)
     elif action == "delete":
+        before_state = {str(identity): {"is_deleted": entities_by_id[identity].is_deleted} for identity in changed_ids}
         for entity_id in changed_ids:
             entities_by_id[entity_id].is_deleted = True
     elif action == "restore":
+        before_state = {str(identity): {"is_deleted": entities_by_id[identity].is_deleted} for identity in changed_ids}
         for entity_id in changed_ids:
             entities_by_id[entity_id].is_deleted = False
     else:
+        before_state = {}
         for entity_id in changed_ids:
             await db.delete(entities_by_id[entity_id])
 
@@ -488,35 +663,58 @@ async def bulk_entity_action(data: dict, request: Request, db: AsyncSession = De
         description=f"Applied bulk external entity action: {action}",
         changes={
             "ids": changed_ids,
-            "payload": clean_update if action == "update" else {},
+            "changed_fields": sorted(clean_update) if action == "update" else [],
             "selected_count": summary["selected_count"],
             "changed_count": summary["changed_count"],
             "unchanged_count": summary["unchanged_count"],
         },
     ))
-    await db.commit()
-    return {"status": "success", **summary}
+    await db.flush()
+    receipt_id = uuid4().hex
+    can_revert = action != "purge" and bool(changed_ids)
+    result_data = {"status": "success", **summary, "operation_id": operation_id, "receipt_id": receipt_id, "can_revert": can_revert}
+    db.add(models.ModuleBulkReceipt(
+        id=receipt_id, module="external", target="external_entities", tenant_id=request.state.tenant_id, actor_id=get_audit_actor(request),
+        operation_id=operation_id, request_hash=request_hash, result=result_data,
+        before_state=before_state,
+        post_state={str(identity): entities_by_id[identity].edit_revision for identity in changed_ids} if can_revert else {},
+    ))
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        replay = await _replay_external_receipt(request, db, operation_id, request_hash)
+        if replay is not None:
+            return replay
+        raise
+    return result_data
 
 
 @router.post("/entities/{entity_id}/restore")
-async def restore_entity(entity_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id))
+async def restore_entity(entity_id: int, expected_revision: str, request: Request, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id).with_for_update())
     obj = result.scalar_one_or_none()
     if not obj: raise HTTPException(404, "Entity not found")
+    if expected_revision != obj.edit_revision:
+        raise HTTPException(409, "External record changed since it was loaded; reload before restoring it")
     await _validate_external_restore_contract(db, obj)
 
     obj.is_deleted = False
-    await db.commit()
     await log_audit(db, request, "RESTORE", "external_entities", entity_id, f"Restored external entity: {obj.name}")
-    return {"status": "success"}
+    await db.commit()
+    return {"status": "success", "edit_revision": obj.edit_revision}
 
 @router.delete("/entities/{entity_id}")
-async def delete_entity(entity_id: int, request: Request, purge: bool = False, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id))
+async def delete_entity(entity_id: int, expected_revision: str, request: Request, purge: bool = False, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id).with_for_update())
     obj = result.scalar_one_or_none()
     if not obj: raise HTTPException(404, "Entity not found")
+    if expected_revision != obj.edit_revision:
+        raise HTTPException(409, "External record changed since it was loaded; reload before archiving it")
     
     if purge:
+        if not obj.is_deleted:
+            raise HTTPException(409, "Archive this external entity before permanent purge")
         # Check for links
         link_check = await db.execute(select(models.ExternalLink).filter(models.ExternalLink.external_entity_id == entity_id))
         if link_check.scalars().first():
@@ -527,17 +725,19 @@ async def delete_entity(entity_id: int, request: Request, purge: bool = False, d
         await db.delete(obj)
         await log_audit(db, request, "PURGE", "external_entities", entity_id, f"Permanently purged external entity: {obj.name}")
     else:
+        if obj.is_deleted:
+            return {"status": "no_op", "edit_revision": obj.edit_revision}
         obj.is_deleted = True
         await log_audit(db, request, "DELETE", "external_entities", entity_id, f"Soft-deleted external entity: {obj.name}")
     
     await db.commit()
-    return {"status": "success"}
+    return {"status": "success", "edit_revision": None if purge else obj.edit_revision}
 
 # --- External Entity Secrets ---
 
 @router.post("/entities/{entity_id}/secrets", response_model=schemas.ExternalEntitySecretResponse)
 async def add_entity_secret(entity_id: int, data: schemas.ExternalEntitySecretBase, request: Request, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id))
+    result = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == entity_id).with_for_update())
     obj = result.scalar_one_or_none()
     if not obj: raise HTTPException(404, "Entity not found")
     if obj.is_deleted:
@@ -548,9 +748,14 @@ async def add_entity_secret(entity_id: int, data: schemas.ExternalEntitySecretBa
         **data.model_dump()
     )
     db.add(secret)
-    await db.commit()
-    await db.refresh(secret)
-    await log_audit(db, request, "CREATE", "external_entity_secrets", secret.id, f"Added credential for external entity: {obj.name}")
+    try:
+        await db.flush()
+        await db.refresh(secret)
+        await log_audit(db, request, "CREATE", "external_entity_secrets", secret.id, f"Added credential for external entity: {obj.name}")
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, "External entity changed before the credential reference was saved") from exc
     return secret
 
 @router.delete("/entities/{entity_id}/secrets/{secret_id}")
@@ -563,8 +768,8 @@ async def delete_entity_secret(entity_id: int, secret_id: int, request: Request,
     if not secret: raise HTTPException(404, "Secret not found")
     
     await db.delete(secret)
-    await db.commit()
     await log_audit(db, request, "DELETE", "external_entity_secrets", secret_id, f"Revoked credential for external entity ID: {entity_id}")
+    await db.commit()
     return {"status": "success"}
 
 # --- External Links ---
@@ -602,7 +807,7 @@ async def get_links(db: AsyncSession = Depends(get_db)):
 
 @router.post("/links", response_model=schemas.ExternalLinkResponse)
 async def create_link(data: schemas.ExternalLinkCreate, request: Request, db: AsyncSession = Depends(get_db)):
-    entity_res = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == data.external_entity_id))
+    entity_res = await db.execute(select(models.ExternalEntity).filter(models.ExternalEntity.id == data.external_entity_id).with_for_update())
     entity = entity_res.scalar_one_or_none()
     if not entity:
         raise HTTPException(404, "External entity not found")
@@ -624,18 +829,77 @@ async def create_link(data: schemas.ExternalLinkCreate, request: Request, db: As
     db_obj.host_or_fqdn = (data.host_or_fqdn or "").strip() or None
     db_obj.path_or_resource = (data.path_or_resource or "").strip() or None
     db.add(db_obj)
-    await db.commit()
-    await db.refresh(db_obj)
-    await log_audit(db, request, "CREATE", "external_links", db_obj.id, f"Established external link to {db_obj.purpose}")
+    try:
+        await db.flush()
+        await db.refresh(db_obj)
+        await log_audit(db, request, "CREATE", "external_links", db_obj.id, f"Established external link to {db_obj.purpose}")
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(409, "This external link conflicts with an existing relationship") from exc
     return db_obj
 
+
+@router.put("/links/{link_id}", response_model=schemas.ExternalLinkResponse)
+async def update_link(link_id: int, data: schemas.ExternalLinkUpdate, request: Request, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.ExternalLink).where(models.ExternalLink.id == link_id).with_for_update())
+    obj = result.scalar_one_or_none()
+    if not obj:
+        raise HTTPException(404, "Link not found")
+    if not data.edit_revision or data.edit_revision != obj.edit_revision:
+        raise HTTPException(status_code=409, detail="External link changed since it was loaded; reload and review your edit")
+
+    entity_result = await db.execute(select(models.ExternalEntity).where(models.ExternalEntity.id == data.external_entity_id).with_for_update())
+    entity = entity_result.scalar_one_or_none()
+    if not entity:
+        raise HTTPException(404, "External entity not found")
+    if entity.is_deleted:
+        raise HTTPException(409, "Restore this external entity before editing its links")
+    device_result = await db.execute(select(models.Device).where(models.Device.id == data.device_id))
+    device = device_result.scalar_one_or_none()
+    if not device:
+        raise HTTPException(404, "Device not found")
+    if device.is_deleted:
+        raise HTTPException(409, "Restore this asset before linking it")
+    if data.service_id is not None:
+        service_result = await db.execute(select(models.LogicalService).where(models.LogicalService.id == data.service_id))
+        service = service_result.scalar_one_or_none()
+        if not service:
+            raise HTTPException(404, "Logical service not found")
+        if service.device_id != data.device_id:
+            raise HTTPException(400, "Selected service does not belong to the selected asset")
+    await _validate_unique_external_link(db, data, exclude_link_id=link_id)
+
+    clean_data = data.model_dump(exclude={"edit_revision"})
+    clean_data["port"] = str(data.port) if data.port is not None else None
+    clean_data["host_or_fqdn"] = (data.host_or_fqdn or "").strip() or None
+    clean_data["path_or_resource"] = (data.path_or_resource or "").strip() or None
+    changed_fields = sorted(key for key, value in clean_data.items() if getattr(obj, key) != value)
+    for key, value in clean_data.items():
+        setattr(obj, key, value)
+    if changed_fields:
+        try:
+            await db.flush()
+            await log_audit(db, request, "UPDATE", "external_links", link_id, "Updated external link", {"changed_fields": changed_fields})
+            await db.commit()
+            await db.refresh(obj)
+        except StaleDataError as exc:
+            await db.rollback()
+            raise HTTPException(409, "External link changed while saving; reload and review your edit") from exc
+        except IntegrityError as exc:
+            await db.rollback()
+            raise HTTPException(409, "This external link conflicts with an existing relationship") from exc
+    return obj
+
 @router.delete("/links/{link_id}")
-async def delete_link(link_id: int, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_link(link_id: int, expected_revision: str, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.ExternalLink).filter(models.ExternalLink.id == link_id))
     obj = result.scalar_one_or_none()
     if not obj: raise HTTPException(404, "Link not found")
+    if expected_revision != obj.edit_revision:
+        raise HTTPException(409, "External link changed since it was loaded; reload before removing it")
     
     await db.delete(obj)
-    await db.commit()
     await log_audit(db, request, "DELETE", "external_links", link_id, "Severed external link")
+    await db.commit()
     return {"status": "success"}

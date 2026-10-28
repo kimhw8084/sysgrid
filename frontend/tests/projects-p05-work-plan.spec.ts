@@ -1,6 +1,8 @@
 import { expect, request, test } from '@playwright/test'
 import { installProjectsRootPreviewApis, PROJECTS_ROOT_PREVIEW_USER } from './helpers/projects-root-preview'
 
+const p05User = process.env.P05_USER_ID || 'p05.manager'
+
 const work = {
   project_id: 'p1',
   project_revision: 3,
@@ -82,7 +84,7 @@ test('P05 real backend browser journey reads the canonical task graph', async ({
   if (!apiOrigin) throw new Error('SYSGRID_P05_API_ORIGIN is required for the real backend journey')
   const api = await request.newContext({
     baseURL: apiOrigin,
-    extraHTTPHeaders: { 'X-User-Id': 'p05.manager', 'X-Tenant-Id': '1' },
+    extraHTTPHeaders: { 'X-User-Id': p05User, 'X-Tenant-Id': '1' },
   })
   try {
     const projectCommandId = globalThis.crypto.randomUUID()
@@ -106,7 +108,7 @@ test('P05 real backend browser journey reads the canonical task graph', async ({
     await create('task.create', { project_revision: 2, graph_revision: 2 }, { title: 'Canonical child', parent_task_id: summary.id, status: 'In progress', progress: 20 })
     await page.addInitScript((origin) => {
       localStorage.setItem('SYSGRID_OVERRIDE_API_URL', origin)
-      localStorage.setItem('SYSGRID_USER_ID', 'p05.manager')
+      localStorage.setItem('SYSGRID_USER_ID', p05User)
       localStorage.setItem('SYSGRID_TENANT_ID', '1')
     }, apiOrigin)
     await page.goto(`/projects/${project.id}/work`)

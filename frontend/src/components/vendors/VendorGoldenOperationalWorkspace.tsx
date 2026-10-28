@@ -1,3 +1,4 @@
+import { useModulePolicy } from '../../policy/ModulePolicy'
 // VendorGoldenOperationalWorkspace.tsx
 // MonitoringGrid golden-template clone wired to the Vendor/Contract/Personnel data contract.
 // Detail modal main content = full VendorDetails tabbed panel (Overview, Contracts, Personnel)
@@ -17,7 +18,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { showWorkspaceToast } from '../shared/WorkspaceToast'
+import { showWorkspaceRevertToast, showWorkspaceToast } from '../shared/WorkspaceToast'
 import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from '../shared/optionalStorage'
 import {
   FLOATING_PANEL_EDGE,
@@ -25,6 +26,7 @@ import {
   useOperationalRowInteractions,
 } from '../shared/OperationalGridInteractions'
 import { apiFetch } from '../../api/apiClient'
+import { fetchOperationalArray } from '../shared/operationalArrayFetch'
 import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../../utils/dateUtils'
 import { AppDropdown } from '../shared/AppDropdown'
 import { ConfigRegistryModal } from '../ConfigRegistry'
@@ -78,6 +80,7 @@ import {
   autoSizeOperationalColumns,
   getOperationalColumnLayoutSnapshot,
   normalizeOperationalColumnLayout,
+  OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
   sanitizeOperationalColumnLayout,
   sanitizeOperationalFilterModel,
   sanitizeOperationalSortModel,
@@ -361,6 +364,9 @@ const CONTRACT_STATUSES = ['Drafted', 'In Review', 'Completed', 'Cancelled', 'Ex
 // MAIN COMPONENT
 // ===========================================================================
 export default function VendorsReal() {
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.vendors?.actions?.write === true
+  const writeReason = policy.isLoading ? 'Checking vendor permissions' : 'Vendor edit permission is required'
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const idParam = searchParams.get('id')
@@ -722,19 +728,15 @@ export default function VendorsReal() {
   // --- DATA QUERIES ---
   const { data: allVendors, isLoading, isFetching, isError, error: vendorsError, refetch: refetchVendors } = useQuery({
     queryKey: VENDOR_QUERY_KEY,
-    queryFn: async () => {
-      const response = await apiFetch(VENDOR_LIST_ENDPOINT)
-      if (!response.ok) throw new Error(await response.text())
-      return response.json()
-    }
+    queryFn: () => fetchOperationalArray(VENDOR_LIST_ENDPOINT, 'Vendor registry'),
   })
-  const { data: devices } = useQuery({
+  const { data: devices, isLoading: isDevicesLoading, isFetching: isDevicesFetching, isError: isDevicesError, refetch: retryDevices } = useQuery({
     queryKey: ['devices'],
-    queryFn: async () => (await apiFetch('/api/v1/devices/')).json()
+    queryFn: () => fetchOperationalArray('/api/v1/devices/', 'Vendor asset choices'),
   })
-  const { data: systems } = useQuery({
+  const { data: systems, isLoading: isSystemsLoading, isFetching: isSystemsFetching, isError: isSystemsError, refetch: retrySystems } = useQuery({
     queryKey: ['settings', 'LogicalSystem'],
-    queryFn: async () => (await apiFetch('/api/v1/settings/options?category=LogicalSystem')).json()
+    queryFn: () => fetchOperationalArray('/api/v1/settings/options?category=LogicalSystem', 'Vendor system choices'),
   })
 
   // One typed Vendor row adapter feeds raw and grouped grids.
@@ -795,7 +797,7 @@ export default function VendorsReal() {
 
   const vendorDataState = useMemo(() => resolveOperationalDataState({
     loading: isLoading,
-    error: isError ? vendorsError : undefined,
+    error: isError && !Array.isArray(allVendors) ? vendorsError : undefined,
     totalCount: processedVendors.length,
     tabCount: items.length,
     visibleCount: displayedItems.length,
@@ -813,7 +815,19 @@ export default function VendorsReal() {
     tabEmptyDescription: registryScope === 'deleted'
       ? 'Archived vendors will appear here.'
       : 'Restore an archived vendor or add a new vendor.',
-  }), [displayedItems.length, isError, isLoading, items.length, processedVendors.length, registryScope, vendorsError])
+    degradedNotice: isError ? {
+      tone: 'warning',
+      title: 'Vendor registry refresh failed',
+      description: Array.isArray(allVendors)
+        ? 'Showing the last loaded vendors. Retry to confirm the current registry.'
+        : 'The registry could not be confirmed. Retry before adding or importing vendors.',
+      actionLabel: 'Retry vendors',
+      onAction: () => { void refetchVendors() },
+      isActionLoading: isFetching,
+    } : undefined,
+  }), [allVendors, displayedItems.length, isError, isFetching, isLoading, items.length, processedVendors.length, refetchVendors, registryScope, vendorsError])
+
+  const vendorRegistryBlocked = !Array.isArray(allVendors)
 
   const sortedItemsForGrouped = useMemo(() => {
     return [...displayedItems].sort((a: any, b: any) => {
@@ -964,25 +978,44 @@ export default function VendorsReal() {
       if (!response.ok) throw new Error(await response.text())
       return response.json()
     },
-    executeRequest: async ({ action, ids, payload }) => {
+    includePreviewInExecution: true,
+    executeRequest: async ({ action, ids, payload }, reviewedPreview) => {
+      if (action === 'undo') {
+        const receiptId = String(payload.receipt_id || '')
+        if (!receiptId) throw new Error('Vendor operation receipt is unavailable. Refresh before undoing the operation.')
+        const response = await apiFetch(VENDOR_LIFECYCLE_ENDPOINT, {
+          method: 'POST',
+          body: JSON.stringify({ ids, action: 'undo', target: 'vendor', receipt_id: receiptId }),
+        })
+        if (!response.ok) throw new Error(await response.text())
+        return response.json()
+      }
+      let precondition = reviewedPreview?.precondition
+      let operationId = reviewedPreview?.operation_id
+      if (!precondition || !operationId) {
+        const previewResponse = await apiFetch(VENDOR_LIFECYCLE_ENDPOINT, {
+          method: 'POST',
+          body: JSON.stringify({ ids, action, target: 'vendor', payload, dry_run: true }),
+        })
+        if (!previewResponse.ok) throw new Error(await previewResponse.text())
+        const safety = await previewResponse.json()
+        precondition = safety.precondition
+        operationId = safety.operation_id
+      }
+      if (!precondition) throw new Error('Vendor preview is missing its safety token. Refresh and review the operation again.')
+      if (!operationId) throw new Error('Vendor preview is missing its operation ID. Refresh and review the operation again.')
       const response = await apiFetch(VENDOR_LIFECYCLE_ENDPOINT, {
         method: 'POST',
-        body: JSON.stringify({ ids, action, target: 'vendor', ...(Object.keys(payload).length ? { payload } : {}) }),
+        body: JSON.stringify({ ids, action, target: 'vendor', precondition, operation_id: operationId, ...(Object.keys(payload).length ? { payload } : {}) }),
       })
       if (!response.ok) throw new Error(await response.text())
       return response.json()
     },
     refresh: () => queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY }),
-    buildRevertRequest: ({ action, changedIds, changedSnapshots }) => {
-      if (action === 'delete' || action === 'restore') {
-        return { action: action === 'delete' ? 'restore' : 'delete', ids: changedIds }
-      }
-      if (action !== 'update') return null
-      const priorCountries = Array.from(new Set(
-        changedSnapshots.map((snapshot: any) => String(snapshot.country ?? '')),
-      ))
-      return priorCountries.length === 1 && Boolean(priorCountries[0])
-        ? { action: 'update', ids: changedIds, payload: { country: priorCountries[0] } }
+    buildRevertRequest: ({ action, changedIds, result }) => {
+      if (action === 'purge' || !changedIds.length) return null
+      return result?.can_revert && result?.receipt_id
+        ? { action: 'undo', ids: changedIds, payload: { receipt_id: result.receipt_id } }
         : null
     },
     onPreviewAccepted: () => {
@@ -1065,6 +1098,7 @@ export default function VendorsReal() {
   const gridContext = useMemo(() => ({ favoriteIds, watchIds }), [favoriteIds, watchIds])
   const vendorGridRuntime = useMemo(() => ({
     preserveExplicitColumnWidths,
+    autoSizeStrategy: OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
     handleGridReady,
     handleColumnResized: handleVendorColumnResized,
     handleColumnMoved,
@@ -1101,7 +1135,7 @@ export default function VendorsReal() {
         actions: (
           <HeaderScopeSwitch
             label="Registry Scope"
-            summary={`${lifecycleCounts.existing} existing · ${lifecycleCounts.archived} archived`}
+            summary={vendorRegistryBlocked ? (isLoading ? 'Loading registry…' : 'Registry unavailable') : `${lifecycleCounts.existing} existing · ${lifecycleCounts.archived} archived`}
             value={registryScope}
             onChange={(next) => {
               setRegistryScope(next as 'active' | 'deleted')
@@ -1119,6 +1153,7 @@ export default function VendorsReal() {
           value={searchTerm}
           onChange={(event) => setSearchTermFromInteraction(event.target.value)}
           placeholder="Search vendors..."
+          ariaLabel="Search vendor records"
         />
       )}
       toolbarControls={(
@@ -1164,7 +1199,7 @@ export default function VendorsReal() {
             <ToolbarIconButton onClick={() => setShowRegistry(true)} title="Registry configuration"><Settings size={16} /></ToolbarIconButton>
           </ToolbarGroup>
           <ToolbarGroup>
-            <ToolbarButton onClick={() => setShowImportModal(true)} title="Import vendor rows">
+            <ToolbarButton onClick={() => setShowImportModal(true)} disabled={vendorRegistryBlocked || !canWrite} ariaLabel="Import vendor rows" title={!canWrite ? writeReason : vendorRegistryBlocked ? 'Retry the vendor registry before importing rows' : 'Import vendor rows'}>
               <span className="flex items-center gap-2"><Upload size={14} />Import</span>
             </ToolbarButton>
             <ToolbarButton
@@ -1212,7 +1247,7 @@ export default function VendorsReal() {
         <>
           <ToolbarButton
             onClick={toggleBulkWindow}
-            disabled={selectedIds.length === 0}
+            disabled={vendorRegistryBlocked || !canWrite || selectedIds.length === 0}
             active={showBulkMenu}
             title="Bulk actions"
             className="bulk-menu-trigger"
@@ -1222,6 +1257,9 @@ export default function VendorsReal() {
           </ToolbarButton>
           <ToolbarButton
             onClick={() => { setEditingItem(null); setIsFormOpen(true) }}
+            disabled={vendorRegistryBlocked || !canWrite}
+            ariaLabel="+ Add Vendor"
+            title={!canWrite ? writeReason : vendorRegistryBlocked ? 'Retry the vendor registry before adding a vendor' : undefined}
             variant="primary"
             className="px-6 py-2"
           >
@@ -1394,7 +1432,7 @@ export default function VendorsReal() {
       }
     >
 
-      {groupBy === 'raw' ? (
+      {groupBy === 'raw' || vendorDataState.kind !== 'ready' || isError ? (
         <OperationalDataGrid
           gridRef={gridRef}
           rows={sortedItemsForGrouped}
@@ -1534,6 +1572,13 @@ export default function VendorsReal() {
             vendor={detailItem}
             devices={devices}
             systems={systems}
+            coverageChoicesLoading={isDevicesLoading || isSystemsLoading}
+            coverageChoicesFetching={isDevicesFetching || isSystemsFetching}
+            coverageChoicesError={isDevicesError || isSystemsError}
+            retryCoverageChoices={() => {
+              if (isDevicesError) void retryDevices()
+              if (isSystemsError) void retrySystems()
+            }}
             onClose={() => { setDetailItem(null); setDetailDeleteConfirm(false) }}
             onDelete={(vendor: any) => {
               if (!detailDeleteConfirm) { setDetailDeleteConfirm(true); return }
@@ -1599,7 +1644,7 @@ function VendorCreateForm({ item, onClose, onSuccess }: any) {
 // ===========================================================================
 // VENDOR DETAIL PANEL — WorkspaceModal shell + full VendorDetails tab content
 // ===========================================================================
-function VendorDetailPanel({ vendor, devices, systems, onClose, onDelete, deleteConfirm }: any) {
+function VendorDetailPanel({ vendor, devices, systems, coverageChoicesLoading, coverageChoicesFetching, coverageChoicesError, retryCoverageChoices, onClose, onDelete, deleteConfirm }: any) {
   useBodyModalFlag()
   const queryClient = useQueryClient()
   const [isMaximized, setIsMaximized]           = useState(false)
@@ -1626,6 +1671,7 @@ function VendorDetailPanel({ vendor, devices, systems, onClose, onDelete, delete
       return response.json()
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY }); setIsEditing(false); setHasChanges(false); toast.success('Vendor Profile Updated') },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message || 'Unable to update vendor profile', { type: 'error' })
   })
   const personnelMutation = useMutation({
@@ -1636,10 +1682,11 @@ function VendorDetailPanel({ vendor, devices, systems, onClose, onDelete, delete
       return response.json()
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY }); setShowPersonnelModal(null); toast.success('Personnel Updated') },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message || 'Unable to update personnel', { type: 'error' })
   })
   const deletePersonnelMutation = useMutation({
-    mutationFn: async (id: number) => apiFetch(`/api/v1/vendors/personnel/${id}`, { method: 'DELETE' }),
+    mutationFn: async (personnel: any) => apiFetch(`/api/v1/vendors/personnel/${personnel.id}?expected_revision=${encodeURIComponent(personnel.edit_revision)}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY }); toast.success('Personnel Removed') }
   })
   const contractMutation = useMutation({
@@ -1651,11 +1698,35 @@ function VendorDetailPanel({ vendor, devices, systems, onClose, onDelete, delete
       return response.json()
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY }); setShowContractModal(null); setActiveContractDetails(null); toast.success('Contract Synchronized') },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message || 'Unable to save contract', { type: 'error' })
   })
   const deleteContractMutation = useMutation({
-    mutationFn: async (id: number) => apiFetch(VENDOR_LIFECYCLE_ENDPOINT, { method: 'POST', body: JSON.stringify({ ids: [id], action: 'delete', target: 'contract' }) }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY }); toast.success('Contract Terminated') }
+    mutationFn: async (id: number) => {
+      const request = { ids: [id], action: 'delete', target: 'contract' }
+      const preview = await apiFetch(VENDOR_LIFECYCLE_ENDPOINT, { method: 'POST', body: JSON.stringify({ ...request, dry_run: true }) })
+      if (!preview.ok) throw new Error(await preview.text())
+      const safety = await preview.json()
+      if (!safety.can_execute || !safety.precondition || !safety.operation_id) throw new Error('Review the latest contract state before archiving it.')
+      const response = await apiFetch(VENDOR_LIFECYCLE_ENDPOINT, { method: 'POST', body: JSON.stringify({ ...request, precondition: safety.precondition, operation_id: safety.operation_id }) })
+      if (!response.ok) throw new Error(await response.text())
+      return response.json()
+    },
+    onSuccess: (result: any, id: number) => {
+      queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY })
+      if (result?.can_revert && result?.receipt_id) {
+        showWorkspaceRevertToast('Contract Archived', async () => {
+          const response = await apiFetch(VENDOR_LIFECYCLE_ENDPOINT, {
+            method: 'POST',
+            body: JSON.stringify({ ids: [id], action: 'undo', target: 'contract', receipt_id: result.receipt_id }),
+          })
+          if (!response.ok) throw new Error(await response.text())
+          await queryClient.invalidateQueries({ queryKey: VENDOR_QUERY_KEY })
+        })
+      } else {
+        showWorkspaceToast('Contract Archived')
+      }
+    }
   })
 
   const primaryPersonnel = vendor.personnel?.find((p: any) => p.id === vendor.primary_personnel_id)
@@ -1951,7 +2022,7 @@ function VendorDetailPanel({ vendor, devices, systems, onClose, onDelete, delete
                             <div className="flex items-center space-x-2">
                               <button onClick={() => setShowPersonnelModal(p)} className="p-2 text-slate-500 hover:text-blue-400 transition-all"><Edit2 size={16} /></button>
                               {confirmingPersonnelId === p.id ? (
-                                <button onClick={() => { deletePersonnelMutation.mutate(p.id); setConfirmingPersonnelId(null) }} className="px-3 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest animate-pulse whitespace-nowrap">Confirm?</button>
+                                <button onClick={() => { deletePersonnelMutation.mutate(p); setConfirmingPersonnelId(null) }} className="px-3 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest animate-pulse whitespace-nowrap">Confirm?</button>
                               ) : (
                                 <button onClick={() => { setConfirmingPersonnelId(p.id); setTimeout(() => setConfirmingPersonnelId(null), 3000) }} className="p-2 text-slate-500 hover:text-rose-400 transition-all"><Trash2 size={16} /></button>
                               )}
@@ -2005,7 +2076,7 @@ function VendorDetailPanel({ vendor, devices, systems, onClose, onDelete, delete
     <AnimatePresence>
       {showPersonnelModal && <PersonnelForm item={showPersonnelModal} onClose={() => setShowPersonnelModal(null)} onSave={(d: any) => personnelMutation.mutate(d)} isSaving={personnelMutation.isPending} />}
       {showContractModal && <ContractRegistrationForm item={showContractModal} onClose={() => setShowContractModal(null)} onSave={(d: any) => contractMutation.mutate(d)} isSaving={contractMutation.isPending} />}
-      {activeContractDetails && <ContractDetailsForm item={activeContractDetails} devices={devices} systems={systems} onClose={() => setActiveContractDetails(null)} onSave={(d: any) => contractMutation.mutate(d)} isSaving={contractMutation.isPending} />}
+      {activeContractDetails && <ContractDetailsForm item={activeContractDetails} devices={devices} systems={systems} coverageChoicesLoading={coverageChoicesLoading} coverageChoicesFetching={coverageChoicesFetching} coverageChoicesError={coverageChoicesError} retryCoverageChoices={retryCoverageChoices} onClose={() => setActiveContractDetails(null)} onSave={(d: any) => contractMutation.mutate(d)} isSaving={contractMutation.isPending} />}
     </AnimatePresence>
     </>
   )
@@ -2250,7 +2321,7 @@ function ContractRegistrationForm({ item, onClose, onSave, isSaving }: any) {
 // ===========================================================================
 // CONTRACT DETAILS FORM — verbatim from Vendor.tsx
 // ===========================================================================
-function ContractDetailsForm({ item, devices, systems, onClose, onSave, isSaving }: any) {
+function ContractDetailsForm({ item, devices, systems, coverageChoicesLoading, coverageChoicesFetching, coverageChoicesError, retryCoverageChoices, onClose, onSave, isSaving }: any) {
   const [formData, setFormData]           = useState({ ...item })
   const [isEditing, setIsEditing]         = useState(false)
   const [hasChanges, setHasChanges]       = useState(false)
@@ -2306,6 +2377,19 @@ function ContractDetailsForm({ item, devices, systems, onClose, onSave, isSaving
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors"><X size={24} /></button>
         </div>
+
+        {coverageChoicesLoading ? (
+          <div role="status" className="mt-4 rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-xs font-semibold text-sky-200">
+            Loading infrastructure coverage choices…
+          </div>
+        ) : coverageChoicesError ? (
+          <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs font-semibold text-amber-100">
+            <span>Coverage choices could not be confirmed. Existing selections are preserved; retry before changing coverage.</span>
+            <button type="button" disabled={coverageChoicesFetching} onClick={retryCoverageChoices} className="min-h-8 rounded-md border border-amber-400/40 px-3 font-bold text-amber-100 hover:bg-amber-500/15 disabled:cursor-wait disabled:opacity-60">
+              {coverageChoicesFetching ? 'Retrying…' : 'Retry choices'}
+            </button>
+          </div>
+        ) : null}
 
         <div className="flex-1 overflow-y-auto custom-scrollbar mt-8 pr-4">
           <div className="space-y-10">
@@ -2388,10 +2472,10 @@ function ContractDetailsForm({ item, devices, systems, onClose, onSave, isSaving
                       <div className="space-y-2">
                         <label className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Covered Systems</label>
                         <div className="bg-black/20 rounded-lg border border-white/5 p-3 h-48 overflow-y-auto custom-scrollbar space-y-1.5">
-                          {usedSystems.length === 0 && <p className="text-[8px] text-slate-600 text-center py-16 uppercase font-bold">No active systems found</p>}
+                          {usedSystems.length === 0 && <p className="text-[8px] text-slate-600 text-center py-16 uppercase font-bold">{coverageChoicesError ? 'System choices unavailable' : 'No active systems found'}</p>}
                           {usedSystems.map((s: any) => (
-                            <label key={s.value} className={`flex items-center space-x-3 p-2 rounded-lg transition-all ${isEditing ? 'hover:bg-white/5 cursor-pointer' : ''}`}>
-                              <input disabled={!isEditing} type="checkbox" checked={formData.covered_systems?.includes(s.value)} onChange={() => toggleSystem(s.value)} className="w-4 h-4 rounded-lg border-white/10 bg-slate-900 text-blue-600" />
+                            <label key={s.value} className={`flex items-center space-x-3 p-2 rounded-lg transition-all ${isEditing && !coverageChoicesLoading && !coverageChoicesError ? 'hover:bg-white/5 cursor-pointer' : ''}`}>
+                              <input disabled={!isEditing || coverageChoicesLoading || coverageChoicesError} type="checkbox" checked={formData.covered_systems?.includes(s.value)} onChange={() => toggleSystem(s.value)} className="w-4 h-4 rounded-lg border-white/10 bg-slate-900 text-blue-600" />
                               <span className={`text-[10px] font-bold uppercase tracking-tight ${formData.covered_systems?.includes(s.value) ? 'text-white' : 'text-slate-500'}`}>{s.label}</span>
                             </label>
                           ))}
@@ -2400,10 +2484,10 @@ function ContractDetailsForm({ item, devices, systems, onClose, onSave, isSaving
                       <div className="space-y-2">
                         <label className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Propagated Assets</label>
                         <div className="bg-black/20 rounded-lg border border-white/5 p-3 h-48 overflow-y-auto custom-scrollbar space-y-1.5">
-                          {filteredAssets.length === 0 && <div className="flex flex-col items-center justify-center h-full space-y-2 text-slate-600"><Server size={20} className="opacity-20" /><p className="text-[8px] uppercase font-bold text-center">Select systems first</p></div>}
+                          {filteredAssets.length === 0 && <div className="flex flex-col items-center justify-center h-full space-y-2 text-slate-600"><Server size={20} className="opacity-20" /><p className="text-[8px] uppercase font-bold text-center">{coverageChoicesError ? 'Asset choices unavailable' : 'Select systems first'}</p></div>}
                           {filteredAssets.map((a: any) => (
-                            <label key={a.id} className={`flex items-center space-x-3 p-2 rounded-lg transition-all ${isEditing ? 'hover:bg-white/5 cursor-pointer' : ''}`}>
-                              <input disabled={!isEditing} type="checkbox" checked={formData.covered_assets?.includes(a.id)} onChange={() => toggleAsset(a.id)} className="w-4 h-4 rounded-lg border-white/10 bg-slate-900 text-indigo-600" />
+                            <label key={a.id} className={`flex items-center space-x-3 p-2 rounded-lg transition-all ${isEditing && !coverageChoicesLoading && !coverageChoicesError ? 'hover:bg-white/5 cursor-pointer' : ''}`}>
+                              <input disabled={!isEditing || coverageChoicesLoading || coverageChoicesError} type="checkbox" checked={formData.covered_assets?.includes(a.id)} onChange={() => toggleAsset(a.id)} className="w-4 h-4 rounded-lg border-white/10 bg-slate-900 text-indigo-600" />
                               <div className="flex flex-col min-w-0">
                                 <span className={`text-[10px] font-bold uppercase tracking-tight truncate ${formData.covered_assets?.includes(a.id) ? 'text-white' : 'text-slate-500'}`}>{a.name}</span>
                                 <span className="text-[8px] text-slate-600 font-bold uppercase">{a.system}</span>

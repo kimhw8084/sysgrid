@@ -1,7 +1,7 @@
 import { expect, request, test, type APIRequestContext, type Page } from '@playwright/test'
 
 const apiOrigin = () => process.env.SYSGRID_P09_API_ORIGIN || ''
-const user = 'p09.outcomes'
+const user = process.env.SYSGRID_P09_USER_ID || 'p09.outcomes'
 
 async function command(api: APIRequestContext, projectId: string, type: string, expectedRevision: number, payload: Record<string, unknown>) {
   const commandId = crypto.randomUUID()

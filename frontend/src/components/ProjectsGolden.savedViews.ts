@@ -352,16 +352,25 @@ export const projectSavedViewOptionLabel = (option: ProjectSavedViewOption) => {
   return `${option.name} · ${scopeLabel}${metadata}`
 }
 
-export const resolveProjectCurrentTeamId = (operatorsValue: unknown, currentUserId: unknown): number | null => {
+export const resolveProjectCurrentOperator = (operatorsValue: unknown, currentUserId: unknown) => {
   if (!Array.isArray(operatorsValue) || typeof currentUserId !== 'string' || !currentUserId.trim()) return null
+  const identity = currentUserId.trim()
+  return operatorsValue.find((entry) => {
+    const record = asRecord(entry)
+    return record && (record.username === identity || record.external_id === identity)
+  }) || null
+}
+
+export const resolveProjectCurrentTeamId = (operatorsValue: unknown, currentUserId: unknown): number | null => {
+  if (!Array.isArray(operatorsValue) || typeof currentUserId !== 'string' || !currentUserId.trim()) {
+    projectSavedViewTeamResolution = undefined
+    return null
+  }
   if (!operatorsValue.length) {
     projectSavedViewTeamResolution = undefined
     return null
   }
-  const current = operatorsValue.find((entry) => {
-    const record = asRecord(entry)
-    return record && record.username === currentUserId.trim()
-  })
+  const current = resolveProjectCurrentOperator(operatorsValue, currentUserId)
   const teamId = Number(asRecord(current)?.team_id)
   const resolved = Number.isSafeInteger(teamId) && teamId > 0 ? teamId : null
   projectSavedViewTeamResolution = resolved

@@ -89,6 +89,7 @@ export function BkmListModal({
       queryClient.invalidateQueries({ queryKey: ['monitoring-history', monitorId] })
       showWorkspaceToast('Synchronized recovery procedures', { type: 'success' })
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => showWorkspaceToast(e.message || 'Failed to update recovery procedures', { type: 'error' })
   })
 

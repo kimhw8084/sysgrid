@@ -6,8 +6,51 @@ import { expectReadableGridText } from './helpers/grid-contrast';
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
-for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] as const) {
-  test(`hardware quantity validation preserves input and supports audited edits in ${theme}`, async ({ page, sysApi: request }, testInfo) => {
+test('asset registry failure blocks new records and recovers through the visible retry action', async ({ page }, testInfo) => {
+  await resetBrowserState(page)
+  await page.setViewportSize({ width: 1440, height: 900 })
+
+  let allowRecovery = false
+  let failedAttempts = 0
+  let fallbackAttempts = 0
+  let recoveredAttempts = 0
+  await page.route(/\/api\/v1\/devices\?include_deleted=true$/, async route => {
+    if (!allowRecovery) {
+      failedAttempts += 1
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Temporary asset registry outage.' }) })
+      return
+    }
+    recoveredAttempts += 1
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+  })
+  await page.route(/\/api\/v1\/devices$/, async route => {
+    fallbackAttempts += 1
+    await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Temporary active inventory outage.' }) })
+  })
+
+  await page.goto('/asset')
+  await expect(page.getByRole('alert').filter({ hasText: 'Asset registry unavailable' })).toBeVisible()
+  await expect(page.getByText('No assets registered', { exact: true })).not.toBeVisible()
+  await expect(page.getByText(/Loading asset registry/)).not.toBeVisible()
+  await expect(page.getByRole('button', { name: 'Register Asset', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Import asset rows', exact: true })).toBeDisabled()
+  await expect.poll(() => failedAttempts).toBeGreaterThan(0)
+  await expect.poll(() => fallbackAttempts).toBeGreaterThan(0)
+  await expect(page.locator('[data-workspace-toast][data-visible="true"]')).toHaveCount(0)
+  await page.screenshot({ path: testInfo.outputPath('asset-registry-unavailable.png'), animations: 'disabled' })
+
+  allowRecovery = true
+  await page.getByRole('button', { name: 'Retry full registry', exact: true }).click()
+  await expect(page.getByText('No assets registered', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Register Asset', exact: true })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Import asset rows', exact: true })).toBeEnabled()
+  expect(recoveredAttempts).toBe(1)
+  await expect(page.locator('[data-workspace-toast][data-visible="true"]')).toHaveCount(0)
+  await page.screenshot({ path: testInfo.outputPath('asset-empty-confirmed-after-retry.png'), animations: 'disabled' })
+})
+
+for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 1440]] as const) {
+  test(`hardware quantity validation preserves input and supports audited edits in ${theme} at desktop`, async ({ page, sysApi: request }, testInfo) => {
     await resetBrowserState(page)
     await page.setViewportSize({ width, height: 900 })
     await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
@@ -372,7 +415,7 @@ test.describe('Assets workflows', () => {
   test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }, testInfo) => {
     test.setTimeout(120_000)
     await resetBrowserState(page)
-    const { stamp, systemName, primary, secondary, tertiary, monitoring } = await seedOperationalScenario(request)
+    const { stamp, systemName, primary, secondary, tertiary, monitoring, far } = await seedOperationalScenario(request)
     const purgeImpactSeed = await request.post(`${apiBase}/devices/${secondary.id}/hardware`, {
       data: { category: 'CPU', name: `PW-PURGE-IMPACT-${stamp}`, count: 1 },
     })
@@ -447,19 +490,17 @@ test.describe('Assets workflows', () => {
     await expect(page.getByText(primary.name).first()).toBeVisible({ timeout: 20000 })
     await expect(page.getByText('Linked Runbooks', { exact: true })).toBeVisible()
     await expect(farRisksButton).toBeVisible()
-    await expect(farRisksButton).toBeDisabled()
+    await expect(farRisksButton).toBeEnabled()
     await expect(auditButton).toBeVisible()
     await expect(page.getByText(`PW-MON-${stamp}`)).toBeVisible()
     await expect(page.getByRole('button', { name: new RegExp(`PW-RUNBOOK-${stamp}`, 'i') }).first()).toBeVisible()
     await expect(page.getByText(`PW-MAINT-${stamp}`)).toBeVisible()
-    if (process.env.SYSGRID_VERIFY_PROFILE === 'root-preview') {
-      await expect(openKnowledgeButton).toBeEnabled()
-      await expect(openKnowledgeButton).not.toHaveAttribute('aria-disabled', 'true')
-    } else {
-      await expect(openKnowledgeButton).toBeDisabled()
-      await expect(openKnowledgeButton).toHaveAttribute('aria-disabled', 'true')
-    }
+    await expect(openKnowledgeButton).toBeEnabled()
+    await expect(openKnowledgeButton).not.toHaveAttribute('aria-disabled', 'true')
     await expect(page).toHaveURL(/\/asset/)
+    await farRisksButton.click()
+    await expect(page).toHaveURL(new RegExp(`/far\\?id=${far.id}`))
+    await expect(page.getByRole('heading', { name: far.title, exact: true })).toBeVisible()
 
     await page.goto('/asset')
     await page.getByPlaceholder('Scan asset matrix...').fill(primary.name)
@@ -468,8 +509,12 @@ test.describe('Assets workflows', () => {
     await primaryDetailsRow.action('More actions').click()
     await viewDetailsButtons.filter({ visible: true }).click()
 
-    await expect(farRisksButton).toBeDisabled()
+    await expect(farRisksButton).toBeEnabled()
     await expect(farRisksButton).toHaveAttribute('data-module-action', 'far')
+    await expect(openKnowledgeButton).toBeEnabled()
+    await openKnowledgeButton.click()
+    await expect(page).toHaveURL(new RegExp(`/knowledge\\?device_id=${primary.id}.*mode=incident`))
+    await expect(page.getByText('Suggested Knowledge Context')).toBeVisible()
 
     await page.goto('/asset')
     await page.getByPlaceholder('Scan asset matrix...').fill(primary.name)

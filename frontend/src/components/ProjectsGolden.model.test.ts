@@ -164,6 +164,13 @@ describe('Projects governance and forecasting model', () => {
     expect(task11[0].reasons).toEqual(expect.arrayContaining(['blocked', 'overdue', 'unassigned']))
   })
 
+  it('reports Unknown health until a project has execution evidence', () => {
+    const health = getProjectHealth({ id: 99, name: 'Unplanned project' }, NOW)
+    expect(health.level).toBe('unknown')
+    expect(health.reasons).toContain('No execution plan recorded')
+    expect(buildPortfolioMetrics([{ id: 99, name: 'Unplanned project' }], NOW).healthUnknown).toBe(1)
+  })
+
   it('diversifies a constrained attention queue across projects first', () => {
     const alpha = buildProjectAttentionItems(projects, NOW)[0]
     const diversified = diversifyAttentionItems([alpha, { ...alpha, id: 'extra-alpha' }, { ...alpha, id: 'beta-risk', projectId: 2, projectName: 'Beta', taskId: 21 }], 2)

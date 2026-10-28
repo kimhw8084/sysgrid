@@ -13,7 +13,7 @@ import {
   Plus, Zap, Trash2, Edit2, Search, MapPin, X, ArrowRightLeft, Server,
   Monitor, AlertTriangle, Check, MoreVertical, RefreshCcw,
   Package, BarChart3, ExternalLink, Settings,
-  Network, HardDrive, TrendingUp, Layers, List, Upload, Tag, History, Clipboard, Eye, EyeOff, Activity, Terminal, Clock
+  Network, HardDrive, TrendingUp, Layers, List, Upload, Tag, History, Clipboard, Eye, EyeOff, Activity, Terminal, Clock, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -38,6 +38,7 @@ import { ConnectionsListModal } from './shared/ConnectionsListModal'
 import { ModulePolicyLink } from '../policy/ModulePolicy'
 import { resolveOperationalAuditNavigation, resolveOperationalObjectReference } from './shared/OperationalObjectReference'
 import { useSearchParams } from 'react-router-dom'
+import { fetchRackArray, RackDataState } from './racksDataState'
 
 // ─── Constants & Helpers ──────────────────────────────────────────────────────
 
@@ -632,11 +633,12 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   const [activeCategory, setActiveCategory] = useState('All Vectors')
   const gridRef = React.useRef<any>(null)
 
-  const { data: logs, isLoading } = useQuery({
+  const auditQuery = useQuery({
     queryKey: ['rack-audit-logs'],
-    queryFn: async () => (await (await apiFetch('/api/v1/racks/audit-logs')).json()),
+    queryFn: () => fetchRackArray('/api/v1/racks/audit-logs'),
     enabled: isOpen
   })
+  const logs = auditQuery.data
 
   // Real-time Statistics
   const stats = useMemo(() => {
@@ -809,20 +811,20 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                         <p className="text-[8px] font-black text-slate-500 uppercase">Total TX</p>
                         <Layers size={10} className="text-blue-500 opacity-50" />
                       </div>
-                      <p className="text-2xl font-black text-white">{stats.total}</p>
+                      <p className="text-2xl font-black text-white">{logs ? stats.total : '—'}</p>
                     </div>
                     <div className="p-4 bg-white/5 rounded-lg border border-white/5 group hover:border-emerald-500/30 transition-all">
                       <div className="flex justify-between items-center mb-1">
                         <p className="text-[8px] font-black text-slate-500 uppercase">Administrators</p>
                         <Zap size={10} className="text-emerald-500 opacity-50" />
                       </div>
-                      <p className="text-2xl font-black text-white">{stats.distinctAdmins}</p>
+                      <p className="text-2xl font-black text-white">{logs ? stats.distinctAdmins : '—'}</p>
                     </div>
                     <div className="p-4 bg-white/5 rounded-lg border border-white/5">
                       <div className="flex justify-between items-center mb-1">
                         <p className="text-[8px] font-black text-slate-500 uppercase">Mount / Unmount</p>
                       </div>
-                      <p className="text-lg font-black text-indigo-400">{stats.mountOps}</p>
+                      <p className="text-lg font-black text-indigo-400">{logs ? stats.mountOps : '—'}</p>
                     </div>
                   </div>
                 </section>
@@ -836,25 +838,38 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
               {/* Main Ledger Content */}
               <div className="flex-1 flex flex-col min-w-0 bg-black/20">
+                <RackDataState
+                  label="Rack audit history"
+                  isError={auditQuery.isError && Boolean(logs)}
+                  isFetching={auditQuery.isFetching}
+                  hasData={Boolean(logs)}
+                  onRetry={() => void auditQuery.refetch()}
+                />
                 <div className="flex-1 relative ag-theme-alpine-dark">
-                  {isLoading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm space-y-4">
-                      <RefreshCcw size={24} className="text-indigo-400 animate-spin" />
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Syncing Transaction Ledger...</p>
+                  {!logs && (auditQuery.isLoading || auditQuery.isError) ? (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 p-8 backdrop-blur-sm">
+                      <RackDataState
+                        label="Rack audit history"
+                        isLoading={auditQuery.isLoading}
+                        isError={auditQuery.isError}
+                        isFetching={auditQuery.isFetching}
+                        onRetry={() => void auditQuery.refetch()}
+                      />
                     </div>
+                  ) : (
+                    <AgGridReact
+                      ref={gridRef}
+                      rowData={filteredLogs}
+                      columnDefs={columnDefs}
+                      onRowClicked={p => setSelectedLog(p.data)}
+                      defaultColDef={{ resizable: true, filter: true, sortable: true }}
+                      animateRows={true}
+                      pagination={true}
+                      paginationPageSize={100}
+                      headerHeight={44}
+                      rowHeight={44}
+                    />
                   )}
-                  <AgGridReact
-                    ref={gridRef}
-                    rowData={filteredLogs}
-                    columnDefs={columnDefs}
-                    onRowClicked={p => setSelectedLog(p.data)}
-                    defaultColDef={{ resizable: true, filter: true, sortable: true }}
-                    animateRows={true}
-                    pagination={true}
-                    paginationPageSize={100}
-                    headerHeight={44}
-                    rowHeight={44}
-                  />
                 </div>
 
                 {/* Bottom Discovery / Detail Pane */}
@@ -1687,7 +1702,7 @@ const PlanBanner = ({ onAbort, onSave, onProceed, selectedCount, isInitialized, 
   </motion.div>
 )
 
-const PlanListModal = ({ plans, onClose, onLoadPlan, onAddPlan, onDeletePlan }: { plans: any[], onClose: () => void, onLoadPlan: (p: any) => void, onAddPlan: (type: 'blank' | 'asis') => void, onDeletePlan: (id: number) => void }) => (
+const PlanListModal = ({ plans, isLoading, isError, isFetching, onRetry, onClose, onLoadPlan, onAddPlan, onDeletePlan }: { plans: any[], isLoading: boolean, isError: boolean, isFetching: boolean, onRetry: () => void, onClose: () => void, onLoadPlan: (p: any) => void, onAddPlan: (type: 'blank' | 'asis') => void, onDeletePlan: (id: number) => void }) => (
   <WorkspaceDialogFrame title="Infrastructure plans" onClose={onClose}>
      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-panel w-[600px] p-10 rounded-lg border border-white/10 shadow-2xl space-y-8">
         <div className="flex justify-between items-start">
@@ -1737,7 +1752,8 @@ const PlanListModal = ({ plans, onClose, onLoadPlan, onAddPlan, onDeletePlan }: 
               <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">Historical Archives</span>
               <div className="h-px flex-1 bg-white/5" />
            </div>
-           {plans.length === 0 ? (
+           <RackDataState label="Infrastructure plans" isLoading={isLoading} isError={isError} isFetching={isFetching} hasData={plans.length > 0} onRetry={onRetry} />
+           {isLoading || (isError && plans.length === 0) ? null : plans.length === 0 ? (
              <div className="p-10 text-center border-2 border-dashed border-white/5 rounded-lg text-slate-600 font-bold uppercase text-[10px] tracking-widest">No plans found</div>
            ) : (
              plans.map(p => (
@@ -2361,9 +2377,12 @@ export default function Racks() {
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await (await apiFetch('/api/v1/devices')).json()) })
-  const { data: sites } = useQuery({ queryKey: ['sites'], queryFn: async () => (await (await apiFetch('/api/v1/sites/')).json()) })
-  const { data: connections } = useQuery({ queryKey: ['connections'], queryFn: async () => (await (await apiFetch('/api/v1/networks/connections')).json()) })
+  const devicesQuery = useQuery({ queryKey: ['devices'], queryFn: () => fetchRackArray('/api/v1/devices') })
+  const sitesQuery = useQuery({ queryKey: ['sites'], queryFn: () => fetchRackArray('/api/v1/sites/') })
+  const connectionsQuery = useQuery({ queryKey: ['connections'], queryFn: () => fetchRackArray('/api/v1/networks/connections') })
+  const devices = devicesQuery.data
+  const sites = sitesQuery.data
+  const connections = connectionsQuery.data
 
   const [searchTerm, setSearchTerm] = useState('')
   const [activeSite, setActiveSite] = useState<number | null>(null)
@@ -2444,10 +2463,12 @@ export default function Racks() {
   useWorkspacePopupDismiss(showAddMenu, addMenu.triggerRef, addMenu.panelRef, () => setShowAddMenu(false))
   const [planDraftName, setPlanDraftName] = useState('')
   const [isCreatingPlan, setIsCreatingPlan] = useState<'blank' | 'asis' | null>(null)
-  const { data: plansData, refetch: refetchPlans } = useQuery({ 
+  const plansQuery = useQuery({
     queryKey: ['infra-plans'], 
-    queryFn: async () => (await (await apiFetch('/api/v1/racks/plans')).json()) 
+    queryFn: () => fetchRackArray('/api/v1/racks/plans')
   })
+  const plansData = plansQuery.data
+  const refetchPlans = plansQuery.refetch
   const plans = useMemo(() => {
     return (plansData || []).map((p: any) => ({
       ...p,
@@ -2522,6 +2543,8 @@ export default function Racks() {
   const [activeTab, setActiveTab] = useState<'active' | 'deleted'>('active')
   const [selectedRacks, setSelectedRacks] = useState<number[]>([])
   const [rackWidth, setRackWidth] = useState(208)
+  const racksGridRef = useRef<HTMLDivElement>(null)
+  const [rackScrollState, setRackScrollState] = useState({ canScrollLeft: false, canScrollRight: false })
   const [showRelocateModal, setShowRelocateModal] = useState(false)
   const [mountSearch, setMountSearch] = useState('')
   const [showAuditLogs, setShowAuditLogs] = useState(false)
@@ -2545,10 +2568,11 @@ export default function Racks() {
     setConfirmModal({ isOpen: true, title, message, onConfirm, variant })
   }
 
-  const { data: allRacks, isLoading } = useQuery({
+  const racksQuery = useQuery({
     queryKey: ['racks-all'],
-    queryFn: async () => (await (await apiFetch('/api/v1/racks/?include_deleted=true')).json())
+    queryFn: () => fetchRackArray('/api/v1/racks/?include_deleted=true')
   })
+  const allRacks = racksQuery.data
 
   const openRackInfo = useCallback((rack: any) => {
     setShowingRackInfo(rack)
@@ -2640,6 +2664,30 @@ export default function Racks() {
     if (!isPlanInitialized) return displayedRacks
     return displayedRacks.filter((r: any) => sandboxRackIds.includes(r.id))
   }, [displayedRacks, isPlanInitialized, sandboxRackIds])
+  const updateRackScrollControls = useCallback(() => {
+    const rail = racksGridRef.current
+    if (!rail) return
+    const next = {
+      canScrollLeft: rail.scrollLeft > 2,
+      canScrollRight: rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 2,
+    }
+    setRackScrollState(current => current.canScrollLeft === next.canScrollLeft && current.canScrollRight === next.canScrollRight ? current : next)
+  }, [])
+  useEffect(() => {
+    const rail = racksGridRef.current
+    if (!rail) return
+    updateRackScrollControls()
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateRackScrollControls)
+    observer?.observe(rail)
+    return () => {
+      observer?.disconnect()
+    }
+  }, [displayedRacks.length, rackWidth, viewMode, updateRackScrollControls])
+  const scrollRackRail = (direction: number) => {
+    const rail = racksGridRef.current
+    if (!rail) return
+    rail.scrollBy({ left: direction * Math.max(240, Math.floor(rail.clientWidth * 0.8)), behavior: 'smooth' })
+  }
 
   const getPlanDeviceLocation = useCallback((deviceId: number) => {
     for (const r of virtualRacks) {
@@ -2728,6 +2776,7 @@ export default function Racks() {
       setIsProvisioning(null)
       setReserveInfo({ temporary_name: '', est_date: '', poc: '' })
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => {
       if (e.data?.type === 'RELOCATION_CONFLICT') {
         const device = devices?.find((d: any) => String(d.id) === String(e.data.payload.device_id))
@@ -2760,6 +2809,7 @@ export default function Racks() {
       setNewSite({ name: '', address: '', color: '#3b82f6' })
       toast.success('Site saved')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message)
   })
 
@@ -2778,6 +2828,7 @@ export default function Racks() {
       queryClient.invalidateQueries({ queryKey: ['racks-all'] })
       toast.success('Site decommissioned')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message)
   })
 
@@ -2804,6 +2855,7 @@ export default function Racks() {
       })
       toast.success('Rack saved')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message)
   })
 
@@ -2829,6 +2881,7 @@ export default function Racks() {
       setSelectedRacks([])
       toast.success('Action completed')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message)
   })
 
@@ -2907,6 +2960,7 @@ export default function Racks() {
       }
       setManagingDevice(null)
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message)
   })
 
@@ -2975,6 +3029,30 @@ export default function Racks() {
   // ── Render ────────────────────────────────────────────────────────────────────
 
   const isMaskMode = isPlanInitialized || !!diffBaseVersion
+
+  const supportQueries = [
+    { label: 'Device choices', query: devicesQuery },
+    { label: 'Sites', query: sitesQuery },
+    { label: 'Network connections', query: connectionsQuery },
+  ]
+  const failedSupportQueries = supportQueries.filter(({ query }) => query.isError)
+
+  if (!allRacks) {
+    return (
+      <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
+        <PageHeader title="Racks" subtitle="Physical Capacity & Spatial Intelligence" />
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] p-8">
+          <RackDataState
+            label="Rack records"
+            isLoading={!racksQuery.isError}
+            isError={racksQuery.isError}
+            isFetching={racksQuery.isFetching}
+            onRetry={() => void racksQuery.refetch()}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
@@ -3151,7 +3229,23 @@ export default function Racks() {
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Search racks & devices..."
+              ariaLabel="Search racks and devices"
             />
+
+            {viewMode === 'elevation' && (rackScrollState.canScrollLeft || rackScrollState.canScrollRight) && (
+              <div data-rack-scroll-controls="true" role="group" aria-label="Rack navigation" className="flex shrink-0 items-center gap-1">
+                {rackScrollState.canScrollLeft && (
+                  <ToolbarIconButton title="Scroll to previous racks" ariaLabel="Scroll to previous racks" onClick={() => scrollRackRail(-1)}>
+                    <ChevronLeft size={14} />
+                  </ToolbarIconButton>
+                )}
+                {rackScrollState.canScrollRight && (
+                  <ToolbarButton ariaLabel="Scroll to next racks" title="Scroll to next racks" onClick={() => scrollRackRail(1)} className="h-9 px-3 text-xs">
+                    More racks <ChevronRight size={14} className="ml-1" aria-hidden="true" />
+                  </ToolbarButton>
+                )}
+              </div>
+            )}
 
             <ToolbarIconButton 
               title="Time Machine / Diff"
@@ -3193,6 +3287,30 @@ export default function Racks() {
           </>
         }
       />
+
+      <RackDataState
+        label="Rack records"
+        isError={racksQuery.isError}
+        isFetching={racksQuery.isFetching}
+        hasData={Boolean(allRacks)}
+        onRetry={() => void racksQuery.refetch()}
+      />
+
+      {failedSupportQueries.length > 0 && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-4 py-3 text-sm text-[var(--text-primary)]">
+          <p>
+            {failedSupportQueries.map(({ label }) => label).join(', ')} could not be refreshed. Previously loaded values remain visible where available; related choices may be incomplete.
+          </p>
+          <button
+            type="button"
+            disabled={failedSupportQueries.some(({ query }) => query.isFetching)}
+            onClick={() => failedSupportQueries.forEach(({ query }) => { void query.refetch() })}
+            className="min-h-9 rounded-md border border-[var(--state-warning-border)] px-3 text-xs font-bold text-[var(--text-primary)] hover:bg-[var(--state-warning-surface)] disabled:cursor-wait disabled:opacity-60"
+          >
+            {failedSupportQueries.some(({ query }) => query.isFetching) ? 'Retrying linked data…' : 'Retry linked data'}
+          </button>
+        </div>
+      )}
 
       {/* ── Capacity Summary Bar ── */}
       {activeRacks && activeRacks.length > 0 && !showCompareOnly && !isMaskMode && (
@@ -3285,7 +3403,7 @@ export default function Racks() {
       )}
 
       {/* ── Rack Grid ── */}
-      <div id="racks-grid" className="h-[480px] flex-none md:h-full md:min-h-[480px] md:flex-1 flex gap-8 overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar px-1 min-h-0 relative">
+      <div id="racks-grid" ref={racksGridRef} onScroll={updateRackScrollControls} className="h-[480px] flex-none md:h-full md:min-h-[480px] md:flex-1 flex gap-8 overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar px-1 min-h-0 relative">
         
         {viewMode === 'spatial' ? (
           <SpatialMap
@@ -3541,6 +3659,10 @@ export default function Racks() {
       {showPlanList && (
        <PlanListModal 
           plans={plans}
+          isLoading={plansQuery.isLoading}
+          isError={plansQuery.isError}
+          isFetching={plansQuery.isFetching}
+          onRetry={() => void plansQuery.refetch()}
           onClose={() => setShowPlanList(false)}
           onDeletePlan={(id) => deletePlanMutation.mutate(id)}
           onAddPlan={(type) => {
