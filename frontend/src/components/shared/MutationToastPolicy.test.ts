@@ -14,6 +14,13 @@ function sourceFiles(directory: string): string[] {
 }
 
 function mutationErrorsWithLocalToast(source: string, fileName: string): boolean {
+  // Avoid building a TypeScript AST for files that cannot match the policy.
+  // The AST predicate below requires these exact identifiers in the source.
+  if (!source.includes('useMutation')) return false
+  if (!source.includes('showWorkspaceToast')
+    && !source.includes('showOperationalBulkErrorToast')
+    && !source.includes('toast')) return false
+
   const sourceFile = ts.createSourceFile(
     fileName,
     source,
