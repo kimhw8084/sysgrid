@@ -45,6 +45,7 @@ export function FARVersionHistory({ mode, onUpdate }: { mode: any; onUpdate: (ty
       toast.success('Failure vector content restored')
       onUpdate('refresh')
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => toast.error(`Version restore failed: ${error?.message || 'Unknown error'}`),
   })
 

@@ -4,6 +4,8 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import ProjectsStory from './ProjectsStory'
 
+vi.mock('../policy/ModulePolicy', () => ({ useModulePolicy: () => ({ data: { identity: { user_id: 'portfolio-test-user' } }, isLoading: false, isError: false, refetch: async () => ({}) }) }))
+
 vi.mock('./ProjectsStory.api', async () => {
   const actual = await vi.importActual<typeof import('./ProjectsStory.api')>('./ProjectsStory.api')
   return {

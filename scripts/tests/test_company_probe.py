@@ -102,6 +102,7 @@ def test_quick_probe_never_promotes_unobserved_company_gates(tmp_path, monkeypat
     monkeypatch.setattr(probe, 'source_fingerprint', lambda *args, **kwargs: 'c' * 64)
     monkeypatch.setattr(probe, 'command_report', lambda *args: {'exit_code': 0, 'report': {'status': 'PASS'}})
     monkeypatch.setattr(probe, 'storage_check', lambda: {'database_count': 2})
+    monkeypatch.setattr(probe.sys, 'version_info', (3, 12, 0))
     monkeypatch.setattr(probe.sys, 'stdin', io.StringIO(''))
     monkeypatch.setattr(probe, 'git', lambda *args: b'main' if args[0] == 'branch' else b'a' * 40 if args[0] == 'rev-parse' else b'')
     output = tmp_path / 'company-proof'
@@ -130,6 +131,7 @@ def test_deployed_release_uses_existing_64_character_identity_and_exact_loaded_s
     monkeypatch.setattr(probe, 'source_fingerprint', lambda *args, **kwargs: 'c' * 64)
     monkeypatch.setattr(probe, 'command_report', lambda *args: {'exit_code': 0, 'report': {'status': 'PASS'}})
     monkeypatch.setattr(probe, 'storage_check', lambda: {'database_count': 2})
+    monkeypatch.setattr(probe.sys, 'version_info', (3, 12, 0))
     monkeypatch.setattr(probe.sys, 'stdin', io.StringIO(''))
     monkeypatch.setattr(probe, 'git', lambda *args: b'main' if args[0] == 'branch' else b'a' * 40 if args[0] == 'rev-parse' else b'')
     monkeypatch.setenv('PV1_RELEASE_CANDIDATE_SHA', 'd' * 64)

@@ -1,15 +1,17 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { OperationalGridMatrix } from './OperationalGridMatrix'
 import {
   getOperationalGridSurfaceStyle,
   OperationalGridSurface,
 } from './OperationalWorkspaceShells'
 import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY } from './OperationalGridSizing'
+import { clampAutoSizedOperationalColumnWidths } from './OperationalGridSizing'
 import { WorkspaceEmptyState } from './OperationalWorkspacePrimitives'
 import type { OperationalDataState } from './OperationalDataState'
 
 type OperationalGridRuntimeLike = {
   preserveExplicitColumnWidths?: boolean
+  autoSizeStrategy?: Record<string, any> | null
   handleGridReady?: (params: any) => void
   handleColumnResized?: (event: any) => void
   handleColumnMoved?: (event: any) => void
@@ -85,18 +87,46 @@ export function OperationalDataGrid({
   suppressRowClickSelection = true,
 }: OperationalDataGridProps) {
   const autoSizeStrategy = useMemo(
-    () => (runtime?.preserveExplicitColumnWidths ? undefined : OPERATIONAL_GRID_AUTO_SIZE_STRATEGY),
-    [runtime?.preserveExplicitColumnWidths]
+    () => (runtime?.preserveExplicitColumnWidths ? undefined : runtime?.autoSizeStrategy ?? OPERATIONAL_GRID_AUTO_SIZE_STRATEGY),
+    [runtime?.preserveExplicitColumnWidths, runtime?.autoSizeStrategy]
   )
+  const handleFirstDataRendered = useCallback((event: any) => {
+    onFirstDataRendered?.(event)
+    if (runtime?.preserveExplicitColumnWidths) return
+    const api = event?.api
+    if (!api) return
+    const clampWidths = () => {
+      if (api.isDestroyed?.()) return
+      clampAutoSizedOperationalColumnWidths(api)
+    }
+    requestAnimationFrame(clampWidths)
+    window.setTimeout(clampWidths, 32)
+  }, [onFirstDataRendered, runtime?.preserveExplicitColumnWidths])
   const noticeToneClass = dataState?.notice?.tone === 'error'
     ? 'border-rose-500/30 bg-rose-500/10 text-rose-100'
     : dataState?.notice?.tone === 'warning'
-      ? 'border-amber-500/30 bg-amber-500/10 text-amber-100'
+      ? 'border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] text-[var(--text-primary)]'
       : 'border-blue-500/25 bg-blue-500/10 text-slate-100'
   const notice = dataState?.notice ? (
-    <div className={`border-b px-4 py-3 ${noticeToneClass}`}>
-      <p className="text-[10px] font-black uppercase tracking-[0.14em]">{dataState.notice.title}</p>
-      {dataState.notice.description ? <p className="pt-1 text-[11px] text-slate-300">{dataState.notice.description}</p> : null}
+    <div
+      role={dataState.kind === 'query-error' || dataState.notice.tone === 'error' ? 'alert' : 'status'}
+      aria-live={dataState.kind === 'query-error' || dataState.notice.tone === 'error' ? 'assertive' : 'polite'}
+      className={`flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 ${noticeToneClass}`}
+    >
+      <div className="min-w-0">
+        <p className="text-[10px] font-black uppercase tracking-[0.14em]">{dataState.notice.title}</p>
+        {dataState.notice.description ? <p className="pt-1 text-[11px] text-[var(--text-secondary)]">{dataState.notice.description}</p> : null}
+      </div>
+      {dataState.notice.onAction ? (
+        <button
+          type="button"
+          onClick={dataState.notice.onAction}
+          disabled={dataState.notice.isActionLoading}
+          className="min-h-9 shrink-0 rounded-md border border-[var(--state-warning-border)] px-3 text-[9px] font-black uppercase tracking-wider text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:cursor-wait disabled:opacity-60"
+        >
+          {dataState.notice.isActionLoading ? 'Retrying…' : dataState.notice.actionLabel || 'Retry'}
+        </button>
+      ) : null}
     </div>
   ) : null
   const shouldRenderEmptyState = Boolean(
@@ -169,7 +199,10 @@ export function OperationalDataGrid({
           getRowId={getRowId}
           getRowClass={getRowClass}
           selectionScopeKey={selectionScopeKey}
-          onGridReady={runtime.handleGridReady}
+          onGridReady={params => {
+            if (typeof window !== 'undefined') (window as any).__DEBUG_OPERATIONAL_GRID_API__ = params.api
+            runtime.handleGridReady?.(params)
+          }}
           onSelectionChanged={onSelectionChanged}
           onColumnResized={runtime.handleColumnResized}
           onColumnMoved={runtime.handleColumnMoved}
@@ -181,7 +214,7 @@ export function OperationalDataGrid({
           onRowClicked={rowInteractions?.handleRowClicked}
           onRowDoubleClicked={rowInteractions?.handleRowDoubleClicked}
           onCellContextMenu={contextMenu?.handleCellContextMenu}
-          onFirstDataRendered={onFirstDataRendered}
+          onFirstDataRendered={handleFirstDataRendered}
           onRowDataUpdated={onRowDataUpdated}
           noRowsLabel={dataState?.noRowsLabel || noRowsLabel}
           suppressRowClickSelection={suppressRowClickSelection}

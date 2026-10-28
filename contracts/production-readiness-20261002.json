@@ -840,15 +840,22 @@
     "production_profile": "contracts/system_management_v1.json",
     "production_modules": [
       "home",
-      "assets",
+      "projects",
       "monitoring",
-      "services",
-      "network",
+      "assets",
       "racks",
+      "services",
+      "external",
+      "network",
+      "architecture",
+      "research",
+      "far",
+      "vendors",
+      "knowledge",
       "logs",
       "settings"
     ],
-    "preview_preservation": "All existing modules and legacy paths remain preserved; graduation requires separate acceptance.",
+    "preview_preservation": "All existing modules and legacy paths remain preserved; release qualification and production acceptance require separate current-candidate evidence.",
     "pv1": {
       "tasks": 10000,
       "dependencies": 20000,
@@ -907,12 +914,12 @@
     ],
     "viewports": [
       {
-        "width": 390,
-        "height": 844
+        "width": 1024,
+        "height": 768
       },
       {
-        "width": 768,
-        "height": 1024
+        "width": 1280,
+        "height": 650
       },
       {
         "width": 1280,
@@ -921,6 +928,10 @@
       {
         "width": 1440,
         "height": 900
+      },
+      {
+        "width": 1920,
+        "height": 1080
       }
     ],
     "interaction": [

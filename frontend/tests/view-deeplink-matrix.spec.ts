@@ -15,15 +15,14 @@ test.describe('View deep-link matrix', () => {
     const failures = installStrictAppMonitoring(page)
     const { primary, secondary, service, knowledge, monitoring, far } = await seedOperationalScenario(request)
     await ensureSettingOption(request, 'NetworkFarm', 'Prod')
-    const rootPreview = process.env.SYSGRID_VERIFY_PROFILE === 'root-preview'
-    const project = rootPreview ? await createProject(request, {
+    const project = await createProject(request, {
       name: `PW-PROJ-DEEPLINK-${Date.now()}`,
       type: 'Strategic',
       status: 'Planning',
       priority: 'High',
       target_assets: [primary.id],
       target_services: [service.id],
-    }) : null
+    })
     const connection = await createConnection(request, {
       device_a_id: primary.id,
       source_port: 'eth10',
@@ -49,13 +48,8 @@ test.describe('View deep-link matrix', () => {
     await expect(page.getByRole('dialog').getByRole('heading', { level: 2, name: service.name, exact: true })).toBeVisible()
     await expect(page.getByRole('dialog').locator('dd').getByText(service.name, { exact: true })).toBeVisible()
 
-    if (project) {
-      await page.goto(`/projects?id=${project.id}`)
-      await expect(page.locator('h1').filter({ hasText: project.name })).toBeVisible()
-    } else {
-      await page.goto('/projects')
-      await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible()
-    }
+    await page.goto(`/projects?id=${project.id}`)
+    await expect(page.locator('h1').filter({ hasText: project.name })).toBeVisible()
 
     await page.goto(`/monitoring?id=${monitoring.id}`)
     const monitoringDialog = page.getByRole('dialog').filter({
@@ -64,19 +58,12 @@ test.describe('View deep-link matrix', () => {
     await expect(monitoringDialog).toBeVisible()
     await expect(monitoringDialog.getByRole('heading', { level: 2, name: monitoring.title, exact: true })).toBeVisible()
 
-    if (rootPreview) {
-      await page.goto(`/far?id=${far.id}`)
-      await expect(page.getByRole('heading', { name: far.title })).toBeVisible()
+    await page.goto(`/far?id=${far.id}`)
+    await expect(page.getByRole('heading', { name: far.title })).toBeVisible()
 
-      await page.goto(`/knowledge?device_id=${primary.id}`)
-      await expect(page.getByText(knowledge.title).first()).toBeVisible()
-      await expect(page.getByText('Suggested Knowledge Context')).toBeVisible()
-    } else {
-      await page.goto(`/far?id=${far.id}`)
-      await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible()
-      await page.goto(`/knowledge?device_id=${primary.id}`)
-      await expect(page.getByRole('heading', { name: 'Access unavailable', exact: true })).toBeVisible()
-    }
+    await page.goto(`/knowledge?device_id=${primary.id}`)
+    await expect(page.getByText(knowledge.title).first()).toBeVisible()
+    await expect(page.getByText('Suggested Knowledge Context')).toBeVisible()
 
     await page.goto(`/network?id=${connection.id}`)
     await expect(page.getByRole('heading', { name: 'Connection Forensics' })).toBeVisible()

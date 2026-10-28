@@ -53,7 +53,7 @@ export const OPERATIONAL_GRID_WIDTHS = {
   compactAction: 124,
   standardAction: 208,
   badge: 132,
-  badgeMin: 96,
+  badgeMin: 120,
   dot: 56,
 } as const
 

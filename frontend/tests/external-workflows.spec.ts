@@ -134,7 +134,13 @@ test.describe('External workflows', () => {
     await linkModal.locator('select').nth(2).selectOption(String(internalAsset.id))
     await linkModal.getByPlaceholder('e.g., Daily DB Synchronization Feed').fill('Partner feed ingress')
     await clickResilientButton(page, /Save Link/i)
-    await expect(page.locator('.max-w-md').getByText('Simulated interconnect failure')).toBeVisible()
+    const failureToast = page.locator('[data-workspace-toast="error"]')
+    await expect(failureToast).toContainText('Simulated interconnect failure')
+    const toastBounds = await failureToast.boundingBox()
+    const viewport = page.viewportSize()
+    expect(toastBounds).not.toBeNull()
+    expect(toastBounds!.y).toBeLessThanOrEqual(24)
+    expect(toastBounds!.x + toastBounds!.width).toBeLessThanOrEqual((viewport?.width || 0) - 12)
     await expect(page.getByRole('heading', { name: 'Establish External Link' })).toBeVisible()
     await linkModal.getByText('Close', { exact: true }).click()
     await clickResilientButton(page, 'Discard Changes')
@@ -156,4 +162,32 @@ test.describe('External workflows', () => {
     await expect(page.getByText('Dependency Matrix')).toBeVisible()
     await expect(page.getByText(internalAsset.name)).toBeVisible()
   })
+})
+
+
+test.describe('External desktop column readability', () => {
+  for (const theme of ['Dark', 'Light'] as const) {
+    test(`keeps default column headings readable in ${theme} theme`, async ({ page, sysApi: request }) => {
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await resetBrowserState(page)
+      await createExternalEntity(request, { name: `PW-EXT-HEADERS-${Date.now()}`, type: 'API', status: 'Active', environment: 'Production' })
+      await page.goto('/external')
+      await expect(page.getByRole('heading', { name: 'External' })).toBeVisible()
+      await page.getByRole('button', { name: theme, exact: true }).click()
+      for (const field of ['business_purpose', 'link_count']) {
+        const columnReady = await page.evaluate((columnId) => {
+          const api = (window as any).__DEBUG_OPERATIONAL_GRID_API__
+          const column = api?.getColumn?.(columnId)
+          if (!column?.isVisible?.()) return false
+          api.ensureColumnVisible(columnId, 'middle')
+          return true
+        }, field)
+        expect(columnReady, `${field} should be enabled in the default External view`).toBe(true)
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+        const text = page.locator(`.ag-header-cell[col-id="${field}"] .ag-header-cell-text`).first()
+        await expect(text).toBeVisible()
+        await expect.poll(() => text.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+      }
+    })
+  }
 })

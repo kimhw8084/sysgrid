@@ -118,7 +118,7 @@ async def test_reports_activity_and_notification_retry_are_snapshot_safe(client,
     async with config_session_factory() as config_session:
         config_session.add(UserTenantAccess(user_id="reviewer", tenant_id=tenant_id, role="VIEWER", is_selected=True))
         await config_session.commit()
-    await provision_module_operator(tenant_id, 'reviewer', 'projects', preview=True)
+    await provision_module_operator(tenant_id, 'reviewer', 'projects')
     async with session_factory() as session:
         project_record = await session.get(models.PV1Project, project_id)
         project_record.phase = "Executing"

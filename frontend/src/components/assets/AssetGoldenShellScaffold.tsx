@@ -61,30 +61,35 @@ export default function AssetGoldenShellScaffold({
                 { label: <span className="flex items-center gap-2"><Globe size={13} /> Map</span>, value: 'map' },
               ]}
             />
-            <div className="h-8 w-px bg-white/5" />
-            <HeaderScopeSwitch
-              label={<span className="hidden lg:inline">Registry Scope</span>}
-              value={activeTab}
-              onChange={(next) => onTabChange(next as 'inventory' | 'deleted')}
-              options={[
-                { label: `Existing (${existingCount})`, value: 'inventory' },
-                { label: `Archived (${purgedCount})`, value: 'deleted' },
-              ]}
-            />
+            {viewMode === 'grid' ? (
+              <>
+                <div className="h-8 w-px bg-white/5" />
+                <HeaderScopeSwitch
+                  label={<span className="hidden lg:inline">Registry Scope</span>}
+                  value={activeTab}
+                  onChange={(next) => onTabChange(next as 'inventory' | 'deleted')}
+                  options={[
+                    { label: `Existing (${existingCount})`, value: 'inventory' },
+                    { label: `Archived (${purgedCount})`, value: 'deleted' },
+                  ]}
+                />
+              </>
+            ) : null}
           </div>
         ),
       }}
-      toolbarSearch={(
+      toolbarSearch={viewMode === 'grid' ? (
         <ToolbarSearch
           value={searchTerm}
           onChange={onSearchTermChange}
           placeholder="Scan asset matrix..."
+          ariaLabel="Search assets"
         />
-      )}
-      toolbarControls={toolbarControls}
-      secondaryToolbar={secondaryToolbar}
+      ) : null}
+      toolbarControls={viewMode === 'grid' ? toolbarControls : null}
+      secondaryToolbar={viewMode === 'grid' ? secondaryToolbar : null}
       toolbarActions={toolbarActions}
-      filterChips={filterChips}
+      filterChips={viewMode === 'grid' ? filterChips : []}
       floatingPanels={floatingPanels}
     >
       {children}

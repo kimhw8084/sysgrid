@@ -348,21 +348,28 @@ def test_schedule_migration_preserves_existing_ids_dates_and_round_trips(tmp_pat
         connection.execute(text("INSERT INTO pv1_projects (id, tenant_id, display_key, name, owner_id, start_date, target_date, created_by, updated_by) VALUES ('legacy-pv1', 7, 'PRJ-000007', 'Preserve schedule', 'owner', '2026-10-03', '2026-10-11', 'owner', 'owner')"))
         connection.execute(text("INSERT INTO pv1_tasks (id, tenant_id, project_id, title, start_date, end_date, created_by, updated_by) VALUES ('legacy-task', 7, 'legacy-pv1', 'Weekend dates', '2026-10-03', '2026-10-11', 'owner', 'owner')"))
 
-    alembic_command.upgrade(config, "head")
-    with engine.connect() as connection:
-        project = connection.execute(text("SELECT id, start_date, target_date, calendar_id, calendar_revision FROM pv1_projects WHERE id='legacy-pv1'")).mappings().one()
-        task = connection.execute(text("SELECT id, start_date, end_date, milestone_anchor, duration_workdays FROM pv1_tasks WHERE id='legacy-task'")).mappings().one()
-        calendar = connection.execute(text("SELECT working_weekdays, revision FROM pv1_project_calendars WHERE project_id='legacy-pv1'")).mappings().one()
-        assert dict(project) == {"id": "legacy-pv1", "start_date": "2026-10-03", "target_date": "2026-10-11", "calendar_id": "calendar-legacy-pv1", "calendar_revision": 1}
-        assert dict(task) == {"id": "legacy-task", "start_date": "2026-10-03", "end_date": "2026-10-11", "milestone_anchor": "start", "duration_workdays": None}
-        assert json.loads(calendar["working_weekdays"]) == [0, 1, 2, 3, 4, 5, 6]
-        assert calendar["revision"] == 1
+    def assert_schedule_state():
+        with engine.connect() as connection:
+            project = connection.execute(text("SELECT id, start_date, target_date, calendar_id, calendar_revision FROM pv1_projects WHERE id='legacy-pv1'")).mappings().one()
+            task = connection.execute(text("SELECT id, start_date, end_date, milestone_anchor, duration_workdays FROM pv1_tasks WHERE id='legacy-task'")).mappings().one()
+            calendar = connection.execute(text("SELECT working_weekdays, revision FROM pv1_project_calendars WHERE project_id='legacy-pv1'")).mappings().one()
+            assert dict(project) == {"id": "legacy-pv1", "start_date": "2026-10-03", "target_date": "2026-10-11", "calendar_id": "calendar-legacy-pv1", "calendar_revision": 1}
+            assert dict(task) == {"id": "legacy-task", "start_date": "2026-10-03", "end_date": "2026-10-11", "milestone_anchor": "start", "duration_workdays": None}
+            assert json.loads(calendar["working_weekdays"]) == [0, 1, 2, 3, 4, 5, 6]
+            assert calendar["revision"] == 1
+
+    schedule_revision = "c5d6e7f8a9b0"
+    alembic_command.upgrade(config, schedule_revision)
+    assert_schedule_state()
 
     alembic_command.downgrade(config, "b2c3d4e5f6a7")
     assert "duration_workdays" not in {column["name"] for column in inspect(engine).get_columns("pv1_tasks")}
     with engine.connect() as connection:
         assert connection.execute(text("SELECT id, start_date, end_date FROM pv1_tasks WHERE id='legacy-task'")).one() == ("legacy-task", "2026-10-03", "2026-10-11")
+    alembic_command.upgrade(config, schedule_revision)
+    assert_schedule_state()
     alembic_command.upgrade(config, "head")
+    assert_schedule_state()
     with engine.connect() as connection:
         assert connection.execute(text("SELECT COUNT(*) FROM pv1_project_calendars WHERE project_id='legacy-pv1'")).scalar_one() == 1
         assert connection.execute(text("SELECT id, start_date, end_date FROM pv1_tasks WHERE id='legacy-task'")).one() == ("legacy-task", "2026-10-03", "2026-10-11")
@@ -378,7 +385,7 @@ async def test_preview_signature_hash_actor_and_expiry_bindings_reject_before_mu
     async with setup_db[1]() as config_session:
         config_session.add(UserTenantAccess(user_id="other-scheduler", tenant_id=tenant_id, role="ADMIN", is_selected=False))
         await config_session.commit()
-    await provision_module_operator(tenant_id, 'other-scheduler', 'projects', preview=True)
+    await provision_module_operator(tenant_id, 'other-scheduler', 'projects')
     access = await _command(client, tenant_id, project_id, "project.set_access", revisions, {"members": [{"user_id": "admin_root", "role": "Owner"}, {"user_id": "other-scheduler", "role": "Lead"}]})
     assert access.status_code == 200, access.text
 

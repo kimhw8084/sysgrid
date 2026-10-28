@@ -12,7 +12,7 @@ export default defineConfig({
   ],
   // Existing phone cases remain available in the base configuration. The
   // owner's current qualification scope is desktop window resizing only.
-  grepInvert: /\b(?:320|390)\b/,
+  grepInvert: /\b(?:320|390|740)(?:px|x\d+)?\b|\b(?:phone|mobile|narrow[- ]screen)\b/i,
   outputDir: 'test-results-desktop',
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report-desktop' }], ['./llm-reporter.ts']],
 })

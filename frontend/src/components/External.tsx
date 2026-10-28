@@ -1,3 +1,4 @@
+import { useModulePolicy } from '../policy/ModulePolicy'
 import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import { usePageLeaveGuard } from './shared/workspaceDeparture'
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
@@ -10,6 +11,7 @@ import {
   Star, GitCompare, Minimize2, ChevronUp, ChevronDown, Bell, Undo2
 } from 'lucide-react'
 import { apiFetch } from "../api/apiClient"
+import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import { parseAppDate, formatAppDate } from '../utils/dateUtils'
 import {
   OperationalRowActionMenu,
@@ -63,6 +65,7 @@ import {
 } from './shared/OperationalDependencyGuard'
 import {
   autoSizeOperationalColumns,
+  OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
   sanitizeOperationalColumnLayout,
   sanitizeOperationalFilterModel,
   sanitizeOperationalSortModel,
@@ -1473,6 +1476,8 @@ const getFriendlyRestoreError = (msg: string): string => {
 }
 
 export default function External() {
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.external?.actions?.write === true
   const { confirm: confirmWorkspace, confirmation } = useWorkspaceConfirmation()
   const externalStorageNamespace = 'sysgrid_external'
   const externalViewStorageKey = `${externalStorageNamespace}_views_v1`
@@ -1644,27 +1649,28 @@ export default function External() {
       setGridColumnApi(params.columnApi)
     },
   })
-  const { data: options } = useQuery({ 
+  const { data: options, isFetching: isOptionsFetching, isError: isOptionsError, error: optionsError, refetch: retryOptions } = useQuery({
     queryKey: ['settings-options'], 
-    queryFn: async () => (await (await apiFetch('/api/v1/settings/options')).json()) 
+    queryFn: () => fetchOperationalArray('/api/v1/settings/options', 'External form choices'),
   })
-  const { data: teams } = useQuery({
+  const { data: teams, isFetching: isTeamsFetching, isError: isTeamsError, error: teamsError, refetch: retryTeams } = useQuery({
     queryKey: ['teams'],
-    queryFn: async () => (await (await apiFetch('/api/v1/settings/teams')).json())
+    queryFn: () => fetchOperationalArray('/api/v1/settings/teams', 'Accountable teams'),
   })
-  const { data: operators } = useQuery({
+  const { data: operators, isFetching: isOperatorsFetching, isError: isOperatorsError, error: operatorsError, refetch: retryOperators } = useQuery({
     queryKey: ['operators'],
-    queryFn: async () => (await (await apiFetch('/api/v1/settings/operators')).json())
+    queryFn: () => fetchOperationalArray('/api/v1/settings/operators', 'Accountable operators'),
   })
 
-  const { data: allEntities, isLoading, isError: isEntityError, error: entityError } = useQuery({
+  const { data: allEntities, isLoading, isFetching: isEntityFetching, isError: isEntityError, error: entityError, refetch: retryEntities } = useQuery({
     queryKey: ['external-entities', { include_deleted: true }],
-    queryFn: async () => (await (await apiFetch('/api/v1/intelligence/entities?include_deleted=true')).json())
+    queryFn: () => fetchOperationalArray('/api/v1/intelligence/entities?include_deleted=true', 'External entity registry'),
   })
 
+  const entityRecords = useMemo(() => Array.isArray(allEntities) ? allEntities : [], [allEntities])
 
   const detailRoute = useOperationalDetailRoute({
-    allItems: allEntities,
+    allItems: Array.isArray(allEntities) ? entityRecords : undefined,
     detailItem: activeDetails,
     setDetailItem: setActiveDetails,
     isEditOpen: !!activeModal,
@@ -1678,19 +1684,22 @@ export default function External() {
   }
 
 
-  const { data: links, isLoading: linkLoading, isError: isLinkError, error: linkError } = useQuery({ 
+  const { data: links, isLoading: linkLoading, isFetching: isLinkFetching, isError: isLinkError, error: linkError, refetch: retryLinks } = useQuery({
     queryKey: ['external-links'], 
-    queryFn: async () => (await (await apiFetch('/api/v1/intelligence/links')).json()) 
+    queryFn: () => fetchOperationalArray('/api/v1/intelligence/links', 'External links registry'),
   })
 
-  const { data: devices } = useQuery({ 
+  const linkRecords = useMemo(() => Array.isArray(links) ? links : [], [links])
+
+  const { data: devices, isFetching: isDeviceFetching, isError: isDeviceError, error: deviceError, refetch: retryDevices } = useQuery({
     queryKey: ['devices'], 
-    queryFn: async () => (await (await apiFetch('/api/v1/devices/')).json()) 
+    queryFn: () => fetchOperationalArray('/api/v1/devices/', 'Linked asset choices'),
   })
+  const deviceRecords = useMemo(() => Array.isArray(devices) ? devices : [], [devices])
 
   const findExternalEntityById = useCallback((id: number) => {
-    return allEntities?.find((entity: any) => entity.id === id) || null
-  }, [allEntities])
+    return entityRecords.find((entity: any) => entity.id === id) || null
+  }, [entityRecords])
 
   const isExternalEntityPurgeable = useCallback((entity: any) => {
     return getExternalEntityPurgeGuard(entity, links).canPurge
@@ -1760,10 +1769,9 @@ export default function External() {
   })
 
   const entities = useMemo(() => {
-    if (!allEntities) return []
-    return allEntities
+    return entityRecords
       .map((entity: any) => {
-        const insights = getEntityInsights(entity, links || [])
+        const insights = getEntityInsights(entity, linkRecords)
         return {
           ...entity,
           internal_owner: insights.internalOwnerLabel,
@@ -1772,7 +1780,7 @@ export default function External() {
         }
       })
       .filter((e: any) => activeTab === 'active' ? !e.is_deleted : e.is_deleted)
-  }, [allEntities, activeTab, links])
+  }, [entityRecords, activeTab, linkRecords])
 
   const sortedEntities = useMemo(() => {
     const sorted = [...entities].sort((a, b) => {
@@ -1788,10 +1796,10 @@ export default function External() {
   }, [entities, normalizedFavoriteIds])
 
   const registryCounts = useMemo(() => ({
-    active: allEntities?.filter((entity: any) => !entity.is_deleted).length || 0,
-    archived: allEntities?.filter((entity: any) => entity.is_deleted).length || 0,
-    links: links?.length || 0,
-  }), [allEntities, links])
+    active: entityRecords.filter((entity: any) => !entity.is_deleted).length,
+    archived: entityRecords.filter((entity: any) => entity.is_deleted).length,
+    links: linkRecords.length,
+  }), [entityRecords, linkRecords])
 
   const toFilterOptions = (values: any[]) => Array.from(new Set(values.filter((value) => typeof value === 'string' && value.trim().length > 0)))
     .sort()
@@ -1805,12 +1813,11 @@ export default function External() {
   }), [entities])
 
   const linkFilterOptions = useMemo(() => {
-    if (!links) return { direction: [], protocol: [] }
     return {
-      direction: toFilterOptions(links.map((l: any) => l.direction)),
-      protocol: toFilterOptions(links.map((l: any) => l.protocol)),
+      direction: toFilterOptions(linkRecords.map((l: any) => l.direction)),
+      protocol: toFilterOptions(linkRecords.map((l: any) => l.protocol)),
     }
-  }, [links])
+  }, [linkRecords])
 
   const filteredEntities = useMemo(() => sortedEntities.filter((entity: any) => {
     if (searchTerm.trim()) {
@@ -1850,8 +1857,7 @@ export default function External() {
   }), [sortedEntities, quickFilters, searchTerm])
 
   const filteredLinks = useMemo(() => {
-    if (!links) return []
-    return links.filter((link: any) => {
+    return linkRecords.filter((link: any) => {
       if (searchTerm.trim()) {
         const query = searchTerm.trim().toLowerCase()
         const haystack = [
@@ -1879,7 +1885,7 @@ export default function External() {
       if (quickFilters.protocol?.length && !quickFilters.protocol.includes(link.protocol)) return false
       return true
     })
-  }, [links, searchTerm, quickFilters])
+  }, [linkRecords, searchTerm, quickFilters])
 
   const getEntityGroupValue = (item: any, field: string) => {
     if (field === 'owner') return item.internal_owner || 'Unassigned'
@@ -1916,16 +1922,43 @@ export default function External() {
     selectionScopeKey,
   })
 
+  const hasActiveExternalRegistry = activeTab === 'links' ? Array.isArray(links) : Array.isArray(allEntities)
+  const activeExternalQueryError = activeTab === 'links'
+    ? (isLinkError ? linkError : null)
+    : (isEntityError ? entityError : null)
+  const activeExternalFetching = activeTab === 'links' ? isLinkFetching : isEntityFetching
+  const activeExternalChoicesError = activeTab === 'links'
+    ? (isDeviceError ? deviceError : isEntityError ? entityError : null)
+    : (optionsError || teamsError || operatorsError)
+  const externalPrimaryRegistryFailed = Boolean(activeExternalQueryError && !hasActiveExternalRegistry)
+  const externalDependencyError = activeTab !== 'links' && isLinkError ? linkError : null
+  const activeExternalDisplayError = activeExternalQueryError
+    || externalDependencyError
+    || activeExternalChoicesError
+  const externalAddPrerequisitesLoading = activeTab === 'links'
+    ? linkLoading || (!Array.isArray(allEntities) && isEntityFetching) || (!Array.isArray(devices) && isDeviceFetching)
+    : isLoading || (!Array.isArray(options) && isOptionsFetching) || (!Array.isArray(teams) && isTeamsFetching) || (!Array.isArray(operators) && isOperatorsFetching)
+  const retryActiveExternalRegistry = useCallback(() => {
+    if (isLinkError) void retryLinks()
+    if (isEntityError) void retryEntities()
+    if (activeTab === 'links' && isDeviceError) void retryDevices()
+    if (activeTab !== 'links' && isOptionsError) void retryOptions()
+    if (activeTab !== 'links' && isTeamsError) void retryTeams()
+    if (activeTab !== 'links' && isOperatorsError) void retryOperators()
+  }, [activeTab, isDeviceError, isEntityError, isLinkError, isOperatorsError, isOptionsError, isTeamsError, retryDevices, retryEntities, retryLinks, retryOperators, retryOptions, retryTeams])
+  const externalRegistryBlocked = !hasActiveExternalRegistry
+  const externalAddBlocked = activeTab === 'links'
+    ? (!Array.isArray(links) || !Array.isArray(allEntities) || !Array.isArray(devices) || isEntityError || isDeviceError)
+    : (!Array.isArray(allEntities) || !Array.isArray(options) || !Array.isArray(teams) || !Array.isArray(operators) || isOptionsError || isTeamsError || isOperatorsError)
+
   const externalDataState = useMemo(
     () => resolveOperationalDataState({
       loading: activeTab === 'links' ? linkLoading : isLoading,
-      error: activeTab === 'links'
-        ? (isLinkError ? linkError : null)
-        : (isEntityError ? entityError : null),
+      error: activeExternalQueryError && !hasActiveExternalRegistry ? activeExternalQueryError : null,
       totalCount: activeTab === 'links'
-        ? (Array.isArray(links) ? links.length : 0)
-        : (Array.isArray(allEntities) ? allEntities.length : 0),
-      tabCount: activeTab === 'links' ? (Array.isArray(links) ? links.length : 0) : entities.length,
+        ? linkRecords.length
+        : entityRecords.length,
+      tabCount: activeTab === 'links' ? linkRecords.length : entities.length,
       visibleCount: activeTab === 'links' ? filteredLinks.length : filteredEntities.length,
       emptyLabel: activeTab === 'links' ? 'No external links found' : 'No external registry data found',
       filteredLabel: activeTab === 'links' ? 'No external links match the current filters' : 'No external entities match the current filters',
@@ -1933,26 +1966,87 @@ export default function External() {
       tabEmptyLabel: activeTab === 'deleted' ? 'No archived external entities found' : 'No active external entities found',
       errorTitle: activeTab === 'links' ? 'External links could not be loaded' : 'External entities could not be loaded',
       errorDescription: activeTab === 'links' ? 'The external links request failed.' : 'The external entities request failed.',
+      degradedNotice: activeExternalDisplayError ? {
+        tone: 'warning',
+        title: externalPrimaryRegistryFailed
+          ? activeTab === 'links' ? 'External links unavailable' : 'External registry unavailable'
+          : activeExternalChoicesError
+            ? activeTab === 'links'
+              ? isDeviceError ? 'Linked asset choices unavailable' : 'External entity choices unavailable'
+              : 'Accountable owner choices unavailable'
+            : externalDependencyError
+              ? 'Dependency link data unavailable'
+              : activeTab === 'links' ? 'External links refresh failed' : 'External registry refresh failed',
+        description: externalPrimaryRegistryFailed
+          ? 'The registry could not be confirmed. Retry before adding or importing records.'
+          : activeExternalChoicesError
+            ? activeTab === 'links'
+              ? isDeviceError
+                ? 'Links remain visible, but retry linked asset choices before adding a connection.'
+                : 'Links remain visible, but retry external entity choices before adding a connection.'
+              : 'Records remain visible, but retry team, operator, and configuration choices before adding an external entity.'
+            : externalDependencyError
+              ? 'Entity records remain visible, but dependency counts may be incomplete. Retry links to refresh them.'
+              : hasActiveExternalRegistry
+                ? 'Showing the last loaded records. Retry to confirm the current registry.'
+                : 'The registry could not be confirmed. Retry before adding or importing records.',
+        actionLabel: externalPrimaryRegistryFailed
+          ? activeTab === 'links' ? 'Retry links' : 'Retry registry'
+          : activeExternalChoicesError
+            ? activeTab === 'links' ? isDeviceError ? 'Retry linked choices' : 'Retry entity choices' : 'Retry owner choices'
+            : externalDependencyError ? 'Retry dependency data' : activeTab === 'links' ? 'Retry links' : 'Retry registry',
+        onAction: () => { void retryActiveExternalRegistry() },
+        isActionLoading: activeExternalFetching
+          || (activeTab !== 'links' && isLinkFetching)
+          || (activeTab === 'links' && isEntityFetching)
+          || (activeTab === 'links' ? isDeviceFetching : isOptionsFetching || isTeamsFetching || isOperatorsFetching),
+      } : externalAddBlocked && externalAddPrerequisitesLoading ? {
+        tone: 'info',
+        title: 'Loading required choices',
+        description: 'Existing records remain available. Add becomes available when the required registries and choices finish loading.',
+      } : undefined,
     }),
     [
       activeTab,
+      activeExternalFetching,
+      activeExternalChoicesError,
+      activeExternalDisplayError,
+      activeExternalQueryError,
+      externalPrimaryRegistryFailed,
+      externalDependencyError,
+      externalAddBlocked,
+      externalAddPrerequisitesLoading,
       allEntities,
       entities.length,
       entityError,
       filteredEntities.length,
       filteredLinks.length,
+      hasActiveExternalRegistry,
       isEntityError,
+      isEntityFetching,
+      isDeviceFetching,
+      isDeviceError,
+      deviceError,
+      isOptionsFetching,
+      isOptionsError,
+      optionsError,
+      isTeamsFetching,
+      isTeamsError,
+      teamsError,
+      isOperatorsFetching,
+      isOperatorsError,
+      operatorsError,
       isLinkError,
+      isLinkFetching,
       isLoading,
       linkError,
       linkLoading,
+      linkRecords.length,
       links,
+      entityRecords.length,
+      retryActiveExternalRegistry,
     ]
   )
-
-  const activeExternalQueryError = activeTab === 'links'
-    ? (isLinkError ? linkError : null)
-    : (isEntityError ? entityError : null)
 
   const externalDiagnosticDetail = useMemo(() => buildOperationalDiagnosticDetail({
     endpoint: activeTab === 'links'
@@ -1970,7 +2064,7 @@ export default function External() {
     }
   }, [activeExternalQueryError])
 
-  const shouldRenderRawGrid = groupBy === 'raw' || externalDataState.kind !== 'ready'
+  const shouldRenderRawGrid = groupBy === 'raw' || externalDataState.kind !== 'ready' || Boolean(activeExternalQueryError)
 
   useEffect(() => {
     if (groupBy === 'raw') return
@@ -2209,6 +2303,7 @@ export default function External() {
 
   const externalGridRuntime = useMemo(() => ({
     preserveExplicitColumnWidths,
+    autoSizeStrategy: OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
     handleGridReady,
     handleColumnResized,
     handleColumnMoved,
@@ -2219,6 +2314,7 @@ export default function External() {
     handleSortChanged,
   }), [
     preserveExplicitColumnWidths,
+    OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
     handleGridReady,
     handleColumnResized,
     handleColumnMoved,
@@ -2299,31 +2395,6 @@ export default function External() {
     toggleOverlay(panel)
   }
 
-  // Backend currently uses PUT for entity updates; this helper sends required stable fields plus intended changed fields while avoiding unrelated legacy invalid enum values.
-  const buildExternalSafeBulkPutPayload = (original: any, payload: any) => {
-    const nextPayload: any = {
-      name: original.name,
-      type: original.type,
-      business_purpose: original.business_purpose || '',
-      contacts_json: original.contacts_json || [],
-      ownership_mode: original.ownership_mode || 'team',
-    }
-
-    if (nextPayload.ownership_mode === 'team') {
-      nextPayload.internal_team_id = original.internal_team_id
-      nextPayload.internal_operator_id = null
-    } else {
-      nextPayload.internal_operator_id = original.internal_operator_id
-      nextPayload.internal_team_id = null
-    }
-
-    Object.keys(payload).forEach((key) => {
-      nextPayload[key] = payload[key]
-    })
-
-    return nextPayload
-  }
-
   const bulkPreviewMutation = useMutation({
     mutationFn: async ({ action, payload = {}, ids: overrideIds }: any) => {
       const idsToUse = overrideIds ?? selectedIds
@@ -2351,6 +2422,7 @@ export default function External() {
       setBulkOperationPreview(nextPreview)
       dismissOverlays()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showOperationalBulkErrorToast(error.message),
   })
 
@@ -2359,15 +2431,43 @@ export default function External() {
   }
 
   const bulkMutation = useMutation({
-    mutationFn: async ({ action, payload = {}, ids: overrideIds }: any) => {
+    mutationFn: async ({ action, payload = {}, ids: overrideIds, precondition: reviewedPrecondition, operation_id: reviewedOperationId, receipt_id: receiptId }: any) => {
       const idsToUse = overrideIds ?? selectedIds
-      const previousSnapshots = (allEntities || [])
-        .filter((entity: any) => idsToUse.includes(entity.id))
-        .map((entity: any) => ({ ...entity }))
+      if (action === 'undo') {
+        if (!receiptId) throw new Error('External operation receipt is unavailable. Refresh before undoing the operation.')
+        const undoRes = await apiFetch('/api/v1/intelligence/entities/bulk-action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: idsToUse, action: 'undo', receipt_id: receiptId }),
+        })
+        if (!undoRes.ok) throw new Error(await undoRes.text())
+        const undoResult = await undoRes.json()
+        return {
+          action, idsToUse, payload,
+          updated: Number(undoResult?.changed_count || 0),
+          skipped: 0, failed: 0, errors: [],
+          changedIds: Array.isArray(undoResult?.changed_ids) ? undoResult.changed_ids : [],
+          receipt_id: undoResult?.receipt_id, can_revert: Boolean(undoResult?.can_revert),
+        }
+      }
+      let precondition = reviewedPrecondition
+      let operationId = reviewedOperationId
+      if (!precondition || !operationId) {
+        const previewRes = await apiFetch('/api/v1/intelligence/entities/bulk-action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: idsToUse, action, payload, dry_run: true }),
+        })
+        if (!previewRes.ok) throw new Error(await previewRes.text())
+        const freshPreview = await previewRes.json()
+        precondition = freshPreview.precondition
+        operationId = freshPreview.operation_id
+      }
+      if (!precondition || !operationId) throw new Error('External preview is missing its safety token. Refresh and review the operation again.')
       const res = await apiFetch('/api/v1/intelligence/entities/bulk-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: idsToUse, action, payload }),
+        body: JSON.stringify({ ids: idsToUse, action, payload, precondition, operation_id: operationId }),
       })
       if (!res.ok) throw new Error(await res.text())
       const result = await res.json()
@@ -2375,16 +2475,19 @@ export default function External() {
         action,
         idsToUse,
         payload,
-        previousSnapshots,
         updated: Number(result?.changed_count || 0),
         skipped: Number(result?.unchanged_count || 0),
         failed: 0,
         errors: [],
+        changedIds: Array.isArray(result?.changed_ids) ? result.changed_ids : [],
+        receipt_id: result?.receipt_id,
+        can_revert: Boolean(result?.can_revert),
       }
     },
-    onSuccess: ({ action, idsToUse, payload, previousSnapshots, updated, skipped, failed, errors }) => {
+    onSuccess: ({ action, idsToUse, payload, updated, skipped, failed, errors, changedIds, receipt_id, can_revert }) => {
       queryClient.invalidateQueries({ queryKey: ['external-entities'] })
       queryClient.invalidateQueries({ queryKey: ['external-links'] })
+      if (action === 'undo') return
       const totalSelected = idsToUse.length
       const fieldLabel = resolveBulkFieldLabel(payload, EXTERNAL_BULK_FIELD_LABELS)
 
@@ -2400,26 +2503,9 @@ export default function External() {
         const undo = externalUndoRef.current
         externalUndoRef.current = null
         if (!undo) return
-        if (undo.mode === 'bulk') {
-          await bulkMutation.mutateAsync({ action: undo.action, ids: undo.ids })
-        } else if (undo.mode === 'restore_snapshots') {
-          await Promise.all((undo.snapshots || []).map(async (snapshot: any) => {
-            if (!snapshot?.id) return
-            const restoreFields: any = {}
-            Object.keys(undo.payload || {}).forEach((key) => {
-              restoreFields[key] = snapshot[key]
-            })
-            const payloadToRestore = buildExternalSafeBulkPutPayload(snapshot, restoreFields)
-            const res = await apiFetch(`/api/v1/intelligence/entities/${snapshot.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payloadToRestore),
-            })
-            if (!res.ok) throw new Error(await res.text())
-          }))
-          queryClient.invalidateQueries({ queryKey: ['external-entities'] })
-          queryClient.invalidateQueries({ queryKey: ['external-links'] })
-        }
+        await bulkMutation.mutateAsync({ action: 'undo', ids: undo.ids, receipt_id: undo.receipt_id })
+        queryClient.invalidateQueries({ queryKey: ['external-entities'] })
+        queryClient.invalidateQueries({ queryKey: ['external-links'] })
       }
 
       if (failed > 0) {
@@ -2428,14 +2514,10 @@ export default function External() {
       } else {
         if (updated <= 0) {
           externalUndoRef.current = null
-        } else if (action === 'delete') {
-          externalUndoRef.current = { mode: 'bulk', ids: previousSnapshots.map(s => s.id), action: 'restore' }
-        } else if (action === 'restore') {
-          externalUndoRef.current = { mode: 'bulk', ids: previousSnapshots.map(s => s.id), action: 'delete' }
-        } else if (action === 'update') {
-          externalUndoRef.current = { mode: 'restore_snapshots', snapshots: previousSnapshots, payload }
         } else {
-          externalUndoRef.current = null
+          externalUndoRef.current = can_revert && receipt_id
+            ? { mode: 'receipt', ids: Array.isArray(changedIds) ? changedIds : [], receipt_id }
+            : null
         }
 
         const receiptRevert = externalUndoRef.current ? async () => {
@@ -2470,6 +2552,7 @@ export default function External() {
         })
       }
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => {
       showOperationalBulkErrorToast(e.message)
     }
@@ -2491,6 +2574,7 @@ export default function External() {
       setActiveModal(null)
       detailRoute.finishTransition()
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => {
       const { fieldErrors, generalError } = parseOperationalApiValidationError(e)
       setActiveModalBackendFieldErrors(fieldErrors)
@@ -2521,14 +2605,17 @@ export default function External() {
       detailRoute.finishTransition()
       showWorkspaceToast('Interconnect Established')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => {
-      showWorkspaceToast(e.message || 'Interconnect establishment failed', { type: 'error' })
+      const { generalError } = parseOperationalApiValidationError(e)
+      showWorkspaceToast(generalError || e.message || 'Interconnect establishment failed', { type: 'error' })
       detailRoute.finishTransition()
     }
   })
 
   const deleteMutation = useMutation({
-    mutationFn: async ({ id, purge, type }: { id: number, purge: boolean, type: 'entity' | 'link' }) => {
+    mutationFn: async ({ id, purge, type, expectedRevision }: { id: number, purge: boolean, type: 'entity' | 'link', expectedRevision: string }) => {
+      if (!expectedRevision) throw new Error('The record revision is unavailable. Refresh the workspace before changing it.')
       if (type === 'entity' && purge) {
         const entity = findExternalEntityById(id)
         const purgeReason = getExternalEntityPurgeReason(entity)
@@ -2536,19 +2623,21 @@ export default function External() {
           throw new Error(purgeReason)
         }
       }
-      const url = type === 'entity' ? `/api/v1/intelligence/entities/${id}${purge ? '?purge=true' : ''}` : `/api/v1/intelligence/links/${id}`
+      const query = new URLSearchParams({ expected_revision: expectedRevision })
+      if (purge && type === 'entity') query.set('purge', 'true')
+      const url = `${type === 'entity' ? `/api/v1/intelligence/entities/${id}` : `/api/v1/intelligence/links/${id}`}?${query.toString()}`
       const res = await apiFetch(url, { method: 'DELETE' })
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       if (variables.type === 'entity') {
          queryClient.invalidateQueries({ queryKey: ['external-entities'] })
          if (variables.purge) {
            showWorkspaceToast('Entity Purged from Global Registry')
          } else {
            showWorkspaceRevertToast('Entity Moved to Deleted Matrix', () => {
-             restoreMutation.mutate(variables.id)
+             restoreMutation.mutate({ id: variables.id, expectedRevision: data.edit_revision })
            })
          }
       } else {
@@ -2556,21 +2645,24 @@ export default function External() {
          showWorkspaceToast('Link Severed')
       }
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => showWorkspaceToast(getFriendlyRestoreError(e.message || String(e)), { type: 'error' })
   })
 
   const restoreMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiFetch(`/api/v1/intelligence/entities/${id}/restore`, { method: 'POST' })
+    mutationFn: async ({ id, expectedRevision }: { id: number, expectedRevision: string }) => {
+      if (!expectedRevision) throw new Error('The record revision is unavailable. Refresh the workspace before restoring it.')
+      const res = await apiFetch(`/api/v1/intelligence/entities/${id}/restore?expected_revision=${encodeURIComponent(expectedRevision)}`, { method: 'POST' })
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
-    onSuccess: (_, restoredId) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['external-entities'] })
       showWorkspaceRevertToast('Entity Restored to Active Registry', () => {
-        deleteMutation.mutate({ id: restoredId, purge: false, type: 'entity' })
+        deleteMutation.mutate({ id: variables.id, purge: false, type: 'entity', expectedRevision: data.edit_revision })
       })
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => showWorkspaceToast(getFriendlyRestoreError(e.message || String(e)), { type: 'error' })
   })
 
@@ -2581,7 +2673,7 @@ export default function External() {
   const { handleRowClicked, handleRowDoubleClicked } = useOperationalRowInteractions({
     onRowDoubleClick: useCallback((item) => {
       if (activeTab === 'links') {
-        const ent = allEntities?.find((e: any) => e.id === item.external_entity_id)
+        const ent = entityRecords.find((e: any) => e.id === item.external_entity_id)
         if (ent) detailRoute.openDetail(ent)
       } else {
         detailRoute.openDetail(item)
@@ -2609,7 +2701,7 @@ export default function External() {
         onClick={(event) => {
           event.stopPropagation()
           if (activeTab === 'links') {
-            const ent = allEntities?.find((e: any) => e.id === item.external_entity_id)
+            const ent = entityRecords.find((e: any) => e.id === item.external_entity_id)
             if (ent) detailRoute.openDetail(ent)
           } else {
             detailRoute.openDetail(item)
@@ -2751,7 +2843,7 @@ export default function External() {
             field: 'business_purpose',
             headerName: 'Business Purpose',
             width: 220,
-            minWidth: 150,
+            minWidth: 220,
             proseMode: 'compact',
             hide: hiddenColumns.includes('business_purpose'),
           },
@@ -2759,7 +2851,8 @@ export default function External() {
             kind: 'plain',
             field: 'link_count',
             headerName: 'Links',
-            width: 85,
+            width: 130,
+            minWidth: 130,
             valueClassName: 'text-center font-bold text-blue-400',
             hide: hiddenColumns.includes('link_count'),
           },
@@ -2835,7 +2928,9 @@ export default function External() {
           <>
             <HeaderScopeSwitch
               label="Registry Scope"
-              summary={`${registryCounts.active} active · ${registryCounts.archived} archived · ${registryCounts.links} links`}
+              summary={!Array.isArray(allEntities) || !Array.isArray(links)
+                ? (isLoading || linkLoading ? 'Loading registry…' : 'Registry unavailable')
+                : `${registryCounts.active} active · ${registryCounts.archived} archived · ${registryCounts.links} links`}
               value={activeTab}
               onChange={(value) => {
                 setActiveTab(value as 'active' | 'deleted' | 'links')
@@ -2869,6 +2964,7 @@ export default function External() {
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           placeholder="Scan registry..."
+          ariaLabel="Search external registry records"
         />
       )}
       toolbarControls={(
@@ -2907,7 +3003,9 @@ export default function External() {
           <ToolbarGroup>
             <ToolbarButton
               onClick={() => setShowImportModal(true)}
-              title="Import external registry rows"
+              disabled={!canWrite || !Array.isArray(allEntities)}
+              ariaLabel="Import external registry rows"
+              title={!canWrite ? 'External edit permission is required' : !Array.isArray(allEntities) ? 'Retry the external registry before importing rows' : 'Import external registry rows'}
             >
               <span className="flex items-center gap-2">
                 <Upload size={14} />
@@ -3013,7 +3111,7 @@ export default function External() {
           )}
           <ToolbarButton
             onClick={() => togglePanel('bulk')}
-            disabled={selectedIds.length === 0}
+            disabled={externalRegistryBlocked || !canWrite || selectedIds.length === 0}
             active={showBulkMenu}
             title="Bulk actions"
             className="bulk-menu-trigger"
@@ -3026,6 +3124,13 @@ export default function External() {
           </ToolbarButton>
           <ToolbarButton
             onClick={() => setActiveModal({})}
+            disabled={externalAddBlocked || !canWrite}
+            ariaLabel={`+ Add ${externalViewLabel}`}
+            title={!canWrite ? 'External edit permission is required' : externalAddBlocked
+              ? externalAddPrerequisitesLoading
+                ? 'Wait for the required registries and linked choices to load'
+                : 'Retry the required registries and linked choices before adding this record'
+              : undefined}
             variant="primary"
             className="px-6 py-2"
           >
@@ -3317,7 +3422,7 @@ export default function External() {
                             tone: 'info' as OperationalRowActionTone,
                             onClick: () => {
                                 if (activeTab === 'links') {
-                                    const ent = allEntities?.find((e: any) => e.id === item.external_entity_id)
+                                    const ent = entityRecords.find((e: any) => e.id === item.external_entity_id)
                                     if (ent) detailRoute.openDetail(ent)
                                 } else {
                                     detailRoute.openDetail(item)
@@ -3373,7 +3478,7 @@ export default function External() {
                             tone: 'success' as OperationalRowActionTone,
                             variant: 'inline' as OperationalRowActionVariant,
                             onClick: () => {
-                                restoreMutation.mutate(item.id)
+                                restoreMutation.mutate({ id: item.id, expectedRevision: item.edit_revision })
                                 setRowActionMenu(null)
                             }
                         }] : []),
@@ -3398,9 +3503,9 @@ export default function External() {
                                     return
                                 }
                                 if (activeTab === 'links') {
-                                    deleteMutation.mutate({ id: item.id, purge: false, type: 'link' })
+                                    deleteMutation.mutate({ id: item.id, purge: false, type: 'link', expectedRevision: item.edit_revision })
                                 } else {
-                                    deleteMutation.mutate({ id: item.id, purge: activeTab === 'deleted', type: 'entity' })
+                                    deleteMutation.mutate({ id: item.id, purge: activeTab === 'deleted', type: 'entity', expectedRevision: item.edit_revision })
                                 }
                                 setRowActionMenu(null)
                                 setRowDeleteConfirmId(null)
@@ -3587,8 +3692,8 @@ export default function External() {
 
       {showLinkModal && (
          <LinkForm 
-            entities={allEntities?.filter((e: any) => !e.is_deleted)}
-            devices={devices}
+            entities={entityRecords.filter((e: any) => !e.is_deleted)}
+            devices={deviceRecords}
             onClose={() => {
               setShowLinkModal(false)
               setLinkSeedEntityId(null)
@@ -3605,7 +3710,7 @@ export default function External() {
 
       {compareOpen && (
         <CompareExternalModal
-          items={allEntities?.filter((e: any) => selectedIds.includes(e.id)) || []}
+          items={entityRecords.filter((e: any) => selectedIds.includes(e.id))}
           onClose={() => setCompareOpen(false)}
         />
       )}
@@ -3635,6 +3740,8 @@ export default function External() {
             action: bulkOperationPreview.action,
             payload: bulkOperationPreview.payload,
             ids: bulkOperationPreview.ids,
+            precondition: bulkOperationPreview.preview.precondition,
+            operation_id: bulkOperationPreview.preview.operation_id,
           })
         }}
       />
@@ -3712,7 +3819,7 @@ export default function External() {
                 disabled={activeTab === 'deleted' && !isExternalEntityPurgeable(activeDetails)}
                 onClick={() => {
                   if (rowDeleteConfirmId === activeDetails.id) {
-                    deleteMutation.mutate({ id: activeDetails.id, purge: activeTab === 'deleted', type: 'entity' })
+                    deleteMutation.mutate({ id: activeDetails.id, purge: activeTab === 'deleted', type: 'entity', expectedRevision: activeDetails.edit_revision })
                     detailRoute.closeDetail()
                     setRowDeleteConfirmId(null)
                   } else {
@@ -3729,7 +3836,7 @@ export default function External() {
           </div>
         ) : undefined}
       >
-        {activeDetails ? <ExternalDetailsView entity={activeDetails} links={links || []} /> : null}
+        {activeDetails ? <ExternalDetailsView entity={activeDetails} links={linkRecords} /> : null}
       </WorkspaceModal>
 
       <ConfigRegistryModal
@@ -3809,12 +3916,9 @@ function LinkForm({ entities, devices, onClose, onSave, isPending, initialExtern
     onDirtyChange?.(isDirty)
   }, [isDirty, onDirtyChange])
 
-  const { data: services } = useQuery({
+  const { data: services, isLoading: isServicesLoading, isFetching: isServicesFetching, isError: isServicesError, refetch: retryServices } = useQuery({
     queryKey: ['device-services', formData.device_id],
-    queryFn: async () => {
-      if (!formData.device_id) return []
-      return (await apiFetch(`/api/v1/logical-services/?device_id=${formData.device_id}`)).json()
-    },
+    queryFn: () => fetchOperationalArray(`/api/v1/logical-services/?device_id=${formData.device_id}`, 'Linked service choices'),
     enabled: !!formData.device_id
   })
 
@@ -3907,6 +4011,17 @@ function LinkForm({ entities, devices, onClose, onSave, isPending, initialExtern
                     options={services?.map((s: any) => ({ value: s.id, label: s.name })) || []}
                     placeholder={formData.device_id ? "Select Service..." : "Select Asset First..."}
                  />
+                 {formData.device_id && isServicesLoading ? (
+                   <p role="status" className="rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-[10px] font-semibold text-sky-200">Loading services for this asset…</p>
+                 ) : null}
+                 {formData.device_id && isServicesError ? (
+                   <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[10px] font-semibold text-amber-100">
+                     <span>{Array.isArray(services) ? 'Showing last loaded service choices.' : 'Service choices are unavailable.'} Service selection is optional; retry to confirm the list.</span>
+                     <button type="button" disabled={isServicesFetching} onClick={() => { void retryServices() }} className="min-h-8 rounded-md border border-amber-400/40 px-3 font-bold text-amber-100 hover:bg-amber-500/15 disabled:cursor-wait disabled:opacity-60">
+                       {isServicesFetching ? 'Retrying…' : 'Retry services'}
+                     </button>
+                   </div>
+                 ) : null}
               </div>
            </div>
 

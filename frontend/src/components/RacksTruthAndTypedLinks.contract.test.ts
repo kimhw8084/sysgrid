@@ -36,4 +36,16 @@ describe('Racks truthful capacity and typed relationship boundary', () => {
     expect(source).toContain('PLANNING ESTIMATE > CONFIGURED CEILING')
   })
 
+  it('surfaces unavailable rack, linked, plan, and audit data with retry instead of showing false empty states', () => {
+    const source = readSource('components/Racks.tsx')
+
+    expect(source).toContain("queryFn: () => fetchRackArray('/api/v1/racks/?include_deleted=true')")
+    expect(source).toContain('if (!allRacks)')
+    expect(source).toContain('onRetry={() => void racksQuery.refetch()}')
+    expect(source).toContain('isError={racksQuery.isError}')
+    expect(source).toContain("queryFn: () => fetchRackArray('/api/v1/racks/audit-logs')")
+    expect(source).toContain('hasData={plans.length > 0}')
+    expect(source).toContain('Retry linked data')
+  })
+
 })

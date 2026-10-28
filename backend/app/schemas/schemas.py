@@ -475,6 +475,7 @@ class ExternalEntitySecretResponse(BaseSchema):
     password_last_rotated_at: Optional[str] = None
 
 class ExternalEntityResponse(BaseSchema):
+    edit_revision: str
     name: str
     external_key: Optional[str] = None
     aliases_json: List[str] = Field(default_factory=list)
@@ -637,7 +638,8 @@ class ExternalEntityBase(BaseModel):
         return self
 
 class ExternalEntityCreate(ExternalEntityBase): pass
-class ExternalEntityUpdate(ExternalEntityBase): pass
+class ExternalEntityUpdate(ExternalEntityBase):
+    edit_revision: str
 
 class ExternalLinkBase(BaseModel):
     external_entity_id: int
@@ -654,6 +656,18 @@ class ExternalLinkBase(BaseModel):
     link_status: Literal["Active", "Planned", "Disabled"] = "Active"
     credential_reference: Optional[str] = None
     credentials: Dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("credentials", mode="before")
+    @classmethod
+    def redact_legacy_inline_credentials(cls, value: Any) -> Dict[str, str]:
+        if not isinstance(value, dict):
+            return {}
+        allowed = {"username", "vault_path", "note"}
+        return {
+            key: raw.strip()
+            for key, raw in value.items()
+            if key in allowed and isinstance(raw, str) and raw.strip()
+        }
 
     @field_validator("purpose")
     @classmethod
@@ -692,8 +706,24 @@ class ExternalLinkBase(BaseModel):
                 raise ValueError("Credential metadata values must be scalar")
         return value
 
-class ExternalLinkCreate(ExternalLinkBase): pass
+class ExternalLinkCreate(ExternalLinkBase):
+    @field_validator("credentials", mode="before")
+    @classmethod
+    def accept_only_vault_reference_metadata(cls, value: Any) -> Any:
+        if value is None:
+            return {}
+        if not isinstance(value, dict):
+            raise ValueError("Credential metadata must reference a vault entry")
+        allowed = {"username", "vault_path", "note"}
+        if set(value) - allowed or any(not isinstance(raw, str) for raw in value.values()):
+            raise ValueError("Store secrets in the vault; link credentials may contain only username, vault_path, and note")
+        return value
+
+
+class ExternalLinkUpdate(ExternalLinkCreate):
+    edit_revision: str
 class ExternalLinkResponse(ExternalLinkBase, BaseSchema):
+    edit_revision: str
     external_entity_name: Optional[str] = None
     device_name: Optional[str] = None
     service_name: Optional[str] = None
@@ -1132,6 +1162,7 @@ class VendorPersonnelCreate(VendorPersonnelBase):
 
 class VendorPersonnelResponse(VendorPersonnelBase, BaseSchema):
     vendor_id: int
+    edit_revision: str
 
 class VendorContractBase(BaseModel):
     title: str
@@ -1152,6 +1183,7 @@ class VendorContractCreate(VendorContractBase):
 
 class VendorContractResponse(VendorContractBase, BaseSchema):
     vendor_id: int
+    edit_revision: str
 
 class VendorBase(BaseModel):
     name: str
@@ -1161,6 +1193,7 @@ class VendorBase(BaseModel):
 
 class VendorCreate(VendorBase): pass
 class VendorResponse(VendorBase, BaseSchema):
+    edit_revision: str
     is_deleted: bool = False
     personnel: List[VendorPersonnelResponse] = []
     contracts: List[VendorContractResponse] = []

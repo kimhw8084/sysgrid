@@ -1,5 +1,3 @@
-import { execFileSync } from 'node:child_process'
-import path from 'node:path'
 import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
@@ -213,6 +211,10 @@ export async function updateFarMode(request: APIRequestContext, modeId: number, 
 }
 
 export async function createConnection(request: APIRequestContext, payload: Record<string, any>) {
+  const linkType = typeof payload.link_type === 'string' ? payload.link_type.trim() : ''
+  const farm = typeof payload.farm === 'string' ? payload.farm.trim() : ''
+  if (linkType) await ensureSettingOption(request, 'LinkPurpose', linkType)
+  if (farm) await ensureSettingOption(request, 'NetworkFarm', farm)
   return post(request, '/networks/connections', payload)
 }
 
@@ -367,18 +369,6 @@ export async function createEmbeddedKnowledgeFixture(
   deviceId: number,
   title: string,
 ) {
-  if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && process.env.SYSGRID_VERIFY_TENANT_DB) {
-    const python = process.env.SYSGRID_VERIFY_PYTHON_BIN || 'python3'
-    const script = path.resolve(process.cwd(), '../scripts/seed-e2e-embedded-knowledge.py')
-    const output = execFileSync(python, [
-      script,
-      '--db-path', process.env.SYSGRID_VERIFY_TENANT_DB,
-      '--device-id', String(deviceId),
-      '--title', title,
-      '--created-by', testUserId,
-    ], { encoding: 'utf8', env: process.env })
-    return JSON.parse(output.trim())
-  }
   return post(request, '/knowledge', {
     category: 'BKM',
     title,
@@ -394,19 +384,6 @@ export async function createEmbeddedFarFixture(
   systemName: string,
   title: string,
 ) {
-  if (process.env.SYSGRID_VERIFY_PROFILE === 'normal-v1' && process.env.SYSGRID_VERIFY_TENANT_DB) {
-    const python = process.env.SYSGRID_VERIFY_PYTHON_BIN || 'python3'
-    const script = path.resolve(process.cwd(), '../scripts/seed-e2e-embedded-far.py')
-    const output = execFileSync(python, [
-      script,
-      '--db-path', process.env.SYSGRID_VERIFY_TENANT_DB,
-      '--device-id', String(deviceId),
-      '--system-name', systemName,
-      '--title', title,
-      '--created-by', testUserId,
-    ], { encoding: 'utf8', env: process.env })
-    return JSON.parse(output.trim())
-  }
   return post(request, '/far/modes', {
     system_name: systemName,
     title,

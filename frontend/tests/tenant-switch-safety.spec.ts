@@ -5,6 +5,12 @@ import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
+function isControlPlaneAdminFixture() {
+  const rootId = process.env.SYSGRID_VERIFY_SYSTEM_ROOT_USER_ID
+  const activeUserId = process.env.USER_ID || process.env.SYSGRID_VERIFY_USER_ID
+  return Boolean(rootId && activeUserId === rootId)
+}
+
 test.beforeEach(async ({ context }) => {
   // The generic fixture pins tenant 1 at the browser transport layer. Tenant
   // tests must observe the application's actual scope headers instead.
@@ -12,6 +18,7 @@ test.beforeEach(async ({ context }) => {
 })
 
 test('a fresh tab resolves a non-default tenant before workspace requests', async ({ page, sysApi }) => {
+  test.skip(!isControlPlaneAdminFixture(), 'Tenant creation is qualified with the System Root control-plane fixture')
   const name = `Fresh workspace ${Date.now()}`
   const created = await sysApi.post(`${apiBase}/tenants/admin/create`, { data: { name } })
   expect(created.status()).toBe(200)
@@ -34,6 +41,7 @@ test('a fresh tab resolves a non-default tenant before workspace requests', asyn
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   test(`tenant selection preserves another tab's draft and write scope in ${theme}`, async ({ page, context, sysApi }, testInfo) => {
+    test.skip(!isControlPlaneAdminFixture(), 'Tenant creation is qualified with the System Root control-plane fixture')
     const name = `Tenant isolation ${theme} ${Date.now()}`
     const created = await sysApi.post(`${apiBase}/tenants/admin/create`, { data: { name } })
     expect(created.status(), 'This test requires an explicit control-plane administrator in the disposable fixture').toBe(200)
@@ -71,7 +79,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await selector.click()
     await page.getByRole('menuitem', { name: new RegExp(name) }).click()
     await confirmation.getByRole('button', { name: 'Switch tenant', exact: true }).click()
-    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Tenant selection temporarily unavailable' })).toBeVisible()
+    await expect(page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Could not confirm the tenant switch. This tab and its draft remain in the current workspace.' })).toBeVisible()
     expect(await page.evaluate(() => sessionStorage.getItem('SYSGRID_TAB_TENANT_ID'))).toBe(testTenantId)
     await page.unroute('**/api/v1/tenants/select')
 

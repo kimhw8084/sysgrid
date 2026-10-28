@@ -17,6 +17,7 @@ import { ServiceDetailsView, ServiceForm } from "./ServiceRegistry"
 import { withServiceEditRevision } from '../utils/serviceRevision'
 import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { CredentialValue, credentialUpdatePayload } from './shared/CredentialValue'
+import { AssetDataState, fetchAssetArray } from './assets/assetDataState'
 
 const SharedServiceModals = ({ 
   activeDetails, 
@@ -96,10 +97,14 @@ const SharedServiceModals = ({
 }
 
 export const AssetServicesTable = ({ deviceId, onViewDetails, onEdit }: { deviceId: number, onViewDetails: (s: any) => void, onEdit: (s: any) => void }) => {
-  const { data: services, isLoading } = useQuery({
+  const servicesQuery = useQuery({
     queryKey: ['device-services', deviceId],
-    queryFn: async () => (await (await apiFetch(`/api/v1/logical-services/?device_id=${deviceId}`)).json())
+    queryFn: () => fetchAssetArray(`/api/v1/logical-services/?device_id=${deviceId}`),
   })
+  const services = servicesQuery.data
+  const isLoading = servicesQuery.isLoading
+
+  if (servicesQuery.isError) return <AssetDataState label="Logical services" isError isFetching={servicesQuery.isFetching} onRetry={() => void servicesQuery.refetch()} />
 
   return (
     <div className="p-0 overflow-hidden">
@@ -409,12 +414,15 @@ export const MetadataViewer = ({ data }: { data: any }) => {
 }
 
 export const MiniMonitoringTable = ({ deviceId }: { deviceId: number }) => {
-  const { data: monitors, isLoading } = useQuery({
+  const monitorsQuery = useQuery({
     queryKey: ['device-monitors', deviceId],
-    queryFn: async () => (await apiFetch(`/api/v1/monitoring/?device_id=${deviceId}`)).json()
+    queryFn: () => fetchAssetArray(`/api/v1/monitoring/?device_id=${deviceId}`),
   })
+  const monitors = monitorsQuery.data
+  const isLoading = monitorsQuery.isLoading
 
   if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase animate-pulse text-slate-500">Retrieving Telemetry...</div>
+  if (monitorsQuery.isError) return <AssetDataState label="Monitoring records" isError isFetching={monitorsQuery.isFetching} onRetry={() => void monitorsQuery.refetch()} />
 
   return (
     <div className="overflow-hidden">
@@ -1000,6 +1008,7 @@ export default function AssetGrid() {
       toast.success('System Registry Updated')
       setActiveModal(null)
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => {
       if (e.message === 'DUPLICATE_HOSTNAME') toast.error('ERROR: Hostname already exists in registry')
       else toast.error(e.message)
@@ -1032,6 +1041,7 @@ export default function AssetGrid() {
         toast.success('Bulk Operation Complete')
       }
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(`Operation failed: ${e.message}`)
   })
 
@@ -1604,6 +1614,7 @@ const AssetDetailsView = ({ device, options, onViewServiceDetails, onEditService
             return res.json()
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['devices'] }); queryClient.invalidateQueries({ queryKey: ['racks-all'] }); toast.success('Asset synchronized') },
+        meta: { handlesErrorToast: true },
         onError: (e: any) => toast.error(e.message || 'Failed to update asset')
     })
 
@@ -1685,6 +1696,7 @@ const HWTable = ({ deviceId }: { deviceId: number }) => {
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/hardware/${id}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-hw', deviceId] }); toast.success('Component removed') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to delete component')
   })
 
@@ -1698,6 +1710,7 @@ const HWTable = ({ deviceId }: { deviceId: number }) => {
         setEditingId(null)
         toast.success('Component Updated')
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to update component')
   })
 
@@ -1843,6 +1856,7 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/secrets/${id}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); toast.success('Credential removed') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to delete credential')
   })
 
@@ -1851,6 +1865,7 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
         method: 'PUT', body: JSON.stringify(credentialUpdatePayload(data))
     }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-secrets', deviceId] }); setEditingId(null); toast.success('Credential updated') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to update credential')
   })
 
@@ -2078,6 +2093,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
   const delMutation = useMutation({
     mutationFn: async (id: number) => apiFetch(`/api/v1/devices/relationships/${id}`, { method: 'DELETE' }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); toast.success('Relationship removed') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to delete relationship')
   })
 
@@ -2086,6 +2102,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
         method: 'PUT', body: JSON.stringify(data)
     }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['device-rel', deviceId] }); setEditingId(null); toast.success('Relationship updated') },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => toast.error(e.message || 'Failed to update relationship')
   })
 

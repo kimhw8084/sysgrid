@@ -76,6 +76,27 @@ function AsyncDetailRouteHarness({
   return <div data-testid="async-detail-state">{detailItem ? detailItem.name : 'none'}</div>
 }
 
+function DelayedListDetailRouteHarness() {
+  const [detailItem, setDetailItem] = React.useState<any>(null)
+  const [isLoaded, setIsLoaded] = React.useState(false)
+  const items = React.useMemo(() => ([
+    { id: 1, name: 'Loaded service', is_deleted: false },
+  ]), [])
+
+  useOperationalDetailRoute({
+    allItems: isLoaded ? items : undefined,
+    detailItem,
+    setDetailItem,
+  })
+
+  return (
+    <div>
+      <button type="button" onClick={() => setIsLoaded(true)}>Finish loading</button>
+      <div data-testid="delayed-detail-state">{detailItem ? detailItem.name : 'none'}</div>
+    </div>
+  )
+}
+
 function deferred<T>() {
   let resolve!: (value: T | PromiseLike<T>) => void
   const promise = new Promise<T>((resolvePromise) => {
@@ -368,6 +389,26 @@ describe('useOperationalDetailRoute history sync', () => {
     await waitFor(() => {
       expect(router.state.location.search).toBe('?id=1')
       expect(screen.getByTestId('detail-state').textContent).toBe('1')
+    })
+  })
+
+  it('preserves an incoming detail route until the list has loaded', async () => {
+    const router = createMemoryRouter([
+      { path: '/services', element: <DelayedListDetailRouteHarness /> },
+    ], {
+      initialEntries: ['/services?id=1'],
+    })
+
+    render(<RouterProvider router={router} />)
+
+    expect(router.state.location.search).toBe('?id=1')
+    expect(screen.getByTestId('delayed-detail-state').textContent).toBe('none')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Finish loading' }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?id=1')
+      expect(screen.getByTestId('delayed-detail-state').textContent).toBe('Loaded service')
     })
   })
 

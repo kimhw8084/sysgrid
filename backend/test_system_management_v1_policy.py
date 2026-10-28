@@ -26,6 +26,9 @@ def test_catalog_is_single_versioned_non_executable_contract():
     catalog_path = Path(__file__).resolve().parents[1] / "contracts" / "system_management_v1.json"
     assert json.loads(catalog_path.read_text(encoding="utf-8")) == CATALOG
     assert set(CATALOG["stages"]) == {"production", "preview", "disabled", "retired"}
+    assert CATALOG["catalog_version"] == "sysgrid-system-management-v1.1"
+    assert len(CATALOG["modules"]) == 15
+    assert all(module["profile_membership"] == "v1" and module["default_stage"] == "production" for module in CATALOG["modules"])
     assert all("component" not in module and "executable" not in module for module in CATALOG["modules"])
     module_ids = {module["id"] for module in CATALOG["modules"]}
     assert set(CATALOG["api_ownership"]).issubset(module_ids)
@@ -70,6 +73,7 @@ def test_module_stages_are_distinct_and_fail_closed(stage, monkeypatch):
 
 def test_tenant_admin_and_wildcard_do_not_become_system_root(monkeypatch):
     monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "haewon.kim")
+    monkeypatch.setattr(settings, "MODULE_STAGE_OVERRIDES", "projects=preview")
     module = next(item for item in CATALOG["modules"] if item["id"] == "projects")
     tenant_admin = _build_module_entry(module, operator=_operator(is_admin=True), system_root=False)
     wildcard_admin = _build_module_entry(module, operator=_operator(permissions={"all": 3}), system_root=False)
@@ -78,6 +82,24 @@ def test_tenant_admin_and_wildcard_do_not_become_system_root(monkeypatch):
     assert tenant_admin["blocked_reason"] == "SYSTEM_ROOT_REQUIRED"
     assert has_capability(_operator(is_admin=True), "system.root", 3) is False
     assert has_capability(_operator(permissions={"all": 3}), "system.preview", 1) is False
+
+
+@pytest.mark.parametrize("module_id", ["projects", "external", "architecture", "research", "far", "vendors", "knowledge"])
+def test_newly_released_modules_use_capability_levels_without_system_root(module_id, monkeypatch):
+    monkeypatch.setattr(settings, "MODULE_STAGE_OVERRIDES", "")
+    module = next(item for item in CATALOG["modules"] if item["id"] == module_id)
+    capability = module["required_capability"]
+    reader = _build_module_entry(module, operator=_operator(permissions={capability: 1}), system_root=False)
+    writer = _build_module_entry(module, operator=_operator(permissions={capability: 2}), system_root=False)
+    unscoped = _build_module_entry(module, operator=_operator(), system_root=False)
+
+    assert reader["stage"] == "production"
+    assert reader["available"] is True and reader["actions"]["read"] is True
+    assert reader["actions"]["write"] is False
+    assert writer["available"] is True and writer["actions"]["write"] is True
+    assert writer["root_preview"] is False
+    assert unscoped["available"] is False
+    assert unscoped["blocked_reason"] == "MISSING_CAPABILITY"
 
 
 def test_module_manage_action_uses_level_three_capability_without_inventing_no_capability_authority():
@@ -106,6 +128,7 @@ async def test_effective_policy_projects_control_plane_identity_and_explicit_dia
     )
     assert configured_response.status_code == 200, configured_response.text
     assert configured_response.json()["identity"]["control_plane_admin"] is True
+    assert configured_response.json()["identity"]["user_id"] == "admin_root"
 
     monkeypatch.setattr(settings, "CONTROL_PLANE_ADMIN_USER_IDS", "deployment-admin")
     response = await seeded_admin_tenant["client"].get(
@@ -116,6 +139,7 @@ async def test_effective_policy_projects_control_plane_identity_and_explicit_dia
     assert response.status_code == 200, response.text
     payload = response.json()
     assert payload["identity"]["tenant_admin"] is True
+    assert payload["identity"]["user_id"] == "admin_root"
     assert payload["identity"]["system_root"] is True
     assert payload["identity"]["control_plane_admin"] is False
     assert payload["actions"]["diagnostics"]["read"] is True
@@ -303,6 +327,14 @@ async def test_embedded_scope_keeps_consumer_relationships_narrow():
 
     db = RecoveryDatabase()
     assert await _embedded_entry_is_in_scope(entry, consumer="monitoring", device_id=None, service_id=None, monitoring_id=202, db=db)
+    device_linked_entry = SimpleNamespace(id=8, linked_device_ids=[101], metadata_json={})
+    assert await _embedded_entry_is_in_scope(
+        device_linked_entry, consumer="monitoring", device_id=101, service_id=None, monitoring_id=202, db=db
+    )
+    unrelated_entry = SimpleNamespace(id=9, linked_device_ids=[999], metadata_json={})
+    assert not await _embedded_entry_is_in_scope(
+        unrelated_entry, consumer="monitoring", device_id=101, service_id=None, monitoring_id=202, db=db
+    )
     assert await _embedded_entry_is_in_scope(entry, consumer="assets", device_id=101, service_id=None, monitoring_id=None, db=db)
     assert await _embedded_entry_is_in_scope(entry, consumer="services", device_id=None, service_id=303, monitoring_id=None, db=db)
     assert await _embedded_entry_is_in_scope(entry, consumer="network", device_id=101, service_id=None, monitoring_id=202, db=db)
@@ -341,12 +373,13 @@ async def test_embedded_target_resolution_is_tenant_scoped_and_fails_closed():
     class AuthorizedTargetDB:
         async def execute(self, query):
             class Result:
-                def scalar_one_or_none(self):
-                    return 99
+                def one_or_none(self):
+                    return (99, 101)
 
             return Result()
 
     await _require_embedded_targets(request, AuthorizedTargetDB())
+    assert request.state.sysgrid_embedded_monitoring_device_id == 101
 
 
 @pytest.mark.anyio

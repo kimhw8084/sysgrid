@@ -99,7 +99,7 @@ function renderOperationalBadgeCell({
   const label = value || emptyValue
   const resolvedClass = resolveOperationalColorClass(label, colorMap, fallbackClass)
   return (
-    <span className={`${OPERATIONAL_GRID_BADGE_CLASS} ${resolvedClass}`}>
+    <span title={String(label)} className={`${OPERATIONAL_GRID_BADGE_CLASS} ${resolvedClass}`}>
       <span style={{ fontSize: `${fontSize}px` }} className={OPERATIONAL_GRID_BADGE_TEXT_CLASS}>
         {label}
       </span>
@@ -188,7 +188,7 @@ export function createOperationalIdentityColumnDefinition({
       onActivate ? (
         <button
           type="button"
-          title={buttonTitle}
+          title={`${buttonTitle}: ${String(p.value ?? '')}`}
           onMouseDown={(event) => event.stopPropagation()}
           onClick={(event) => {
             event.stopPropagation()
@@ -199,7 +199,7 @@ export function createOperationalIdentityColumnDefinition({
           {p.value}
         </button>
       ) : (
-        <span className={OPERATIONAL_GRID_PRIMARY_TEXT_CLASS}>{p.value}</span>
+        <span title={String(p.value ?? '')} className={OPERATIONAL_GRID_PRIMARY_TEXT_CLASS}>{p.value}</span>
       )
     ),
     hide,
@@ -250,9 +250,10 @@ export function createOperationalPlainValueColumn({
     headerClass: OPERATIONAL_GRID_CLASSES.centeredHeader,
     cellRenderer: (p: any) => {
       const resolvedValue = formatValue ? formatValue(p.value, p) : p.value
+      const displayValue = resolvedValue || emptyValue
       return resolvedValue
-        ? <span className={valueClassName || OPERATIONAL_GRID_PLAIN_VALUE_CLASS}>{resolvedValue}</span>
-        : <span className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS}>{emptyValue}</span>
+        ? <span title={String(resolvedValue)} className={valueClassName || OPERATIONAL_GRID_PLAIN_VALUE_CLASS}>{resolvedValue}</span>
+        : <span title={String(displayValue)} className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS}>{displayValue}</span>
     },
     hide,
   }
@@ -286,6 +287,7 @@ export function createOperationalMappedTextColumn({
     headerClass: OPERATIONAL_GRID_CLASSES.centeredHeader,
     cellRenderer: (p: any) => (
       <span
+        title={String(p.value || emptyValue)}
         style={{ fontSize: `${fontSize}px` }}
         className={`${OPERATIONAL_GRID_PLAIN_VALUE_CLASS} ${resolveOperationalColorClass(p.value, colorMap, p.value ? fallbackClass : 'text-slate-500')}`}
       >
@@ -321,7 +323,7 @@ export function createOperationalProseColumn({
     cellClass: proseMode === 'wrap' ? OPERATIONAL_GRID_CLASSES.leftBodyWrapCell : OPERATIONAL_GRID_CLASSES.leftBodyCell,
     headerClass: OPERATIONAL_GRID_CLASSES.primaryHeader,
     cellRenderer: (p: any) => (
-      <span className={`${p.value ? OPERATIONAL_GRID_PLAIN_VALUE_CLASS : OPERATIONAL_GRID_EMPTY_VALUE_CLASS} truncate`}>
+      <span title={String(p.value || emptyValue)} className={`${p.value ? OPERATIONAL_GRID_PLAIN_VALUE_CLASS : OPERATIONAL_GRID_EMPTY_VALUE_CLASS} truncate`}>
         {p.value || emptyValue}
       </span>
     ),
@@ -506,6 +508,7 @@ export function createOperationalActionLinkColumn({
       <div className="flex items-center justify-center h-full">
         <button
           type="button"
+          title={String(p.value || emptyValue)}
           onClick={(event) => {
             event.stopPropagation()
             onActivate(p)

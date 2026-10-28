@@ -211,8 +211,8 @@ export function createFarIncidentsColumn({
   return createFarOperationalRendererColumn({
     field: 'linked_rcas',
     headerName: 'Incidents',
-    width: 120,
-    minWidth: 112,
+    width: 144,
+    minWidth: 136,
     hide: hidden,
     cellRenderer: (params: any) => {
       const incidents: FarAnalyticalIncident[] = params.data?.linked_rcas || []

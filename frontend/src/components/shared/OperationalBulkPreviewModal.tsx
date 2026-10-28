@@ -22,6 +22,9 @@ export type OperationalBulkPreview = {
   missing_ids: number[]
   blockers: OperationalBulkBlocker[]
   can_execute: boolean
+  precondition?: string
+  operation_id?: string
+  versions?: Record<string, string>
   purge_impact?: OperationalPurgeImpact
 }
 

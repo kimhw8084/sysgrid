@@ -1477,6 +1477,7 @@ function ArchDesignerInner() {
   const saveMutation = useMutation({
     mutationFn: async (data: any) => { const isUpdate = !!data.id; const url = isUpdate ? `/api/v1/data-flows/${data.id}` : '/api/v1/data-flows'; const response = await apiFetch(url, { method: isUpdate ? 'PUT' : 'POST', body: JSON.stringify(data) }); return response.json(); },
     onSuccess: (savedFlow) => { setActiveFlow(savedFlow); setHasUnsavedChanges(false); queryClient.invalidateQueries({ queryKey: ['data-flows'] }); queryClient.invalidateQueries({ queryKey: ['data-flow-history', savedFlow.id] }); toast.success("Manifest Persistent in Core Registry"); if (view === 'dashboard') setView('editor'); },
+    meta: { handlesErrorToast: true },
     onError: () => toast.error("Failure Syncing Manifest to Core")
   });
   const approveMutation = useMutation({

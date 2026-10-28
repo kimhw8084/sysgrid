@@ -61,6 +61,10 @@ export function TenantSelector({ compact = false }: { compact?: boolean }) {
       // Consent happens before the server request, never in a later unload dialog.
       approveWorkspaceDeparture()
       window.location.reload()
+    },
+    meta: { handlesErrorToast: true },
+    onError: () => {
+      toast.error('Could not confirm the tenant switch. This tab and its draft remain in the current workspace.')
     }
   })
 

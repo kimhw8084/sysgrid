@@ -11,6 +11,7 @@ import { ASSET_GOLDEN_ALLOWED_COLUMN_FIELDS } from './assetGoldenColumns'
 import { usePersistentJsonState } from '../shared/OperationalWorkspaceHooks'
 import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from '../shared/optionalStorage'
 import { fetchAssetSettingOptions } from './assetRecordOptions'
+import { fetchAssetArray } from './assetDataState'
 
 export type AssetTab = 'inventory' | 'deleted'
 export type AssetViewMode = 'grid' | 'report' | 'map'
@@ -461,11 +462,11 @@ export function useAssetGoldenWorkspace() {
 
   const devicesQuery = useQuery({
     queryKey: ['asset-golden-devices'],
-    queryFn: async () => (await apiFetch('/api/v1/devices/?include_deleted=true')).json(),
+    queryFn: () => fetchAssetArray('/api/v1/devices/?include_deleted=true'),
   })
   const liveDevicesQuery = useQuery({
     queryKey: ['devices'],
-    queryFn: async () => (await apiFetch('/api/v1/devices/')).json(),
+    queryFn: () => fetchAssetArray('/api/v1/devices/'),
     enabled: devicesQuery.isError,
   })
   const optionsQuery = useQuery({
@@ -474,11 +475,11 @@ export function useAssetGoldenWorkspace() {
   })
   const relationshipsQuery = useQuery({
     queryKey: ['asset-golden-relationships'],
-    queryFn: async () => (await apiFetch('/api/v1/devices/relationships/all')).json(),
+    queryFn: () => fetchAssetArray('/api/v1/devices/relationships/all'),
   })
   const connectionsQuery = useQuery({
     queryKey: ['asset-golden-connections'],
-    queryFn: async () => (await apiFetch('/api/v1/networks/connections')).json(),
+    queryFn: () => fetchAssetArray('/api/v1/networks/connections'),
   })
 
   const includeDeletedAssets = useMemo(
@@ -492,11 +493,22 @@ export function useAssetGoldenWorkspace() {
   )
   const hasLiveAssetData = Array.isArray(liveDevicesQuery.data)
   const isUsingLiveFallback = devicesQuery.isError && !hasIncludeDeletedAssetData && hasLiveAssetData
+  const shouldShowAssetRegistryNotice = devicesQuery.isError && (hasIncludeDeletedAssetData || !liveDevicesQuery.isLoading)
+  const assetRegistryBlocked = !hasIncludeDeletedAssetData
+  const retryAssetRegistry = useCallback(() => { void devicesQuery.refetch() }, [devicesQuery.refetch])
   const assetQueryFallbackError = !hasIncludeDeletedAssetData && !hasLiveAssetData
     ? (devicesQuery.error || liveDevicesQuery.error || null)
     : (!hasIncludeDeletedAssetData && includeDeletedAssets.length === 0 && liveAssets.length === 0)
       ? (devicesQuery.error || null)
       : null
+  const relatedDataErrors = [
+    relationshipsQuery.isError ? 'asset relationships' : null,
+    connectionsQuery.isError ? 'network connections' : null,
+  ].filter(Boolean) as string[]
+  const retryRelatedData = useCallback(() => {
+    if (relationshipsQuery.isError) void relationshipsQuery.refetch()
+    if (connectionsQuery.isError) void connectionsQuery.refetch()
+  }, [connectionsQuery.isError, connectionsQuery.refetch, relationshipsQuery.isError, relationshipsQuery.refetch])
 
   const allAssets = useMemo(() => {
     const source = hasIncludeDeletedAssetData ? includeDeletedAssets : isUsingLiveFallback ? liveAssets : []
@@ -570,12 +582,19 @@ export function useAssetGoldenWorkspace() {
     tabEmptyDescription: activeTab === 'deleted'
       ? 'The registry is loaded, but no archived assets are currently available.'
       : 'The registry is loaded, but no active assets are currently available.',
-    degradedNotice: isUsingLiveFallback ? {
+    degradedNotice: shouldShowAssetRegistryNotice ? {
       tone: 'warning',
-      title: 'Showing live fallback rows only',
-      description: 'The include-deleted asset request failed, so this workspace is using active inventory rows until the registry endpoint recovers.',
+      title: isUsingLiveFallback ? 'Showing live fallback rows only' : hasIncludeDeletedAssetData ? 'Asset registry refresh failed' : 'Asset registry unavailable',
+      description: isUsingLiveFallback
+        ? 'The full registry is unavailable. Active inventory is shown, but archived records may be missing.'
+        : hasIncludeDeletedAssetData
+          ? 'Previously loaded registry rows remain visible. Retry to confirm the latest records.'
+          : 'The full asset registry could not be confirmed. Retry before creating or importing records.',
+      actionLabel: 'Retry full registry',
+      onAction: retryAssetRegistry,
+      isActionLoading: devicesQuery.isFetching,
     } : undefined,
-  }), [activeTab, allAssets.length, assetQueryFallbackError, devicesQuery.isLoading, filteredAssets.length, isUsingLiveFallback, liveDevicesQuery.isLoading, visiblePool.length])
+  }), [activeTab, allAssets.length, assetQueryFallbackError, devicesQuery.isError, devicesQuery.isFetching, devicesQuery.isLoading, devicesQuery.refetch, filteredAssets.length, hasIncludeDeletedAssetData, isUsingLiveFallback, liveDevicesQuery.isLoading, retryAssetRegistry, shouldShowAssetRegistryNotice, visiblePool.length])
 
   const linkPurposeOptions = useMemo(() => {
     const options = Array.isArray(optionsQuery.data) ? optionsQuery.data.filter((item: any) => item.category === 'LinkPurpose') : []
@@ -887,6 +906,7 @@ export function useAssetGoldenWorkspace() {
     activeTab,
     activeViewId,
     allAssets,
+    assetRegistryBlocked,
     bulkMutation,
     bulkPreviewMutation,
     bulkOperationPreview,
@@ -932,6 +952,11 @@ export function useAssetGoldenWorkspace() {
     lastLifecycleOperation,
     executeRevert,
     relationships: Array.isArray(relationshipsQuery.data) ? relationshipsQuery.data : [],
+    relatedDataState: {
+      failedLabels: relatedDataErrors,
+      isFetching: relationshipsQuery.isFetching || connectionsQuery.isFetching,
+      retry: retryRelatedData,
+    },
     rowActionMenu,
     rowDensity,
     savedViews,

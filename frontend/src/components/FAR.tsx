@@ -1,3 +1,4 @@
+import { useModulePolicy } from '../policy/ModulePolicy'
 import React, { useState, useMemo, useEffect } from 'react'
 import {
   WorkspaceCollapsibleHeader,
@@ -254,6 +255,8 @@ function MetricHelpModal({ metric, onClose }: { metric: string | null, onClose: 
 }
 
 export default function FAR() {
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.far?.actions?.write === true
   const [operatorLoopSession, setOperatorLoopSession] = useState<FarOperatorLoopSession | null>(null)
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -481,7 +484,7 @@ export default function FAR() {
         headerName: 'Failure Mode', values: loadedModes.map((mode: any) => mode.title), minWidth: 200, fallbackWidth: 260, maxDefaultWidth: 360,
       }),
       created_by_user_id: getOperationalContentAwareWidth({
-        headerName: 'Created By', values: loadedModes.map((mode: any) => mode.created_by_user_id || 'SYSTEM'), minWidth: 128, fallbackWidth: 136, maxDefaultWidth: 220,
+        headerName: 'Created By', values: loadedModes.map((mode: any) => mode.created_by_user_id || 'SYSTEM'), minWidth: 148, fallbackWidth: 156, maxDefaultWidth: 220,
       }),
     }
   }
@@ -489,7 +492,7 @@ export default function FAR() {
     system_name: 132,
     failure_type: 108,
     title: 260,
-    created_by_user_id: 136,
+    created_by_user_id: 156,
   }
 
   const filteredModes = useMemo(
@@ -725,7 +728,7 @@ export default function FAR() {
       hide: hiddenColumns.includes('severity'),
     }),
     createOperationalMetricBadgeColumn({
-      field: 'occurrence', headerName: 'O', width: 72, minWidth: 68, fontSize,
+      field: 'occurrence', headerName: 'O', width: 84, minWidth: 84, fontSize,
       resolveTone: (value) => value >= 7 ? 'critical' : value >= 4 ? 'warning' : 'healthy',
       onActivate: () => setShowRpnHelp(true),
       title: 'RPN Definition Matrix',
@@ -739,7 +742,7 @@ export default function FAR() {
       hide: hiddenColumns.includes('detection'),
     }),
     createOperationalMetricBadgeColumn({
-      field: 'rpn', headerName: 'RPN', width: 84, minWidth: 80, fontSize,
+      field: 'rpn', headerName: 'RPN', width: 130, minWidth: 130, fontSize,
       resolveTone: (value) => value >= 150 ? 'critical' : value >= 80 ? 'warning' : 'healthy',
       onActivate: () => setShowRpnHelp(true),
       title: 'RPN Definition Matrix',
@@ -755,7 +758,7 @@ export default function FAR() {
       field: 'created_by_user_id',
       headerName: 'Created By',
       width: farDefaultWidths.created_by_user_id,
-      minWidth: 128,
+      minWidth: 148,
       filter: true,
       emptyValue: 'SYSTEM',
       tooltipValueGetter: (value) => String(value || 'SYSTEM'),
@@ -815,7 +818,7 @@ export default function FAR() {
     gridRef,
     modes: lifecycleModes,
     selectedIds: lifecycleScope === 'active' ? selectedIds : [],
-    readOnly: lifecycleScope === 'archived',
+    readOnly: lifecycleScope === 'archived' || !canWrite,
     lifecycleScope,
     restorationDossier,
     onLifecycleScopeChange: restoreFarLifecycleScope,
@@ -902,7 +905,12 @@ export default function FAR() {
         ),
       }}
       toolbarSearch={(
-        <ToolbarSearch value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Scan risk vectors..." />
+        <ToolbarSearch
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Scan risk vectors..."
+          ariaLabel="Search failure analysis records"
+        />
       )}
       toolbarControls={(
         <>
@@ -1883,6 +1891,7 @@ function CausalTab({ mode, readOnly, onUpdate, setBkmGuidanceModal, setResolutio
       queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       onUpdate()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => toast.error(error.message || 'Failed to delete root cause')
   })
 
@@ -2111,6 +2120,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
       queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       onUpdate()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => {
       setDeletingMitigationId(null)
       toast.error(error.message || 'Failed to delete mitigation')
@@ -2134,6 +2144,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
       queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       onUpdate()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => toast.error(error?.message || 'Failed to update prevention status'),
   })
 
@@ -2394,6 +2405,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
         onUpdate()
         queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       },
+      meta: { handlesErrorToast: true },
       onError: (err: any) => {
         toast.error(`Linking Failed: ${err.message}`)
       }
@@ -2417,6 +2429,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
         onUpdate()
         queryClient.invalidateQueries({ queryKey: ['far', 'modes'] })
       },
+      meta: { handlesErrorToast: true },
       onError: (err: any) => {
         toast.error(`Unlink Failed: ${err.message}`)
       }

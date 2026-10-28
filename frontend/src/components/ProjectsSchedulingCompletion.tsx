@@ -9,7 +9,7 @@ import ProjectsStory, { shouldUseProjectsStory } from './ProjectsStory'
 import ProjectsWorkPlan, { shouldUseProjectsWorkPlan } from './ProjectsWorkPlan'
 import ProjectsCommunication, { shouldUseProjectsCommunication } from './ProjectsCommunication'
 import ProjectsOutcomes, { shouldUseProjectsOutcomes } from './ProjectsOutcomes'
-import { parseProjectsLocation } from './ProjectsNavigation'
+import { parseProjectsLocation, shouldPreserveLegacyProjectsPortfolioLocation } from './ProjectsNavigation'
 import { shouldUseProjectsTimeline } from './ProjectsTimeline.route'
 import { ProjectsTimelineAuthority } from './ProjectsWorkspaceLayout'
 import { apiFetch } from '../api/apiClient'
@@ -133,7 +133,8 @@ function ProjectsLegacyAliasRedirect({ target }: { target: string }) {
 export default function ProjectsSchedulingCompletion() {
   const location = useLocation()
   const projectsRoute = parseProjectsLocation(location.pathname, location.search)
-  if (projectsRoute.source === 'legacy' && projectsRoute.redirectTo) return <ProjectsLegacyAliasRedirect target={projectsRoute.redirectTo} />
+  const preserveLegacyPortfolio = shouldPreserveLegacyProjectsPortfolioLocation(location.pathname, location.search)
+  if (projectsRoute.source === 'legacy' && projectsRoute.redirectTo && !preserveLegacyPortfolio) return <ProjectsLegacyAliasRedirect target={projectsRoute.redirectTo} />
   if (shouldUseProjectsStory(location.pathname, location.search)) return <ProjectsStory />
   if (shouldUseProjectsWorkPlan(location.pathname, location.search)) return <ProjectsWorkPlan />
   if (shouldUseProjectsOutcomes(location.pathname)) return <ProjectsOutcomes />
@@ -355,6 +356,7 @@ function ProjectsSchedulingWorkspace() {
     },
     onMutate: ({ label }: any) => setLiveMessage(`Saving ${String(label || 'schedule update').toLowerCase()}…`),
     onSuccess: ({ saved, label }: any) => { queryClient.setQueryData<any[]>(['projects'], (current = []) => current.map((project: any) => String(project?.id) === String(saved?.id) ? saved : project)); setLiveMessage(label); toast.success(label) },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => { const message = error?.message || 'Schedule update failed'; setLiveMessage(message); toast.error(message) },
   })
 

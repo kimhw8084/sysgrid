@@ -168,13 +168,17 @@ async def _require_embedded_targets(request: Request, db: AsyncSession) -> None:
             ),
         ))
     if "monitoring_id" in selectors:
-        target_checks.append((
-            "monitoring_id",
-            select(models.MonitoringItem.id).where(
-                models.MonitoringItem.id == selectors["monitoring_id"],
-                models.MonitoringItem.is_deleted == False,
-            ),
-        ))
+        monitoring_target_query = select(
+            models.MonitoringItem.id,
+            models.MonitoringItem.device_id,
+        ).where(
+            models.MonitoringItem.id == selectors["monitoring_id"],
+            models.MonitoringItem.is_deleted == False,
+        )
+        monitoring_target = (await db.execute(monitoring_target_query)).one_or_none()
+        if monitoring_target is None:
+            raise HTTPException(status_code=404, detail="Embedded target not found")
+        request.state.sysgrid_embedded_monitoring_device_id = monitoring_target[1]
 
     for selector, query in target_checks:
         if (await db.execute(query)).scalar_one_or_none() is None:
@@ -225,7 +229,7 @@ async def _embedded_entry_is_in_scope(
         return service_match
 
     if consumer == "monitoring" and monitoring_id is not None:
-        if monitoring_match:
+        if monitoring_match or device_match:
             return True
         recovery_query = select(models.MonitoringItem.recovery_docs).where(
             models.MonitoringItem.id == monitoring_id,
@@ -264,6 +268,9 @@ async def get_entries(
     db: AsyncSession = Depends(get_db)
 ):
     await _require_embedded_targets(request, db)
+    monitoring_scope_device_id = device_id
+    if embedded_consumer == "monitoring" and monitoring_id is not None:
+        monitoring_scope_device_id = getattr(request.state, "sysgrid_embedded_monitoring_device_id", None)
     query = select(models.KnowledgeEntry).filter(models.KnowledgeEntry.is_deleted == False).options(
         selectinload(models.KnowledgeEntry.qa_threads).selectinload(models.KnowledgeQA.replies)
     )
@@ -307,7 +314,7 @@ async def get_entries(
             if await _embedded_entry_is_in_scope(
                 entry,
                 consumer=embedded_consumer,
-                device_id=device_id,
+                device_id=monitoring_scope_device_id,
                 service_id=service_id,
                 monitoring_id=monitoring_id,
                 db=db,

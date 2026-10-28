@@ -30,6 +30,7 @@ router = APIRouter(
 )
 IMMUTABLE_MONITORING_FIELDS = {"id", "created_at", "updated_at", "created_by_user_id", "version", "edit_revision"}
 MONITORING_SEVERITIES = {"Critical", "Warning", "Info"}
+MONITORING_LEGACY_SEVERITIES = {"Informational"}
 MONITORING_STATUSES = {"Existing", "Planned", "Cancelled", "Decommissioned", "Deleted"}
 MONITORING_OWNER_ROLES = {"Primary Support", "Escalation", "Observer"}
 
@@ -393,6 +394,7 @@ async def build_monitoring_payload(
     payload: dict[str, Any],
     *,
     partial: bool = False,
+    legacy_severity: Optional[str] = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]] | None]:
     owners_data = payload.get("owners") if "owners" in payload else None
     clean_data = filter_valid_columns(models.MonitoringItem, payload, exclude=IMMUTABLE_MONITORING_FIELDS | {"owners"})
@@ -401,7 +403,12 @@ async def build_monitoring_payload(
         clean_data["monitoring_url"] = normalize_monitoring_url(clean_data.get("monitoring_url"))
 
     if "severity" in clean_data and clean_data["severity"] not in MONITORING_SEVERITIES:
-        raise HTTPException(status_code=400, detail=f"Severity must be one of: {', '.join(sorted(MONITORING_SEVERITIES))}")
+        preserved_legacy_severity = (
+            clean_data["severity"] == legacy_severity
+            and legacy_severity in MONITORING_LEGACY_SEVERITIES
+        )
+        if not preserved_legacy_severity:
+            raise HTTPException(status_code=400, detail=f"Severity must be one of: {', '.join(sorted(MONITORING_SEVERITIES))}")
     if "status" in clean_data and clean_data["status"] not in MONITORING_STATUSES:
         raise HTTPException(status_code=400, detail=f"Status must be one of: {', '.join(sorted(MONITORING_STATUSES))}")
 
@@ -762,7 +769,9 @@ async def update_monitoring_item(item_id: int, data: dict, request: Request, db:
         ],
     }
     merged_payload.update(data)
-    clean_data, owners_data = await build_monitoring_payload(db, merged_payload, partial=False)
+    clean_data, owners_data = await build_monitoring_payload(
+        db, merged_payload, partial=False, legacy_severity=item.severity
+    )
     await ensure_monitoring_item_uniqueness(db, item_data=clean_data, exclude_item_id=item_id)
     next_snapshot = build_monitoring_snapshot_from_values(clean_data, owners_data)
     if next_snapshot == previous_snapshot:
@@ -881,7 +890,9 @@ async def bulk_action(request: Request, data: dict, db: AsyncSession = Depends(g
                     ],
                 }
                 merged_payload.update(payload)
-                validated_update, owners_data = await build_monitoring_payload(db, merged_payload, partial=False)
+                validated_update, owners_data = await build_monitoring_payload(
+                    db, merged_payload, partial=False, legacy_severity=item.severity
+                )
                 await ensure_monitoring_item_uniqueness(db, item_data=validated_update, exclude_item_id=item.id)
                 next_snapshot = build_monitoring_snapshot_from_values(validated_update, owners_data)
                 if next_snapshot == previous_snapshot:

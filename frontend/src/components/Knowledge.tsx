@@ -1,3 +1,4 @@
+import { useModulePolicy } from '../policy/ModulePolicy'
 import React, { useState, useMemo, useEffect } from 'react'
 import { WorkspaceEmptyState } from "./shared/OperationalWorkspacePrimitives";
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -89,6 +90,20 @@ const normalizeKnowledgeEntry = (entry: any) => ({
   ...entry,
   metadata_json: normalizeKnowledgeMetadata(entry?.metadata_json)
 })
+
+async function readKnowledgeJson(response: Response, action: string) {
+  if (!response.ok) throw new Error(`${action} failed (HTTP ${response.status}).`)
+  if (!response.headers.get('content-type')?.toLowerCase().includes('application/json')) {
+    throw new Error(`${action} returned an invalid response.`)
+  }
+  return response.json()
+}
+
+async function fetchKnowledgeArray(url: string, label: string) {
+  const payload = await readKnowledgeJson(await apiFetch(url), label)
+  if (!Array.isArray(payload)) throw new Error(`${label} response was invalid.`)
+  return payload
+}
 
 const toSearchBlob = (value: any): string => {
   if (value == null) return ''
@@ -220,6 +235,8 @@ const CategoryPill = ({ label, active, onClick, count }: any) => (
 )
 
 export default function Knowledge() {
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.knowledge?.actions?.write === true
   const navigate = useNavigate()
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -241,8 +258,8 @@ export default function Knowledge() {
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, id: null })
   const [viewMode, setViewMode] = useState<'Grid' | 'Timeline'>('Grid')
 
-  const { data: entries, isLoading } = useQuery({ 
-    queryKey: ['knowledge', { deviceParam, serviceParam, monitoringParam, farParam, researchParam, vendorParam, projectParam }], 
+  const knowledgeQuery = useQuery({
+    queryKey: ['knowledge', { deviceParam, serviceParam, monitoringParam, farParam, researchParam, vendorParam, projectParam }],
     queryFn: async () => {
       let url = '/api/v1/knowledge/'
       const params = new URLSearchParams()
@@ -254,44 +271,59 @@ export default function Knowledge() {
       if (vendorParam) params.append('vendor_id', vendorParam)
       if (projectParam) params.append('project_id', projectParam)
       if (params.toString()) url += `?${params.toString()}`
-      const res = await apiFetch(url)
-      return (await res.json()).map(normalizeKnowledgeEntry)
+      return (await fetchKnowledgeArray(url, 'Knowledge records')).map(normalizeKnowledgeEntry)
     }
   })
+  const entries = knowledgeQuery.data ?? []
+  const { isLoading } = knowledgeQuery
 
-  // Fetch contextual data for Manuals
-  const { data: devices } = useQuery({ queryKey: ['devices'], queryFn: async () => (await apiFetch('/api/v1/devices/')).json() })
-  const { data: services } = useQuery({ queryKey: ['services'], queryFn: async () => (await apiFetch('/api/v1/logical-services/')).json() })
-  const { data: dataFlows } = useQuery({ queryKey: ['data-flows'], queryFn: async () => (await apiFetch('/api/v1/data-flows/')).json() })
-  const { data: farModes } = useQuery({ queryKey: ['far', 'modes'], queryFn: async () => (await apiFetch('/api/v1/far/modes')).json() })
-  const { data: monitoringItems } = useQuery({ queryKey: ['monitoring'], queryFn: async () => (await apiFetch('/api/v1/monitoring')).json() })
-  const { data: investigations } = useQuery({ queryKey: ['investigations'], queryFn: async () => (await apiFetch('/api/v1/investigations')).json() })
-  const { data: vendors } = useQuery({ queryKey: ['vendors'], queryFn: async () => (await apiFetch('/api/v1/vendors')).json() })
-  const { data: projects } = useQuery({ queryKey: ['projects'], queryFn: async () => (await apiFetch('/api/v1/projects')).json() })
+  // Linked records enrich names and form choices; failures stay visibly partial.
+  const devicesQuery = useQuery({ queryKey: ['devices'], queryFn: () => fetchKnowledgeArray('/api/v1/devices/', 'Asset choices') })
+  const servicesQuery = useQuery({ queryKey: ['services'], queryFn: () => fetchKnowledgeArray('/api/v1/logical-services/', 'Service choices') })
+  const dataFlowsQuery = useQuery({ queryKey: ['data-flows'], queryFn: () => fetchKnowledgeArray('/api/v1/data-flows/', 'Architecture choices') })
+  const farModesQuery = useQuery({ queryKey: ['far', 'modes'], queryFn: () => fetchKnowledgeArray('/api/v1/far/modes', 'FAR choices') })
+  const monitoringItemsQuery = useQuery({ queryKey: ['monitoring'], queryFn: () => fetchKnowledgeArray('/api/v1/monitoring', 'Monitoring choices') })
+  const investigationsQuery = useQuery({ queryKey: ['investigations'], queryFn: () => fetchKnowledgeArray('/api/v1/investigations', 'Research choices') })
+  const vendorsQuery = useQuery({ queryKey: ['vendors'], queryFn: () => fetchKnowledgeArray('/api/v1/vendors', 'Vendor choices') })
+  const projectsQuery = useQuery({ queryKey: ['projects'], queryFn: () => fetchKnowledgeArray('/api/v1/projects', 'Project choices') })
+  const devices = devicesQuery.data
+  const services = servicesQuery.data
+  const dataFlows = dataFlowsQuery.data
+  const farModes = farModesQuery.data
+  const monitoringItems = monitoringItemsQuery.data
+  const investigations = investigationsQuery.data
+  const vendors = vendorsQuery.data
+  const projects = projectsQuery.data
+  const contextQueries = [devicesQuery, servicesQuery, dataFlowsQuery, farModesQuery, monitoringItemsQuery, investigationsQuery, vendorsQuery, projectsQuery]
+  const failedContextQueries = contextQueries.filter(query => query.isError)
+  const retryContextQueries = () => Promise.all(failedContextQueries.map(query => query.refetch()))
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       const url = data.id ? `/api/v1/knowledge/${data.id}` : '/api/v1/knowledge/'
       const method = data.id ? 'PUT' : 'POST'
-      const res = await apiFetch(url, { method, body: JSON.stringify(data) })
-      return res.json()
+      return readKnowledgeJson(await apiFetch(url, { method, body: JSON.stringify(data) }), 'Knowledge save')
     },
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['knowledge'] })
       toast.success('Knowledge Matrix Synchronized')
       setActiveModal(null)
       setActiveEntry(null)
-    }
+    },
+    meta: { handlesErrorToast: true },
+    onError: () => toast.error('Knowledge could not be saved. Your draft is still open.')
   })
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => apiFetch(`/api/v1/knowledge/${id}`, { method: 'DELETE' }),
+    mutationFn: async (id: number) => readKnowledgeJson(await apiFetch(`/api/v1/knowledge/${id}`, { method: 'DELETE' }), 'Knowledge delete'),
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['knowledge'] })
       toast.success('Intelligence Expunged')
       setConfirmModal({ isOpen: false, id: null })
       setActiveEntry(null)
-    }
+    },
+    meta: { handlesErrorToast: true },
+    onError: () => toast.error('Knowledge could not be deleted.')
   })
 
   const quickUpdateMutation = useMutation({
@@ -301,16 +333,17 @@ export default function Knowledge() {
         ...patch,
         metadata_json: mergeDeep(entry.metadata_json || {}, patch.metadata_json || {})
       })
-      const res = await apiFetch(`/api/v1/knowledge/${entry.id}`, {
+      return readKnowledgeJson(await apiFetch(`/api/v1/knowledge/${entry.id}`, {
         method: 'PUT',
         body: JSON.stringify(next)
-      })
-      return res.json()
+      }), 'Knowledge update')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge'] })
       toast.success('Knowledge Node Updated')
-    }
+    },
+    meta: { handlesErrorToast: true },
+    onError: () => toast.error('Knowledge could not be updated. No success was recorded.')
   })
 
   const entityMaps = useMemo(() => ({
@@ -517,11 +550,11 @@ export default function Knowledge() {
       {/* Header Section */}
       <div className="flex min-w-0 shrink-0 flex-col gap-4 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between" data-knowledge-primary-tools="true">
         <div className="min-w-0 flex-1">
-          <h1 className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-black uppercase tracking-tighter text-[var(--text-primary)] sm:text-4xl sm:gap-4">
+          <h1 aria-label="Collective Intelligence" className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-black uppercase tracking-tighter text-[var(--text-primary)] sm:text-4xl sm:gap-4 xl:flex-nowrap xl:gap-2 xl:text-3xl">
             <div className="shrink-0 rounded-lg bg-blue-600 p-2 shadow-lg shadow-blue-500/20 sm:p-3">
               <BookOpen size={24} className="text-white sm:h-8 sm:w-8" />
             </div>
-            <span className="min-w-0 break-words">Collective Intelligence</span>
+            <span className="min-w-0 break-words">Collective<span aria-hidden="true" className="inline-block w-[0.42em]" /> Intelligence</span>
           </h1>
           <p className="mt-2 ml-1 flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 sm:tracking-[0.4em]">
             <Globe size={12} className="text-blue-500/50" /> Unified Knowledge Matrix // Zero-Loss Information Handoff
@@ -541,14 +574,14 @@ export default function Knowledge() {
           </div>
           <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap" data-knowledge-primary-actions="true">
             {(researchParam || monitoringParam) && (
-              <button
+              <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
                 onClick={() => setActiveModal(buildConversionDraft())}
-                className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-amber-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-800 active:scale-95 sm:w-auto sm:flex-1 sm:px-5 sm:text-[10px]"
+                className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-amber-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-5 sm:text-[10px]"
               >
                 <FileText size={16} /> Convert Incident
               </button>
             )}
-            <button 
+            <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
               onClick={() => setActiveModal({ 
                 category: 'Manual', title: '', tags: [], linked_device_ids: [], impacted_systems: [], status: 'Draft',
                 metadata_json: mergeDeep(emptyKnowledgeMetadata(), { entry_type: 'Architecture Note' }),
@@ -559,19 +592,19 @@ export default function Knowledge() {
                   operation: { owner_team: '', owner_individual: '', raci: [], cpm_workflow: '', far_ids: [], dr_strategy: { rto: '', rpo: '', plan: '' }, operational_logs: [] }
                 } 
               })} 
-              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-emerald-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-800 active:scale-95 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
+              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-emerald-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
             >
               <Workflow size={16} /> + System Manual
             </button>
-            <button 
+            <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
               onClick={() => setActiveModal(buildBkmTemplate())} 
-              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-rose-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-rose-500/20 transition-all hover:bg-rose-700 active:scale-95 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
+              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-rose-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-rose-500/20 transition-all hover:bg-rose-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
             >
               <ShieldCheck size={16} /> + New BKM
             </button>
-            <button 
+            <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
               onClick={() => setActiveModal({ category: 'Q&A', title: '', question_context: '', content: '', tags: [], linked_device_ids: [], impacted_systems: [], status: 'Draft', metadata_json: mergeDeep(emptyKnowledgeMetadata(), { entry_type: 'FAQ' }), qa_threads: [] })} 
-              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-blue-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
+              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-blue-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
             >
               <HelpCircle size={16} /> + Ask Question
             </button>
@@ -619,8 +652,8 @@ export default function Knowledge() {
          </div>
       </div>
 
-      <div className="grid shrink-0 items-start grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
-        <div className="grid items-start grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid min-w-0 shrink-0 items-start grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] 2xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
+        <div className="grid min-w-0 items-start grid-cols-2 lg:grid-cols-4 gap-4">
           <KnowledgeSummaryCard
             label="Knowledge Coverage"
             value={summary.total}
@@ -655,6 +688,22 @@ export default function Knowledge() {
 
       {/* Main Content Area */}
       <div className="min-w-0 shrink-0" data-knowledge-record-list="true">
+         {knowledgeQuery.isError && entries.length > 0 && (
+           <div role="status" className="mb-4 flex items-center justify-between gap-4 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-4 py-3 text-sm text-[var(--state-warning)]">
+             <span>Knowledge could not be refreshed. Showing the last loaded records.</span>
+             <button type="button" onClick={() => void knowledgeQuery.refetch()} disabled={knowledgeQuery.isFetching} className="shrink-0 rounded-md border border-current px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
+               {knowledgeQuery.isFetching ? 'Retrying…' : 'Retry records'}
+             </button>
+           </div>
+         )}
+         {failedContextQueries.length > 0 && (
+           <div role="status" className="mb-4 flex items-center justify-between gap-4 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-4 py-3 text-sm text-[var(--state-warning)]">
+             <span>Some linked record choices are unavailable. Knowledge remains visible; retry before changing cross-record links.</span>
+             <button type="button" onClick={() => void retryContextQueries()} disabled={failedContextQueries.some(query => query.isFetching)} className="shrink-0 rounded-md border border-current px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
+               {failedContextQueries.some(query => query.isFetching) ? 'Retrying…' : 'Retry linked data'}
+             </button>
+           </div>
+         )}
          {!!(deviceParam || serviceParam || monitoringParam || farParam || researchParam || vendorParam || projectParam) && (
            <div className="mb-6 rounded-lg border border-amber-500/15 bg-amber-500/[0.04] px-5 py-4 flex items-center justify-between gap-6">
              <div>
@@ -695,6 +744,17 @@ export default function Knowledge() {
               </div>
               <p className="text-[11px] font-black uppercase tracking-[0.4em] animate-pulse">Traversing Intelligence Grid...</p>
            </div>
+         ) : knowledgeQuery.isError && entries.length === 0 ? (
+            <div role="alert" className="mx-auto flex max-w-xl flex-col items-center gap-4 rounded-xl border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] p-8 text-center">
+              <AlertCircle size={32} className="text-[var(--state-danger)]" aria-hidden="true" />
+              <div>
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">Knowledge records unavailable</h3>
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">The records could not be loaded. This does not mean the workspace is empty.</p>
+              </div>
+              <button type="button" onClick={() => void knowledgeQuery.refetch()} disabled={knowledgeQuery.isFetching} className="rounded-md border border-[var(--border-default)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-60">
+                {knowledgeQuery.isFetching ? 'Retrying…' : 'Retry loading records'}
+              </button>
+            </div>
          ) : filteredEntries?.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center space-y-6 text-slate-700 opacity-50">
                <FileSearch size={64} strokeWidth={1} />
@@ -782,17 +842,17 @@ function KnowledgeSummaryCard({ label, value, detail, icon, tone }: any) {
 
 function KnowledgeQueuePanel({ entries, onOpenEntry }: any) {
   return (
-    <div className="flex max-h-[220px] flex-col rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-5 shadow-sm" data-knowledge-queue="true">
+    <div className="flex min-w-0 max-h-[220px] flex-col rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-5 shadow-sm" data-knowledge-queue="true">
       <div className="flex shrink-0 items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[var(--text-primary)]">Knowledge Action Queue</p>
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Highest-value records to harden next</p>
+          <p className="whitespace-nowrap text-[9px] font-black uppercase tracking-[0.16em] text-[var(--text-primary)]">Knowledge Action Queue</p>
+          <p className="mt-1 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.1em] text-slate-500">Highest-risk records first</p>
         </div>
         <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
           {entries.length} items
         </div>
       </div>
-      <div className="mt-4 min-h-0 overflow-y-auto custom-scrollbar space-y-3" role="region" aria-label="Knowledge action queue entries" tabIndex={0}>
+      <div className="mt-3 min-h-0 overflow-y-auto custom-scrollbar space-y-3" role="region" aria-label="Knowledge action queue entries" tabIndex={0}>
         {entries.length === 0 && (
           <div className="rounded-lg border border-[var(--state-success-border)] bg-[var(--state-success-surface)] px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--state-success)]">
             No urgent governance debt detected
@@ -809,18 +869,19 @@ function KnowledgeQueuePanel({ entries, onOpenEntry }: any) {
             <button
               key={`queue-${entry.id}`}
               onClick={() => onOpenEntry(entry)}
-              className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] px-4 py-4 text-left hover:border-[var(--accent-primary)] hover:bg-[var(--surface-hover)] transition-all"
+              title={entry.title}
+              className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] px-4 py-2 text-left hover:border-[var(--accent-primary)] hover:bg-[var(--surface-hover)] transition-all"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-[0.24em] text-slate-500">{entry.category} // {entry.metadata_json?.entry_type}</p>
-                  <p className="mt-2 text-sm font-black uppercase tracking-tight text-[var(--text-primary)]">{entry.title}</p>
+                  <p className="mt-1 line-clamp-2 text-sm font-black uppercase tracking-tight text-[var(--text-primary)] [overflow-wrap:anywhere]">{entry.title}</p>
                 </div>
                 <span className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-2 py-1 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
                   {entry.__readiness.label}
                 </span>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 {reasons.map((reason: string) => (
                   <span key={`${entry.id}-${reason}`} className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-2 py-1 text-[8px] font-black uppercase tracking-widest text-[var(--state-warning)]">
                     {reason}
@@ -2730,26 +2791,28 @@ function QAViewer({ entry }: any) {
 
   const qaMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiFetch('/api/v1/knowledge/qa', { method: 'POST', body: JSON.stringify(data) })
-      return res.json()
+      return readKnowledgeJson(await apiFetch('/api/v1/knowledge/qa', { method: 'POST', body: JSON.stringify(data) }), 'Knowledge reply')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge'] })
       setReplyText('')
       setActiveReplyTo(null)
       toast.success('Sync Successful')
-    }
+    },
+    meta: { handlesErrorToast: true },
+    onError: () => toast.error('Reply could not be saved. Your text is still here.')
   })
 
   const qaUpdateMutation = useMutation({
     mutationFn: async ({ qaId, patch }: any) => {
-      const res = await apiFetch(`/api/v1/knowledge/qa/${qaId}`, { method: 'PUT', body: JSON.stringify(patch) })
-      return res.json()
+      return readKnowledgeJson(await apiFetch(`/api/v1/knowledge/qa/${qaId}`, { method: 'PUT', body: JSON.stringify(patch) }), 'Knowledge reply update')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge'] })
       toast.success('Contribution Updated')
-    }
+    },
+    meta: { handlesErrorToast: true },
+    onError: () => toast.error('Reply update failed. The previous contribution was kept.')
   })
 
   const handleSubmit = (parentId: number | null = null) => {

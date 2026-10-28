@@ -2,6 +2,9 @@ export type OperationalDataNotice = {
   tone?: 'info' | 'warning' | 'error'
   title: string
   description?: string
+  actionLabel?: string
+  onAction?: () => void
+  isActionLoading?: boolean
 }
 
 export type OperationalDataState =

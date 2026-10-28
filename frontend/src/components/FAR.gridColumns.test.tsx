@@ -69,8 +69,8 @@ describe('FAR analytical grid convergence', () => {
     expect(columns).toHaveLength(3)
     expect(columns.map((column) => column.headerName)).toEqual(['Maturity', 'Vectors', 'Incidents'])
     expect(columns.map((column) => column.field || column.colId)).toEqual(['status', 'vectors', 'linked_rcas'])
-    expect(columns.map((column) => column.width)).toEqual([164, 160, 120])
-    expect(columns.map((column) => column.minWidth)).toEqual([152, 140, 112])
+    expect(columns.map((column) => column.width)).toEqual([164, 160, 144])
+    expect(columns.map((column) => column.minWidth)).toEqual([152, 140, 136])
     expect(columns.every((column) => column.operationalSkipAutoSize === true)).toBe(true)
     expect(columns.every((column) => column.suppressAutoSize === true)).toBe(true)
     expect(columns.every((column) => column.resizable === true)).toBe(true)
@@ -80,7 +80,7 @@ describe('FAR analytical grid convergence', () => {
     expect(columns[0].hide).toBe(true)
     expect(columns[1].hide).toBe(true)
     expect(columns[2].hide).toBe(true)
-    expect(columns.map((column) => column.minWidth)).toEqual([152, 140, 112])
+    expect(columns.map((column) => column.minWidth)).toEqual([152, 140, 136])
   })
 
   it('preserves maturity and incident activation callbacks', () => {

@@ -3,6 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import TypeAdapter
 from pydantic_core import ErrorType
+from sqlalchemy.orm.exc import StaleDataError
 from typing import get_args
 
 
@@ -85,5 +86,13 @@ def standardize_validation_errors(app: FastAPI):
         return JSONResponse(
             status_code=422,
             content={"detail": [_public_error(error, names) for error in exc.errors()[:50]], "message": "Validation Failed"},
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.exception_handler(StaleDataError)
+    async def stale_write_exception_handler(request: Request, exc: StaleDataError):
+        return JSONResponse(
+            status_code=409,
+            content={"detail": "This record changed while you were editing it. Reload the latest values and review your changes."},
             headers={"Cache-Control": "no-store"},
         )

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PROJECT_TEMPLATES, applyProjectTemplate, blankCreationDraft, homePrimaryAction, lifecycleMessage, projectBucket, sortPortfolioItems, type ProjectStoryItem } from './ProjectsStory.model'
+import { PROJECT_TEMPLATES, applyProjectTemplate, blankCreationDraft, hasPartialProjectResourceCoverage, homePrimaryAction, lifecycleMessage, projectBucket, projectCreationRecoveryStorageKey, projectCurrentOwnerId, normalizeProjectOwnerIdForDisplay, resolveProjectCurrentOperator, sortPortfolioItems, type ProjectStoryItem } from './ProjectsStory.model'
 
 const project = (overrides: Partial<ProjectStoryItem> = {}): ProjectStoryItem => ({
   id: 'p-1', display_key: 'PRJ-000001', name: 'Qualification Analysis Automation', objective: 'Reduce manual review time while preserving qualification evidence.', owner_id: 'mina.chen', phase: 'Executing', run_state: 'Active', priority: 'High', architecture_assessment: 'Yes', outcome_phase: 'Pilot', outcome_result: 'Unassessed', revision: 1, graph_revision: 1,
@@ -9,6 +9,24 @@ const project = (overrides: Partial<ProjectStoryItem> = {}): ProjectStoryItem =>
 })
 
 describe('P04 Project story model', () => {
+  it('resolves trusted proxy identities to canonical operator owners and isolates local recovery by account', () => {
+    const operators = [{ username: 'haewon', external_id: 'company-user-42', team_id: 42 }, { username: 'other', external_id: 'company-user-99', team_id: 99 }]
+    const current = resolveProjectCurrentOperator(operators, 'company-user-42')
+    expect(current).toBe(operators[0])
+    expect(projectCurrentOwnerId(current, 'company-user-42')).toBe('haewon')
+    expect(resolveProjectCurrentOperator(operators, 'missing')).toBeNull()
+    expect(projectCurrentOwnerId(null, 'missing')).toBe('missing')
+    expect(normalizeProjectOwnerIdForDisplay('  mina.chen  ')).toBe('mina.chen')
+    expect(normalizeProjectOwnerIdForDisplay('legacy:unresolved:PRJ-000001')).toBeNull()
+    expect(normalizeProjectOwnerIdForDisplay('  ')).toBeNull()
+    expect(projectCreationRecoveryStorageKey('company/user-42')).toBe('sysgrid_projects_creation_recovery_v1:company%2Fuser-42')
+    expect(projectCreationRecoveryStorageKey('company-user-42')).not.toBe(projectCreationRecoveryStorageKey('company-user-99'))
+  })
+
+  it('suppresses partial-resource warnings for an empty portfolio', () => {
+    expect(hasPartialProjectResourceCoverage({ items: [], coverage: { resources: 'partial' } })).toBe(false)
+    expect(hasPartialProjectResourceCoverage({ items: [project()], coverage: { resources: 'partial' } })).toBe(true)
+  })
   it('defines exactly seven versioned templates without dates, numeric targets, or links', () => {
     expect(PROJECT_TEMPLATES).toHaveLength(7)
     expect(PROJECT_TEMPLATES.map((item) => item.name)).toEqual(['Automation', 'Product/feature', 'Infrastructure/platform', 'Reliability', 'Engineering improvement', 'Experiment', 'Process improvement'])

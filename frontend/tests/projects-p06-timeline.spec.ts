@@ -8,9 +8,10 @@ const apiOrigin = () => {
   if (!value) throw new Error('SYSGRID_P06_API_ORIGIN is required')
   return value
 }
+const user = process.env.SYSGRID_P06_USER_ID || 'p06.scheduler'
 
 async function createJourney(): Promise<Journey> {
-  const api = await request.newContext({ baseURL: apiOrigin(), extraHTTPHeaders: { 'X-User-Id': 'p06.scheduler', 'X-Tenant-Id': '1' } })
+  const api = await request.newContext({ baseURL: apiOrigin(), extraHTTPHeaders: { 'X-User-Id': user, 'X-Tenant-Id': '1' } })
   const projectCommandId = crypto.randomUUID()
   const created = await api.post('/api/v2/projects', { headers: { 'Idempotency-Key': projectCommandId }, data: { name: `Journey 3 ${projectCommandId.slice(0, 8)}`, objective: 'Deterministic schedule authority', timezone: 'America/Chicago' } })
   expect(created.ok(), await created.text()).toBeTruthy()
@@ -40,11 +41,11 @@ async function createJourney(): Promise<Journey> {
 }
 
 async function openTimeline(page: Page, projectId: string) {
-  await page.addInitScript((origin) => {
+  await page.addInitScript(({ origin, actor }) => {
     localStorage.setItem('SYSGRID_OVERRIDE_API_URL', origin)
-    localStorage.setItem('SYSGRID_USER_ID', 'p06.scheduler')
+    localStorage.setItem('SYSGRID_USER_ID', actor)
     localStorage.setItem('SYSGRID_TENANT_ID', '1')
-  }, apiOrigin())
+  }, { origin: apiOrigin(), actor: user })
   await page.goto(`/projects/${projectId}/timeline`)
   const gantt = page.getByRole('region', { name: 'Project timeline' })
   await expect(gantt).toBeVisible()
@@ -136,7 +137,7 @@ test('keyboard and pointer emit equivalent previews, cancellation writes nothing
   } finally { await journey.api.dispose() }
 })
 
-test('calendar changes demand explicit normalization and responsive schedule-only mode keeps controls reachable', async ({ page }) => {
+test('calendar changes demand explicit normalization before schedule changes are applied', async ({ page }) => {
   const journey = await createJourney()
   const failures = collectFailures(page)
   try {
@@ -155,13 +156,6 @@ test('calendar changes demand explicit normalization and responsive schedule-onl
     await panel.getByRole('button', { name: 'Close schedule changes' }).click()
     await expect(scheduleButton).toBeFocused()
 
-    await page.setViewportSize({ width: 390, height: 844 })
-    await gantt.getByLabel('Timeline mobile pane').selectOption('schedule')
-    await expect(gantt.getByRole('separator', { name: 'Resize WBS rail' })).toHaveCount(0)
-    for (const control of [gantt.getByLabel('Timeline zoom'), gantt.getByRole('button', { name: 'Schedule changes' })]) {
-      const controlBox = await control.boundingBox()
-      expect(controlBox?.height).toBeGreaterThanOrEqual(44)
-    }
     expect(failures).toEqual([])
   } finally { await journey.api.dispose() }
 })

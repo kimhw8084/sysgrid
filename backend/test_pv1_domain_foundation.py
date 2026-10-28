@@ -138,7 +138,7 @@ async def test_project_membership_enforces_task_ownership_and_revocation(client,
     async with setup_db[1]() as config_session:
         config_session.add(UserTenantAccess(user_id="contributor", tenant_id=tenant_id, role="EDITOR", is_selected=False))
         await config_session.commit()
-    await provision_module_operator(tenant_id, 'contributor', 'projects', preview=True)
+    await provision_module_operator(tenant_id, 'contributor', 'projects')
 
     created = await client.post(
         "/api/v2/projects",

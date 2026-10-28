@@ -32,7 +32,8 @@ test.describe('FAR Monitoring-golden controls', () => {
     await expect(shell).toBeVisible()
     await expect(shell).toHaveAttribute('data-golden-archetype', 'analytical')
     await expect(shell.locator('[data-golden-grid-surface="true"]')).toBeVisible()
-    await expect(shell.getByText(title)).toBeVisible()
+    const titleRow = shell.locator('.ag-center-cols-container .ag-row').filter({ hasText: title }).first()
+    await expect(titleRow).toBeVisible()
 
     for (const label of ['Views', 'Display', 'Filters', 'FAR domain tools', 'Activity', 'Compare', 'Bulk Actions', 'Import', 'Add Failure Mode']) {
       await expect(shell.getByRole('button', { name: new RegExp(label, 'i') }).first()).toBeVisible()

@@ -97,12 +97,14 @@ export const ToolbarSearch = ({
   value,
   onChange,
   placeholder,
+  ariaLabel = placeholder,
   inputRef,
   className = ''
 }: {
   value: string
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   placeholder: string
+  ariaLabel?: string
   inputRef?: React.Ref<HTMLInputElement>
   className?: string
 }) => (
@@ -117,6 +119,7 @@ export const ToolbarSearch = ({
       value={value}
       onChange={onChange}
       placeholder={placeholder}
+      aria-label={ariaLabel}
       className={`${TOOLBAR_CONTROL_HEIGHT} w-full rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] pl-10 pr-4 py-0 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--action-primary)] focus:bg-[var(--surface-hover)]`}
     />
   </div>

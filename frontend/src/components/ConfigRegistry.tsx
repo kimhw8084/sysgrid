@@ -7,7 +7,15 @@ import { showWorkspaceToast } from "./shared/WorkspaceToast"
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { ToolbarButton } from "./shared/LayoutPrimitives"
 import { useBodyModalFlag } from "./shared/OperationalWorkspacePrimitives"
-import { ModulePolicyLink } from "../policy/ModulePolicy"
+import { ModulePolicyLink, useModulePolicy } from "../policy/ModulePolicy"
+
+const CODE_MANAGED_OPTION_CATEGORIES = new Set([
+  'MonitoringSeverity',
+  'MonitoringOwnerRole',
+  'MonitoringPlatform',
+  'MonitoringCategory',
+  'NotificationMethod',
+])
 
 type RegistrySectionProps = {
   title: string
@@ -21,7 +29,14 @@ type RegistrySectionProps = {
 
 export const ConfigSection = ({ title, category, options, icon: Icon, usageTargets = [], description, wrapHeaderOnMobile = false, onDirtyChange }: RegistrySectionProps & { onDirtyChange?: (dirty: boolean) => void }) => {
   const queryClient = useQueryClient()
+  const policy = useModulePolicy()
+  const canManageSettings = !policy.isError && policy.data?.modules.settings?.actions?.manage === true
   const isTeamCategory = category === "MonitoringTeam"
+  const isCodeManaged = CODE_MANAGED_OPTION_CATEGORIES.has(category)
+  const canEdit = canManageSettings && !isCodeManaged
+  const editReason = isCodeManaged
+    ? 'This value is managed by the application.'
+    : 'Settings management permission is required.'
   const records = Array.isArray(options) ? options : []
   const [isExpanded, setIsExpanded] = useState(false)
   const [newValue, setNewValue] = useState("")
@@ -49,6 +64,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
 
   const addMutation = useMutation({
     mutationFn: async () => {
+      if (!canEdit) throw new Error(editReason)
       const res = await apiFetch(
         isTeamCategory ? "/api/v1/settings/teams" : "/api/v1/settings/options",
         {
@@ -80,11 +96,13 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
       setNewDescription("")
       showWorkspaceToast(`Added ${newValue}`, { type: 'success' })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message, { type: 'error' }),
   })
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, value, metadataKeys }: { id: number; value: string; metadataKeys: string[] }) => {
+      if (!canEdit) throw new Error(editReason)
       const res = await apiFetch(
         isTeamCategory ? `/api/v1/settings/teams/${id}` : `/api/v1/settings/options/${id}`,
         {
@@ -115,11 +133,13 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
       setEditDescription("")
       showWorkspaceToast(isTeamCategory ? "Team updated" : "Option updated", { type: 'success' })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message, { type: 'error' }),
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
+      if (!canEdit) throw new Error(editReason)
       const res = await apiFetch(
         isTeamCategory ? `/api/v1/settings/teams/${id}` : `/api/v1/settings/options/${id}`,
         { method: "DELETE" }
@@ -134,6 +154,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
       invalidateRegistry()
       // showWorkspaceToast(isTeamCategory ? "Team removed" : "Option removed", { type: 'success' })
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message, { type: 'error' }),
   })
 
@@ -179,11 +200,14 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
           <button
             onClick={(event) => {
               event.stopPropagation()
+              if (!canEdit) return
               setIsExpanded(true)
             }}
-            aria-label={wrapHeaderOnMobile ? `Add ${isTeamCategory ? 'team' : 'option'} to ${title}` : undefined}
-            title={wrapHeaderOnMobile ? `Add ${isTeamCategory ? 'team' : 'option'} to ${title}` : undefined}
-            className="rounded-lg p-2 text-blue-400 transition-all hover:bg-blue-600 hover:text-white active:scale-90"
+            aria-label={`Add ${isTeamCategory ? 'team' : 'option'} to ${title}`}
+            title={!canEdit ? editReason : `Add ${isTeamCategory ? 'team' : 'option'} to ${title}`}
+            aria-disabled={!canEdit || undefined}
+            disabled={!canEdit}
+            className="rounded-lg p-2 text-blue-400 transition-all hover:bg-blue-600 hover:text-white active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <PlusCircle size={20} />
           </button>
@@ -208,7 +232,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                   return (
                     <div key={record.id} className="group relative flex flex-col rounded-lg border border-white/5 bg-white/5 p-3 transition-all hover:bg-white/10">
                       <div className="flex items-center justify-between">
-                        {editingId === record.id ? (
+                        {editingId === record.id && canEdit ? (
                           <div className="flex flex-1 items-center space-x-2">
                             <input
                               autoFocus
@@ -217,6 +241,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                               className="flex-1 rounded-lg border border-blue-500/50 bg-black/40 px-2 py-1 text-[10px] font-bold text-white outline-none"
                               onKeyDown={(event) => {
                                 if (event.key === "Enter") {
+                                  if (!canEdit) return
                                   updateMutation.mutate({
                                     id: record.id,
                                     value: editValue,
@@ -226,14 +251,17 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                               }}
                             />
                             <button
-                              onClick={() =>
+                              disabled={!canEdit || updateMutation.isPending}
+                              aria-label={`Save ${title} entry`}
+                              title={!canEdit ? editReason : 'Save changes'}
+                              onClick={() => canEdit &&
                                 updateMutation.mutate({
                                   id: record.id,
                                   value: editValue,
                                   metadataKeys: editMetadata.split(",").map((value) => value.trim()).filter(Boolean),
                                 })
                               }
-                              className="text-emerald-400 hover:text-emerald-300"
+                              className="text-emerald-400 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               <Check size={16} />
                             </button>
@@ -252,19 +280,26 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                             </div>
                             <div className="flex items-center space-x-1 opacity-0 transition-all group-hover:opacity-100">
                               <button
+                                disabled={!canEdit}
+                                aria-label={`Edit ${title} entry ${displayLabel}`}
+                                title={!canEdit ? editReason : 'Edit entry'}
                                 onClick={() => {
+                                  if (!canEdit) return
                                   setEditingId(record.id)
                                   setEditValue(displayLabel || "")
                                   setEditDescription(isTeamCategory ? record.description || "" : "")
                                   setEditMetadata(metadataKeys.join(", "))
                                 }}
-                                className="rounded-lg p-1.5 text-slate-500 transition-all hover:bg-blue-500/20 hover:text-blue-400"
+                                className="rounded-lg p-1.5 text-slate-500 transition-all hover:bg-blue-500/20 hover:text-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 <Edit2 size={12} />
                               </button>
                               <button
-                                onClick={() => deleteMutation.mutate(record.id)}
-                                className="rounded-lg p-1.5 text-slate-500 transition-all hover:bg-rose-500/20 hover:text-rose-400"
+                                disabled={!canEdit || deleteMutation.isPending}
+                                aria-label={`Delete ${title} entry ${displayLabel}`}
+                                title={!canEdit ? editReason : 'Delete entry'}
+                                onClick={() => canEdit && deleteMutation.mutate(record.id)}
+                                className="rounded-lg p-1.5 text-slate-500 transition-all hover:bg-rose-500/20 hover:text-rose-400 disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 <Trash2 size={12} />
                               </button>
@@ -275,7 +310,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
 
                       {(hasMetadataSupport || isTeamCategory) && (
                         <div className="mt-2 border-l border-white/5 pl-6">
-                          {editingId === record.id ? (
+                          {editingId === record.id && canEdit ? (
                             <div className="space-y-1">
                               <label className="text-[7px] font-bold uppercase tracking-widest text-slate-500">
                                 {isTeamCategory ? "Description" : "Metadata Keys (CSV)"}
@@ -338,7 +373,7 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                 )}
               </div>
 
-              <div className="mx-auto max-w-md space-y-2">
+              {canEdit ? <div className="mx-auto max-w-md space-y-2">
                 <div className="relative">
                   <input
                     value={newValue}
@@ -346,12 +381,14 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                     placeholder={isTeamCategory ? `Define new ${title}...` : `Define new ${title} entry...`}
                     className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 pr-12 text-[11px] font-bold text-white shadow-inner outline-none transition-all focus:border-blue-500"
                     onKeyDown={(event) => {
-                      if (event.key === "Enter" && newValue) addMutation.mutate()
+                      if (event.key === "Enter" && newValue && canEdit) addMutation.mutate()
                     }}
                   />
                   <button
-                    onClick={() => newValue && addMutation.mutate()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-blue-600 p-2 text-white shadow-lg transition-all hover:bg-blue-500 active:scale-90"
+                    disabled={!canEdit || !newValue || addMutation.isPending}
+                    aria-label={`Add ${title} entry`}
+                    onClick={() => newValue && canEdit && addMutation.mutate()}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-blue-600 p-2 text-white shadow-lg transition-all hover:bg-blue-500 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Plus size={18} />
                   </button>
@@ -371,7 +408,11 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                     </p>
                   </div>
                 ) : null}
-              </div>
+              </div> : (
+                <p role="note" className="mx-auto max-w-md rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-xs text-slate-400">
+                  {editReason}
+                </p>
+              )}
             </div>
           </motion.div>
         )}

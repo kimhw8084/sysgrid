@@ -400,6 +400,7 @@ async def test_normal_home_search_does_not_expose_preview_records(seeded_admin_t
     tenant_id = seeded_admin_tenant["tenant_id"]
     headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
     monkeypatch.setattr(settings, "SYSTEM_ROOT_USER_IDS", "")
+    monkeypatch.setattr(settings, "MODULE_STAGE_OVERRIDES", "projects=preview")
 
     config_session_factory = setup_db[1]
     async with config_session_factory() as config_db:

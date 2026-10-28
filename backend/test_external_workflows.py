@@ -86,9 +86,30 @@ async def test_external_entity_creation_and_secret_management(seeded_admin_tenan
         "ids": [entity["id"]],
         "action": "update",
         "payload": {"risk_rating": "High"},
+        "precondition": preview["precondition"],
+        "operation_id": preview["operation_id"],
     }, headers=headers)
     assert execute_res.status_code == 200, execute_res.text
     assert execute_res.json()["changed_count"] == 1
+    replayed_bulk_res = await client.post("/api/v1/intelligence/entities/bulk-action", json={
+        "ids": [entity["id"]],
+        "action": "update",
+        "payload": {"risk_rating": "High"},
+        "precondition": preview["precondition"],
+        "operation_id": preview["operation_id"],
+    }, headers=headers)
+    assert replayed_bulk_res.status_code == 200
+    assert replayed_bulk_res.json()["changed_count"] == 1
+    undo_res = await client.post("/api/v1/intelligence/entities/bulk-action", json={
+        "ids": [entity["id"]],
+        "action": "undo",
+        "receipt_id": execute_res.json()["receipt_id"],
+    }, headers=headers)
+    assert undo_res.status_code == 200, undo_res.text
+    assert undo_res.json()["status"] == "reverted"
+    current_entities = await client.get("/api/v1/intelligence/entities?include_deleted=true", headers=headers)
+    current_entity = next(item for item in current_entities.json() if item["id"] == entity["id"])
+    assert current_entity["risk_rating"] == "Medium"
 
     secret_res = await client.post(f"/api/v1/intelligence/entities/{entity['id']}/secrets", json={
         "secret_label": "Readonly feed",
@@ -102,6 +123,7 @@ async def test_external_entity_creation_and_secret_management(seeded_admin_tenan
 
     update_res = await client.put(f"/api/v1/intelligence/entities/{entity['id']}", json={
         "id": entity["id"],
+        "edit_revision": current_entity["edit_revision"],
         "name": "EXT-QA-01",
         "external_key": "ext-qa-01",
         "type": "Virtual Server",
@@ -131,6 +153,11 @@ async def test_external_entity_creation_and_secret_management(seeded_admin_tenan
         "metadata_json": {"hypervisor": "", "vcpu": "", "vram": "", "os": ""},
     }, headers=headers)
     assert update_res.status_code == 200, update_res.text
+    stale_update_payload = {**update_res.json(), "edit_revision": current_entity["edit_revision"]}
+    stale_update_res = await client.put(
+        f"/api/v1/intelligence/entities/{entity['id']}", headers=headers, json=stale_update_payload,
+    )
+    assert stale_update_res.status_code == 409
 
     list_res = await client.get("/api/v1/intelligence/entities?include_deleted=true", headers=headers)
     assert list_res.status_code == 200, list_res.text
@@ -139,7 +166,11 @@ async def test_external_entity_creation_and_secret_management(seeded_admin_tenan
     assert len(loaded["secrets"]) == 1
     assert loaded["secrets"][0]["username"] == "svc_partner"
 
-    archive_res = await client.delete(f"/api/v1/intelligence/entities/{entity['id']}", headers=headers)
+    archive_res = await client.delete(
+        f"/api/v1/intelligence/entities/{entity['id']}",
+        headers=headers,
+        params={"expected_revision": update_res.json()["edit_revision"]},
+    )
     assert archive_res.status_code == 200, archive_res.text
     purge_preview_res = await client.post("/api/v1/intelligence/entities/bulk-action", json={
         "ids": [entity["id"]],
@@ -223,7 +254,10 @@ async def test_external_archived_entity_blocks_new_links_and_secrets(seeded_admi
     assert entity_res.status_code == 200, entity_res.text
     entity = entity_res.json()
 
-    delete_res = await client.delete(f"/api/v1/intelligence/entities/{entity['id']}", headers=headers)
+    delete_res = await client.delete(
+        f"/api/v1/intelligence/entities/{entity['id']}", headers=headers,
+        params={"expected_revision": entity["edit_revision"]},
+    )
     assert delete_res.status_code == 200, delete_res.text
 
     secret_res = await client.post(f"/api/v1/intelligence/entities/{entity['id']}/secrets", json={
@@ -332,8 +366,20 @@ async def test_external_links_are_enriched_and_duplicate_shape_is_blocked(seeded
         "path_or_resource": "/status",
         "link_status": "Active",
     }
+    secret_value_res = await client.post("/api/v1/intelligence/links", json={
+        **link_payload,
+        "credentials": {"username": "partner-user", "password": "must-not-be-stored"},
+    }, headers=headers)
+    assert secret_value_res.status_code == 422
+
+    link_payload["credentials"] = {
+        "username": "partner-user",
+        "vault_path": "vault://partner/readonly",
+        "note": "Read-only integration reference",
+    }
     create_link_res = await client.post("/api/v1/intelligence/links", json=link_payload, headers=headers)
     assert create_link_res.status_code == 200, create_link_res.text
+    assert create_link_res.json()["credentials"] == link_payload["credentials"]
 
     dup_link_res = await client.post("/api/v1/intelligence/links", json=link_payload, headers=headers)
     assert dup_link_res.status_code == 409
@@ -345,6 +391,40 @@ async def test_external_links_are_enriched_and_duplicate_shape_is_blocked(seeded
     link = next(item for item in links if item["external_entity_id"] == entity["id"])
     assert link["external_entity_name"] == "ENRICH-EXT-01"
     assert link["device_name"] == "EXT-ENRICH-DEVICE-01"
+    assert "password" not in link["credentials"]
+
+    from app.schemas.schemas import ExternalLinkResponse
+    legacy_response = ExternalLinkResponse.model_validate({
+        **link,
+        "credentials": {"username": "partner-user", "password": "legacy-inline-secret", "vault_path": "vault://partner/readonly"},
+    })
+    assert legacy_response.credentials == {"username": "partner-user", "vault_path": "vault://partner/readonly"}
+
+    updated_link_payload = {
+        **link_payload,
+        "purpose": "Updated partner feed",
+        "edit_revision": link["edit_revision"],
+    }
+    updated_link_res = await client.put(
+        f"/api/v1/intelligence/links/{link['id']}",
+        json=updated_link_payload,
+        headers=headers,
+    )
+    assert updated_link_res.status_code == 200, updated_link_res.text
+    assert updated_link_res.json()["purpose"] == "Updated partner feed"
+    stale_link_res = await client.put(
+        f"/api/v1/intelligence/links/{link['id']}",
+        json=updated_link_payload,
+        headers=headers,
+    )
+    assert stale_link_res.status_code == 409
+    secret_link_update_res = await client.put(
+        f"/api/v1/intelligence/links/{link['id']}",
+        json={**updated_link_payload, "edit_revision": updated_link_res.json()["edit_revision"],
+              "credentials": {"username": "partner-user", "password": "must-not-be-stored"}},
+        headers=headers,
+    )
+    assert secret_link_update_res.status_code == 422
 
 
 @pytest.mark.anyio
@@ -412,12 +492,25 @@ async def test_external_entity_blocks_active_identity_duplicates_and_restore_con
     assert duplicate_res.status_code == 409
     assert "same name, type, and owner organization" in duplicate_res.json()["detail"]
 
-    archive_res = await client.delete(f"/api/v1/intelligence/entities/{first['id']}", headers=headers)
+    premature_purge = await client.delete(
+        f"/api/v1/intelligence/entities/{first['id']}", headers=headers,
+        params={"purge": "true", "expected_revision": first["edit_revision"]},
+    )
+    assert premature_purge.status_code == 409
+    assert "Archive this external entity" in premature_purge.json()["detail"]
+
+    archive_res = await client.delete(
+        f"/api/v1/intelligence/entities/{first['id']}", headers=headers,
+        params={"expected_revision": first["edit_revision"]},
+    )
     assert archive_res.status_code == 200, archive_res.text
 
     replacement_res = await client.post("/api/v1/intelligence/entities", json={**base_payload, "external_key": "identity-ext-02"}, headers=headers)
     assert replacement_res.status_code == 200, replacement_res.text
 
-    restore_res = await client.post(f"/api/v1/intelligence/entities/{first['id']}/restore", headers=headers)
+    restore_res = await client.post(
+        f"/api/v1/intelligence/entities/{first['id']}/restore", headers=headers,
+        params={"expected_revision": archive_res.json()["edit_revision"]},
+    )
     assert restore_res.status_code == 409
     assert "same name, type, and owner organization" in restore_res.json()["detail"]

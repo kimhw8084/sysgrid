@@ -18,6 +18,40 @@ describe('Asset map interactions', () => {
     expect(screen.getByRole('img', { name: '2 drawn assets' })).toBeInTheDocument()
   })
 
+  it('clears the focused asset when the last starting asset is deselected', () => {
+    render(<AssetMapSurface {...props} selectedAssetId={1} />)
+    const filters = screen.getByRole('complementary', { name: 'Map filters' })
+    const primary = within(filters).getByRole('button', { name: 'Primary' })
+    expect(primary).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('region', { name: 'Selected asset' })).toBeInTheDocument()
+
+    fireEvent.click(primary)
+
+    expect(primary).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByRole('region', { name: 'Selected asset' })).not.toBeInTheDocument()
+    expect(screen.getByText('Choose where to start')).toBeInTheDocument()
+  })
+
+  it('keeps another selected start focused when the current start is removed', () => {
+    render(<AssetMapSurface {...props} selectedAssetId={1} />)
+    const filters = screen.getByRole('complementary', { name: 'Map filters' })
+    const startSection = within(filters).getByText('Starting assets').closest('details')
+    expect(startSection).not.toBeNull()
+    fireEvent.click(startSection!.querySelector('summary')!)
+    const primary = within(filters).getByRole('button', { name: 'Primary' })
+    const peer = within(filters).getByRole('button', { name: 'Peer' })
+
+    fireEvent.click(peer)
+    expect(peer).toHaveAttribute('aria-pressed', 'true')
+    expect(within(screen.getByRole('region', { name: 'Selected asset' })).getByRole('heading', { name: 'Peer' })).toBeVisible()
+
+    fireEvent.click(peer)
+    expect(peer).toHaveAttribute('aria-pressed', 'false')
+    expect(primary).toHaveAttribute('aria-pressed', 'true')
+    expect(startSection).toHaveTextContent('1 selected')
+    expect(within(screen.getByRole('region', { name: 'Selected asset' })).getByRole('heading', { name: 'Primary' })).toBeVisible()
+  })
+
   it('opens and edits the exact selected connected asset using keyboard-accessible controls', () => {
     const onOpenDetails = vi.fn(), onEdit = vi.fn()
     render(<AssetMapSurface {...props} selectedAssetId={1} onOpenDetails={onOpenDetails} onEdit={onEdit} />)

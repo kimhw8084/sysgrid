@@ -21,7 +21,7 @@ vi.mock('./api/apiClient', () => ({
     json: async () => url.includes('/health')
       ? { status: 'healthy', sample: ++observed.health }
       : url.includes('/policy/')
-        ? { identity: { authenticated: true, tenant_admin: true, system_root: false }, modules: { home: { available: true } }, actions: { diagnostics: { read: true } } }
+        ? { identity: { user_id: 'test.operator', authenticated: true, tenant_admin: true, system_root: false }, modules: { home: { available: true } }, actions: { diagnostics: { read: true } } }
         : url.endsWith('/profile') ? { username: 'test.operator', full_name: 'Test Operator' } : {},
   })),
 }))

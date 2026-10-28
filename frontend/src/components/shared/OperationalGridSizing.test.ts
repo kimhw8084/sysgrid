@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyOperationalColumnSizing, lockOperationalColumnWidth } from './OperationalGridSizing'
+import { applyOperationalColumnSizing, applyOperationalColumnState, lockOperationalColumnWidth } from './OperationalGridSizing'
 
 describe('restored pin state', () => {
   it('preserves an explicit unpin after automatic narrow-viewport overflow', () => {
@@ -33,5 +33,22 @@ describe('lockOperationalColumnWidth', () => {
     expect(column.initialWidth).toBe(48)
     expect(column.minWidth).toBe(48)
     expect(column.maxWidth).toBe(48)
+  })
+})
+
+describe('restored column width bounds', () => {
+  it('clamps saved widths to the current column minimum and maximum', () => {
+    const column = { colId: 'contact', width: 180, minWidth: 120, maxWidth: 200 }
+    expect(applyOperationalColumnSizing(column, { colId: 'contact', width: 80 }, true).width).toBe(120)
+    expect(applyOperationalColumnSizing(column, { colId: 'contact', width: 260 }, true).width).toBe(200)
+  })
+
+  it('clamps the state applied to a live grid column definition', () => {
+    let applied: any[] = []
+    applyOperationalColumnState({
+      getColumn: () => ({ getColDef: () => ({ minWidth: 120, maxWidth: 200 }) }),
+      applyColumnState: (config: any) => { applied = config.state },
+    }, [{ colId: 'contact', width: 80 }], true)
+    expect(applied[0].width).toBe(120)
   })
 })

@@ -101,8 +101,6 @@ type RuntimeConsoleEvent = {
   source: string | null
 }
 
-const CAPTURE_DIR = path.resolve(process.cwd(), 'stage31-evidence')
-const HTML_EVIDENCE_PATH = path.resolve(process.cwd(), 'OUT-26_ITERATION_33_STAGE31_EVIDENCE.html')
 const DESKTOP_VIEWPORT = { width: 1440, height: 1200 }
 const EXACT_VIEWPORT = { width: 960, height: 720 }
 const DUPLICATE_KEY_PATTERN = /duplicate key|encountered two children with the same key/i
@@ -698,9 +696,10 @@ const captureAssetInteractionProofs = async (page: any, recordText: string) => {
 }
 
 test.describe('Assets golden evidence capture', () => {
-  test('captures stage31 workspace evidence', async ({ page, sysApi: request }) => {
+  test('captures stage31 workspace evidence', async ({ page, sysApi: request }, testInfo) => {
+    const CAPTURE_DIR = testInfo.outputPath('stage31-evidence')
+    const HTML_EVIDENCE_PATH = testInfo.outputPath('OUT-26_ITERATION_33_STAGE31_EVIDENCE.html')
     test.setTimeout(180_000)
-    await fs.rm(CAPTURE_DIR, { recursive: true, force: true })
     await fs.mkdir(CAPTURE_DIR, { recursive: true })
 
     await resetBrowserState(page)

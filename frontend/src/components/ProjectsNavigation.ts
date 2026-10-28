@@ -36,6 +36,15 @@ export type ProjectsRoute = {
 }
 
 const asSearchParams = (search: string | URLSearchParams | undefined) => search instanceof URLSearchParams ? search : new URLSearchParams(search || '')
+export const shouldPreserveLegacyProjectsPortfolioLocation = (pathname: string, search?: string | URLSearchParams) => {
+  if (pathname !== '/projects' && pathname !== '/projects/') return false
+  const params = asSearchParams(search)
+  const view = (params.get('view') || '').toLowerCase()
+  if (params.has('id')) return params.get('legacy_workspace') === '1' && view === 'overview'
+  if (params.has('saved_view')) return true
+  const section = (params.get('section') || '').toLowerCase()
+  return view === 'overview' || Boolean(section && section !== 'control')
+}
 const isNonEmpty = (value: string | null): value is string => Boolean(value && value.trim())
 const valid = <T extends string>(value: string | null, values: readonly T[], fallback: T): T => value && (values as readonly string[]).includes(value) ? value as T : fallback
 

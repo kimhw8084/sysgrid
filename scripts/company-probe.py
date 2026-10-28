@@ -33,7 +33,7 @@ MANUAL = {
     'J': 'The platform scheduler ran health checks/backups; a deliberate failure or missing run delivered its alert to the responsible operator.',
     'P': 'Every live provider/action included in this release was verified, including credential custody and recovery. Answer n/a only for a registry-only release with live actions gated.',
     'L': 'Representative company workload at the promised user/estate size met agreed p95/error/resource budgets, including contention and a sustained session.',
-    'U': 'All eight V1 workspaces completed representative tasks in both themes, short desktop windows, keyboard navigation, 200% zoom and the supported assistive technology.',
+    'U': 'All fifteen released workspaces completed representative tasks in both themes, short desktop windows, keyboard navigation, 200% zoom and the supported assistive technology.',
     'H': 'Real engineers completed the pilot and explicitly accepted correctness, task completion and recovery; record their anonymous participant count below.',
 }
 

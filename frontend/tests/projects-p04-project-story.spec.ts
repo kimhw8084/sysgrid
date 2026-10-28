@@ -33,7 +33,7 @@ async function attachScreenshot(page: Page, testInfo: TestInfo, name: string) {
 }
 
 test('real backend creation survives one failed save and reload without duplicate Projects', async ({ page, request }, testInfo) => {
-  const teamResponse = await request.post(`${apiOrigin}/api/v1/settings/teams`, { headers, data: { name: 'P04 Automation Engineering', description: 'Isolated P04 browser fixture' } })
+  const teamResponse = await request.post(`${apiOrigin}/api/v1/settings/teams`, { headers, data: { name: `P04 Automation Engineering ${globalThis.crypto.randomUUID()}`, description: 'Isolated P04 browser fixture' } })
   expect(teamResponse.ok(), await teamResponse.text()).toBeTruthy()
   const team = await teamResponse.json()
   await bootstrapBrowser(page)
@@ -126,8 +126,11 @@ test('real backend creation survives one failed save and reload without duplicat
   await expect(page).toHaveURL(/\/projects\/new\?draft=/)
   const discardedDraftId = new URL(page.url()).searchParams.get('draft')
   expect(discardedDraftId).toBeTruthy()
-  page.once('dialog', (dialog) => dialog.accept())
   await clickResilientButton(page, 'Discard')
+  const discardConfirmation = page.getByRole('dialog')
+  await expect(discardConfirmation).toBeVisible()
+  await expect(discardConfirmation).toContainText('Discard draft?')
+  await discardConfirmation.getByRole('button', { name: 'Discard draft', exact: true }).click()
   await expect(page).toHaveURL(/\/projects$/)
   await expect(page.getByText('Discarded P04 browser Draft', { exact: true })).toHaveCount(0)
   const discarded = await request.get(`${apiOrigin}/api/v2/projects/${discardedDraftId}`, { headers })

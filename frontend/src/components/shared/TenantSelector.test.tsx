@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TenantSelector } from './TenantSelector'
 import { usePageLeaveGuard } from './workspaceDeparture'
 import { makeJsonResponse } from '../../test/response'
+import toast from 'react-hot-toast'
 
 function Draft() {
   const [draft, setDraft] = React.useState('Unsaved host change')
@@ -42,7 +43,8 @@ describe('tenant-switch consent', () => {
     expect(localStorage.getItem('SYSGRID_TENANT_ID')).toBeNull()
   })
 
-  it('a failed selection preserves the old scope and unload protection', async () => {
+  it('a failed selection preserves the old scope, draft, and unload protection with visible feedback', async () => {
+    const toastError = vi.spyOn(toast, 'error')
     vi.stubGlobal('fetch', vi.fn(async (_url, options) => options?.method === 'POST'
       ? makeJsonResponse({ detail: 'Permission changed' }, { status: 403 })
       : makeJsonResponse([
@@ -56,6 +58,7 @@ describe('tenant-switch consent', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Switch tenant?' })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Switch tenant' }))
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Switching tenant' })).not.toBeInTheDocument())
+    expect(toastError).toHaveBeenCalledWith('Could not confirm the tenant switch. This tab and its draft remain in the current workspace.')
     expect(screen.getByLabelText('Draft')).toHaveValue('Unsaved host change')
     expect(sessionStorage.getItem('SYSGRID_TAB_TENANT_ID')).toBe('1')
     const unload = new Event('beforeunload', { cancelable: true })

@@ -7,6 +7,7 @@ type Preview = OperationalBulkPreview & { selected_ids: number[]; precondition: 
 type Props = {
   ids: number[] | null
   pendingIds: React.MutableRefObject<Set<number>>
+  canWrite: boolean
   onClose: () => void
   onPurged: (ids: number[]) => void
 }
@@ -15,7 +16,7 @@ function errorMessage(error: any) {
   return error?.data?.detail?.message || (typeof error?.data?.detail === 'string' ? error.data.detail : error?.message) || 'Purge could not be confirmed. Review a fresh preview.'
 }
 
-export function MonitoringPurgeDialog({ ids, pendingIds, onClose, onPurged }: Props) {
+export function MonitoringPurgeDialog({ ids, pendingIds, canWrite, onClose, onPurged }: Props) {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [result, setResult] = useState<OperationalBulkResult | null>(null)
   const [error, setError] = useState('')
@@ -37,7 +38,7 @@ export function MonitoringPurgeDialog({ ids, pendingIds, onClose, onPurged }: Pr
   useEffect(() => {
     const current = ++generation.current
     setPreview(null); setResult(null); setError('')
-    if (!key) { setLoading(false); return }
+    if (!key || !canWrite) { setLoading(false); return }
     setLoading(true)
     const selected = key.split(',').map(Number)
     void apiFetch('/api/v1/monitoring/bulk-action', {
@@ -57,10 +58,10 @@ export function MonitoringPurgeDialog({ ids, pendingIds, onClose, onPurged }: Pr
       if (current === generation.current && mounted.current) setLoading(false)
     })
     return () => { generation.current++ }
-  }, [key, refresh])
+  }, [canWrite, key, refresh])
 
   const confirm = async () => {
-    if (!preview?.can_execute || loading || error || execution.current) return
+    if (!canWrite || !preview?.can_execute || loading || error || execution.current) return
     const selected = [...preview.selected_ids]
     if (selected.some(id => pendingIds.current.has(id))) {
       setError('Another operation on this monitor is still pending. Wait, then review a fresh preview.')
@@ -94,7 +95,7 @@ export function MonitoringPurgeDialog({ ids, pendingIds, onClose, onPurged }: Pr
   }
 
   return <OperationalBulkPreviewModal
-    isOpen={Boolean(ids)} workspaceLabel="Monitoring" actionLabel="Permanent purge"
+    isOpen={Boolean(ids) && canWrite} workspaceLabel="Monitoring" actionLabel="Permanent purge"
     nextValue={ids ? `Monitoring ${ids.map(id => `#${id}`).join(', ')}` : undefined}
     preview={preview} result={result} isLoading={loading} isExecuting={executing}
     error={error} onRefresh={() => setRefresh(value => value + 1)} onClose={onClose}

@@ -184,7 +184,7 @@ async def test_two_users_get_owner_scoped_writes_and_named_decision_authorizatio
     async with setup_db[1]() as config_session:
         config_session.add(UserTenantAccess(user_id="contributor", tenant_id=tenant_id, role="EDITOR", is_selected=False))
         await config_session.commit()
-    await provision_module_operator(tenant_id, 'contributor', 'projects', preview=True)
+    await provision_module_operator(tenant_id, 'contributor', 'projects')
 
     project_id, _ = await _create_project(client, tenant_id, "Two-user work plan")
     access = await _command_call(

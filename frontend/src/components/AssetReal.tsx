@@ -76,6 +76,7 @@ import {
   getOperationalColumnLayoutSnapshot,
   normalizeOperationalColumnLayout,
   OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
+  OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
   sanitizeOperationalColumnLayout,
   sanitizeOperationalFilterModel,
   sanitizeOperationalSortModel,
@@ -1842,6 +1843,7 @@ export default function AssetReal() {
         showWorkspaceToast(result?.summary || 'Updated assets', { type: 'success' })
       }
     },
+    meta: { handlesErrorToast: true },
     onError: (e: any) => showWorkspaceToast(`Operation failed: ${e.message}`, { type: 'error' })
   })
 
@@ -2311,7 +2313,7 @@ export default function AssetReal() {
 
   const gridContext = useMemo(() => ({ favoriteIds, watchIds }), [favoriteIds, watchIds])
   const autoSizeStrategy = useMemo(
-    () => (preserveExplicitColumnWidths ? undefined : OPERATIONAL_GRID_AUTO_SIZE_STRATEGY),
+    () => (preserveExplicitColumnWidths ? undefined : OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY),
     [preserveExplicitColumnWidths]
   )
 
@@ -3304,6 +3306,7 @@ function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmO
       showWorkspaceToast(`Updated ${rows.length} asset${rows.length === 1 ? '' : 's'}`)
       onSuccess()
     },
+    meta: { handlesErrorToast: true },
     onError: (error: any) => showWorkspaceToast(error.message || 'Bulk edit failed', { type: 'error' }),
   })
 

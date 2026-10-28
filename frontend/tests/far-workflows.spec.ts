@@ -46,7 +46,8 @@ test.describe('FAR workflows', () => {
     await expect(page.getByRole('button', { name: /Causal Forensics/i })).toBeVisible()
     await expect(page.getByRole('heading', { name: far.title })).toBeVisible()
 
-    await page.getByTitle('Edit Matrix Configuration').click()
+    const dossier = page.getByRole('dialog', { name: 'Failure Mode Dossier', exact: true })
+    await dossier.getByRole('button', { name: 'Edit failure vector', exact: true }).click()
     const titleInput = page.getByPlaceholder('E.G., DATABASE_CONNECTION_TIMEOUT')
     await expect(titleInput).toHaveValue(far.title)
 
@@ -68,15 +69,19 @@ test.describe('FAR workflows', () => {
     await expect(gridSurface).toBeVisible()
     await expect(workspace.getByRole('button', { name: /Display/i })).toBeVisible()
     await expect(workspace.getByRole('button', { name: /Filters/i })).toBeVisible()
-    await expect(workspace.getByRole('button', { name: /Insights/i })).toBeVisible()
+    await expect(workspace.getByRole('button', { name: 'FAR domain tools', exact: true })).toBeVisible()
     await expect(workspace.getByTitle('Export CSV')).toBeVisible()
     await expect(workspace.getByTitle('Copy to Clipboard')).toBeVisible()
     await expect(workspace.getByText(/failure vectors in scope/i)).toHaveCount(0)
-    await expect(workspace.getByText('Failure Inventory Maturity Profile')).not.toBeVisible()
-    await workspace.getByRole('button', { name: /Insights/i }).click()
-    await expect(workspace.getByText('Failure Inventory Maturity Profile')).toBeVisible()
-    await workspace.getByRole('button', { name: /Insights/i }).click()
-    await expect(workspace.getByText('Failure Inventory Maturity Profile')).not.toBeVisible()
+    await expect(workspace.getByText('Reliability Index', { exact: true })).not.toBeVisible()
+    await workspace.getByRole('button', { name: 'FAR domain tools', exact: true }).click()
+    await page.getByRole('button', { name: 'Reliability insights', exact: true }).click()
+    await page.getByRole('button', { name: 'Close FAR tools', exact: true }).click()
+    await expect(workspace.getByText('Reliability Index', { exact: true })).toBeVisible()
+    await workspace.getByRole('button', { name: 'FAR domain tools', exact: true }).click()
+    await page.getByRole('button', { name: 'Reliability insights', exact: true }).click()
+    await page.getByRole('button', { name: 'Close FAR tools', exact: true }).click()
+    await expect(workspace.getByText('Reliability Index', { exact: true })).not.toBeVisible()
     await page.getByPlaceholder(/scan risk vectors/i).fill(far.title)
     const centerRow = workspace.locator('.ag-center-cols-container .ag-row').filter({ hasText: far.title })
     await expect(centerRow).toBeVisible()
@@ -275,7 +280,9 @@ test.describe('FAR workflows', () => {
       priority: 'High',
       systems: [far.system_name],
     })
+    const currentMode = await getCurrentFarMode(request, far.id)
     await updateFarMode(request, far.id, {
+      expected_version: currentMode.version,
       metadata_json: { linked_research_ids: [investigation.id] },
     })
 
@@ -301,4 +308,22 @@ test.describe('FAR workflows', () => {
     await relinkedCard.getByRole('button').first().click()
     await expect(page).toHaveURL(new RegExp(`/research\\?type=research&id=${investigation.id}$`))
   })
+})
+
+
+test.describe('FAR desktop heading readability', () => {
+  for (const theme of ['Dark', 'Light'] as const) {
+    test(`keeps RPN heading readable in ${theme} theme`, async ({ page, sysApi: request }) => {
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await resetBrowserState(page)
+      await seedOperationalScenario(request)
+      await page.goto('/far')
+      await expect(page.locator('[data-workspace="far"]')).toBeVisible()
+      await page.getByRole('button', { name: theme, exact: true }).click()
+      await page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__.ensureColumnVisible('rpn'))
+      const text = page.locator('.ag-header-cell[col-id="rpn"] .ag-header-cell-text').first()
+      await expect(text).toBeVisible()
+      await expect.poll(() => text.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+    })
+  }
 })

@@ -22,6 +22,8 @@ test('P11 Portfolio keeps migrated and native Projects in one canonical story pr
     })
     expect(nativeResponse.ok(), await nativeResponse.text()).toBeTruthy()
     const native = (await nativeResponse.json()).project
+    const legacyResponse = await api.post('/api/v1/projects', { data: { name: 'P11 Migrated Attention Project', objective: 'A past delivery commitment appears with a clear warning.', owner: userId, status: 'In Progress', priority: 'High', start_date: '2019-01-01T00:00:00', end_date: '2020-01-01T00:00:00' } })
+    expect(legacyResponse.ok(), await legacyResponse.text()).toBeTruthy()
 
     await page.addInitScript(({ origin, actor, tenant }) => {
       localStorage.setItem('SYSGRID_OVERRIDE_API_URL', origin)
@@ -68,6 +70,12 @@ test('P11 Portfolio keeps migrated and native Projects in one canonical story pr
     await page.goto(`/projects?id=${encodeURIComponent(String(migrated.legacy_project_id))}&view=overview`)
     await expect(page).toHaveURL(new RegExp(`/projects/${migrated.id}/home$`))
     await expect(page.locator('[data-p04-project-home="true"]')).toBeVisible()
+    await expect(page.locator('[data-p04-legacy-workspace]')).toHaveAttribute('data-p04-legacy-workspace', String(migrated.legacy_project_id))
+    await expect(page.getByRole('link', { name: 'Open existing workspace' })).toHaveAttribute('href', `/projects?view=overview&id=${migrated.legacy_project_id}&legacy_workspace=1`)
+    await page.getByRole('link', { name: 'Open existing workspace' }).click()
+    await expect(page).toHaveURL(new RegExp(`/projects\\?view=overview&id=${migrated.legacy_project_id}&legacy_workspace=1$`))
+    await expect(page.locator('[data-project-overview="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'P11 Migrated Attention Project', exact: true })).toBeVisible()
   } finally {
     expect(pageErrors, `uncaught page errors: ${pageErrors.join(' | ')}`).toEqual([])
     expect(consoleErrors, `console errors: ${consoleErrors.join(' | ')}`).toEqual([])

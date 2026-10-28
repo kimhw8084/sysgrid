@@ -63,7 +63,7 @@ export default function AuditLogs() {
     offset: 0,
   }), [dateRange.end, dateRange.start, targetIdParam, targetTableParam])
 
-  const { data: auditResult, isLoading } = useQuery({
+  const { data: auditResult, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: getAuditQueryKey(auditQuery),
     enabled: !auditQuery.range_error,
     queryFn: async () => {
@@ -73,8 +73,9 @@ export default function AuditLogs() {
   })
   const logs = auditResult?.items || []
   const scope = auditResult?.scope
-  const scopeText = auditQuery.range_error ? 'Date range requires review' : scope?.complete
-    ? 'Complete matching scope'
+  const scopeText = isError ? (auditResult ? 'Refresh failed · showing last loaded records' : 'Audit ledger unavailable') : auditQuery.range_error ? 'Date range requires review' : auditResult && logs.length === 0
+    ? 'No events in selected scope'
+    : scope?.complete ? 'Complete matching scope'
     : `Loaded ${logs.length} records${scope?.hasMore ? ' · more matching records' : ' · matching scope is bounded'}`
 
   // Prepare chart data
@@ -128,7 +129,8 @@ export default function AuditLogs() {
     { 
       field: 'timestamp', 
       headerName: 'TRANSACTION TIME', 
-      width: 180, 
+      width: 190,
+      minWidth: 190,
       sortable: true, 
       filter: 'agDateColumnFilter', 
       pinned: isMobileLayout ? null : 'left' as const,
@@ -187,14 +189,15 @@ export default function AuditLogs() {
     { 
         field: 'target_table', 
         headerName: 'REGISTRY', 
-        width: 130, 
+        width: 160,
+        minWidth: 160,
         filter: true, 
         cellClass: 'text-center font-bold text-slate-400 uppercase tracking-tighter', 
         headerClass: 'text-center'
     },
     { 
         field: 'target_id', 
-        headerName: 'ENTITY ID', 
+        headerName: 'ID',
         width: 100, 
         filter: true, 
         cellClass: 'text-center font-mono font-bold text-slate-500', 
@@ -202,13 +205,15 @@ export default function AuditLogs() {
     },
     { 
         field: 'description', 
-        headerName: 'TRANSACTION PAYLOAD & ARCHITECTURAL IMPACT', 
-        flex: 1, 
+        headerName: 'PAYLOAD & IMPACT',
+        headerTooltip: 'Transaction payload and architectural impact',
+        flex: 1,
+        minWidth: 360,
         filter: true, 
         cellClass: 'text-left font-bold text-slate-300', 
         headerClass: 'text-left',
         cellRenderer: (p: any) => (
-            <span className="truncate">{p.value}</span>
+            <span className="truncate" title={String(p.value ?? '')}>{p.value}</span>
         )
     },
     {
@@ -278,6 +283,7 @@ export default function AuditLogs() {
                   gridRef.current?.api?.setQuickFilter(e.target.value)
                 }}
                 placeholder="Quick scan ledger..."
+                ariaLabel="Search audit log entries"
               />
               <ToolbarGroup>
                 <ToolbarButton active={showCharts} onClick={() => setShowCharts(!showCharts)}>
@@ -315,6 +321,14 @@ export default function AuditLogs() {
           }
         />
         {auditQuery.range_error && <p id="audit-date-range-error" role="alert" className="mt-2 text-sm font-medium text-[var(--state-danger)]">{auditQuery.range_error}</p>}
+        {isError && auditResult && logs.length > 0 && (
+          <div role="status" className="flex items-center justify-between gap-4 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-4 py-3 text-sm text-[var(--state-warning)]">
+            <span>The latest refresh failed. Showing the last loaded audit records.</span>
+            <button type="button" onClick={() => void refetch()} disabled={isFetching} className="shrink-0 rounded-md border border-current px-3 py-1.5 text-xs font-semibold disabled:opacity-60">
+              {isFetching ? 'Retrying…' : 'Retry audit records'}
+            </button>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -443,10 +457,31 @@ export default function AuditLogs() {
              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Synchronizing Ledger Matrix...</p>
           </div>
         )}
+        {isError && !auditResult && (
+          <div role="alert" className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-[var(--surface-base)] px-6 text-center">
+            <Activity size={28} className="text-[var(--state-danger)]" aria-hidden="true" />
+            <div>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Audit records could not be loaded</p>
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">The empty grid is not evidence that this scope has no activity.</p>
+            </div>
+            <ToolbarButton onClick={() => void refetch()} disabled={isFetching} variant="primary">
+              {isFetching ? 'Retrying…' : 'Retry audit records'}
+            </ToolbarButton>
+          </div>
+        )}
+        {!isLoading && !auditQuery.range_error && auditResult && logs.length === 0 && (
+          <div role={isError ? 'alert' : 'status'} className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-[var(--surface-base)] px-6 text-center">
+            <Layers size={28} className="text-[var(--text-secondary)]" aria-hidden="true" />
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{isError ? 'Last loaded scope had no audit events' : 'No audit events match this scope'}</p>
+            <p className="text-xs text-[var(--text-secondary)]">{isError ? 'The latest refresh failed; retry to confirm the current result.' : 'Adjust the date range or record scope to search other activity.'}</p>
+            {isError && <ToolbarButton onClick={() => void refetch()} disabled={isFetching} variant="primary">{isFetching ? 'Retrying…' : 'Retry audit records'}</ToolbarButton>}
+          </div>
+        )}
         <AgGridReact
           ref={gridRef}
           rowData={logs}
           columnDefs={columnDefs}
+          alwaysShowHorizontalScroll={true}
           processUnpinnedColumns={({ api, columns }) => {
             // Keep record actions reachable when pinned columns exceed a narrow viewport.
             const leftColumns = api.getColumns()?.filter(column => column.getPinned() === 'left') || []
@@ -523,6 +558,16 @@ export default function AuditLogs() {
             font-size: ${Math.max(10, fontSize - 1)}px !important;
             justify-content: center !important; 
             color: var(--text-secondary) !important;
+        }
+        [data-audit-ledger] .ag-header-cell-text {
+            white-space: nowrap !important;
+            word-break: normal !important;
+            overflow-wrap: normal !important;
+        }
+        [data-audit-ledger] .ag-cell-value {
+            white-space: nowrap !important;
+            word-break: normal !important;
+            overflow-wrap: normal !important;
         }
         [data-audit-ledger] .ag-header-cell[col-id="audit-actions"] .ag-header-cell-text,
         [data-audit-ledger] .ag-header-cell[col-id="action"] .ag-header-cell-text,

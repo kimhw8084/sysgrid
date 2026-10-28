@@ -73,6 +73,25 @@ export type PortfolioResponse = {
   coverage: Record<string, string>
 }
 
+export type ProjectOperatorIdentity = { username?: string | null; external_id?: string | null; team_id?: number | string | null }
+
+export const resolveProjectCurrentOperator = (operators: unknown, userId: unknown): ProjectOperatorIdentity | null => {
+  if (!Array.isArray(operators) || typeof userId !== 'string' || !userId.trim()) return null
+  const identity = userId.trim()
+  return (operators as ProjectOperatorIdentity[]).find((operator) => operator.username === identity || operator.external_id === identity) || null
+}
+
+export const projectCurrentOwnerId = (operator: ProjectOperatorIdentity | null, fallback: string) => operator?.username || operator?.external_id || fallback
+
+export const normalizeProjectOwnerIdForDisplay = (ownerId?: string | null): string | null => {
+  const normalized = ownerId?.trim()
+  return normalized && !normalized.toLowerCase().startsWith('legacy:unresolved') ? normalized : null
+}
+
+export const projectCreationRecoveryStorageKey = (userId: string) => `sysgrid_projects_creation_recovery_v1:${encodeURIComponent(userId)}`
+
+export const hasPartialProjectResourceCoverage = (portfolio?: Pick<PortfolioResponse, 'items' | 'coverage'>) => Boolean(portfolio?.items.length && portfolio.coverage.resources === 'partial')
+
 export type CreationDraft = {
   draft_step: number
   acceptance_criteria: string[]

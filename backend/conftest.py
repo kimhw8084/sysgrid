@@ -114,6 +114,13 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import select # Import select here
 
+# The application database drivers are asyncio-based. The AnyIO plugin also
+# selects Trio by default, which cannot await aiosqlite futures.
+# Session scope supports module-scoped AnyIO tests across plugin versions.
+@pytest.fixture(scope="session")
+def anyio_backend():
+    return "asyncio"
+
 from app.database import (
     Base,
     get_db,
@@ -445,9 +452,9 @@ async def seeded_admin_tenant(client, tmp_path, tmp_path_factory, setup_db, migr
 
 
 @pytest.fixture
-def provision_module_operator(setup_db, monkeypatch):
+def provision_module_operator(setup_db):
     """Opt-in module identity; registry access and domain membership remain separate."""
-    async def provision(tenant_id, user_id, *module_ids, preview=False):
+    async def provision(tenant_id, user_id, *module_ids):
         from app.api.module_policy import MODULES
         from app.database import get_tenant_engine
         from app.models.config import Tenant, UserTenantAccess
@@ -469,12 +476,6 @@ def provision_module_operator(setup_db, monkeypatch):
             assert capability
             permissions[capability] = 3
         assert permissions
-        if preview:
-            assert all(MODULES[module_id]['default_stage'] == 'preview' for module_id in module_ids)
-            # Reserved disposable identity for this domain test only. The release
-            # gate and all domain-role checks still run; monkeypatch restores the
-            # deployment allow-list after this individual test.
-            monkeypatch.setattr(settings, 'SYSTEM_ROOT_USER_IDS', ','.join(sorted(settings.system_root_user_ids | {user_id})))
         try:
             async with async_sessionmaker(engine, expire_on_commit=False)() as session:
                 operator = await session.scalar(select(Operator).where(Operator.username == user_id))

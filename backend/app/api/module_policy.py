@@ -236,6 +236,7 @@ async def _build_effective_policy(
         "profile_id": CATALOG["profile_id"],
         "identity": {
             "authenticated": bool(user_id),
+            "user_id": user_id or None,
             "tenant_id": getattr(request.state, "tenant_id", None),
             "access_role": getattr(request.state, "sysgrid_access_role", None),
             "operator_role": operator.role.name if operator and operator.role else None,

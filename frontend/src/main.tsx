@@ -538,7 +538,7 @@ const Bootstrap = () => {
                     </div>
                   ) : null}
                   {!backendDiagnostics.ok && backendDiagnostics.data?.detail ? (
-                    <p className="text-[10px] leading-relaxed text-rose-300">{backendDiagnostics.data.detail}</p>
+                    <p className="text-[10px] leading-relaxed text-rose-300">{typeof backendDiagnostics.data.detail === 'string' ? backendDiagnostics.data.detail : typeof backendDiagnostics.data.detail?.message === 'string' ? backendDiagnostics.data.detail.message : 'Backend startup diagnostics are unavailable.'}</p>
                   ) : null}
                 </div>
               ) : (

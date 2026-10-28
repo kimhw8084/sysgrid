@@ -3,6 +3,8 @@ from app.api.settings import ensure_tenant_admin_async
 from app.models.config import Tenant
 from sqlalchemy import select
 from app.database import ConfigSessionLocal
+from app.models import models
+from test_chg13_authorization_security import _tenant_db
 
 async def _ensure_admin(seeded_admin_tenant):
     tenant_id = seeded_admin_tenant["tenant_id"]
@@ -13,6 +15,86 @@ async def _ensure_admin(seeded_admin_tenant):
             pytest.fail(f"Seeded tenant with ID {tenant_id} not found in config DB.")
         tenant_db_url = selected_tenant_obj.db_url
     await ensure_tenant_admin_async(tenant_db_url=tenant_db_url, admin_user="admin_root", full_name="Admin Root", email="admin_root@test.com", department="IT")
+
+
+@pytest.mark.anyio
+async def test_monitoring_edits_preserve_existing_informational_severity(seeded_admin_tenant, setup_db):
+    client = seeded_admin_tenant["client"]
+    tenant_id = seeded_admin_tenant["tenant_id"]
+    headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(tenant_id)}
+    await _ensure_admin(seeded_admin_tenant)
+
+    device_res = await client.post("/api/v1/devices", json={
+        "name": "MON-LEGACY-INFO-01",
+        "system": "MON-LEGACY-INFO",
+        "status": "Active",
+        "type": "Physical",
+        "serial_number": "MON-LEGACY-INFO-SN",
+        "asset_tag": "MON-LEGACY-INFO-AT",
+    }, headers=headers)
+    assert device_res.status_code == 200, device_res.text
+
+    create_res = await client.post("/api/v1/monitoring", json={
+        "device_id": device_res.json()["id"],
+        "category": "Hardware",
+        "status": "Existing",
+        "title": "MON-LEGACY-INFO-RECORD",
+        "severity": "Info",
+    }, headers=headers)
+    assert create_res.status_code == 200, create_res.text
+    monitor = create_res.json()
+
+    async with _tenant_db(setup_db, tenant_id) as tenant_db:
+        stored = await tenant_db.get(models.MonitoringItem, monitor["id"])
+        assert stored is not None
+        stored.severity = "Informational"
+        history_result = await tenant_db.execute(
+            select(models.MonitoringHistory)
+            .filter(models.MonitoringHistory.monitoring_item_id == monitor["id"])
+            .order_by(models.MonitoringHistory.version.desc())
+        )
+        initial_revision = history_result.scalars().first()
+        assert initial_revision is not None
+        initial_snapshot = dict(initial_revision.snapshot or {})
+        initial_snapshot["severity"] = "Informational"
+        initial_revision.snapshot = initial_snapshot
+        await tenant_db.commit()
+
+    edit_res = await client.put(f"/api/v1/monitoring/{monitor['id']}", json={
+        "title": "MON-LEGACY-INFO-EDITED",
+    }, headers=headers)
+    assert edit_res.status_code == 200, edit_res.text
+    assert edit_res.json()["severity"] == "Informational"
+
+    bulk_res = await client.post("/api/v1/monitoring/bulk-action", json={
+        "ids": [monitor["id"]],
+        "action": "update",
+        "payload": {"purpose": "Unrelated bulk edit"},
+    }, headers=headers)
+    assert bulk_res.status_code == 200, bulk_res.text
+
+    listed_res = await client.get("/api/v1/monitoring?include_deleted=true", headers=headers)
+    assert listed_res.status_code == 200, listed_res.text
+    current = next(row for row in listed_res.json() if row["id"] == monitor["id"])
+    assert current["severity"] == "Informational"
+    assert current["title"] == "MON-LEGACY-INFO-EDITED"
+    assert current["purpose"] == "Unrelated bulk edit"
+
+    history_res = await client.get(f"/api/v1/monitoring/{monitor['id']}/history", headers=headers)
+    assert history_res.status_code == 200, history_res.text
+    history = history_res.json()
+    assert "severity" not in history[0]["changed_fields"]
+    assert "severity" not in history[1]["changed_fields"]
+
+    new_legacy_res = await client.post("/api/v1/monitoring", json={
+        "device_id": device_res.json()["id"],
+        "category": "Hardware",
+        "status": "Existing",
+        "title": "MON-LEGACY-INFO-NEW-INVALID",
+        "severity": "Informational",
+    }, headers=headers)
+    assert new_legacy_res.status_code == 400, new_legacy_res.text
+
 
 @pytest.mark.anyio
 async def test_monitoring_bulk_actions_create_history_entries(seeded_admin_tenant):

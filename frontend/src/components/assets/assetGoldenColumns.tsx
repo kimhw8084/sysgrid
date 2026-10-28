@@ -8,6 +8,7 @@ import {
   buildOperationalGridColumnDefinitions,
   renderOperationalActionButtons,
 } from '../shared/OperationalGridStandard'
+import { applyOperationalHeaderWidthBounds } from '../shared/operationalHeaderWidthBounds'
 
 export const ASSET_GOLDEN_COLUMN_FIELDS = [
   'name',
@@ -69,6 +70,7 @@ type BuildAssetGoldenColumnsArgs = {
   onOpenQuickLook: (asset: any) => void
   onOpenDetails: (asset: any) => void
   onOpenEdit: (asset: any) => void
+  canWrite?: boolean
   getConsoleUrl: (asset: any) => string | null
   onOpenRowActions: (asset: any, event: React.MouseEvent<HTMLButtonElement>) => void
   onToggleFavorite: (id: number) => void
@@ -86,6 +88,7 @@ export function buildAssetGoldenColumns({
   onOpenQuickLook,
   onOpenDetails,
   onOpenEdit,
+  canWrite = true,
   getConsoleUrl,
   onOpenRowActions,
   onToggleFavorite,
@@ -96,16 +99,18 @@ export function buildAssetGoldenColumns({
       kind: 'identity',
       field: 'name',
       headerName: 'Instance',
-      width: 220,
+      width: 210,
       minWidth: 180,
-      maxWidth: 320,
+      maxWidth: 210,
       hide: hiddenColumns.includes('name'),
     },
     {
       kind: 'plain',
       field: 'system',
       headerName: 'System',
-      width: 110,
+      width: 118,
+      minWidth: 112,
+      maxWidth: 128,
       hide: hiddenColumns.includes('system'),
       emptyValue: 'Unassigned',
     },
@@ -113,7 +118,9 @@ export function buildAssetGoldenColumns({
       kind: 'mappedText',
       field: 'type',
       headerName: 'Type',
-      width: 90,
+      width: 98,
+      minWidth: 96,
+      maxWidth: 104,
       fontSize,
       colorMap: ASSET_TYPE_COLORS,
       hide: hiddenColumns.includes('type'),
@@ -123,7 +130,9 @@ export function buildAssetGoldenColumns({
       kind: 'mappedBadge',
       field: 'status',
       headerName: 'Status',
-      width: 110,
+      width: OPERATIONAL_GRID_WIDTHS.badge,
+      minWidth: OPERATIONAL_GRID_WIDTHS.badge,
+      maxWidth: 144,
       fontSize,
       colorMap: ASSET_STATUS_COLORS,
       knownValues: Object.keys(ASSET_STATUS_COLORS),
@@ -135,13 +144,17 @@ export function buildAssetGoldenColumns({
       field: 'environment',
       headerName: 'Env',
       width: 80,
+      minWidth: 92,
+      maxWidth: 104,
       hide: hiddenColumns.includes('environment'),
     },
     {
       kind: 'plain',
       field: 'owner',
       headerName: 'Owner',
-      width: 100,
+      width: 112,
+      minWidth: 104,
+      maxWidth: 112,
       hide: hiddenColumns.includes('owner'),
       emptyValue: 'Unowned',
     },
@@ -150,6 +163,7 @@ export function buildAssetGoldenColumns({
       field: 'manufacturer',
       headerName: 'Make',
       width: 80,
+      minWidth: 104,
       hide: hiddenColumns.includes('manufacturer'),
     },
     {
@@ -157,6 +171,7 @@ export function buildAssetGoldenColumns({
       field: 'model',
       headerName: 'Model',
       width: 90,
+      minWidth: 112,
       hide: hiddenColumns.includes('model'),
     },
     {
@@ -178,6 +193,7 @@ export function buildAssetGoldenColumns({
       field: 'primary_ip',
       headerName: 'Primary IP',
       width: 120,
+      minWidth: 144,
       hide: hiddenColumns.includes('primary_ip'),
     },
     {
@@ -185,6 +201,7 @@ export function buildAssetGoldenColumns({
       field: 'management_ip',
       headerName: 'Mgmt IP',
       width: 120,
+      minWidth: 120,
       hide: hiddenColumns.includes('management_ip'),
     },
     {
@@ -192,6 +209,7 @@ export function buildAssetGoldenColumns({
       field: 'hardware_summary',
       headerName: 'Resources',
       width: 150,
+      minWidth: 140,
       proseMode: 'compact',
       hide: hiddenColumns.includes('hardware_summary'),
       emptyValue: 'No hardware summary',
@@ -201,6 +219,7 @@ export function buildAssetGoldenColumns({
       field: 'hardware_age',
       headerName: 'Age',
       width: 80,
+      minWidth: 64,
       hide: hiddenColumns.includes('hardware_age'),
     },
     {
@@ -217,7 +236,7 @@ export function buildAssetGoldenColumns({
             <span className="font-bold text-[10px]">{val}</span>
           </span>
         ) : (
-          <span className="text-emerald-500/40 font-bold text-[11px]">✔</span>
+          <span role="img" aria-label="No open incidents" title="No open incidents" className="text-[var(--state-success)] font-bold text-[11px]">✔</span>
         )
       },
     },
@@ -321,7 +340,9 @@ export function buildAssetGoldenColumns({
                   event.stopPropagation()
                   onOpenEdit(asset)
                 }}
-                title="Edit asset"
+                aria-label="Edit asset"
+                disabled={!canWrite}
+                title={canWrite ? "Edit asset" : "Asset edit permission is required"}
                 className="rounded-lg p-1 text-emerald-400 transition-all hover:bg-emerald-400/10 active:scale-90"
               >
                 <Edit2 size={13} />
@@ -370,7 +391,15 @@ export function buildAssetGoldenColumns({
       onToggleWatch,
       itemLabel: 'asset',
     },
-    columnConfigs,
+    // Reserve the header controls' space so the measured labels remain readable.
+    columnConfigs: applyOperationalHeaderWidthBounds(columnConfigs, {
+      system: { minWidth: 112 },
+      type: { minWidth: 96 },
+      environment: { minWidth: 92, maxWidth: 96 },
+      manufacturer: { minWidth: 104 },
+      model: { minWidth: 112 },
+      primary_ip: { minWidth: 144 },
+    }),
     columnLayoutState,
     preserveExplicitColumnWidths,
   })
