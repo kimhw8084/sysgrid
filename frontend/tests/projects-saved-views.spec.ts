@@ -330,6 +330,7 @@ test.describe('Projects shared saved views', () => {
     expect(shared.revision).toBe(1)
     await page.getByPlaceholder('Find projects, objectives, owners…').fill('team updated')
     await page.getByRole('button', { name: 'Update synced', exact: true }).click()
+    await expect(page.getByText('Synced Project view updated', { exact: true })).toBeVisible()
     shared = await findRemoteView(page, 'Shared Focus', 'team', team.id)
     expect(shared.revision).toBe(2)
 

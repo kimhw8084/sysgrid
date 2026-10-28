@@ -42,6 +42,11 @@ async function getVisibleGridHeaderClips(page: Page) {
     const text = element.textContent?.trim() || ''
     if (!text) return []
     const column = element.closest('.ag-header-cell')
+    const cellBounds = column?.getBoundingClientRect()
+    const viewport = column?.closest('.ag-header-viewport, .ag-pinned-left-header, .ag-pinned-right-header')?.getBoundingClientRect()
+    // Horizontally scrollable grids can expose a sliver of an offscreen column;
+    // only flag text truncation when the complete header cell is in its viewport.
+    if (cellBounds && viewport && (cellBounds.left < viewport.left - 1 || cellBounds.right > viewport.right + 1)) return []
     const geometry = { text, columnId: column?.getAttribute('col-id') || null, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }
     return geometry.scrollWidth <= geometry.clientWidth + 1 ? [] : [geometry]
   }))

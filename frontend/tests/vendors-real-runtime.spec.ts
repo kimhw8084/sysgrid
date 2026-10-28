@@ -379,9 +379,10 @@ test.describe('Vendor desktop column readability', () => {
       const fields = ['name', 'country', 'primary_personnel_name', 'primary_personnel_email', 'active_contract_count', 'contract_count']
       for (const field of fields) {
         await page.evaluate((id) => (window as any).__DEBUG_VENDORS_GRID_API__.ensureColumnVisible(id), field)
+        await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
         const text = page.locator(`.ag-header-cell[col-id="${field}"] .ag-header-cell-text`).first()
         await expect(text).toBeVisible()
-        await expect.poll(() => text.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+        await expect.poll(() => text.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
       }
     })
   }

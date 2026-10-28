@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { clampAutoSizedOperationalColumnWidths } from './OperationalGridSizing'
+import { autoSizeOperationalColumns, clampAutoSizedOperationalColumnWidths } from './OperationalGridSizing'
 
 describe('auto-sized operational column width bounds', () => {
   it('restores declared minimums and maximums after content sizing', () => {
@@ -23,5 +23,24 @@ describe('auto-sized operational column width bounds', () => {
       ],
       applyOrder: false,
     })
+  })
+
+  it('does not call or resize a grid after AG Grid destroys its API', () => {
+    const getAllDisplayedColumns = vi.fn(() => undefined as any)
+    const applyColumnState = vi.fn()
+    const autoSizeColumns = vi.fn()
+    const api = {
+      isDestroyed: () => true,
+      getAllDisplayedColumns,
+      applyColumnState,
+      autoSizeColumns,
+    }
+
+    clampAutoSizedOperationalColumnWidths(api)
+    autoSizeOperationalColumns({ api })
+
+    expect(getAllDisplayedColumns).not.toHaveBeenCalled()
+    expect(applyColumnState).not.toHaveBeenCalled()
+    expect(autoSizeColumns).not.toHaveBeenCalled()
   })
 })

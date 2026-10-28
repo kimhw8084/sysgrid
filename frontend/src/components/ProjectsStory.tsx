@@ -384,8 +384,21 @@ function NewProjectScreen({ userId }: { userId: string }) {
     } catch { /* failed save remains visible with local recovery and blocks a false Draft saved message */ }
   }
   const discard = async () => {
+    if (saveState === 'Saving') return
     if (!await confirmWorkspace({ title: 'Discard draft?', message: 'Its audit record is preserved, but it will leave the active Portfolio.', confirmText: 'Discard draft', variant: 'danger' })) return
-    try { if (project) await discardPV1Draft(project); localStorage.removeItem(recoveryKey); queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] }); navigate('/projects') } catch (error) { setSaveState('Save failed'); setSaveError(error instanceof Error ? error.message : 'Draft discard failed.') }
+    setSaveState('Saving'); setSaveError('')
+    try {
+      if (project) {
+        const latest = await readPV1Project(project.id)
+        await discardPV1Draft(latest)
+      }
+      localStorage.removeItem(recoveryKey)
+      queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] })
+      navigate('/projects')
+    } catch (error) {
+      setSaveState('Save failed')
+      setSaveError(error instanceof Error ? error.message : 'Draft discard failed.')
+    }
   }
 
   const steps = ['Purpose', 'Success', 'Delivery plan', 'Review']
@@ -401,7 +414,7 @@ function NewProjectScreen({ userId }: { userId: string }) {
         {step === 1 ? <SuccessStep creation={creation} setCreation={setCreation} operators={activeOperators} selectedTemplate={selectedTemplate} /> : null}
         {step === 2 ? <DeliveryStep form={form} setField={setField} creation={creation} setCreation={setCreation} operators={activeOperators} selectedTemplate={selectedTemplate} /> : null}
         {step === 3 ? <ReviewStep form={form} creation={creation} project={project} gaps={transitionGaps} onGap={(action) => setStep(action.includes('purpose') ? 0 : action.includes('success') ? 1 : 2)} /> : null}
-        <footer className="p04-create-footer"><div>{step > 0 ? <button className="p04-button" onClick={() => move(step - 1)}>Back</button> : null}<button className="p04-button" onClick={close} disabled={saveState === 'Saving'}>Close</button><button className="p04-button p04-danger-button" onClick={discard}>Discard</button></div><div>{step < 3 ? <button className="p04-button p04-button-primary" onClick={() => move(step + 1)} disabled={saveState === 'Saving'}>Next <ArrowRight size={16} /></button> : <><button className="p04-button" onClick={() => persist(creationWithStep(3))}>Save draft</button><button className="p04-button p04-button-primary" onClick={createProject} disabled={saveState === 'Saving'}>Create project</button></>}</div></footer>
+        <footer className="p04-create-footer"><div>{step > 0 ? <button className="p04-button" onClick={() => move(step - 1)} disabled={saveState === 'Saving'}>Back</button> : null}<button className="p04-button" onClick={close} disabled={saveState === 'Saving'}>Close</button><button className="p04-button p04-danger-button" onClick={discard} disabled={saveState === 'Saving'}>Discard</button></div><div>{step < 3 ? <button className="p04-button p04-button-primary" onClick={() => move(step + 1)} disabled={saveState === 'Saving'}>Next <ArrowRight size={16} /></button> : <><button className="p04-button" onClick={() => persist(creationWithStep(3))} disabled={saveState === 'Saving'}>Save draft</button><button className="p04-button p04-button-primary" onClick={createProject} disabled={saveState === 'Saving'}>Create project</button></>}</div></footer>
       </section><aside className="p04-guidance"><ShieldCheck size={22} /><h2>Truthful by default</h2><p>The server creates one versioned Draft and checks every transition. Suggested milestones and metric units become data only after you apply and save them.</p><dl><div><dt>Owner</dt><dd>{ownerLabel(operators.data || [], form.owner_id)}</dd></div><div><dt>Team</dt><dd>{teamLabel(teams.data || [], Number(form.team_id))}</dd></div><div><dt>Lifecycle</dt><dd>Draft → Proposed</dd></div><div><dt>Visibility</dt><dd>Team</dd></div></dl></aside></div>
     </main>
   </StoryShell>

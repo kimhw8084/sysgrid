@@ -18,6 +18,14 @@ const clampOperationalColumnWidth = (width: any, minWidth: any, maxWidth: any): 
   return Math.max(minimum, Math.min(width, maximum))
 }
 
+const isOperationalGridDestroyed = (api: { isDestroyed?: () => boolean } | null | undefined) => {
+  try {
+    return api?.isDestroyed?.() === true
+  } catch {
+    return true
+  }
+}
+
 // Source of truth: protected sizing / resize behavior for fixed-width operational columns.
 export const lockOperationalColumnWidth = (
   column: Record<string, any>,
@@ -47,10 +55,10 @@ export const normalizeOperationalColumnLayout = (layout: any[], preserveWidths: 
   }))
 
 export const getOperationalColumnLayoutSnapshot = (
-  api: { getColumnState?: () => any[] } | null | undefined,
+  api: { getColumnState?: () => any[]; isDestroyed?: () => boolean } | null | undefined,
   preserveWidths: boolean
 ) => {
-  if (!api?.getColumnState) return []
+  if (!api?.getColumnState || isOperationalGridDestroyed(api)) return []
   return normalizeOperationalColumnLayout(api.getColumnState(), preserveWidths)
 }
 
@@ -58,11 +66,12 @@ export const applyOperationalColumnState = (
   api: {
     applyColumnState?: (config: any) => void
     getColumn?: (key: string) => { getColDef?: () => Record<string, any> } | null
+    isDestroyed?: () => boolean
   } | null | undefined,
   layout: any[],
   preserveWidths: boolean
 ) => {
-  if (!api || !layout?.length || !api.applyColumnState) return
+  if (!api || !layout?.length || !api.applyColumnState || isOperationalGridDestroyed(api)) return
   const state = normalizeOperationalColumnLayout(layout, preserveWidths)
   const boundedState = preserveWidths && api.getColumn
     ? state.map((entry: any) => {
@@ -81,16 +90,19 @@ export const applyOperationalColumnState = (
 export const clampAutoSizedOperationalColumnWidths = (api: {
   getAllDisplayedColumns?: () => Array<{ getColId: () => string; getColDef?: () => Record<string, any>; getActualWidth?: () => number }>
   applyColumnState?: (config: any) => void
+  isDestroyed?: () => boolean
 } | null | undefined) => {
-  if (!api?.getAllDisplayedColumns || !api.applyColumnState) return
-  const state = api.getAllDisplayedColumns().flatMap((column) => {
+  if (!api?.getAllDisplayedColumns || !api.applyColumnState || isOperationalGridDestroyed(api)) return
+  const displayedColumns = api.getAllDisplayedColumns()
+  if (!Array.isArray(displayedColumns)) return
+  const state = displayedColumns.flatMap((column) => {
     const width = column.getActualWidth?.()
     if (typeof width !== 'number' || !Number.isFinite(width)) return []
     const definition = column.getColDef?.()
     const boundedWidth = clampOperationalColumnWidth(width, definition?.minWidth, definition?.maxWidth)
     return boundedWidth === width ? [] : [{ colId: column.getColId(), width: boundedWidth }]
   })
-  if (!state.length) return
+  if (!state.length || isOperationalGridDestroyed(api)) return
   api.applyColumnState({ state, applyOrder: false })
 }
 
@@ -105,15 +117,17 @@ export const autoSizeOperationalColumns = ({
     autoSizeColumns?: (keys: string[], skipHeader?: boolean) => void
     sizeColumnsToFit?: () => void
     applyColumnState?: (config: any) => void
+    isDestroyed?: () => boolean
   } | null | undefined
   fitGridWidth?: boolean
   skipColumnIds?: string[]
   onSized?: () => void
 }) => {
   if (fitGridWidth) {
-    if (!api?.sizeColumnsToFit) return
+    if (!api?.sizeColumnsToFit || isOperationalGridDestroyed(api)) return
 
     requestAnimationFrame(() => {
+      if (isOperationalGridDestroyed(api)) return
       api.sizeColumnsToFit?.()
       clampAutoSizedOperationalColumnWidths(api)
       onSized?.()
@@ -121,9 +135,10 @@ export const autoSizeOperationalColumns = ({
     return
   }
 
-  if (!api?.getAllDisplayedColumns || !api.autoSizeColumns) return
-  const columnIds = api
-    .getAllDisplayedColumns()
+  if (!api?.getAllDisplayedColumns || !api.autoSizeColumns || isOperationalGridDestroyed(api)) return
+  const displayedColumns = api.getAllDisplayedColumns()
+  if (!Array.isArray(displayedColumns)) return
+  const columnIds = displayedColumns
     .filter((column) => !column.getColDef?.()?.operationalSkipAutoSize)
     .map((column) => column.getColId())
     .filter((colId) => !skipColumnIds.includes(colId))
@@ -131,6 +146,7 @@ export const autoSizeOperationalColumns = ({
   if (!columnIds.length) return
 
   const run = () => {
+    if (isOperationalGridDestroyed(api)) return
     api.autoSizeColumns?.(columnIds, false)
     clampAutoSizedOperationalColumnWidths(api)
     onSized?.()

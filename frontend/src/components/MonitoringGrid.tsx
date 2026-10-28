@@ -1697,6 +1697,8 @@ export default function MonitoringGrid() {
       field: 'device_name',
       headerName: 'Target Asset',
       width: 160,
+      minWidth: 120,
+      maxWidth: 340,
       hide: hiddenColumns.includes('device_name'),
     },
     {
