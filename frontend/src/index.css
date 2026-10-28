@@ -507,6 +507,10 @@
   padding-right: 10px !important;
 }
 
+.operational-grid-shell .ag-header-cell.network-direction-header .ag-header-cell-label {
+  padding-right: 4px !important;
+}
+
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell,
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-cell-value,
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header-cell-label,

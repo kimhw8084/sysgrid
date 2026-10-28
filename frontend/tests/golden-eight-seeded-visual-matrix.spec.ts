@@ -47,8 +47,15 @@ async function getVisibleGridHeaderClips(page: Page) {
     // Horizontally scrollable grids can expose a sliver of an offscreen column;
     // only flag text truncation when the complete header cell is in its viewport.
     if (cellBounds && viewport && (cellBounds.left < viewport.left - 1 || cellBounds.right > viewport.right + 1)) return []
+    if (element.scrollWidth <= element.clientWidth + 1) return []
+    const label = column?.querySelector('.ag-header-cell-label')
     const geometry = { text, columnId: column?.getAttribute('col-id') || null, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }
-    return geometry.scrollWidth <= geometry.clientWidth + 1 ? [] : [geometry]
+    return [{
+      ...geometry,
+      cellWidth: column?.clientWidth ?? null,
+      labelWidth: label?.clientWidth ?? null,
+      labelPaddingRight: label ? getComputedStyle(label).paddingRight : null,
+    }]
   }))
 }
 
@@ -365,8 +372,8 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         }
         if (importantColumns[route.key]) {
           const target = importantColumns[route.key]
-          const requiredMinimums = route.key === 'assets' ? { name: 180, system: 112, type: 96, status: 132, environment: 80, owner: 104 } : route.key === 'external' ? { status: 120, business_purpose: 220, link_count: 130 } : route.key === 'vendors' ? { name: 180, country: 136, primary_personnel_name: 180, primary_personnel_email: 190 } : { name: 180, country: 120, primary_personnel_name: 180, primary_personnel_email: 190 }
-          const requiredMaximums = route.key === 'assets' ? { name: 210, system: 128, type: 104, status: 144, environment: 96, owner: 112 } : route.key === 'vendors' ? { name: 220, country: 136, primary_personnel_name: 200, primary_personnel_email: 200 } : {}
+          const requiredMinimums = route.key === 'assets' ? { name: 180, system: 112, type: 96, status: 132, environment: 80, owner: 104 } : route.key === 'external' ? { status: 120, business_purpose: 220, link_count: 130 } : route.key === 'vendors' ? { name: 180, country: 136, primary_personnel_name: 208, primary_personnel_email: 190 } : { name: 180, country: 120, primary_personnel_name: 180, primary_personnel_email: 190 }
+          const requiredMaximums = route.key === 'assets' ? { name: 210, system: 128, type: 104, status: 144, environment: 96, owner: 112 } : route.key === 'vendors' ? { name: 220, country: 136, primary_personnel_name: 216, primary_personnel_email: 200 } : {}
           const widthColumnIds = route.key === 'assets' ? ['name', 'system', 'type', 'environment', ...target.columnIds] : route.key === 'vendors' ? ['name', ...target.columnIds] : target.columnIds
           await expectColumnsFullyVisible(page, row, route.key, target.apiName, target.columnIds)
           await expectColumnMinimumWidths(page, route.key, target.apiName, widthColumnIds, requiredMinimums, requiredMaximums)
