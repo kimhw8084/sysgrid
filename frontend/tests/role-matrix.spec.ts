@@ -65,8 +65,27 @@ for (const surface of [
     expect(policy.modules[surface.module].actions).toMatchObject({ read: true, write: false })
     const denied = await context.request.post(`${api}${surface.endpoint}`, { headers, data: {} })
     expect(denied.status()).toBe(403)
+    if (surface.module === 'monitoring') {
+      const seeded = await context.request.post(`${api}/monitoring`, {
+        headers: { ...headers, 'X-User-Id': 'sysgrid.verify.editor' },
+        data: { category: 'Hardware', status: 'Existing', title: `ROLE-MATRIX-MONITOR-${Date.now()}` },
+      })
+      expect(seeded.ok(), await seeded.text()).toBeTruthy()
+    }
     await page.goto(surface.path)
     await expect(page.getByRole('button', { name: surface.action }).first()).toBeDisabled()
+    if (surface.module === 'monitoring') {
+      await expect(page.getByRole('button', { name: 'Import monitoring rows', exact: true })).toBeDisabled()
+      await expect(page.getByRole('button', { name: 'Edit configuration', exact: true }).first()).toBeDisabled()
+      await page.getByTitle('Registry configuration').click()
+      await expect(page.getByText('Monitoring Matrix Enumerations', { exact: true })).toBeVisible()
+      await expect(page.getByTitle('This value is managed by the application.').first()).toBeDisabled()
+    }
+    if (surface.module === 'services') {
+      await page.getByTitle('Registry configuration').click()
+      await expect(page.getByText('Service Enumerations', { exact: true })).toBeVisible()
+      await expect(page.getByTitle('Settings management permission is required.').first()).toBeDisabled()
+    }
     if (surface.module === 'knowledge') {
       await expect(page.getByRole('button', { name: /System Manual/ })).toBeDisabled()
       await expect(page.getByRole('button', { name: /Ask Question/ })).toBeDisabled()

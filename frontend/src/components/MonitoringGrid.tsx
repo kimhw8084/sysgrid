@@ -128,7 +128,7 @@ import {
   showOperationalBulkRevertedToast,
 } from './shared/OperationalBulkContract'
 import { useCollaborativeWorkspaceViews } from './shared/CollaborativeWorkspaceViews'
-import { ModulePolicyButton, useModuleActionPolicy } from '../policy/ModulePolicy'
+import { ModulePolicyButton, useModuleActionPolicy, useModulePolicy } from '../policy/ModulePolicy'
 
 const MONITORING_VIEW_STORAGE_KEY = 'sysgrid_monitoring_views_v1'
 const MONITORING_ACTIVE_VIEW_KEY = 'sysgrid_monitoring_active_view_v1'
@@ -438,6 +438,9 @@ export default function MonitoringGrid() {
   const { confirm: confirmWorkspaceAction, confirmation } = useWorkspaceConfirmation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const policy = useModulePolicy()
+  const canWrite = !policy.isError && policy.data?.modules.monitoring?.actions?.write === true
+  const writeReason = policy.isLoading ? 'Checking monitoring permissions' : 'Monitoring edit permission is required'
   const knowledgeAction = useModuleActionPolicy('knowledge')
   const gridRef = React.useRef<any>(null)
   const [showMonitoringDataDiagnostic, setShowMonitoringDataDiagnostic] = useState(false)
@@ -932,13 +935,16 @@ export default function MonitoringGrid() {
         </button>
         <button
           type="button"
+          disabled={!canWrite}
           onClick={(event) => {
             event.stopPropagation()
+            if (!canWrite) return
             setEditingItem(item)
             setIsFormOpen(true)
           }}
-          title="Edit configuration"
-          className="rounded-lg p-1 text-emerald-400 transition-all hover:bg-emerald-400/10 active:scale-90"
+          title={!canWrite ? writeReason : 'Edit configuration'}
+          aria-label="Edit configuration"
+          className="rounded-lg p-1 text-emerald-400 transition-all hover:bg-emerald-400/10 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Edit2 size={13} />
         </button>
@@ -976,7 +982,7 @@ export default function MonitoringGrid() {
         )}
       </div>
     )
-  }, [openRecoveryDocuments, pendingIds])
+  }, [canWrite, detailRoute, openRecoveryDocuments, openRowActionMenu, pendingIds, writeReason])
 
   const handleExportCSV = () => {
     if (gridRef.current?.api) {
@@ -1576,6 +1582,7 @@ export default function MonitoringGrid() {
   })
 
   const runUndo = async (undo: any) => {
+    if (!canWrite) throw new Error(writeReason)
     if (!undo || undo !== lastUndoRef.current) throw new Error('This recovery is no longer available.')
     const ids: number[] = undo.ids || undo.snapshots.map((snapshot: any) => snapshot.id)
     if (ids.some(id => pendingLifecycleIds.current.has(id))) {
@@ -1615,6 +1622,7 @@ export default function MonitoringGrid() {
       setPendingIds(prev => prev.filter(id => !idsToUse.includes(id)))
     },
     mutationFn: async ({ action, payload = {}, ids: overrideIds }: any) => {
+      if (!canWrite) throw new Error(writeReason)
       const idsToUse = overrideIds ?? selectedIds
       if (action === 'purge' || action === 'restore_purged') throw new Error('Use the permanent-purge preview.')
       if (idsToUse.some((id: number) => pendingLifecycleIds.current.has(id))) throw new Error('An overlapping operation is still pending.')
@@ -1698,7 +1706,7 @@ export default function MonitoringGrid() {
       headerName: 'Target Asset',
       width: 160,
       minWidth: 120,
-      maxWidth: 340,
+      maxWidth: 480,
       hide: hiddenColumns.includes('device_name'),
     },
     {
@@ -1835,6 +1843,7 @@ export default function MonitoringGrid() {
     preserveExplicitColumnWidths,
   })
 }, [
+  canWrite,
   columnLayoutState,
   fontSize,
   hiddenColumns,
@@ -1844,6 +1853,7 @@ export default function MonitoringGrid() {
   renderPrimaryRowActions,
   toggleFavorite,
   toggleWatch,
+  writeReason,
 ]) as any
 
   const gridContext = useMemo(() => ({ favoriteIds, watchIds }), [favoriteIds, watchIds])
@@ -1935,7 +1945,7 @@ export default function MonitoringGrid() {
             </ToolbarIconButton>
           </ToolbarGroup>
           <ToolbarGroup>
-            <ToolbarButton onClick={() => setShowImportModal(true)} disabled={monitoringRegistryBlocked} title={monitoringRegistryBlocked ? 'Retry the monitoring registry before importing rows' : 'Import monitoring rows'}>
+            <ToolbarButton onClick={() => { if (canWrite) setShowImportModal(true) }} disabled={monitoringRegistryBlocked || !canWrite} ariaLabel="Import monitoring rows" title={!canWrite ? writeReason : monitoringRegistryBlocked ? 'Retry the monitoring registry before importing rows' : 'Import monitoring rows'}>
               <span className="flex items-center gap-2">
                 <Upload size={14} />
                 Import
@@ -2017,9 +2027,9 @@ export default function MonitoringGrid() {
           )}
           <ToolbarButton
             onClick={() => togglePanel('bulk')}
-            disabled={monitoringRegistryBlocked || !hasSelection()}
+            disabled={!canWrite || monitoringRegistryBlocked || !hasSelection()}
             active={showBulkMenu}
-            title="Bulk actions"
+            title={!canWrite ? writeReason : 'Bulk actions'}
             className="bulk-menu-trigger"
             ref={bulkMenuButtonRef as any}
           >
@@ -2029,9 +2039,9 @@ export default function MonitoringGrid() {
             </span>
           </ToolbarButton>
           <ToolbarButton
-            onClick={() => { setEditingItem(null); setIsFormOpen(true); }}
-            disabled={monitoringRegistryBlocked}
-            title={monitoringRegistryBlocked ? 'Retry the monitoring registry before adding a monitor' : undefined}
+            onClick={() => { if (canWrite) { setEditingItem(null); setIsFormOpen(true) } }}
+            disabled={monitoringRegistryBlocked || !canWrite}
+            title={!canWrite ? writeReason : monitoringRegistryBlocked ? 'Retry the monitoring registry before adding a monitor' : undefined}
             variant="primary"
             className="px-6 py-2"
             ariaLabel="Add Monitoring"
@@ -2139,7 +2149,7 @@ export default function MonitoringGrid() {
                     placeholder="Choose status"
                     actionLabel="Apply Status"
                     onApply={() => bulkMutation.mutate({ action: 'update', payload: { status: bulkDraft.status } })}
-                    disabled={!bulkDraft.status || bulkMutation.isPending}
+                    disabled={!canWrite || !bulkDraft.status || bulkMutation.isPending}
                   />
                 )}
                 <WorkspaceFlyoutActionCard
@@ -2155,7 +2165,7 @@ export default function MonitoringGrid() {
                     placeholder="Choose severity"
                     actionLabel="Apply Severity"
                     onApply={() => bulkMutation.mutate({ action: 'update', payload: { severity: bulkDraft.severity } })}
-                    disabled={!bulkDraft.severity || bulkMutation.isPending}
+                    disabled={!canWrite || !bulkDraft.severity || bulkMutation.isPending}
                   />
                 )}
                 <WorkspaceFlyoutActionCard
@@ -2171,7 +2181,7 @@ export default function MonitoringGrid() {
                     placeholder="Choose notification method"
                     actionLabel="Apply Method"
                     onApply={() => bulkMutation.mutate({ action: 'update', payload: { notification_method: bulkDraft.notification_method } })}
-                    disabled={!bulkDraft.notification_method || bulkMutation.isPending}
+                    disabled={!canWrite || !bulkDraft.notification_method || bulkMutation.isPending}
                   />
                 )}
               </div>
@@ -2186,7 +2196,7 @@ export default function MonitoringGrid() {
                     columns: 5 as 5,
                     items: [
                         { id: 'details', label: 'Details', icon: Maximize2, tone: 'info' as OperationalRowActionTone, onClick: () => { detailRoute.openDetail(item); setRowActionMenu(null); } },
-                        { id: 'edit', label: 'Edit', icon: Edit2, tone: 'success' as OperationalRowActionTone, onClick: () => { setEditingItem(item); setIsFormOpen(true); setRowActionMenu(null); } },
+                        { id: 'edit', label: 'Edit', icon: Edit2, tone: 'success' as OperationalRowActionTone, disabled: !canWrite, disabledReason: writeReason, onClick: () => { if (!canWrite) return; setEditingItem(item); setIsFormOpen(true); setRowActionMenu(null); } },
                         { id: 'history', label: 'History', icon: Clock, tone: 'warning' as OperationalRowActionTone, onClick: () => { setHistoryItem(item); setRowActionMenu(null); } },
                         { id: 'asset', label: 'Asset', icon: Monitor, tone: 'info' as OperationalRowActionTone, onClick: () => { if (item.device_id) navigate(`/asset?id=${item.device_id}`); setRowActionMenu(null); } },
                         { id: 'knowledge', label: 'Knowledge', icon: BookOpen, tone: 'success' as OperationalRowActionTone, onClick: () => { const firstDoc = item.recovery_docs?.[0]; const docId = typeof firstDoc === 'object' ? firstDoc?.id : firstDoc; if (docId && knowledgeAction.available) navigate(`/knowledge?id=${docId}`); setRowActionMenu(null); }, disabled: !item.recovery_docs?.[0] || knowledgeAction.disabled, disabledReason: !item.recovery_docs?.[0] ? 'No recovery procedure linked.' : knowledgeAction.reason }
@@ -2205,15 +2215,18 @@ export default function MonitoringGrid() {
                     id: 'archive',
                     columns: 1 as 1,
                     items: [
-                        ...(activeTab === 'deleted' ? [{ id: 'restore', label: 'Restore', icon: Undo2, tone: 'success' as OperationalRowActionTone, variant: 'inline' as OperationalRowActionVariant, onClick: () => { bulkMutation.mutate({ action: 'restore', ids: [item.id] }); setRowActionMenu(null); } }] : []),
+                        ...(activeTab === 'deleted' ? [{ id: 'restore', label: 'Restore', icon: Undo2, tone: 'success' as OperationalRowActionTone, variant: 'inline' as OperationalRowActionVariant, disabled: !canWrite, disabledReason: writeReason, onClick: () => { if (!canWrite) return; bulkMutation.mutate({ action: 'restore', ids: [item.id] }); setRowActionMenu(null); } }] : []),
                         {
                             id: 'archive',
                             label: rowDeleteConfirmId === item.id ? (activeTab === 'active' ? OPERATIONAL_ACTION_LABELS.archiveConfirm : OPERATIONAL_ACTION_LABELS.purgeConfirm) : (activeTab === 'active' ? OPERATIONAL_ACTION_LABELS.archive : OPERATIONAL_ACTION_LABELS.purge),
                             icon: Trash2,
                             tone: 'danger' as OperationalRowActionTone,
                             variant: 'inline' as OperationalRowActionVariant,
+                            disabled: !canWrite,
+                            disabledReason: writeReason,
                             confirming: rowDeleteConfirmId === item.id,
                             onClick: () => {
+                              if (!canWrite) return
                               if (activeTab === 'deleted') {
                                 setPurgeIds([item.id])
                                 setRowActionMenu(null)
@@ -2358,6 +2371,7 @@ export default function MonitoringGrid() {
       <MonitoringPurgeDialog
         ids={purgeIds}
         pendingIds={pendingLifecycleIds}
+        canWrite={canWrite}
         onClose={() => setPurgeIds(null)}
         onPurged={(ids) => {
           const recovery = lastUndoRef.current
@@ -2373,7 +2387,7 @@ export default function MonitoringGrid() {
       />
 
       <AnimatePresence>
-        {isFormOpen && (
+        {isFormOpen && canWrite && (
           <MonitoringForm 
             key={`monitoring-form-${editingItem?.id || 'new'}`}
             item={editingItem} 
@@ -2404,8 +2418,11 @@ export default function MonitoringGrid() {
           <MonitoringDetailModal
             key={`monitoring-detail-${detailItem.id}`}
             item={detailItem}
+            canWrite={canWrite}
+            writeReason={writeReason}
             onClose={() => { detailRoute.closeDetail(); setDetailDeleteConfirm(false); }}
             onEdit={(monitor: any) => {
+              if (!canWrite) return
               detailRoute.openEditFromDetail(monitor, () => {
                 setEditingItem(monitor);
                 setIsFormOpen(true);
@@ -2426,6 +2443,7 @@ export default function MonitoringGrid() {
               })
             }}
             onDelete={(monitor: any) => {
+              if (!canWrite) return
               if (monitor.is_deleted) {
                 setPurgeIds([monitor.id])
                 detailRoute.closeDetail()
@@ -2445,7 +2463,7 @@ export default function MonitoringGrid() {
             deleteConfirm={detailDeleteConfirm}
           />
         )}
-        {historyItem && <MonitoringHistoryModal key={`monitoring-history-${historyItem.id}`} item={historyItem} onClose={() => { setHistoryItem(null); detailRoute.finishTransition(); }} />}
+        {historyItem && <MonitoringHistoryModal key={`monitoring-history-${historyItem.id}`} item={historyItem} canWrite={canWrite} writeReason={writeReason} onClose={() => { setHistoryItem(null); detailRoute.finishTransition(); }} />}
         {recipientPopup && <RecipientsModal key={`monitoring-recipients-${recipientPopup.method}-${recipientPopup.recipients.join('|')}`} recipients={recipientPopup.recipients} method={recipientPopup.method} onClose={() => setRecipientPopup(null)} />}
         {bkmPopup && (
           <BkmListModal 
@@ -2465,7 +2483,7 @@ export default function MonitoringGrid() {
         )}
         {activeBkm && <BkmDetailModal key={`monitoring-bkm-detail-${activeBkm.id}`} bkmId={activeBkm.id} monitorId={activeBkm.monitorId} onClose={() => { setActiveBkm(null); detailRoute.finishTransition(); }} />}
         {compareOpen && <CompareMonitorsModal key={`monitoring-compare-${compareItems.map((item) => item.id).join('-') || 'empty'}`} items={compareItems} onClose={() => setCompareOpen(false)} />}
-        {showBulkEditModal && (
+        {showBulkEditModal && canWrite && (
           <BulkEditTableModal
             key={`monitoring-bulk-edit-${selectedItems.map((item) => item.id).join('-') || 'empty'}`}
             items={selectedItems}
@@ -2473,6 +2491,7 @@ export default function MonitoringGrid() {
             operators={operators || []}
             severities={severities}
             notificationMethods={notificationMethods}
+            canWrite={canWrite}
             onClose={() => setShowBulkEditModal(false)}
             onSuccess={() => {
               queryClient.invalidateQueries({ queryKey: ['monitoring-items'] })
@@ -2483,7 +2502,7 @@ export default function MonitoringGrid() {
         )}
         <OperationalImportModal
           key="monitoring-import-modal"
-          isOpen={showImportModal}
+          isOpen={showImportModal && canWrite}
           onClose={() => setShowImportModal(false)}
           tableName="monitoring_items"
           displayName="Monitoring"
@@ -2610,7 +2629,7 @@ function CompareRow({ label, value, multiline = false, colorIndex = -1 }: { labe
 }
 
 
-function BulkEditTableModal({ items, teams, operators, severities, notificationMethods, onClose, onSuccess, onDirtyChange }: any) {
+function BulkEditTableModal({ items, teams, operators, severities, notificationMethods, canWrite, onClose, onSuccess, onDirtyChange }: any) {
   const [rows, setRows] = useState(() => items.map((item: any) => ({
     id: item.id,
     title: item.title,
@@ -2652,6 +2671,7 @@ function BulkEditTableModal({ items, teams, operators, severities, notificationM
 
   const mutation = useMutation({
     mutationFn: async () => {
+      if (!canWrite) throw new Error('Monitoring edit permission is required')
       for (const row of rows) {
         const payload = {
           status: row.status,
@@ -2697,7 +2717,7 @@ function BulkEditTableModal({ items, teams, operators, severities, notificationM
         <div className="flex items-center gap-3">
           <ToolbarButton 
             onClick={() => mutation.mutate()} 
-            disabled={mutation.isPending} 
+            disabled={!canWrite || mutation.isPending}
             variant="primary"
           >
             {mutation.isPending ? <Clock className="animate-spin" size={14} /> : <Check size={14} />}
@@ -2818,7 +2838,7 @@ function RecipientsModal({ recipients, method, onClose }: any) {
 
 // Extracted to BkmDetailModal.tsx
 
-function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm, onDelete, onOpenAsset, onOpenKnowledge, deleteConfirm }: any) {
+function MonitoringDetailModal({ item, canWrite, writeReason, onClose, onEdit, onOpenHistory, onOpenBkm, onDelete, onOpenAsset, onOpenKnowledge, deleteConfirm }: any) {
   useEscapeDismiss(onClose)
   useBodyModalFlag()
   const knowledgeAction = useModuleActionPolicy('knowledge')
@@ -2874,12 +2894,15 @@ function MonitoringDetailModal({ item, onClose, onEdit, onOpenHistory, onOpenBkm
       }
       footerRight={
         <>
-            <ToolbarButton onClick={() => onEdit?.(item)}>Edit Monitor</ToolbarButton>
+            <ToolbarButton onClick={() => canWrite && onEdit?.(item)} disabled={!canWrite} title={!canWrite ? writeReason : undefined}>Edit Monitor</ToolbarButton>
             <ToolbarButton onClick={() => onOpenHistory?.(item)}>History</ToolbarButton>
             <ToolbarButton onClick={() => onOpenBkm?.(item)}>Recovery</ToolbarButton>
             <ToolbarButton 
               variant="danger" 
+              disabled={!canWrite}
+              title={!canWrite ? writeReason : undefined}
               onClick={() => {
+                if (!canWrite) return
                 if (deleteConfirm) {
                   const action = item.is_deleted ? 'Purged' : 'Archived';
                   onDelete?.(item);
@@ -3183,7 +3206,7 @@ const isMonitoringFieldRequired = (fieldName: string) => MONITORING_REQUIRED_FIE
 
 const monitoringInputClass = (error?: string) => getWorkspaceInputClass(error)
 
-function MonitoringHistoryModal({ item, onClose }: any) {
+function MonitoringHistoryModal({ item, canWrite, writeReason, onClose }: any) {
   useEscapeDismiss(onClose)
   useBodyModalFlag()
   const [isMaximized, setIsMaximized] = useState(false)
@@ -3336,8 +3359,11 @@ function MonitoringHistoryModal({ item, onClose }: any) {
                            <button 
                              type="button"
                              aria-label={`Restore revision ${h.v_num}`}
+                             disabled={!canWrite}
+                             title={!canWrite ? writeReason : undefined}
                              onClick={async (e) => {
                                e.stopPropagation()
+                               if (!canWrite) return
                                showWorkspaceToast('Restoring state...', { type: 'loading' })
                                try {
                                  const response: any = await apiFetch(`/api/v1/monitoring/${item.id}/restore/${h.id}`, { method: 'POST' })

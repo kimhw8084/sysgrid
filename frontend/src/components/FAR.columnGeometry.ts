@@ -11,7 +11,7 @@ export const FAR_GOLDEN_COLUMN_GEOMETRY: readonly FarGoldenColumnGeometry[] = [
   { colId: 'failure_type', headerName: 'Type', defaultWidth: 108, minWidth: 96, dynamicDefault: true },
   { colId: 'title', headerName: 'Failure Mode', defaultWidth: 260, minWidth: 200, dynamicDefault: true },
   { colId: 'severity', headerName: 'S', defaultWidth: 72, minWidth: 68 },
-  { colId: 'occurrence', headerName: 'O', defaultWidth: 72, minWidth: 68 },
+  { colId: 'occurrence', headerName: 'O', defaultWidth: 84, minWidth: 84 },
   { colId: 'detection', headerName: 'D', defaultWidth: 72, minWidth: 68 },
   { colId: 'rpn', headerName: 'RPN', defaultWidth: 130, minWidth: 130 },
   { colId: 'status', headerName: 'Maturity', defaultWidth: 164, minWidth: 152 },

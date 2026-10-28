@@ -26,7 +26,7 @@ describe('Monitoring permanent purge', () => {
     fetchMock.mockResolvedValueOnce(response(preview(7))).mockResolvedValueOnce(response({ ...preview(7), status: 'success', can_revert: false }))
     const purged = vi.fn()
     const pending = { current: new Set<number>() }
-    const router = createMemoryRouter([{ path: '/', element: <MonitoringPurgeDialog ids={[7]} pendingIds={pending} onClose={() => {}} onPurged={purged} /> }])
+    const router = createMemoryRouter([{ path: '/', element: <MonitoringPurgeDialog ids={[7]} pendingIds={pending} canWrite onClose={() => {}} onPurged={purged} /> }])
     render(<RouterProvider router={router} />)
     const confirm = screen.getByRole('button', { name: 'Confirm Permanent purge' })
     expect(confirm).toBeDisabled()
@@ -42,7 +42,7 @@ describe('Monitoring permanent purge', () => {
 
   it('rejects an incomplete preview and an overlapping in-flight recovery', async () => {
     fetchMock.mockResolvedValueOnce(response({ ...preview(7), precondition: undefined })).mockResolvedValueOnce(response(preview(7)))
-    const router = createMemoryRouter([{ path: '/', element: <MonitoringPurgeDialog ids={[7]} pendingIds={{ current: new Set([7]) }} onClose={() => {}} onPurged={() => {}} /> }])
+    const router = createMemoryRouter([{ path: '/', element: <MonitoringPurgeDialog ids={[7]} pendingIds={{ current: new Set([7]) }} canWrite onClose={() => {}} onPurged={() => {}} /> }])
     render(<RouterProvider router={router} />)
     await screen.findByText('The server did not return a complete permanent-purge preview.')
     expect(screen.getByRole('button', { name: 'Confirm Permanent purge' })).toBeDisabled()
@@ -60,7 +60,7 @@ describe('Monitoring permanent purge', () => {
     const React = await import('react')
     function Host() {
       const [ids, update] = React.useState([1]); setIds = update
-      return <MonitoringPurgeDialog ids={ids} pendingIds={React.useRef(new Set<number>())} onClose={() => {}} onPurged={() => {}} />
+      return <MonitoringPurgeDialog ids={ids} pendingIds={React.useRef(new Set<number>())} canWrite onClose={() => {}} onPurged={() => {}} />
     }
     const router = createMemoryRouter([{ path: '/', element: <Host /> }])
     render(<RouterProvider router={router} />)
@@ -82,7 +82,7 @@ describe('Monitoring permanent purge', () => {
     function Host() {
       const [moved, setMoved] = React.useState(false)
       navigate = () => setMoved(true)
-      return <MonitoringPurgeDialog ids={moved ? null : [7]} pendingIds={React.useRef(new Set<number>())} onClose={() => {}} onPurged={moved ? after : before} />
+      return <MonitoringPurgeDialog ids={moved ? null : [7]} pendingIds={React.useRef(new Set<number>())} canWrite onClose={() => {}} onPurged={moved ? after : before} />
     }
     const router = createMemoryRouter([{ path: '/', element: <Host /> }])
     render(<RouterProvider router={router} />)

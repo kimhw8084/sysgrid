@@ -15,7 +15,7 @@ describe('FAR golden column geometry', () => {
       { colId: 'failure_type', headerName: 'Type', defaultWidth: 108, minWidth: 96, dynamicDefault: true },
       { colId: 'title', headerName: 'Failure Mode', defaultWidth: 260, minWidth: 200, dynamicDefault: true },
       { colId: 'severity', headerName: 'S', defaultWidth: 72, minWidth: 68, dynamicDefault: false },
-      { colId: 'occurrence', headerName: 'O', defaultWidth: 72, minWidth: 68, dynamicDefault: false },
+      { colId: 'occurrence', headerName: 'O', defaultWidth: 84, minWidth: 84, dynamicDefault: false },
       { colId: 'detection', headerName: 'D', defaultWidth: 72, minWidth: 68, dynamicDefault: false },
       { colId: 'rpn', headerName: 'RPN', defaultWidth: 130, minWidth: 130, dynamicDefault: false },
       { colId: 'status', headerName: 'Maturity', defaultWidth: 164, minWidth: 152, dynamicDefault: false },

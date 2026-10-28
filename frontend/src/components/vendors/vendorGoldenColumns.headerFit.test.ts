@@ -16,7 +16,7 @@ describe('Vendor header width constraints', () => {
       renderPrimaryRowActions: () => null,
     })
 
-    expect(columns.find((column: any) => column.field === 'country')).toMatchObject({ minWidth: 128, maxWidth: 128 })
+    expect(columns.find((column: any) => column.field === 'country')).toMatchObject({ minWidth: 136, maxWidth: 136 })
     expect(columns.find((column: any) => column.field === 'primary_personnel_name')).toMatchObject({ minWidth: 192, maxWidth: 200 })
     expect(columns.find((column: any) => column.field === 'personnel_count')).toMatchObject({ minWidth: 144 })
   })

@@ -175,7 +175,7 @@ describe('PC-50 FAR operational workspace core + saved-view continuity exact G b
       'isLoading: modesLoading',
       'filterFarModes(lifecycleModes, searchTerm, quickFilters)',
       "field: 'severity', headerName: 'S', width: 72, minWidth: 68",
-      "field: 'occurrence', headerName: 'O', width: 72, minWidth: 68",
+      "field: 'occurrence', headerName: 'O', width: 84, minWidth: 84",
       "field: 'detection', headerName: 'D', width: 72, minWidth: 68",
       "field: 'rpn', headerName: 'RPN', width: 130, minWidth: 130",
       "title: 'RPN Definition Matrix'",

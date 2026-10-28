@@ -46,9 +46,9 @@ export function buildVendorGoldenColumns({
       kind: 'plain',
       field: 'country',
       headerName: 'Country',
-      width: 120,
-      minWidth: 120,
-      maxWidth: 128,
+      width: 136,
+      minWidth: 136,
+      maxWidth: 136,
       emptyValue: 'Unspecified',
       hide: hiddenColumns.includes('country'),
     },
@@ -151,7 +151,7 @@ export function buildVendorGoldenColumns({
     },
     // Reserve the header controls' space for the measured Vendor labels.
     columnConfigs: applyOperationalHeaderWidthBounds(columnConfigs, {
-      country: { minWidth: 128, maxWidth: 128 },
+      country: { minWidth: 136, maxWidth: 136 },
       primary_personnel_name: { minWidth: 192 },
       personnel_count: { minWidth: 144 },
     }),

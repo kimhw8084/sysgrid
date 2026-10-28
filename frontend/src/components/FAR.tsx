@@ -728,7 +728,7 @@ export default function FAR() {
       hide: hiddenColumns.includes('severity'),
     }),
     createOperationalMetricBadgeColumn({
-      field: 'occurrence', headerName: 'O', width: 72, minWidth: 68, fontSize,
+      field: 'occurrence', headerName: 'O', width: 84, minWidth: 84, fontSize,
       resolveTone: (value) => value >= 7 ? 'critical' : value >= 4 ? 'warning' : 'healthy',
       onActivate: () => setShowRpnHelp(true),
       title: 'RPN Definition Matrix',

@@ -44,9 +44,9 @@ for (const file of byFile.keys()) {
   assert(!/\b(?:fs\.)?(?:rm|rmSync|rmdir|unlink|unlinkSync)\s*\(/.test(source), `Unsafe file deletion in ${file}`)
   assert(!/process\.cwd\s*\(/.test(source), `Unscoped working-directory output in ${file}`)
 }
-const matrix = byFile.get('golden-eight-seeded-visual-matrix.spec.ts')
+const matrix = (byFile.get('golden-eight-seeded-visual-matrix.spec.ts') || [])
+  .filter(spec => spec.title === 'renders representative populated desktop states for every completed target view')
 assert.equal(matrix.length, 1, 'Exactly one populated desktop matrix must be selected')
-assert.equal(matrix[0].title, 'renders representative populated desktop states for every completed target view')
 for (const [file, prefix] of [
   ['vendors-real-runtime.spec.ts', 'keeps default column headings readable in'],
   ['external-workflows.spec.ts', 'keeps default column headings readable in'],

@@ -365,8 +365,8 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         }
         if (importantColumns[route.key]) {
           const target = importantColumns[route.key]
-          const requiredMinimums = route.key === 'assets' ? { name: 180, system: 112, type: 96, status: 132, environment: 80, owner: 104 } : route.key === 'external' ? { status: 120, business_purpose: 220, link_count: 130 } : { name: 180, country: 120, primary_personnel_name: 180, primary_personnel_email: 190 }
-          const requiredMaximums = route.key === 'assets' ? { name: 210, system: 128, type: 104, status: 144, environment: 96, owner: 112 } : route.key === 'vendors' ? { name: 220, country: 128, primary_personnel_name: 200, primary_personnel_email: 200 } : {}
+          const requiredMinimums = route.key === 'assets' ? { name: 180, system: 112, type: 96, status: 132, environment: 80, owner: 104 } : route.key === 'external' ? { status: 120, business_purpose: 220, link_count: 130 } : route.key === 'vendors' ? { name: 180, country: 136, primary_personnel_name: 180, primary_personnel_email: 190 } : { name: 180, country: 120, primary_personnel_name: 180, primary_personnel_email: 190 }
+          const requiredMaximums = route.key === 'assets' ? { name: 210, system: 128, type: 104, status: 144, environment: 96, owner: 112 } : route.key === 'vendors' ? { name: 220, country: 136, primary_personnel_name: 200, primary_personnel_email: 200 } : {}
           const widthColumnIds = route.key === 'assets' ? ['name', 'system', 'type', 'environment', ...target.columnIds] : route.key === 'vendors' ? ['name', ...target.columnIds] : target.columnIds
           await expectColumnsFullyVisible(page, row, route.key, target.apiName, target.columnIds)
           await expectColumnMinimumWidths(page, route.key, target.apiName, widthColumnIds, requiredMinimums, requiredMaximums)
