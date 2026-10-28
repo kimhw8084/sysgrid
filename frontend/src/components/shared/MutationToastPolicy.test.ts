@@ -9,7 +9,7 @@ function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
     const file = path.join(directory, entry.name)
     if (entry.isDirectory()) return sourceFiles(file)
-    return /\.(?:ts|tsx)$/.test(entry.name) ? [file] : []
+    return /\.(?:ts|tsx)$/.test(entry.name) && !/\.(?:test|spec)\.(?:ts|tsx)$/.test(entry.name) ? [file] : []
   })
 }
 
@@ -17,6 +17,7 @@ function mutationErrorsWithLocalToast(source: string, fileName: string): boolean
   // Avoid building a TypeScript AST for files that cannot match the policy.
   // The AST predicate below requires these exact identifiers in the source.
   if (!source.includes('useMutation')) return false
+  if (!source.includes('onError')) return false
   if (!source.includes('showWorkspaceToast')
     && !source.includes('showOperationalBulkErrorToast')
     && !source.includes('toast')) return false

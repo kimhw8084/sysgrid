@@ -61,8 +61,27 @@ test('real backend creation survives one failed save and reload without duplicat
   await expect(page.locator('[data-p04-step="success"]')).toBeVisible()
   const success = page.locator('[data-p04-step="success"]')
   await expect(success.getByLabel('Primary metric')).toHaveValue('Eligible workflows adopted; hours recovered')
+
+  let continueDraftRead!: () => void
+  let draftReadStarted!: () => void
+  const draftReadCanContinue = new Promise<void>((resolve) => { continueDraftRead = resolve })
+  const draftReadHasStarted = new Promise<void>((resolve) => { draftReadStarted = resolve })
+  const delayDraftRead = async (route: any) => {
+    draftReadStarted()
+    await draftReadCanContinue
+    await route.continue()
+  }
+  await page.route(`**/api/v2/projects/${draftId}`, delayDraftRead)
+  await page.reload()
+  await expect(page.locator('[data-p04-step="success"]')).toBeVisible()
+  await draftReadHasStarted
   await success.getByLabel('Delivery acceptance checklist').fill('Review evidence remains traceable')
   await success.getByLabel('Measurement definition').fill('Count eligible workflows using approved automation; steward verifies the source every two weeks.')
+  const draftReadResponse = page.waitForResponse((response) => response.url().endsWith(`/api/v2/projects/${draftId}`) && response.request().method() === 'GET')
+  continueDraftRead()
+  await draftReadResponse
+  await expect(success.getByLabel('Delivery acceptance checklist')).toHaveValue('Review evidence remains traceable')
+  await page.unroute(`**/api/v2/projects/${draftId}`, delayDraftRead)
 
   let failedOnce = false
   const failOneSave = async (route: any) => {

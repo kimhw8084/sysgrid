@@ -279,6 +279,42 @@ type CreationForm = {
   name: string; objective: string; problem: string; owner_id: string; team_id: string; priority: string; in_scope: string; out_of_scope: string; target_date: string; no_deadline_reason: string; architecture_assessment: 'Yes' | 'No' | 'Not assessed'; architecture_rationale: string
 }
 type Recovery = { form: CreationForm; creation: CreationDraft; draftId: string | null; createCommandId: string; templateKey: string | null; updatedAt: string }
+const recoveryFormMatchesProject = (form: CreationForm, project: ProjectStoryItem) => (
+  form.name === project.name
+  && form.objective === (project.objective || '')
+  && form.problem === (project.problem || '')
+  && form.owner_id === project.owner_id
+  && form.team_id === (project.team_id ? String(project.team_id) : '')
+  && form.priority === project.priority
+  && form.in_scope === (project.in_scope || '')
+  && form.out_of_scope === (project.out_of_scope || '')
+  && form.target_date === (project.target_date || '')
+  && form.no_deadline_reason === (project.no_deadline_reason || '')
+  && form.architecture_assessment === (project.architecture_assessment || 'Not assessed')
+  && form.architecture_rationale === (project.architecture_rationale || '')
+)
+const recoveryCreationMatchesProject = (creation: CreationDraft, project: ProjectStoryItem) => {
+  const recovered = {
+    draft_step: creation.draft_step || 0,
+    acceptance_criteria: creation.acceptance_criteria || [],
+    metric: { ...creation.metric, target_spec: creation.metric?.target_spec || null },
+    milestones: creation.milestones || [],
+    collaborators: creation.collaborators || [],
+    dependencies: creation.dependencies || [],
+    suggestions_accepted: Boolean(creation.suggestions_accepted),
+  }
+  const saved = project.creation_draft || blankCreationDraft(project.owner_id)
+  const persisted = {
+    draft_step: saved.draft_step || 0,
+    acceptance_criteria: saved.acceptance_criteria || [],
+    metric: { ...saved.metric, target_spec: saved.metric?.target_spec || null },
+    milestones: saved.milestones || [],
+    collaborators: saved.collaborators || [],
+    dependencies: saved.dependencies || [],
+    suggestions_accepted: Boolean(saved.suggestions_accepted),
+  }
+  return JSON.stringify(recovered) === JSON.stringify(persisted)
+}
 const defaultForm = (ownerId: string): CreationForm => ({ name: '', objective: '', problem: '', owner_id: ownerId, team_id: '', priority: 'Medium', in_scope: '', out_of_scope: '', target_date: '', no_deadline_reason: '', architecture_assessment: 'Not assessed', architecture_rationale: '' })
 const readRecovery = (recoveryKey: string): Recovery | null => {
   if (typeof window === 'undefined') return null
@@ -301,6 +337,7 @@ function NewProjectScreen({ userId }: { userId: string }) {
   const [saveError, setSaveError] = useState('')
   const [transitionGaps, setTransitionGaps] = useState<Array<{ code: string; message: string; action: string }>>([])
   const createCommandId = useRef(initialRecovery.current?.createCommandId || crypto.randomUUID())
+  const localEdits = useRef(false)
   const requestedDraftId = searchParams.get('draft') || initialRecovery.current?.draftId || ''
   const serverDraft = useQuery({ queryKey: ['pv1-project-draft', userId, requestedDraftId], queryFn: () => readPV1Project(requestedDraftId), enabled: Boolean(requestedDraftId), retry: 1 })
   const teams = useQuery({ queryKey: ['teams', userId], queryFn: readCreationTeams, staleTime: 60_000 })
@@ -311,7 +348,19 @@ function NewProjectScreen({ userId }: { userId: string }) {
     if (hydrated.current || !serverDraft.data) return
     const saved = serverDraft.data
     const draft = saved.creation_draft || blankCreationDraft(saved.owner_id)
-    setProject(saved); setForm({ name: saved.name, objective: saved.objective || '', problem: saved.problem || '', owner_id: saved.owner_id, team_id: saved.team_id ? String(saved.team_id) : '', priority: saved.priority, in_scope: saved.in_scope || '', out_of_scope: saved.out_of_scope || '', target_date: saved.target_date || '', no_deadline_reason: saved.no_deadline_reason || '', architecture_assessment: saved.architecture_assessment || 'Not assessed', architecture_rationale: saved.architecture_rationale || '' }); setCreation(draft); setStep(draft.draft_step || 0); setTemplateKey(saved.template_key || null); setSaveState('Saved'); hydrated.current = true
+    const recovery = initialRecovery.current
+    const recoveredChanges = recovery?.draftId === saved.id && (
+      !recoveryFormMatchesProject(recovery.form, saved)
+      || !recoveryCreationMatchesProject(recovery.creation, saved)
+      || recovery.templateKey !== (saved.template_key || null)
+    )
+    setProject(saved)
+    if (localEdits.current || recoveredChanges) {
+      setSaveState('Not saved')
+      hydrated.current = true
+      return
+    }
+    setForm({ name: saved.name, objective: saved.objective || '', problem: saved.problem || '', owner_id: saved.owner_id, team_id: saved.team_id ? String(saved.team_id) : '', priority: saved.priority, in_scope: saved.in_scope || '', out_of_scope: saved.out_of_scope || '', target_date: saved.target_date || '', no_deadline_reason: saved.no_deadline_reason || '', architecture_assessment: saved.architecture_assessment || 'Not assessed', architecture_rationale: saved.architecture_rationale || '' }); setCreation(draft); setStep(draft.draft_step || 0); setTemplateKey(saved.template_key || null); setSaveState('Saved'); hydrated.current = true
   }, [serverDraft.data])
 
   useEffect(() => {
@@ -332,7 +381,14 @@ function NewProjectScreen({ userId }: { userId: string }) {
   const selectedTemplate = PROJECT_TEMPLATES.find((template) => template.key === templateKey) || null
   const activeTeams = (teams.data || []).filter((team: any) => !team.is_archived)
   const activeOperators = (operators.data || []).filter((operator: any) => !form.team_id || String(operator.team_id) === form.team_id || operator.username === form.owner_id || operator.external_id === form.owner_id)
-  const setField = (field: keyof CreationForm, value: string) => setForm((current) => ({ ...current, [field]: value }))
+  const setCreationFromUser: React.Dispatch<React.SetStateAction<CreationDraft>> = (value) => {
+    localEdits.current = true
+    setCreation(value)
+  }
+  const setField = (field: keyof CreationForm, value: string) => {
+    localEdits.current = true
+    setForm((current) => ({ ...current, [field]: value }))
+  }
   const creationWithStep = (nextStep: number) => ({ ...creation, draft_step: nextStep })
 
   const persist = async (draftValue: CreationDraft = creationWithStep(step)): Promise<ProjectStoryItem> => {
@@ -348,7 +404,10 @@ function NewProjectScreen({ userId }: { userId: string }) {
       }
       const saved = await savePV1CreationDraft(current, { name: form.name.trim(), objective: form.objective.trim() || null, problem: form.problem.trim() || null, in_scope: form.in_scope.trim() || null, out_of_scope: form.out_of_scope.trim() || null, priority: form.priority, target_date: form.target_date || null, no_deadline_reason: form.no_deadline_reason.trim() || null, architecture_assessment: form.architecture_assessment, architecture_rationale: form.architecture_rationale.trim() || null, template_key: selectedTemplate?.key || null, template_version: selectedTemplate?.version || null }, draftValue)
       setProject(saved); setCreation(draftValue); setSaveState('Saved')
-      localStorage.setItem(recoveryKey, JSON.stringify({ form, creation: draftValue, draftId: saved.id, createCommandId: createCommandId.current, templateKey, updatedAt: new Date().toISOString() }))
+      const savedRecovery = { form, creation: draftValue, draftId: saved.id, createCommandId: createCommandId.current, templateKey, updatedAt: new Date().toISOString() }
+      initialRecovery.current = savedRecovery
+      localEdits.current = false
+      localStorage.setItem(recoveryKey, JSON.stringify(savedRecovery))
       queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] })
       return saved
     } catch (error) {
@@ -362,8 +421,9 @@ function NewProjectScreen({ userId }: { userId: string }) {
     try { await persist(nextCreation); setStep(nextStep); setTransitionGaps([]) } catch { /* form and recovery remain in place */ }
   }
   const applyTemplate = (template: ProjectTemplate | null) => {
-    if (!template) { setTemplateKey(null); setCreation(blankCreationDraft(form.owner_id || userId)); return }
-    setTemplateKey(template.key); setCreation(applyProjectTemplate(creation, template, form.owner_id || userId))
+    localEdits.current = true
+    if (!template) { setTemplateKey(null); setCreationFromUser(blankCreationDraft(form.owner_id || userId)); return }
+    setTemplateKey(template.key); setCreationFromUser(applyProjectTemplate(creation, template, form.owner_id || userId))
   }
   const createProject = async () => {
     try {
@@ -411,8 +471,8 @@ function NewProjectScreen({ userId }: { userId: string }) {
       <ol className="p04-steps">{steps.map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined} className={index < step ? 'is-complete' : ''}><span>{index < step ? <CheckCircle2 size={16} /> : index + 1}</span><strong>{label}</strong></li>)}</ol>
       <div className="p04-create-layout"><section className="p04-step-card">
         {step === 0 ? <PurposeStep form={form} setField={setField} templates={PROJECT_TEMPLATES} selectedTemplate={selectedTemplate} applyTemplate={applyTemplate} teams={activeTeams} operators={activeOperators} /> : null}
-        {step === 1 ? <SuccessStep creation={creation} setCreation={setCreation} operators={activeOperators} selectedTemplate={selectedTemplate} /> : null}
-        {step === 2 ? <DeliveryStep form={form} setField={setField} creation={creation} setCreation={setCreation} operators={activeOperators} selectedTemplate={selectedTemplate} /> : null}
+        {step === 1 ? <SuccessStep creation={creation} setCreation={setCreationFromUser} operators={activeOperators} selectedTemplate={selectedTemplate} /> : null}
+        {step === 2 ? <DeliveryStep form={form} setField={setField} creation={creation} setCreation={setCreationFromUser} operators={activeOperators} selectedTemplate={selectedTemplate} /> : null}
         {step === 3 ? <ReviewStep form={form} creation={creation} project={project} gaps={transitionGaps} onGap={(action) => setStep(action.includes('purpose') ? 0 : action.includes('success') ? 1 : 2)} /> : null}
         <footer className="p04-create-footer"><div>{step > 0 ? <button className="p04-button" onClick={() => move(step - 1)} disabled={saveState === 'Saving'}>Back</button> : null}<button className="p04-button" onClick={close} disabled={saveState === 'Saving'}>Close</button><button className="p04-button p04-danger-button" onClick={discard} disabled={saveState === 'Saving'}>Discard</button></div><div>{step < 3 ? <button className="p04-button p04-button-primary" onClick={() => move(step + 1)} disabled={saveState === 'Saving'}>Next <ArrowRight size={16} /></button> : <><button className="p04-button" onClick={() => persist(creationWithStep(3))} disabled={saveState === 'Saving'}>Save draft</button><button className="p04-button p04-button-primary" onClick={createProject} disabled={saveState === 'Saving'}>Create project</button></>}</div></footer>
       </section><aside className="p04-guidance"><ShieldCheck size={22} /><h2>Truthful by default</h2><p>The server creates one versioned Draft and checks every transition. Suggested milestones and metric units become data only after you apply and save them.</p><dl><div><dt>Owner</dt><dd>{ownerLabel(operators.data || [], form.owner_id)}</dd></div><div><dt>Team</dt><dd>{teamLabel(teams.data || [], Number(form.team_id))}</dd></div><div><dt>Lifecycle</dt><dd>Draft → Proposed</dd></div><div><dt>Visibility</dt><dd>Team</dd></div></dl></aside></div>
