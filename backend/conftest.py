@@ -116,7 +116,8 @@ from sqlalchemy import select # Import select here
 
 # The application database drivers are asyncio-based. The AnyIO plugin also
 # selects Trio by default, which cannot await aiosqlite futures.
-@pytest.fixture
+# Session scope supports module-scoped AnyIO tests across plugin versions.
+@pytest.fixture(scope="session")
 def anyio_backend():
     return "asyncio"
 
