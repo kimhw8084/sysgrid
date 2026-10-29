@@ -3,6 +3,7 @@ import { captureTenantPreference, getCurrentTenantId, initializeTenantContext } 
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
+import './workspace-shell-gutters.css'
 import { apiFetch, setApiOverride, getApiBaseUrl } from './api/apiClient'
 import { startConfigurationSync } from './api/configurationSync'
 import { replaceBootstrapConfigurationCache } from './api/bootstrapCache'

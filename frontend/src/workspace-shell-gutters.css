@@ -1,0 +1,36 @@
+/* Keep every workspace on the same outer content gutter as Assets. */
+#sg-main-content[data-sg-content-panel="true"] {
+  padding: 2rem !important;
+}
+
+@media (max-width: 639px) {
+  #sg-main-content[data-sg-content-panel="true"] {
+    padding: 1rem !important;
+  }
+}
+
+/* Project views used independent outer padding and width caps. The app shell
+   now owns that space, so route roots start flush within its content canvas. */
+#sg-main-content [data-p04-projects-story] .p04-shell,
+#sg-main-content .sg-pv1-shell,
+#sg-main-content .p05-page,
+#sg-main-content .p06-page,
+#sg-main-content .p08-page,
+#sg-main-content .p09-page {
+  padding: 0 !important;
+}
+
+#sg-main-content [data-p04-projects-story] .p04-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+#sg-main-content .p04-create,
+#sg-main-content .p08-grid,
+#sg-main-content .p09-hero,
+#sg-main-content .p09-grid {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}

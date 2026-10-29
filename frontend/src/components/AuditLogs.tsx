@@ -251,7 +251,7 @@ export default function AuditLogs() {
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col overflow-y-auto bg-[var(--surface-base)]" data-audit-ledger="true">
-      <div className="min-w-0 shrink-0 space-y-4 border-b border-[var(--grid-border)] bg-[var(--surface-base)] px-3 py-4 sm:px-8 sm:py-6">
+      <div className="min-w-0 shrink-0 space-y-4 border-b border-[var(--grid-border)] bg-[var(--surface-base)] py-4 sm:py-6">
         <PageHeader
           eyebrow="Registry"
           title={
@@ -337,7 +337,7 @@ export default function AuditLogs() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: isMobileLayout ? 'auto' : 208, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="shrink-0 overflow-hidden bg-[var(--surface-base)] border-b border-[var(--grid-border)] px-3 py-3 flex flex-col items-stretch gap-4 sm:px-6 sm:py-0 sm:flex-row sm:items-center sm:gap-6"
+            className="shrink-0 overflow-hidden bg-[var(--surface-base)] border-b border-[var(--grid-border)] py-3 flex flex-col items-stretch gap-4 sm:py-0 sm:flex-row sm:items-center sm:gap-6"
           >
              <div className="min-w-0 w-full sm:flex-1">
                 <p className="text-xs font-medium text-[var(--text-secondary)] mb-2 flex items-center gap-2">
