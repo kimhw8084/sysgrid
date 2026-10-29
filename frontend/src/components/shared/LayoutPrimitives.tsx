@@ -31,7 +31,8 @@ export const PageHeader = ({
   subtitle,
   meta,
   actions,
-  className = ''
+  className = '',
+  style,
 }: {
   eyebrow?: ReactNode
   title: ReactNode
@@ -39,8 +40,9 @@ export const PageHeader = ({
   meta?: ReactNode
   actions?: ReactNode
   className?: string
+  style?: React.CSSProperties
 }) => (
-  <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} data-golden-page-header="true">
+  <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} style={style} data-golden-page-header="true">
     <div className="min-w-0 basis-[200px] flex-1 space-y-1">
       {eyebrow && <div className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--accent-primary)]">{eyebrow}</div>}
       <div className="space-y-0.5">
