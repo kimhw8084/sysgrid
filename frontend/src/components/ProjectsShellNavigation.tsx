@@ -2,16 +2,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import './ProjectsVisualRepair.css'
 
 /** Shell navigation stays lightweight: importing it must not import the Gantt workspace. */
-export function useProjectsNavigation(pathname: string, expanded: boolean, setExpanded: (next: boolean) => void) {
+export function useProjectsNavigation(pathname: string, expanded: boolean) {
   const active = pathname === '/projects' || pathname.startsWith('/projects/')
   const [width, setWidth] = useState(() => typeof window === 'undefined' ? 1440 : window.innerWidth)
   const [open, setOpen] = useState(false)
-  const previous = useRef(expanded)
   const toggleRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => { let raf = 0; const update = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setWidth(window.innerWidth)) }; window.addEventListener('resize', update); return () => { window.removeEventListener('resize', update); cancelAnimationFrame(raf) } }, [])
-  useEffect(() => { if (!active) return; previous.current = expanded; return () => setExpanded(previous.current) }, [active]) // preference preserved on route exit
   const mobile = width < 768
-  useEffect(() => { if (active && !mobile) setExpanded(width >= 1440 && previous.current) }, [active, mobile, width >= 1440])
   useEffect(() => { setOpen(false) }, [pathname])
   const close = () => { setOpen(false); requestAnimationFrame(() => toggleRef.current?.focus()) }
   useEffect(() => {
@@ -33,7 +30,10 @@ export function useProjectsNavigation(pathname: string, expanded: boolean, setEx
     document.addEventListener('keydown', keys)
     return () => { document.removeEventListener('keydown', keys); if (main) main.inert = wasInert || false }
   }, [mobile, open])
-  const sidebarExpanded = mobile ? open : active ? width >= 1440 && previous.current : expanded
+  // Projects uses the same persisted desktop navigation preference as every
+  // other route. A project-specific 1440px breakpoint made the global sidebar
+  // unexpectedly collapse and shifted the whole workspace on narrower laptops.
+  const sidebarExpanded = mobile ? open : expanded
   return { active, mobile, open, sidebarExpanded, toggleRef, close, toggle: () => setOpen(value => !value) }
 }
 

@@ -1442,6 +1442,7 @@ export default function VendorsReal() {
           contextMenu={vendorContextMenu}
           fontSize={fontSize}
           rowDensity={rowDensity}
+          compactWhenFewRows={Boolean(searchTerm.trim())}
           context={gridContext}
           selectionScopeKey={selectionScopeKey}
           getRowId={handleRowId}

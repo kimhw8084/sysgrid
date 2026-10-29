@@ -2,7 +2,7 @@ import { useWorkspaceConfirmation } from './shared/useWorkspaceConfirmation'
 import { useWorkspacePrompt } from './shared/useWorkspacePrompt'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, ChevronDown, CircleDot, Clock3, Filter, LayoutList, Milestone, Plus, RefreshCcw, Search, ShieldCheck, Sparkles, Target, Users } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleDot, Clock3, Filter, LayoutList, Milestone, Plus, RefreshCcw, Search, ShieldCheck, Sparkles, Target, Users } from 'lucide-react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   createPV1Draft,
@@ -39,6 +39,7 @@ import {
 import { useModulePolicy } from '../policy/ModulePolicy'
 import { ProjectsPrimaryNavigation } from './ProjectsRouteChrome'
 import { buildProjectsLegacyWorkspacePath } from './ProjectsNavigation'
+import { readOptionalStorage, writeOptionalStorage } from './shared/optionalStorage'
 import './ProjectsPV1.css'
 import './ProjectsStory.css'
 
@@ -76,7 +77,39 @@ const apiFailureDescription = (error: unknown, fallback: string) => {
   return `${error.message || fallback}${requestId ? ` Request ID: ${requestId}.` : ''}`
 }
 
-function StoryShell({ children, active, project, projects = [], teams = [], teamId = '', onTeamChange, onRefresh, refreshing = false, showProjectNavigation = true, onProjectSelectorFocus }: { children: React.ReactNode; active: 'portfolio' | 'new' | 'home'; project?: ProjectStoryItem | null; projects?: ProjectStoryItem[]; teams?: any[]; teamId?: string; onTeamChange?: (value: string) => void; onRefresh?: () => void; refreshing?: boolean; showProjectNavigation?: boolean; onProjectSelectorFocus?: () => void }) {
+function ProjectSelectionRail({ project, projects, collapsed, listLoaded, listLoading, listError, onToggle, onLoad, onSelect }: { project: ProjectStoryItem; projects: ProjectStoryItem[]; collapsed: boolean; listLoaded: boolean; listLoading: boolean; listError: boolean; onToggle: () => void; onLoad: () => void; onSelect: (projectId: string) => void }) {
+  const [search, setSearch] = useState('')
+  const rows = useMemo(() => {
+    const byId = new Map<string, ProjectStoryItem>([[String(project.id), project]])
+    for (const item of projects) byId.set(String(item.id), item)
+    return [...byId.values()].sort((left, right) => left.name.localeCompare(right.name))
+  }, [project, projects])
+  const filteredRows = rows.filter((item) => `${item.name} ${item.display_key} ${item.objective || ''} ${item.owner_id}`.toLowerCase().includes(search.trim().toLowerCase()))
+  if (collapsed) return <aside className="p04-project-rail is-collapsed" data-p04-project-rail="true" data-collapsed="true"><button className="p04-project-rail-expand" type="button" aria-label="Expand project list" title="Expand project list" aria-expanded="false" onClick={onToggle}><ChevronRight size={17} /></button></aside>
+  return <aside className="p04-project-rail" data-p04-project-rail="true" data-collapsed="false">
+    <header className="p04-project-rail-header"><div><p className="p04-eyebrow">Project workspace</p><h2>Projects</h2></div><button type="button" className="p04-project-rail-collapse" aria-label="Collapse project list" title="Collapse project list" aria-expanded="true" onClick={onToggle}><ChevronLeft size={17} /></button></header>
+    {listLoaded ? <label className="p04-project-rail-search"><Search size={15} aria-hidden="true" /><span className="sr-only">Filter projects</span><input aria-label="Filter projects" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Find a project…" /></label> : null}
+    <nav className="p04-project-rail-list" aria-label="Project list">
+      {filteredRows.map((item) => {
+        const selected = String(item.id) === String(project.id)
+        const health = item.story.health.level
+        const phase = item.run_state === 'Active' ? item.phase : item.run_state
+        const rawProgress = item.story.delivery.percent
+        const progress = typeof rawProgress === 'number' && Number.isFinite(rawProgress) ? Math.max(0, Math.min(100, rawProgress)) : null
+        return <button type="button" key={item.id} className={`p04-project-rail-row${selected ? ' is-selected' : ''}`} data-p04-project-rail-row={String(item.id)} data-health={health} aria-current={selected ? 'page' : undefined} aria-label={`${item.name}, ${phase}, ${health}`} title={item.objective || item.name} onClick={() => onSelect(item.id)}>
+          <span className="p04-project-rail-row-main"><strong>{item.name}</strong><small>{item.display_key} · {phase}</small></span>
+          <span className={`p04-project-rail-health p04-health-${health.toLowerCase().replace(/\s+/g, '-')}`}>{health}</span>
+          {progress == null ? <small className="p04-project-rail-progress-note">Delivery not measured</small> : <span className="p04-project-rail-progress" role="meter" aria-label={`${item.name} delivery progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><i style={{ width: `${progress}%` }} /></span>}
+        </button>
+      })}
+      {!filteredRows.length ? <p className="p04-project-rail-empty">No projects match this search.</p> : null}
+    </nav>
+    {!listLoaded ? <div className="p04-project-rail-load"><p>Load the accessible project list to switch projects here. The current project stays available while the list loads.</p>{listError ? <p className="p04-project-rail-error" role="alert">Project list could not be loaded.</p> : null}<button type="button" className="p04-button p04-button-primary" onClick={onLoad} disabled={listLoading}>{listLoading ? 'Loading projects…' : listError ? 'Retry project list' : 'Load project list'}</button></div> : null}
+    {listLoaded && rows.length === 1 ? <p className="p04-project-rail-empty">Only this project is available to you.</p> : null}
+  </aside>
+}
+
+function StoryShell({ children, active, project, projects = [], teams = [], teamId = '', onTeamChange, onRefresh, refreshing = false, showProjectNavigation = true, showProjectSelector = true, projectRailCollapsed = false, projectListLoaded = false, projectListLoading = false, projectListError = false, onToggleProjectRail, onLoadProjectList }: { children: React.ReactNode; active: 'portfolio' | 'new' | 'home'; project?: ProjectStoryItem | null; projects?: ProjectStoryItem[]; teams?: any[]; teamId?: string; onTeamChange?: (value: string) => void; onRefresh?: () => void; refreshing?: boolean; showProjectNavigation?: boolean; showProjectSelector?: boolean; projectRailCollapsed?: boolean; projectListLoaded?: boolean; projectListLoading?: boolean; projectListError?: boolean; onToggleProjectRail?: () => void; onLoadProjectList?: () => void }) {
   const navigate = useNavigate()
   const selectorProjects = project ? [project, ...projects.filter((item) => item.id !== project.id)] : projects
   return <div data-workspace="projects" data-pv1-projects-route="true" data-p04-projects-story="true" className="p04-page">
@@ -85,13 +118,16 @@ function StoryShell({ children, active, project, projects = [], teams = [], team
         <div className="p04-brand"><span>Projects</span><nav aria-label="Projects global navigation"><Link to="/projects" aria-current={active === 'portfolio' ? 'page' : undefined}>Portfolio</Link><Link to="/projects/my-day">My day</Link></nav></div>
         <div className="p04-global-actions">
           {teams.length && onTeamChange ? <label className="p04-team-selector"><span>Team</span><select value={teamId} onChange={(event) => onTeamChange(event.target.value)}><option value="">All allowed teams</option>{teams.filter((team) => !team.is_archived).map((team) => <option key={team.id} value={String(team.id)}>{team.name}</option>)}</select></label> : null}
-          {project ? <label className="p04-project-selector"><span>Project</span><select value={project.id} onFocus={onProjectSelectorFocus} onPointerDown={onProjectSelectorFocus} onChange={(event) => navigate(`/projects/${encodeURIComponent(event.target.value)}/home`)}>{selectorProjects.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label> : null}
+          {project && showProjectSelector ? <label className="p04-project-selector"><span>Project</span><select value={project.id} onChange={(event) => navigate(`/projects/${encodeURIComponent(event.target.value)}/home`)}>{selectorProjects.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label> : null}
           {onRefresh ? <button className="p04-icon-button" type="button" onClick={onRefresh} disabled={refreshing} aria-label="Refresh Projects"><RefreshCcw size={16} className={refreshing ? 'p04-spin' : ''} /></button> : null}
           <Link className="p04-button p04-button-primary" to="/projects/new"><Plus size={16} /> New project</Link>
         </div>
       </header>
       {project && showProjectNavigation ? <ProjectPrimaryNavigation project={project} /> : null}
-      {children}
+      {active === 'home' && project ? <div className={`p04-project-layout${projectRailCollapsed ? ' is-collapsed' : ''}`} data-p04-project-layout="true" data-collapsed={String(projectRailCollapsed)}>
+        <ProjectSelectionRail project={project} projects={projects} collapsed={projectRailCollapsed} listLoaded={projectListLoaded} listLoading={projectListLoading} listError={projectListError} onToggle={onToggleProjectRail || (() => undefined)} onLoad={onLoadProjectList || (() => undefined)} onSelect={(projectId) => navigate(`/projects/${encodeURIComponent(projectId)}/home`)} />
+        <div className="p04-project-content" data-p04-project-content="true">{children}</div>
+      </div> : children}
     </div>
   </div>
 }
@@ -204,19 +240,24 @@ function ProjectHomeScreen({ projectId, userId }: { projectId: string; userId: s
   const { ask, promptDialog } = useWorkspacePrompt()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const projectRailPreferenceKey = `sysgrid_p04_project_rail_collapsed_v1:${encodeURIComponent(userId)}`
+  const [projectRailCollapsed, setProjectRailCollapsed] = useState(() => readOptionalStorage(projectRailPreferenceKey) === 'true')
   const summary = useQuery({ queryKey: ['pv1-project-summary', userId, projectId], queryFn: () => readPV1ProjectSummary(projectId), staleTime: 60_000 })
-  // The first Home viewport needs the current project's canonical summary;
-  // the complete Portfolio projection is only needed when the selector is
-  // opened.  Avoid competing with the summary request for a large graph and
-  // keep the selector's fetch on the existing authorized query path.
+  // Keep the first Home viewport focused on the current project summary. Load
+  // the full Portfolio projection only when someone opens the project list.
   const portfolio = useQuery({ queryKey: ['pv1-projects-portfolio', userId, ''], queryFn: () => readPV1Portfolio(), staleTime: 60_000, enabled: false })
   const teams = useQuery({ queryKey: ['teams', userId], queryFn: readCreationTeams, staleTime: 60_000 })
   const operators = useQuery({ queryKey: ['operators', userId], queryFn: readCreationOperators, staleTime: 60_000 })
   const project = summary.data?.project
   const story = summary.data?.story
-  const loadProjectsForSelector = () => {
+  const loadProjectList = () => {
     if (!portfolio.data && !portfolio.isFetching) void portfolio.refetch()
   }
+  const toggleProjectRail = () => setProjectRailCollapsed((collapsed) => {
+    const next = !collapsed
+    writeOptionalStorage(projectRailPreferenceKey, String(next))
+    return next
+  })
   const readiness = useQuery({ queryKey: ['pv1-project-readiness', userId, projectId, 'Proposed'], queryFn: () => readPV1Readiness(projectId, 'Proposed'), enabled: project?.phase === 'Draft' && !project.archived_at, staleTime: 15_000 })
   const lifecycle = useMutation({ mutationFn: ({ type, payload }: { type: string; payload?: Record<string, unknown> }) => runPV1LifecycleCommand(project!, type, payload), onSuccess: (saved) => { queryClient.setQueryData(['pv1-project-summary', userId, projectId], (current: any) => current ? { ...current, project: saved, story: saved.story, capabilities: saved.capabilities } : current); queryClient.invalidateQueries({ queryKey: ['pv1-projects-portfolio', userId] }) } })
   if (summary.isLoading && !summary.data) return <StoryShell active="home"><StoryState title="Loading Project Home" description="Reading the canonical management story." /></StoryShell>
@@ -239,7 +280,7 @@ function ProjectHomeScreen({ projectId, userId }: { projectId: string; userId: s
     const reason = await ask({ title: 'Cancel project', label: 'Why is this project being cancelled? The record and history will be preserved.' })
     if (reason) command('project.cancel', { reason })
   }
-  return <StoryShell active="home" project={project} projects={portfolio.data?.items || []} teams={teams.data || []} onProjectSelectorFocus={loadProjectsForSelector} onRefresh={() => summary.refetch()} refreshing={summary.isFetching} showProjectNavigation={false}>
+  return <StoryShell active="home" project={project} projects={portfolio.data?.items || []} teams={teams.data || []} onRefresh={() => summary.refetch()} refreshing={summary.isFetching} showProjectNavigation={false} showProjectSelector={false} projectRailCollapsed={projectRailCollapsed} projectListLoaded={Boolean(portfolio.data)} projectListLoading={portfolio.isFetching} projectListError={portfolio.isError && !portfolio.data} onToggleProjectRail={toggleProjectRail} onLoadProjectList={loadProjectList}>
     {confirmation}{promptDialog}
     <main className="p04-home" data-p04-project-home="true">
       {banner ? <div className={`p04-lifecycle-banner p04-lifecycle-${project.archived_at ? 'archived' : project.run_state.toLowerCase()}`}>{banner}</div> : null}

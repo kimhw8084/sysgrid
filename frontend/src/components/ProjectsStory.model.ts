@@ -180,6 +180,7 @@ export const homePrimaryAction = (project: ProjectStoryItem): { label: string; h
   if (project.phase === 'Draft') return { label: 'Complete setup', href: `/projects/new?draft=${encodeURIComponent(project.id)}` }
   if (project.phase === 'Delivered') return { label: 'Record measurement', href: `/projects/${encodeURIComponent(project.id)}/outcomes?section=measurements` }
   if (!project.capabilities.edit) return { label: 'View plan', href: `/projects/${encodeURIComponent(project.id)}/plan` }
+  if (project.story.delivery.label === 'Not planned') return { label: 'Plan delivery', href: `/projects/${encodeURIComponent(project.id)}/plan?section=brief` }
   if (project.story.attention.some((item) => item.kind === 'Late update')) return { label: 'Draft update', href: `/projects/${encodeURIComponent(project.id)}/updates?section=draft` }
   return { label: 'Open work', href: `/projects/${encodeURIComponent(project.id)}/work` }
 }

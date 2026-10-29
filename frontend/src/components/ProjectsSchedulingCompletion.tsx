@@ -138,7 +138,7 @@ export default function ProjectsSchedulingCompletion() {
   if (shouldUseProjectsStory(location.pathname, location.search)) return <ProjectsStory />
   if (shouldUseProjectsWorkPlan(location.pathname, location.search)) return <ProjectsWorkPlan />
   if (shouldUseProjectsOutcomes(location.pathname)) return <ProjectsOutcomes />
-  if (shouldUseProjectsCommunication(location.pathname)) return <ProjectsCommunication />
+  if (shouldUseProjectsCommunication(location.pathname, location.search)) return <ProjectsCommunication />
   const timeline = shouldUseProjectsTimeline(location.pathname)
   if (timeline) return <React.Suspense fallback={<main className="sg-pv1-state" aria-busy="true">Loading Timeline…</main>}><ProjectsTimeline projectId={timeline.projectId} /></React.Suspense>
   return <ProjectsSchedulingWorkspace />

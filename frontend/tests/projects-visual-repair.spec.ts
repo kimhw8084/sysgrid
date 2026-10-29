@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test'
+import { projectsRootPreviewPolicy } from './helpers/projects-root-preview'
 const sizes=[[390,844],[430,932],[768,1024],[1024,768],[1280,720],[1440,900],[1920,1080],[2560,1440]]
 const INTERACTION_BUDGET_MS=1200
 function fixture() {
@@ -18,6 +19,7 @@ async function setup(page:Page){
  await page.route('**/api/v2/**',async route=>{
   const r=route.request(),p=new URL(r.url()).pathname,m=r.method();const json=(value:any)=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(value)})
   if(m==='GET'&&p==='/api/v2/projects')return json({items:[{...canonical(),story:story()}],summary:{Executing:1},as_of:'2026-09-01T00:00:00Z',source_revision:'visual-repair-fixture',coverage:{projects:'complete'},next_cursor:null})
+  if(m==='GET'&&p==='/api/v2/projects/901')return json(canonical())
   if(m==='GET'&&p==='/api/v2/focus')return json({scope:'project',project_id:'901',items:[],total:0,engine_version:'pv-focus-1'})
   if(m==='GET'&&p==='/api/v2/projects/901/work')return json(work())
   if(m==='GET'&&p==='/api/v2/projects/901/schedule')return json(schedule())
@@ -31,6 +33,7 @@ async function setup(page:Page){
   const r=route.request(),p=new URL(r.url()).pathname,m=r.method();let data:any=[]
   if(m==='PUT' && p==='/api/v1/projects/901'){const value=r.postDataJSON();puts.push(value);project={...project,...value,id:901};data=project}
   else if(!['GET','HEAD','OPTIONS'].includes(m))return route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({detail:'Test blocked a non-Project write'})})
+  else if(p==='/api/v1/policy/module-availability')data=projectsRootPreviewPolicy
   else if(p==='/api/v1/projects')data=[project]
   else if(p==='/api/v1/projects/901')data=project
   else if(p.endsWith('/settings/bootstrap'))data={VITE_API_BASE_URL:new URL(r.url()).origin,DEFAULT_USER_ID:'proof_operator'}

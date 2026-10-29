@@ -550,13 +550,13 @@ export default function Knowledge() {
       {/* Header Section */}
       <div className="flex min-w-0 shrink-0 flex-col gap-4 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between" data-knowledge-primary-tools="true">
         <div className="min-w-0 flex-1">
-          <h1 aria-label="Collective Intelligence" className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-black uppercase tracking-tighter text-[var(--text-primary)] sm:text-4xl sm:gap-4 xl:flex-nowrap xl:gap-2 xl:text-3xl">
+          <h1 aria-label="Collective Intelligence" className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-bold uppercase leading-tight tracking-normal text-[var(--text-primary)] sm:text-3xl sm:gap-4 xl:flex-nowrap xl:gap-2 xl:text-2xl">
             <div className="shrink-0 rounded-lg bg-blue-600 p-2 shadow-lg shadow-blue-500/20 sm:p-3">
               <BookOpen size={24} className="text-white sm:h-8 sm:w-8" />
             </div>
-            <span className="min-w-0 break-words">Collective<span aria-hidden="true" className="inline-block w-[0.42em]" /> Intelligence</span>
+            <span className="min-w-0 break-words">Collective Intelligence</span>
           </h1>
-          <p className="mt-2 ml-1 flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 sm:tracking-[0.4em]">
+          <p className="mt-2 ml-1 flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 sm:tracking-[0.16em]">
             <Globe size={12} className="text-blue-500/50" /> Unified Knowledge Matrix // Zero-Loss Information Handoff
           </p>
         </div>
@@ -849,7 +849,7 @@ function KnowledgeQueuePanel({ entries, onOpenEntry }: any) {
           <p className="mt-1 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.1em] text-slate-500">Highest-risk records first</p>
         </div>
         <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">
-          {entries.length} items
+          {entries.length} {entries.length === 1 ? 'item' : 'items'}
         </div>
       </div>
       <div className="mt-3 min-h-0 overflow-y-auto custom-scrollbar space-y-3" role="region" aria-label="Knowledge action queue entries" tabIndex={0}>

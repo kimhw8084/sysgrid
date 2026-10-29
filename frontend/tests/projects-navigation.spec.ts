@@ -94,6 +94,55 @@ test('P01 central-navigation rehearsal exposes six intents and persistent contex
   await expectIntentNav(page)
 })
 
+test('project selection rail collapses to expand the workspace and preserves theme on selection @navigation-acceptance', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/projects?id=901&view=overview')
+  const rail = page.locator('[data-p04-project-rail="true"]')
+  const workspace = page.locator('[data-p04-project-content="true"]')
+  await expect(rail).toBeVisible()
+  await expect(rail.getByRole('button', { name: /P01 — Yield Guardian/ })).toHaveAttribute('aria-current', 'page')
+  const expandedWidth = (await workspace.boundingBox())!.width
+  await rail.getByRole('button', { name: 'Collapse project list' }).click()
+  await expect(rail).toHaveAttribute('data-collapsed', 'true')
+  await expect(rail.getByRole('button', { name: 'Expand project list' })).toBeVisible()
+  await expect.poll(async () => (await workspace.boundingBox())?.width || 0).toBeGreaterThan(expandedWidth + 180)
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('sysgrid_p04_project_rail_collapsed_v1:sysgrid_r2_root_fixture'))).toBe('true')
+  await page.reload()
+  await expect(rail).toHaveAttribute('data-collapsed', 'true')
+  await expect.poll(async () => (await workspace.boundingBox())?.width || 0).toBeGreaterThan(expandedWidth + 180)
+  await rail.getByRole('button', { name: 'Expand project list' }).click()
+  await expect(rail).toHaveAttribute('data-collapsed', 'false')
+  await rail.getByRole('button', { name: 'Load project list' }).click()
+  await expect(rail.getByRole('button', { name: /P02 — Recipe Release Guardrail/ })).toBeVisible()
+  await expect(rail.locator('[data-p04-project-rail-row="902"]')).toHaveAttribute('data-health', 'At risk')
+  await rail.getByRole('textbox', { name: 'Filter projects' }).fill('Recipe Release Guardrail')
+  await expect(rail.locator('[data-p04-project-rail-row="901"]')).toHaveCount(0)
+  await expect(rail.locator('[data-p04-project-rail-row="902"]')).toBeVisible()
+  await rail.getByRole('textbox', { name: 'Filter projects' }).fill('')
+  const theme = await page.locator('html').getAttribute('data-theme')
+  await page.evaluate(() => {
+    const root = document.documentElement
+    const transitions: string[] = []
+    new MutationObserver((records) => {
+      for (const attribute of ['data-theme', 'class']) {
+        const values = records.filter((record) => record.attributeName === attribute).map((record) => record.oldValue)
+        if (!values.length) continue
+        values.push(root.getAttribute(attribute))
+        const states = attribute === 'class' ? values.map((value) => /\bdark\b/.test(String(value || ''))) : values
+        for (let index = 1; index < states.length; index += 1) {
+          if (states[index - 1] !== states[index]) transitions.push(`${attribute}: ${states[index - 1]} → ${states[index]}`)
+        }
+      }
+    }).observe(root, { attributes: true, attributeOldValue: true, attributeFilter: ['data-theme', 'class'] })
+    ;(window as any).__projectThemeTransitions = transitions
+  })
+  await rail.getByRole('button', { name: /P02 — Recipe Release Guardrail/ }).click()
+  await expect(page).toHaveURL(/\/projects\/902\/home$/)
+  await expect(page.locator('html')).toHaveAttribute('data-theme', theme || 'nordic-frost-v1')
+  expect(await page.evaluate(() => (window as any).__projectThemeTransitions)).toEqual([])
+  await page.screenshot({ path: process.env.SYSGRID_PROJECTS_UX_RAIL_SCREENSHOT || testInfo.outputPath('projects-workbench-rail.png'), fullPage: false })
+})
+
 test('P01 Work deep link opens the canonical task graph and Board projection @navigation-acceptance', async ({ page }) => {
   await page.goto('/projects?id=901&view=overview')
   const primary = page.getByRole('navigation', { name: 'Project primary navigation' })
@@ -133,7 +182,7 @@ test('all retained project view aliases history-replace to canonical destination
     ['files', '/projects/901/plan?section=resources'],
     ['updates', '/projects/901/updates?section=updates'],
     ['reports', '/projects/901/updates?section=reports'],
-    ['insights&section=review', '/projects/901/plan?section=risks'],
+    ['insights&section=review', '/projects/901/plan?section=brief'],
   ] as const
   for (const [legacyQuery, canonicalPath] of aliases) {
     await page.goto(`/projects?id=901&view=${legacyQuery}`)

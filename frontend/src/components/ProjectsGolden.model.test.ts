@@ -125,6 +125,7 @@ describe('Projects governance and forecasting model', () => {
     expect(resolveProjectPortfolioSection(null, 'roadmap')).toBe('roadmap')
     expect(resolveProjectPortfolioSection(null, 'owners')).toBe('owners')
     expect(resolveProjectInsightSection(null, 'governance')).toBe('governance')
+    expect(resolveProjectInsightSection('risks')).toBe('governance')
   })
 
   it('normalizes ALL filters and preserves unknown task states for diagnostics', () => {

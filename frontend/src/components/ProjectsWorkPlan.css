@@ -1,6 +1,7 @@
 .p05-page { min-height: 100%; padding: 28px clamp(16px, 4vw, 64px) 80px; background: var(--surface-base); color: var(--text-primary); }
 .p05-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent); padding-bottom: 20px; }
 .p05-header h1, .p05-section-heading h2, .p05-task-panel h2, .p05-plan h2 { margin: 2px 0; letter-spacing: -.02em; }
+.p05-project-context { margin: 3px 0 0; color: var(--text-secondary); font-size: 13px; }.p05-project-context strong { color: var(--action-ink); }
 .p05-header nav { display: flex; flex-wrap: wrap; gap: 14px; }
 .p05-header a, .p05-plan a { color: var(--action-ink); font-weight: 700; }
 .p05-eyebrow { margin: 0; color: var(--text-secondary); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
@@ -56,9 +57,27 @@
 .p05-guidance { grid-column: 1 / -1; display: grid; gap: 8px; }
 .p05-guidance a { display: flex; gap: 8px; align-items: center; }
 .p05-error { color: var(--state-danger); }
+.p05-error button { min-height: 36px; margin-left: 8px; border: 1px solid var(--border-default); border-radius: 7px; padding: 6px 10px; background: var(--surface-overlay); color: var(--action-ink); font-weight: 700; }
 .p05-success { color: var(--state-success); }
 .p05-back { margin-top: 20px; border: 0; background: transparent; color: var(--action-ink); font-weight: 700; }
 :is(.p05-focus, .p05-work-area, .p05-plan, .p05-focus-list li, .p05-board section, .p05-card, .p05-task-panel) { color: var(--text-primary); }
+.p05-filterbar { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:0 0 10px; color:var(--text-secondary); font-size:12px; }
+.p05-filterbar label:first-child { flex:1 1 280px; }
+.p05-filterbar input, .p05-filterbar select { box-sizing:border-box; width:100%; min-height:40px; border:1px solid var(--border-default); border-radius:7px; padding:8px 10px; background:var(--input-bg); color:var(--text-primary); }
+.p05-filterbar label:nth-child(2) { flex:0 1 190px; }
+.p05-filterbar button { min-height:40px; border:1px solid var(--border-default); border-radius:7px; padding:8px 12px; background:var(--surface-overlay); color:var(--action-ink); font-weight:700; }
+.p05-view-hint { margin-right:auto; color:var(--text-secondary); font-size:12px; }
+.p05-card-progress { display:flex; justify-content:space-between; gap:8px; border-top:1px solid var(--border-subtle); padding-top:7px; }
+.p05-card-progress strong { color:var(--action-ink); font-variant-numeric:tabular-nums; }
+.p05-empty-state { margin-top:18px; border:1px solid var(--border-default); border-radius:10px; padding:18px; background:var(--surface-overlay); }
+.p05-empty-title { margin:0; color:var(--text-primary); font-size:16px; font-weight:800; }
+.p05-empty-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.p05-empty-actions a { display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--border-default); border-radius:7px; padding:8px 12px; color:var(--action-ink); font-weight:700; }
+.p05-plan[data-p05-plan-section] { grid-template-columns:minmax(0,1fr); }
+.p05-plan[data-p05-plan-section] > section { grid-column:1; }
+.p05-page :is(a, button, input:not([type='checkbox']), select, textarea, [tabindex]):focus-visible { outline:2px solid var(--accent-primary); outline-offset:2px; }
+:is([data-theme='pure-clarity'], [data-theme='light']) .p05-page :is(input:not([type='checkbox']), select, textarea) { border-color:var(--border-default)!important; background-color:var(--input-bg)!important; color:var(--text-primary)!important; }
+:is([data-theme='pure-clarity'], [data-theme='light']) .p05-page :is(input, textarea)::placeholder { color:var(--text-muted)!important; opacity:1; }
 @media (max-width: 900px) { .p05-header { align-items: flex-start; flex-direction: column; } .p05-board { grid-template-columns: repeat(5, minmax(220px, 1fr)); } .p05-plan { grid-template-columns: 1fr; } .p05-grid-row { grid-template-columns: minmax(230px, 2fr) 120px 130px 100px 120px; } }
 @media (max-width: 600px) {
   .p05-focus, .p05-work-area { padding: 14px; }

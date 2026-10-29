@@ -1,0 +1,53 @@
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-page,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p09-page {
+  background: var(--bg-primary, #111827);
+  color: var(--text-primary, #f3f6fb);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-card,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p09-card,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p09-hero-state {
+  background: var(--sg-surface-1, #202b3d);
+  border-color: var(--border-default, #40506a);
+  box-shadow: none;
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-resource-form input,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-resource-form select,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-resource-form textarea,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-editor textarea,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p09-form select,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p09-form textarea,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p09-measurement-form select,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p09-measurement-form input {
+  background: var(--input-bg, #162033);
+  color: var(--text-primary, #f3f6fb);
+  border-color: var(--border-default, #52637d);
+}
+
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-history-row,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-resource-row,
+:is([data-theme='nordic-frost-v1'], [data-theme='dark']) .p08-report-list article {
+  border-color: var(--border-default, #40506a);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) .p08-page,
+:is([data-theme='pure-clarity'], [data-theme='light']) .p09-page {
+  background: var(--bg-primary, #f7f9fc);
+  color: var(--text-primary, #172033);
+}
+
+:is([data-theme='pure-clarity'], [data-theme='light']) .p08-resource-form :is(input, select, textarea),
+:is([data-theme='pure-clarity'], [data-theme='light']) .p08-editor textarea,
+:is([data-theme='pure-clarity'], [data-theme='light']) .p09-form :is(select, textarea),
+:is([data-theme='pure-clarity'], [data-theme='light']) .p09-measurement-form :is(select, input) {
+  background: var(--input-bg, #fff);
+  color: var(--text-primary, #172033);
+  border-color: var(--border-default, #c8d0dc);
+}
+
+.p08-page :is(button, a, input, select, textarea):focus-visible,
+.p09-page :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent-primary, #2563eb);
+  outline-offset: 2px;
+}

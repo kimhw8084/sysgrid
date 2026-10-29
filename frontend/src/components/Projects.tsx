@@ -84,6 +84,7 @@ const ROI_TYPES = [
   { value: 'stoploss', label: 'Stoploss' },
   { value: 'wpd', label: 'WPD' }
 ]
+const PROJECT_BENEFIT_FIELDS = ['man_hours_saved', 'stoploss_minutes_saved', 'wafers_gained'] as const
 
 // --- Workspace Components ---
 
@@ -2465,7 +2466,7 @@ const ProjectActivityStream = ({ project, allProjects = [] }: any) => {
   )
 }
 
-export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, services, options }: any) => {
+export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, services, options, hideActions = false, onSubmitReady }: any) => {
   const [formData, setFormData] = useState({ 
     name: '', type: 'Strategic', status: 'Planning', priority: 'Medium', owner: '', 
     problem_statement: '', objective: '', description: '', start_date: new Date().toISOString(), end_date: addDays(new Date(), 90).toISOString(),
@@ -2473,6 +2474,9 @@ export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, 
     target_systems: [], target_assets: [], target_services: [], ...initialData 
   })
   const [jiraInput, setJiraInput] = useState((formData.jira_links || []).join(', '))
+  const [impactDrafts, setImpactDrafts] = useState<Record<string, string>>({})
+  const [submitAttempted, setSubmitAttempted] = useState(false)
+  const formErrorRef = useRef<HTMLParagraphElement | null>(null)
 
   // Cascading Logic
   const systemOptions = options?.filter((o:any) => o.category === 'LogicalSystem') || []
@@ -2486,66 +2490,76 @@ export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, 
     return services?.filter((s:any) => formData.target_assets.includes(s.device_id)) || []
   }, [services, formData.target_assets])
 
-  const years = Array.from({ length: 11 }, (_, i) => 2024 + i)
-  const months = [
-    { v: 0, l: 'JAN' }, { v: 1, l: 'FEB' }, { v: 2, l: 'MAR' }, { v: 3, l: 'APR' },
-    { v: 4, l: 'MAY' }, { v: 5, l: 'JUN' }, { v: 6, l: 'JUL' }, { v: 7, l: 'AUG' },
-    { v: 8, l: 'SEP' }, { v: 9, l: 'OCT' }, { v: 10, l: 'NOV' }, { v: 11, l: 'DEC' }
-  ]
-
-  const handleDateChange = (type: 'start' | 'end', part: 'month' | 'year', val: number) => {
-    const d = parseAppDate(formData[`${type}_date`]) || new Date()
-    d.setDate(1)
-    if (part === 'month') d.setMonth(val)
-    else d.setFullYear(val)
-    setFormData({ ...formData, [`${type}_date`]: d.toISOString() })
+  const dateInputValue = (value: unknown) => {
+    const text = String(value || '')
+    const isoDate = /^(\d{4}-\d{2}-\d{2})/.exec(text)?.[1]
+    if (isoDate) return isoDate
+    const parsed = parseAppDate(text)
+    return parsed && !Number.isNaN(parsed.getTime()) ? format(parsed, 'yyyy-MM-dd') : ''
   }
+  const setProjectDate = (field: 'start_date' | 'end_date', value: string) => {
+    setFormData({ ...formData, [field]: value ? new Date(`${value}T00:00:00.000Z`).toISOString() : null })
+  }
+  const startDateInput = dateInputValue(formData.start_date)
+  const finishDateInput = dateInputValue(formData.end_date)
+  const projectDatesValid = Boolean(startDateInput && finishDateInput && startDateInput < finishDateInput)
+  const projectNameValid = Boolean(String(formData.name || '').trim())
+  const projectOwnerValid = Boolean(String(formData.owner || '').trim())
+  const impactValuesValid = PROJECT_BENEFIT_FIELDS.every((field) => {
+    const raw = impactDrafts[field] ?? String(formData[field] ?? 0)
+    return raw.trim() === '' || (Number.isFinite(Number(raw)) && Number(raw) >= 0)
+  })
+  const formError = !projectNameValid ? 'Enter a project name before saving.' : !projectOwnerValid ? 'Assign a project owner before saving.' : !projectDatesValid ? 'Set a start date and a target finish date after it.' : 'Use zero or a positive number for each expected benefit.'
+  const visibleFormError = submitAttempted && (!projectNameValid || !projectOwnerValid || !projectDatesValid || !impactValuesValid) ? formError : ''
+  const submitProject = useCallback(() => {
+    setSubmitAttempted(true)
+    if (!projectNameValid || !projectOwnerValid || !projectDatesValid || !impactValuesValid) return
+    const normalized = { ...formData }
+    PROJECT_BENEFIT_FIELDS.forEach((field) => {
+      const raw = impactDrafts[field]
+      if (raw !== undefined) normalized[field] = raw.trim() === '' ? 0 : Number(raw)
+    })
+    onSave({ ...normalized, name: String(formData.name).trim() })
+  }, [formData, impactDrafts, impactValuesValid, onSave, projectDatesValid, projectNameValid, projectOwnerValid])
 
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }))
       setJiraInput((initialData.jira_links || []).join(', '))
+      setImpactDrafts({})
     }
   }, [initialData])
-
-  const startDate = parseAppDate(formData.start_date) || new Date()
-  const endDate = parseAppDate(formData.end_date) || new Date()
+  useEffect(() => {
+    if (onSubmitReady) onSubmitReady(submitProject)
+  }, [onSubmitReady, submitProject])
+  useEffect(() => {
+    if (visibleFormError) formErrorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [visibleFormError])
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto p-8 bg-[#0a0c14]/50 rounded-lg border border-white/5 shadow-2xl mt-4">
-       <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-600/10 rounded-lg flex items-center justify-center border border-blue-500/20"><Briefcase size={20} className="text-blue-400" /></div><div><h3 className="text-lg font-bold uppercase text-white tracking-tighter">Strategic Matrix Configuration</h3></div></div>
+    <div className="space-y-6 max-w-5xl mx-auto p-8 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-default)] shadow-lg mt-4" data-project-details-form="true">
+       <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-600/10 rounded-lg flex items-center justify-center border border-blue-500/20"><Briefcase size={20} className="text-blue-400" /></div><div><h3 className="text-lg font-bold uppercase text-[var(--text-primary)] tracking-tighter">Project setup</h3></div></div>
        <div className="grid grid-cols-2 gap-8">
           <div className="space-y-5">
-             <div><label className="text-[9px] font-bold text-slate-600 uppercase mb-1.5 block">Project Identifier</label><input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-blue-500" placeholder="Enter project name..."/></div>
-             <div className="grid grid-cols-2 gap-4"><StyledSelect label="Type" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} options={PROJECT_TYPES} /><StyledSelect label="Priority" value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})} options={PROJECT_PRIORITIES} /></div>
-             <div className="grid grid-cols-2 gap-4"><StyledSelect label="Status" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} options={PROJECT_STATUSES} /><div><label className="text-[9px] font-bold text-slate-600 uppercase mb-1.5 block">Lead Owner</label><input value={formData.owner} onChange={e => setFormData({ ...formData, owner: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-xs font-bold text-white outline-none focus:border-blue-500"/></div></div>
+             <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 block">Project name <span aria-hidden="true" className="text-rose-500">*</span></label><input aria-label="Project name" required aria-invalid={submitAttempted && !projectNameValid} aria-describedby={visibleFormError ? 'project-form-error' : undefined} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-blue-500" placeholder="Enter project name..."/></div>
+             <div className="grid grid-cols-2 gap-4"><StyledSelect themeAware label="Project type" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} options={PROJECT_TYPES} /><StyledSelect themeAware label="Priority" value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})} options={PROJECT_PRIORITIES} /></div>
+             <div className="grid grid-cols-2 gap-4"><StyledSelect themeAware label="Status" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} options={PROJECT_STATUSES} /><div><label className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 block">Project owner <span aria-hidden="true" className="text-rose-500">*</span></label><input aria-label="Project owner" required aria-invalid={submitAttempted && !projectOwnerValid} aria-describedby={visibleFormError ? 'project-form-error' : undefined} value={formData.owner} onChange={e => setFormData({ ...formData, owner: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-xs font-bold text-white outline-none focus:border-blue-500"/></div></div>
              
              <div className="space-y-4 pt-4 border-t border-white/5">
-                <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2"><Calendar size={14} /> Timeline parameters</label>
+                <label className="text-[11px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2"><Calendar size={14} /> Project dates</label>
                 <div className="grid grid-cols-2 gap-6">
-                   <div className="space-y-2">
-                      <label className="text-[8px] font-bold text-slate-500 uppercase">Initialization</label>
-                      <div className="flex gap-2">
-                         <select value={startDate.getMonth()} onChange={e => handleDateChange('start', 'month', parseInt(e.target.value))} className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-[10px] font-bold text-white outline-none">{months.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}</select>
-                         <select value={startDate.getFullYear()} onChange={e => handleDateChange('start', 'year', parseInt(e.target.value))} className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-[10px] font-bold text-white outline-none">{years.map(y => <option key={y} value={y}>{y}</option>)}</select>
-                      </div>
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[8px] font-bold text-slate-500 uppercase">Termination</label>
-                      <div className="flex gap-2">
-                         <select value={endDate.getMonth()} onChange={e => handleDateChange('end', 'month', parseInt(e.target.value))} className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-[10px] font-bold text-white outline-none">{months.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}</select>
-                         <select value={endDate.getFullYear()} onChange={e => handleDateChange('end', 'year', parseInt(e.target.value))} className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-2 text-[10px] font-bold text-white outline-none">{years.map(y => <option key={y} value={y}>{y}</option>)}</select>
-                      </div>
-                   </div>
+                   <label className="space-y-2 text-[11px] font-bold text-slate-500 uppercase">Start date <span aria-hidden="true" className="text-rose-500">*</span><input type="date" required max={finishDateInput || undefined} aria-invalid={submitAttempted && !projectDatesValid} aria-describedby={visibleFormError ? 'project-form-error' : undefined} value={startDateInput} onChange={event => setProjectDate('start_date', event.target.value)} className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] px-3 py-2 text-sm font-semibold normal-case text-[var(--text-primary)] outline-none focus:border-blue-500" /></label>
+                   <label className="space-y-2 text-[11px] font-bold text-slate-500 uppercase">Target finish date <span aria-hidden="true" className="text-rose-500">*</span><input type="date" required min={startDateInput || undefined} aria-invalid={submitAttempted && !projectDatesValid} aria-describedby={visibleFormError ? 'project-form-error' : undefined} value={finishDateInput} onChange={event => setProjectDate('end_date', event.target.value)} className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] px-3 py-2 text-sm font-semibold normal-case text-[var(--text-primary)] outline-none focus:border-blue-500" /></label>
                 </div>
+                {visibleFormError ? <p ref={formErrorRef} id="project-form-error" role="alert" className="rounded-lg border border-rose-500/20 bg-rose-500/[0.05] px-3 py-2 text-[11px] font-semibold text-rose-300">{visibleFormError}</p> : null}
              </div>
           </div>
 
           <div className="space-y-5">
              <div className="bg-white/[0.02] p-5 rounded-lg border border-white/5 space-y-4">
-                <h4 className="text-[9px] font-bold text-blue-400 uppercase mb-1 flex items-center gap-2"><BarChart3 size={12} /> Strategic Impact Metrics</h4>
+                <h4 className="text-[11px] font-bold text-blue-400 uppercase mb-1 flex items-center gap-2"><BarChart3 size={12} /> Expected impact</h4>
                 <div className="space-y-3 mb-4">
-                   <h5 className="text-[8px] font-bold text-slate-500 uppercase tracking-widest px-1">Active ROI Streams</h5>
+                   <h5 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-1">Expected benefit types</h5>
                    <div className="grid grid-cols-2 gap-2">
                       {ROI_TYPES.map(t => (
                         <label key={t.value} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${formData.roi_types?.includes(t.value) ? 'bg-blue-600/10 border-blue-500/30 text-blue-400' : 'bg-white/5 border-white/5 text-slate-600'}`}>
@@ -2553,27 +2567,27 @@ export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, 
                              const current = formData.roi_types || []
                              const updated = e.target.checked ? [...current, t.value] : current.filter((v:any) => v !== t.value)
                              setFormData({ ...formData, roi_types: updated })
-                           }} className="rounded-lg border-white/10 bg-black/40 text-blue-600"/><span className="text-[9px] font-bold uppercase tracking-tight">{t.label}</span>
+                           }} className="rounded-lg border-white/10 bg-black/40 text-blue-600"/><span className="text-[11px] font-bold uppercase tracking-tight">{t.label}</span>
                         </label>
                       ))}
                    </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                   <StyledSelect label="Defense Line" value={formData.roi_defense_line} onChange={e => setFormData({...formData, roi_defense_line: parseInt(e.target.value)})} options={DEFENSE_LINES} />
-                   <div><label className="text-[9px] font-bold text-slate-600 uppercase mb-1.5 block">Man-Hours Saved (hr/yr)</label><input type="number" value={formData.man_hours_saved} onChange={e => setFormData({...formData, man_hours_saved: parseFloat(e.target.value) || 0})} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-1.5 text-xs font-bold text-white outline-none" /></div>
+                   <StyledSelect themeAware label="Defense Line" value={formData.roi_defense_line} onChange={e => setFormData({...formData, roi_defense_line: parseInt(e.target.value)})} options={DEFENSE_LINES} />
+                   <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 block">Time saved (hours/year)</label><input aria-label="Time saved (hours per year)" type="number" min="0" step="any" aria-invalid={submitAttempted && !impactValuesValid} aria-describedby={visibleFormError ? 'project-form-error' : undefined} value={impactDrafts.man_hours_saved ?? String(formData.man_hours_saved ?? 0)} onChange={e => setImpactDrafts({ ...impactDrafts, man_hours_saved: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-1.5 text-xs font-bold text-white outline-none" /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                   <div><label className="text-[9px] font-bold text-slate-600 uppercase mb-1.5 block">Stoploss (min/yr)</label><input type="number" value={formData.stoploss_minutes_saved} onChange={e => setFormData({...formData, stoploss_minutes_saved: parseFloat(e.target.value) || 0})} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-1.5 text-xs font-bold text-white outline-none" /></div>
-                   <div><label className="text-[9px] font-bold text-slate-600 uppercase mb-1.5 block">Wafer Yield (WPD)</label><input type="number" value={formData.wafers_gained} onChange={e => setFormData({...formData, wafers_gained: parseFloat(e.target.value) || 0})} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-1.5 text-xs font-bold text-white outline-none" /></div>
+                   <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 block">Loss avoided (minutes/year)</label><input aria-label="Loss avoided (minutes per year)" type="number" min="0" step="any" aria-invalid={submitAttempted && !impactValuesValid} aria-describedby={visibleFormError ? 'project-form-error' : undefined} value={impactDrafts.stoploss_minutes_saved ?? String(formData.stoploss_minutes_saved ?? 0)} onChange={e => setImpactDrafts({ ...impactDrafts, stoploss_minutes_saved: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-1.5 text-xs font-bold text-white outline-none" /></div>
+                   <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 block">Wafer output (wafers/day)</label><input aria-label="Wafer output (wafers per day)" type="number" min="0" step="any" aria-invalid={submitAttempted && !impactValuesValid} aria-describedby={visibleFormError ? 'project-form-error' : undefined} value={impactDrafts.wafers_gained ?? String(formData.wafers_gained ?? 0)} onChange={e => setImpactDrafts({ ...impactDrafts, wafers_gained: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-1.5 text-xs font-bold text-white outline-none" /></div>
                 </div>
-                <div><label className="text-[9px] font-bold text-slate-600 uppercase mb-1.5 block">Jira References</label><input value={jiraInput} onChange={e => { setJiraInput(e.target.value); setFormData({ ...formData, jira_links: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }) }} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-xs font-bold text-white outline-none" placeholder="e.g. PROJ-123, PROJ-456"/></div>
+                <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 block">Jira issue keys</label><input aria-label="Jira issue keys" value={jiraInput} onChange={e => { setJiraInput(e.target.value); setFormData({ ...formData, jira_links: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }) }} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-xs font-bold text-white outline-none" placeholder="e.g. PROJ-123, PROJ-456"/></div>
              </div>
 
              <div className="space-y-4 pt-4 border-t border-white/5">
-                <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2"><Sliders size={14} /> Context boundaries</label>
+                <label className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2"><Sliders size={14} /> Related systems, assets and services</label>
                 <div className="grid grid-cols-3 gap-4">
                    <div className="space-y-2">
-                      <label className="text-[8px] font-bold text-slate-500 uppercase">Systems</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase">Systems</label>
                       <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar bg-black/40 border border-white/10 rounded-lg p-2">
                          {systemOptions.map((o:any) => (
                             <label key={o.value} className="flex items-center gap-2 group cursor-pointer">
@@ -2596,7 +2610,7 @@ export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, 
                       </div>
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[8px] font-bold text-slate-500 uppercase">Assets</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase">Assets</label>
                       <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar bg-black/40 border border-white/10 rounded-lg p-2">
                          {filteredAssets.map((d:any) => (
                             <label key={d.id} className="flex items-center gap-2 group cursor-pointer">
@@ -2615,7 +2629,7 @@ export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, 
                       </div>
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[8px] font-bold text-slate-500 uppercase">Services</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase">Services</label>
                       <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar bg-black/40 border border-white/10 rounded-lg p-2">
                          {filteredServices.map((s:any) => (
                             <label key={s.id} className="flex items-center gap-2 group cursor-pointer">
@@ -2632,16 +2646,16 @@ export const ProjectForm = ({ initialData, onSave, isSaving, onCancel, devices, 
              </div>
           </div>
        </div>
-       <div className="flex gap-4 pt-4">
-          <button onClick={onCancel} className="flex-1 py-3 bg-white/5 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] transition-all">Abort</button>
-          <button 
-            disabled={isSaving || !formData.name || (parseAppDate(formData.start_date)?.getTime() || 0) >= (parseAppDate(formData.end_date)?.getTime() || 0)} 
-            onClick={() => onSave(formData)} 
-            className="flex-[2] py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold uppercase tracking-[0.2em] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+       {!hideActions ? <div className="flex gap-4 pt-4">
+          <button onClick={onCancel} className="flex-1 py-3 bg-white/5 text-slate-500 rounded-lg text-[11px] font-bold uppercase tracking-[0.12em] transition-all">Cancel</button>
+          <button
+            disabled={isSaving}
+            onClick={submitProject}
+            className="flex-[2] py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] font-bold uppercase tracking-[0.12em] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-             {isSaving ? 'Establishing Link...' : 'Commit Strategic Vector'}
+             {isSaving ? 'Saving...' : 'Save project'}
           </button>
-       </div>
+       </div> : null}
     </div>
   )
 }

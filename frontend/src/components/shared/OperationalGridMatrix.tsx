@@ -80,6 +80,10 @@ export const OperationalGridMatrix = React.memo(({
     suppressMovable: false,
     wrapText: false,
     autoHeight: false,
+    tooltipValueGetter: (params: any) => {
+      const value = params.valueFormatted ?? params.value
+      return value == null ? null : String(value)
+    },
     cellClass: OPERATIONAL_GRID_CLASSES.centeredCell,
     headerClass: OPERATIONAL_GRID_CLASSES.centeredHeader,
   }), [])
@@ -138,6 +142,8 @@ export const OperationalGridMatrix = React.memo(({
       suppressCellFocus={true}
       suppressRowClickSelection={suppressRowClickSelection}
       enableCellTextSelection={true}
+      tooltipShowMode="whenTruncated"
+      tooltipShowDelay={300}
       suppressMovableColumns={false}
       ensureDomOrder={false}
       overlayNoRowsTemplate={`<span class='text-slate-500 font-semibold text-[10px]'>${noRowsLabel}</span>`}

@@ -2,3 +2,4 @@
 .p06-project-selector{display:flex;align-items:center;gap:8px;color:var(--pv1-text-muted,#a0abc5);font-size:12px}.p06-project-selector select{min-height:40px;max-width:280px;border:1px solid var(--pv1-border,#3b4153);border-radius:8px;background:var(--pv1-surface-2,#2c2d37);color:var(--pv1-text-primary,#eef0fa);padding:8px}
 @media(max-width:1199px){.p06-page{padding:16px}}
 @media(max-width:767px),(pointer:coarse){.p06-page{padding:12px}.p06-title{align-items:flex-start}.p06-title h1{font-size:24px;line-height:32px}.p06-page button,.p06-state button,.p06-panel input,.p06-panel select,.sg-gantt button,.sg-gantt select{min-width:44px;min-height:44px}.p06-weekdays{grid-template-columns:repeat(4,1fr)}.p06-exception-add{grid-template-columns:1fr}.p06-review{width:calc(100% - 16px)}.p06-review footer{flex-direction:column}.p06-review footer button{width:100%;justify-content:center}}
+.p06-state { flex: 1; min-height: 280px; height: auto; }

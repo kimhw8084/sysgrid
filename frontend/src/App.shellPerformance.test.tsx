@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const observed = vi.hoisted(() => ({
   layouts: 0, pages: 0, health: 0,
   latency: null as null | ((value: number) => void),
+  policy: null as any,
+  scope: 'performance-shell',
 }))
 
 vi.mock('./components/shared/routeFocus', () => ({ useRouteFocus: () => { observed.layouts++ } }))
@@ -12,7 +14,7 @@ vi.mock('./components/shared/TenantSelector', () => ({ TenantSelector: () => <sp
 vi.mock('./components/shared/ErrorConsole', () => ({ ErrorConsole: () => null }))
 vi.mock('./api/apiClient', () => ({
   getConfig: (_name: string, fallback: string) => fallback,
-  getRequestScopeKey: () => 'performance-test',
+  getRequestScopeKey: () => observed.scope,
   subscribeToLatency: (callback: (value: number) => void) => {
     observed.latency = callback
     return () => { observed.latency = null }
@@ -21,7 +23,7 @@ vi.mock('./api/apiClient', () => ({
     json: async () => url.includes('/health')
       ? { status: 'healthy', sample: ++observed.health }
       : url.includes('/policy/')
-        ? { identity: { user_id: 'test.operator', authenticated: true, tenant_admin: true, system_root: false }, modules: { home: { available: true } }, actions: { diagnostics: { read: true } } }
+        ? observed.policy || { identity: { user_id: 'test.operator', authenticated: true, tenant_admin: true, system_root: false }, modules: { home: { available: true } }, actions: { diagnostics: { read: true } } }
         : url.endsWith('/profile') ? { username: 'test.operator', full_name: 'Test Operator' } : {},
   })),
 }))
@@ -53,5 +55,15 @@ describe('application shell render isolation', () => {
     expect(observed.health).toBeGreaterThan(before.health)
     expect(observed.layouts, 'SHELL_RERENDER_REGRESSION').toBe(before.layouts)
     expect(observed.pages).toBe(before.pages)
+  })
+
+  it('fails closed when policy identity is missing without crashing app initialization', async () => {
+    observed.scope = 'missing-policy-identity'
+    observed.policy = { modules: {} }
+    const pagesBefore = observed.pages
+    render(<App />)
+    await screen.findByText('Account unavailable')
+    expect(screen.getByRole('status')).toHaveTextContent('Account unavailable')
+    expect(observed.pages).toBe(pagesBefore)
   })
 })

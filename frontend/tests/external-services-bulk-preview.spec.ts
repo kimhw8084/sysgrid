@@ -4,8 +4,6 @@ import { clickResilientButton, createExternalEntity, createService, resetBrowser
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const multiSelectModifier = process.platform === 'darwin' ? 'Meta' : 'Control'
-const targetEnvironment = 'Development'
-
 async function selectRowsByNames(page: any, names: string[]) {
   const selectedRows = []
   for (const [index, name] of names.entries()) {
@@ -22,15 +20,21 @@ async function selectRowsByNames(page: any, names: string[]) {
   return selectedRows
 }
 
-async function choosePortaledDropdownOption(page: any, label: string) {
+async function chooseAlternativePortaledDropdownOption(page: any, currentLabel: string) {
   const menu = page
     .locator('[data-workspace-panel="true"]')
     .filter({ has: page.getByPlaceholder('Search options...') })
     .last()
   await expect(menu).toBeVisible()
-  const option = menu.getByRole('button', { name: label, exact: true })
-  await expect(option).toBeVisible()
-  await option.click()
+  const options = menu.getByRole('button')
+  for (let index = 0; index < await options.count(); index += 1) {
+    const option = options.nth(index)
+    const label = (await option.innerText()).replace(/\s+/g, ' ').trim()
+    if (!label || label === currentLabel || label === 'No matching options') continue
+    await option.click()
+    return label
+  }
+  throw new Error(`No configured environment differs from ${currentLabel}.`)
 }
 
 test.describe('External and Services authoritative bulk preview', () => {
@@ -51,7 +55,8 @@ test.describe('External and Services authoritative bulk preview', () => {
     await clickResilientButton(page, 'Bulk actions')
     await clickResilientButton(page, 'Set Environment')
     await clickResilientButton(page, 'Choose environment')
-    await choosePortaledDropdownOption(page, targetEnvironment)
+    const serviceTargetEnvironment = await chooseAlternativePortaledDropdownOption(page, 'Production')
+    expect(serviceTargetEnvironment).not.toBe('Production')
     await clickResilientButton(page, 'Apply Environment')
 
     const servicePreview = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Services bulk preview' }) })
@@ -79,7 +84,7 @@ test.describe('External and Services authoritative bulk preview', () => {
     expect(servicesResponse.ok()).toBeTruthy()
     const serviceRows = await servicesResponse.json()
     for (const service of services) {
-      expect(serviceRows.find((row: any) => row.id === service.id)?.environment).toBe(targetEnvironment)
+      expect(serviceRows.find((row: any) => row.id === service.id)?.environment).toBe(serviceTargetEnvironment)
     }
 
     await serviceReceipt.getByRole('button', { name: 'Undo bulk changes' }).click()
@@ -110,7 +115,8 @@ test.describe('External and Services authoritative bulk preview', () => {
     await clickResilientButton(page, 'Bulk actions')
     await clickResilientButton(page, 'Set Environment')
     await clickResilientButton(page, 'Choose environment')
-    await choosePortaledDropdownOption(page, targetEnvironment)
+    const externalTargetEnvironment = await chooseAlternativePortaledDropdownOption(page, 'Production')
+    expect(externalTargetEnvironment).not.toBe('Production')
     await clickResilientButton(page, 'Apply Environment')
 
     const externalPreview = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'External bulk preview' }) })
@@ -137,7 +143,7 @@ test.describe('External and Services authoritative bulk preview', () => {
     expect(externalResponse.ok()).toBeTruthy()
     const externalRows = await externalResponse.json()
     for (const entity of externalEntities) {
-      expect(externalRows.find((row: any) => row.id === entity.id)?.environment).toBe(targetEnvironment)
+      expect(externalRows.find((row: any) => row.id === entity.id)?.environment).toBe(externalTargetEnvironment)
     }
     await externalReceipt.getByRole('button', { name: 'Close bulk receipt' }).click()
     await expect(externalReceipt).not.toBeVisible()

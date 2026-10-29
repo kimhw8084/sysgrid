@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyOperationalColumnSizing, applyOperationalColumnState, lockOperationalColumnWidth } from './OperationalGridSizing'
+import { applyOperationalColumnSizing, applyOperationalColumnState, getOperationalCompactGridHeight, lockOperationalColumnWidth } from './OperationalGridSizing'
+
+describe('compact operational grid sizing', () => {
+  it('fits small filtered result sets without a tall blank panel', () => {
+    expect(getOperationalCompactGridHeight(0, 11, 24)).toBe(139)
+    expect(getOperationalCompactGridHeight(1, 11, 24)).toBe(139)
+    expect(getOperationalCompactGridHeight(5, 11, 24)).toBe(256)
+    expect(getOperationalCompactGridHeight(6, 11, 24)).toBeNull()
+  })
+})
 
 describe('restored pin state', () => {
   it('preserves an explicit unpin after automatic narrow-viewport overflow', () => {

@@ -4,6 +4,18 @@ export const OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY = {
 
 export const OPERATIONAL_GRID_AUTO_SIZE_STRATEGY = OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY
 
+export const getOperationalCompactGridHeight = (
+  visibleRowCount: number,
+  fontSize: number,
+  rowDensity: number,
+): number | null => {
+  if (![visibleRowCount, fontSize, rowDensity].every(Number.isFinite) || visibleRowCount > 5) return null
+  const rows = Math.max(2, Math.floor(visibleRowCount))
+  const headerHeight = fontSize + rowDensity + 10
+  const rowHeight = fontSize + rowDensity + 4
+  return Math.ceil(headerHeight + rows * rowHeight + 16)
+}
+
 export const isOperationalAutoResizeSource = (source: string) => (
   source === 'autosizeColumns' ||
   source === 'sizeColumnsToFit' ||

@@ -7,6 +7,7 @@ import ProjectsModernGantt, { type TimelineScheduleAuthority } from './ProjectsM
 import type { ProjectDependencyType } from './ProjectsSchedulingCompletion.model'
 import { isProjectWorkingOrdinal, scheduleDateOrdinal, type PV1Calendar } from './ProjectsScheduleCore'
 import { shouldUseProjectsTimeline, type ProjectsTimelineRoute } from './ProjectsTimeline.route'
+import { ProjectsLegacyWorkspaceRedirect, ProjectsPrimaryNavigation } from './ProjectsRouteChrome'
 import './ProjectsTimeline.css'
 
 export { shouldUseProjectsTimeline } from './ProjectsTimeline.route'
@@ -92,7 +93,7 @@ function trapDialogTab(event: React.KeyboardEvent, container: HTMLElement | null
 }
 
 function TimelineNavigation({ projectId }: { projectId: string }) {
-  return <nav className="p06-nav" aria-label="Project primary navigation">{[['home','Home'],['work','Work'],['plan','Plan'],['timeline','Timeline'],['updates','Updates'],['outcomes','Outcomes']].map(([key,label]) => <a key={key} href={`/projects/${encodeURIComponent(projectId)}/${key}`} aria-current={key === 'timeline' ? 'page' : undefined}>{label}</a>)}</nav>
+  return <ProjectsPrimaryNavigation projectId={projectId} active="timeline" />
 }
 
 export default function ProjectsTimeline({ projectId }: ProjectsTimelineRoute) {
@@ -105,7 +106,9 @@ export default function ProjectsTimeline({ projectId }: ProjectsTimelineRoute) {
   const [message, setMessage] = useState('')
   const [lastUndoId, setLastUndoId] = useState<string | null>(null)
   const [lastRedoId, setLastRedoId] = useState<string | null>(null)
-  const query = useQuery({ queryKey: ['pv1-schedule', projectId], queryFn: () => readSchedule(projectId), staleTime: 5_000 })
+  const projectQuery = useQuery({ queryKey: ['pv1-project-route', projectId], queryFn: () => apiFetch(`/api/v2/projects/${encodeURIComponent(projectId)}`).then(jsonOrThrow), staleTime: 30_000 })
+  const legacyProject = projectQuery.data?.legacy_project_id != null
+  const query = useQuery({ queryKey: ['pv1-schedule', projectId], queryFn: () => readSchedule(projectId), staleTime: 5_000, enabled: projectQuery.isSuccess && !legacyProject })
   const projectsQuery = useQuery({ queryKey: ['pv1-projects-selector'], queryFn: () => apiFetch('/api/v2/projects?limit=200').then(jsonOrThrow), staleTime: 30_000 })
   const data = query.data
   const project = useMemo(() => data ? adaptSchedule(data) : null, [data])
@@ -174,8 +177,11 @@ export default function ProjectsTimeline({ projectId }: ProjectsTimelineRoute) {
   const selectedTask = (data?.tasks || []).find((item: any) => String(item.id) === searchParams.get('task'))
   const closeTask = () => { const next = new URLSearchParams(searchParams); next.delete('task'); setSearchParams(next, { replace: true }) }
 
-  if (query.isLoading) return <main className="p06-state" aria-busy="true"><CalendarClock/><h1>Loading Timeline</h1><p>Loading the canonical task graph and project calendar.</p></main>
-  if (query.isError || !data || !project) return <main className="p06-state" role="alert"><AlertTriangle/><h1>Timeline unavailable</h1><p>{query.error instanceof Error ? query.error.message : 'The schedule could not be loaded.'}</p><button onClick={() => query.refetch()}><RefreshCcw/> Retry</button></main>
+  if (projectQuery.isPending) return <main className="p06-page" data-workspace="projects" data-pv1-projects-route="true" data-p06-timeline="true"><header className="p06-header"><div><a href="/projects">Portfolio</a><a href="/projects/my-day">My day</a><span>Project {projectId}</span></div></header><TimelineNavigation projectId={projectId}/><section className="p06-state" aria-busy="true"><CalendarClock/><h1>Loading Timeline</h1><p>Loading the project and schedule authority.</p></section></main>
+  if (projectQuery.isError) return <main className="p06-page" data-workspace="projects" data-pv1-projects-route="true" data-p06-timeline="true"><header className="p06-header"><div><a href="/projects">Portfolio</a><a href="/projects/my-day">My day</a><span>Project {projectId}</span></div></header><TimelineNavigation projectId={projectId}/><section className="p06-state" role="alert"><AlertTriangle/><h1>Project unavailable</h1><p>The project could not be loaded. Check access, then retry.</p><button onClick={() => projectQuery.refetch()}><RefreshCcw/> Retry</button></section></main>
+  if (legacyProject) return <main className="p06-page" data-workspace="projects" data-pv1-projects-route="true" data-p06-timeline="true"><header className="p06-header"><div><a href="/projects">Portfolio</a><a href="/projects/my-day">My day</a><span>{projectQuery.data.display_key}</span></div><strong>{projectQuery.data.name}</strong></header><ProjectsPrimaryNavigation projectId={projectId} active="timeline" legacyProjectId={projectQuery.data.legacy_project_id}/><ProjectsLegacyWorkspaceRedirect project={projectQuery.data} view="timeline" /></main>
+  if (query.isPending) return <main className="p06-page" data-workspace="projects" data-pv1-projects-route="true" data-p06-timeline="true"><header className="p06-header"><div><a href="/projects">Portfolio</a><a href="/projects/my-day">My day</a><span>{projectQuery.data?.display_key || projectId}</span></div><strong>{projectQuery.data?.name}</strong></header><TimelineNavigation projectId={projectId}/><section className="p06-state" aria-busy="true"><CalendarClock/><h1>Loading Timeline</h1><p>Loading the canonical task graph and project calendar.</p></section></main>
+  if (query.isError || !data || !project) return <main className="p06-page" data-workspace="projects" data-pv1-projects-route="true" data-p06-timeline="true"><header className="p06-header"><div><a href="/projects">Portfolio</a><a href="/projects/my-day">My day</a><span>{projectQuery.data?.display_key || projectId}</span></div><strong>{projectQuery.data?.name}</strong></header><TimelineNavigation projectId={projectId}/><section className="p06-state" role="alert"><AlertTriangle/><h1>Timeline unavailable</h1><p>Schedule data could not be loaded. Try again.</p><button onClick={() => query.refetch()}><RefreshCcw/> Retry</button></section></main>
   return <main className="p06-page" data-workspace="projects" data-pv1-projects-route="true" data-p06-timeline="true">
     <header className="p06-header"><div><a href="/projects">Portfolio</a><a href="/projects/my-day">My day</a><label className="p06-project-selector"><span>Project</span><select aria-label="Project" value={projectId} onChange={(event) => navigate(`/projects/${encodeURIComponent(event.target.value)}/timeline`)}><option value={projectId}>{data.project.name}</option>{(projectsQuery.data?.items || []).filter((item: any) => String(item.id) !== projectId).map((item: any) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><span>{data.project.display_key}</span></header>
     <TimelineNavigation projectId={projectId}/>

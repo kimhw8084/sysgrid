@@ -75,6 +75,7 @@ export const resolveProjectPortfolioSection = (value?: string | null, legacyView
 export const resolveProjectInsightSection = (value?: string | null, legacyView?: string | null): ProjectInsightSection => {
   const normalized = String(value || '').trim().toLowerCase()
   if (PROJECT_INSIGHT_SECTIONS.includes(normalized as ProjectInsightSection)) return normalized as ProjectInsightSection
+  if (normalized === 'risks') return 'governance'
   return legacyView === 'governance' ? 'governance' : 'review'
 }
 
@@ -309,6 +310,7 @@ export interface ProjectHealthSummary {
   blockedCritical: number
   milestoneRisk: number
   scheduleVarianceDays: number | null
+  unscheduled: number
 }
 
 export const getProjectHealth = (project: any, now: Date = new Date()): ProjectHealthSummary => {
@@ -324,6 +326,7 @@ export const getProjectHealth = (project: any, now: Date = new Date()): ProjectH
   const milestones = getProjectMilestones(project, now)
   const milestoneRisk = milestones.filter((item) => item.blocked || item.overdue).length
   const scheduleVarianceDays = getScheduleVarianceDays(project)
+  const unscheduled = openTasks.filter((task: any) => calendarOrdinal(task?.start_date) == null || calendarOrdinal(task?.end_date) == null).length
   const reasons: string[] = []
   let score = 0
   if (blockedCritical) { score += 5; reasons.push(`${blockedCritical} blocked critical task${blockedCritical === 1 ? '' : 's'}`) }
@@ -331,6 +334,7 @@ export const getProjectHealth = (project: any, now: Date = new Date()): ProjectH
   if (overdue) { score += Math.min(4, overdue * 2); reasons.push(`${overdue} overdue task${overdue === 1 ? '' : 's'}`) }
   if (milestoneRisk) { score += 3; reasons.push(`${milestoneRisk} milestone/checkpoint${milestoneRisk === 1 ? '' : 's'} at risk`) }
   if (scheduleVarianceDays != null && scheduleVarianceDays > 0) { score += scheduleVarianceDays >= 7 ? 4 : 2; reasons.push(`${scheduleVarianceDays}d schedule variance`) }
+  if (unscheduled) { score += 3; reasons.push(`${unscheduled} open task${unscheduled === 1 ? '' : 's'} missing schedule dates`) }
   if (unassigned) { score += Math.min(2, unassigned); reasons.push(`${unassigned} unassigned open task${unassigned === 1 ? '' : 's'}`) }
   if (review >= 4) { score += 2; reasons.push(`${review} tasks waiting in review`) }
   const hasExecutionEvidence = (Array.isArray(project?.tasks) && project.tasks.length > 0) || milestones.length > 0 || scheduleVarianceDays != null
@@ -349,6 +353,7 @@ export const getProjectHealth = (project: any, now: Date = new Date()): ProjectH
     blockedCritical,
     milestoneRisk,
     scheduleVarianceDays,
+    unscheduled,
   }
 }
 
@@ -1028,7 +1033,7 @@ export const getEvidenceReadiness = (project: any) => {
     blockedGates,
     evidence: evidence.length,
     completedEvidence,
-    evidencePercent: evidence.length ? Math.round((completedEvidence / evidence.length) * 100) : (gates.length ? 0 : 100),
+    evidencePercent: evidence.length ? Math.round((completedEvidence / evidence.length) * 100) : null,
   }
 }
 
@@ -1074,9 +1079,12 @@ export const getProjectForecast = (project: any, now: Date = new Date(), slipByT
         critical: critical.has(String(row?.task_id)),
       }
     })
-    const plannedFinishOrdinal = calendarOrdinal(project?.end_date || project?.target_date) ?? (taskForecasts.length ? Math.max(...taskForecasts.map((row) => row.plannedEndOrdinal ?? row.forecastEndOrdinal)) : null)
+    const plannedEnds = taskForecasts.map((row) => row.plannedEndOrdinal).filter((value): value is number => value != null)
+    const plannedFinishOrdinal = calendarOrdinal(project?.end_date || project?.target_date) ?? (plannedEnds.length ? Math.max(...plannedEnds) : null)
     const baselineFinishOrdinal = calendarOrdinal(project?.metadata_json?.baseline_end_date || project?.baseline_end_date)
-    const forecastFinishOrdinal = calendarOrdinal(authoritative.finish) ?? (taskForecasts.length ? Math.max(...taskForecasts.map((row) => row.forecastEndOrdinal)) : plannedFinishOrdinal)
+    const forecastFinishOrdinal = authoritative.coverage?.complete === false
+      ? null
+      : calendarOrdinal(authoritative.finish) ?? (taskForecasts.length ? Math.max(...taskForecasts.map((row) => row.forecastEndOrdinal)) : null)
     return {
       plannedFinishOrdinal,
       baselineFinishOrdinal,
@@ -1088,6 +1096,34 @@ export const getProjectForecast = (project: any, now: Date = new Date(), slipByT
       varianceVsBaselineDays: baselineFinishOrdinal == null || forecastFinishOrdinal == null ? null : forecastFinishOrdinal - baselineFinishOrdinal,
       tasks: taskForecasts,
       drivers: [],
+      coverage: authoritative.coverage || null,
+    }
+  }
+  const missingTaskIds = tasks.filter((task: any) => {
+    const milestone = isProjectTaskMilestone(task)
+    const pointDate = milestone ? calendarOrdinal(task?.point_date || task?.start_date || task?.end_date) : null
+    if (canonicalTaskStatus(task?.status) === 'Completed') {
+      return calendarOrdinal(task?.actual_end_date || task?.actual_finish || task?.end_date) == null && pointDate == null
+    }
+    if (milestone) return pointDate == null
+    return calendarOrdinal(task?.start_date) == null || calendarOrdinal(task?.end_date) == null
+  }).map((task: any) => String(task?.id))
+  if (missingTaskIds.length) {
+    const plannedEnds = tasks.map((task: any) => calendarOrdinal(task?.end_date || (isProjectTaskMilestone(task) ? task?.point_date : null))).filter((value: number | null): value is number => value != null)
+    const plannedFinishOrdinal = calendarOrdinal(project?.end_date || project?.target_date) ?? (plannedEnds.length ? Math.max(...plannedEnds) : null)
+    const baselineFinishOrdinal = calendarOrdinal(project?.metadata_json?.baseline_end_date || project?.baseline_end_date)
+    return {
+      plannedFinishOrdinal,
+      baselineFinishOrdinal,
+      forecastFinishOrdinal: null,
+      plannedFinish: ordinalToDate(plannedFinishOrdinal),
+      baselineFinish: ordinalToDate(baselineFinishOrdinal),
+      forecastFinish: null,
+      varianceVsPlanDays: null,
+      varianceVsBaselineDays: null,
+      tasks: [],
+      drivers: [],
+      coverage: { totalTasks: tasks.length, forecastableTasks: tasks.length - missingTaskIds.length, missingTaskIds, complete: false },
     }
   }
   const memo = new Map<string, ProjectForecastTask>()
@@ -1095,8 +1131,9 @@ export const getProjectForecast = (project: any, now: Date = new Date(), slipByT
   const calculate = (task: any): ProjectForecastTask => {
     const key = String(task?.id)
     const cached = memo.get(key); if (cached) return cached
-    const plannedStart = calendarOrdinal(task?.start_date)
-    const plannedEnd = calendarOrdinal(task?.end_date)
+    const milestoneDate = isProjectTaskMilestone(task) ? calendarOrdinal(task?.point_date || task?.start_date || task?.end_date) : null
+    const plannedStart = milestoneDate ?? calendarOrdinal(task?.start_date)
+    const plannedEnd = milestoneDate ?? calendarOrdinal(task?.end_date)
     const duration = plannedStart != null && plannedEnd != null ? Math.max(1, plannedEnd - plannedStart + 1) : 1
     const remainingRatio = canonicalTaskStatus(task?.status) === 'Completed' ? 0 : Math.max(0.05, (100 - getTaskProgress(task)) / 100)
     const remainingDays = canonicalTaskStatus(task?.status) === 'Completed' ? 0 : Math.max(1, Math.ceil(duration * remainingRatio))
@@ -1109,17 +1146,19 @@ export const getProjectForecast = (project: any, now: Date = new Date(), slipByT
     const deps = (Array.isArray(task?.dependencies_json) ? task.dependencies_json : []).map((dep: any) => taskById.get(String(dep?.id ?? dep?.task_id ?? dep))).filter(Boolean) as any[]
     const dependencyEnd = deps.length ? Math.max(...deps.map((dep) => calculate(dep).forecastEndOrdinal)) : null
     let forecastStart = Math.max(today, plannedStart ?? today, dependencyEnd == null ? -Infinity : dependencyEnd + 1)
-    if (canonicalTaskStatus(task?.status) === 'Completed') forecastStart = plannedStart ?? plannedEnd ?? today
-    let forecastEnd = canonicalTaskStatus(task?.status) === 'Completed' ? (plannedEnd ?? forecastStart) : forecastStart + remainingDays - 1
+    const completedFinish = calendarOrdinal(task?.actual_end_date || task?.actual_finish || task?.end_date) ?? milestoneDate
+    if (canonicalTaskStatus(task?.status) === 'Completed') forecastStart = plannedStart ?? completedFinish ?? today
+    let forecastEnd = canonicalTaskStatus(task?.status) === 'Completed' ? (completedFinish ?? plannedEnd ?? forecastStart) : forecastStart + remainingDays - 1
     if (plannedEnd != null) forecastEnd = Math.max(plannedEnd, forecastEnd)
     forecastEnd += Math.max(0, Math.round(Number(slipByTask[key]) || 0))
     const row = { id: task.id, name: task?.name || 'Unnamed task', plannedEndOrdinal: plannedEnd, forecastStartOrdinal: forecastStart, forecastEndOrdinal: forecastEnd, delayDays: plannedEnd == null ? 0 : Math.max(0, forecastEnd - plannedEnd), critical: critical.has(task.id) }
     visiting.delete(key); memo.set(key, row); return row
   }
   const taskForecasts = tasks.map(calculate)
-  const plannedFinishOrdinal = calendarOrdinal(project?.end_date || project?.target_date) ?? (taskForecasts.length ? Math.max(...taskForecasts.map((row) => row.plannedEndOrdinal ?? row.forecastEndOrdinal)) : null)
+  const plannedEnds = taskForecasts.map((row) => row.plannedEndOrdinal).filter((value): value is number => value != null)
+  const plannedFinishOrdinal = calendarOrdinal(project?.end_date || project?.target_date) ?? (plannedEnds.length ? Math.max(...plannedEnds) : null)
   const baselineFinishOrdinal = calendarOrdinal(project?.metadata_json?.baseline_end_date || project?.baseline_end_date)
-  const forecastFinishOrdinal = taskForecasts.length ? Math.max(...taskForecasts.map((row) => row.forecastEndOrdinal)) : plannedFinishOrdinal
+  const forecastFinishOrdinal = taskForecasts.length ? Math.max(...taskForecasts.map((row) => row.forecastEndOrdinal)) : null
   const drivers = [...taskForecasts].filter((row) => row.delayDays > 0).sort((a, b) => (Number(b.critical) - Number(a.critical)) || b.delayDays - a.delayDays).slice(0, 5)
   return {
     plannedFinishOrdinal,
@@ -1132,18 +1171,20 @@ export const getProjectForecast = (project: any, now: Date = new Date(), slipByT
     varianceVsBaselineDays: baselineFinishOrdinal == null || forecastFinishOrdinal == null ? null : forecastFinishOrdinal - baselineFinishOrdinal,
     tasks: taskForecasts,
     drivers,
+    coverage: { totalTasks: tasks.length, forecastableTasks: tasks.length, missingTaskIds: [], complete: tasks.length > 0 },
   }
 }
 
 export const simulateProjectScenario = (project: any, taskId: number | string, slipDays: number, now: Date = new Date()) => {
   const base = getProjectForecast(project, now)
+  if (base.forecastFinishOrdinal == null) return { baseForecastFinish: null, scenarioForecastFinish: null, finishDeltaDays: null, affected: [] as ProjectForecastTask[] }
   const scenario = getProjectForecast(project, now, { [String(taskId)]: Math.max(0, Math.round(Number(slipDays) || 0)) })
   const baseById = new Map<string, ProjectForecastTask>(base.tasks.map((row: ProjectForecastTask) => [String(row.id), row]))
   const affected = scenario.tasks.filter((row) => row.forecastEndOrdinal > (baseById.get(String(row.id))?.forecastEndOrdinal ?? row.forecastEndOrdinal)).map((row) => ({ ...row, additionalDelayDays: row.forecastEndOrdinal - (baseById.get(String(row.id))?.forecastEndOrdinal ?? row.forecastEndOrdinal) }))
   return {
     baseForecastFinish: base.forecastFinish,
     scenarioForecastFinish: scenario.forecastFinish,
-    finishDeltaDays: base.forecastFinishOrdinal == null || scenario.forecastFinishOrdinal == null ? 0 : scenario.forecastFinishOrdinal - base.forecastFinishOrdinal,
+    finishDeltaDays: base.forecastFinishOrdinal == null || scenario.forecastFinishOrdinal == null ? null : scenario.forecastFinishOrdinal - base.forecastFinishOrdinal,
     affected,
   }
 }

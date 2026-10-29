@@ -59,6 +59,8 @@
 /* Module identity is a restrained accent, not a replacement for the neutral page. */
 [data-golden-workspace='assets'] { --workspace-ink: var(--guide-blue); }
 [data-golden-workspace='monitoring'] { --workspace-ink: var(--guide-teal); }
+[data-golden-workspace='external'], [data-golden-workspace='racks'] { --workspace-ink: var(--guide-blue); }
+[data-golden-workspace='architecture'] { --workspace-ink: var(--guide-violet); }
 [data-golden-workspace='network'] { --workspace-ink: var(--guide-violet); }
 [data-golden-workspace='services'] { --workspace-ink: var(--guide-amber); }
 [data-golden-workspace] [data-golden-page-header] h1 > span > svg,
