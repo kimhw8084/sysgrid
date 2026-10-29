@@ -157,7 +157,7 @@ export const projectRouteForLegacyView = (projectId: string | number, view: Proj
   if (view === 'reports') return buildProjectsDestinationPath(projectId, 'updates', { section: 'reports' })
   if (view === 'insights') {
     if (OUTCOME_SECTIONS.includes(section as typeof OUTCOME_SECTIONS[number])) return buildProjectsDestinationPath(projectId, 'outcomes', { section })
-    const planSection = section === 'architecture' || section === 'risks' ? section : 'brief'
+    const planSection = section === 'review' || section === 'risks' ? 'risks' : section === 'architecture' ? 'architecture' : 'brief'
     return buildProjectsDestinationPath(projectId, 'plan', { section: planSection })
   }
   return buildProjectsDestinationPath(projectId, 'home')

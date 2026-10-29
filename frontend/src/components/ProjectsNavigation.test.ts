@@ -56,7 +56,7 @@ describe('PV1 Projects canonical navigation', () => {
     expect(parseProjectsLocation('/projects', '?view=roadmap').redirectTo).toBe('/projects?section=roadmap')
     expect(projectRouteForLegacyView(42, 'reports')).toBe('/projects/42/updates?section=reports')
     expect(projectRouteForLegacyView(42, 'updates', 'activity')).toBe('/projects/42/updates?section=activity')
-    expect(projectRouteForLegacyView(42, 'insights', 'review')).toBe('/projects/42/plan?section=brief')
+    expect(projectRouteForLegacyView(42, 'insights', 'review')).toBe('/projects/42/plan?section=risks')
   })
 
   it('treats invalid project destinations as not found rather than switching projects', () => {
