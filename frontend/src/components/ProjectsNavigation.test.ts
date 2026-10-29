@@ -53,6 +53,7 @@ describe('PV1 Projects canonical navigation', () => {
     expect(parseProjectsLocation('/projects', '?id=42&view=tasks&task=7&saved_view=sv-2').redirectTo).toBe('/projects/42/work?layout=list&panel=task&entity=7&saved_view=sv-2')
     expect(parseProjectsLocation('/projects', '?id=42&view=reports&report=rp-4').redirectTo).toBe('/projects/42/updates?section=reports&report=rp-4')
     expect(parseProjectsLocation('/projects', '?id=42&view=updates&section=activity').redirectTo).toBe('/projects/42/updates?section=activity')
+    expect(parseProjectsLocation('/projects', '?id=42&view=insights&section=review').redirectTo).toBe('/projects/42/plan?section=brief')
     expect(parseProjectsLocation('/projects', '?view=roadmap').redirectTo).toBe('/projects?section=roadmap')
     expect(projectRouteForLegacyView(42, 'reports')).toBe('/projects/42/updates?section=reports')
     expect(projectRouteForLegacyView(42, 'updates', 'activity')).toBe('/projects/42/updates?section=activity')

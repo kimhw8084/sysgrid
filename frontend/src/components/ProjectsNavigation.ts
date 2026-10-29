@@ -170,6 +170,8 @@ export const buildProjectsLegacyRedirect = (params: URLSearchParams, route: Proj
     ? '/projects'
     : legacyView === 'governance' || route.section === 'governance'
       ? buildProjectsDestinationPath(projectId, 'plan', { section: 'risks' })
+      : legacyView === 'insights' && route.section === 'review'
+        ? buildProjectsDestinationPath(projectId, 'plan', { section: 'brief' })
       : route.kind === 'outcomes'
         ? buildProjectsDestinationPath(projectId, 'outcomes', { section: route.section || 'summary' })
         : projectRouteForLegacyView(projectId, route.legacyView, route.section || undefined)
