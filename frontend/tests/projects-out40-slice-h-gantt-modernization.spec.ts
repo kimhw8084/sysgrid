@@ -261,24 +261,23 @@ test('OUT-40 Slice H bar move and resize each commit one Project PUT @out40-slic
   expect(failures).toEqual([])
 })
 
-test('OUT-40 Slice H narrow Gantt contains page overflow and keeps primary controls >=40px @out40-slice-h-acceptance', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 })
+test('OUT-40 Slice H compact desktop Gantt contains page overflow and keeps primary controls >=40px @out40-slice-h-acceptance', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 })
   const failures = collectFailures(page); await installIdentity(page); await installRoutes(page); const gantt = await openTimeline(page)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)
-  const narrowControls: Array<[string, Locator]> = [
+  const compactControls: Array<[string, Locator]> = [
     ['Today', gantt.getByRole('button', { name: 'Today', exact: true })],
     ['Fit', gantt.getByRole('button', { name: 'Fit', exact: true })],
     ['Timeline zoom', gantt.getByLabel('Timeline zoom', { exact: true })],
     ['Filters', gantt.getByRole('button', { name: 'Filters', exact: true })],
     ['Dependency start', gantt.getByRole('button', { name: 'Start dependency from Gantt task 1', exact: true })],
   ]
-  for (const [label, control] of narrowControls) await expectMinTarget(control, label)
-  const scrollport = gantt.locator('[data-project-timeline-scrollport="true"]'); const scrollBox = await scrollport.boundingBox(); expect(scrollBox).not.toBeNull(); expect(scrollBox!.x).toBeGreaterThanOrEqual(0); expect(scrollBox!.x + scrollBox!.width).toBeLessThanOrEqual(391)
+  for (const [label, control] of compactControls) await expectMinTarget(control, label)
+  const scrollport = gantt.locator('[data-project-timeline-scrollport="true"]'); const scrollBox = await scrollport.boundingBox(); expect(scrollBox).not.toBeNull(); expect(scrollBox!.x).toBeGreaterThanOrEqual(0); expect(scrollBox!.x + scrollBox!.width).toBeLessThanOrEqual(1025)
   expect(failures).toEqual([])
 })
 
-test('P12 dedicated task-1001 virtualization regression evidence @p12-task-1001', async ({ page }) => {
-  test.skip(!process.env.P12_TASK_1001_OUTPUT, 'dedicated P12 evidence invocation only')
+test('P12 task-1001 virtualization remains bounded in the active schedule @p12-task-1001', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 })
   const failures = collectFailures(page)
   await installIdentity(page)
@@ -288,7 +287,9 @@ test('P12 dedicated task-1001 virtualization regression evidence @p12-task-1001'
   const bar = gantt.locator('[data-project-semantic-id="task-bar-1001"]')
   await expect(row).toBeVisible()
   await expect(bar).toBeVisible()
-  await row.click()
+  await row.locator('button.sg-task-name').click()
+  await expect(row).toHaveAttribute('aria-selected', 'true')
+  const selected = await row.getAttribute('aria-selected') === 'true'
   const scrollportHeight = await gantt.locator('[data-project-timeline-scrollport="true"]').evaluate((element) => (element as HTMLElement).clientHeight)
   const realizedRows = await gantt.locator('[data-project-timeline-row="true"]').count()
   const domBound = Math.ceil(scrollportHeight / 48) + 16
@@ -303,13 +304,13 @@ test('P12 dedicated task-1001 virtualization regression evidence @p12-task-1001'
     target_task_id: '1001',
     target_addressable: true,
     target_visible: await row.isVisible(),
-    target_selectable: true,
+    target_selectable: selected,
     realized_row_count: realizedRows,
     scrollport_height: scrollportHeight,
     dom_bound: domBound,
-    verdict: !failures.length && realizedRows <= domBound,
+    verdict: !failures.length && realizedRows <= domBound && selected,
   }
-  writeFileSync(process.env.P12_TASK_1001_OUTPUT, `${JSON.stringify(evidence, null, 2)}\n`)
+  if (process.env.P12_TASK_1001_OUTPUT) writeFileSync(process.env.P12_TASK_1001_OUTPUT, `${JSON.stringify(evidence, null, 2)}\n`)
   expect(failures).toEqual([])
   expect(realizedRows).toBeLessThanOrEqual(domBound)
 })

@@ -225,6 +225,7 @@ def test_release_inventory_contains_current_p0_flows():
     }
     assert release & root_preview == shared_released_workflows
     assert 'golden-eight-seeded-visual-matrix.spec.ts' in release
+    assert 'projects-out40-slice-h-gantt-modernization.spec.ts' in release
     assert 'golden-eight-mobile-routes.spec.ts' in deferred
     assert {
         'notification-layout.spec.ts', 'notification-keyboard.spec.ts',
