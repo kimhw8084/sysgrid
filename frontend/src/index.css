@@ -511,6 +511,10 @@
   padding-right: 4px !important;
 }
 
+.operational-grid-shell .ag-header-cell[col-id='system'] .ag-header-cell-label {
+  padding-right: 4px !important;
+}
+
 .operational-grid-shell .ag-header-cell[col-id='src_port'] .ag-header-cell-label {
   padding-right: 0 !important;
 }
