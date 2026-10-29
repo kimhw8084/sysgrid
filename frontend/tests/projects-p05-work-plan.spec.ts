@@ -15,7 +15,7 @@ const work = {
   blockers: [],
 }
 
-test('P05 Work treegrid exposes expanded row geometry and keyboard status projection', async ({ page }) => {
+test('P05 Work treegrid exposes expanded row geometry and keyboard status projection', async ({ page }, testInfo) => {
   const fixture = structuredClone(work)
   await page.addInitScript((userId) => {
     localStorage.setItem('SYSGRID_OVERRIDE_API_URL', 'http://127.0.0.1:8000')
@@ -23,6 +23,7 @@ test('P05 Work treegrid exposes expanded row geometry and keyboard status projec
     localStorage.setItem('SYSGRID_TENANT_ID', '1')
   }, PROJECTS_ROOT_PREVIEW_USER)
   await page.route('**/api/v2/focus*', async (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ scope: 'project', engine_version: 'pv-focus-1', total: 1, items: [{ id: 'task:task-1', entity_kind: 'task', entity_id: 'task-1', project_id: 'p1', project_name: 'P05 fixture', title: 'Canonical task', due_context: 'No due date', bucket_label: 'In progress or review', why_here: 'In progress or review: In progress work', primary_action: 'Open task', pinned: false }], all_priorities: [] }) }))
+  await page.route('**/api/v2/projects/p1', async (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'p1', display_key: 'PRJ-P05', name: 'P05 fixture', legacy_project_id: null }) }))
   await page.route('**/api/v2/projects/p1/work', async (route) => {
     if (route.request().method() === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(fixture) })
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'applied' }) })
@@ -48,9 +49,10 @@ test('P05 Work treegrid exposes expanded row geometry and keyboard status projec
   await status.press('ArrowDown')
   await status.selectOption('Blocked')
   await expect(status).toHaveValue('Blocked')
+  await page.screenshot({ path: testInfo.outputPath('p05-work-list.png'), fullPage: true, animations: 'disabled' })
 })
 
-test('P05 Board keeps Move to keyboard control in the same task projection', async ({ page }) => {
+test('P05 Board keeps Move to keyboard control in the same task projection', async ({ page }, testInfo) => {
   const fixture = structuredClone(work)
   await page.addInitScript((userId) => {
     localStorage.setItem('SYSGRID_OVERRIDE_API_URL', 'http://127.0.0.1:8000')
@@ -58,6 +60,7 @@ test('P05 Board keeps Move to keyboard control in the same task projection', asy
     localStorage.setItem('SYSGRID_TENANT_ID', '1')
   }, PROJECTS_ROOT_PREVIEW_USER)
   await page.route('**/api/v2/focus*', async (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ scope: 'project', engine_version: 'pv-focus-1', total: 0, items: [], all_priorities: [] }) }))
+  await page.route('**/api/v2/projects/p1', async (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'p1', display_key: 'PRJ-P05', name: 'P05 fixture', legacy_project_id: null }) }))
   await page.route('**/api/v2/projects/p1/work', async (route) => {
     if (route.request().method() === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(fixture) })
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'applied' }) })
@@ -76,9 +79,10 @@ test('P05 Board keeps Move to keyboard control in the same task projection', asy
   await page.getByLabel('Move Canonical task to').press('ArrowDown')
   await page.getByLabel('Move Canonical task to').selectOption('Blocked')
   await expect(page.getByLabel('Move Canonical task to')).toHaveValue('Blocked')
+  await page.screenshot({ path: testInfo.outputPath('p05-work-board.png'), fullPage: true, animations: 'disabled' })
 })
 
-test('P05 real backend browser journey reads the canonical task graph', async ({ page }) => {
+test('P05 real backend browser journey reads the canonical task graph', async ({ page }, testInfo) => {
   test.skip(!process.env.P05_REAL_BACKEND, 'requires the isolated P05 backend proof runtime')
   const apiOrigin = process.env.SYSGRID_P05_API_ORIGIN
   if (!apiOrigin) throw new Error('SYSGRID_P05_API_ORIGIN is required for the real backend journey')
@@ -118,6 +122,16 @@ test('P05 real backend browser journey reads the canonical task graph', async ({
     await grid.getByRole('button', { name: 'Expand Delivery group' }).click()
     await expect(grid).toHaveAttribute('aria-rowcount', '3')
     await expect(grid.getByRole('row').filter({ hasText: 'Canonical child' })).toHaveAttribute('aria-level', '2')
+    await page.screenshot({ path: testInfo.outputPath('p05-real-work.png'), fullPage: true, animations: 'disabled' })
+
+    await page.goto('/projects/my-day')
+    await expect(page.getByRole('heading', { name: 'My day', exact: true })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p05-my-day.png'), fullPage: true, animations: 'disabled' })
+
+    await page.goto(`/projects/${project.id}/plan`)
+    await expect(page.getByRole('heading', { name: 'Plan', exact: true })).toBeVisible()
+    await expect(page.locator('.p05-plan')).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p05-plan.png'), fullPage: true, animations: 'disabled' })
   } finally {
     await api.dispose()
   }

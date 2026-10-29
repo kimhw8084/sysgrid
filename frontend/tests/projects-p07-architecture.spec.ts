@@ -34,21 +34,23 @@ async function open(page: Page, path: string) {
 
 test.beforeEach(() => test.skip(!process.env.P07_REAL_BACKEND, 'requires isolated P07 backend proof runtime'))
 
-test('one canonical object is visible in full Architecture and Project Plan hosts', async ({ page }) => {
+test('one canonical object is visible in full Architecture and Project Plan hosts', async ({ page }, testInfo) => {
   const journey = await setupJourney()
   try {
     await open(page, `/architecture?model=${journey.modelId}&mode=current`)
     await expect(page.locator('[data-pv1-architecture-workspace="true"]')).toBeVisible()
     await expect(page.getByRole('button', { name: 'P07 Service' })).toBeVisible()
     await expect(page.getByText(/revision 2/).first()).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p07-architecture-workspace.png'), fullPage: true, animations: 'disabled' })
     await open(page, `/projects/${journey.projectId}/plan?section=architecture`)
     await expect(page.locator('[data-pv1-architecture-project="' + journey.projectId + '"]')).toBeVisible()
     await expect(page.getByRole('button', { name: 'P07 Service' })).toBeVisible()
     await expect(page.getByRole('tab', { name: 'Impact' })).toHaveAttribute('aria-selected', 'true')
+    await page.screenshot({ path: testInfo.outputPath('p07-architecture-in-plan.png'), fullPage: true, animations: 'disabled' })
   } finally { await journey.api.dispose() }
 })
 
-test('Draft Proposed creates reserved identity without changing Current', async ({ page }) => {
+test('Draft Proposed creates reserved identity without changing Current', async ({ page }, testInfo) => {
   const journey = await setupJourney()
   try {
     await open(page, `/architecture?model=${journey.modelId}&mode=current`)
@@ -57,6 +59,7 @@ test('Draft Proposed creates reserved identity without changing Current', async 
     await page.getByRole('button', { name: 'Create Draft proposal' }).click()
     await expect(page.getByText(/Draft change set created/)).toBeVisible()
     await expect(page.getByText('P07 Proposed Datastore').first()).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p07-proposed-draft.png'), fullPage: true, animations: 'disabled' })
     const current = await journey.api.get(`/api/v2/architecture/models/${journey.modelId}`, { params: { mode: 'current' } })
     expect((await current.json()).objects.map((item: any) => item.name)).not.toContain('P07 Proposed Datastore')
   } finally { await journey.api.dispose() }

@@ -1,0 +1,4 @@
+[data-project-updates-section="activity"] [data-project-update-authoring] { display: none; }
+[data-project-updates-section="updates"] [data-project-system-activity] { display: none; }
+[data-project-updates-section="activity"] { grid-template-columns: minmax(0, 1fr); }
+[data-project-updates-section="updates"] { grid-template-columns: minmax(0, 1fr); }

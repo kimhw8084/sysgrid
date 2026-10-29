@@ -3039,8 +3039,8 @@ export default function Racks() {
 
   if (!allRacks) {
     return (
-      <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
-        <PageHeader title="Racks" subtitle="Physical Capacity & Spatial Intelligence" />
+      <div data-golden-workspace="racks" className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
+        <PageHeader eyebrow="Infrastructure" title={<span className="inline-flex items-center gap-2"><Server size={20} aria-hidden="true" />Racks</span>} subtitle="Physical capacity and spatial intelligence" />
         <div className="flex flex-1 items-center justify-center rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] p-8">
           <RackDataState
             label="Rack records"
@@ -3055,7 +3055,7 @@ export default function Racks() {
   }
 
   return (
-    <div className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
+    <div data-golden-workspace="racks" className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
       {editorConfirmation}
       
       {isPlanMode && (
@@ -3139,8 +3139,9 @@ export default function Racks() {
 
       {/* ── Page Header ── */}
       <PageHeader 
-        title="Racks"
-        subtitle="Physical Capacity & Spatial Intelligence"
+        eyebrow="Infrastructure"
+        title={<span className="inline-flex items-center gap-2"><Server size={20} aria-hidden="true" />Racks</span>}
+        subtitle="Physical capacity and spatial intelligence"
         className={isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}
         actions={
           activeTab === 'active' && !isMaskMode && (

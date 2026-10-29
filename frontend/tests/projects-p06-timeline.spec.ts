@@ -61,7 +61,7 @@ function collectFailures(page: Page) {
 
 test.beforeEach(() => test.skip(!process.env.P06_REAL_BACKEND, 'requires the isolated P06 backend proof runtime'))
 
-test('Journey 3 renders exact authority results with bounded rows, ticks, connectors and targets', async ({ page }) => {
+test('Journey 3 renders exact authority results with bounded rows, ticks, connectors and targets', async ({ page }, testInfo) => {
   const journey = await createJourney()
   const failures = collectFailures(page)
   try {
@@ -81,11 +81,12 @@ test('Journey 3 renders exact authority results with bounded rows, ticks, connec
     const shortBar = gantt.locator(`[data-task-id="${journey.ids.B}"][data-project-timeline-bar="true"]`)
     await shortBar.click()
     await expect(gantt.getByRole('button', { name: 'Move task earlier B' })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p06-timeline-and-task-panel.png'), fullPage: true, animations: 'disabled' })
     expect(failures).toEqual([])
   } finally { await journey.api.dispose() }
 })
 
-test('keyboard and pointer emit equivalent previews, cancellation writes nothing, and lost response is confirmed', async ({ page }) => {
+test('keyboard and pointer emit equivalent previews, cancellation writes nothing, and lost response is confirmed', async ({ page }, testInfo) => {
   const journey = await createJourney()
   const failures = collectFailures(page)
   const previews: any[] = []
@@ -96,6 +97,7 @@ test('keyboard and pointer emit equivalent previews, cancellation writes nothing
     await bar.focus()
     await bar.press('ArrowRight')
     await expect(page.getByRole('dialog', { name: 'Review propagation' })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p06-propagation-review.png'), fullPage: true, animations: 'disabled' })
     await page.getByRole('button', { name: 'Cancel — zero writes' }).click()
 
     const box = await bar.boundingBox()
@@ -137,7 +139,7 @@ test('keyboard and pointer emit equivalent previews, cancellation writes nothing
   } finally { await journey.api.dispose() }
 })
 
-test('calendar changes demand explicit normalization before schedule changes are applied', async ({ page }) => {
+test('calendar changes demand explicit normalization before schedule changes are applied', async ({ page }, testInfo) => {
   const journey = await createJourney()
   const failures = collectFailures(page)
   try {
@@ -153,6 +155,7 @@ test('calendar changes demand explicit normalization before schedule changes are
     expect(await choices.count()).toBeGreaterThan(0)
     for (let index = 0; index < await choices.count(); index += 1) await choices.nth(index).selectOption('next')
     await expect(previewButton).toBeEnabled()
+    await page.screenshot({ path: testInfo.outputPath('p06-calendar-normalization.png'), fullPage: true, animations: 'disabled' })
     await panel.getByRole('button', { name: 'Close schedule changes' }).click()
     await expect(scheduleButton).toBeFocused()
 

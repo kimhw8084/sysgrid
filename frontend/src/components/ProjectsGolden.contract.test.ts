@@ -209,7 +209,7 @@ describe('Projects complete planning and execution golden contract', () => {
     expect(model).toContain('target == predecessor')
   })
 
-  it('makes pointer direct manipulation the primary Board status path instead of native HTML5 drag/drop', () => {
+  it('uses an explicit Board drag handle instead of native HTML5 drag/drop', () => {
     expect(source).toContain('const pointerDragRef = useRef')
     expect(source).toContain('beginBoardPointerDrag')
     expect(source).toContain('moveBoardPointerDrag')
@@ -220,7 +220,7 @@ describe('Projects complete planning and execution golden contract', () => {
     expect(source).toContain('onPointerDown={(event) => beginBoardPointerDrag(task.id, event)}')
     expect(source).toContain('onPointerMove={moveBoardPointerDrag}')
     expect(source).toContain('onPointerUp={(event) => finishBoardPointerDrag(task, event)}')
-    expect(source).toContain('data-board-pointer-drag="true"')
+    expect(source).toContain('title={`Drag ${task.name} to another status`} onPointerDown')
     expect(source).not.toContain('data-project-board-card="true" data-task-id={String(task.id)} draggable')
     expect(source).not.toContain('onDrop={(event) =>')
   })

@@ -1,11 +1,10 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { OperationalGridMatrix } from './OperationalGridMatrix'
 import {
   getOperationalGridSurfaceStyle,
   OperationalGridSurface,
 } from './OperationalWorkspaceShells'
-import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY } from './OperationalGridSizing'
-import { clampAutoSizedOperationalColumnWidths } from './OperationalGridSizing'
+import { clampAutoSizedOperationalColumnWidths, getOperationalCompactGridHeight, OPERATIONAL_GRID_AUTO_SIZE_STRATEGY } from './OperationalGridSizing'
 import { WorkspaceEmptyState } from './OperationalWorkspacePrimitives'
 import type { OperationalDataState } from './OperationalDataState'
 
@@ -56,6 +55,7 @@ interface OperationalDataGridProps {
   className?: string
   surfaceVariant?: 'golden' | 'attached-panel'
   height?: string
+  compactWhenFewRows?: boolean
   suppressRowClickSelection?: boolean
 }
 
@@ -84,14 +84,32 @@ export function OperationalDataGrid({
   className = '',
   surfaceVariant = 'golden',
   height,
+  compactWhenFewRows = Boolean(quickFilterText?.trim()) || height !== undefined,
   suppressRowClickSelection = true,
 }: OperationalDataGridProps) {
+  const [displayedRowCount, setDisplayedRowCount] = useState(() => rows?.length ?? 0)
+  useEffect(() => setDisplayedRowCount(rows?.length ?? 0), [rows])
+  const updateDisplayedRowCount = useCallback((event: any) => {
+    const count = event?.api?.getDisplayedRowCount?.()
+    if (typeof count === 'number' && Number.isFinite(count)) setDisplayedRowCount(count)
+  }, [])
+  const surfaceStyle = useMemo(() => {
+    const style = getOperationalGridSurfaceStyle(fontSize, height)
+    const compactHeight = loading || !compactWhenFewRows ? null : getOperationalCompactGridHeight(displayedRowCount, fontSize, rowDensity)
+    if (compactHeight !== null) {
+      style.height = `${compactHeight}px`
+      style.minHeight = `${compactHeight}px`
+      style.flex = '0 0 auto'
+    }
+    return style
+  }, [compactWhenFewRows, displayedRowCount, fontSize, height, loading, rowDensity])
   const autoSizeStrategy = useMemo(
     () => (runtime?.preserveExplicitColumnWidths ? undefined : runtime?.autoSizeStrategy ?? OPERATIONAL_GRID_AUTO_SIZE_STRATEGY),
     [runtime?.preserveExplicitColumnWidths, runtime?.autoSizeStrategy]
   )
   const handleFirstDataRendered = useCallback((event: any) => {
     onFirstDataRendered?.(event)
+    updateDisplayedRowCount(event)
     if (runtime?.preserveExplicitColumnWidths) return
     const api = event?.api
     if (!api) return
@@ -101,7 +119,7 @@ export function OperationalDataGrid({
     }
     requestAnimationFrame(clampWidths)
     window.setTimeout(clampWidths, 32)
-  }, [onFirstDataRendered, runtime?.preserveExplicitColumnWidths])
+  }, [onFirstDataRendered, runtime?.preserveExplicitColumnWidths, updateDisplayedRowCount])
   const noticeToneClass = dataState?.notice?.tone === 'error'
     ? 'border-rose-500/30 bg-rose-500/10 text-rose-100'
     : dataState?.notice?.tone === 'warning'
@@ -178,7 +196,7 @@ export function OperationalDataGrid({
   return (
     <OperationalGridSurface
       className={className}
-      style={getOperationalGridSurfaceStyle(fontSize, height)}
+      style={surfaceStyle}
       loading={loading}
       loadingIcon={loadingIcon}
       loadingLabel={loadingLabel}
@@ -202,6 +220,7 @@ export function OperationalDataGrid({
           onGridReady={params => {
             if (typeof window !== 'undefined') (window as any).__DEBUG_OPERATIONAL_GRID_API__ = params.api
             runtime.handleGridReady?.(params)
+            updateDisplayedRowCount(params)
           }}
           onSelectionChanged={onSelectionChanged}
           onColumnResized={runtime.handleColumnResized}
@@ -209,13 +228,13 @@ export function OperationalDataGrid({
           onDragStopped={runtime.handleDragStopped}
           onColumnPinned={runtime.handleColumnPinned}
           onColumnVisible={runtime.handleColumnVisible}
-          onFilterChanged={runtime.handleFilterChanged}
+          onFilterChanged={event => { runtime.handleFilterChanged?.(event); updateDisplayedRowCount(event) }}
           onSortChanged={runtime.handleSortChanged}
           onRowClicked={rowInteractions?.handleRowClicked}
           onRowDoubleClicked={rowInteractions?.handleRowDoubleClicked}
           onCellContextMenu={contextMenu?.handleCellContextMenu}
           onFirstDataRendered={handleFirstDataRendered}
-          onRowDataUpdated={onRowDataUpdated}
+          onRowDataUpdated={event => { onRowDataUpdated?.(event); updateDisplayedRowCount(event) }}
           noRowsLabel={dataState?.noRowsLabel || noRowsLabel}
           suppressRowClickSelection={suppressRowClickSelection}
         />

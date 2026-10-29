@@ -37,7 +37,7 @@ async function open(page: Page, path: string) {
 
 test.beforeEach(() => test.skip(!process.env.P08_REAL_BACKEND, 'requires isolated P08 backend proof runtime'))
 
-test('AI-off updates, resources, reports and activity are reachable from canonical routes', async ({ page }) => {
+test('AI-off updates, resources, reports and activity are reachable from canonical routes', async ({ page }, testInfo) => {
   const journey = await setupJourney()
   try {
     await open(page, `/projects/${journey.projectId}/updates`)
@@ -45,11 +45,17 @@ test('AI-off updates, resources, reports and activity are reachable from canonic
     await expect(page.getByText('AI disabled by default')).toBeVisible()
     await expect(page.getByText('Published updates')).toBeVisible()
     await expect(page.getByText('Activity')).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p08-updates.png'), fullPage: true, animations: 'disabled' })
+    await open(page, `/projects/${journey.projectId}/updates?section=activity`)
+    await expect(page.locator('[data-project-activity-view="true"]')).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p08-activity.png'), fullPage: true, animations: 'disabled' })
     await open(page, `/projects/${journey.projectId}/resources`)
     await expect(page.getByText('P08 Runbook')).toBeVisible()
     await expect(page.getByRole('link', { name: 'CSV' })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p08-resources.png'), fullPage: true, animations: 'disabled' })
     await open(page, `/projects/${journey.projectId}/reports`)
     await expect(page.getByText('Stakeholder summary', { exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: 'PDF' })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p08-reports.png'), fullPage: true, animations: 'disabled' })
   } finally { await journey.api.dispose() }
 })

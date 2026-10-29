@@ -1,0 +1,11 @@
+/* Outcome tabs are separate work surfaces; keep only the requested content visible. */
+.p09-page[data-p09-section="summary"] .p09-grid > [data-p09-panel]:not([data-p09-panel~="summary"]),
+.p09-page[data-p09-section="measurements"] .p09-grid > [data-p09-panel]:not([data-p09-panel~="measurements"]),
+.p09-page[data-p09-section="value"] .p09-grid > [data-p09-panel]:not([data-p09-panel~="value"]) { display: none; }
+.p09-page[data-p09-section="value"] .p09-grid > [data-p09-panel~="value"] { grid-column: 1 / -1; }
+.p09-page :is(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--accent-primary, #2563eb); outline-offset: 2px; }
+
+.p09-empty-acceptance { display:grid; gap:8px; margin-top:14px; padding:16px; border:1px solid var(--state-warning-border,#e9bd63); border-radius:10px; background:var(--state-warning-surface,#fff9eb); }
+.p09-empty-acceptance p { margin:0; color:var(--text-secondary,#475467); }
+.p09-empty-acceptance a { justify-self:start; color:var(--accent-primary,#155eef); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+:is([data-theme='nordic-frost-v1'],[data-theme='dark']) .p09-empty-acceptance { background:color-mix(in srgb,var(--state-warning) 10%,var(--surface-elevated)); }

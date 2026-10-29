@@ -34,12 +34,16 @@ export function axisCells(rangeStart: number, rangeEnd: number, scale: number, o
   if (unit === 'quarter') cursor = ordinal(y, Math.floor(m / 3) * 3, 1)
   if (unit === 'year') cursor = ordinal(Math.floor(y / years) * years, 0, 1)
   const result: AxisCell[] = []
+  let previousMajor = ''
   for (let i = 0; cursor <= last && i < 30; i++) {
     const d = date(cursor), y = d.getUTCFullYear(), m = d.getUTCMonth()
     const end = unit === 'day' ? cursor + 1 : unit === 'week' ? cursor + 7 : unit === 'month' ? ordinal(y, m + 1, 1) : unit === 'quarter' ? ordinal(y, m + 3, 1) : ordinal(y + years, 0, 1)
     const month = shortMonth.format(d)
     const label = unit === 'day' ? `${month} ${d.getUTCDate()}` : unit === 'week' ? `${month} ${d.getUTCDate()}` : unit === 'month' ? month : unit === 'quarter' ? `Q${Math.floor(m / 3) + 1}` : years > 1 ? `${y}–${y + years - 1}` : String(y)
-    result.push({ start: cursor, end, label, major: unit === 'day' || unit === 'week' ? `${month} ${y}` : String(y) })
+    const majorLabel = unit === 'day' || unit === 'week' ? `${month} ${y}` : String(y)
+    const major = majorLabel === previousMajor ? '' : majorLabel
+    previousMajor = majorLabel
+    result.push({ start: cursor, end, label, major })
     cursor = end
   }
   return result

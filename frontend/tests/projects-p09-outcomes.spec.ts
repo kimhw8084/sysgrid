@@ -39,7 +39,7 @@ async function open(page: Page, path: string) {
 
 test.beforeEach(() => test.skip(!process.env.P09_REAL_BACKEND, 'requires isolated P09 backend proof runtime'))
 
-test('Outcomes route presents independent delivery, adoption evidence and exact ROI', async ({ page }) => {
+test('Outcomes route presents independent delivery, adoption evidence and exact ROI', async ({ page }, testInfo) => {
   const journey = await setupJourney()
   try {
     await open(page, `/projects/${journey.projectId}/outcomes`)
@@ -48,7 +48,12 @@ test('Outcomes route presents independent delivery, adoption evidence and exact 
     await expect(page.getByText('Delivery acceptance', { exact: true })).toBeVisible()
     await expect(page.getByText('Not accepted', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Adoption', exact: true })).toBeVisible()
-    await expect(page.getByText('ROI 20%', { exact: true })).toBeVisible()
     await expect(page.getByText('Task progress is not used as an outcome result.', { exact: false })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p09-outcomes-summary.png'), fullPage: true, animations: 'disabled' })
+    await page.getByRole('link', { name: 'Value', exact: true }).click()
+    await expect(page.locator('[data-p09-section="value"]')).toBeVisible()
+    await expect(page.locator('[data-p09-panel="value"]')).toBeVisible()
+    await expect(page.getByText('ROI 20%', { exact: true })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('p09-outcomes-value.png'), fullPage: true, animations: 'disabled' })
   } finally { await journey.api.dispose() }
 })

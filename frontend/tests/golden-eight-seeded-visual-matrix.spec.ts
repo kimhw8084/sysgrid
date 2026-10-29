@@ -165,6 +165,14 @@ async function expectCellFullValueTitle(page: Page, row: Locator, apiName: strin
   await expect(row.locator(`[col-id="${columnId}"] [title]`).first()).toHaveAttribute('title', expected)
 }
 
+async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebrow: string) {
+  const header = page.locator(`#sg-main-content [data-golden-workspace="${workspace}"] [data-golden-page-header="true"]`).first()
+  await expect(header, `${workspace} should render the shared PageHeader`).toBeVisible()
+  await expect(header).toContainText(eyebrow)
+  const accent = await header.evaluate(element => getComputedStyle(element).borderLeftWidth)
+  expect(accent, `${workspace} should use the shared colored header accent`).toBe('3px')
+}
+
 async function createVendor(request: APIRequestContext, stamp: string) {
   const response = await request.post(`${apiBase}/vendors`, {
     data: {
@@ -225,7 +233,10 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
     const architecture = await createArchitectureModel(request, stamp)
 
     const project = await createProject(request, {
-      name: `PW-SEED-PROJECT-${stamp}`,
+      name: 'Network reliability modernization',
+      objective: 'Improve core network resilience without interrupting production services.',
+      start_date: '2037-02-03T00:00:00Z',
+      end_date: '2037-04-30T00:00:00Z',
       type: 'Strategic',
       status: 'Planning',
       priority: 'High',
@@ -330,6 +341,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         expect(new URL(page.url()).pathname).toBe(route.path)
         const workspace = page.locator('#sg-main-content')
         await expect(workspace, `${route.key} workspace should render`).toBeVisible()
+        if (route.key === 'external') await expectGoldenWorkspaceHeader(page, 'external', 'External Intelligence')
         await expectVisibleFormControlsHaveNames(page, route.key)
         // AG Grid's virtualized DOM order can start with a clipped overscan row;
         // assert against the actual first displayed data row instead.
@@ -350,6 +362,16 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         if (routeSearch) {
           await fillGridSearch(page, routeSearch.placeholder, routeSearch.value)
           await expect(page.getByRole('textbox', { name: routeSearch.name })).toHaveValue(routeSearch.value)
+        }
+        if (['assets', 'external', 'vendors'].includes(route.key)) {
+          const gridApiName = route.key === 'vendors' ? '__DEBUG_VENDORS_GRID_API__' : '__DEBUG_OPERATIONAL_GRID_API__'
+          await expect.poll(() => page.evaluate(apiName => {
+            const api = (window as any)[apiName]
+            return api?.getDisplayedRowCount?.() ?? -1
+          }, gridApiName)).toBe(1)
+          const surface = workspace.locator('[data-golden-grid-surface="true"]')
+          const height = await surface.evaluate(element => element.getBoundingClientRect().height)
+          expect(height, route.key + ' one-result grids should stay compact').toBeLessThanOrEqual(300)
         }
         const clipped = await row.evaluate(element => {
           const bounds = element.getBoundingClientRect()
@@ -427,6 +449,9 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       for (const route of supplementaryRoutes) {
         await page.goto(route.path)
         await waitForAppIdle(page)
+        if (route.key === 'home') {
+          await expect(page.getByRole('heading', { name: /^Good (morning|afternoon|evening),/ })).toBeVisible()
+        }
         // Route-specific UI assertions below establish readiness while background requests may stay active.
         await expectVisibleFormControlsHaveNames(page, route.key)
         await expect(page.locator('#sg-main-content h1, #sg-main-content h2').first()).toBeVisible()
@@ -435,6 +460,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         await expect(page.locator('[data-sg-state="fatal-error"]')).toHaveCount(0)
         expect(new URL(page.url()).pathname).toBe(route.path.split('?')[0])
         if (route.key === 'racks') {
+          await expectGoldenWorkspaceHeader(page, 'racks', 'Infrastructure')
           await expect(page.getByRole('textbox', { name: 'Search racks and devices' })).toBeVisible()
           await expect(page.getByText(racks.rackA1.name, { exact: true }).first()).toBeVisible()
           const rackRail = page.locator('#racks-grid')
@@ -450,10 +476,21 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         if (route.key === 'projects') {
           const projectRow = page.locator('.p04-table tbody tr').filter({ hasText: project.name })
           await expect(projectRow).toBeVisible()
+          const pageHeading = page.locator('.p04-page-heading')
+          await expect(pageHeading).toBeVisible()
+          const headingAccent = await pageHeading.evaluate(element => {
+            const style = getComputedStyle(element)
+            return { borderWidth: style.borderLeftWidth, borderStyle: style.borderLeftStyle, borderColor: style.borderLeftColor, padding: style.paddingLeft }
+          })
+          expect(headingAccent.borderWidth).toBe('3px')
+          expect(headingAccent.borderStyle).toBe('solid')
+          expect(headingAccent.borderColor).not.toBe('rgba(0, 0, 0, 0)')
+          expect(headingAccent.padding).toBe('16px')
           await expect(projectRow).toContainText('Unassigned')
           await expect(projectRow).not.toContainText(/legacy:unresolved/i)
         }
         if (route.key === 'architecture') {
+          await expectGoldenWorkspaceHeader(page, 'architecture', 'Infrastructure')
           await expect(page.locator('[data-pv1-architecture-engine="shared"]')).toBeVisible()
           await expect(page.locator('[aria-label="Canonical Architecture objects"]').getByText(architecture.serviceName, { exact: true })).toBeVisible()
           const graph = page.locator('[aria-label="Architecture diagram projection"] svg')
@@ -491,10 +528,21 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         }
         if (route.key === 'knowledge') {
           await expect(page.getByText(seeded.knowledge.title, { exact: true }).first()).toBeVisible()
+          const knowledgeHeading = page.getByRole('heading', { name: 'Collective Intelligence' })
+          await expect(knowledgeHeading).toBeVisible()
+          const titleLayout = await knowledgeHeading.evaluate(element => {
+            const text = element.querySelector(':scope > span') as HTMLElement | null
+            const spacing = getComputedStyle(element).letterSpacing
+            return { height: element.getBoundingClientRect().height, textFits: Boolean(text && text.scrollWidth <= text.clientWidth + 1), letterSpacing: spacing === 'normal' ? 0 : parseFloat(spacing) }
+          })
+          expect(titleLayout.height, 'Knowledge title should stay compact in its header').toBeLessThanOrEqual(72)
+          expect(titleLayout.textFits, 'Knowledge title words should not collide or clip').toBe(true)
+          expect(titleLayout.letterSpacing).toBeGreaterThanOrEqual(0)
           const summary = page.locator('[data-knowledge-summary]').first()
           expect((await summary.boundingBox())!.height, 'Summary cards must not stretch to the queue height').toBeLessThan(240)
           await expect(page.locator('[data-knowledge-record-list] h3').first(), 'Populated records must remain visible below the overview').toBeInViewport()
           const queueRegion = page.getByRole('region', { name: 'Knowledge action queue entries' })
+          await expect(page.locator('[data-knowledge-queue]').getByText('1 item', { exact: true })).toBeVisible()
           const firstQueuedEntry = queueRegion.getByRole('button').first()
           await expect(firstQueuedEntry, 'The first high-priority action must be fully visible without scrolling the queue').toBeVisible()
           const [queueBox, entryBox] = await Promise.all([queueRegion.boundingBox(), firstQueuedEntry.boundingBox()])
@@ -507,6 +555,14 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         await expect(page.locator('#sg-main-content h1, #sg-main-content h2').first()).toBeVisible()
         await expect(page.locator('[data-sg-state="fatal-error"]')).toHaveCount(0)
         expect(new URL(page.url()).pathname).toBe(route.path.split('?')[0])
+        if (route.key === 'projects') {
+          await expect(page.locator('[data-resource-coverage-warning="true"]')).toHaveCount(0)
+          const timelineToggle = page.getByRole('button', { name: 'Timeline', exact: true })
+          await timelineToggle.click()
+          await expect(timelineToggle).toHaveAttribute('aria-pressed', 'true')
+          await expect(page.locator('[data-p04-portfolio-timeline="true"]')).toBeVisible()
+          await expect(page.locator('[data-p04-portfolio-timeline="true"] .p04-timeline-row')).toHaveCount(1)
+        }
         await page.screenshot({ path: testInfo.outputPath(`${theme}-${route.key}-interacted-desktop.png`), animations: 'disabled' })
       }
     }

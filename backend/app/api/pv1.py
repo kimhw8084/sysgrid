@@ -243,11 +243,20 @@ async def _portfolio_summary_for_query(db: AsyncSession, project_statement: Any,
     return result
 
 
+def _legacy_task_progress(task: legacy_models.ProjectTask) -> int:
+    if task.status in {"Done", "Completed"}:
+        return 100
+    if task.progress is None:
+        return 90 if task.status == "Review" else 50 if task.status == "In Progress" else 0
+    return max(0, min(99, int(task.progress)))
+
+
 async def _legacy_story(db: AsyncSession, project: legacy_models.Project) -> dict[str, Any]:
     task_result = await db.execute(select(legacy_models.ProjectTask).where(legacy_models.ProjectTask.project_id == project.id).order_by(legacy_models.ProjectTask.id))
     tasks = list(task_result.scalars())
     active_tasks = [task for task in tasks if task.status not in {"Done", "Completed", "Cancelled"}]
     blocked = [task for task in active_tasks if task.status == "Blocked"]
+    unscheduled = [task for task in active_tasks if not task.start_date or not task.end_date]
     today = date.today()
     overdue = [task for task in active_tasks if task.end_date and task.end_date.date() < today]
     if blocked:
@@ -256,9 +265,12 @@ async def _legacy_story(db: AsyncSession, project: legacy_models.Project) -> dic
         health = {"level": "At risk", "reason": "A legacy delivery commitment is overdue."}
     elif not tasks:
         health = {"level": "Unknown", "reason": "Legacy delivery work is not available."}
+    elif unscheduled:
+        count = len(unscheduled)
+        health = {"level": "At risk", "reason": f"{count} open task{'s' if count != 1 else ''} lack a start or finish date."}
     else:
         health = {"level": "On track", "reason": "No blocker or missed commitment is recorded."}
-    percent = round(sum(max(0, min(100, task.progress or 0)) for task in tasks) / len(tasks)) if tasks else None
+    percent = round(sum(_legacy_task_progress(task) for task in tasks) / len(tasks)) if tasks else None
     attention = [{"id": f"legacy-task:{task.id}", "kind": "Blocker" if task.status == "Blocked" else "Missed commitment", "reason": task.name, "accountable": task.owner or project.owner or "Unassigned", "due_date": task.end_date.date().isoformat() if task.end_date else None, "action": "Open work", "entity_id": str(task.id)} for task in [*blocked, *[item for item in overdue if item not in blocked]]]
     metadata = project.metadata_json or {}
     updates = (metadata.get("project_updates_v1") or {}).get("updates") or []
@@ -266,7 +278,7 @@ async def _legacy_story(db: AsyncSession, project: legacy_models.Project) -> dic
     resources = [item for item in (metadata.get("links") or []) if isinstance(item, dict)][:4]
     return {
         "health": health,
-        "delivery": {"percent": percent, "label": f"{percent}%" if percent is not None else "Not planned", "method": "Legacy task average." if tasks else "No executable work is recorded."},
+        "delivery": {"percent": percent, "label": f"{percent}%" if percent is not None else "Not planned", "method": "Status-aware legacy task average." if tasks else "No executable work is recorded."},
         "next_milestone": None,
         "milestones": [],
         "attention": attention,

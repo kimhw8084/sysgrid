@@ -662,6 +662,7 @@ export default function AssetGoldenOperationalWorkspace() {
           onViewServiceDetails={workspace.setServiceDetails}
           onEditService={workspace.setServiceEdit}
           rowDensity={workspace.rowDensity}
+          searchTerm={workspace.searchTerm}
           rows={workspace.visibleAssets}
           visibleAssets={workspace.visibleAssets}
           runtime={{ getAssetConsoleUrl: workspace.getAssetConsoleUrl }}

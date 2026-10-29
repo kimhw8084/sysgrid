@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildProjectsDestinationPath, canonicalQueryKeys, parseProjectsLocation, projectRouteForLegacyView, shouldPreserveLegacyProjectsPortfolioLocation } from './ProjectsNavigation'
+import { buildProjectsDestinationPath, buildProjectsLegacyWorkspacePath, canonicalQueryKeys, parseProjectsLocation, projectRouteForLegacyView, shouldPreserveLegacyProjectsPortfolioLocation } from './ProjectsNavigation'
 
 describe('PV1 Projects canonical navigation', () => {
   it('preserves explicit legacy Portfolio and saved-view state while canonical Portfolio stays clean', () => {
@@ -12,9 +12,25 @@ describe('PV1 Projects canonical navigation', () => {
     expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=overview')).toBe(false)
     expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=overview&legacy_workspace=1')).toBe(true)
     expect(parseProjectsLocation('/projects', '?id=42&view=overview&legacy_workspace=1')).toMatchObject({ source: 'legacy', kind: 'home', projectId: '42' })
-    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=tasks&legacy_workspace=1')).toBe(false)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=tasks&legacy_workspace=1')).toBe(true)
+    expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&view=reports&legacy_workspace=1')).toBe(true)
     expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects', '?id=42&saved_view=sv-1')).toBe(false)
     expect(shouldPreserveLegacyProjectsPortfolioLocation('/projects/42', '?view=overview')).toBe(false)
+  })
+
+  it('builds an explicit legacy workspace deep link without dropping its section', () => {
+    expect(buildProjectsLegacyWorkspacePath(42, 'insights', 'governance')).toBe('/projects?view=insights&id=42&legacy_workspace=1&section=governance')
+  })
+
+  it('keeps migrated project tabs in the workspace with matching active destinations', () => {
+    expect(parseProjectsLocation('/projects', '?id=42&view=insights&section=review&legacy_workspace=1')).toMatchObject({ source: 'legacy', kind: 'plan', section: 'review', legacyView: 'insights' })
+    expect(parseProjectsLocation('/projects', '?id=42&view=insights&section=risks&legacy_workspace=1')).toMatchObject({ source: 'legacy', kind: 'plan', section: 'risks', legacyView: 'insights' })
+    expect(parseProjectsLocation('/projects', '?id=42&view=insights&section=governance&legacy_workspace=1')).toMatchObject({ source: 'legacy', kind: 'outcomes', section: 'governance', legacyView: 'insights' })
+    expect(parseProjectsLocation('/projects/42/plan', '?section=brief').legacyView).toBe('insights')
+    expect(parseProjectsLocation('/projects/42/plan', '?section=milestones').legacyView).toBe('timeline')
+    expect(parseProjectsLocation('/projects/42/plan', '?section=risks').legacyView).toBe('insights')
+    expect(parseProjectsLocation('/projects/42/plan', '?section=resources').legacyView).toBe('files')
+    expect(parseProjectsLocation('/projects/42/outcomes', '?section=summary').legacyView).toBe('insights')
   })
 
   it('keeps portfolio, My day, and new-project routes distinct', () => {
@@ -36,8 +52,12 @@ describe('PV1 Projects canonical navigation', () => {
     expect(parseProjectsLocation('/projects', '?id=42&view=tasks').legacyView).toBe('tasks')
     expect(parseProjectsLocation('/projects', '?id=42&view=tasks&task=7&saved_view=sv-2').redirectTo).toBe('/projects/42/work?layout=list&panel=task&entity=7&saved_view=sv-2')
     expect(parseProjectsLocation('/projects', '?id=42&view=reports&report=rp-4').redirectTo).toBe('/projects/42/updates?section=reports&report=rp-4')
+    expect(parseProjectsLocation('/projects', '?id=42&view=updates&section=activity').redirectTo).toBe('/projects/42/updates?section=activity')
+    expect(parseProjectsLocation('/projects', '?id=42&view=insights&section=review').redirectTo).toBe('/projects/42/plan?section=brief')
     expect(parseProjectsLocation('/projects', '?view=roadmap').redirectTo).toBe('/projects?section=roadmap')
     expect(projectRouteForLegacyView(42, 'reports')).toBe('/projects/42/updates?section=reports')
+    expect(projectRouteForLegacyView(42, 'updates', 'activity')).toBe('/projects/42/updates?section=activity')
+    expect(projectRouteForLegacyView(42, 'insights', 'review')).toBe('/projects/42/plan?section=risks')
   })
 
   it('treats invalid project destinations as not found rather than switching projects', () => {

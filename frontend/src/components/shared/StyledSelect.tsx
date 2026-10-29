@@ -17,6 +17,7 @@ interface StyledSelectProps {
   error?: boolean | string
   hint?: string
   disabled?: boolean
+  themeAware?: boolean
 }
 
 export const StyledSelect = ({ 
@@ -28,7 +29,8 @@ export const StyledSelect = ({
   className = '',
   error = false,
   hint,
-  disabled = false
+  disabled = false,
+  themeAware = false
 }: StyledSelectProps) => {
   const describedById = useId()
   const controlId = `${describedById}-control`
@@ -54,11 +56,13 @@ export const StyledSelect = ({
           aria-invalid={hasError}
           aria-describedby={describedBy}
           className={`
-            w-full appearance-none bg-slate-900 border 
-            ${hasError ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/10 group-hover:border-white/20'} 
+            w-full appearance-none border
+            ${themeAware
+              ? hasError ? 'border-rose-500/50 bg-rose-500/5' : 'border-[var(--border-default)] bg-[var(--input-bg)] group-hover:border-[var(--accent-primary)]'
+              : hasError ? 'border-rose-500/50 bg-rose-500/5' : 'bg-slate-900 border-white/10 group-hover:border-white/20'}
             rounded-lg pl-4 pr-10 py-2.5 text-xs outline-none focus:border-blue-500
             transition-all ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} 
-            ${!value ? 'text-slate-500' : 'text-slate-200'}
+            ${themeAware ? (!value ? 'text-[var(--text-muted)]' : 'text-[var(--text-primary)]') : (!value ? 'text-slate-500' : 'text-slate-200')}
           `}
         >
           {placeholder && <option value="">{placeholder}</option>}

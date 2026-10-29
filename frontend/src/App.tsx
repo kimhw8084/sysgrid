@@ -176,7 +176,7 @@ function MainLayout() {
   const navigate = useNavigate(); 
   const mainContentRef = useRef<HTMLDivElement>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window === 'undefined' || window.innerWidth >= 1024);
-  const projectNavigation = useProjectsNavigation(location.pathname, isSidebarOpen, setIsSidebarOpen); 
+  const projectNavigation = useProjectsNavigation(location.pathname, isSidebarOpen);
   const [showPatchNotes, setShowPatchNotes] = useState(false);
   const [showLinuxEnv, setShowLinuxEnv] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -225,6 +225,7 @@ function MainLayout() {
       const normalizedTheme = normalizeTheme(userSettings.theme);
       setCurrentTheme(normalizedTheme);
       document.documentElement.setAttribute('data-theme', normalizedTheme);
+      writeOptionalStorage('sysgrid-theme', normalizedTheme);
       const isLight = normalizedTheme === 'pure-clarity';
       if (isLight) document.documentElement.classList.remove('dark');
       else document.documentElement.classList.add('dark');
@@ -524,7 +525,7 @@ import { ErrorSentinel } from './components/shared/ErrorSentinel'
 function ReconnectRefresh() {
   const modulePolicy = useModulePolicy()
   const lastServerUserId = React.useRef<string | null | undefined>(undefined)
-  const serverUserId = modulePolicy.data ? modulePolicy.data.identity.user_id : undefined
+  const serverUserId = modulePolicy.data?.identity?.user_id
   const clearWorkspaceQueries = React.useCallback(() => {
     queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'module-policy' })
     queryClient.getMutationCache().clear()

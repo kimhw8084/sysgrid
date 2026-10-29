@@ -33,12 +33,14 @@ async function attachScreenshot(page: Page, testInfo: TestInfo, name: string) {
 }
 
 test('real backend creation survives one failed save and reload without duplicate Projects', async ({ page, request }, testInfo) => {
-  const teamResponse = await request.post(`${apiOrigin}/api/v1/settings/teams`, { headers, data: { name: `P04 Automation Engineering ${globalThis.crypto.randomUUID()}`, description: 'Isolated P04 browser fixture' } })
+  const teamResponse = await request.post(`${apiOrigin}/api/v1/settings/teams`, { headers, data: { name: 'P04 Automation Engineering', description: 'Isolated P04 browser fixture' } })
   expect(teamResponse.ok(), await teamResponse.text()).toBeTruthy()
   const team = await teamResponse.json()
   await bootstrapBrowser(page)
   await page.goto('/projects/new')
   await expect(page.locator('[data-p04-new-project="true"]')).toBeVisible()
+  await expect(page.locator('[data-p04-step="purpose"]')).toBeVisible()
+  await attachScreenshot(page, testInfo, 'new-project-purpose')
 
   const purpose = page.locator('[data-p04-step="purpose"]')
   await purpose.getByLabel('Team').selectOption(String(team.id))

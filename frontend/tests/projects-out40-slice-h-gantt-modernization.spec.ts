@@ -1,4 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test'
+import { projectsRootPreviewPolicy } from './helpers/projects-root-preview'
 import { writeFileSync } from 'node:fs'
 
 type Project = Record<string, any>
@@ -67,10 +68,11 @@ const installRoutes = async (page: Page): Promise<State> => {
     const request = route.request(); const url = new URL(request.url()); const path = url.pathname
     const json = (value: unknown) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
     if (request.method() === 'GET' && path === '/api/v2/projects') return json({ items: [canonical()], summary: { Executing: 1 }, as_of: '2026-09-01T00:00:00Z', source_revision: 'out40-fixture', coverage: { projects: 'complete' }, next_cursor: null })
+    if (request.method() === 'GET' && path === '/api/v2/projects/901') return json(canonical())
     if (request.method() === 'GET' && path === '/api/v2/projects/901/schedule') return json(schedule())
     if (request.method() === 'POST' && path === '/api/v2/projects/901/schedule/preview') {
       const body = request.postDataJSON?.() || {}; const delta = Number(body.parameters?.delta_workdays || 1); const ids = (body.selection_ids || []).map(String)
-      const changes = ids.map((id: string) => { const task = project.tasks.find((item: any) => String(item.id) === id); if (!task) return null; const shift = (value: string) => new Date(Date.parse(value) + delta * 86400000).toISOString().slice(0, 10); const before = { start_date: task.start_date, end_date: task.end_date }; const after = body.operation === 'resize' ? { ...before, end_date: shift(task.end_date) } : { start_date: shift(task.start_date), end_date: shift(task.end_date) }; return { task_id: id, before, after, delta_workdays: delta, explanation_chain: [{ kind: 'direct-edit' }] } }).filter(Boolean)
+      const changes = ids.map((id: string) => { const task = project.tasks.find((item: any) => String(item.id) === id); if (!task) return null; const shift = (value: string) => new Date(Date.parse(value) + delta * 86400000).toISOString().slice(0, 10); const before = { start_date: task.start_date, end_date: task.end_date }; const after = body.operation === 'resize' ? body.parameters?.edge === 'start' ? { ...before, start_date: shift(task.start_date) } : { ...before, end_date: shift(task.end_date) } : { start_date: shift(task.start_date), end_date: shift(task.end_date) }; return { task_id: id, before, after, delta_workdays: delta, explanation_chain: [{ kind: 'direct-edit' }] } }).filter(Boolean)
       const preview = { preview_id: `out40-preview-${Date.now()}-${Math.random()}`, content_hash: 'f'.repeat(64), base_graph_revision: 1, calendar_revision: 1, expires_at: new Date(Date.now() + 60_000).toISOString(), changes, failures: [] }; previews.set(preview.preview_id, preview); return json(preview)
     }
     if (request.method() === 'POST' && path === '/api/v2/projects/901/commands') { const body = request.postDataJSON?.() || {}; const preview = previews.get(body.payload?.preview_id); for (const change of preview?.changes || []) { const task = project.tasks.find((item: any) => String(item.id) === String(change.task_id)); if (task) Object.assign(task, change.after) }; if (body.type === 'dependency.create') { const task = project.tasks.find((item: any) => String(item.id) === String(body.payload?.successor_id)); if (task) task.dependencies_json = [...(task.dependencies_json || []), { id: String(body.payload.predecessor_id), type: body.payload.dependency_type || 'FS', lag_days: Number(body.payload.lag_days || 0) }] }; if (body.type === 'dependency.remove') { const dependencyId = String(body.payload?.dependency_id || ''); project.tasks = project.tasks.map((task: any) => ({ ...task, dependencies_json: (task.dependencies_json || []).filter((dep: any, index: number) => `edge-${task.id}-${index}` !== dependencyId) })) }; putCount += 1; return json({ status: 'applied', event_id: `event-${putCount}` }) }
@@ -81,6 +83,7 @@ const installRoutes = async (page: Page): Promise<State> => {
     const json = (value: unknown) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
     if (request.method() === 'POST' && path === '/api/v1/observability/performance') return route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ accepted: true }) })
     if (request.method() === 'GET' && path.endsWith('/settings/bootstrap')) return json({ VITE_API_BASE_URL: url.origin, DEFAULT_USER_ID: 'proof_operator' })
+    if (request.method() === 'GET' && path === '/api/v1/policy/module-availability') return json(projectsRootPreviewPolicy)
     if (request.method() === 'GET' && path === '/api/v1/settings/user/profile') return json({ id: 'proof_operator', username: 'proof_operator', full_name: 'Proof Operator', team: 'Operations', team_id: 1, is_admin: true, permissions: { all: 3, projects: 3 } })
     if (request.method() === 'GET' && path === '/api/v1/settings/user/settings') return json({ theme: 'nordic-frost-v1' })
     if (request.method() === 'GET' && path === '/api/v1/settings/operators') return json([{ id: 1, username: 'proof_operator', full_name: 'Proof Operator', team: 'Operations', team_id: 1 }])
@@ -214,7 +217,7 @@ test('OUT-40 Slice H scroll zoom filter collapse are mutation-free and stay boun
   expect(failures).toEqual([])
 })
 
-test('OUT-40 Slice H bar move and resize each commit one Project PUT @out40-slice-h-acceptance', async ({ page }) => {
+test('OUT-40 Slice H bar move and resize each commit one Project PUT @out40-slice-h-acceptance', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 720 })
   const failures = collectFailures(page); await installIdentity(page); const state = await installRoutes(page); const gantt = await openTimeline(page)
   state.resetWrites()
@@ -226,12 +229,35 @@ test('OUT-40 Slice H bar move and resize each commit one Project PUT @out40-slic
   expect(movedStart).not.toBe(iso(baseOrdinal))
 
   await page.goto('/projects?id=901&view=timeline'); await expect(gantt).toBeVisible(); state.resetWrites()
-  const resize = gantt.locator('[data-project-semantic-id="resize-end-1005"]')
-  await resize.scrollIntoViewIfNeeded()
-  await expectMinTarget(resize)
-  const rb = await resize.boundingBox(); expect(rb).not.toBeNull()
+  const compactBar = gantt.locator('[data-project-semantic-id="task-bar-1002"]')
+  const compactBox = await compactBar.boundingBox(); expect(compactBox).not.toBeNull(); expect(compactBox!.width).toBeLessThan(120)
+  await expect(compactBar).toHaveAttribute('data-status', 'in-progress')
+  await expect(gantt.locator('.sg-status-legend')).toContainText('To do')
+  await expect(gantt.locator('.sg-status-legend')).toContainText('In progress')
+  await expect(gantt.locator('.sg-status-legend')).toContainText('Review')
+  await expect(gantt.locator('.sg-status-legend')).toContainText('Blocked')
+  await expect(gantt.locator('.sg-status-legend')).toContainText('Done')
+  expect(await compactBar.evaluate((element) => getComputedStyle(element, '::before').backgroundColor)).toBe('rgb(37, 99, 235)')
+  expect(await gantt.locator('[data-project-semantic-id="task-bar-1001"]').evaluate((element) => getComputedStyle(element, '::before').backgroundColor)).toBe('rgb(190, 54, 85)')
+  const resizeEnd = gantt.locator('[data-project-semantic-id="resize-end-1002"]')
+  await resizeEnd.scrollIntoViewIfNeeded()
+  await expectMinTarget(resizeEnd)
+  const originalEnd = state.getProject().tasks.find((task: any) => task.id === 1002).end_date
+  const rb = await resizeEnd.boundingBox(); expect(rb).not.toBeNull()
   await page.mouse.move(rb!.x + rb!.width / 2, rb!.y + rb!.height / 2); await page.mouse.down(); await page.mouse.move(rb!.x + rb!.width / 2 + 28, rb!.y + rb!.height / 2, { steps: 3 }); await page.mouse.up()
   await expect.poll(() => state.getPutCount()).toBe(1)
+  expect(state.getProject().tasks.find((task: any) => task.id === 1002).end_date).not.toBe(originalEnd)
+  state.resetWrites()
+  const resizeStart = gantt.locator('[data-project-semantic-id="resize-start-1002"]')
+  await expectMinTarget(resizeStart)
+  const beforeShorten = state.getProject().tasks.find((task: any) => task.id === 1002)
+  const previousStart = beforeShorten.start_date; const previousFinish = beforeShorten.end_date
+  const sb = await resizeStart.boundingBox(); expect(sb).not.toBeNull()
+  await page.mouse.move(sb!.x + sb!.width / 2, sb!.y + sb!.height / 2); await page.mouse.down(); await page.mouse.move(sb!.x + sb!.width / 2 + 14, sb!.y + sb!.height / 2, { steps: 3 }); await page.mouse.up()
+  await expect.poll(() => state.getPutCount()).toBe(1)
+  expect(state.getProject().tasks.find((task: any) => task.id === 1002).start_date).not.toBe(previousStart)
+  expect(state.getProject().tasks.find((task: any) => task.id === 1002).end_date).toBe(previousFinish)
+  await page.screenshot({ path: process.env.SYSGRID_PROJECTS_UX_GANTT_SCREENSHOT || testInfo.outputPath('projects-timeline-gantt-ux.png'), fullPage: false })
   expect(failures).toEqual([])
 })
 

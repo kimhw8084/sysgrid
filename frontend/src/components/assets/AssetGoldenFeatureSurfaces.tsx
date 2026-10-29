@@ -27,6 +27,7 @@ export function AssetGoldenFeatureSurfaces({
   onViewServiceDetails,
   onEditService,
   rowDensity,
+  searchTerm = '',
   rows,
   visibleAssets,
   runtime,
@@ -64,6 +65,7 @@ export function AssetGoldenFeatureSurfaces({
   onViewServiceDetails: (service: any) => void
   onEditService: (service: any) => void
   rowDensity: number
+  searchTerm?: string
   rows: any[]
   visibleAssets: any[]
   runtime: any
@@ -198,6 +200,7 @@ export function AssetGoldenFeatureSurfaces({
       getRowClass={getRowClass}
       fontSize={fontSize}
       rowDensity={rowDensity}
+      compactWhenFewRows={Boolean(searchTerm.trim())}
       dataState={dataState}
       noRowsLabel="No assets match the current working set."
       height="calc(100vh - 250px)"
