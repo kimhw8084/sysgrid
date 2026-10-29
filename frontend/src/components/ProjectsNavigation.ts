@@ -40,10 +40,16 @@ export const shouldPreserveLegacyProjectsPortfolioLocation = (pathname: string, 
   if (pathname !== '/projects' && pathname !== '/projects/') return false
   const params = asSearchParams(search)
   const view = (params.get('view') || '').toLowerCase()
-  if (params.has('id')) return params.get('legacy_workspace') === '1' && view === 'overview'
+  if (params.has('id')) return params.get('legacy_workspace') === '1' && ['overview', 'tasks', 'timeline', 'board', 'files', 'updates', 'reports', 'insights'].includes(view)
   if (params.has('saved_view')) return true
   const section = (params.get('section') || '').toLowerCase()
   return view === 'overview' || Boolean(section && section !== 'control')
+}
+
+export const buildProjectsLegacyWorkspacePath = (legacyProjectId: number | string, view: ProjectsRoute['legacyView'], section?: string) => {
+  const params = new URLSearchParams({ view, id: String(legacyProjectId), legacy_workspace: '1' })
+  if (section) params.set('section', section)
+  return `/projects?${params.toString()}`
 }
 const isNonEmpty = (value: string | null): value is string => Boolean(value && value.trim())
 const valid = <T extends string>(value: string | null, values: readonly T[], fallback: T): T => value && (values as readonly string[]).includes(value) ? value as T : fallback
@@ -60,9 +66,25 @@ const parseLegacy = (params: URLSearchParams, projectId: string | null): Project
   else if (raw === 'board') route = baseRoute('legacy', 'work', projectId, null, 'board', null, null, null, 'board')
   else if (raw === 'timeline') route = baseRoute('legacy', 'timeline', projectId, null, null, null, null, null, 'timeline')
   else if (raw === 'files') route = baseRoute('legacy', 'plan', projectId, 'resources', null, null, null, null, 'files')
-  else if (raw === 'updates') route = baseRoute('legacy', 'updates', projectId, 'updates', null, null, null, null, 'updates')
+  else if (raw === 'updates') {
+    const section = valid(params.get('section'), UPDATE_SECTIONS, 'updates')
+    route = baseRoute('legacy', 'updates', projectId, section, null, null, null, null, 'updates')
+  }
   else if (raw === 'reports') route = baseRoute('legacy', 'updates', projectId, 'reports', null, null, null, null, 'reports')
-  else if (raw === 'insights' || raw === 'review' || raw === 'governance') route = baseRoute('legacy', 'plan', projectId, 'risks', null, null, null, null, 'insights')
+  else if (raw === 'insights' || raw === 'review' || raw === 'governance') {
+    const requestedSection = params.get('section')?.toLowerCase()
+    if (raw === 'governance' || requestedSection === 'governance') {
+      route = baseRoute('legacy', 'outcomes', projectId, 'governance', null, null, null, null, 'insights')
+    } else if (OUTCOME_SECTIONS.includes(requestedSection as typeof OUTCOME_SECTIONS[number])) {
+      route = baseRoute('legacy', 'outcomes', projectId, requestedSection!, null, null, null, null, 'insights')
+    } else {
+      // "review" was a legacy-only screen and has no canonical Plan section.
+      // Resolve it to the nearest durable planning destination instead of
+      // emitting /plan?section=review (which rendered an empty panel).
+      const section = valid(requestedSection, ['review', 'brief', 'architecture', 'risks'] as const, 'brief')
+      route = baseRoute('legacy', 'plan', projectId, section, null, null, null, null, 'insights')
+    }
+  }
   else route = baseRoute('legacy', projectId ? 'home' : 'portfolio', projectId, null, null, null, null, null, projectId ? 'overview' : 'portfolio')
   route.redirectTo = buildProjectsLegacyRedirect(params, route)
   return route
@@ -108,7 +130,7 @@ export const parseProjectsLocation = (pathname: string, search?: string | URLSea
   const layout = destination === 'work' ? valid(params.get('layout'), WORK_LAYOUTS, 'list') : null
   const section = destination === 'plan' ? valid(params.get('section'), PLAN_SECTIONS, 'brief') : destination === 'updates' ? valid(params.get('section'), UPDATE_SECTIONS, 'updates') : destination === 'outcomes' ? valid(params.get('section'), OUTCOME_SECTIONS, 'summary') : null
   const architectureMode = destination === 'plan' && section === 'architecture' ? valid(params.get('mode'), ARCHITECTURE_MODES, 'current') : null
-  const legacyView = destination === 'work' ? layout === 'board' ? 'board' : 'tasks' : destination === 'plan' ? section === 'resources' ? 'files' : section === 'risks' ? 'insights' : 'timeline' : destination === 'updates' ? section === 'reports' ? 'reports' : 'updates' : destination === 'outcomes' ? section === 'value' || section === 'measurements' ? 'insights' : 'reports' : destination === 'timeline' ? 'timeline' : 'overview'
+  const legacyView = destination === 'work' ? layout === 'board' ? 'board' : 'tasks' : destination === 'plan' ? section === 'resources' ? 'files' : section === 'milestones' ? 'timeline' : ['brief', 'architecture', 'risks'].includes(section || '') ? 'insights' : 'overview' : destination === 'updates' ? section === 'reports' ? 'reports' : 'updates' : destination === 'outcomes' ? 'insights' : destination === 'timeline' ? 'timeline' : 'overview'
   return baseRoute('canonical', destination, projectId, section, layout, panel, entityId, architectureMode, legacyView, isNonEmpty(params.get('changeset')) ? params.get('changeset') : null)
 }
 
@@ -131,9 +153,13 @@ export const projectRouteForLegacyView = (projectId: string | number, view: Proj
   if (view === 'board') return buildProjectsDestinationPath(projectId, 'work', { layout: 'board' })
   if (view === 'timeline') return buildProjectsDestinationPath(projectId, 'timeline')
   if (view === 'files') return buildProjectsDestinationPath(projectId, 'plan', { section: 'resources' })
-  if (view === 'updates') return buildProjectsDestinationPath(projectId, 'updates', { section: 'updates' })
+  if (view === 'updates') return buildProjectsDestinationPath(projectId, 'updates', { section: UPDATE_SECTIONS.includes(section as typeof UPDATE_SECTIONS[number]) ? section : 'updates' })
   if (view === 'reports') return buildProjectsDestinationPath(projectId, 'updates', { section: 'reports' })
-  if (view === 'insights') return buildProjectsDestinationPath(projectId, 'plan', { section: section || 'risks' })
+  if (view === 'insights') {
+    if (OUTCOME_SECTIONS.includes(section as typeof OUTCOME_SECTIONS[number])) return buildProjectsDestinationPath(projectId, 'outcomes', { section })
+    const planSection = section === 'architecture' || section === 'risks' ? section : 'brief'
+    return buildProjectsDestinationPath(projectId, 'plan', { section: planSection })
+  }
   return buildProjectsDestinationPath(projectId, 'home')
 }
 
@@ -142,7 +168,11 @@ export const buildProjectsLegacyRedirect = (params: URLSearchParams, route: Proj
   const projectId = params.get('id')
   let path = !projectId
     ? '/projects'
-    : projectRouteForLegacyView(projectId, route.legacyView, legacyView === 'governance' ? 'risks' : undefined)
+    : legacyView === 'governance' || route.section === 'governance'
+      ? buildProjectsDestinationPath(projectId, 'plan', { section: 'risks' })
+      : route.kind === 'outcomes'
+        ? buildProjectsDestinationPath(projectId, 'outcomes', { section: route.section || 'summary' })
+        : projectRouteForLegacyView(projectId, route.legacyView, route.section || undefined)
   const retained = new URLSearchParams()
   const taskId = params.get('task')
   const reportId = params.get('report')
