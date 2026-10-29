@@ -11,7 +11,7 @@ import {
   ChevronDown, User, Calendar, ExternalLink, Clock,
   List, Shield, Target, Zap, Activity, Image as ImageIcon,
   ChevronRight, AlertCircle, PlayCircle, History, Link as LinkIcon, Lightbulb, Check,
-  Workflow, Briefcase, TrendingUp, Users, Cpu, Box, Share2, Globe, Lock, Unlock,
+  Workflow, Briefcase, TrendingUp, Users, Cpu, Box, Share2, Lock, Unlock,
   MessageSquare, Send, Reply, AlertTriangle, FileSearch, ShieldCheck, ZapOff, HardDrive
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,6 +20,7 @@ import { toast } from 'react-hot-toast'
 import { formatAppDate, parseAppDate } from '../utils/dateUtils'
 import { ConfirmationModal } from './shared/ConfirmationModal'
 import { StyledSelect } from './shared/StyledSelect'
+import { PageHeader } from './shared/LayoutPrimitives'
 
 // --- Types & Constants ---
 
@@ -548,68 +549,72 @@ export default function Knowledge() {
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 overflow-y-auto custom-scrollbar sm:space-y-6" data-knowledge-workspace="true">
       {/* Header Section */}
-      <div className="flex min-w-0 shrink-0 flex-col gap-4 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between" data-knowledge-primary-tools="true">
-        <div className="min-w-0 flex-1">
-          <h1 aria-label="Collective Intelligence" className="flex min-w-0 flex-wrap items-center gap-3 text-2xl font-bold uppercase leading-tight tracking-normal text-[var(--text-primary)] sm:text-3xl sm:gap-4 xl:flex-nowrap xl:gap-2 xl:text-2xl">
-            <div className="shrink-0 rounded-lg bg-blue-600 p-2 shadow-lg shadow-blue-500/20 sm:p-3">
-              <BookOpen size={24} className="text-white sm:h-8 sm:w-8" />
+      <div className="min-w-0 shrink-0 rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] p-4 shadow-sm sm:p-5" data-knowledge-primary-tools="true">
+        <PageHeader
+          eyebrow="Knowledge"
+          title={
+            <span className="flex min-w-0 items-center gap-3">
+              <span aria-hidden="true" className="shrink-0 rounded-lg bg-blue-600 p-2 shadow-lg shadow-blue-500/20">
+                <BookOpen size={20} className="text-white" />
+              </span>
+              <span data-knowledge-title-text="true" className="min-w-0 break-words">Collective Intelligence</span>
+            </span>
+          }
+          subtitle="Find and maintain system manuals, runbooks, and operational answers."
+          className="items-center gap-4"
+          actions={
+            <div className="flex w-full min-w-0 flex-col gap-3 lg:min-w-[520px] lg:max-w-[760px] lg:flex-1">
+              <div className="group relative w-full min-w-0">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition-colors group-focus-within:text-[var(--accent-primary)]" aria-hidden="true" />
+                <input
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="Search runbooks, manuals, and answers..."
+                  aria-label="Search Knowledge"
+                  data-knowledge-search="true"
+                  className="min-h-11 w-full min-w-0 rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] py-2.5 pl-12 pr-4 text-sm font-medium text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--focus-ring)] focus:ring-2 focus:ring-blue-500/15 sm:pr-6"
+                />
+              </div>
+              <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap" data-knowledge-primary-actions="true">
+                {(researchParam || monitoringParam) && (
+                  <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
+                    onClick={() => setActiveModal(buildConversionDraft())}
+                    className="inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-amber-700 px-3 py-2.5 text-center text-xs font-semibold text-white shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-4"
+                  >
+                    <FileText size={16} /> Convert Incident
+                  </button>
+                )}
+                <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
+                  onClick={() => setActiveModal({
+                    category: 'Manual', title: '', tags: [], linked_device_ids: [], impacted_systems: [], status: 'Draft',
+                    metadata_json: mergeDeep(emptyKnowledgeMetadata(), { entry_type: 'Architecture Note' }),
+                    content_json: {
+                      business_value: { business_problem: '', kpis: [], roi_projection: '', beneficiaries: [] },
+                      overview: { official_name: '', version: '', status: 'Active', asset_ids: [], service_ids: [], diagram_ids: [], interface_ids: [], source_config: '', licenses: [], data_stores: [] },
+                      performance: { availability_target: '', latency_limits: '', throughput_capacity: '', monitoring_ids: [], capacity_methodology: '' },
+                      operation: { owner_team: '', owner_individual: '', raci: [], cpm_workflow: '', far_ids: [], dr_strategy: { rto: '', rpo: '', plan: '' }, operational_logs: [] }
+                    }
+                  })}
+                  className="inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-emerald-700 px-3 py-2.5 text-center text-xs font-semibold text-white shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-4"
+                >
+                  <Workflow size={16} /> System Manual
+                </button>
+                <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
+                  onClick={() => setActiveModal(buildBkmTemplate())}
+                  className="inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-rose-600 px-3 py-2.5 text-center text-xs font-semibold text-white shadow-lg shadow-rose-500/20 transition-colors hover:bg-rose-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-4"
+                >
+                  <ShieldCheck size={16} /> New BKM
+                </button>
+                <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
+                  onClick={() => setActiveModal({ category: 'Q&A', title: '', question_context: '', content: '', tags: [], linked_device_ids: [], impacted_systems: [], status: 'Draft', metadata_json: mergeDeep(emptyKnowledgeMetadata(), { entry_type: 'FAQ' }), qa_threads: [] })}
+                  className="inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-blue-600 px-3 py-2.5 text-center text-xs font-semibold text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-4"
+                >
+                  <HelpCircle size={16} /> Ask Question
+                </button>
+              </div>
             </div>
-            <span className="min-w-0 break-words">Collective Intelligence</span>
-          </h1>
-          <p className="mt-2 ml-1 flex min-w-0 flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 sm:tracking-[0.16em]">
-            <Globe size={12} className="text-blue-500/50" /> Unified Knowledge Matrix // Zero-Loss Information Handoff
-          </p>
-        </div>
-        <div className="flex min-w-0 flex-col gap-3 lg:max-w-[760px] lg:flex-1">
-          <div className="group relative w-full min-w-0">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
-            <input 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              placeholder="Query Matrix..." 
-              aria-label="Search Knowledge"
-              data-knowledge-search="true"
-              className="w-full min-w-0 rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] py-3 pl-12 pr-4 text-[11px] text-[var(--text-primary)] font-black uppercase outline-none transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--focus-ring)] focus:ring-4 focus:ring-blue-500/10 sm:pr-6"
-            />
-          </div>
-          <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap" data-knowledge-primary-actions="true">
-            {(researchParam || monitoringParam) && (
-              <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
-                onClick={() => setActiveModal(buildConversionDraft())}
-                className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-amber-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-5 sm:text-[10px]"
-              >
-                <FileText size={16} /> Convert Incident
-              </button>
-            )}
-            <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
-              onClick={() => setActiveModal({ 
-                category: 'Manual', title: '', tags: [], linked_device_ids: [], impacted_systems: [], status: 'Draft',
-                metadata_json: mergeDeep(emptyKnowledgeMetadata(), { entry_type: 'Architecture Note' }),
-                content_json: { 
-                  business_value: { business_problem: '', kpis: [], roi_projection: '', beneficiaries: [] },
-                  overview: { official_name: '', version: '', status: 'Active', asset_ids: [], service_ids: [], diagram_ids: [], interface_ids: [], source_config: '', licenses: [], data_stores: [] },
-                  performance: { availability_target: '', latency_limits: '', throughput_capacity: '', monitoring_ids: [], capacity_methodology: '' },
-                  operation: { owner_team: '', owner_individual: '', raci: [], cpm_workflow: '', far_ids: [], dr_strategy: { rto: '', rpo: '', plan: '' }, operational_logs: [] }
-                } 
-              })} 
-              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-emerald-700 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
-            >
-              <Workflow size={16} /> + System Manual
-            </button>
-            <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
-              onClick={() => setActiveModal(buildBkmTemplate())} 
-              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-rose-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-rose-500/20 transition-all hover:bg-rose-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
-            >
-              <ShieldCheck size={16} /> + New BKM
-            </button>
-            <button disabled={!canWrite} title={!canWrite ? 'Knowledge edit permission is required' : undefined}
-              onClick={() => setActiveModal({ category: 'Q&A', title: '', question_context: '', content: '', tags: [], linked_device_ids: [], impacted_systems: [], status: 'Draft', metadata_json: mergeDeep(emptyKnowledgeMetadata(), { entry_type: 'FAQ' }), qa_threads: [] })} 
-              className="inline-flex w-full min-w-0 items-center justify-center gap-2 !whitespace-normal break-words rounded-lg bg-blue-600 px-3 py-3 text-center text-[9px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:flex-1 sm:px-6 sm:text-[10px]"
-            >
-              <HelpCircle size={16} /> + Ask Question
-            </button>
-          </div>
-        </div>
+          }
+        />
       </div>
 
       {/* Navigation & Filters */}

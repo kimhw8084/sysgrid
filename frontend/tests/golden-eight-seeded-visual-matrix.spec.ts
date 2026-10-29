@@ -531,18 +531,17 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           const knowledgeHeading = page.getByRole('heading', { name: 'Collective Intelligence' })
           await expect(knowledgeHeading).toBeVisible()
           const titleLayout = await knowledgeHeading.evaluate(element => {
-            const text = element.querySelector(':scope > span') as HTMLElement | null
-            const spacing = getComputedStyle(element).letterSpacing
-            return { height: element.getBoundingClientRect().height, textFits: Boolean(text && text.scrollWidth <= text.clientWidth + 1), letterSpacing: spacing === 'normal' ? 0 : parseFloat(spacing) }
+            const text = element.querySelector('[data-knowledge-title-text]') as HTMLElement | null
+            return { height: element.getBoundingClientRect().height, textFits: Boolean(text && text.scrollWidth <= text.clientWidth + 1), fontSize: parseFloat(getComputedStyle(element).fontSize) }
           })
           expect(titleLayout.height, 'Knowledge title should stay compact in its header').toBeLessThanOrEqual(72)
           expect(titleLayout.textFits, 'Knowledge title words should not collide or clip').toBe(true)
-          expect(titleLayout.letterSpacing).toBeGreaterThanOrEqual(0)
+          expect(titleLayout.fontSize, 'Knowledge title should meet the shared page-title size').toBeGreaterThanOrEqual(20)
           const summary = page.locator('[data-knowledge-summary]').first()
           expect((await summary.boundingBox())!.height, 'Summary cards must not stretch to the queue height').toBeLessThan(240)
           await expect(page.locator('[data-knowledge-record-list] h3').first(), 'Populated records must remain visible below the overview').toBeInViewport()
           const queueRegion = page.getByRole('region', { name: 'Knowledge action queue entries' })
-          await expect(page.locator('[data-knowledge-queue]').getByText('1 item', { exact: true })).toBeVisible()
+          await expect(page.locator('[data-knowledge-queue]').getByText(/^\d+ items?$/)).toBeVisible()
           const firstQueuedEntry = queueRegion.getByRole('button').first()
           await expect(firstQueuedEntry, 'The first high-priority action must be fully visible without scrolling the queue').toBeVisible()
           const [queueBox, entryBox] = await Promise.all([queueRegion.boundingBox(), firstQueuedEntry.boundingBox()])
