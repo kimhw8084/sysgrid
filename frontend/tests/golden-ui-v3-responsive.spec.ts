@@ -856,7 +856,7 @@ test('Knowledge mobile search and primary actions recompose under short-height a
   await expect(owner).toBeVisible()
   await search.fill('PW-KNOWLEDGE-')
   await expect(page.getByText(title, { exact: true }).first()).toBeVisible()
-  const action = page.getByRole('button', { name: /\+ New BKM/ })
+  const action = page.getByRole('button', { name: /New BKM/ })
   await assertReachable(search, 'Knowledge search')
   await assertReachable(action, 'Knowledge create BKM')
   const actionGeometry = await owner.locator('[data-knowledge-primary-actions] button').evaluateAll((elements) => elements.map((element) => {
@@ -868,14 +868,14 @@ test('Knowledge mobile search and primary actions recompose under short-height a
   }))
   expect(actionGeometry.length).toBeGreaterThanOrEqual(3)
   expect(actionGeometry.every((geometry) => geometry.width >= geometry.parentWidth - 1 && geometry.scrollWidth <= geometry.clientWidth + 4 && geometry.textWithinButton), JSON.stringify(actionGeometry)).toBe(true)
-  expect(actionGeometry.map((geometry) => geometry.label).join(' ')).toContain('+ New BKM')
+  expect(actionGeometry.map((geometry) => geometry.label).join(' ')).toContain('New BKM')
   await assertNoBodyOverflow(page)
-  const knowledgeProof = await renderedPageProof(page, 'knowledge-workspace', ['Search Knowledge', '+ System Manual', '+ New BKM', '+ Ask Question'])
+  const knowledgeProof = await renderedPageProof(page, 'knowledge-workspace', ['Search Knowledge', 'System Manual', 'New BKM', 'Ask Question'])
   const defaultActionContrast = knowledgeProof.actions?.filter((measurement) => measurement.name !== 'Search Knowledge') || []
   expect(defaultActionContrast.length).toBe(3)
   expect(defaultActionContrast.every((measurement) => (measurement.contrast?.ratio || 0) >= 4.5), JSON.stringify(defaultActionContrast)).toBe(true)
   const hoverActionContrast = [] as Array<{ name: string; color: string | null; background: string | null; ratio: number | null }>
-  for (const name of ['+ System Manual', '+ New BKM', '+ Ask Question']) {
+  for (const name of ['System Manual', 'New BKM', 'Ask Question']) {
     await page.getByRole('button', { name: new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') }).hover()
     const hoverProof = await renderedPageProof(page, 'knowledge-workspace', [name])
     const measurement = hoverProof.actions?.[0]?.contrast
@@ -892,14 +892,14 @@ test('Knowledge mobile search and primary actions recompose under short-height a
   await assertReachable(search, 'Knowledge search at short height')
   await assertReachable(action, 'Knowledge create BKM at short height')
   await assertNoBodyOverflow(page)
-  await capture(page, 'knowledge-mobile-short-390x600', 'knowledge-workspace', ['Search Knowledge', '+ New BKM'])
+  await capture(page, 'knowledge-mobile-short-390x600', 'knowledge-workspace', ['Search Knowledge', 'New BKM'])
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.evaluate(() => { document.documentElement.style.setProperty('font-size', '200%', 'important') })
   await assertReachable(search, 'Knowledge search at 200% text pressure')
   await assertReachable(action, 'Knowledge create BKM at 200% text pressure')
   await assertNoBodyOverflow(page)
-  await capture(page, 'knowledge-mobile-text-200', 'knowledge-workspace', ['Search Knowledge', '+ New BKM'])
+  await capture(page, 'knowledge-mobile-text-200', 'knowledge-workspace', ['Search Knowledge', 'New BKM'])
 
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.reload()
@@ -907,7 +907,7 @@ test('Knowledge mobile search and primary actions recompose under short-height a
   await assertReachable(search, 'Knowledge desktop search')
   await assertReachable(action, 'Knowledge desktop primary action')
   await assertNoBodyOverflow(page)
-  await capture(page, 'knowledge-desktop-1440x900', 'knowledge-workspace', ['Search Knowledge', '+ New BKM'])
+  await capture(page, 'knowledge-desktop-1440x900', 'knowledge-workspace', ['Search Knowledge', 'New BKM'])
   await assertNoFatal(page, errors)
 })
 
