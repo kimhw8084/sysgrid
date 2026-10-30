@@ -168,12 +168,14 @@ async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebro
   const header = page.locator(`#sg-main-content [data-golden-workspace="${workspace}"] [data-golden-page-header="true"]`).first()
   await expect(header, `${workspace} should render the shared PageHeader`).toBeVisible()
   await expect(header).toContainText(eyebrow)
-  const accent = await header.evaluate(element => ({
-    width: getComputedStyle(element, '::before').width,
-    color: getComputedStyle(element, '::before').backgroundColor,
-  }))
-  expect(accent.width, `${workspace} should use the shared colored header accent`).toBe('3px')
-  expect(accent.color, `${workspace} should color the shared header accent`).not.toBe('rgba(0, 0, 0, 0)')
+  await expect.poll(
+    () => header.evaluate(element => getComputedStyle(element, '::before').width),
+    { message: `${workspace} should use the shared colored header accent` },
+  ).toBe('3px')
+  await expect.poll(
+    () => header.evaluate(element => getComputedStyle(element, '::before').backgroundColor),
+    { message: `${workspace} should color the shared header accent` },
+  ).not.toBe('rgba(0, 0, 0, 0)')
 }
 
 async function createVendor(request: APIRequestContext, stamp: string) {
