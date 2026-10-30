@@ -109,7 +109,7 @@ export function ShellNavItem({
   const content = (
     <span className={itemClassName}>
       <Icon size={18} aria-hidden="true" className="shrink-0" />
-      <span className={isOpen ? 'min-w-0 truncate' : 'sr-only'}>{displayLabel}</span>
+      <span className={[isOpen ? 'min-w-0 truncate' : 'sr-only', isOpen ? (active ? 'font-bold' : 'font-semibold') : ''].filter(Boolean).join(' ')}>{displayLabel}</span>
       {active && isOpen ? <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" /> : null}
       {active && !isOpen ? <span className="absolute right-1.5 h-1.5 w-1.5 rounded-full bg-[var(--accent-primary)]" aria-hidden="true" /> : null}
     </span>
