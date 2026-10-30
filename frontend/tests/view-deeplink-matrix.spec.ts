@@ -49,7 +49,9 @@ test.describe('View deep-link matrix', () => {
     await expect(page.getByRole('dialog').locator('dd').getByText(service.name, { exact: true })).toBeVisible()
 
     await page.goto(`/projects?id=${project.id}`)
-    const projectsNotice = page.getByRole('status')
+    const projectsNotice = page.getByRole('status').filter({
+      has: page.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' }),
+    })
     await expect(projectsNotice.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' })).toBeVisible()
     await expect(projectsNotice).toContainText('Its backend records and API remain available for a dedicated app.')
 
@@ -64,7 +66,9 @@ test.describe('View deep-link matrix', () => {
     await expect(page.getByRole('heading', { name: far.title })).toBeVisible()
 
     await page.goto(`/knowledge?device_id=${primary.id}`)
-    const knowledgeNotice = page.getByRole('status')
+    const knowledgeNotice = page.getByRole('status').filter({
+      has: page.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' }),
+    })
     await expect(knowledgeNotice.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' })).toBeVisible()
     await expect(knowledgeNotice).toContainText('Its backend records and API remain available for a dedicated app.')
 
