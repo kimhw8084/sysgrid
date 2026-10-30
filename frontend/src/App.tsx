@@ -361,7 +361,7 @@ function MainLayout() {
              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/5 bg-[var(--action-primary)] shadow-lg transition-transform group-hover:scale-105">
                 <Grid3X3 size={20} aria-hidden="true" className="text-white" />
              </div>
-             {projectNavigation.sidebarExpanded && <span className="truncate text-lg font-semibold tracking-tight text-[var(--text-primary)]">SYSGRID</span>}
+             {projectNavigation.sidebarExpanded && <span className="truncate text-lg font-bold tracking-[-0.01em] text-[var(--text-primary)]">SYSGRID</span>}
           </Link>
           {projectNavigation.sidebarExpanded ? (
             <button
