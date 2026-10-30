@@ -2,12 +2,11 @@ import { expect, type APIRequestContext, type Locator, type Page } from '@playwr
 import { readFileSync, writeFileSync } from 'node:fs'
 import { test } from './helpers/sysgrid-test'
 import { expectReadableGridText } from './helpers/grid-contrast'
+import { SYSGRID_SEPARATE_APP_MODULE_IDS } from '../src/policy/moduleCatalog'
 import {
   createConnection,
   createExternalEntity,
-  createInvestigation,
   fillGridSearch,
-  createProject,
   createRack,
   resetBrowserState,
   seedRackScenario,
@@ -169,8 +168,12 @@ async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebro
   const header = page.locator(`#sg-main-content [data-golden-workspace="${workspace}"] [data-golden-page-header="true"]`).first()
   await expect(header, `${workspace} should render the shared PageHeader`).toBeVisible()
   await expect(header).toContainText(eyebrow)
-  const accent = await header.evaluate(element => getComputedStyle(element).borderLeftWidth)
-  expect(accent, `${workspace} should use the shared colored header accent`).toBe('3px')
+  const accent = await header.evaluate(element => ({
+    width: getComputedStyle(element, '::before').width,
+    color: getComputedStyle(element, '::before').backgroundColor,
+  }))
+  expect(accent.width, `${workspace} should use the shared colored header accent`).toBe('3px')
+  expect(accent.color, `${workspace} should color the shared header accent`).not.toBe('rgba(0, 0, 0, 0)')
 }
 
 async function createVendor(request: APIRequestContext, stamp: string) {
@@ -183,35 +186,6 @@ async function createVendor(request: APIRequestContext, stamp: string) {
   })
   expect(response.ok()).toBeTruthy()
   return response.json()
-}
-
-async function createArchitectureModel(request: APIRequestContext, stamp: string) {
-  const apiOrigin = apiBase.replace(/\/api\/v1$/, '')
-  const modelCommand = crypto.randomUUID()
-  const modelResponse = await request.post(`${apiOrigin}/api/v2/architecture/models`, {
-    data: { command_id: modelCommand, name: 'Visual Architecture' },
-    headers: { ...testApiHeaders, 'Idempotency-Key': modelCommand },
-  })
-  expect(modelResponse.ok()).toBeTruthy()
-  const model = (await modelResponse.json()).model
-  const serviceId = `pw-visual-${stamp}-service`
-  const storeId = `pw-visual-${stamp}-store`
-  const serviceName = 'Checkout Service'
-  const storeName = 'Orders DB'
-
-  const command = async (type: string, expectedRevision: number, payload: Record<string, unknown>) => {
-    const commandId = crypto.randomUUID()
-    const response = await request.post(`${apiOrigin}/api/v2/architecture/models/${model.id}/commands`, {
-      data: { command_id: commandId, type, expected: { model_revision: expectedRevision }, payload },
-      headers: { ...testApiHeaders, 'Idempotency-Key': commandId },
-    })
-    expect(response.ok()).toBeTruthy()
-  }
-
-  await command('object.create', 1, { id: serviceId, kind: 'Application/Service', name: serviceName })
-  await command('object.create', 2, { id: storeId, kind: 'Datastore', name: storeName })
-  await command('relation.create', 3, { id: `pw-visual-${stamp}-relation`, source_id: serviceId, target_id: storeId, relation_type: 'Changes' })
-  return { modelId: model.id, serviceName, storeName }
 }
 
 test.describe('Golden Eight deterministic populated visual matrix', () => {
@@ -230,18 +204,6 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         max_power_kw: 10,
       })
     }
-    const architecture = await createArchitectureModel(request, stamp)
-
-    const project = await createProject(request, {
-      name: 'Network reliability modernization',
-      objective: 'Improve core network resilience without interrupting production services.',
-      start_date: '2037-02-03T00:00:00Z',
-      end_date: '2037-04-30T00:00:00Z',
-      type: 'Strategic',
-      status: 'Planning',
-      priority: 'High',
-    })
-
     await createConnection(request, {
       device_a_id: seeded.primary.id,
       source_port: 'eth0',
@@ -267,16 +229,6 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       metadata_json: { fixture: 'golden-eight-populated' },
     })
 
-    const research = await createInvestigation(request, {
-      title: `PW-SEED-RESEARCH-${stamp}`,
-      problem_statement: 'Representative populated research investigation',
-      category: 'Research',
-      status: 'Analyzing',
-      priority: 'High',
-      systems: [seeded.systemName],
-      initiation_at: '2037-02-03T04:05:00',
-    })
-
     const vendor = await createVendor(request, stamp)
 
     const routes = [
@@ -286,16 +238,12 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       { key: 'external', path: '/external', workspace: 'external' },
       { key: 'network', path: '/network', workspace: 'network' },
       { key: 'far', path: '/far', workspace: 'far' },
-      { key: 'research', path: '/research', workspace: 'research' },
       { key: 'vendors', path: '/vendors', workspace: 'vendors' },
     ] as const
 
     const supplementaryRoutes = [
       { key: 'home', path: '/' },
       { key: 'racks', path: '/racks' },
-      { key: 'projects', path: '/projects' },
-      { key: 'architecture', path: `/architecture?model=${encodeURIComponent(architecture.modelId)}` },
-      { key: 'knowledge', path: '/knowledge' },
       { key: 'logs', path: '/logs' },
       { key: 'settings', path: '/settings' },
     ] as const
@@ -306,10 +254,12 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       external: { placeholder: 'Scan registry...', name: 'Search external registry records', value: external.name },
       network: { placeholder: 'Scan matrix...', name: 'Search network connections', value: `PW-SEED-FARM-${stamp}` },
       far: { placeholder: 'Scan risk vectors...', name: 'Search failure analysis records', value: seeded.far.title },
-      research: { placeholder: 'Scan research...', name: 'Search investigations', value: research.title },
       vendors: { placeholder: 'Search vendors...', name: 'Search vendor records', value: vendor.name },
     }
-    const releasedPaths = releaseCatalog.modules.filter(module => module.default_stage === 'production').map(module => module.canonical_route).sort()
+    const releasedPaths = releaseCatalog.modules
+      .filter(module => module.default_stage === 'production' && !SYSGRID_SEPARATE_APP_MODULE_IDS.has(module.id))
+      .map(module => module.canonical_route)
+      .sort()
     const testedPaths = [...routes, ...supplementaryRoutes].map(route => route.path.split('?')[0])
     expect(testedPaths).toHaveLength(releasedPaths.length)
     expect([...new Set(testedPaths)].sort()).toEqual(releasedPaths)
@@ -405,17 +355,10 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           if (route.key === 'external') await expectCellFullValueTitle(page, row, target.apiName, 'business_purpose', 'Golden Eight deterministic visual validation')
           if (route.key === 'vendors') await expectCellFullValueTitle(page, row, target.apiName, 'primary_personnel_name', 'Unassigned')
         }
-        if (route.key === 'research') {
-          await expect(row.locator('[col-id="title"]'), 'Long system names must leave record titles visible').toBeInViewport({ ratio: 0.5 })
-        }
         if (route.key === 'network') {
           await expect(page.locator('#sg-main-content .ag-body-horizontal-scroll').first(), 'Dense network records must expose the horizontal column scroll affordance').toBeVisible()
         }
-        if (route.key === 'research') {
-          await row.locator('[col-id="title"]').hover()
-        } else {
-          await row.hover()
-        }
+        await row.hover()
         if (importantColumns[route.key]) {
           const apiName = importantColumns[route.key].apiName
           const restored = await page.evaluate(apiName => {
@@ -434,9 +377,6 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           if (route.key === 'vendors') {
             await expectCellContentFits(page, row, route.key, 'primary_personnel_email', 'button', true)
           }
-        }
-        if (route.key === 'research') {
-          await expect(row.locator('[col-id="title"]'), 'Research title must be visible in the captured viewport').toBeInViewport({ ratio: 0.5 })
         }
         await expectReadableGridText(page, testInfo, `${theme}-${route.key}-hover`, '.ag-center-cols-container, .ag-pinned-right-cols-container')
         timings.push({ theme, route: route.path, readyMs: Date.now() - started })
@@ -473,44 +413,6 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           await page.getByRole('button', { name: 'Scroll to previous racks' }).click()
           await expect.poll(() => rackRail.evaluate(element => element.scrollLeft)).toBeLessThanOrEqual(1)
         }
-        if (route.key === 'projects') {
-          const projectRow = page.locator('.p04-table tbody tr').filter({ hasText: project.name })
-          await expect(projectRow).toBeVisible()
-          const pageHeading = page.locator('.p04-page-heading')
-          await expect(pageHeading).toBeVisible()
-          const headingAccent = await pageHeading.evaluate(element => {
-            const style = getComputedStyle(element)
-            return { borderWidth: style.borderLeftWidth, borderStyle: style.borderLeftStyle, borderColor: style.borderLeftColor, padding: style.paddingLeft }
-          })
-          expect(headingAccent.borderWidth).toBe('3px')
-          expect(headingAccent.borderStyle).toBe('solid')
-          expect(headingAccent.borderColor).not.toBe('rgba(0, 0, 0, 0)')
-          expect(headingAccent.padding).toBe('16px')
-          await expect(projectRow).toContainText('Unassigned')
-          await expect(projectRow).not.toContainText(/legacy:unresolved/i)
-        }
-        if (route.key === 'architecture') {
-          await expectGoldenWorkspaceHeader(page, 'architecture', 'Infrastructure')
-          await expect(page.locator('[data-pv1-architecture-engine="shared"]')).toBeVisible()
-          await expect(page.locator('[aria-label="Canonical Architecture objects"]').getByText(architecture.serviceName, { exact: true })).toBeVisible()
-          const graph = page.locator('[aria-label="Architecture diagram projection"] svg')
-          const geometry = await graph.evaluate(svg => {
-            const canvas = svg.getBoundingClientRect()
-            const nodes = Array.from(svg.querySelectorAll('[role="button"]')).map(node => node.getBoundingClientRect())
-            return { width: canvas.width, height: canvas.height, nodes: nodes.map(node => ({ width: node.width, height: node.height, centerX: node.left + node.width / 2, centerY: node.top + node.height / 2 })) }
-          })
-          expect(geometry.nodes).toHaveLength(2)
-          expect(geometry.nodes.every(node => node.width > 150 && node.height > 65), 'Small architecture diagrams should use the available canvas instead of pinning nodes to its corner').toBe(true)
-          const centerX = geometry.nodes.reduce((sum, node) => sum + node.centerX, 0) / geometry.nodes.length
-          const centerY = geometry.nodes.reduce((sum, node) => sum + node.centerY, 0) / geometry.nodes.length
-          const canvasRect = await graph.boundingBox()
-          expect(canvasRect).not.toBeNull()
-          expect(centerX).toBeGreaterThan(canvasRect!.x + canvasRect!.width * 0.3)
-          expect(centerX).toBeLessThan(canvasRect!.x + canvasRect!.width * 0.7)
-          expect(centerY).toBeGreaterThan(canvasRect!.y + canvasRect!.height * 0.3)
-          expect(centerY).toBeLessThan(canvasRect!.y + canvasRect!.height * 0.7)
-          await expect(page.getByText(`${architecture.serviceName} → ${architecture.storeName}`, { exact: true })).toBeVisible()
-        }
         if (route.key === 'settings') {
           await expect(page.getByRole('textbox', { name: 'Search system parameters' })).toBeVisible()
         }
@@ -526,42 +428,10 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           const payloadHeaderFits = await payloadHeader.evaluate(element => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1)
           expect(payloadHeaderFits, 'Audit payload heading should be readable in the desktop table').toBe(true)
         }
-        if (route.key === 'knowledge') {
-          await expect(page.getByText(seeded.knowledge.title, { exact: true }).first()).toBeVisible()
-          const knowledgeHeading = page.getByRole('heading', { name: 'Collective Intelligence' })
-          await expect(knowledgeHeading).toBeVisible()
-          const titleLayout = await knowledgeHeading.evaluate(element => {
-            const text = element.querySelector('[data-knowledge-title-text]') as HTMLElement | null
-            return { height: element.getBoundingClientRect().height, textFits: Boolean(text && text.scrollWidth <= text.clientWidth + 1), fontSize: parseFloat(getComputedStyle(element).fontSize) }
-          })
-          expect(titleLayout.height, 'Knowledge title should stay compact in its header').toBeLessThanOrEqual(72)
-          expect(titleLayout.textFits, 'Knowledge title words should not collide or clip').toBe(true)
-          expect(titleLayout.fontSize, 'Knowledge title should meet the shared page-title size').toBeGreaterThanOrEqual(20)
-          const summary = page.locator('[data-knowledge-summary]').first()
-          expect((await summary.boundingBox())!.height, 'Summary cards must not stretch to the queue height').toBeLessThan(240)
-          await expect(page.locator('[data-knowledge-record-list] h3').first(), 'Populated records must remain visible below the overview').toBeInViewport()
-          const queueRegion = page.getByRole('region', { name: 'Knowledge action queue entries' })
-          await expect(page.locator('[data-knowledge-queue]').getByText(/^\d+ items?$/)).toBeVisible()
-          const firstQueuedEntry = queueRegion.getByRole('button').first()
-          await expect(firstQueuedEntry, 'The first high-priority action must be fully visible without scrolling the queue').toBeVisible()
-          const [queueBox, entryBox] = await Promise.all([queueRegion.boundingBox(), firstQueuedEntry.boundingBox()])
-          expect(queueBox).not.toBeNull()
-          expect(entryBox).not.toBeNull()
-          expect(entryBox!.y).toBeGreaterThanOrEqual(queueBox!.y)
-          expect(entryBox!.y + entryBox!.height).toBeLessThanOrEqual(queueBox!.y + queueBox!.height + 1)
-        }
         await page.screenshot({ path: testInfo.outputPath(`${theme}-${route.key}-resting-desktop.png`), animations: 'disabled' })
         await expect(page.locator('#sg-main-content h1, #sg-main-content h2').first()).toBeVisible()
         await expect(page.locator('[data-sg-state="fatal-error"]')).toHaveCount(0)
         expect(new URL(page.url()).pathname).toBe(route.path.split('?')[0])
-        if (route.key === 'projects') {
-          await expect(page.locator('[data-resource-coverage-warning="true"]')).toHaveCount(0)
-          const timelineToggle = page.getByRole('button', { name: 'Timeline', exact: true })
-          await timelineToggle.click()
-          await expect(timelineToggle).toHaveAttribute('aria-pressed', 'true')
-          await expect(page.locator('[data-p04-portfolio-timeline="true"]')).toBeVisible()
-          await expect(page.locator('[data-p04-portfolio-timeline="true"] .p04-timeline-row')).toHaveCount(1)
-        }
         await page.screenshot({ path: testInfo.outputPath(`${theme}-${route.key}-interacted-desktop.png`), animations: 'disabled' })
       }
     }

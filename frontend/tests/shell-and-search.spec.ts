@@ -60,10 +60,8 @@ test.describe('App shell and global search', () => {
     await expect(searchInput).toBeVisible()
     await searchInput.fill(knowledge.title)
     const searchDialog = page.getByRole('dialog')
-    const knowledgeResult = searchDialog.getByRole('link', { name: new RegExp(knowledge.title) }).first()
-    await expect(knowledgeResult).toBeVisible()
-    await knowledgeResult.click()
-    await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
+    await expect(searchDialog.getByRole('link', { name: new RegExp(knowledge.title) })).toHaveCount(0)
+    await expect(searchDialog.getByText(`No released or authorized records found for "${knowledge.title}"`)).toBeVisible()
   })
 })
 
@@ -74,7 +72,6 @@ const goldenRoutes = [
   { path: '/external', archetype: 'table' },
   { path: '/network', archetype: 'hybrid' },
   { path: '/far', archetype: 'analytical' },
-  { path: '/research', archetype: 'analytical' },
   { path: '/vendors', archetype: 'table' },
 ] as const
 
@@ -168,10 +165,10 @@ function expectAligned(actual: number, expected: number, message = 'Golden works
   expect(delta, measurement).toBeLessThanOrEqual(tolerance)
 }
 
-test.describe('Golden Eight rendered geometry', () => {
+test.describe('Released golden workspace geometry', () => {
 
 
-  test('records authoritative API response shapes for comprehensive Golden Eight seed fixtures', async ({ page }, testInfo) => {
+  test('records authoritative API response shapes for released golden workspace seed fixtures', async ({ page }, testInfo) => {
     await resetBrowserState(page)
     await page.setViewportSize({ width: 1440, height: 1000 })
 
@@ -230,7 +227,7 @@ test.describe('Golden Eight rendered geometry', () => {
       expect(inventory.some((entry) => entry.route === route.path)).toBeTruthy()
     }
   })
-  test('keeps desktop shell, command bar, and grid alignment invariant on every golden route', async ({ page }, testInfo) => {
+  test('keeps desktop shell, command bar, and grid alignment invariant on every released golden route', async ({ page }, testInfo) => {
     test.setTimeout(120_000)
     await resetBrowserState(page)
     await page.setViewportSize({ width: 1440, height: 1000 })
@@ -284,7 +281,7 @@ test.describe('Golden Eight rendered geometry', () => {
     }
   })
 
-  test('keeps compact desktop shell and overflow containment invariant on every golden route', async ({ page }, testInfo) => {
+  test('keeps compact desktop shell and overflow containment invariant on every released golden route', async ({ page }, testInfo) => {
     await resetBrowserState(page)
     await page.setViewportSize({ width: 1024, height: 768 })
 

@@ -3,7 +3,7 @@ import { useId, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode }
 import { Link, type LinkProps } from 'react-router-dom'
 import { apiFetch, getRequestScopeKey } from '../api/apiClient'
 import { PermissionDeniedState } from '../components/shared/ShellStates'
-import { getCatalogModule, getCatalogModuleForPath, type ModuleStage } from './moduleCatalog'
+import { getCatalogModule, getCatalogModuleForPath, SYSGRID_SEPARATE_APP_MODULE_IDS, type ModuleStage } from './moduleCatalog'
 
 export type EffectiveModulePolicy = {
   module_id: string
@@ -53,8 +53,7 @@ export function useModulePolicy() {
 export const effectiveIdentityChanged = (previous: string | null | undefined, current: string | null | undefined) => previous !== undefined && current !== undefined && previous !== current
 
 export function moduleIsReleased(policy: EffectiveModulePolicyProjection | undefined, moduleId: string) {
-  const module = policy?.modules?.[moduleId]
-  return Boolean(module?.available)
+  return !SYSGRID_SEPARATE_APP_MODULE_IDS.has(moduleId) && Boolean(policy?.modules?.[moduleId]?.available)
 }
 
 export type ModuleActionState = {
@@ -78,11 +77,12 @@ type ModulePolicyState = {
 export function resolveModuleActionState(moduleId: string, policyState: ModulePolicyState): ModuleActionState {
   const catalogModule = getCatalogModule(moduleId)
   const module = policyState.data?.modules?.[moduleId]
-  const stage = module?.stage || catalogModule?.default_stage
+  const isSeparateAppModule = SYSGRID_SEPARATE_APP_MODULE_IDS.has(moduleId)
+  const stage = isSeparateAppModule ? 'retired' : module?.stage || catalogModule?.default_stage
   const label = module?.label || catalogModule?.label || moduleId
   const isPreviewTarget = stage === 'preview' || catalogModule?.default_stage === 'preview'
   const policyPending = Boolean(policyState.isLoading || policyState.isError || !policyState.data)
-  const blockedReason = module?.blocked_reason ?? (
+  const blockedReason = isSeparateAppModule ? 'MODULE_RETIRED' : module?.blocked_reason ?? (
     isPreviewTarget && policyPending
       ? 'POLICY_UNAVAILABLE'
       : module
@@ -91,7 +91,7 @@ export function resolveModuleActionState(moduleId: string, policyState: ModulePo
   )
   // Production actions remain usable while the policy request settles. Preview
   // actions fail closed until effective backend policy explicitly enables them.
-  const available = module?.available ?? (policyPending && !isPreviewTarget)
+  const available = isSeparateAppModule ? false : module?.available ?? (policyPending && !isPreviewTarget)
 
   let reason = `${label} is unavailable for the current account.`
   if (blockedReason === 'MODULE_DISABLED') {

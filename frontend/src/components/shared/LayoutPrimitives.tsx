@@ -4,7 +4,7 @@ import { isGoldenActivityColumnsTitle } from './OperationalGoldenToolbarContract
 
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ')
 
-export const GOLDEN_PAGE_HEADER_CLASS = 'flex min-w-0 flex-wrap items-start justify-between gap-4'
+export const GOLDEN_PAGE_HEADER_CLASS = 'flex min-w-0 shrink-0 flex-wrap items-start justify-between gap-4'
 export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'
 export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-auto lg:flex-wrap'
 export const GOLDEN_TOOLBAR_RIGHT_CLASS = 'flex min-w-max flex-nowrap items-center justify-end gap-3 lg:flex-wrap'

@@ -373,7 +373,6 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
       enabled: !!device.id
     })
 
-    const primaryMonitoringId = monitoringQuery.data?.[0]?.id || null
     const suggestedKnowledge = knowledgeQuery.data
 
     const maintenanceQuery = useQuery({
@@ -483,24 +482,18 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                         <div className="flex items-center justify-between gap-4">
                             <div>
                                 <p className="text-[9px] font-black uppercase tracking-[0.24em] text-amber-300">Linked Runbooks</p>
-                                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Procedures linked to this asset.</p>
+                                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Read-only procedures linked to this asset.</p>
                             </div>
-                            <ModulePolicyButton
-                              moduleId="knowledge"
-                              onClick={() => navigate(`/knowledge?device_id=${device.id}${primaryMonitoringId ? `&monitoring_id=${primaryMonitoringId}` : ''}&mode=incident`)}
-                              className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-amber-300 transition-all hover:bg-amber-500/20"
-                            >
-                              Open Knowledge
-                            </ModulePolicyButton>
+                            <span className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-amber-300">Knowledge app</span>
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-3">
                             {Array.isArray(suggestedKnowledge) && suggestedKnowledge.slice(0, 2).map((entry: any) => (
-                              <ModulePolicyButton key={entry.id} moduleId="knowledge" onClick={() => navigate(`/knowledge?id=${entry.id}`)} className="rounded-lg border border-white/5 bg-black/20 px-3 py-3 text-left hover:bg-white/[0.06] transition-all">
+                              <div key={entry.id} className="rounded-lg border border-white/5 bg-black/20 px-3 py-3">
                                 <p className="text-[10px] font-black uppercase tracking-tight text-white truncate">{entry.title}</p>
                                 <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-500">
                                   {entry.metadata_json?.entry_type || entry.category} // {entry.metadata_json?.verification?.state || entry.status}
                                 </p>
-                              </ModulePolicyButton>
+                              </div>
                             ))}
                             {knowledgeQuery.isLoading && <p role="status" className="col-span-2 text-[10px] font-bold uppercase text-slate-500 italic">Loading linked runbooks…</p>}
                             {knowledgeQuery.isError && <p className="col-span-2 text-[10px] font-bold uppercase text-amber-300 italic">Linked runbooks unavailable</p>}
@@ -614,10 +607,10 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                     </p>
                     <div className="space-y-2">
                         {Array.isArray(relatedKnowledge) && relatedKnowledge.slice(0, 3).map((entry: any) => (
-                          <ModulePolicyButton key={entry.id} moduleId="knowledge" onClick={() => navigate(`/knowledge?id=${entry.id}`)} className="w-full rounded-lg border border-white/5 bg-white/[0.03] px-3 py-3 text-left hover:bg-white/[0.06] transition-all group">
-                            <p className="text-[10px] font-bold uppercase text-slate-200 group-hover:text-amber-400">{entry.title}</p>
+                          <div key={entry.id} className="w-full rounded-lg border border-white/5 bg-white/[0.03] px-3 py-3">
+                            <p className="text-[10px] font-bold uppercase text-slate-200">{entry.title}</p>
                             <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-500">{entry.category} // {entry.status}</p>
-                          </ModulePolicyButton>
+                          </div>
                         ))}
                         {knowledgeQuery.isLoading && <p role="status" className="text-[10px] font-bold uppercase text-slate-500 italic">Loading linked knowledge…</p>}
                         {knowledgeQuery.isError && <p className="text-[10px] font-bold uppercase text-amber-300 italic">Linked knowledge unavailable</p>}

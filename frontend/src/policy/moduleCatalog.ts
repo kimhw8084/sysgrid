@@ -2,6 +2,8 @@ import catalog from '../../../contracts/system_management_v1.json'
 
 export type ModuleStage = 'production' | 'preview' | 'disabled' | 'retired'
 
+export const SYSGRID_SEPARATE_APP_MODULE_IDS = new Set(['projects', 'research', 'knowledge', 'architecture'])
+
 export type ModuleCatalogEntry = {
   id: string
   label: string

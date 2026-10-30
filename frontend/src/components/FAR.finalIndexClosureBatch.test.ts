@@ -175,11 +175,13 @@ describe('PC-51 FAR foundational contracts final-index closure', () => {
     ])
   })
 
-  it('G80/G81 preserve linked BKM/Research/Incident navigation and management surfaces', () => {
+  it('G80/G81 keep linked BKM and Research actions behind their owning apps', () => {
     expectAll(farSource, [
       'function BkmGuidanceModal',
+      'ModulePolicyButton moduleId="knowledge"',
       'onClick={() => navigate(`/knowledge?id=${res.knowledge_id}`)}',
       'Jump to BKM',
+      'ModulePolicyButton moduleId="research"',
       'onClick={() => navigate(`/research?type=research&id=${r.id}`)}',
       'setSelectedRcaDetail(r);',
       '<EnhancedRcaDetails',

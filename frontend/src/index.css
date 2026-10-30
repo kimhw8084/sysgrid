@@ -95,13 +95,13 @@
   --input-bg: #161616;
   --action-primary: #1e49b5;
   --action-primary-hover: #2c5ed0;
-  --action-ink: #6a92ff;
+  --action-ink: #83aaff;
   --nav-active-bg: #183a7b;
   --nav-active-text: #ffffff;
   --state-success: #93d2ac;
   --state-warning: #e5c583;
   --state-danger: #e4a5a0;
-  --state-info: #6a92ff;
+  --state-info: #83aaff;
   --state-info-surface: rgb(47 101 230 / 16%);
   --state-info-border: rgb(91 138 255 / 42%);
 }
@@ -109,7 +109,7 @@
 /* Match legacy accent utilities to the shared dark palette without changing
    equipment geometry, status fills, or either light-theme alias. */
 :is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.text-blue-300, .text-blue-400, .text-blue-500, .text-sky-300, .text-sky-400, .text-cyan-300, .text-cyan-400) {
-  color: var(--accent-primary) !important;
+  color: var(--action-ink) !important;
 }
 :is([data-theme='nordic-frost-v1'], [data-theme='dark']) [class*='shadow-blue-'] {
   --tw-shadow-color: rgba(0, 0, 0, 0.2) !important;

@@ -24,23 +24,23 @@ describe('central module release action policy', () => {
     expect(effectiveIdentityChanged('account-a', null)).toBe(true)
   })
   it('keeps released actions usable while policy is loading or unavailable', () => {
-    const loading = resolveModuleActionState('knowledge', { isLoading: true })
-    const errored = resolveModuleActionState('knowledge', { isError: true })
+    const loading = resolveModuleActionState('external', { isLoading: true })
+    const errored = resolveModuleActionState('external', { isError: true })
 
     expect(loading.disabled).toBe(false)
     expect(errored.disabled).toBe(false)
   })
 
   it('fails closed for explicit preview actions while policy is loading or unavailable', () => {
-    const previewPolicy = policyFor('knowledge', {
+    const previewPolicy = policyFor('external', {
       stage: 'preview',
       default_stage: 'preview',
       available: false,
       blocked_reason: 'SYSTEM_ROOT_REQUIRED',
       root_preview: false,
     })
-    const loading = resolveModuleActionState('knowledge', { data: previewPolicy, isLoading: true })
-    const errored = resolveModuleActionState('knowledge', { data: previewPolicy, isError: true })
+    const loading = resolveModuleActionState('external', { data: previewPolicy, isLoading: true })
+    const errored = resolveModuleActionState('external', { data: previewPolicy, isError: true })
 
     expect(loading.disabled).toBe(true)
     expect(loading.reason).toMatch(/Preview unavailable/i)
@@ -49,8 +49,8 @@ describe('central module release action policy', () => {
   })
 
   it('activates root-preview only from effective backend policy', () => {
-    const root = resolveModuleActionState('knowledge', {
-      data: policyFor('knowledge', { available: true, blocked_reason: null, root_preview: true }),
+    const root = resolveModuleActionState('external', {
+      data: policyFor('external', { available: true, blocked_reason: null, root_preview: true }),
     })
 
     expect(root.disabled).toBe(false)
@@ -58,16 +58,28 @@ describe('central module release action policy', () => {
   })
 
   it('keeps disabled and retired stages unavailable even for root-preview', () => {
-    const disabled = resolveModuleActionState('knowledge', {
-      data: policyFor('knowledge', { stage: 'disabled', available: false, blocked_reason: 'MODULE_DISABLED', root_preview: false }),
+    const disabled = resolveModuleActionState('external', {
+      data: policyFor('external', { stage: 'disabled', available: false, blocked_reason: 'MODULE_DISABLED', root_preview: false }),
     })
-    const retired = resolveModuleActionState('knowledge', {
-      data: policyFor('knowledge', { stage: 'retired', available: false, blocked_reason: 'MODULE_RETIRED', root_preview: false }),
+    const retired = resolveModuleActionState('external', {
+      data: policyFor('external', { stage: 'retired', available: false, blocked_reason: 'MODULE_RETIRED', root_preview: false }),
     })
 
     expect(disabled.disabled).toBe(true)
     expect(disabled.reason).toMatch(/module disabled/i)
     expect(retired.disabled).toBe(true)
     expect(retired.reason).toMatch(/module retired/i)
+  })
+
+  it('keeps separate-app actions unavailable even while the shared API remains available', () => {
+    const separateApp = resolveModuleActionState('knowledge', {
+      data: policyFor('knowledge', { stage: 'production', available: true, blocked_reason: null, root_preview: false }),
+    })
+
+    expect(separateApp.stage).toBe('retired')
+    expect(separateApp.available).toBe(false)
+    expect(separateApp.disabled).toBe(true)
+    expect(separateApp.blockedReason).toBe('MODULE_RETIRED')
+    expect(separateApp.reason).toMatch(/module retired/i)
   })
 })

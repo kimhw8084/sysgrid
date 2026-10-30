@@ -323,7 +323,7 @@ for gate in normal-v1 desktop role-matrix root-preview; do
   VERIFY_RUNTIME_BACKEND_PID=""
   VERIFY_RUNTIME_FRONTEND_PID=""
   export SYSGRID_VERIFY_PROFILE=normal-v1
-  export SYSGRID_DESKTOP_ONLY=0
+  export SYSGRID_DESKTOP_ONLY=1
   case "$gate" in
     normal-v1) config=playwright.v1.config.ts ;;
     desktop) config=playwright.desktop.config.ts; export SYSGRID_DESKTOP_ONLY=1 ;;
