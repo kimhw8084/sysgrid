@@ -34,7 +34,7 @@ function Header({ projectId, active, project }: { projectId: string; active: Com
     { label: 'Resources', href: `/projects/${encodeURIComponent(projectId)}/resources`, active: active === 'resources' },
     { label: 'Reports', href: `/projects/${encodeURIComponent(projectId)}/reports`, active: active === 'reports' },
   ]
-  return <header className="p08-header"><div><p className="p05-eyebrow">Projects · evidence communication</p><h1>{active === 'updates' ? 'Updates' : active === 'activity' ? 'Activity' : active === 'resources' ? 'Resources' : 'Reports'}</h1>{project ? <p className="p08-project-context"><strong>{project.display_key}</strong> · {project.name}</p> : <p className="p08-project-context">Project {projectId}</p>}</div><ProjectsPrimaryNavigation projectId={projectId} active={primaryActive} legacyProjectId={project?.legacy_project_id} extras={extras} /></header>
+  return <header className="p08-header" data-golden-page-header="true"><div><p className="p05-eyebrow">Projects · evidence communication</p><h1>{active === 'updates' ? 'Updates' : active === 'activity' ? 'Activity' : active === 'resources' ? 'Resources' : 'Reports'}</h1>{project ? <p className="p08-project-context"><strong>{project.display_key}</strong> · {project.name}</p> : <p className="p08-project-context">Project {projectId}</p>}</div><ProjectsPrimaryNavigation projectId={projectId} active={primaryActive} legacyProjectId={project?.legacy_project_id} extras={extras} /></header>
 }
 
 function State({ message, error = false }: { message: string; error?: boolean }) { return <p className={error ? 'p08-error' : 'p08-state'} role={error ? 'alert' : undefined}>{message}</p> }

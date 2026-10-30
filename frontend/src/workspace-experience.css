@@ -63,10 +63,62 @@
 [data-golden-workspace='architecture'] { --workspace-ink: var(--guide-violet); }
 [data-golden-workspace='network'] { --workspace-ink: var(--guide-violet); }
 [data-golden-workspace='services'] { --workspace-ink: var(--guide-amber); }
-[data-golden-workspace] [data-golden-page-header] h1 > span > svg,
-[data-golden-workspace] [data-golden-page-header] h1 > div > svg,
-[data-golden-workspace] [data-golden-page-header] h1 > svg { color: var(--workspace-ink, var(--action-ink)); }
-[data-golden-workspace] [data-golden-page-header] { border-left: 3px solid var(--workspace-ink, var(--action-ink)); padding-left: 1rem; }
+[data-golden-page-header] h1 > span > svg,
+[data-golden-page-header] h1 > div > svg,
+[data-golden-page-header] h1 > svg { color: var(--workspace-ink, var(--action-ink, var(--accent-primary))); }
+section[data-golden-page-header],
+header[data-golden-page-header] {
+  position: relative;
+  min-height: 4rem;
+  border-left: 0;
+  padding-left: 1rem;
+}
+[data-golden-page-header]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 4rem;
+  border-radius: 2px;
+  background: var(--workspace-ink, var(--pv1-accent, var(--guide-blue, var(--action-ink, var(--accent-primary)))));
+  pointer-events: none;
+}
+[data-golden-page-header] h1 {
+  margin: 0 !important;
+  font-size: 1.375rem !important;
+  line-height: 1.625rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+[data-golden-page-header].p04-page-heading,
+[data-golden-page-header].p05-header,
+[data-golden-page-header].p06-title,
+[data-golden-page-header].p08-header,
+[data-golden-page-header].p09-header {
+  align-items: flex-start;
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.p04-page-heading[data-golden-page-header] .p04-eyebrow,
+.p05-header[data-golden-page-header] .p05-eyebrow,
+.p08-header[data-golden-page-header] .p05-eyebrow,
+.p09-header[data-golden-page-header] .p05-eyebrow,
+.p06-title[data-golden-page-header] > div:first-child > p {
+  font-size: 8px !important;
+  line-height: 12px !important;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.p04-page-heading[data-golden-page-header] > div > p:not(.p04-eyebrow),
+.p05-header[data-golden-page-header] .p05-project-context,
+.p08-header[data-golden-page-header] .p08-project-context,
+.p09-header[data-golden-page-header] .p09-project-context {
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
 
 .asset-map { display: grid; grid-template-columns: 18rem minmax(0,1fr); grid-template-rows: minmax(0,1fr); height: 100%; min-height: 0; min-width: 0; overflow: hidden; border: 1px solid var(--border-default); border-radius: .75rem; background: var(--surface-base); color: var(--text-primary); }
 .asset-map-sidebar { min-width: 0; min-height: 0; overflow-y: auto; padding: 1rem; border-right: 1px solid var(--border-default); background: var(--surface-elevated); }

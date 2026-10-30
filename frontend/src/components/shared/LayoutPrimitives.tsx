@@ -4,7 +4,7 @@ import { isGoldenActivityColumnsTitle } from './OperationalGoldenToolbarContract
 
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ')
 
-export const GOLDEN_PAGE_HEADER_CLASS = 'flex flex-wrap items-start justify-between gap-6'
+export const GOLDEN_PAGE_HEADER_CLASS = 'flex min-w-0 flex-wrap items-start justify-between gap-4'
 export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'
 export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-auto lg:flex-wrap'
 export const GOLDEN_TOOLBAR_RIGHT_CLASS = 'flex min-w-max flex-nowrap items-center justify-end gap-3 lg:flex-wrap'
@@ -42,9 +42,9 @@ export const PageHeader = ({
   className?: string
   style?: React.CSSProperties
 }) => (
-  <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} style={style} data-golden-page-header="true">
+  <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} style={{ ...style, '--workspace-ink': 'var(--accent-primary)' } as React.CSSProperties} data-golden-page-header="true">
     <div className="min-w-0 basis-[200px] flex-1 space-y-1">
-      {eyebrow && <div className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--accent-primary)]">{eyebrow}</div>}
+      {eyebrow && <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent-primary)]">{eyebrow}</div>}
       <div className="space-y-0.5">
         <h1 className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">{title}</h1>
         {subtitle && (
