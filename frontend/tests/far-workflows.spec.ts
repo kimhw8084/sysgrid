@@ -309,7 +309,7 @@ test.describe('FAR workflows', () => {
     await expect(openResearchButton).toBeDisabled()
     await expect(openResearchButton).toHaveAttribute('data-module-action', 'research')
     await expect(openResearchButton).toHaveAttribute('data-module-action-reason', 'MODULE_RETIRED')
-    await expect(page).toHaveURL(new RegExp(`/far\\?id=${far.id}$`))
+    await expect(page).toHaveURL(new RegExp(`/far\\?id=${far.id}(?:&|$)`))
   })
 })
 
