@@ -1987,7 +1987,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto px-0 sm:px-4 overflow-x-hidden overflow-y-auto relative sm:overflow-hidden" data-settings-workspace="true">
+    <div className="h-full min-h-0 min-w-0 flex flex-col space-y-4 w-full mx-auto overflow-x-hidden overflow-y-auto relative sm:overflow-hidden" data-settings-workspace="true">
       {confirmation}
       {pendingPermissionWrites > 0 && (
         <p role="status" className="shrink-0 rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] px-4 py-3 text-sm text-[var(--text-primary)]">

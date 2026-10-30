@@ -481,7 +481,7 @@ function MainLayout() {
         />
 
         <WorkspaceToaster portal={false} />
-        <div ref={mainContentRef} id="sg-main-content" tabIndex={-1} className={`relative flex min-h-0 flex-1 flex-col overflow-hidden focus-visible:outline-none ${location.pathname === '/architecture' || location.pathname === '/logs' || location.pathname === '/projects' ? '' : 'p-4 sm:p-8'}`} data-sg-content-panel="true">
+        <div ref={mainContentRef} id="sg-main-content" tabIndex={-1} className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-4 focus-visible:outline-none sm:p-8" data-sg-content-panel="true">
           <ErrorBoundary>
             <Suspense fallback={<div role="status" className="flex min-h-40 flex-1 items-center justify-center text-sm text-[var(--text-secondary)]" data-sg-state="route-loading">Loading workspace…</div>}>
             <Routes>
