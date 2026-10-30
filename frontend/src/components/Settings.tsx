@@ -19,6 +19,7 @@ import { readOptionalStorage, writeOptionalStorage } from './shared/optionalStor
 import { apiFetch, setApiOverride, getApiBaseUrl, getRequestScopeKey } from "../api/apiClient"
 import { formatAppDate, parseAppDate } from "../utils/dateUtils"
 import { 
+  GOLDEN_PAGE_HEADER_CLASS,
   PageHeader, 
   PageToolbar, 
   ToolbarGroup, 
@@ -2060,7 +2061,7 @@ export default function SettingsPage() {
         )}
       </AnimatePresence>
 
-      <section className="flex w-full min-w-0 shrink-0 flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-6" data-golden-page-header="true" data-settings-header="true">
+      <section className={`${GOLDEN_PAGE_HEADER_CLASS} w-full shrink-0`} style={{ '--workspace-ink': 'var(--accent-primary)' } as React.CSSProperties} data-golden-page-header="true" data-settings-header="true">
         <div className="w-full min-w-0 flex-1 space-y-1 sm:w-auto sm:min-w-[200px]">
           <div className="space-y-0.5">
             <h1 className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">
@@ -2069,7 +2070,7 @@ export default function SettingsPage() {
                 <span>Settings</span>
               </span>
             </h1>
-            <p className="max-w-3xl text-sm text-[var(--text-secondary)]">
+            <p className="max-w-3xl text-xs leading-relaxed text-[var(--text-secondary)]">
               System Configuration & Golden Template
             </p>
           </div>

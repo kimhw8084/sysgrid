@@ -5,18 +5,7 @@ import path from 'node:path'
 
 // Collect only. Ensure every newly released workflow is actually selected in
 // the normal-user stage while its root-capability regression remains intact.
-const required = [
-  'architecture-workflows.spec.ts',
-  'external-workflows.spec.ts',
-  'far-workflows.spec.ts',
-  'golden-eight-seeded-visual-matrix.spec.ts',
-  'knowledge-workflows.spec.ts',
-  'projects-p04-project-story.spec.ts',
-  'monitoring-workflows.spec.ts',
-  'service-workflows.spec.ts',
-  'research-workflows.spec.ts',
-  'vendors-real-runtime.spec.ts',
-]
+const required = JSON.parse(readFileSync('tests/qualification-suite.json', 'utf8')).release_blocking
 const report = JSON.parse(execFileSync(process.execPath, [
   'node_modules/@playwright/test/cli.js', 'test', '--config=playwright.v1.config.ts', '--list', '--reporter=json',
 ], { encoding: 'utf8', env: { ...process.env, SYSGRID_DESKTOP_ONLY: '1', SYSGRID_VERIFY_PROFILE: 'normal-v1' } }))

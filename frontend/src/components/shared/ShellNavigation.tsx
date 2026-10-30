@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Activity, AlertTriangle, BookOpen, Briefcase, ChevronDown, FileText, Globe, Layers, LayoutDashboard, Network, Package, Search, Server, Share2, Workflow, type LucideIcon } from 'lucide-react'
+import { Activity, AlertTriangle, ChevronDown, FileText, Globe, Layers, LayoutDashboard, Network, Package, Server, Share2, type LucideIcon } from 'lucide-react'
 import { MODULE_CATALOG } from '../../policy/moduleCatalog'
 import { ModulePolicyLink, useModuleActionPolicy } from '../../policy/ModulePolicy'
 
@@ -20,24 +20,23 @@ export type ShellNavigationGroup = {
 
 const MODULE_ICONS: Record<string, LucideIcon> = {
   home: LayoutDashboard,
-  projects: Briefcase,
   monitoring: Activity,
   assets: Server,
   racks: Package,
   services: Layers,
   external: Share2,
   network: Network,
-  architecture: Workflow,
-  research: Search,
   far: AlertTriangle,
   vendors: Globe,
-  knowledge: BookOpen,
   logs: FileText,
   settings: FileText,
 }
 
+const RETIRED_SYSGRID_MODULE_IDS = new Set(['projects', 'research', 'knowledge', 'architecture'])
+
 export const SHELL_NAV_GROUPS: ShellNavigationGroup[] = Array.from(
   MODULE_CATALOG.modules.reduce((groups, module) => {
+    if (RETIRED_SYSGRID_MODULE_IDS.has(module.id)) return groups
     const group = groups.get(module.navigation_group) || []
     group.push({
       moduleId: module.id,
@@ -49,7 +48,7 @@ export const SHELL_NAV_GROUPS: ShellNavigationGroup[] = Array.from(
     groups.set(module.navigation_group, group)
     return groups
   }, new Map<string, ShellNavigationItem[]>()),
-).map(([label, items]) => ({ label, items }))
+).filter(([, items]) => items.length > 0).map(([label, items]) => ({ label, items }))
 
 const normalizePath = (path: string) => {
   const normalized = path.replace(/\/+$/, '')

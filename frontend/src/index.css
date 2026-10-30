@@ -78,36 +78,38 @@
 [data-theme='dark'] {
   /* Soft Carbon. Keep saved dark-theme ids compatible without a preference migration. */
   color-scheme: dark;
-  --bg-primary: #252525;
-  --bg-header: #303030;
-  --glass-bg: #303030;
-  --glass-border: #474747;
-  --text-primary: #e1e1e1;
+  --bg-primary: #161616;
+  --bg-header: #202020;
+  --glass-bg: #202020;
+  --glass-border: #3a3a3a;
+  --text-primary: #ececec;
   --text-secondary: #c4c4c4;
-  --text-muted: #acacac;
-  --accent-primary: #93c5fd;
-  --accent-glow: rgb(59 130 246 / 12%);
+  --text-muted: #a6a6a6;
+  --accent-primary: #6a92ff;
+  --accent-glow: rgb(47 101 230 / 18%);
   --sidebar-bg: #292929;
-  --grid-bg: #2b2b2b;
-  --grid-header-bg: #353535;
-  --grid-border: #474747;
-  --panel-item-bg: #303030;
-  --input-bg: #252525;
-  --action-primary: #2563eb;
-  --action-primary-hover: #1d4ed8;
-  --action-ink: #93c5fd;
-  --nav-active-bg: #233d5a;
-  --nav-active-text: #dbeafe;
+  --grid-bg: #161616;
+  --grid-header-bg: #292929;
+  --grid-border: #3a3a3a;
+  --panel-item-bg: #202020;
+  --input-bg: #161616;
+  --action-primary: #1e49b5;
+  --action-primary-hover: #2c5ed0;
+  --action-ink: #83aaff;
+  --nav-active-bg: #183a7b;
+  --nav-active-text: #ffffff;
   --state-success: #93d2ac;
   --state-warning: #e5c583;
   --state-danger: #e4a5a0;
-  --state-info: #7dd3fc;
+  --state-info: #83aaff;
+  --state-info-surface: rgb(47 101 230 / 16%);
+  --state-info-border: rgb(91 138 255 / 42%);
 }
 
 /* Match legacy accent utilities to the shared dark palette without changing
    equipment geometry, status fills, or either light-theme alias. */
 :is([data-theme='nordic-frost-v1'], [data-theme='dark']) :is(.text-blue-300, .text-blue-400, .text-blue-500, .text-sky-300, .text-sky-400, .text-cyan-300, .text-cyan-400) {
-  color: var(--accent-primary) !important;
+  color: var(--action-ink) !important;
 }
 :is([data-theme='nordic-frost-v1'], [data-theme='dark']) [class*='shadow-blue-'] {
   --tw-shadow-color: rgba(0, 0, 0, 0.2) !important;

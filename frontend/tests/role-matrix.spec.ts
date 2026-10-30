@@ -73,7 +73,12 @@ for (const surface of [
       expect(seeded.ok(), await seeded.text()).toBeTruthy()
     }
     await page.goto(surface.path)
-    await expect(page.getByRole('button', { name: surface.action }).first()).toBeDisabled()
+    if (surface.module === 'research' || surface.module === 'knowledge') {
+      const moduleName = surface.module === 'research' ? 'Research' : 'Knowledge'
+      await expect(page.getByRole('heading', { name: `${moduleName} is outside SysGrid`, exact: true })).toBeVisible()
+    } else {
+      await expect(page.getByRole('button', { name: surface.action }).first()).toBeDisabled()
+    }
     if (surface.module === 'monitoring') {
       await expect(page.getByRole('button', { name: 'Import monitoring rows', exact: true })).toBeDisabled()
       await expect(page.getByRole('button', { name: 'Edit configuration', exact: true }).first()).toBeDisabled()
@@ -86,10 +91,6 @@ for (const surface of [
       await expect(page.getByText('Service Enumerations', { exact: true })).toBeVisible()
       await expect(page.getByTitle('Settings management permission is required.').first()).toBeDisabled()
     }
-    if (surface.module === 'knowledge') {
-      await expect(page.getByRole('button', { name: /System Manual/ })).toBeDisabled()
-      await expect(page.getByRole('button', { name: /Ask Question/ })).toBeDisabled()
-    }
   })
   test(`editor can access create in ${surface.module}`, async ({ page, context }) => {
     const headers = { 'X-User-Id': 'sysgrid.verify.editor', 'X-Tenant-Id': process.env.PW_TENANT_ID || '1' }
@@ -100,6 +101,11 @@ for (const surface of [
     expect(policy.identity).toMatchObject({ user_id: 'sysgrid.verify.editor', tenant_admin: false, access_role: 'EDITOR' })
     expect(policy.modules[surface.module].actions).toMatchObject({ read: true, write: true })
     await page.goto(surface.path)
-    await expect(page.getByRole('button', { name: surface.action }).first()).toBeEnabled()
+    if (surface.module === 'research' || surface.module === 'knowledge') {
+      const moduleName = surface.module === 'research' ? 'Research' : 'Knowledge'
+      await expect(page.getByRole('heading', { name: `${moduleName} is outside SysGrid`, exact: true })).toBeVisible()
+    } else {
+      await expect(page.getByRole('button', { name: surface.action }).first()).toBeEnabled()
+    }
   })
 }

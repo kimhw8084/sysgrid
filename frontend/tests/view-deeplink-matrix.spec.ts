@@ -49,7 +49,11 @@ test.describe('View deep-link matrix', () => {
     await expect(page.getByRole('dialog').locator('dd').getByText(service.name, { exact: true })).toBeVisible()
 
     await page.goto(`/projects?id=${project.id}`)
-    await expect(page.locator('h1').filter({ hasText: project.name })).toBeVisible()
+    const projectsNotice = page.getByRole('status').filter({
+      has: page.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' }),
+    })
+    await expect(projectsNotice.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' })).toBeVisible()
+    await expect(projectsNotice).toContainText('Its backend records and API remain available for a dedicated app.')
 
     await page.goto(`/monitoring?id=${monitoring.id}`)
     const monitoringDialog = page.getByRole('dialog').filter({
@@ -62,8 +66,11 @@ test.describe('View deep-link matrix', () => {
     await expect(page.getByRole('heading', { name: far.title })).toBeVisible()
 
     await page.goto(`/knowledge?device_id=${primary.id}`)
-    await expect(page.getByText(knowledge.title).first()).toBeVisible()
-    await expect(page.getByText('Suggested Knowledge Context')).toBeVisible()
+    const knowledgeNotice = page.getByRole('status').filter({
+      has: page.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' }),
+    })
+    await expect(knowledgeNotice.getByRole('heading', { level: 2, name: 'This workspace has been retired from SysGrid.' })).toBeVisible()
+    await expect(knowledgeNotice).toContainText('Its backend records and API remain available for a dedicated app.')
 
     await page.goto(`/network?id=${connection.id}`)
     await expect(page.getByRole('heading', { name: 'Connection Forensics' })).toBeVisible()

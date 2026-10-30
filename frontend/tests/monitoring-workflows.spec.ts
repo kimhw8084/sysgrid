@@ -133,13 +133,11 @@ test.describe('Monitoring workflows', () => {
     await expect(bkmDetailDialog).not.toBeVisible()
     await expect(recoveryDialog).toBeVisible()
     const standaloneRecoveryButton = recoveryDialog.getByTitle('Open Recovery BKM').first()
-    await expect(standaloneRecoveryButton).toBeEnabled()
+    await expect(standaloneRecoveryButton).toHaveAttribute('aria-disabled', 'true')
     await expect(page).toHaveURL(/\/monitoring(?:\?.*)?$/)
     await expect(page.getByText(knowledge.title, { exact: true }).first()).toBeVisible()
     await expect(page.getByText('Recovery procedure').first()).toBeVisible()
-    await standaloneRecoveryButton.click()
-    await expect(page).toHaveURL(new RegExp(`/knowledge\\?id=${knowledge.id}`))
-    await expect(page.getByText(knowledge.title, { exact: true }).first()).toBeVisible()
+    await expect(standaloneRecoveryButton).toContainText('Open Recovery BKM')
   })
 
   test('supports bulk undo, compare, and persisted display state', async ({ page, request }) => {

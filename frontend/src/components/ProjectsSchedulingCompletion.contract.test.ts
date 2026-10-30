@@ -10,9 +10,9 @@ const model = fs.readFileSync(path.join(root, 'components/ProjectsSchedulingComp
 const timeline = fs.readFileSync(path.join(root, 'components/ProjectsTimeline.tsx'), 'utf8')
 
 describe('OUT-38 source contract', () => {
-  it('keeps one Gantt renderer while routing canonical deep links to the v2 schedule authority', () => {
-    expect(app).toContain("const Projects = lazy(() => import('./components/ProjectsSchedulingCompletion'))")
-    expect(app).toContain('<Route path="/projects/*" element={<ModulePolicyGate moduleId="projects"><Projects /></ModulePolicyGate>} />')
+  it('removes Project routing from SysGrid while retaining implementation for a separate app', () => {
+    expect(app).not.toContain("const Projects = lazy(() => import('./components/ProjectsSchedulingCompletion'))")
+    expect(app).toContain('<Route path="/projects/*" element={<RetiredWorkspaceNotice moduleName="Projects" />} />')
     expect(app).not.toMatch(/import\s+Projects\s+from\s/)
     expect(wrapper).toContain("import ProjectsGolden from './ProjectsGolden'")
     expect(wrapper).toContain('<ProjectsGolden />')

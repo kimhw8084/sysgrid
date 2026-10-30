@@ -269,7 +269,7 @@ test.describe('FAR workflows', () => {
     ]))
     expect(latestMitigations.some((item: any) => Number(item.id) === Number(processChange.id))).toBe(false)
   })
-  test('navigates to Research and can unlink linked research artifacts', async ({ page, sysApi: request }) => {
+  test('keeps linked Research artifacts visible and managed within FAR', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
     const { far } = await seedOperationalScenario(request)
     const investigation = await createInvestigation(request, {
@@ -305,8 +305,11 @@ test.describe('FAR workflows', () => {
 
     const relinkedCard = page.getByRole('heading', { name: investigation.title }).locator('xpath=ancestor::div[contains(@class,"group")][1]')
     await relinkedCard.hover()
-    await relinkedCard.getByRole('button').first().click()
-    await expect(page).toHaveURL(new RegExp(`/research\\?type=research&id=${investigation.id}$`))
+    const openResearchButton = relinkedCard.getByRole('button').first()
+    await expect(openResearchButton).toBeDisabled()
+    await expect(openResearchButton).toHaveAttribute('data-module-action', 'research')
+    await expect(openResearchButton).toHaveAttribute('data-module-action-reason', 'MODULE_RETIRED')
+    await expect(page).toHaveURL(new RegExp(`/far\\?id=${far.id}(?:&|$)`))
   })
 })
 

@@ -28,7 +28,7 @@ describe('Golden workspace geometry contract', () => {
     expect(shell).toContain("'attached-panel': 'rounded-t-none border-x border-b border-white/5'")
     expect(shell).toContain('data-golden-geometry-version={GOLDEN_WORKSPACE_GEOMETRY_VERSION}')
 
-    expect(layout).toContain("GOLDEN_PAGE_HEADER_CLASS = 'flex flex-wrap items-start justify-between gap-6'")
+    expect(layout).toContain("GOLDEN_PAGE_HEADER_CLASS = 'flex min-w-0 shrink-0 flex-wrap items-start justify-between gap-4'")
     expect(layout).toContain("GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'")
     expect(layout).toContain('data-golden-page-header="true"')
     expect(layout).toContain('data-golden-page-toolbar="true"')

@@ -1,4 +1,4 @@
-import { useModulePolicy } from '../policy/ModulePolicy'
+import { ModulePolicyButton, useModulePolicy } from '../policy/ModulePolicy'
 import React, { useState, useMemo, useEffect } from 'react'
 import {
   WorkspaceCollapsibleHeader,
@@ -1324,13 +1324,13 @@ function BkmGuidanceModal({ cause, onClose }: { cause: any, onClose: () => void 
                           </div>
                        </div>
                     </div>
-                    <button 
+                    <ModulePolicyButton moduleId="knowledge"
                       onClick={() => navigate(`/knowledge?id=${res.knowledge_id}`)}
                       className="flex items-center gap-2 px-4 py-2 bg-emerald-600/10 border border-emerald-500/20 rounded-lg text-[10px] font-black text-emerald-400 uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-lg group-hover:scale-105"
                     >
                        <Zap size={12} />
                        Jump to BKM
-                    </button>
+                    </ModulePolicyButton>
                  </div>
                  <div className="p-6 space-y-4">
                     <div className="space-y-2">
@@ -2460,7 +2460,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
                      </div>
                   </div>
                   <div className="flex gap-3">
-                     <button onClick={() => navigate(`/research?type=research&id=${r.id}`)} className="p-2.5 bg-white/5 rounded-lg text-slate-500 hover:text-blue-400 transition-all opacity-0 group-hover:opacity-100"><Eye size={18}/></button>
+                     <ModulePolicyButton moduleId="research" onClick={() => navigate(`/research?type=research&id=${r.id}`)} className="p-2.5 bg-white/5 rounded-lg text-slate-500 hover:text-blue-400 transition-all opacity-0 group-hover:opacity-100"><Eye size={18}/></ModulePolicyButton>
                      <button onClick={() => unlinkMutation.mutate(r.id)} disabled={readOnly} className="p-2.5 bg-white/5 rounded-lg text-slate-500 hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-20"><Trash2 size={18}/></button>
                   </div>
                </div>
@@ -2469,7 +2469,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
                <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4 opacity-20 ">
                   <Activity size={48} className="text-slate-500" />
                   <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-center max-w-md">No historical research artifacts currently mapped to this failure vector</p>
-                  <button onClick={() => navigate('/research')} className="text-[10px] font-bold uppercase underline tracking-widest text-rose-500">Initiate New Research Case</button>
+                  <ModulePolicyButton moduleId="research" onClick={() => navigate('/research')} className="text-[10px] font-bold uppercase underline tracking-widest text-rose-500">Initiate New Research Case</ModulePolicyButton>
                </div>
             )}
          </div>

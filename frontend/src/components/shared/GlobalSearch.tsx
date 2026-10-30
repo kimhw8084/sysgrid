@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiClient';
 import metadata from '../../metadata.json';
 import { ModulePolicyLink, resolveModuleActionState, useModulePolicy } from '../../policy/ModulePolicy';
-import { getCatalogModuleForPath } from '../../policy/moduleCatalog';
+import { getCatalogModuleForPath, SYSGRID_SEPARATE_APP_MODULE_IDS } from '../../policy/moduleCatalog';
 
 interface SearchResult {
   id: number;
@@ -59,7 +59,11 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           if (!res.ok) throw new Error(`Search failed with status ${res.status}`);
           const data = await res.json();
           if (!current) return;
-          setResults(data.results || []);
+          const availableResults = Array.isArray(data.results) ? data.results : []
+          setResults(availableResults.filter((result: SearchResult) => {
+            const moduleId = result.module_id || getCatalogModuleForPath(result.path)?.id
+            return !SYSGRID_SEPARATE_APP_MODULE_IDS.has(moduleId || '') && result.type !== 'project' && result.type !== 'knowledge'
+          }));
           setSelectedIndex(0);
         } catch (err) {
           if (!current || controller.signal.aborted) return;

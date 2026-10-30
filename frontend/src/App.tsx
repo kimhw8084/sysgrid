@@ -19,19 +19,14 @@ const ServicesReal = lazy(() => import('./components/ServicesReal'))
 const SettingsPage = lazy(() => import('./components/Settings'))
 const MonitoringGrid = lazy(() => import('./components/MonitoringGrid'))
 const Maintenance = lazy(() => import('./components/Maintenance'))
-const Research = lazy(() => import('./components/Research'))
 const NetworkReal = lazy(() => import('./components/NetworkReal'))
 const VendorsReal = lazy(() => import('./components/VendorsReal'))
-const Knowledge = lazy(() => import('./components/Knowledge'))
 const FAR = lazy(() => import('./components/FAR'))
-const ArchitectureWorkspace = lazy(() => import('./components/ArchitectureWorkspace'))
-const DataFlowDesigner = lazy(() => import('./components/DataFlowDesigner'))
-const Projects = lazy(() => import('./components/ProjectsSchedulingCompletion'))
 const External = lazy(() => import('./components/External'))
 const Racks = lazy(() => import('./components/Racks'))
 import metadata from "./metadata.json"
 import { GlobalSearch } from "./components/shared/GlobalSearch"
-import { ShellHeader, ToolbarButton } from "./components/shared/LayoutPrimitives"
+import { ShellHeader, ToolbarButton, PageHeader } from "./components/shared/LayoutPrimitives"
 import { LiveShellHeaderTools, ShellFooter } from "./components/shared/ShellLiveRegions"
 import { FatalErrorState, PermissionDeniedState } from "./components/shared/ShellStates"
 import { SHELL_NAV_GROUPS, ShellNavGroup, ShellNavItem, isShellRouteActive } from "./components/shared/ShellNavigation"
@@ -42,15 +37,39 @@ import { effectiveIdentityChanged, ModulePolicyGate, useModulePolicy } from './p
 const APP_VERSION = metadata.version
 const PATCH_HISTORY = metadata.patchHistory
 
-function ArchitectureRoute() {
-  const location = useLocation()
-  const legacy = new URLSearchParams(location.search).get('legacy') === 'true'
-  return legacy ? <DataFlowDesigner /> : <ArchitectureWorkspace />
-}
-
 function MonitoringRoute() {
   const location = useLocation()
   return new URLSearchParams(location.search).get('workspace') === 'maintenance' ? <Maintenance /> : <MonitoringGrid />
+}
+
+function RetiredWorkspaceNotice({ moduleName }: { moduleName: string }) {
+  const navigate = useNavigate()
+  return (
+    <section className="flex min-h-0 flex-1 flex-col gap-4" aria-labelledby="retired-workspace-title">
+      <PageHeader
+        eyebrow="Separate workspace"
+        title={`${moduleName} is outside SysGrid`}
+        subtitle="SysGrid is the source of truth for physical and virtual hardware."
+      />
+      <div role="status" className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-6">
+        <h2 id="retired-workspace-title" className="text-base font-semibold">This workspace has been retired from SysGrid.</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
+          Its backend records and API remain available for a dedicated app. This change does not migrate records to another app.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex min-h-10 items-center rounded-md border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
+            Return to previous view
+          </button>
+          <Link to="/" className="inline-flex min-h-10 items-center rounded-md border border-[var(--action-primary)] bg-[var(--action-primary)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--action-primary-hover)]">
+            Open SysGrid home
+          </Link>
+          <Link to="/asset" className="inline-flex min-h-10 items-center rounded-md border border-[var(--border-default)] bg-[var(--panel-item-bg)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)]">
+            Open hardware inventory
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
 }
 
 import { QueryCache, MutationCache } from "@tanstack/react-query"
@@ -344,12 +363,11 @@ function MainLayout() {
   }, [currentTheme])
 
   return (
-    <div className="sg-app-shell flex h-[100dvh] overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" data-sg-projects-app={projectNavigation.active ? "true" : undefined} data-sg-mobile={projectNavigation.mobile ? 'true' : undefined}>
+    <div className="sg-app-shell flex h-[100dvh] overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" data-sg-mobile={projectNavigation.mobile ? 'true' : undefined}>
       <ProjectsNavigationBackdrop nav={projectNavigation} />
       <a href="#sg-main-content" className="skip-link">Skip to content</a>
       <motion.aside
         initial={false}
-        transition={projectNavigation.active ? { duration: 0 } : undefined}
         animate={{ width: projectNavigation.sidebarExpanded ? 240 : 80 }}
         className="glass-panel relative z-20 flex shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--sidebar-bg)] shadow-xl"
         aria-label="Application navigation"
@@ -475,7 +493,7 @@ function MainLayout() {
             pathname={location.pathname}
             errors={errors}
             onOpenErrorConsole={() => setErrorConsoleOpen(true)}
-            compact={projectNavigation.active || projectNavigation.mobile}
+            compact={projectNavigation.mobile}
             onOpenPatchNotes={() => setShowPatchNotes(true)}
           />}
         />
@@ -486,7 +504,7 @@ function MainLayout() {
             <Suspense fallback={<div role="status" className="flex min-h-40 flex-1 items-center justify-center text-sm text-[var(--text-secondary)]" data-sg-state="route-loading">Loading workspace…</div>}>
             <Routes>
               <Route path="/" element={<Dashboard onNavigate={(p:any) => navigate("/" + p)} />} />
-              <Route path="/projects/*" element={<ModulePolicyGate moduleId="projects"><Projects /></ModulePolicyGate>} />
+              <Route path="/projects/*" element={<RetiredWorkspaceNotice moduleName="Projects" />} />
               <Route path="/racks" element={<ModulePolicyGate moduleId="racks"><Racks /></ModulePolicyGate>} />
               <Route path="/asset" element={<ModulePolicyGate moduleId="assets"><Assets /></ModulePolicyGate>} />
               <Route path="/asset-real" element={<ModulePolicyGate moduleId="assets"><LegacyAssetRedirect /></ModulePolicyGate>} />
@@ -494,13 +512,13 @@ function MainLayout() {
               <Route path="/external" element={<ModulePolicyGate moduleId="external"><External /></ModulePolicyGate>} />
               <Route path="/network" element={<ModulePolicyGate moduleId="network"><NetworkReal /></ModulePolicyGate>} />
               <Route path="/network-real" element={<ModulePolicyGate moduleId="network"><LegacyNetworkRedirect /></ModulePolicyGate>} />
-              <Route path="/architecture" element={<ModulePolicyGate moduleId="architecture"><ArchitectureRoute /></ModulePolicyGate>} />
-              <Route path="/research" element={<ModulePolicyGate moduleId="research"><Research /></ModulePolicyGate>} />
+              <Route path="/architecture/*" element={<RetiredWorkspaceNotice moduleName="Architecture" />} />
+              <Route path="/research/*" element={<RetiredWorkspaceNotice moduleName="Research" />} />
               <Route path="/far" element={<ModulePolicyGate moduleId="far"><FAR /></ModulePolicyGate>} />
               <Route path="/monitoring" element={<ModulePolicyGate moduleId="monitoring"><MonitoringRoute /></ModulePolicyGate>} />
               <Route path="/vendors" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
               <Route path="/vendors-real" element={<ModulePolicyGate moduleId="vendors"><VendorsReal /></ModulePolicyGate>} />
-              <Route path="/knowledge" element={<ModulePolicyGate moduleId="knowledge"><Knowledge /></ModulePolicyGate>} />
+              <Route path="/knowledge/*" element={<RetiredWorkspaceNotice moduleName="Knowledge" />} />
               <Route path="/logs" element={<ModulePolicyGate moduleId="logs"><AuditLogs /></ModulePolicyGate>} />
               <Route path="/settings" element={<ModulePolicyGate moduleId="settings"><SettingsPage /></ModulePolicyGate>} />
               <Route path="*" element={<Navigate to="/" replace />} />

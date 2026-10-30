@@ -9,9 +9,11 @@ const navigationSource = fs.readFileSync(path.join(frontendRoot, 'components/sha
 const policySource = fs.readFileSync(path.join(frontendRoot, 'policy/ModulePolicy.tsx'), 'utf8')
 
 describe('System Management V1 module release policy contract', () => {
-  it('classifies every catalog route and compatibility alias in the actual router', () => {
+  it('classifies active routes and explicitly retires separate-app routes', () => {
+    const separateAppModules = new Set(['projects', 'research', 'knowledge', 'architecture'])
     for (const module of catalog.modules) {
-      if (module.id !== 'home') expect(appSource).toContain(`moduleId="${module.id}"`)
+      if (module.id !== 'home' && !separateAppModules.has(module.id)) expect(appSource).toContain(`moduleId="${module.id}"`)
+      if (separateAppModules.has(module.id)) expect(appSource).toContain(`RetiredWorkspaceNotice moduleName="${module.label}"`)
       for (const route of [module.canonical_route, ...module.aliases]) {
         if (route === '/') expect(appSource).toContain('path="/"')
         else expect(appSource).toContain(`path="${route}`)
@@ -24,6 +26,7 @@ describe('System Management V1 module release policy contract', () => {
     expect(navigationSource).toContain('module.canonical_route')
     expect(navigationSource).toContain('module.aliases')
     expect(navigationSource).toContain('MODULE_ICONS')
+    expect(navigationSource).toContain('RETIRED_SYSGRID_MODULE_IDS')
     expect(navigationSource).not.toContain("permission: 'projects'")
   })
 
