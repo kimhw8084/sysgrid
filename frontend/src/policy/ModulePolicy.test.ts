@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { effectiveIdentityChanged, resolveModuleActionState, type EffectiveModulePolicy } from './ModulePolicy'
+import { effectiveIdentityChanged, moduleIsReleased, resolveModuleActionState, type EffectiveModulePolicy } from './ModulePolicy'
 
 const policyFor = (moduleId: string, override: Partial<EffectiveModulePolicy> = {}) => ({
   modules: {
@@ -71,9 +71,10 @@ describe('central module release action policy', () => {
     expect(retired.reason).toMatch(/module retired/i)
   })
 
-  it('keeps separate-app actions unavailable even while the shared API remains available', () => {
-    const separateApp = resolveModuleActionState('knowledge', {
-      data: policyFor('knowledge', { stage: 'production', available: true, blocked_reason: null, root_preview: false }),
+  it.each(['projects', 'research', 'knowledge', 'architecture'])('keeps %s actions unavailable even while the shared API remains available', moduleId => {
+    const policy = policyFor(moduleId, { stage: 'production', available: true, blocked_reason: null, root_preview: false })
+    const separateApp = resolveModuleActionState(moduleId, {
+      data: policy,
     })
 
     expect(separateApp.stage).toBe('retired')
@@ -81,5 +82,6 @@ describe('central module release action policy', () => {
     expect(separateApp.disabled).toBe(true)
     expect(separateApp.blockedReason).toBe('MODULE_RETIRED')
     expect(separateApp.reason).toMatch(/module retired/i)
+    expect(moduleIsReleased(policy, moduleId)).toBe(false)
   })
 })

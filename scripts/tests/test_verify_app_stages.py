@@ -100,7 +100,7 @@ def test_selected_stage_runs_its_complete_scope_only(staged_executor, stage):
         assert len(starts) == 1
         assert starts[0]['profile'] == (stage if stage in {'root-preview', 'role-matrix'} else 'normal-v1')
         invocation = next(event for event in events if any(arg.startswith('--config=') for arg in event['args']))
-        assert (invocation['desktop'] == '1') == (stage in {'desktop', 'role-matrix'})
+        assert invocation['desktop'] == '1'
         if stage == 'root-preview':
             assert starts[0]['root'] == 'test-system-root'
 
@@ -212,38 +212,45 @@ def test_release_ledger_matches_released_catalog_and_desktop_scope():
     assert {'keyboard_only', 'screen_reader', 'zoom_200_percent', 'reflow_400_percent'} <= set(ledger['acceptance_dimensions']['interaction'])
 
 
-def test_release_inventory_contains_current_p0_flows():
+def test_release_inventory_matches_current_app_ownership():
     suite = json.loads((ROOT / 'frontend/tests/qualification-suite.json').read_text())
     release = set(suite['release_blocking'])
     root_preview = set(suite['root_preview'])
+    separate_apps = set(suite['separate_app_ownership'])
     deferred = set(suite['deferred_historical'])
     shared_released_workflows = {
-        'architecture-workflows.spec.ts', 'external-workflows.spec.ts',
-        'far-workflows.spec.ts', 'knowledge-workflows.spec.ts',
-        'projects-p04-project-story.spec.ts', 'research-workflows.spec.ts',
+        'external-workflows.spec.ts', 'far-workflows.spec.ts',
         'vendors-real-runtime.spec.ts',
     }
+    assert suite['version'] == 2
     assert release & root_preview == shared_released_workflows
     assert 'golden-eight-seeded-visual-matrix.spec.ts' in release
-    assert 'projects-out40-slice-h-gantt-modernization.spec.ts' in release
     assert 'golden-eight-mobile-routes.spec.ts' in deferred
     assert {
         'notification-layout.spec.ts', 'notification-keyboard.spec.ts',
     } <= release
     assert {
-        'architecture-workflows.spec.ts', 'far-golden-controls.spec.ts',
+        'far-golden-controls.spec.ts',
         'far-visible-grid.spec.ts', 'far-workflows.spec.ts',
-        'knowledge-workflows.spec.ts', 'research-workflows.spec.ts',
         'release-policy-root-preview.spec.ts', 'tenant-switch-safety.spec.ts',
         'shell-dialogs.spec.ts', 'workspace-storage-preview.spec.ts',
         'external-services-bulk-preview.spec.ts', 'external-workflows.spec.ts',
+        'vendors-real-runtime.spec.ts',
+    } <= root_preview
+    assert not (release & deferred) and not (root_preview & deferred)
+    assert not (release & separate_apps) and not (root_preview & separate_apps) and not (deferred & separate_apps)
+    assert {
+        'architecture-workflows.spec.ts', 'knowledge-workflows.spec.ts',
+        'research-workflows.spec.ts', 'projects-creation-flow.spec.ts',
+        'projects-out40-slice-e-timeline-dependency-a11y.spec.ts',
+        'projects-out40-slice-f-task-drawer-a11y.spec.ts',
+        'projects-out40-slice-h-gantt-modernization.spec.ts',
         'projects-navigation.spec.ts', 'projects-p04-project-story.spec.ts',
         'projects-p05-work-plan.spec.ts', 'projects-p06-timeline.spec.ts',
         'projects-p07-architecture.spec.ts', 'projects-p08-communication.spec.ts',
         'projects-p09-outcomes.spec.ts', 'projects-p11-portfolio-regression.spec.ts',
-        'projects-saved-views.spec.ts', 'vendors-real-runtime.spec.ts',
-    } <= root_preview
-    assert not (release & deferred) and not (root_preview & deferred)
+        'projects-saved-views.spec.ts',
+    } <= separate_apps
     normal_config = (ROOT / 'frontend/playwright.v1.config.ts').read_text()
     root_config = (ROOT / 'frontend/playwright.root-preview.config.ts').read_text()
     assert 'narrow[- ]screen' in normal_config and 'narrow[- ]screen' in root_config
@@ -253,6 +260,8 @@ def test_release_inventory_contains_current_p0_flows():
     assert all(Path(spec).name.removesuffix('.spec.ts') not in root_config for spec in release - shared_released_workflows)
     assert all(Path(spec).name.removesuffix('.spec.ts') not in normal_config for spec in deferred)
     assert all(Path(spec).name.removesuffix('.spec.ts') not in root_config for spec in deferred)
+    assert all(Path(spec).name.removesuffix('.spec.ts') not in normal_config for spec in separate_apps)
+    assert all(Path(spec).name.removesuffix('.spec.ts') not in root_config for spec in separate_apps)
 
 
 def test_owned_browser_origins_all_target_the_isolated_backend(tmp_path):

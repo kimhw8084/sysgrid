@@ -2,7 +2,6 @@ import { expect, type APIRequestContext, type Locator, type Page } from '@playwr
 import { readFileSync, writeFileSync } from 'node:fs'
 import { test } from './helpers/sysgrid-test'
 import { expectReadableGridText } from './helpers/grid-contrast'
-import { SYSGRID_SEPARATE_APP_MODULE_IDS } from '../src/policy/moduleCatalog'
 import {
   createConnection,
   createExternalEntity,
@@ -19,6 +18,7 @@ const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const releaseCatalog = JSON.parse(readFileSync(new URL('../../contracts/system_management_v1.json', import.meta.url), 'utf8')) as {
   modules: Array<{ id: string; canonical_route: string; default_stage: string }>
 }
+const separateAppModuleIds = new Set(['projects', 'research', 'knowledge', 'architecture'])
 
 async function expectVisibleFormControlsHaveNames(page: Page, route: string) {
   const unnamed = await page.locator([
@@ -257,7 +257,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       vendors: { placeholder: 'Search vendors...', name: 'Search vendor records', value: vendor.name },
     }
     const releasedPaths = releaseCatalog.modules
-      .filter(module => module.default_stage === 'production' && !SYSGRID_SEPARATE_APP_MODULE_IDS.has(module.id))
+      .filter(module => module.default_stage === 'production' && !separateAppModuleIds.has(module.id))
       .map(module => module.canonical_route)
       .sort()
     const testedPaths = [...routes, ...supplementaryRoutes].map(route => route.path.split('?')[0])
