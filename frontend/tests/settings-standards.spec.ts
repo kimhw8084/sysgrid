@@ -39,8 +39,11 @@ test.describe('Settings Standards reference', () => {
     await expect(reference).not.toContainText('Golden Radius')
     await expect(reference).not.toContainText('Monitoring-style')
     await reference.locator('#table-standard > button').click()
-    await expect(reference).toContainText('FAR and Research')
-    await expect(reference).toContainText('Pinned AG Grid fragments')
+    await expect(reference).toContainText('Operational records')
+    await expect(reference).toContainText('Read-only summaries')
+    await expect(reference).toContainText('two highest-frequency actions beside More')
+    await expect(reference).toContainText('keyboard-accessible row menu')
+    await expect(reference).toContainText('Shift+F10')
 
     await reference.locator('#modals > button').click()
     await expect(reference).toContainText('WorkspaceModal supplies accessible dialog semantics')

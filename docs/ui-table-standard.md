@@ -15,6 +15,7 @@ This is the shared design and behavior contract for every operational grid, sema
 
 - Operational grids use a 42px minimum header, 40px minimum desktop row, 12px body type, and 11px medium-weight column labels. Density controls may add space but cannot compress records below the readable minimum.
 - Give checkbox, favorite, and watch utility columns 64px so their controls and labels remain legible; compact unlabeled change markers may use 52px.
+- Keep the shared row-action rail at 120px. Show the two highest-frequency actions beside More; put secondary actions in the keyboard-accessible row menu.
 - Detail tables use 12px body type and 9px × 12px cell padding. Compact modifiers use 11px and 6px × 9px padding.
 - Record names and prose align left. Status, selection, and icon actions align centrally. Numeric values and dates with numeric significance align right and use tabular numerals.
 - Use a quiet horizontal divider between records. Do not draw a box around every cell. Keep one subtle boundary at the grid surface and a divider at pinned utility or action columns only.

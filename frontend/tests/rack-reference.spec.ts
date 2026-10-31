@@ -88,7 +88,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     // Show actual mounted equipment, including the lower units in a tall rack.
     await card(racks[0].id).getByText(racks[0].deviceNames[2], { exact: true }).scrollIntoViewIfNeeded()
     await expect(card(racks[0].id).getByText(racks[0].deviceNames[2], { exact: true })).toBeInViewport()
-    await expect(card(racks[0].id).getByRole('img', { name: 'Status: Active', exact: true }).first()).toHaveAttribute('title', 'Status: Active')
+    const activeDevice = card(racks[0].id).getByRole('button', { name: new RegExp(`^Open ${racks[0].deviceNames[2]}, Active,`) }).first()
+    await expect(activeDevice).toHaveAttribute('title', /Active/)
     await page.screenshot({ path: testInfo.outputPath('racks-mounted-units.png'), animations: 'disabled' })
 
     await page.getByRole('button', { name: `Open site ${coreSite.name}`, exact: true }).click()

@@ -69,7 +69,7 @@ test.describe('Racks workflows', () => {
     await page.getByRole('button', { name: `Open site ${siteA.name}`, exact: true }).click()
     const rackCard = page.locator(`.glass-panel[data-rack-id="${rackA1.id}"]`)
     await expect(rackCard).toBeVisible()
-    await rackCard.locator(`[data-device-id="${devicePrimary.id}"]`).first().locator('div').nth(1).click()
+    await rackCard.locator(`[data-device-id="${devicePrimary.id}"]`).first().getByRole('button', { name: new RegExp(`^Open ${devicePrimary.name},`) }).click()
     await page.getByRole('button', { name: 'Edit Asset', exact: true }).click()
     await expect(page.getByRole('heading', { name: devicePrimary.name, exact: true })).toBeVisible()
 
@@ -110,14 +110,14 @@ test.describe('Racks workflows', () => {
     await clickResilientButton(page, /New Blank Plan/i)
     await expect(page.getByText('Ghost Planner')).toBeVisible()
 
-    await rackCard(rackA1.id).locator('[data-u="1"] > div').first().click()
+    await rackCard(rackA1.id).locator('[data-u="1"]').getByRole('button', { name: 'Mount or reserve at U1', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Mount Asset' })).toBeVisible()
     await page.getByPlaceholder('Filter by name, type, or system...').fill(devicePrimary.name)
     await page.getByText(devicePrimary.name, { exact: true }).click()
     await clickResilientButton(page, 'Mount Asset')
     await expect(page.getByText('Ghost Planner')).toBeVisible()
 
-    await rackCard(rackA1.id).locator('[data-u="1"] > div').first().click()
+    await rackCard(rackA1.id).locator('[data-u="1"]').getByRole('button', { name: 'Select rack unit U1', exact: true }).click()
     await page.getByPlaceholder('Filter by name, type, or system...').fill(deviceSecondary.name)
     await page.getByText(deviceSecondary.name, { exact: true }).click()
     await clickResilientButton(page, 'Mount Asset')

@@ -929,6 +929,7 @@ export default function MonitoringGrid() {
             detailRoute.openDetail(item)
           }}
           title="Open details"
+          aria-label="Open details"
           className="rounded-lg p-1 text-blue-400 transition-all hover:bg-blue-400/10 active:scale-90"
         >
           <Maximize2 size={13} />
@@ -950,30 +951,9 @@ export default function MonitoringGrid() {
         </button>
         <button
           type="button"
-          onClick={(event) => {
-            event.stopPropagation()
-            setHistoryItem(item)
-          }}
-          title="View history"
-          className="rounded-lg p-1 text-amber-400 transition-all hover:bg-amber-400/10 active:scale-90"
-        >
-          <Clock size={13} />
-        </button>
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation()
-            openRecoveryDocuments(item)
-          }}
-          title="Knowledge documents"
-          className="rounded-lg p-1 text-purple-400 transition-all hover:bg-purple-400/10 active:scale-90"
-        >
-          <BookOpen size={13} />
-        </button>
-        <button
-          type="button"
           onClick={(event: any) => openRowActionMenu(event, item)}
           title="More actions"
+          aria-label="More actions"
           className="row-action-trigger row-action-menu-container rounded-lg p-1 text-slate-400 transition-all hover:bg-slate-400/10 hover:text-white active:scale-90"
         >
           <MoreVertical size={13} />
@@ -982,7 +962,7 @@ export default function MonitoringGrid() {
         )}
       </div>
     )
-  }, [canWrite, detailRoute, openRecoveryDocuments, openRowActionMenu, pendingIds, writeReason])
+  }, [canWrite, detailRoute, openRowActionMenu, pendingIds, writeReason])
 
   const handleExportCSV = () => {
     if (gridRef.current?.api) {
@@ -2202,7 +2182,8 @@ export default function MonitoringGrid() {
                         { id: 'edit', label: 'Edit', icon: Edit2, tone: 'success' as OperationalRowActionTone, disabled: !canWrite, disabledReason: writeReason, onClick: () => { if (!canWrite) return; setEditingItem(item); setIsFormOpen(true); setRowActionMenu(null); } },
                         { id: 'history', label: 'History', icon: Clock, tone: 'warning' as OperationalRowActionTone, onClick: () => { setHistoryItem(item); setRowActionMenu(null); } },
                         { id: 'asset', label: 'Asset', icon: Monitor, tone: 'info' as OperationalRowActionTone, onClick: () => { if (item.device_id) navigate(`/asset?id=${item.device_id}`); setRowActionMenu(null); } },
-                        { id: 'knowledge', label: 'Knowledge', icon: BookOpen, tone: 'success' as OperationalRowActionTone, onClick: () => { const firstDoc = item.recovery_docs?.[0]; const docId = typeof firstDoc === 'object' ? firstDoc?.id : firstDoc; if (docId && knowledgeAction.available) navigate(`/knowledge?id=${docId}`); setRowActionMenu(null); }, disabled: !item.recovery_docs?.[0] || knowledgeAction.disabled, disabledReason: !item.recovery_docs?.[0] ? 'No recovery procedure linked.' : knowledgeAction.reason }
+                        { id: 'knowledge', label: 'Knowledge', icon: BookOpen, tone: 'success' as OperationalRowActionTone, onClick: () => { const firstDoc = item.recovery_docs?.[0]; const docId = typeof firstDoc === 'object' ? firstDoc?.id : firstDoc; if (docId && knowledgeAction.available) navigate(`/knowledge?id=${docId}`); setRowActionMenu(null); }, disabled: !item.recovery_docs?.[0] || knowledgeAction.disabled, disabledReason: !item.recovery_docs?.[0] ? 'No recovery procedure linked.' : knowledgeAction.reason },
+                        { id: 'recoveryDocuments', label: 'Recovery documents', icon: BookOpen, tone: 'success', onClick: () => { openRecoveryDocuments(item); setRowActionMenu(null); } }
 
                     ]
                 },

@@ -543,19 +543,19 @@ test.describe('Network workflows', () => {
     expect(idWidth).toBe(90)
     
     expect(favoriteVisible).toBe(true)
-    expect(favoriteWidth).toBe(80) // Favorite remains visible by default
+    expect(favoriteWidth).toBe(64) // Utility columns follow the shared table standard
     
     expect(watchVisible).toBe(false) // Watch is hidden/collapsed by default
     expect(recentVisible).toBe(false) // Recent Change is hidden/collapsed by default
     
     expect(actionVisible).toBe(true)
-    expect(actionWidth).toBe(208)
+    expect(actionWidth).toBe(120)
 
     // Prove actual rendered DOM geometry and widths in collapsed state
     await expectColumnRenderedWidth(page, 'select', 64, 64)
     await expectColumnRenderedWidth(page, 'id', 90, 90)
-    await expectColumnRenderedWidth(page, 'favorite', 80, 80)
-    await expectColumnRenderedWidth(page, 'row_actions', 208, 208)
+    await expectColumnRenderedWidth(page, 'favorite', 64, 64)
+    await expectColumnRenderedWidth(page, 'row_actions', 120, 120)
 
     // Scroll status into view using AG Grid API to ensure it is rendered and visible in DOM
     await page.evaluate(() => {
@@ -610,14 +610,14 @@ test.describe('Network workflows', () => {
     const recentWidthExpanded = await getColumnWidth(page, 'recent_change')
     
     expect(watchVisibleExpanded).toBe(true)
-    expect(watchWidthExpanded).toBe(85)
+    expect(watchWidthExpanded).toBe(64)
     
     expect(recentVisibleExpanded).toBe(true)
-    expect(recentWidthExpanded).toBe(80)
+    expect(recentWidthExpanded).toBe(52)
 
     // Prove actual rendered DOM geometry and alignment for watch and recent_change in expanded state with multi-row proof
-    await expectColumnRenderedWidth(page, 'watch', 85, 85)
-    await expectColumnRenderedWidth(page, 'recent_change', 80, 80)
+    await expectColumnRenderedWidth(page, 'watch', 64, 64)
+    await expectColumnRenderedWidth(page, 'recent_change', 52, 52)
     await expectHeaderBodyAligned(page, 'watch', 2, 2)
     await expectHeaderBodyAligned(page, 'recent_change', 2, 2)
 

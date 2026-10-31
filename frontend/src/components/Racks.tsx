@@ -1059,7 +1059,7 @@ interface RackElevationProps {
      ${isSelected ? 'border-blue-500/60 shadow-blue-500/15 shadow-2xl bg-blue-900/[0.07]' : 'border-[var(--grid-border)] hover:border-[var(--accent-primary)]'}
      ${isDeleted ? 'opacity-60 grayscale-[0.4]' : ''}
      ${isFillOver ? 'ring-1 ring-rose-500/50' : ''}
-     h-full max-h-full ${className}
+     h-full min-h-[360px] max-h-full ${className}
    `}>      
       <RackStatusBar rack={rack} siteColor={rack.site_color} />
 
@@ -1197,7 +1197,7 @@ interface RackElevationProps {
         />
 
         {/* Scrollable interior grid */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar px-5 py-2">
+        <div ref={scrollRef} className="flex-1 min-h-[120px] overflow-y-auto custom-scrollbar px-5 py-2">
           <div className="bg-[var(--surface-base)] border border-[var(--grid-border)] rounded-lg overflow-hidden">
             {units.map(u => {
               const loc = rack.device_locations?.find((l: any) => u >= l.start_unit && u < l.start_unit + l.size_u)

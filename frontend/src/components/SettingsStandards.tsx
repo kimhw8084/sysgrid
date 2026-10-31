@@ -166,10 +166,11 @@ export const SettingsStandards = () => {
             <div className="space-y-3">
               <Guidance term="Scale and spacing">Use a 42px header, a 40px minimum desktop row, 12px body text, and 11px medium-weight header labels. Resizing controls and row actions must remain fully clickable.</Guidance>
               <Guidance term="Utility-column width">Reserve 64px for selection, favorite, and watch controls so their headers and hit targets do not clip; unlabeled change markers may use 52px.</Guidance>
+              <Guidance term="Row-action rail">Keep the shared rail at 120px. Show the two highest-frequency actions beside More; keep secondary actions in the keyboard-accessible row menu.</Guidance>
               <Guidance term="Alignment and borders">Align record names and prose left, status and utility controls centrally, and measured values right with tabular numerals. Use quiet horizontal row dividers; reserve vertical separators for utility and pinned action edges.</Guidance>
               <Guidance term="Row tracking">Operational grids use a subtle zebra band by default. Read-only tables use it from six records onward. Hover adds a quiet blue tint; selection uses a stronger blue tint and visible focus ring.</Guidance>
               <Guidance term="Activation">A single click only selects where selection is enabled. The identity action opens the record; double-click may open the same detail only when that workspace explicitly wires it. Neither click may mutate data.</Guidance>
-              <Guidance term="Menus and tooltips">Row actions stay visible and keyboard reachable. Where a row menu exists, right-click and Context Menu / Shift+F10 open that same menu. Full values stay quiet; truncated values get a delayed, viewport-safe tooltip.</Guidance>
+              <Guidance term="Menus and tooltips">Primary row actions stay visible and keyboard reachable. Where a row menu exists, right-click and Context Menu / Shift+F10 open the same menu. Full values stay quiet; truncated values get a delayed, viewport-safe tooltip.</Guidance>
               <Guidance term="Bulk work">Selection count and clear-selection control remain visible. Bulk actions target the selected record IDs, preview scope, and confirm destructive changes before committing.</Guidance>
             </div>
           </div>
