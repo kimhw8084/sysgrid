@@ -1,11 +1,50 @@
+@import "tailwindcss";
+@import "tw-animate-css";
 @import 'reactflow/dist/style.css';
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
 @import './theme-compatibility.css';
 @import './workspace-experience.css';
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.js";
+
+@theme inline {
+  --font-sans: "Geist Variable", "SF Pro Display", system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-xs: calc(var(--radius) - 6px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+
+@font-face {
+  font-family: 'Geist Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist/geist-latin-wght-normal.woff2') format('woff2');
+}
 
 @font-face {
   font-family: 'Inter';
@@ -24,7 +63,8 @@
 }
 
 :root {
-  scrollbar-gutter: stable;
+  /* Scrollbar space belongs to inner scroll regions, not the full-viewport app canvas. */
+  scrollbar-gutter: auto;
   /* Dark Mode (Default) */
   --bg-primary: #020617;
   --bg-header: rgba(15, 23, 42, 0.8);
@@ -228,17 +268,37 @@
   --input-bg: #f8fafc;
 }
 
+/*
+ * Viewport canvas law:
+ * - html, body, and #root share the app viewport width and theme surface.
+ * - scrollbar gutters belong only to intentional inner scroll regions.
+ * - text may wrap unless a component opts into a one-line control.
+ */
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+  background-color: var(--background, var(--bg-primary));
+}
+
+#root {
+  min-height: 100dvh;
+  background-color: var(--background, var(--bg-primary));
+}
+
 @layer base {
   body {
-    background-color: var(--bg-primary);
+    background-color: var(--background, var(--bg-primary));
     color: var(--text-primary);
     @apply font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  /* Force buttons to one line */
-  button, .button-like {
-    white-space: nowrap !important;
   }
 
   /* Allow text to wrap naturally within containers */
@@ -472,7 +532,7 @@
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell).ag-theme-alpine-dark {
-  --ag-font-family: 'Inter', 'SF Pro Display', system-ui, sans-serif;
+  --ag-font-family: 'Geist Variable', 'SF Pro Display', system-ui, sans-serif;
   --ag-background-color: var(--grid-bg);
   --ag-header-background-color: var(--grid-header-bg);
   --ag-border-color: var(--grid-border);
@@ -491,10 +551,10 @@
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header-cell,
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header-group-cell {
   background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.05) !important;
-  font-size: 9px !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.16em !important;
+  border-color: var(--grid-border) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
 }
 
@@ -502,9 +562,9 @@
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header-group-cell-label {
   font-size: var(--ag-font-size, 11px) !important;
   font-weight: 700 !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   white-space: nowrap !important;
-  letter-spacing: 0.1em !important;
+  letter-spacing: 0.07em !important;
   text-transform: uppercase !important;
   padding-right: 10px !important;
 }

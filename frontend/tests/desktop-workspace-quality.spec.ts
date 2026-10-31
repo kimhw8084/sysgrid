@@ -339,6 +339,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
   for (const scenario of ['initial load', 'fallback recovery'] as const) test(`desktop Asset ${scenario} ${theme}`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.emulateMedia({ reducedMotion: 'reduce' })
+    await resetBrowserState(page)
     await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
     const cached = { id: 900001, name: 'Cached live host', system: 'Loading proof', type: 'Physical', status: 'Active', is_deleted: false }
     let release!: () => void, entered!: () => void
@@ -364,7 +365,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
     try {
       await page.goto('/services')
       await page.waitForLoadState('networkidle')
-      expect(liveRequests).toBeGreaterThan(0)
+      await expect(page.getByRole('heading', { name: 'Services', exact: true })).toBeVisible()
       await page.evaluate(() => {
         ;(window as any).fallbackWarnings = []
         new MutationObserver(() => {
@@ -374,6 +375,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
       await page.getByRole('link', { name: 'Assets', exact: true }).click()
       await requested
       await expect(page.getByRole('heading', { name: 'Assets', exact: true })).toBeVisible()
+      await expect.poll(() => liveRequests).toBeGreaterThan(0)
       const notice = page.getByText('Showing live fallback rows only', { exact: true })
       if (scenario === 'initial load') {
         await expect(page.getByText('Loading asset registry…', { exact: true })).toBeVisible()

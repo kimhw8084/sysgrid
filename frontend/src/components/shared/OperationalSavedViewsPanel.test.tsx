@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { OperationalAnchoredPanel, OperationalSavedViewsPanel } from './OperationalWorkspaceShells'
 import { computeWorkspaceAnchoredPanelStyle, shouldIgnoreWorkspaceAnchoredScroll, useWorkspaceAnchoredLayer, WorkspaceFloatingPanel } from './OperationalWorkspacePrimitives'
 import { useOperationalDismissController } from './OperationalGridInteractions'
+import { useWorkspaceDismissHandlers } from './OperationalWorkspaceHooks'
 
 const remoteView = {
   id: '11',
@@ -223,6 +224,11 @@ function DismissLockHarness({ locked }: { locked: boolean }) {
   )
 }
 
+function DismissCallbackHarness({ onDismiss }: { onDismiss: () => void }) {
+  useWorkspaceDismissHandlers({ active: true, onDismiss, shouldDismiss: () => false })
+  return <div>Dismiss callback harness</div>
+}
+
 describe('Operational anchored-panel interaction continuity', () => {
   it('keeps an open popup below reserved header and notification space', () => {
     const result = computeWorkspaceAnchoredPanelStyle({
@@ -348,6 +354,25 @@ describe('Operational anchored-panel interaction continuity', () => {
     expect(after).toBe(before)
     expect(after).toHaveAttribute('data-workspace-panel', 'true')
     expect(screen.getByText('After')).toBeInTheDocument()
+  })
+
+  it('keeps Escape dismissal attached across callback-only rerenders', () => {
+    const firstDismiss = vi.fn()
+    const latestDismiss = vi.fn()
+    const removeListener = vi.spyOn(window, 'removeEventListener')
+    const { rerender, unmount } = render(<DismissCallbackHarness onDismiss={firstDismiss} />)
+    const removalsBeforeRerender = removeListener.mock.calls.filter(([type]) => type === 'keydown').length
+
+    try {
+      rerender(<DismissCallbackHarness onDismiss={latestDismiss} />)
+      expect(removeListener.mock.calls.filter(([type]) => type === 'keydown').length).toBe(removalsBeforeRerender)
+      fireEvent.keyDown(window, { key: 'Escape' })
+      expect(latestDismiss).toHaveBeenCalledTimes(1)
+      expect(firstDismiss).not.toHaveBeenCalled()
+    } finally {
+      unmount()
+      removeListener.mockRestore()
+    }
   })
 
   it('blocks outside click and Escape dismissal while an editor transaction owns the panel', () => {

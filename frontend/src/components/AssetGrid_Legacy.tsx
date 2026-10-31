@@ -550,7 +550,7 @@ const ConnectionMap = ({ deviceId, type, devices }: { deviceId: number, type: 'd
 
               const text = type === 'dependency' ? link.label : link.details || link.label;
               const fontSize = Math.min(MAX_FONT_SIZE, 10 / globalScale);
-              ctx.font = `${fontSize}px Inter`;
+              ctx.font = `${fontSize}px Geist Variable`;
               const textWidth = ctx.measureText(text).width;
               const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2) as [number, number];
 
@@ -574,7 +574,7 @@ const ConnectionMap = ({ deviceId, type, devices }: { deviceId: number, type: 'd
            nodeCanvasObject={(node: any, ctx, globalScale) => {
              const label = node.name;
              const fontSize = node.isCenter ? 12/globalScale : 10/globalScale;
-             ctx.font = `${fontSize}px Inter`;
+             ctx.font = `${fontSize}px Geist Variable`;
              const textWidth = ctx.measureText(label).width;
              const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2) as [number, number];
 
@@ -1534,7 +1534,7 @@ export default function AssetGrid() {
           --ag-border-color: rgba(255, 255, 255, 0.05);
           --ag-foreground-color: #f1f5f9;
           --ag-header-foreground-color: #3b82f6;
-          --ag-font-family: 'Inter', sans-serif;
+          --ag-font-family: 'Geist Variable', sans-serif;
           --ag-font-size: ${fontSize}px;
         }
         .ag-root-wrapper { border: none !important; }
@@ -2750,7 +2750,7 @@ function AssetMap({ assets, connections, relationships, systemsList }: any) {
              nodeCanvasObject={(node: any, ctx, globalScale) => {
                const label = node.label.toUpperCase()
                const fontSize = 11/globalScale
-               ctx.font = `900 ${fontSize}px Inter, sans-serif`
+               ctx.font = `900 ${fontSize}px Geist Variable, sans-serif`
                const textWidth = ctx.measureText(label).width
                const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.4) as [number, number]
 
@@ -2791,7 +2791,7 @@ function AssetMap({ assets, connections, relationships, systemsList }: any) {
 
                 const text = link.label.toUpperCase();
                 const fontSize = Math.min(MAX_FONT_SIZE, 8 / globalScale);
-                ctx.font = `900 ${fontSize}px Inter, sans-serif`;
+                ctx.font = `900 ${fontSize}px Geist Variable, sans-serif`;
                 const textWidth = ctx.measureText(text).width;
                 const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2) as [number, number];
 

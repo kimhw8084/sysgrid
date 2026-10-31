@@ -63,7 +63,7 @@ async def test_monitoring_list_filters_and_bulk_edge_behaviors(seeded_admin_tena
         "/api/v1/monitoring",
         json={
             "device_id": device_a["id"],
-            "category": "Infrastructure",
+            "category": "Hardware",
             "status": "Existing",
             "title": "QUERY-MON-A",
             "platform": "Zabbix",
@@ -78,7 +78,7 @@ async def test_monitoring_list_filters_and_bulk_edge_behaviors(seeded_admin_tena
         "/api/v1/monitoring",
         json={
             "device_id": device_b["id"],
-            "category": "Infrastructure",
+            "category": "Hardware",
             "status": "Existing",
             "title": "QUERY-MON-B",
             "platform": "Prometheus",

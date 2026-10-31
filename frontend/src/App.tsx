@@ -1,12 +1,14 @@
 // SYSGRID_VISUAL_REPAIR_R4
 // SYSGRID_VISUAL_REPAIR_R3
 // SYSGRID_VISUAL_REPAIR_V1
-import { useProjectsNavigation, ProjectsNavigationButton, ProjectsNavigationBackdrop } from './components/ProjectsShellNavigation'
 import React, { lazy, Suspense, useState, useEffect, useRef, Component, ErrorInfo, ReactNode } from "react"
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
 import { Routes, Route, Link, useLocation, useNavigate, Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
-import { Grid3X3, Globe, Search, Star } from "lucide-react"
+import { motion, AnimatePresence, MotionConfig } from "framer-motion"
+import { Grid3X3, Globe, Search, Star, Moon, Sun } from "lucide-react"
+import { Button as NovaButton } from "./components/ui/button"
+import { DropdownMenu, DropdownMenuItem } from "./components/ui/dropdown-menu"
+import { TooltipProvider } from "./components/ui/tooltip"
 import { toast } from "react-hot-toast"
 import { apiFetch, getConfig, getRequestScopeKey } from "./api/apiClient"
 import { errorManager, useErrors } from "./stores/errorStore"
@@ -194,8 +196,7 @@ function MainLayout() {
   const location = useLocation(); 
   const navigate = useNavigate(); 
   const mainContentRef = useRef<HTMLDivElement>(null)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window === 'undefined' || window.innerWidth >= 1024);
-  const projectNavigation = useProjectsNavigation(location.pathname, isSidebarOpen);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showPatchNotes, setShowPatchNotes] = useState(false);
   const [showLinuxEnv, setShowLinuxEnv] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -363,54 +364,55 @@ function MainLayout() {
   }, [currentTheme])
 
   return (
-    <div className="sg-app-shell flex h-[100dvh] overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" data-sg-mobile={projectNavigation.mobile ? 'true' : undefined}>
-      <ProjectsNavigationBackdrop nav={projectNavigation} />
+    <div className="sg-app-shell nova-app-shell flex h-[100dvh] w-full min-w-0 overflow-hidden bg-[var(--background)] text-[var(--foreground)]" data-design-system="nova" data-theme={currentTheme}>
       <a href="#sg-main-content" className="skip-link">Skip to content</a>
       <motion.aside
         initial={false}
-        animate={{ width: projectNavigation.sidebarExpanded ? 240 : 80 }}
-        className="glass-panel relative z-20 flex shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--sidebar-bg)] shadow-xl"
+        animate={{ width: isSidebarOpen ? 240 : 72 }}
+        className="relative z-20 flex shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--sidebar-bg)]"
         aria-label="Application navigation"
         data-sg-app-sidebar="true"
-        data-sg-nav-open={projectNavigation.sidebarExpanded ? "true" : "false"}
+        data-sg-nav-open={isSidebarOpen ? "true" : "false"}
       >
-        <div className={`flex items-center border-b border-[var(--border-subtle)] p-4 ${projectNavigation.sidebarExpanded ? 'justify-between' : 'justify-center'}`}>
+        <div className={`flex items-center border-b border-[var(--border-subtle)] p-4 ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
           <Link to="/" className="group flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none" aria-label="SysGrid home">
-             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/5 bg-[var(--action-primary)] shadow-lg transition-transform group-hover:scale-105">
-                <Grid3X3 size={20} aria-hidden="true" className="text-white" />
+             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-[var(--primary)] shadow-sm transition-transform group-hover:scale-105">
+                <Grid3X3 size={20} aria-hidden="true" className="text-[var(--primary-foreground)]" />
              </div>
-             {projectNavigation.sidebarExpanded && <span className="truncate text-lg font-bold tracking-[-0.01em] text-[var(--text-primary)]">SYSGRID</span>}
+             {isSidebarOpen && <span className="truncate text-lg font-bold tracking-[-0.01em] text-[var(--text-primary)]">SYSGRID</span>}
           </Link>
-          {projectNavigation.sidebarExpanded ? (
-            <button
-              type="button"
-              onClick={() => projectNavigation.mobile ? projectNavigation.close() : setIsSidebarOpen(false)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-              aria-label={projectNavigation.mobile ? 'Close application navigation' : 'Collapse application navigation'}
+          {isSidebarOpen ? (
+            <NovaButton
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(false)}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              aria-label="Collapse application navigation"
               aria-expanded="true"
-              title={projectNavigation.mobile ? 'Close navigation' : 'Collapse navigation'}
+              title="Collapse navigation"
             >
               <span aria-hidden="true">‹</span>
-            </button>
+            </NovaButton>
           ) : null}
         </div>
-        {!projectNavigation.sidebarExpanded && (
+        {!isSidebarOpen && (
           <div className="flex justify-center border-b border-[var(--border-subtle)] py-2">
-            <button
-              type="button"
+            <NovaButton
+              variant="ghost"
+              size="icon"
               onClick={() => setIsSidebarOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               aria-label="Expand application navigation"
               aria-expanded="false"
               title="Expand navigation"
             >
               <span aria-hidden="true">›</span>
-            </button>
+            </NovaButton>
           </div>
         )}
         <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4 custom-scrollbar" aria-label="Primary navigation">
           {SHELL_NAV_GROUPS.map((group) => (
-            <ShellNavGroup key={group.label} label={group.label} isSidebarOpen={projectNavigation.sidebarExpanded} defaultExpanded={group.defaultExpanded}>
+            <ShellNavGroup key={group.label} label={group.label} isSidebarOpen={isSidebarOpen} defaultExpanded={group.defaultExpanded}>
               {group.items.map((item) => {
                 const module = modulePolicy.data?.modules?.[item.moduleId]
                 return (
@@ -421,7 +423,7 @@ function MainLayout() {
                     label={module?.label || item.label}
                     path={item.path}
                     active={isShellRouteActive(location.pathname, item.path, item.aliases)}
-                    isOpen={projectNavigation.sidebarExpanded}
+                    isOpen={isSidebarOpen}
                     unavailableReason={module?.blocked_reason}
                   />
                 )
@@ -431,16 +433,16 @@ function MainLayout() {
         </nav>
         
         {/* User Profile Section */}
-        <div className={`space-y-2 border-t border-[var(--border-subtle)] p-3 ${!projectNavigation.sidebarExpanded ? 'flex flex-col items-center' : ''}`}>
+        <div className={`space-y-2 border-t border-[var(--border-subtle)] p-3 ${!isSidebarOpen ? 'flex flex-col items-center' : ''}`}>
            {modulePolicy.data?.actions?.diagnostics?.read ? <button
               onClick={() => setShowLinuxEnv(true)}
-              className={`flex items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-2 hover:bg-[var(--surface-hover)] ${!projectNavigation.sidebarExpanded ? 'h-10 w-10 justify-center' : 'w-full text-left'}`}
+              className={`flex items-center gap-3 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-2 hover:bg-[var(--surface-hover)] ${!isSidebarOpen ? 'h-10 w-10 justify-center' : 'w-full text-left'}`}
               aria-label="Open environment details"
            >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-hover)] text-[var(--accent-primary)]">
                  <Globe size={16} aria-hidden="true" />
               </div>
-              {projectNavigation.sidebarExpanded && (
+              {isSidebarOpen && (
                 <div className="flex flex-col min-w-0">
                    <span className="truncate text-xs font-medium text-[var(--text-primary)]">{userProfile?.full_name || userProfile?.username || 'Operator'}</span>
                    <span className="truncate text-[10px] text-[var(--text-muted)]">{userProfile?.username || 'Signed-in user'}</span>
@@ -448,33 +450,44 @@ function MainLayout() {
               )}
            </button> : null}
 
-           {/* Direct Theme Toggles */}
-           <div className={`flex items-center gap-1 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1 ${!projectNavigation.sidebarExpanded ? 'flex-col' : 'w-full'}`} aria-label="Theme">
-              {THEMES.map(theme => (
-                <button 
-                  key={theme.id}
-                  onClick={() => changeTheme(theme.id)}
-                  type="button"
-                  className={`flex min-h-9 flex-1 items-center gap-2 rounded-md p-2 text-xs transition-colors ${currentTheme === theme.id ? 'border border-[var(--action-primary)] bg-[var(--action-primary-muted)] text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'} ${!projectNavigation.sidebarExpanded ? 'w-full justify-center' : ''}`}
-                  title={theme.label}
-                  aria-label={projectNavigation.sidebarExpanded ? undefined : `Use ${theme.label}`}
-                  aria-pressed={currentTheme === theme.id}
-                >
-                   <div className={`w-3 h-3 rounded-full ${theme.color} border border-white/10 shrink-0`} />
-                   {projectNavigation.sidebarExpanded && <span className="text-xs font-medium">{theme.label.split(' ')[0]}</span>}
-                </button>
-              ))}
-           </div>
+           <DropdownMenu
+              ariaLabel="Appearance"
+              showChevron={isSidebarOpen}
+              label={(
+                <span className={isSidebarOpen ? "flex w-full items-center gap-2" : "flex items-center justify-center"}>
+                  {currentTheme === 'pure-clarity' ? <Sun size={14} aria-hidden="true" /> : <Moon size={14} aria-hidden="true" />}
+                  {isSidebarOpen && <span>{currentTheme === 'pure-clarity' ? 'Light appearance' : 'Dark appearance'}</span>}
+                </span>
+              )}
+              triggerClassName={isSidebarOpen
+                ? "w-full justify-start border border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                : "h-10 w-10 p-0 border border-[var(--border-default)] bg-[var(--surface-elevated)] text-[var(--text-secondary)]"}
+            >
+              <DropdownMenuItem
+                label="Dark appearance"
+                selected={currentTheme !== 'pure-clarity'}
+                onSelect={() => changeTheme('nordic-frost-v1')}
+              >
+                Dark appearance
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                label="Light appearance"
+                selected={currentTheme === 'pure-clarity'}
+                onSelect={() => changeTheme('pure-clarity')}
+              >
+                Light appearance
+              </DropdownMenuItem>
+            </DropdownMenu>
         </div>
 
         <div className="border-t border-[var(--border-subtle)] p-3 text-center">
-           {projectNavigation.sidebarExpanded ? <p className="text-[10px] text-[var(--text-muted)]">Version {APP_VERSION}</p> : <span className="sr-only">Version {APP_VERSION}</span>}
+           {isSidebarOpen ? <p className="text-[10px] text-[var(--text-muted)]">Version {APP_VERSION}</p> : <span className="sr-only">Version {APP_VERSION}</span>}
         </div>
       </motion.aside>
-      <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden" data-sg-app-main="true">
+      <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[var(--background)]" data-sg-app-main="true">
         <ShellHeader
           left={
-            <><ProjectsNavigationButton nav={projectNavigation} />{<>
+            <>
               <ToolbarButton onClick={() => setShowPatchNotes(true)} aria-label="Patch Notes" title="Patch Notes"><Star size={16} aria-hidden="true" className="md:hidden" /><span className="hidden md:inline">Patch Notes</span></ToolbarButton>
               <button
                 onClick={() => setIsSearchOpen(true)}
@@ -487,19 +500,19 @@ function MainLayout() {
                   <span className="rounded border border-[var(--border-subtle)] bg-[var(--surface-base)] px-1.5 py-0.5 text-[10px]">K</span>
                 </div>
               </button>
-            </>}</>
+            </>
           }
           right={<LiveShellHeaderTools
             pathname={location.pathname}
             errors={errors}
             onOpenErrorConsole={() => setErrorConsoleOpen(true)}
-            compact={projectNavigation.mobile}
+            compact={false}
             onOpenPatchNotes={() => setShowPatchNotes(true)}
           />}
         />
 
         <WorkspaceToaster portal={false} />
-        <div ref={mainContentRef} id="sg-main-content" tabIndex={-1} className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-4 focus-visible:outline-none sm:p-8" data-sg-content-panel="true">
+        <div ref={mainContentRef} id="sg-main-content" tabIndex={-1} className="relative flex min-h-0 flex-1 flex-col overflow-hidden p-4 focus-visible:outline-none lg:p-6" data-sg-content-panel="true" data-slot="app-content">
           <ErrorBoundary>
             <Suspense fallback={<div role="status" className="flex min-h-40 flex-1 items-center justify-center text-sm text-[var(--text-secondary)]" data-sg-state="route-loading">Loading workspace…</div>}>
             <Routes>
@@ -588,13 +601,17 @@ function EffectiveIdentityBoundary({ children }: { children: React.ReactNode }) 
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ReconnectRefresh />
-      <ErrorSentinel>
-        <EffectiveIdentityBoundary>
-          <RouterProvider router={appRouter} />
-        </EffectiveIdentityBoundary>
-      </ErrorSentinel>
-    </QueryClientProvider>
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}>
+      <TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <ReconnectRefresh />
+          <ErrorSentinel>
+            <EffectiveIdentityBoundary>
+              <RouterProvider router={appRouter} />
+            </EffectiveIdentityBoundary>
+          </ErrorSentinel>
+        </QueryClientProvider>
+      </TooltipProvider>
+    </MotionConfig>
   )
 }

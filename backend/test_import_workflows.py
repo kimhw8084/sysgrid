@@ -37,7 +37,7 @@ async def test_monitoring_import_schema_and_template(seeded_admin_tenant):
     assert device_res.status_code == 200, device_res.text
     monitor_res = await client.post("/api/v1/monitoring", json={
         "device_id": device_res.json()["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "Template Example Monitor",
         "platform": "Zabbix",
@@ -110,7 +110,7 @@ async def test_monitoring_import_preview_rows_and_execute(seeded_admin_tenant):
             "rows": [
                 {
                     "device_name": "MON-IMPORT-01",
-                    "category": "Infrastructure",
+                    "category": "Hardware",
                     "status": "Existing",
                     "title": "Disk Free Space",
                     "platform": "Zabbix",
@@ -121,7 +121,7 @@ async def test_monitoring_import_preview_rows_and_execute(seeded_admin_tenant):
                 },
                 {
                     "device_name": "UNKNOWN-ASSET",
-                    "category": "Infrastructure",
+                    "category": "Hardware",
                     "status": "Existing",
                     "title": "Bad Row",
                     "platform": "Zabbix",
@@ -147,7 +147,7 @@ async def test_monitoring_import_preview_rows_and_execute(seeded_admin_tenant):
             "rows": [
                 {
                     "device_name": "MON-IMPORT-01",
-                    "category": "Infrastructure",
+                    "category": "Hardware",
                     "status": "Existing",
                     "title": "Disk Free Space",
                     "platform": "Zabbix",
@@ -198,7 +198,7 @@ async def test_monitoring_snapshot_export_uses_round_trip_import_contract(seeded
 
     create_res = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "Snapshot Monitor",
         "platform": "Zabbix",
@@ -247,7 +247,7 @@ async def test_monitoring_import_preview_file_accepts_csv_upload(seeded_admin_te
 
     csv_body = "\n".join([
         "device_name,category,status,title,platform,owner_team",
-        "MON-FILE-01,Infrastructure,Existing,CPU Saturation,Zabbix,File Import Ops",
+        "MON-FILE-01,Hardware,Existing,CPU Saturation,Zabbix,File Import Ops",
     ])
     preview_res = await client.post(
         "/api/v1/import/preview-file",
@@ -619,7 +619,7 @@ async def test_monitoring_import_rejects_duplicate_rows_in_same_batch(seeded_adm
             "rows": [
                 {
                     "device_name": "MON-DUP-IMPORT-01",
-                    "category": "Infrastructure",
+                    "category": "Hardware",
                     "status": "Existing",
                     "title": "Duplicate Import Monitor",
                     "platform": "Zabbix",
@@ -627,7 +627,7 @@ async def test_monitoring_import_rejects_duplicate_rows_in_same_batch(seeded_adm
                 },
                 {
                     "device_name": "MON-DUP-IMPORT-01",
-                    "category": "Infrastructure",
+                    "category": "Hardware",
                     "status": "Existing",
                     "title": "Duplicate Import Monitor",
                     "platform": "Zabbix",

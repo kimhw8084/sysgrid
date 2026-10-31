@@ -2777,7 +2777,7 @@ export default function AssetReal() {
 	        <OperationalGridSurface
             style={{
               '--ag-font-size': `${fontSize}px`,
-              '--ag-font-family': "'Inter', sans-serif",
+              '--ag-font-family': "'Geist Variable', sans-serif",
             } as React.CSSProperties}
             loading={isLoading}
             loadingIcon={<RefreshCcw size={32} className="text-blue-400 animate-spin" />}
@@ -2868,7 +2868,7 @@ export default function AssetReal() {
                   <OperationalGridSurface
                     style={{
                       '--ag-font-size': `${fontSize}px`,
-                      '--ag-font-family': "'Inter', sans-serif",
+                      '--ag-font-family': "'Geist Variable', sans-serif",
                       height: `${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`
                     } as React.CSSProperties}
                   >

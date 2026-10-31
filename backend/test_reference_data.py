@@ -85,3 +85,54 @@ def test_async_provisioning_applies_the_plan_once():
     assert second == {"created": 0, "updated": 0, "total": len(CODE_MANAGED_REFERENCE_OPTIONS)}
     assert {(row.category, row.value) for row in db.rows} == required_reference_pairs()
     assert db.commit_count == 2
+
+
+def test_reference_option_migration_is_additive_and_repeatable(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+
+    import sqlalchemy as sa
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+    from app.models.models import SettingOption
+
+    migration_path = (
+        Path(__file__).parent
+        / "alembic"
+        / "versions"
+        / "d43c98a72f10_seed_code_managed_reference_options.py"
+    )
+    spec = importlib.util.spec_from_file_location("reference_option_migration", migration_path)
+    migration = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(migration)
+
+    engine = sa.create_engine(f"sqlite:///{tmp_path / 'reference-options.db'}")
+    try:
+        SettingOption.__table__.create(engine)
+        with engine.begin() as connection:
+            connection.execute(
+                SettingOption.__table__.insert().values(
+                    category="MonitoringPlatform",
+                    label="Zabbix",
+                    value="Zabbix",
+                    description="Operator-maintained description",
+                    is_default=True,
+                )
+            )
+            monkeypatch.setattr(
+                migration,
+                "op",
+                Operations(MigrationContext.configure(connection)),
+            )
+            migration.upgrade()
+            migration.upgrade()
+
+            rows = connection.execute(
+                sa.select(SettingOption.category, SettingOption.value, SettingOption.description)
+            ).all()
+            assert {(row.category, row.value) for row in rows} == required_reference_pairs()
+            assert len(rows) == len(CODE_MANAGED_REFERENCE_OPTIONS)
+            assert next(row.description for row in rows if row.value == "Zabbix") == "Operator-maintained description"
+    finally:
+        engine.dispose()

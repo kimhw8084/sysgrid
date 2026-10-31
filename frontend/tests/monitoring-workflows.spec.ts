@@ -16,6 +16,7 @@ import {
   openToolbarButton,
   resetBrowserState,
   seedOperationalScenario,
+  selectWorkspaceAppearance,
   selectGridCheckboxRows,
   testApiHeaders
 } from './helpers/sysgrid'
@@ -717,7 +718,7 @@ test.describe('Desktop operational heading readability', () => {
       await seedOperationalScenario(request)
       await page.goto('/monitoring')
       await expect(page.getByRole('heading', { name: 'Monitoring', exact: true })).toBeVisible()
-      await page.getByRole('button', { name: theme, exact: true }).click()
+      await selectWorkspaceAppearance(page, theme)
       await page.evaluate(() => (window as any).__DEBUG_MONITORING_GRID_API__.ensureColumnVisible('severity'))
       const text = page.locator('.ag-header-cell[col-id="severity"] .ag-header-cell-text').first()
       await expect(text).toBeVisible()

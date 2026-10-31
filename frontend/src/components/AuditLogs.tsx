@@ -251,7 +251,7 @@ export default function AuditLogs() {
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col overflow-y-auto bg-[var(--surface-base)]" data-audit-ledger="true">
-      <div className="min-w-0 shrink-0 space-y-4 border-b border-[var(--grid-border)] bg-[var(--surface-base)] py-4 sm:py-6">
+      <div className="min-w-0 shrink-0 space-y-4 border-b border-[var(--grid-border)] bg-[var(--surface-base)]">
         <PageHeader
           eyebrow="Registry"
           title={
@@ -545,7 +545,7 @@ export default function AuditLogs() {
           --ag-border-color: var(--grid-border);
           --ag-foreground-color: var(--text-primary);
           --ag-header-foreground-color: var(--text-secondary);
-          --ag-font-family: 'Inter', sans-serif;
+          --ag-font-family: 'Geist Variable', sans-serif;
           --ag-font-size: ${fontSize}px;
           --ag-grid-size: 4px;
           --ag-list-item-height: 24px;

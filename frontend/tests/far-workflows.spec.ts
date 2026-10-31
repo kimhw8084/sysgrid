@@ -7,6 +7,7 @@ import {
   createFarMode,
   createInvestigation,
   resetBrowserState,
+  selectWorkspaceAppearance,
   seedOperationalScenario,
   updateFarMode,
 } from './helpers/sysgrid'
@@ -70,8 +71,8 @@ test.describe('FAR workflows', () => {
     await expect(workspace.getByRole('button', { name: /Display/i })).toBeVisible()
     await expect(workspace.getByRole('button', { name: /Filters/i })).toBeVisible()
     await expect(workspace.getByRole('button', { name: 'FAR domain tools', exact: true })).toBeVisible()
-    await expect(workspace.getByTitle('Export CSV')).toBeVisible()
-    await expect(workspace.getByTitle('Copy to Clipboard')).toBeVisible()
+    await expect(workspace.getByRole('button', { name: 'Export CSV', exact: true })).toBeVisible()
+    await expect(workspace.getByRole('button', { name: 'Copy to clipboard', exact: true })).toBeVisible()
     await expect(workspace.getByText(/failure vectors in scope/i)).toHaveCount(0)
     await expect(workspace.getByText('Reliability Index', { exact: true })).not.toBeVisible()
     await workspace.getByRole('button', { name: 'FAR domain tools', exact: true }).click()
@@ -322,7 +323,7 @@ test.describe('FAR desktop heading readability', () => {
       await seedOperationalScenario(request)
       await page.goto('/far')
       await expect(page.locator('[data-workspace="far"]')).toBeVisible()
-      await page.getByRole('button', { name: theme, exact: true }).click()
+      await selectWorkspaceAppearance(page, theme)
       await page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__.ensureColumnVisible('rpn'))
       const text = page.locator('.ag-header-cell[col-id="rpn"] .ag-header-cell-text').first()
       await expect(text).toBeVisible()

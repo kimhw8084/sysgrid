@@ -951,7 +951,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 --ag-border-color: rgba(255, 255, 255, 0.05);
                 --ag-foreground-color: #f1f5f9;
                 --ag-header-foreground-color: #6366f1;
-                --ag-font-family: 'Inter', sans-serif;
+                --ag-font-family: 'Geist Variable', sans-serif;
                 --ag-font-size: 11px;
                 --ag-row-hover-color: rgba(99, 102, 241, 0.05);
                 --ag-selected-row-background-color: rgba(99, 102, 241, 0.1);

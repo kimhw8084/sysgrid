@@ -95,9 +95,9 @@ export function ShellNavItem({
     ? `${label} (Preview)`
     : isDisabled ? `${label} (Unavailable)` : label
   const itemClassName = [
-    'group relative flex min-h-10 w-full items-center rounded-md px-3 py-2.5',
+    'group relative flex min-h-8 w-full items-center rounded-lg px-2.5 py-1.5',
     'text-sm transition-colors duration-150',
-    isOpen ? 'justify-start gap-3' : 'justify-center',
+    isOpen ? 'justify-start gap-2.5' : 'justify-center',
     isDisabled
       ? 'cursor-not-allowed text-[var(--text-disabled)] opacity-60'
       : active
@@ -164,12 +164,12 @@ export function ShellNavGroup({
   const id = groupId(label)
   return (
     <details
-      className="mb-3"
+      className="mb-2"
       open={isExpanded}
       data-sg-nav-group={label.toLowerCase()}
     >
       <summary
-        className="flex min-h-9 cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-xs font-semibold text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none"
+        className="flex min-h-8 cursor-pointer list-none items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none"
         aria-controls={id}
         aria-expanded={isExpanded}
         onClick={(event) => {

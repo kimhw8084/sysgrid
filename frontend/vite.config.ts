@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
@@ -28,7 +29,7 @@ export default defineConfig(({ mode }) => {
   const apiTarget = env.VITE_API_BASE_URL || `http://${backendHost}:${backendPort}`;
 
   return {
-    plugins: [react(), {
+    plugins: [react(), tailwindcss(), {
       name: 'sysgrid-release-identity',
       generateBundle() {
         this.emitFile({ type: 'asset', fileName: 'sysgrid-build.json', source: JSON.stringify({
@@ -37,6 +38,11 @@ export default defineConfig(({ mode }) => {
         }) })
       },
     }],
+    resolve: {
+      alias: {
+        '@': resolve(process.cwd(), 'src'),
+      },
+    },
     test: {
       environment: 'jsdom',
       globals: true,

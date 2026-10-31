@@ -9,7 +9,7 @@ export function WorkspaceDialogFrame({ children, onClose, title, className = '' 
   className?: string
 }) {
   const dialogProps = useWorkspaceDialogLayer(true, onClose)
-  return <WorkspacePortal><div {...dialogProps} role="dialog" aria-modal="true" aria-label={title}
+  return <WorkspacePortal><div {...dialogProps} data-slot="dialog-overlay" role="dialog" aria-modal="true" aria-label={title}
     className={`workspace-dialog-frame fixed inset-0 flex items-center justify-center bg-[var(--overlay-scrim)] p-4 ${className}`}>
     {children}
   </div></WorkspacePortal>

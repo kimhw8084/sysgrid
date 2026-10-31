@@ -298,6 +298,7 @@ export function WorkspaceModal({
         style={{ zIndex: layer }}
         tabIndex={-1}
         className={`fixed inset-0 ${WORKSPACE_MODAL_LAYER_CLASS} flex items-center justify-center bg-[var(--overlay-scrim)] p-4 backdrop-blur-sm sm:p-6 lg:p-8`}
+        data-slot="dialog-overlay"
         role="dialog"
         aria-modal="true"
         aria-label={accessibleTitle || undefined}
@@ -311,7 +312,10 @@ export function WorkspaceModal({
           exit={reducedMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: reducedMotion ? 0 : 0.2, ease: 'easeOut' }}
           className={`${getWorkspaceModalShellClass(isMaximized ? 'fullscreen' : size)} glass-panel flex min-w-0 flex-col overflow-hidden ${(isMaximized || size === 'fullscreen') ? '' : `${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-[var(--border-default)] shadow-[0_24px_80px_rgba(0,0,0,0.35)]`} ${className}`}
-          style={{ backgroundColor: 'var(--surface-base)' }}
+          data-slot="dialog-content"
+          data-dialog-size={isMaximized ? 'fullscreen' : size}
+          data-sg-dialog-content="true"
+          style={{ backgroundColor: 'var(--popover)' }}
         >
           <WorkspaceModalHeader
             icon={icon}

@@ -57,9 +57,9 @@ describe('PC-51 FAR foundational contracts final-index closure', () => {
       'workspace="monitoring"',
     ])
     expectAll(shellSource, [
-      "export const GOLDEN_WORKSPACE_GEOMETRY_VERSION = '1'",
-      "export const GOLDEN_WORKSPACE_FRAME_CLASS = 'h-full min-h-0 flex flex-col space-y-4'",
-      "export const GOLDEN_GRID_BASE_CLASS = 'operational-grid-shell operational-grid flex flex-1 w-full min-h-0 flex-col glass-panel overflow-hidden ag-theme-alpine-dark relative'",
+      "export const GOLDEN_WORKSPACE_GEOMETRY_VERSION = '2'",
+      "export const GOLDEN_WORKSPACE_FRAME_CLASS = 'flex h-full min-h-0 min-w-0 flex-col gap-4'",
+      "export const GOLDEN_GRID_BASE_CLASS = 'operational-grid-shell operational-grid relative flex min-h-0 w-full flex-1 flex-col overflow-hidden glass-panel ag-theme-alpine-dark'",
       'className={join(GOLDEN_WORKSPACE_FRAME_CLASS, className)}',
       'data-golden-geometry-version={GOLDEN_WORKSPACE_GEOMETRY_VERSION}',
       '<OperationalWorkspaceFrame header={header} commandBar={resolvedCommandBar} className={className} workspace={workspace} archetype={archetype}>',

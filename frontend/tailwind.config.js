@@ -13,7 +13,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
+        sans: ['Geist Variable', 'SF Pro Display', 'system-ui', 'sans-serif'],
       }
     },
   },

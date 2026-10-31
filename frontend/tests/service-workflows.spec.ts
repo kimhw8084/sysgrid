@@ -1,7 +1,7 @@
 import { clickResilientButton } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
-import { createAsset, createService, resetBrowserState, seedOperationalScenario } from './helpers/sysgrid'
+import { createAsset, createService, resetBrowserState, seedOperationalScenario, selectWorkspaceAppearance } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
@@ -260,7 +260,7 @@ test.describe('Desktop operational heading readability', () => {
       await seedOperationalScenario(request)
       await page.goto('/services')
       await expect(page.getByRole('heading', { name: 'Services', exact: true })).toBeVisible()
-      await page.getByRole('button', { name: theme, exact: true }).click()
+      await selectWorkspaceAppearance(page, theme)
       await page.evaluate(() => (window as any).__DEBUG_SERVICES_GRID_API__.ensureColumnVisible('manufacturer'))
       const text = page.locator('.ag-header-cell[col-id="manufacturer"] .ag-header-cell-text').first()
       await expect(text).toBeVisible()

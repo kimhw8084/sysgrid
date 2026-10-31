@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useSearchParams } from 'react-router-dom'
 import { usePageLeaveGuard } from './workspaceDeparture'
 import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './optionalStorage'
@@ -142,16 +142,24 @@ export function useWorkspaceDismissHandlers({
   onDismiss: () => void
   shouldDismiss: (target: HTMLElement) => boolean
 }) {
+  const onDismissRef = useRef(onDismiss)
+  const shouldDismissRef = useRef(shouldDismiss)
+
+  useLayoutEffect(() => {
+    onDismissRef.current = onDismiss
+    shouldDismissRef.current = shouldDismiss
+  }, [onDismiss, shouldDismiss])
+
   useEffect(() => {
     if (!active) return
 
     const handleClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null
-      if (target && shouldDismiss(target)) onDismiss()
+      if (target && shouldDismissRef.current(target)) onDismissRef.current()
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !event.defaultPrevented) onDismiss()
+      if (event.key === 'Escape' && !event.defaultPrevented) onDismissRef.current()
     }
 
     document.addEventListener('click', handleClick)
@@ -160,7 +168,7 @@ export function useWorkspaceDismissHandlers({
       document.removeEventListener('click', handleClick)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [active, onDismiss, shouldDismiss])
+  }, [active])
 }
 
 export type WorkspaceOverlayKey = 'display' | 'views' | 'bulk' | 'rowAction' | 'surface' | 'export'

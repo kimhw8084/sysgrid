@@ -152,10 +152,12 @@ test('reversible notification confirms once and restores the actual archived rec
   await page.screenshot({ path: testInfo.outputPath('reversible-notification.png'), animations: 'disabled' })
   await toast.getByRole('button', { name: 'Revert', exact: true }).click()
   await expect(toast.getByRole('button', { name: 'Confirm Undo?', exact: true })).toBeVisible()
-  await page.setViewportSize({ width: 390, height: 844 })
-  await expect(toast.getByRole('button', { name: 'Confirm Undo?', exact: true })).toBeFocused()
-  await page.setViewportSize({ width: 1440, height: 900 })
-  await expect(toast.getByRole('button', { name: 'Confirm Undo?', exact: true })).toBeFocused()
+  if (process.env.SYSGRID_DESKTOP_ONLY !== '1') {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(toast.getByRole('button', { name: 'Confirm Undo?', exact: true })).toBeFocused()
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await expect(toast.getByRole('button', { name: 'Confirm Undo?', exact: true })).toBeFocused()
+  }
   const restored = page.waitForResponse(response => response.url().includes('/devices/bulk-action') && response.request().postDataJSON()?.action === 'undo')
   await toast.getByRole('button', { name: 'Confirm Undo?', exact: true }).click()
   const restoredResponse = await restored

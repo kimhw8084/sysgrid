@@ -1,14 +1,17 @@
 import React, { ReactNode, useLayoutEffect, useRef } from 'react'
 import { Maximize2, Minimize2, Search } from 'lucide-react'
 import { isGoldenActivityColumnsTitle } from './OperationalGoldenToolbarContract'
+import { Button as NovaButton } from '../ui/button'
+import { Input as NovaInput } from '../ui/input'
+import { Tooltip } from '../ui/tooltip'
 
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ')
 
-export const GOLDEN_PAGE_HEADER_CLASS = 'flex min-w-0 shrink-0 flex-wrap items-start justify-between gap-4'
-export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'
-export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-3 lg:min-w-0 lg:flex-auto lg:flex-wrap'
-export const GOLDEN_TOOLBAR_RIGHT_CLASS = 'flex min-w-max flex-nowrap items-center justify-end gap-3 lg:flex-wrap'
-const TOOLBAR_CONTROL_HEIGHT = 'h-10'
+export const GOLDEN_PAGE_HEADER_CLASS = 'relative flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-4'
+export const GOLDEN_PAGE_TOOLBAR_CLASS = 'flex min-w-0 shrink-0 items-center gap-2 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 lg:flex-wrap lg:justify-between lg:overflow-visible'
+export const GOLDEN_TOOLBAR_LEFT_CLASS = 'flex min-w-max flex-nowrap items-center gap-2 lg:min-w-0 lg:flex-auto lg:flex-wrap'
+export const GOLDEN_TOOLBAR_RIGHT_CLASS = 'flex min-w-max flex-nowrap items-center justify-end gap-2 lg:flex-wrap'
+const TOOLBAR_CONTROL_HEIGHT = 'h-9'
 
 export const ShellHeader = ({
   left,
@@ -17,8 +20,8 @@ export const ShellHeader = ({
   left: ReactNode
   right?: ReactNode
 }) => (
-  <header className="relative z-10 shrink-0 border-b border-[var(--border-default)] bg-[var(--bg-header)] px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8" data-sg-shell-header="true">
-    <div className="flex min-h-[40px] flex-wrap items-center justify-between gap-3">
+  <header className="relative z-10 shrink-0 border-b border-[var(--border-default)] bg-[var(--bg-header)] px-4 py-2 backdrop-blur-xl sm:px-6" data-sg-shell-header="true" data-slot="app-header">
+    <div className="flex min-h-9 flex-wrap items-center justify-between gap-3">
       <div className="flex w-full min-w-0 flex-wrap items-center gap-3 md:w-auto md:min-w-[24rem] md:flex-1">{left}</div>
       {right && <div className="flex w-full min-w-0 max-w-full flex-wrap items-center justify-end gap-2 sm:gap-3 md:w-auto">{right}</div>}
     </div>
@@ -42,20 +45,20 @@ export const PageHeader = ({
   className?: string
   style?: React.CSSProperties
 }) => (
-  <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} style={{ ...style, '--workspace-ink': 'var(--accent-primary)' } as React.CSSProperties} data-golden-page-header="true">
-    <div className="min-w-0 basis-[200px] flex-1 space-y-1">
+  <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} style={{ ...style, '--workspace-ink': 'var(--brand-blue, var(--accent-primary))' } as React.CSSProperties} data-golden-page-header="true" data-slot="page-header">
+    <div className="min-w-0 basis-[240px] flex-1 space-y-1.5">
       {eyebrow && <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent-primary)]">{eyebrow}</div>}
       <div className="space-y-0.5">
-        <h1 className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">{title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{title}</h1>
         {subtitle && (
-          <p className="max-w-3xl text-xs leading-relaxed text-[var(--text-secondary)]">
+          <p className="max-w-3xl text-sm leading-5 text-[var(--text-secondary)]">
             {subtitle}
           </p>
         )}
       </div>
       {meta && <div className="flex flex-wrap items-center gap-3">{meta}</div>}
     </div>
-    {actions && <div className="flex min-w-0 max-w-full shrink-0 flex-wrap items-start gap-3">{actions}</div>}
+    {actions && <div className="flex min-w-0 max-w-full shrink-0 flex-wrap items-center gap-2">{actions}</div>}
   </section>
 )
 
@@ -77,9 +80,10 @@ export const PageToolbar = ({
       className
     )}
     data-golden-page-toolbar="true"
+    data-slot="page-toolbar"
   >
-    {left ? <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center gap-3 lg:w-auto lg:min-w-0 lg:flex-auto' : GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
-    {right && <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center justify-start gap-3 lg:w-auto lg:justify-end' : GOLDEN_TOOLBAR_RIGHT_CLASS} data-golden-toolbar-right="true">{right}</div>}
+    {left ? <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto lg:min-w-0 lg:flex-auto' : GOLDEN_TOOLBAR_LEFT_CLASS} data-golden-toolbar-left="true">{left}</div> : <div />}
+    {right && <div className={wrapOnMobile ? 'flex w-full min-w-0 flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end' : GOLDEN_TOOLBAR_RIGHT_CLASS} data-golden-toolbar-right="true">{right}</div>}
   </section>
 )
 
@@ -110,19 +114,19 @@ export const ToolbarSearch = ({
   inputRef?: React.Ref<HTMLInputElement>
   className?: string
 }) => (
-  <div className={join('relative min-w-[240px] flex-1 max-w-md', className)}>
+  <div className={join('relative min-w-[240px] flex-1 max-w-lg', className)}>
     <Search
       size={14}
         aria-hidden="true"
         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition-colors group-focus-within:text-[var(--accent-primary)]"
     />
-    <input
+    <NovaInput
       ref={inputRef}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
       aria-label={ariaLabel}
-      className={`${TOOLBAR_CONTROL_HEIGHT} w-full rounded-lg border border-[var(--border-default)] bg-[var(--input-bg)] pl-10 pr-4 py-0 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--action-primary)] focus:bg-[var(--surface-hover)]`}
+      className={`${TOOLBAR_CONTROL_HEIGHT} w-full pl-10 pr-4 py-0 text-sm text-[var(--text-primary)] focus:bg-[var(--surface-hover)]`}
     />
   </div>
 )
@@ -152,16 +156,13 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
   ariaControls,
   ariaHasPopup
 }, ref) => {
-  const variantClass =
-    variant === 'primary'
-      ? 'border border-[var(--action-primary)] bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20 hover:bg-[var(--action-primary-hover)]'
-      : variant === 'danger'
-        ? 'bg-[var(--state-danger-surface)] text-[var(--state-danger)] border border-[var(--state-danger-border)] hover:bg-[var(--state-danger-surface-strong)]'
-        : variant === 'quiet'
-          ? 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
-          : active
-            ? 'bg-[var(--action-primary-muted)] text-[var(--action-ink)] border border-[var(--action-primary)]'
-            : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-default)] hover:text-[var(--text-primary)]'
+  const novaVariant = variant === 'primary'
+    ? 'default'
+    : variant === 'danger'
+      ? 'destructive'
+      : variant === 'quiet'
+        ? 'ghost'
+        : active ? 'secondary' : 'outline'
   const activityColumnsToggle = isGoldenActivityColumnsTitle(title)
   const resolvedChildren = activityColumnsToggle ? (
     <>
@@ -170,9 +171,11 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
   ) : children
 
   return (
-    <button
+    <NovaButton
       ref={ref}
       type="button"
+      variant={novaVariant}
+      size="default"
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -181,14 +184,10 @@ export const ToolbarButton = React.forwardRef<HTMLButtonElement, {
       aria-controls={ariaControls}
       aria-haspopup={ariaHasPopup}
       aria-pressed={ariaExpanded === undefined ? active || undefined : undefined}
-      className={join(
-        `${TOOLBAR_CONTROL_HEIGHT} inline-flex items-center justify-center gap-2 rounded-lg px-3 py-0 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors disabled:cursor-not-allowed disabled:opacity-40`,
-        variantClass,
-        className
-      )}
+      className={join('h-9 shrink-0 gap-2 whitespace-nowrap', className)}
     >
       {resolvedChildren}
-    </button>
+    </NovaButton>
   )
 })
 ToolbarButton.displayName = 'ToolbarButton'
@@ -209,27 +208,25 @@ export const ToolbarIconButton = React.forwardRef<HTMLButtonElement, {
   title,
   ariaLabel,
   tone = 'default'
-}, ref) => (
-  <button
-    ref={ref}
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    aria-label={ariaLabel || title}
-    aria-pressed={active || undefined}
-    className={join(
-      `${TOOLBAR_CONTROL_HEIGHT} rounded-lg px-2.5 py-0 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40`,
-      tone === 'danger'
-        ? 'border border-[var(--state-danger-border)] bg-[var(--state-danger-surface)] text-[var(--state-danger)] hover:bg-[var(--state-danger-surface-strong)]'
-        : active
-          ? 'border border-[var(--action-primary)] bg-[var(--action-primary-muted)] text-[var(--action-ink)]'
-          : 'border border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
-    )}
-  >
-    {children}
-  </button>
-))
+}, ref) => {
+  const button = (
+    <NovaButton
+      ref={ref}
+      type="button"
+      variant={tone === 'danger' ? 'destructive' : active ? 'secondary' : 'outline'}
+      size="icon"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel || title}
+      aria-pressed={active || undefined}
+      className="size-9"
+    >
+      {children}
+    </NovaButton>
+  )
+
+  return title ? <Tooltip content={title}>{button}</Tooltip> : button
+})
 ToolbarIconButton.displayName = 'ToolbarIconButton'
 
 export const ToolbarSegmented = ({
@@ -275,23 +272,25 @@ export const ToolbarSegmented = ({
       className="min-w-0 max-w-full overflow-x-auto overscroll-x-contain touch-pan-x"
       data-golden-segmented-scroll="true"
     >
-      <div className="relative flex w-max min-w-max items-center gap-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1" role="group" aria-label="View selection">
+      <div className="relative flex w-max min-w-max items-center gap-0.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-0.5" role="group" aria-label="View selection" data-slot="segmented-control">
         {options.map((option) => (
-          <button
+          <NovaButton
             key={option.value}
             ref={value === option.value ? activeRef : undefined}
             type="button"
+            variant={value === option.value ? 'default' : 'ghost'}
+            size="default"
             onClick={() => onChange(option.value)}
             className={join(
-              `${TOOLBAR_CONTROL_HEIGHT} shrink-0 whitespace-nowrap rounded-lg px-4 py-0 text-xs font-semibold transition-colors`,
+              `${TOOLBAR_CONTROL_HEIGHT} shrink-0 whitespace-nowrap rounded-md px-3 py-0 text-sm font-medium transition-colors`,
               value === option.value
-                ? 'bg-[var(--action-primary)] text-white shadow-lg shadow-blue-500/20'
-                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+                ? 'font-semibold shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             )}
             aria-pressed={value === option.value}
           >
             {option.label}
-          </button>
+          </NovaButton>
         ))}
       </div>
     </div>
@@ -311,10 +310,10 @@ export const HeaderScopeSwitch = ({
   value: string
   onChange: (value: string) => void
 }) => (
-  <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-1.5">
-    <div className="px-2">
-      <p className="text-[8px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">{label}</p>
-      {summary ? <p className="pt-0.5 text-[10px] font-semibold text-[var(--text-primary)]">{summary}</p> : null}
+  <div className="flex min-w-0 flex-wrap items-center gap-2.5" data-slot="scope-switch">
+    <div className="min-w-0 px-1">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">{label}</p>
+      {summary ? <p className="pt-0.5 text-xs font-medium text-[var(--text-primary)]">{summary}</p> : null}
     </div>
     <ToolbarSegmented options={options} value={value} onChange={onChange} />
   </div>

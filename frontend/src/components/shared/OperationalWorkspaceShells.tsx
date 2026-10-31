@@ -10,9 +10,9 @@ const join = (...parts: Array<string | false | null | undefined>) => parts.filte
 type WorkspaceFilterChip = { id: string; label: string; onRemove: () => void }
 export type GoldenWorkspaceArchetype = 'table' | 'hybrid' | 'analytical'
 
-export const GOLDEN_WORKSPACE_GEOMETRY_VERSION = '1'
-export const GOLDEN_WORKSPACE_FRAME_CLASS = 'h-full min-h-0 flex flex-col space-y-4'
-export const GOLDEN_GRID_BASE_CLASS = 'operational-grid-shell operational-grid flex flex-1 w-full min-h-0 flex-col glass-panel overflow-hidden ag-theme-alpine-dark relative'
+export const GOLDEN_WORKSPACE_GEOMETRY_VERSION = '2'
+export const GOLDEN_WORKSPACE_FRAME_CLASS = 'flex h-full min-h-0 min-w-0 flex-col gap-4'
+export const GOLDEN_GRID_BASE_CLASS = 'operational-grid-shell operational-grid relative flex min-h-0 w-full flex-1 flex-col overflow-hidden glass-panel ag-theme-alpine-dark'
 export const GOLDEN_GRID_VARIANT_CLASS = {
   golden: 'rounded-lg',
   'attached-panel': 'rounded-t-none border-x border-b border-white/5',
@@ -51,6 +51,7 @@ export function OperationalWorkspaceFrame({
       data-golden-workspace={workspace}
       data-golden-archetype={archetype}
       data-golden-geometry-version={GOLDEN_WORKSPACE_GEOMETRY_VERSION}
+      data-slot="workspace-layout"
     >
       <PageHeader {...header} />
       <WorkspaceCommandBar {...commandBar} />
@@ -163,6 +164,7 @@ export function OperationalAnchoredPanel({
       style={style}
       className={className}
       data-workspace-panel="true"
+      data-slot="popover-positioner"
       data-workspace-panel-key={panelKey}
       data-workspace-panel-offset={yOffset}
       data-workspace-interaction-lock={interactionLocked ? 'true' : undefined}
@@ -182,7 +184,7 @@ export function OperationalGroupedGridView({
   sections: React.ReactNode
 }) {
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar" data-slot="workspace-body">
       <div className="rounded-lg border border-white/5 bg-black/20 px-6 py-4 flex items-center justify-between">
         {summary}
         {actions ? <div className="flex items-center gap-3">{actions}</div> : null}

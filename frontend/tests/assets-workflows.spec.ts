@@ -415,6 +415,7 @@ test.describe('Assets workflows', () => {
   test('simulates the changed Assets workflows end-to-end', async ({ page, sysApi: request }, testInfo) => {
     test.setTimeout(120_000)
     await resetBrowserState(page)
+    await page.setViewportSize({ width: 1440, height: 900 })
     const { stamp, systemName, primary, secondary, tertiary, monitoring, far } = await seedOperationalScenario(request)
     const purgeImpactSeed = await request.post(`${apiBase}/devices/${secondary.id}/hardware`, {
       data: { category: 'CPU', name: `PW-PURGE-IMPACT-${stamp}`, count: 1 },
@@ -605,7 +606,7 @@ test.describe('Assets workflows', () => {
     await verifyGridRowRobust(page, secondary.name)
 
     // A. Toolbar / Export / Template Enabled state check when rows exist
-    await page.getByTitle('Export asset data').click()
+    await page.getByRole('button', { name: 'Export asset data' }).click()
     await expect(page.getByRole('button', { name: /^Export CSV/ })).toBeEnabled()
     await expect(page.getByRole('button', { name: /^Snapshot/ })).toBeEnabled()
     await expect(page.getByRole('button', { name: /^Export Template/ })).toBeEnabled()
@@ -800,30 +801,34 @@ test.describe('Assets workflows', () => {
     await attachEvidence(testInfo, 'asset-purge-preview-1440x900.json', JSON.stringify(previewMetadata, null, 2), 'application/json')
     await attachEvidence(testInfo, 'asset-purge-preview-1440x900.png', await page.screenshot(), 'image/png')
 
-    await page.setViewportSize({ width: 390, height: 844 })
-    await expect(purgePreviewDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
-    await expect(purgePreviewDialog.getByText('Hardware components', { exact: true })).toBeVisible()
-    await expect(purgePreviewDialog.getByRole('button', { name: 'Cancel' })).toBeVisible()
-    const mobileConfirm = purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' })
-    await expect(mobileConfirm).toBeVisible()
-    const mobileConfirmBox = await mobileConfirm.boundingBox()
-    expect(mobileConfirmBox).not.toBeNull()
-    expect(mobileConfirmBox!.x).toBeGreaterThanOrEqual(0)
-    expect(mobileConfirmBox!.y).toBeGreaterThanOrEqual(0)
-    expect(mobileConfirmBox!.x + mobileConfirmBox!.width).toBeLessThanOrEqual(390)
-    expect(mobileConfirmBox!.y + mobileConfirmBox!.height).toBeLessThanOrEqual(844)
-    await attachEvidence(
-      testInfo,
-      'asset-purge-preview-390x844.json',
-      JSON.stringify({ ...previewMetadata, viewport: { width: 390, height: 844 }, scrollY: await page.evaluate(() => window.scrollY) }, null, 2),
-      'application/json',
-    )
-    await attachEvidence(testInfo, 'asset-purge-preview-390x844.png', await page.screenshot(), 'image/png')
+    const confirmPurgeSelection = purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' })
+    if (process.env.SYSGRID_DESKTOP_ONLY !== '1') {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await expect(purgePreviewDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
+      await expect(purgePreviewDialog.getByText('Hardware components', { exact: true })).toBeVisible()
+      await expect(purgePreviewDialog.getByRole('button', { name: 'Cancel' })).toBeVisible()
+      const mobileConfirm = purgePreviewDialog.getByRole('button', { name: 'Confirm Purge selection' })
+      await expect(mobileConfirm).toBeVisible()
+      const mobileConfirmBox = await mobileConfirm.boundingBox()
+      expect(mobileConfirmBox).not.toBeNull()
+      expect(mobileConfirmBox!.x).toBeGreaterThanOrEqual(0)
+      expect(mobileConfirmBox!.y).toBeGreaterThanOrEqual(0)
+      expect(mobileConfirmBox!.x + mobileConfirmBox!.width).toBeLessThanOrEqual(390)
+      expect(mobileConfirmBox!.y + mobileConfirmBox!.height).toBeLessThanOrEqual(844)
+      await attachEvidence(
+        testInfo,
+        'asset-purge-preview-390x844.json',
+        JSON.stringify({ ...previewMetadata, viewport: { width: 390, height: 844 }, scrollY: await page.evaluate(() => window.scrollY) }, null, 2),
+        'application/json',
+      )
+      await attachEvidence(testInfo, 'asset-purge-preview-390x844.png', await page.screenshot(), 'image/png')
+
+    }
 
     const purgeResponsePromise = page.waitForResponse(response =>
       response.url().includes('/api/v1/devices/bulk-action') && response.status() === 200
     )
-    await mobileConfirm.click()
+    await confirmPurgeSelection.click()
     const purgeResponse = await purgeResponsePromise
     const purgeReceipt = await purgeResponse.json()
     expect(purgeReceipt.changed_ids).toEqual([secondary.id])
@@ -833,15 +838,17 @@ test.describe('Assets workflows', () => {
     await expect(purgeReceiptDialog.getByText('This purge cannot be restored or reverted.')).toBeVisible()
     await expect(purgeReceiptDialog.getByRole('button', { name: 'Undo bulk changes' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Revert', exact: true })).toHaveCount(0)
-    await attachEvidence(testInfo, 'asset-purge-receipt-390x844.json', JSON.stringify({
-        route: '/asset',
-        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
-        viewport: { width: 390, height: 844 },
-        scrollY: await page.evaluate(() => window.scrollY),
-        readiness: 'Permanent purge receipt settled; actual impact came from the execution response; generic undo is absent.',
-        receipt: purgeReceipt,
-      }, null, 2), 'application/json')
-    await attachEvidence(testInfo, 'asset-purge-receipt-390x844.png', await page.screenshot(), 'image/png')
+    if (process.env.SYSGRID_DESKTOP_ONLY !== '1') {
+      await attachEvidence(testInfo, 'asset-purge-receipt-390x844.json', JSON.stringify({
+          route: '/asset',
+          profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+          viewport: { width: 390, height: 844 },
+          scrollY: await page.evaluate(() => window.scrollY),
+          readiness: 'Permanent purge receipt settled; actual impact came from the execution response; generic undo is absent.',
+          receipt: purgeReceipt,
+        }, null, 2), 'application/json')
+      await attachEvidence(testInfo, 'asset-purge-receipt-390x844.png', await page.screenshot(), 'image/png')
+    }
     await page.setViewportSize({ width: 1440, height: 900 })
     await expect(purgeReceiptDialog.getByTestId('operational-purge-impact')).toBeVisible()
     await expect(purgeReceiptDialog.getByRole('button', { name: 'Undo bulk changes' })).toHaveCount(0)
@@ -885,43 +892,46 @@ test.describe('Assets workflows', () => {
     }, null, 2), 'application/json')
     await attachEvidence(testInfo, 'asset-purge-closed-desktop-1440x900.png', await page.screenshot(), 'image/png')
 
-    await page.setViewportSize({ width: 390, height: 844 })
-    await expect(page.getByRole('button', { name: 'Open application navigation' })).toBeVisible()
-    const applicationSidebar = page.locator('[data-sg-app-sidebar]')
-    await expect(applicationSidebar).not.toBeVisible()
-    await expect.poll(async () => (await page.locator('[data-sg-app-main]').boundingBox())?.x ?? Infinity).toBe(0)
-    await expect(getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })).toHaveCount(0)
-    const mobileArchivedScope = page.getByRole('button', { name: /Archived/ }).first()
-    await expect(mobileArchivedScope).toBeVisible()
-    await mobileArchivedScope.scrollIntoViewIfNeeded()
-    const mobileArchivedScopeBox = await mobileArchivedScope.boundingBox()
-    expect(mobileArchivedScopeBox).not.toBeNull()
-    expect(mobileArchivedScopeBox!.x).toBeGreaterThanOrEqual(0)
-    expect(mobileArchivedScopeBox!.x + mobileArchivedScopeBox!.width).toBeLessThanOrEqual(390)
-    const mobileClosedReceiptMetrics = await page.evaluate(() => ({
-      viewportWidth: window.innerWidth,
-      documentWidth: document.documentElement.scrollWidth,
-      bodyWidth: document.body.scrollWidth,
-    }))
-    expect(mobileClosedReceiptMetrics.documentWidth).toBeLessThanOrEqual(390)
-    await attachEvidence(testInfo, 'asset-purge-closed-mobile-390x844.json', JSON.stringify({
-      route: '/asset',
-      profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
-      viewport: { width: 390, height: 844 },
-      target: { id: secondary.id, name: secondary.name },
-      priorRecovery: { ids: secondArchiveReceipt.changed_ids, labels: [secondary.name], confirmationText: recoveryBeforePurgeConfirmation },
-      purgeChangedIds: purgeReceipt.changed_ids,
-      receiptUndoVisible: false,
-      receiptRevertVisible: false,
-      archivedScope: archivedScopeAfterPurge,
-      receiptVocabulary: 'This purge cannot be restored or reverted.',
-      persistentRevertVisible: false,
-      backendDevicePresent: false,
-      archivedScopeWithinViewport: true,
-      documentWidth: mobileClosedReceiptMetrics.documentWidth,
-      bodyWidth: mobileClosedReceiptMetrics.bodyWidth,
-    }, null, 2), 'application/json')
-    await attachEvidence(testInfo, 'asset-purge-closed-mobile-390x844.png', await page.screenshot(), 'image/png')
+    if (process.env.SYSGRID_DESKTOP_ONLY !== '1') {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await expect(page.getByRole('button', { name: 'Open application navigation' })).toBeVisible()
+      const applicationSidebar = page.locator('[data-sg-app-sidebar]')
+      await expect(applicationSidebar).not.toBeVisible()
+      await expect.poll(async () => (await page.locator('[data-sg-app-main]').boundingBox())?.x ?? Infinity).toBe(0)
+      await expect(getWorkspaceRoot(page, 'assets').getByRole('button', { name: 'Revert last completed asset lifecycle operation' })).toHaveCount(0)
+      const mobileArchivedScope = page.getByRole('button', { name: /Archived/ }).first()
+      await expect(mobileArchivedScope).toBeVisible()
+      await mobileArchivedScope.scrollIntoViewIfNeeded()
+      const mobileArchivedScopeBox = await mobileArchivedScope.boundingBox()
+      expect(mobileArchivedScopeBox).not.toBeNull()
+      expect(mobileArchivedScopeBox!.x).toBeGreaterThanOrEqual(0)
+      expect(mobileArchivedScopeBox!.x + mobileArchivedScopeBox!.width).toBeLessThanOrEqual(390)
+      const mobileClosedReceiptMetrics = await page.evaluate(() => ({
+        viewportWidth: window.innerWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        bodyWidth: document.body.scrollWidth,
+      }))
+      expect(mobileClosedReceiptMetrics.documentWidth).toBeLessThanOrEqual(390)
+      await attachEvidence(testInfo, 'asset-purge-closed-mobile-390x844.json', JSON.stringify({
+        route: '/asset',
+        profile: process.env.SYSGRID_VERIFY_PROFILE || 'normal-v1',
+        viewport: { width: 390, height: 844 },
+        target: { id: secondary.id, name: secondary.name },
+        priorRecovery: { ids: secondArchiveReceipt.changed_ids, labels: [secondary.name], confirmationText: recoveryBeforePurgeConfirmation },
+        purgeChangedIds: purgeReceipt.changed_ids,
+        receiptUndoVisible: false,
+        receiptRevertVisible: false,
+        archivedScope: archivedScopeAfterPurge,
+        receiptVocabulary: 'This purge cannot be restored or reverted.',
+        persistentRevertVisible: false,
+        backendDevicePresent: false,
+        archivedScopeWithinViewport: true,
+        documentWidth: mobileClosedReceiptMetrics.documentWidth,
+        bodyWidth: mobileClosedReceiptMetrics.bodyWidth,
+      }, null, 2), 'application/json')
+      await attachEvidence(testInfo, 'asset-purge-closed-mobile-390x844.png', await page.screenshot(), 'image/png')
+
+    }
 
     // Verify row has disappeared completely from Archived scope by reloading the page
     await page.goto('/asset')
@@ -937,8 +947,7 @@ test.describe('Assets workflows', () => {
     await expect(getWorkspaceRoot(page, 'assets').getByRole('treegrid').getByText(secondary.name, { exact: true })).not.toBeVisible()
 
     // B. Toolbar / Export / Template Disabled state check when the registry is empty or filtered-empty
-    await page.getByRole('button', { name: 'View & filters', exact: true }).click()
-    await page.getByTitle('Export asset data').click()
+    await page.getByRole('button', { name: 'Export asset data' }).click()
     await expect(page.getByRole('button', { name: /^Export CSV/ })).toBeDisabled()
     await expect(page.getByRole('button', { name: /^Snapshot/ })).toBeDisabled()
     await expect(page.getByRole('button', { name: /^Export Template/ })).toBeEnabled()
@@ -1474,7 +1483,9 @@ test.describe('Assets workflows', () => {
       }
 
       await capturePendingState(1440, 900, 'asset-pending-overlap-same-target-1440x900')
-      await capturePendingState(390, 844, 'asset-pending-overlap-same-target-390x844')
+      if (process.env.SYSGRID_DESKTOP_ONLY !== '1') {
+        await capturePendingState(390, 844, 'asset-pending-overlap-same-target-390x844')
+      }
       expect(restoreRequestCount).toBe(0)
       await page.setViewportSize({ width: 1920, height: 1080 })
 
