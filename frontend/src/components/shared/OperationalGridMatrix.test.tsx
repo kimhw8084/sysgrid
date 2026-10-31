@@ -62,6 +62,31 @@ it('still releases commands if even they cannot fit with the minimum center view
   expect(api.setColumnsPinned).toHaveBeenCalledExactlyOnceWith([commands], null)
 })
 
+it('opens the same row menu from the keyboard context-menu shortcut', () => {
+  const onCellContextMenu = vi.fn()
+  render(<OperationalGridMatrix onCellContextMenu={onCellContextMenu} />)
+  const preventDefault = vi.fn()
+  const target = { getBoundingClientRect: () => ({ left: 20, width: 80, bottom: 140 }) }
+  captured.props.onCellKeyDown({
+    data: { id: 7 },
+    event: { key: 'F10', shiftKey: true, target, preventDefault },
+  })
+  expect(preventDefault).toHaveBeenCalledOnce()
+  expect(onCellContextMenu).toHaveBeenCalledOnce()
+  expect(onCellContextMenu.mock.calls[0][0].data).toEqual({ id: 7 })
+  expect(onCellContextMenu.mock.calls[0][0].event.clientX).toBe(44)
+  expect(onCellContextMenu.mock.calls[0][0].event.clientY).toBe(140)
+})
+
+it('does not replace ordinary keyboard navigation with a row menu', () => {
+  const onCellContextMenu = vi.fn()
+  render(<OperationalGridMatrix onCellContextMenu={onCellContextMenu} />)
+  const preventDefault = vi.fn()
+  captured.props.onCellKeyDown({ event: { key: 'ArrowDown', shiftKey: false, preventDefault } })
+  expect(preventDefault).not.toHaveBeenCalled()
+  expect(onCellContextMenu).not.toHaveBeenCalled()
+})
+
 it('gives phone identities and commands room and restores the configured desktop density', () => {
   let changed: (() => void) | undefined
   const media = { matches: true, addEventListener: vi.fn((_event, listener) => { changed = listener }), removeEventListener: vi.fn() }
@@ -71,12 +96,12 @@ it('gives phone identities and commands room and restores the configured desktop
     expect(captured.props.rowHeight).toBe(52)
     media.matches = false
     act(() => changed?.())
-    expect(captured.props.rowHeight).toBe(23)
+    expect(captured.props.rowHeight).toBe(40)
     rerender(<OperationalGridMatrix fontSize={20} rowDensity={8} />)
-    expect(captured.props.rowHeight).toBe(32)
+    expect(captured.props.rowHeight).toBe(40)
     media.matches = true
     act(() => changed?.())
-    expect(captured.props.rowHeight).toBe(61)
+    expect(captured.props.rowHeight).toBe(52)
     unmount()
     expect(media.removeEventListener).toHaveBeenCalledWith('change', changed)
   } finally { match.mockRestore() }

@@ -39,6 +39,7 @@ import { ModulePolicyLink } from '../policy/ModulePolicy'
 import { resolveOperationalAuditNavigation, resolveOperationalObjectReference } from './shared/OperationalObjectReference'
 import { useSearchParams } from 'react-router-dom'
 import { fetchRackArray, RackDataState } from './racksDataState'
+import { getRackUnitStatusKey } from './rackVisualState'
 
 // ─── Constants & Helpers ──────────────────────────────────────────────────────
 
@@ -56,27 +57,27 @@ const highlightAnimation = `
 `
 
 const STATUS_CONFIG: Record<string, { color: string; dot: string; badge: string }> = {
-  Active:        { color: 'text-[var(--state-success)]', dot: 'bg-[var(--state-success)]', badge: 'bg-[var(--panel-item-bg)] text-[var(--state-success)] border-[var(--state-success-border)]' },
-  Maintenance:   { color: 'text-[var(--state-warning)]', dot: 'bg-[var(--state-warning)]', badge: 'bg-[var(--panel-item-bg)] text-[var(--state-warning)] border-[var(--state-warning-border)]' },
-  Decommissioned:{ color: 'text-[var(--state-danger)]', dot: 'bg-[var(--state-danger)]', badge: 'bg-[var(--state-danger-surface)] text-[var(--state-danger)] border-[var(--state-danger-border)]' },
-  Offline:       { color: 'text-[var(--text-secondary)]', dot: 'bg-[var(--text-secondary)]', badge: 'bg-[var(--panel-item-bg)] text-[var(--text-secondary)] border-[var(--grid-border)]' },
-  Standby:       { color: 'text-[var(--state-info)]', dot: 'bg-[var(--state-info)]', badge: 'bg-[var(--state-info-surface)] text-[var(--state-info)] border-[var(--state-info-border)]' },
-  Reserved:      { color: 'text-violet-700 [.dark_&]:text-violet-300', dot: 'bg-violet-700 [.dark_&]:bg-violet-300', badge: 'bg-violet-500/10 text-violet-700 [.dark_&]:text-violet-300 border-violet-500/30' },
+  Active:        { color: 'text-[var(--rack-active-ink)]', dot: 'bg-[var(--rack-active-accent)]', badge: 'bg-[var(--rack-active-bg)] text-[var(--rack-active-ink)] border-[var(--rack-active-border)]' },
+  Maintenance:   { color: 'text-[var(--rack-maintenance-ink)]', dot: 'bg-[var(--rack-maintenance-accent)]', badge: 'bg-[var(--rack-maintenance-bg)] text-[var(--rack-maintenance-ink)] border-[var(--rack-maintenance-border)]' },
+  Decommissioned:{ color: 'text-[var(--rack-retired-ink)]', dot: 'bg-[var(--rack-retired-accent)]', badge: 'bg-[var(--rack-retired-bg)] text-[var(--rack-retired-ink)] border-[var(--rack-retired-border)]' },
+  Offline:       { color: 'text-[var(--rack-offline-ink)]', dot: 'bg-[var(--rack-offline-accent)]', badge: 'bg-[var(--rack-offline-bg)] text-[var(--rack-offline-ink)] border-[var(--rack-offline-border)]' },
+  Standby:       { color: 'text-[var(--rack-standby-ink)]', dot: 'bg-[var(--rack-standby-accent)]', badge: 'bg-[var(--rack-standby-bg)] text-[var(--rack-standby-ink)] border-[var(--rack-standby-border)]' },
+  Reserved:      { color: 'text-[var(--rack-reserved-ink)]', dot: 'bg-[var(--rack-reserved-accent)]', badge: 'bg-[var(--rack-reserved-bg)] text-[var(--rack-reserved-ink)] border-[var(--rack-reserved-border)]' },
 }
 
-const TYPE_CONFIG: Record<string, { color: string; short: string }> = {
-  physical: { color: 'text-violet-800 [.dark_&]:text-violet-200', short: 'PHY' },
-  virtual:  { color: 'text-blue-400',   short: 'VM'  },
-  storage:  { color: 'text-amber-400',  short: 'STO' },
-  switch:   { color: 'text-rose-400',   short: 'NET' },
-  server:   { color: 'text-emerald-400',short: 'SRV' },
+const TYPE_CONFIG: Record<string, { color: string; short: string; tone: string }> = {
+  physical: { color: 'text-[var(--rack-type-physical)]', short: 'PHY', tone: 'physical' },
+  virtual:  { color: 'text-[var(--rack-type-virtual)]', short: 'VM', tone: 'virtual' },
+  storage:  { color: 'text-[var(--rack-type-storage)]', short: 'STO', tone: 'storage' },
+  switch:   { color: 'text-[var(--rack-type-switch)]', short: 'NET', tone: 'switch' },
+  server:   { color: 'text-[var(--rack-type-server)]', short: 'SRV', tone: 'server' },
 }
 
 const getStatusCfg = (s: string, isReservation?: boolean) => {
   if (isReservation) return STATUS_CONFIG['Reserved']
   return STATUS_CONFIG[s] ?? STATUS_CONFIG['Offline']
 }
-const getTypeCfg = (t: string) => TYPE_CONFIG[t?.toLowerCase()] ?? { color: 'text-slate-400', short: t?.slice(0,3).toUpperCase() || 'UNK' }
+const getTypeCfg = (t: string) => TYPE_CONFIG[t?.toLowerCase()] ?? { color: 'text-[var(--text-secondary)]', short: t?.slice(0,3).toUpperCase() || 'UNK', tone: 'unknown' }
 
 const fillColor = (pct: number) => {
   if (pct >= 110) return 'bg-rose-600 shadow-[0_0_15px_rgba(225,29,72,0.8)]'
@@ -515,112 +516,88 @@ const RackUnit = ({ uNumber, loc, isTop, isBottom, highlight, onSelect, onManage
     (loc?.size_u !== liveLoc?.size_u)
   )
 
-  const bgBase = device
-    ? isFocused
-      ? 'bg-blue-500/40 border-blue-400/50'
-      : isConnected
-        ? 'bg-emerald-500/30 border-emerald-400/40'
-        : isDiff
-          ? 'bg-amber-500/40 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-pulse z-10'
-          : highlight
-            ? 'animate-pulse bg-amber-500/20 border-amber-500/50 z-10'
-            : isReservation
-              ? 'bg-violet-500/20 border-violet-500/30'
-              : device.status === 'Maintenance'
-                ? 'bg-amber-500/15'
-                : (device.status === 'Decommissioned' || device.status === 'Deleted')
-                  ? 'bg-rose-500/15'
-                  : 'bg-blue-600/30'
-    : isDiff && liveLoc
-      ? 'bg-rose-500/20 border-rose-500/40 border-dashed animate-pulse'
-      : 'hover:bg-white/[0.04]'
-
-  const borderClass = device
-    ? [
-        isTop ? 'border-t border-white/10' : '',
-        isBottom ? 'border-b border-black/40' : 'border-b border-white/[0.03]',
-        !isTop ? 'border-t-0' : '',
-      ].join(' ')
-    : 'border-b border-[var(--grid-border)]'
-
-  const roundedClass = device
-    ? `${isTop ? 'rounded-t-lg' : ''} ${isBottom ? 'rounded-b-lg' : ''}`
-    : ''
-
-  const contiguousBlockClass = device
-    ? [
-        isTop ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]' : '',
-        !isTop && !isBottom ? 'shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]' : '',
-      ].join(' ')
-    : ''
+  const rackState = getRackUnitStatusKey(device)
+  const liveDevice = liveLoc?.device
+  const rackUnitTitle = device
+    ? `${device.name} · ${isReservation ? 'Reserved' : device.status || 'Unknown'} · U${loc.start_unit}${loc.size_u > 1 ? `–U${loc.start_unit + loc.size_u - 1}` : ''} · ${loc.orientation || 'Front'}`
+    : `Mount or reserve at U${uNumber}`
 
   return (
     <div
-      style={{ height: '22px' }}
-      className={`relative flex items-center transition-all cursor-default ${bgBase} ${borderClass} ${roundedClass} ${contiguousBlockClass} ${device ? 'mx-[1px] bg-gradient-to-b from-white/[0.05] to-transparent' : ''} ${isReservation ? 'border-dashed' : ''}`}
+      className="rack-unit"
       data-device-id={device?.id}
       data-u={uNumber}
+      data-rack-state={rackState}
+      data-has-device={device ? 'true' : 'false'}
+      data-rack-block-top={isTop ? 'true' : 'false'}
+      data-rack-block-bottom={isBottom ? 'true' : 'false'}
+      data-rack-selected={isFocused ? 'true' : 'false'}
+      data-rack-connected={isConnected ? 'true' : 'false'}
+      data-rack-diff={isDiff ? 'true' : 'false'}
+      data-rack-match={highlight ? 'true' : 'false'}
     >
-      {/* Precision Zone: The U-Number is ALWAYS a mounting trigger */}
-      <div 
-        onClick={(e) => { e.stopPropagation(); if (!isDeleted) onSelect(); }}
-        className={`w-7 h-full flex items-center justify-center shrink-0 cursor-pointer border-r border-white/5 hover:bg-blue-500/20 group/u transition-colors`}
+      <button
+        type="button"
+        disabled={isDeleted}
+        aria-label={`Select rack unit U${uNumber}`}
+        aria-pressed={Boolean(isFocused)}
+        title={`Select U${uNumber}`}
+        onClick={(event) => { event.stopPropagation(); onSelect() }}
+        className="rack-unit-number"
       >
-        <span className="text-[10px] font-mono select-none tabular-nums text-[var(--text-secondary)]">
-          {uNumber}
-        </span>
-      </div>
+        {uNumber}
+      </button>
 
-      {/* Body Zone: Clicking here manages the device if it exists, or mounts if it doesn't */}
-      <div 
-        onClick={(e) => { e.stopPropagation(); if (device && !isDeleted) onManage(device, loc, e); else if (!isDeleted) onSelect(); }}
-        className={`flex-1 h-full flex items-center min-w-0 px-1.5 ${device ? 'cursor-pointer' : 'cursor-pointer'}`}
+      <button
+        type="button"
+        disabled={isDeleted}
+        aria-label={device ? `Open ${device.name}, ${isReservation ? 'Reserved' : device.status || 'Unknown'}, U${loc.start_unit}${loc.size_u > 1 ? ` through U${loc.start_unit + loc.size_u - 1}` : ''}` : `Mount or reserve at U${uNumber}`}
+        title={rackUnitTitle}
+        onClick={(event) => {
+          event.stopPropagation()
+          if (device) onManage(device, loc, event)
+          else onSelect()
+        }}
+        className="rack-unit-body"
       >
         {isBottom && device && (
-          <div className="flex-1 flex items-center justify-between overflow-hidden gap-1 pl-1">
-            <div className="flex items-center gap-1.5 overflow-hidden">
-              <span role="img" aria-label={`Status: ${isReservation ? 'Reserved' : device.status || 'Unknown'}`} title={`Status: ${isReservation ? 'Reserved' : device.status || 'Unknown'}`} className={`shrink-0 ${statusCfg?.dot} w-1.5 h-1.5 rounded-full ${isReservation ? 'animate-pulse' : ''}`} />
-              <div className="flex flex-col min-w-0">
-                <span title={device.name} className="text-xs font-semibold truncate leading-none text-[var(--text-primary)]">
+          <span className="rack-unit-device">
+            <span className="rack-unit-identity">
+              <span aria-hidden="true" className={`rack-unit-status-dot ${statusCfg?.dot}`} />
+              <span className="rack-unit-name-wrap">
+                <span className="rack-unit-device-name">
                   {device.name}
-                  {isDiff && <span className="ml-2 text-amber-400 text-[7px] font-black uppercase tracking-widest">[Diff Change]</span>}
+                  {isDiff && <span className="rack-unit-diff-label">Changed</span>}
                 </span>
                 {isReservation && device.reservation_info?.poc && (
-                  <span className="text-[6px] text-violet-400 font-black uppercase tracking-widest mt-0.5 truncate">
+                  <span className="rack-unit-reservation">
                     RES: {device.reservation_info.poc} {device.reservation_info.est_date && `· ${device.reservation_info.est_date}`}
                   </span>
                 )}
-              </div>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
+              </span>
+            </span>
+            <span className="rack-unit-meta">
               {loc?.size_u > 1 && (
-                <span className="text-[7px] text-slate-600 font-mono">{loc.size_u}U</span>
+                <span className="rack-unit-size">{loc.size_u}U</span>
               )}
-              <span className={`text-[7px] font-black uppercase px-1 py-0.5 rounded-lg border ${typeCfg?.color} border-current/20 bg-current/5`}>
+              <span className="rack-unit-type-badge" data-rack-type={typeCfg?.tone}>
                 {typeCfg?.short}
               </span>
               {loc.orientation === 'Back' && (
-                <span className="text-[7px] font-black px-1 py-0.5 rounded-lg bg-slate-800 text-slate-400 border border-white/5">REAR</span>
+                <span className="rack-unit-rear">REAR</span>
               )}
-            </div>
-          </div>
+            </span>
+          </span>
         )}
 
         {!device && isDiff && liveLoc && (
-           <div className="absolute inset-0 flex items-center pl-10">
-              <span className="text-[7px] text-rose-400 font-black uppercase tracking-widest flex items-center gap-1">
-                 <Trash2 size={8}/> Removed from Live
-              </span>
-           </div>
+          <span className="rack-unit-removed">Removed from live · {liveDevice?.name || `U${uNumber}`}</span>
         )}
 
         {!device && !isDiff && (
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center pl-10 pointer-events-none">
-            <Plus size={8} className="text-[var(--accent-primary)] mr-1" />
-            <span className="text-[7px] text-[var(--accent-primary)] font-bold uppercase tracking-widest">Mount / Reserve</span>
-          </div>
+          <span className="rack-unit-empty-prompt"><Plus size={11} /> Add equipment</span>
         )}
-      </div>
+      </button>
     </div>
   )
 }
@@ -1506,7 +1483,7 @@ const LabelGeneratorModal = ({ racks, onClose, devices, connections }: { racks: 
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar border border-white/5 rounded-lg bg-black/40">
-             <table className="w-full text-left">
+             <table className="sg-data-table w-full text-left">
                 <thead className="sticky top-0 bg-slate-900 z-10 shadow-lg">
                    <tr className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/10">
                       <th className="p-5">Logical Source Vector</th>
@@ -3220,7 +3197,7 @@ export default function Racks() {
                   onChange={e => setRackWidth(parseInt(e.target.value))}
                   className="w-24 accent-blue-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className="text-[8px] font-black text-slate-500 w-8 tabular-nums">{rackWidth}px</span>
+                <span className="w-10 tabular-nums text-[10px] font-semibold text-[var(--text-secondary)]">{rackWidth}px</span>
               </div>
             )}
           </>
@@ -3405,7 +3382,7 @@ export default function Racks() {
       )}
 
       {/* ── Rack Grid ── */}
-      <div id="racks-grid" ref={racksGridRef} onScroll={updateRackScrollControls} className="h-[480px] flex-none md:h-full md:min-h-[480px] md:flex-1 flex gap-8 overflow-x-auto overflow-y-hidden pb-4 custom-scrollbar px-1 min-h-0 relative">
+      <div id="racks-grid" ref={racksGridRef} onScroll={updateRackScrollControls} className="h-[480px] flex-none md:h-full md:min-h-0 md:flex-1 flex gap-8 overflow-x-auto overflow-y-auto pb-4 custom-scrollbar px-1 min-h-0 relative">
         
         {viewMode === 'spatial' ? (
           <SpatialMap

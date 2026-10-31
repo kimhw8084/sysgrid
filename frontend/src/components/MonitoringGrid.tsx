@@ -2764,7 +2764,7 @@ function BulkEditTableModal({ items, teams, operators, severities, notificationM
         </div>
 
         <div className="overflow-x-auto rounded-lg border border-white/10 bg-black/20 custom-scrollbar">
-          <table className="min-w-full divide-y divide-white/10">
+          <table className="sg-data-table min-w-full divide-y divide-white/10">
             <thead className="bg-slate-950/90 sticky top-0 z-10">
               <tr>
                 <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Title</th>

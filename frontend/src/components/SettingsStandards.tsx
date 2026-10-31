@@ -161,27 +161,39 @@ export const SettingsStandards = () => {
       <Section id="table-standard" title="Table Standard" description="Grid contracts apply to table-like regions, not every workspace body">
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4">
-            <WorkspacePanelTitle>Operational grid guidance</WorkspacePanelTitle>
-            <WorkspacePanelSubtitle>Monitoring, Network, and Assets demonstrate accepted data-grid patterns.</WorkspacePanelSubtitle>
+            <WorkspacePanelTitle>Operational data-grid law</WorkspacePanelTitle>
+            <WorkspacePanelSubtitle>Use one readable grid grammar for registries. Keep actions and colors specific to the record domain.</WorkspacePanelSubtitle>
             <div className="space-y-3">
-              <Guidance term="Utility columns">Selection, identity, state, and row-action columns use actual grid sizing helpers and remain fixed while content columns flex.</Guidance>
-              <Guidance term="Logical rows">Pinned AG Grid fragments are one logical row for assertions and interaction. Test the row identity, not the first rendered fragment.</Guidance>
-              <Guidance term="Capabilities">Saved views, display controls, import/export, bulk actions, deep links, and detail routes are capability-specific.</Guidance>
+              <Guidance term="Scale and spacing">Use a 42px header, a 40px minimum desktop row, 12px body text, and 11px medium-weight header labels. Resizing controls and row actions must remain fully clickable.</Guidance>
+              <Guidance term="Utility-column width">Reserve 64px for selection, favorite, and watch controls so their headers and hit targets do not clip; unlabeled change markers may use 52px.</Guidance>
+              <Guidance term="Alignment and borders">Align record names and prose left, status and utility controls centrally, and measured values right with tabular numerals. Use quiet horizontal row dividers; reserve vertical separators for utility and pinned action edges.</Guidance>
+              <Guidance term="Row tracking">Operational grids use a subtle zebra band by default. Read-only tables use it from six records onward. Hover adds a quiet blue tint; selection uses a stronger blue tint and visible focus ring.</Guidance>
+              <Guidance term="Activation">A single click only selects where selection is enabled. The identity action opens the record; double-click may open the same detail only when that workspace explicitly wires it. Neither click may mutate data.</Guidance>
+              <Guidance term="Menus and tooltips">Row actions stay visible and keyboard reachable. Where a row menu exists, right-click and Context Menu / Shift+F10 open that same menu. Full values stay quiet; truncated values get a delayed, viewport-safe tooltip.</Guidance>
+              <Guidance term="Bulk work">Selection count and clear-selection control remain visible. Bulk actions target the selected record IDs, preview scope, and confirm destructive changes before committing.</Guidance>
             </div>
           </div>
           <div className="space-y-4">
-            <WorkspacePanelTitle>Grid versus custom body</WorkspacePanelTitle>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <WorkspacePanelTitle>Choose the right table behavior</WorkspacePanelTitle>
+            <div className="grid gap-3">
               <WorkspaceSectionCard>
-                <WorkspaceSectionBadge tone="emerald">Grid region</WorkspaceSectionBadge>
-                <p className="mt-3 text-[11px] font-semibold text-slate-400">Use the operational grid contract where a table-like region exists.</p>
+                <WorkspaceSectionBadge tone="blue">Operational records</WorkspaceSectionBadge>
+                <p className="mt-3 text-[11px] font-semibold text-slate-400">Sortable and filterable registry data gets selection, domain row actions, explicit detail activation, delayed truncated-value tooltips, and bulk controls only where supported.</p>
               </WorkspaceSectionCard>
               <WorkspaceSectionCard>
-                <WorkspaceSectionBadge tone="amber">Custom body</WorkspaceSectionBadge>
-                <p className="mt-3 text-[11px] font-semibold text-slate-400">FAR and Research use accepted custom-body shell patterns and should not be converted into grid-first workspaces.</p>
+                <WorkspaceSectionBadge>Read-only summaries</WorkspaceSectionBadge>
+                <p className="mt-3 text-[11px] font-semibold text-slate-400">Detail, report, import-preview, and audit summaries do not inherit selection or bulk commands. Small tables stay unstriped; longer lists use the same subtle zebra and row-divider tokens.</p>
+              </WorkspaceSectionCard>
+              <WorkspaceSectionCard>
+                <WorkspaceSectionBadge tone="amber">Rack elevation</WorkspaceSectionBadge>
+                <p className="mt-3 text-[11px] font-semibold text-slate-400">Rack U positions are spatial controls, not rows: state uses a strong readable fill and edge, device type uses a separate labeled badge, and selection or diff uses a distinct outline.</p>
               </WorkspaceSectionCard>
             </div>
           </div>
+        </div>
+        <div className="mt-5 rounded-lg border border-[var(--grid-border)] bg-[var(--grid-header-bg)] p-4">
+          <WorkspacePanelTitle>Light and dark color rule</WorkspacePanelTitle>
+          <p className="mt-2 text-[11px] font-semibold leading-relaxed text-[var(--text-secondary)]">Keep table surfaces monochrome. Blue marks interaction and selection; green means healthy, amber needs attention, red means failure or retirement, violet means reservation. Always show the state label with its color. Rack site colors identify a site only and never replace device state.</p>
         </div>
       </Section>
 

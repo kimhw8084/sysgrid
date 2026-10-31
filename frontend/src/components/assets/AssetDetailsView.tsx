@@ -280,7 +280,7 @@ const NetworkingTab = ({ device, onEditLink, onViewLink }: { device: any, onEdit
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Structured Connection Ledger</span>
           </div>
           <div className="border border-white/5 rounded-lg overflow-hidden">
-            <table className="w-full text-[10px]">
+            <table className="sg-data-table w-full text-[10px]">
               <thead className="bg-white/5 border-b border-white/5 animate-fade-in">
                 <tr>
                   <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Peer</th>
@@ -728,7 +728,7 @@ export const HWTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
 
   return (
     <div role="region" aria-label="Hardware components" tabIndex={0} className="p-0 min-w-0 overflow-x-auto">
-      <table aria-busy={updateMutation.isPending} className="w-full min-w-[24rem] text-[10px]">
+      <table aria-busy={updateMutation.isPending} className="sg-data-table w-full min-w-[24rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-center font-bold uppercase tracking-widest text-slate-500">Category</th>
@@ -888,7 +888,7 @@ export const SecretsTable = ({ deviceId, inlineDraft }: { deviceId: number } & I
 
   return (
     <div className="p-0">
-      <table aria-busy={updateMutation.isPending} className="w-full text-[10px]">
+      <table aria-busy={updateMutation.isPending} className="sg-data-table w-full text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Type</th>
@@ -1126,7 +1126,7 @@ const RelationsTable = ({ deviceId, inlineDraft }: { deviceId: number } & Inline
       <div className="p-3">
         <AssetDataState label="Asset names" isLoading={devicesQuery.isLoading} isError={devicesQuery.isError} isFetching={devicesQuery.isFetching} onRetry={() => void devicesQuery.refetch()} />
       </div>
-      <table aria-busy={updateMutation.isPending} className="w-full min-w-[36rem] text-[10px]">
+      <table aria-busy={updateMutation.isPending} className="sg-data-table w-full min-w-[36rem] text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Local Identity</th>

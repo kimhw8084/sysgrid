@@ -52,6 +52,16 @@ const resolveOperationalColorClass = (
   return colorMap[String(value)] || normalizedMap[normalizeOperationalColorKey(value)] || fallbackClass
 }
 
+const getOperationalBadgeTone = (className: string) => {
+  const normalized = className.toLowerCase()
+  if (/rose|red|danger|error/.test(normalized)) return 'danger'
+  if (/amber|orange|yellow|warning/.test(normalized)) return 'warning'
+  if (/emerald|green|lime|success/.test(normalized)) return 'success'
+  if (/blue|sky|cyan|teal|info|indigo/.test(normalized)) return 'info'
+  if (/violet|purple|fuchsia/.test(normalized)) return 'accent'
+  return 'neutral'
+}
+
 const getOperationalBadgeWidth = ({
   knownValues = [],
   colorMap,
@@ -99,7 +109,7 @@ function renderOperationalBadgeCell({
   const label = value || emptyValue
   const resolvedClass = resolveOperationalColorClass(label, colorMap, fallbackClass)
   return (
-    <span title={String(label)} className={`${OPERATIONAL_GRID_BADGE_CLASS} ${resolvedClass}`}>
+    <span aria-label={String(label)} data-operational-tone={getOperationalBadgeTone(resolvedClass)} className={`${OPERATIONAL_GRID_BADGE_CLASS} ${resolvedClass}`}>
       <span style={{ fontSize: `${fontSize}px` }} className={OPERATIONAL_GRID_BADGE_TEXT_CLASS}>
         {label}
       </span>
@@ -188,7 +198,7 @@ export function createOperationalIdentityColumnDefinition({
       onActivate ? (
         <button
           type="button"
-          title={`${buttonTitle}: ${String(p.value ?? '')}`}
+          aria-label={`${buttonTitle}: ${String(p.value ?? '')}`}
           onMouseDown={(event) => event.stopPropagation()}
           onClick={(event) => {
             event.stopPropagation()
@@ -199,7 +209,7 @@ export function createOperationalIdentityColumnDefinition({
           {p.value}
         </button>
       ) : (
-        <span title={String(p.value ?? '')} className={OPERATIONAL_GRID_PRIMARY_TEXT_CLASS}>{p.value}</span>
+        <span className={OPERATIONAL_GRID_PRIMARY_TEXT_CLASS}>{p.value}</span>
       )
     ),
     hide,
@@ -246,14 +256,14 @@ export function createOperationalPlainValueColumn({
     resizable: getOperationalResizable(lockWidth),
     operationalLockWidth: lockWidth,
     operationalSkipAutoSize: lockWidth,
-    cellClass: OPERATIONAL_GRID_CLASSES.centeredCell,
-    headerClass: OPERATIONAL_GRID_CLASSES.centeredHeader,
+    cellClass: OPERATIONAL_GRID_CLASSES.textCell,
+    headerClass: OPERATIONAL_GRID_CLASSES.textHeader,
     cellRenderer: (p: any) => {
       const resolvedValue = formatValue ? formatValue(p.value, p) : p.value
       const displayValue = resolvedValue || emptyValue
       return resolvedValue
-        ? <span title={String(resolvedValue)} className={valueClassName || OPERATIONAL_GRID_PLAIN_VALUE_CLASS}>{resolvedValue}</span>
-        : <span title={String(displayValue)} className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS}>{displayValue}</span>
+        ? <span className={valueClassName || OPERATIONAL_GRID_PLAIN_VALUE_CLASS}>{resolvedValue}</span>
+        : <span className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS}>{displayValue}</span>
     },
     hide,
   }
@@ -287,7 +297,6 @@ export function createOperationalMappedTextColumn({
     headerClass: OPERATIONAL_GRID_CLASSES.centeredHeader,
     cellRenderer: (p: any) => (
       <span
-        title={String(p.value || emptyValue)}
         style={{ fontSize: `${fontSize}px` }}
         className={`${OPERATIONAL_GRID_PLAIN_VALUE_CLASS} ${resolveOperationalColorClass(p.value, colorMap, p.value ? fallbackClass : 'text-slate-500')}`}
       >
@@ -323,7 +332,7 @@ export function createOperationalProseColumn({
     cellClass: proseMode === 'wrap' ? OPERATIONAL_GRID_CLASSES.leftBodyWrapCell : OPERATIONAL_GRID_CLASSES.leftBodyCell,
     headerClass: OPERATIONAL_GRID_CLASSES.primaryHeader,
     cellRenderer: (p: any) => (
-      <span title={String(p.value || emptyValue)} className={`${p.value ? OPERATIONAL_GRID_PLAIN_VALUE_CLASS : OPERATIONAL_GRID_EMPTY_VALUE_CLASS} truncate`}>
+      <span className={`${p.value ? OPERATIONAL_GRID_PLAIN_VALUE_CLASS : OPERATIONAL_GRID_EMPTY_VALUE_CLASS} truncate`}>
         {p.value || emptyValue}
       </span>
     ),

@@ -1096,7 +1096,7 @@ export default function FAR() {
               </div>
               
               <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse">
+                <table className="sg-data-table w-full text-left border-collapse">
                    <thead className="sticky top-0 bg-slate-900 border-b border-white/10 z-10">
                       <tr className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
                          <th className="py-3 px-4 w-12 text-center text-blue-400">#</th>
@@ -1175,7 +1175,7 @@ export default function FAR() {
                    <button onClick={() => setShowMaturityHelp(false)} className="text-slate-500 hover:text-white transition-colors"><X size={24}/></button>
                 </div>
                 <div className="p-4 space-y-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                   <table className="w-full text-xs">
+                   <table className="sg-data-table w-full text-xs">
                       <thead className="bg-white/5 border-b border-white/5">
                          <tr>
                             <th className="px-4 py-2 text-center font-bold uppercase tracking-widest text-slate-500">Lv</th>
@@ -1911,7 +1911,7 @@ function CausalTab({ mode, readOnly, onUpdate, setBkmGuidanceModal, setResolutio
        </div>
        
        <div className="flex-1 bg-black/40 border border-white/5 rounded-lg overflow-hidden flex flex-col shadow-2xl">
-          <table className="w-full text-left border-collapse">
+          <table className="sg-data-table w-full text-left border-collapse">
              <thead className="bg-white/[0.03] border-b border-white/10">
                 <tr className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ">
                    <th className="px-8 py-4">Root Cause Description (Logical Origin)</th>
@@ -2187,7 +2187,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
 
        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
           <div className="bg-black/40 border border-white/5 rounded-lg overflow-hidden shadow-2xl">
-             <table className="w-full text-left border-collapse">
+             <table className="sg-data-table w-full text-left border-collapse">
                 <thead className="bg-white/[0.03] border-b border-white/10">
                    <tr className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ">
                       <th className="px-8 py-4">Shield Type</th>
@@ -2303,7 +2303,7 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
                   {(mode.prevention_actions || []).filter((p: any) => p.cause_id === selectedCauseId).length} linked
                 </span>
              </div>
-             <table className="w-full text-left border-collapse">
+             <table className="sg-data-table w-full text-left border-collapse">
                 <thead className="border-b border-white/10 bg-white/[0.02]">
                    <tr className="text-[9px] font-bold uppercase tracking-widest text-slate-500">
                       <th className="px-8 py-3">Prevention Action / Project Objective</th>

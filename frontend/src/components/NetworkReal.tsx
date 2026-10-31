@@ -3210,7 +3210,7 @@ function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmO
         <WorkspaceValidationBanner message={saveError} />
         <fieldset disabled={mutation.isPending} className="min-w-0">
         <div className="overflow-x-auto rounded-lg border border-white/10 bg-black/20 custom-scrollbar">
-          <table className="min-w-full divide-y divide-white/10">
+          <table className="sg-data-table min-w-full divide-y divide-white/10">
             <thead className="bg-slate-950/90 sticky top-0 z-10">
               <tr>
                 <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Connection</th>
@@ -4147,7 +4147,7 @@ function NetworkHistoryModal({ item, onClose }: any) {
                  ) : diffs.length > 0 ? (
                     <div className="space-y-6">
                        <div className="overflow-hidden rounded-lg border border-white/5 bg-black/20">
-                          <table className="w-full text-left border-collapse">
+                          <table className="sg-data-table w-full text-left border-collapse">
                              <thead>
                                 <tr className="bg-white/5 text-[9px] font-black uppercase text-slate-500 tracking-widest">
                                    <th className="p-4 w-1/4">Property</th>

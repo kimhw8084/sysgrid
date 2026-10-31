@@ -4,6 +4,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { apiFetch } from '../api/apiClient'
 import { makeJsonResponse } from '../test/response'
 import { fetchRackArray, RackDataState } from './racksDataState'
+import { getRackUnitStatusKey } from './rackVisualState'
 
 vi.mock('../api/apiClient', () => ({ apiFetch: vi.fn() }))
 
@@ -34,4 +35,18 @@ it('offers a retry and distinguishes unavailable records from an empty result', 
   expect(screen.getByRole('alert')).toHaveTextContent('An empty result has not been confirmed')
   fireEvent.click(screen.getByRole('button', { name: 'Retry rack records' }))
   expect(onRetry).toHaveBeenCalledOnce()
+})
+
+it.each([
+  [null, 'empty'],
+  [{ status: 'Active' }, 'active'],
+  [{ status: 'Maintenance' }, 'maintenance'],
+  [{ status: 'Decommissioned' }, 'retired'],
+  [{ status: 'Deleted' }, 'retired'],
+  [{ status: 'Offline' }, 'offline'],
+  [{ status: 'Standby' }, 'standby'],
+  [{ status: 'New state' }, 'unknown'],
+  [{ status: 'Offline', is_reservation: true }, 'reserved'],
+])('maps rack unit state %j to %s', (device, state) => {
+  expect(getRackUnitStatusKey(device)).toBe(state)
 })

@@ -854,8 +854,8 @@ export default function ServiceRegistry() {
             rowData={services || []} 
             columnDefs={columnDefs} 
             rowSelection="multiple" 
-            headerHeight={fontSize + rowDensity + 10} 
-            rowHeight={fontSize + rowDensity + 10} 
+            headerHeight={Math.max(42, fontSize + rowDensity + 10)}
+            rowHeight={Math.max(40, fontSize + rowDensity + 10)}
             onGridReady={(params) => {
               setGridApi(params.api)
               setGridColumnApi(params.columnApi)

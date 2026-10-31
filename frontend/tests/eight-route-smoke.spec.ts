@@ -203,8 +203,16 @@ async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, t
 test.describe('SysGrid data-hub desktop visual matrix', () => {
   for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
     test(`${theme} views, title rails, and retirement routes`, async ({ page, sysApi }, testInfo) => {
-      await resetBrowserState(page)
-      await captureRouteMatrix(page, sysApi, testInfo, theme)
+      const preference = await sysApi.get(`${apiBase}/settings/user/settings`)
+      expect(preference.ok(), 'the current appearance preference should be readable').toBeTruthy()
+      const originalTheme = (await preference.json()).theme || 'nordic-frost-v1'
+      try {
+        await resetBrowserState(page)
+        await captureRouteMatrix(page, sysApi, testInfo, theme)
+      } finally {
+        const restore = await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme: originalTheme } })
+        expect(restore.ok(), 'the original appearance preference should be restored after visual proof').toBeTruthy()
+      }
     })
   }
 })
