@@ -1,4 +1,5 @@
 import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test'
+import { OPERATIONAL_GRID_WIDTHS } from '../../src/components/shared/OperationalGridContract'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const apiOrigin = apiBase.replace(/\/api\/v1$/, '')
@@ -699,7 +700,7 @@ export async function expectHeaderBodyAligned(page: Page, colId: string, toleran
 export async function expectNoBrokenGridOverflow(page: Page, gridLocator: Locator) {
   await expect(gridLocator).toBeVisible()
   
-  const result = await gridLocator.evaluate((gridEl) => {
+  const result = await gridLocator.evaluate((gridEl, standardActionWidth) => {
     const rootWrapper = gridEl.closest('.ag-root-wrapper') || gridEl.querySelector('.ag-root-wrapper') || gridEl
     const centerViewport = rootWrapper.querySelector('.ag-center-cols-viewport')
     const bodyViewport = centerViewport || rootWrapper.querySelector('.ag-body-viewport') || gridEl.querySelector('.ag-body-viewport') || gridEl.closest('.ag-body-viewport')
@@ -802,13 +803,13 @@ export async function expectNoBrokenGridOverflow(page: Page, gridLocator: Locato
     const actionCell = rootWrapper.querySelector('.ag-cell[col-id="row_actions"]')
     if (actionCell) {
       const rect = actionCell.getBoundingClientRect()
-      if (rect.width < 150) {
-        return { ok: false, error: `Row actions column width (${rect.width}px) is narrow or crowded` }
+      if (rect.width < standardActionWidth) {
+        return { ok: false, error: `Row actions column width (${rect.width}px) is below the shared ${standardActionWidth}px standard` }
       }
     }
 
     return { ok: true }
-  })
+  }, OPERATIONAL_GRID_WIDTHS.standardAction)
 
   if (!result.ok) {
     throw new Error(`Broken Grid Layout/Overflow detected: ${result.error}`)

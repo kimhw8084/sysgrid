@@ -857,7 +857,7 @@ export function OperationalImportModal({
 
                     <div className="overflow-x-auto rounded-lg border border-white/10 shadow-xl bg-black/40">
                       <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-                        <table className="min-w-full divide-y divide-white/5 text-left border-collapse">
+                        <table className="sg-data-table min-w-full divide-y divide-white/5 text-left border-collapse">
                           <thead className="sticky top-0 bg-[#0d0e12] z-10 shadow-md">
                             <tr className="border-b border-white/10">
                               <th className="px-4 py-3 text-center text-[9px] font-black uppercase tracking-widest text-slate-500 w-16">Row</th>
@@ -1062,7 +1062,7 @@ export function OperationalImportModal({
                     </div>
                     <div className="overflow-x-auto rounded-lg border border-white/5 bg-[#0f172a] shadow-xl">
                       <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
-                        <table className="min-w-full divide-y divide-white/5 text-left border-collapse">
+                        <table className="sg-data-table min-w-full divide-y divide-white/5 text-left border-collapse">
                           <thead className="bg-[#020617] sticky top-0 z-10 shadow-sm border-b border-white/10">
                             <tr>
                               <th className="px-4 py-3 text-center w-12">

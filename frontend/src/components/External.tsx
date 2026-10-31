@@ -583,7 +583,7 @@ const MetadataViewer = ({ data }: { data: any }) => {
       <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
         <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Metadata Inspection</span>
       </div>
-      <table className="w-full text-[10px]">
+      <table className="sg-data-table w-full text-[10px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Key</th>
@@ -792,7 +792,7 @@ const ExternalSecretsTab = ({ entityId }: { entityId: number }) => {
           <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Authorized Credential Matrix</span>
           <span className="text-[8px] font-bold text-blue-500 uppercase bg-blue-500/10 px-2 py-0.5 rounded-lg">{entity?.secrets?.length || 0} Entries</span>
         </div>
-        <table className="w-full text-left">
+        <table className="sg-data-table w-full text-left">
           <thead>
             <tr className="bg-white/5 border-b border-white/5">
               <th className="px-4 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-500">Label</th>

@@ -180,7 +180,7 @@ export function InvestigationTab({ formData, setFormData, failureModes, setFocus
           </div>
 
           <div className="overflow-visible">
-             <table className="w-full text-left border-collapse">
+             <table className="sg-data-table w-full text-left border-collapse">
                 <thead>
                    <tr className="border-b border-white/10 bg-black/40">
                       <th className="py-3 px-6 text-[9px] font-black uppercase tracking-widest text-slate-500">Linked Failure Mode</th>

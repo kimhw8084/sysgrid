@@ -340,7 +340,7 @@ export function BulkImportModal({ isOpen, onClose, tableName, displayName }: Bul
 
               <div className="overflow-hidden rounded-lg border border-white/5 bg-black/40 shadow-xl">
                 <div className="max-h-[30vh] overflow-y-auto custom-scrollbar">
-                  <table className="w-full text-left border-collapse">
+                  <table className="sg-data-table w-full text-left border-collapse">
                     <thead className="sticky top-0 bg-slate-900 z-10 border-b border-white/5">
                       <tr className="text-[8px] font-bold uppercase text-slate-500 tracking-widest">
                         <th className="p-3 w-10 text-center">
@@ -393,7 +393,7 @@ export function BulkImportModal({ isOpen, onClose, tableName, displayName }: Bul
                 </h4>
                 <div className="overflow-hidden rounded-lg border border-rose-500/10 bg-rose-500/5 shadow-xl">
                   <div className="max-h-[25vh] overflow-y-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse">
+                    <table className="sg-data-table w-full text-left border-collapse">
                       <thead className="sticky top-0 bg-[#1a0a0c] z-10 border-b border-white/10">
                         <tr className="text-[8px] font-bold uppercase text-rose-300 tracking-widest">
                           <th className="p-3">Index</th>

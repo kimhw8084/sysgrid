@@ -43,6 +43,20 @@ export const OperationalGridMatrix = React.memo(({
     return () => media.removeEventListener('change', changed)
   }, [])
   const unpinFrame = useRef<number>()
+  const handleCellKeyDown = useCallback((event: any) => {
+    const key = event?.event?.key
+    if (!onCellContextMenu || !(key === 'ContextMenu' || (key === 'F10' && event.event.shiftKey))) return
+    event.event.preventDefault()
+    const cell = event.event.target as HTMLElement | null
+    const rect = cell?.getBoundingClientRect()
+    const pointEvent = {
+      target: event.event.target,
+      clientX: rect ? Math.round(rect.left + Math.min(rect.width / 2, 24)) : 0,
+      clientY: rect ? Math.round(rect.bottom) : 0,
+      preventDefault: () => event.event.preventDefault(),
+    }
+    onCellContextMenu({ ...event, event: pointEvent })
+  }, [onCellContextMenu])
   // AG Grid detects pinned overflow inside ResizeObserver delivery. Defer its
   // layout-changing unpin until the next frame to avoid same-frame resize loops.
   const processUnpinnedColumns = useCallback(({ columns, api, viewportWidth }: any) => {
@@ -84,8 +98,8 @@ export const OperationalGridMatrix = React.memo(({
       const value = params.valueFormatted ?? params.value
       return value == null ? null : String(value)
     },
-    cellClass: OPERATIONAL_GRID_CLASSES.centeredCell,
-    headerClass: OPERATIONAL_GRID_CLASSES.centeredHeader,
+    cellClass: OPERATIONAL_GRID_CLASSES.textCell,
+    headerClass: OPERATIONAL_GRID_CLASSES.textHeader,
   }), [])
 
   useEffect(() => {
@@ -110,15 +124,15 @@ export const OperationalGridMatrix = React.memo(({
       rowData={rowData}
       columnDefs={columnDefs}
       autoSizeStrategy={autoSizeStrategy}
-      alwaysShowHorizontalScroll={true}
+      alwaysShowHorizontalScroll={false}
       processUnpinnedColumns={processUnpinnedColumns}
       colResizeDefault={colResizeDefault}
       defaultColDef={defaultColDef}
       getRowId={getRowId}
       rowSelection="multiple"
       animateRows={false}
-      headerHeight={fontSize + rowDensity + 10}
-      rowHeight={Math.max(phone ? Math.max(52, Math.ceil(fontSize * 1.25) + 36) : 0, fontSize + rowDensity + 4)}
+      headerHeight={Math.max(42, fontSize + rowDensity + 10)}
+      rowHeight={Math.max(phone ? 52 : 40, fontSize + rowDensity + 4)}
       rowBuffer={6}
       valueCache={true}
       context={context}
@@ -135,15 +149,16 @@ export const OperationalGridMatrix = React.memo(({
       onRowClicked={onRowClicked}
       onRowDoubleClicked={onRowDoubleClicked}
       onCellContextMenu={onCellContextMenu}
+      onCellKeyDown={handleCellKeyDown}
       getRowClass={getRowClass}
       onFirstDataRendered={onFirstDataRendered}
       onRowDataUpdated={onRowDataUpdated}
       suppressScrollOnNewData={true}
-      suppressCellFocus={true}
+      suppressCellFocus={false}
       suppressRowClickSelection={suppressRowClickSelection}
       enableCellTextSelection={true}
       tooltipShowMode="whenTruncated"
-      tooltipShowDelay={300}
+      tooltipShowDelay={450}
       suppressMovableColumns={false}
       ensureDomOrder={false}
       overlayNoRowsTemplate={`<span class='text-slate-500 font-semibold text-[10px]'>${noRowsLabel}</span>`}

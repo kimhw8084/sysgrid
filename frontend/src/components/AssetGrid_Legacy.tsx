@@ -114,7 +114,7 @@ export const AssetServicesTable = ({ deviceId, onViewDetails, onEdit }: { device
           <p className="text-[10px] font-bold uppercase">Loading services...</p>
         </div>
       )}
-      {!isLoading && (<table className="w-full text-[11px]">
+      {!isLoading && (<table className="sg-data-table w-full text-[11px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Service Name</th>
@@ -389,7 +389,7 @@ export const MetadataViewer = ({ data }: { data: any }) => {
     <div className="p-6 space-y-4">
       <h3 className="text-[10px] font-bold uppercase text-blue-400 tracking-[0.2em]">Metadata Inspection</h3>
       <div className="bg-slate-900/50 rounded-lg border border-white/5 overflow-hidden">
-        <table className="w-full text-[10px]">
+        <table className="sg-data-table w-full text-[10px]">
           <thead className="bg-white/5 border-b border-white/5">
             <tr>
               <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Key</th>
@@ -426,7 +426,7 @@ export const MiniMonitoringTable = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="overflow-hidden">
-      <table className="w-full text-[11px]">
+      <table className="sg-data-table w-full text-[11px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Category</th>
@@ -1409,8 +1409,8 @@ export default function AssetGrid() {
             rowData={assets || []} 
             columnDefs={columnDefs} 
             rowSelection="multiple"
-            headerHeight={fontSize + rowDensity + 10}
-            rowHeight={fontSize + rowDensity + 10}
+            headerHeight={Math.max(42, fontSize + rowDensity + 10)}
+            rowHeight={Math.max(40, fontSize + rowDensity + 10)}
             onSelectionChanged={e => setSelectedIds(e?.api?.getSelectedNodes().map((n: any) => n.data?.id).filter(Boolean) || [])}
             quickFilterText={searchTerm}
             animateRows={true}
@@ -1725,7 +1725,7 @@ const HWTable = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="p-0">
-      <table className="w-full text-[11px]">
+      <table className="sg-data-table w-full text-[11px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-center font-bold uppercase tracking-widest text-slate-500">Category</th>
@@ -1879,7 +1879,7 @@ const SecretsTable = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="p-0">
-      <table className="w-full text-[11px]">
+      <table className="sg-data-table w-full text-[11px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Type</th>
@@ -2108,7 +2108,7 @@ const RelationsTable = ({ deviceId }: { deviceId: number }) => {
 
   return (
     <div className="p-0">
-      <table className="w-full text-[11px]">
+      <table className="sg-data-table w-full text-[11px]">
         <thead className="bg-white/5 border-b border-white/5">
           <tr>
             <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Local Identity</th>

@@ -52,7 +52,7 @@ export const ConnectionsListModal: React.FC<ConnectionsListModalProps> = ({ isOp
     >
       <div className="-mx-6 -mt-6 sm:-mx-8 sm:-mt-8">
         <div className="overflow-x-auto min-h-[400px]">
-          <table className="min-w-full text-left border-collapse">
+          <table className="sg-data-table min-w-full text-left border-collapse">
             <thead className="bg-[#020617] sticky top-0 z-10 shadow-sm border-b border-white/5">
               <tr className="bg-white/[0.01] text-[10px] text-slate-500 font-black uppercase tracking-widest">
                 <th className="px-8 py-4 font-black">Connected Peer (Target)</th>

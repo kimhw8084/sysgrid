@@ -481,7 +481,7 @@ export default function AuditLogs() {
           ref={gridRef}
           rowData={logs}
           columnDefs={columnDefs}
-          alwaysShowHorizontalScroll={true}
+          alwaysShowHorizontalScroll={false}
           processUnpinnedColumns={({ api, columns }) => {
             // Keep record actions reachable when pinned columns exceed a narrow viewport.
             const leftColumns = api.getColumns()?.filter(column => column.getPinned() === 'left') || []
@@ -491,8 +491,8 @@ export default function AuditLogs() {
           animateRows={true}
           enableCellTextSelection={true}
           rowSelection="multiple"
-          headerHeight={fontSize + rowDensity + 14}
-          rowHeight={fontSize + rowDensity + 16}
+          headerHeight={Math.max(42, fontSize + rowDensity + 14)}
+          rowHeight={Math.max(40, fontSize + rowDensity + 16)}
           pagination={true}
           paginationPageSize={50}
         />

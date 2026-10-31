@@ -34,8 +34,10 @@ describe('FAR Monitoring-golden structural contract', () => {
     expect(standard).toContain('operationalLockWidth: true')
 
     expect(OPERATIONAL_GRID_WIDTHS.utilityCheckbox).toBe(64)
+    expect(OPERATIONAL_GRID_WIDTHS.utilityFavorite).toBe(64)
+    expect(OPERATIONAL_GRID_WIDTHS.utilityWatch).toBe(64)
     expect(OPERATIONAL_GRID_WIDTHS.id).toBe(90)
-    expect(OPERATIONAL_GRID_WIDTHS.standardAction).toBe(208)
+    expect(OPERATIONAL_GRID_WIDTHS.standardAction).toBe(120)
   })
 
   it('uses stable content-aware defaults and shared golden renderers without limiting operator resize', () => {

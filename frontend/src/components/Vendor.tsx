@@ -404,8 +404,8 @@ export default function Vendor() {
           ref={gridRef}
           rowData={processedVendors || []} 
           columnDefs={columnDefs} 
-          headerHeight={fontSize + rowDensity + 10}
-          rowHeight={fontSize + rowDensity + 10}
+          headerHeight={Math.max(42, fontSize + rowDensity + 10)}
+          rowHeight={Math.max(40, fontSize + rowDensity + 10)}
           quickFilterText={searchTerm}
           animateRows={true}
           enableCellTextSelection={true}

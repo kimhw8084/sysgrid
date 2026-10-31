@@ -152,7 +152,7 @@ async function expectCellContentFits(page: Page, row: Locator, route: string, co
   if (requireViewportFit) expect(geometry.fitsViewport, route + ' ' + columnId + ' should fit the initial desktop viewport: ' + JSON.stringify(geometry)).toBe(true)
 }
 
-async function expectCellFullValueTitle(page: Page, row: Locator, apiName: string, columnId: string, expected: string) {
+async function expectCellFullValueTooltip(page: Page, row: Locator, apiName: string, columnId: string, expected: string) {
   const ensured = await page.evaluate(({ apiName, columnId }) => {
     const api = (window as any)[apiName]
     if (!api?.getColumn?.(columnId)) return false
@@ -161,7 +161,9 @@ async function expectCellFullValueTitle(page: Page, row: Locator, apiName: strin
   }, { apiName, columnId })
   expect(ensured, `${columnId} should be available before checking its full-value hover`).toBe(true)
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
-  await expect(row.locator(`[col-id="${columnId}"] [title]`).first()).toHaveAttribute('title', expected)
+  const cell = row.locator(`[col-id="${columnId}"]`).first()
+  await cell.hover()
+  await expect(page.locator('.ag-tooltip:visible').last()).toContainText(expected)
 }
 
 async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebrow: string) {
@@ -394,10 +396,10 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           if (route.key === 'network') await expectHeaderTextFits(page, route.key, target.apiName, 'type', 'Type')
           if (route.key === 'network') await expectHeaderTextFits(page, route.key, target.apiName, 'status', 'Status')
           if (route.key === 'assets') await expectHeaderTextFits(page, route.key, target.apiName, 'owner', 'Owner')
-          if (route.key === 'assets') await expectCellFullValueTitle(page, row, target.apiName, 'status', 'Maintenance')
+          if (route.key === 'assets') await expect(row.locator('.ag-cell[col-id="status"] .operational-grid-badge')).toHaveText('Maintenance')
           if (route.key === 'assets') await expectCellContentFits(page, row, route.key, 'status', '.operational-grid-badge')
-          if (route.key === 'external') await expectCellFullValueTitle(page, row, target.apiName, 'business_purpose', 'Golden Eight deterministic visual validation')
-          if (route.key === 'vendors') await expectCellFullValueTitle(page, row, target.apiName, 'primary_personnel_name', 'Unassigned')
+          if (route.key === 'external') await expectCellFullValueTooltip(page, row, target.apiName, 'business_purpose', 'Golden Eight deterministic visual validation')
+          if (route.key === 'vendors') await expect(row.locator('.ag-cell[col-id="primary_personnel_name"]')).toContainText('Unassigned')
         }
         await row.hover()
         if (importantColumns[route.key]) {

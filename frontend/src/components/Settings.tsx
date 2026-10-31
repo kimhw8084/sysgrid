@@ -628,7 +628,7 @@ function PermissionHistoryModal({ versions, allViews, onClose, restorePhase, res
                  {historyRows.length > 0 ? (
                     <div className="space-y-6">
                        <div role="region" aria-label="Identity changes" tabIndex={0} className="max-w-full overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--panel-item-bg)] custom-scrollbar">
-                          <table className="w-full text-left border-collapse">
+                          <table className="sg-data-table w-full text-left border-collapse">
                              <thead>
                                 <tr className="bg-[var(--grid-header-bg)] text-xs font-semibold uppercase text-[var(--text-secondary)] tracking-widest">
                                    <th className="p-4 min-w-[120px]">Change</th>
@@ -2767,7 +2767,7 @@ export default function SettingsPage() {
                                 )}
                             </div>
                             <div className="max-h-[400px] overflow-auto custom-scrollbar">
-                                <table aria-label="Identity changes" className="w-full min-w-[680px] text-left border-collapse text-xs">
+                                <table aria-label="Identity changes" className="sg-data-table w-full min-w-[680px] text-left border-collapse text-xs">
                                     <thead>
                                         <tr className="bg-[var(--grid-header-bg)] text-[var(--text-secondary)]">
                                             {['Identity', 'Username', 'Status', 'Changes'].map(label => <th key={label} scope="col" className="p-3 font-semibold border-b border-[var(--grid-border)]">{label}</th>)}
@@ -2809,7 +2809,7 @@ export default function SettingsPage() {
                     Levels show tenant grants; module policy may further restrict access. Global grants set the minimum level for every module.
                   </p>
                   <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse">
+                    <table className="sg-data-table w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-[var(--grid-header-bg)] text-[var(--text-secondary)]">
                           <th className="p-4 text-xs font-semibold border-b border-[var(--grid-border)] md:sticky md:left-0 bg-[var(--grid-header-bg)] z-20 min-w-[84px]">Select</th>
@@ -3001,7 +3001,7 @@ export default function SettingsPage() {
                         </div>
                      </div>
                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse text-left">
+                        <table className="sg-data-table w-full border-collapse text-left">
                            <thead>
                               <tr className="bg-black/20 text-[8px] font-black uppercase tracking-[0.16em] text-slate-500">
                                  <th className="border-b border-white/5 p-4">Tenant</th>
@@ -3486,7 +3486,7 @@ export default function SettingsPage() {
                       <h3 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-amber-400"><Server size={12} /> Backend .env Raw</h3>
                       <span className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-500">{Object.keys(localEnv._raw_env?.backend || {}).length} entries</span>
                     </div>
-                    <table className="w-full border-collapse text-left">
+                    <table className="sg-data-table w-full border-collapse text-left">
                       <thead>
                         <tr className="bg-white/5">
                           <th className="border-b border-white/5 p-3 text-[8px] font-black uppercase tracking-[0.16em] text-slate-500">Parameter</th>
@@ -3518,7 +3518,7 @@ export default function SettingsPage() {
                       <h3 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-indigo-400"><Layout size={12} /> Frontend .env Raw</h3>
                       <span className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-500">{Object.keys(localEnv._raw_env?.frontend || {}).length} entries</span>
                     </div>
-                    <table className="w-full border-collapse text-left">
+                    <table className="sg-data-table w-full border-collapse text-left">
                       <thead>
                         <tr className="bg-white/5">
                           <th className="border-b border-white/5 p-3 text-[8px] font-black uppercase tracking-[0.16em] text-slate-500">Parameter</th>
@@ -3586,7 +3586,7 @@ export default function SettingsPage() {
         <WorkspaceModal isOpen onClose={() => setViewVersionData(null)} size="workspace"
           title="Snapshot Trace" subtitle="Inspection of synchronized identity records">
           <div className="max-h-[65vh] overflow-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse">
+                    <table className="sg-data-table w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-white/5">
                                 {viewVersionData[0] && Object.keys(viewVersionData[0]).map(key => (

@@ -102,6 +102,25 @@ async function openMonitoringDetailFromLogicalRow(page: any, title: string) {
 }
 
 test.describe('Monitoring workflows', () => {
+  test('keeps the row-action rail compact while preserving secondary actions', async ({ page, request }, testInfo) => {
+    await resetBrowserState(page)
+    const { monitoring } = await seedOperationalScenario(request)
+    await gotoView(page, '/monitoring', 'Monitoring', 'monitoring')
+    await fillGridSearch(page, 'Scan matrix...', monitoring.title, 'monitoring')
+
+    const row = await getWorkspaceLogicalRowByText(page, 'monitoring', monitoring.title)
+    await expect.poll(() => page.locator('.ag-header-cell[col-id="row_actions"]').evaluate((cell) => Math.round(cell.getBoundingClientRect().width))).toBe(120)
+    await expect(row.action('Open details')).toBeVisible()
+    await expect(row.action('Edit configuration')).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('monitoring-compact-row-actions.png'), animations: 'disabled' })
+
+    await row.action('More actions').click()
+    await expect(page.getByRole('button', { name: 'History', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Recovery documents', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Recovery documents', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Recovery Procedures', exact: true })).toBeVisible()
+  })
+
   test('preserves lifecycle status, recovery linking, and knowledge jump paths', async ({ page, request }) => {
     await resetBrowserState(page)
     const { stamp, primary, monitoring, knowledge } = await seedOperationalScenario(request)
