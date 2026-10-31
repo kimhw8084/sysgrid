@@ -2366,7 +2366,7 @@ function ContractDetailsForm({ item, devices, systems, coverageChoicesLoading, c
         <div className="flex items-center justify-between border-b border-white/5 pb-6">
           <div className="flex items-center gap-6">
             <h2 className="text-2xl font-bold uppercase text-blue-400 flex items-center gap-3"><FileText size={24} />Contract Details</h2>
-            <button type="button" onClick={() => setIsInfraCollapsed(false)} className="px-4 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 text-[10px] font-bold uppercase tracking-widest text-indigo-300 hover:bg-indigo-500/20">Infrastructure Coverage</button>
+            <button type="button" aria-label="Open infrastructure coverage section" onClick={() => setIsInfraCollapsed(false)} className="px-4 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 text-[10px] font-bold uppercase tracking-widest text-indigo-300 hover:bg-indigo-500/20">Infrastructure Coverage</button>
             {!isEditing ? (
               <button onClick={() => setIsEditing(true)} className="px-4 py-1.5 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all">Enable Edit Mode</button>
             ) : (

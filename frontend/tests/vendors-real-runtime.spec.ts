@@ -343,7 +343,7 @@ test.describe('VendorsReal canonical runtime', () => {
     await expect(contractDetailsModal).toContainText('24x7')
     await expect(contractDetailsModal).toContainText('Pager rotation')
     await expect(contractDetailsModal).toContainText('Holiday coverage requires named backup')
-    await clickResilientButton(page, 'Infrastructure Coverage')
+    await clickResilientButton(page, 'Open infrastructure coverage section')
     await expect(contractDetailsModal).toContainText(scenario.systemName)
     await contractDetailsModal
       .getByText(scenario.workDescription, { exact: false })

@@ -99,7 +99,7 @@ test('real backend creation survives one failed save and reload without duplicat
 
   const delivery = page.locator('[data-p04-step="delivery"]')
   await expect(delivery).toBeVisible()
-  await delivery.getByLabel('Target date').fill('2026-10-30')
+  await delivery.getByLabel('Target date').fill(p04ManagerFixture.project.target_date)
   await delivery.getByLabel('Architecture impact').selectOption('Yes')
   await delivery.getByLabel('In scope').fill('Qualification evidence review and approval workflow')
   await delivery.getByLabel('Out of scope').fill('Replacing source qualification systems')

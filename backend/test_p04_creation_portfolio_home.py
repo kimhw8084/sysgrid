@@ -60,6 +60,7 @@ async def test_server_draft_resumes_idempotently_and_materializes_accepted_templ
     assert replayed.json()["project"]["id"] == project["id"]
     assert (project["timezone"], project["calendar_id"], project["calendar_revision"]) == ("America/Chicago", "eng-standard", 4)
 
+    target_date = (date.today() + timedelta(days=90)).isoformat()
     save_id = str(uuid4())
     saved = await client.post(
         f"/api/v2/projects/{project['id']}/commands",
@@ -69,7 +70,7 @@ async def test_server_draft_resumes_idempotently_and_materializes_accepted_templ
                 "problem": "Manual review delays qualification decisions.",
                 "in_scope": "Qualification evidence review",
                 "out_of_scope": "Source-system replacement",
-                "target_date": "2026-10-30",
+                "target_date": target_date,
                 "architecture_assessment": "Yes",
                 "template_key": "automation",
                 "template_version": "1.0.0",
@@ -91,7 +92,7 @@ async def test_server_draft_resumes_idempotently_and_materializes_accepted_templ
     resumed_project = resumed.json()
     assert resumed_project["creation_draft"]["draft_step"] == 3
     assert resumed_project["creation_draft"]["milestones"][1]["title"] == "Pilot"
-    assert resumed_project["target_date"] == "2026-10-30"
+    assert resumed_project["target_date"] == target_date
     assert (resumed_project["template_key"], resumed_project["template_version"]) == ("automation", "1.0.0")
 
     readiness = await client.get(f"/api/v2/projects/{project['id']}/readiness?to_phase=Proposed", headers=headers(tenant_id))
