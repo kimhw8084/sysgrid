@@ -270,15 +270,21 @@
 
 /*
  * Viewport canvas law:
- * - html, body, and #root share the app viewport width and theme surface.
+ * - html, body, and #root share one viewport-wide theme surface.
+ * - the app frame fills that canvas; its main column takes only the width left
+ *   beside navigation, with no route allowed to widen or narrow the outer frame.
+ * - route content is shrinkable and text wraps unless truncation is deliberate.
  * - scrollbar gutters belong only to intentional inner scroll regions.
- * - text may wrap unless a component opts into a one-line control.
+ * - horizontal overflow belongs to an explicitly scrollable component, never
+ *   an oversized page surface hidden by the application shell.
  */
 html,
 body,
 #root {
-  width: 100%;
-  min-width: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   margin: 0;
 }
 
@@ -290,6 +296,32 @@ body {
 
 #root {
   min-height: 100dvh;
+  background-color: var(--background, var(--bg-primary));
+}
+
+/* One viewport canvas owns every route. Flex content must be allowed to shrink
+   into the space beside navigation; page content cannot enlarge the canvas. */
+.sg-app-shell {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  background-color: var(--background, var(--bg-primary));
+}
+
+.sg-app-shell > [data-sg-app-main="true"] {
+  box-sizing: border-box;
+  flex: 1 1 0%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  background-color: var(--background, var(--bg-primary));
+}
+
+.sg-app-shell [data-sg-content-panel="true"] {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   background-color: var(--background, var(--bg-primary));
 }
 
@@ -421,7 +453,7 @@ body {
 .workspace-dialog-frame > .glass-panel {
   background-color: var(--panel-item-bg);
 }
-@keyframes workspace-notice-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes workspace-notice-in { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .workspace-toast { animation: none; } }
 
 /* Compact workspaces keep navigation off canvas and content in one scroll path. */

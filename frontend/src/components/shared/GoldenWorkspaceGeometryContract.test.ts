@@ -22,6 +22,9 @@ describe('Golden workspace geometry contract', () => {
     expect(globalStyles).toContain('scrollbar-gutter: auto;')
     expect(globalStyles).toContain('html,\nbody,\n#root')
     expect(globalStyles).toContain('background-color: var(--background, var(--bg-primary));')
+    expect(globalStyles).toContain('.sg-app-shell > [data-sg-app-main="true"]')
+    expect(globalStyles).toContain('.sg-app-shell [data-sg-content-panel="true"]')
+    expect(globalStyles).toContain('max-inline-size: 100%;')
     expect(globalStyles).not.toMatch(/button,\s*\.button-like\s*\{\s*white-space:\s*nowrap\s*!important;/)
   })
 

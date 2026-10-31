@@ -5,8 +5,13 @@ import { createAsset, createRack, createSite, mountRackDevice, resetBrowserState
 async function textContrast(locator: Locator) {
   return locator.evaluate(node => {
     const rgba = (value: string) => {
-      const values = value.match(/[\d.]+/g)!.map(Number)
-      return [values[0], values[1], values[2], values[3] ?? 1]
+      const canvas = document.createElement('canvas')
+      canvas.width = canvas.height = 1
+      const context = canvas.getContext('2d', { colorSpace: 'srgb' })!
+      context.fillStyle = value
+      context.fillRect(0, 0, 1, 1)
+      const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1, { colorSpace: 'srgb' }).data
+      return [red, green, blue, alpha / 255]
     }
     const layers: number[][] = []
     for (let current: Element | null = node; current; current = current.parentElement) {

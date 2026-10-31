@@ -75,6 +75,20 @@ const goldenRoutes = [
   { path: '/vendors', archetype: 'table' },
 ] as const
 
+const viewportCanvasRoutes = [
+  '/',
+  '/racks',
+  '/asset',
+  '/services',
+  '/external',
+  '/network',
+  '/far',
+  '/monitoring',
+  '/vendors',
+  '/logs',
+  '/settings',
+] as const
+
 type GeometryBox = { x: number; y: number; width: number; height: number; right: number; bottom: number }
 
 
@@ -237,7 +251,7 @@ test.describe('Released golden workspace geometry', () => {
       await waitForAppIdle(page)
       const { shell, boxes } = await readGoldenGeometry(page)
 
-      await expect(shell).toHaveAttribute('data-golden-geometry-version', '1')
+      await expect(shell).toHaveAttribute('data-golden-geometry-version', '2')
       await expect(shell).toHaveAttribute('data-golden-archetype', route.archetype)
       expect(boxes.header.y).toBeLessThan(boxes.commandBar.y)
       expect(boxes.commandBar.bottom).toBeLessThanOrEqual(boxes.grid.y + 1)
@@ -290,7 +304,7 @@ test.describe('Released golden workspace geometry', () => {
       await waitForAppIdle(page)
       const { shell, boxes } = await readGoldenGeometry(page)
 
-      await expect(shell).toHaveAttribute('data-golden-geometry-version', '1')
+      await expect(shell).toHaveAttribute('data-golden-geometry-version', '2')
       await expect(shell).toHaveAttribute('data-golden-archetype', route.archetype)
       expect(boxes.header.y).toBeLessThan(boxes.commandBar.y)
       expect(boxes.commandBar.bottom).toBeLessThanOrEqual(boxes.grid.y + 1)
@@ -314,6 +328,126 @@ test.describe('Released golden workspace geometry', () => {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
       expect(overflow).toBeLessThanOrEqual(2)
 
+    }
+  })
+
+  test('keeps every active view canvas full-width and inside the viewport in both themes', async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+
+    for (const width of [1440, 1024]) {
+      await page.setViewportSize({ width, height: 900 })
+
+      for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
+        const preference = await request.patch(`${process.env.PW_API_BASE}/settings/user/settings`, { data: { theme } })
+        expect(preference.ok()).toBeTruthy()
+        await page.goto('/')
+        await page.evaluate((nextTheme) => localStorage.setItem('sysgrid-theme', nextTheme), theme)
+        await page.reload()
+        await waitForAppIdle(page)
+        await expect(page.locator('.sg-app-shell')).toBeVisible()
+        await expect(page.locator('[data-sg-state="route-loading"]')).toHaveCount(0)
+
+        for (const route of viewportCanvasRoutes) {
+          if (route !== '/') {
+            await page.goto(route)
+            await waitForAppIdle(page)
+            await expect(page.locator('.sg-app-shell')).toBeVisible()
+            await expect(page.locator('[data-sg-state="route-loading"]')).toHaveCount(0)
+          }
+
+          const canvas = await page.evaluate(() => {
+            const selectors = [
+              ['document', 'html'],
+              ['body', 'body'],
+              ['root', '#root'],
+              ['application shell', '.sg-app-shell'],
+              ['navigation rail', '.sg-app-shell > [data-sg-app-sidebar="true"]'],
+              ['main view', '.sg-app-shell > [data-sg-app-main="true"]'],
+              ['view content', '#sg-main-content'],
+            ] as const
+            const viewportWidth = document.documentElement.clientWidth
+            const boxes = selectors.map(([name, selector]) => {
+              const element = document.querySelector<HTMLElement>(selector)
+              if (!element) return { name, missing: true, left: 0, right: 0, width: 0, background: '' }
+              const rect = element.getBoundingClientRect()
+              return {
+                name,
+                missing: false,
+                left: rect.left,
+                right: rect.right,
+                width: rect.width,
+                background: getComputedStyle(element).backgroundColor,
+              }
+            })
+            const outsideControls: Array<{ label: string; left: number; right: number }> = []
+            const clippedControlLabels: Array<{ label: string; width: number; scrollWidth: number }> = []
+            const controls = Array.from(document.querySelectorAll<HTMLElement>('button, a[href]'))
+            for (const control of controls) {
+              const rect = control.getBoundingClientRect()
+              const style = getComputedStyle(control)
+              if (
+                rect.width === 0 || rect.height === 0 || style.display === 'none' ||
+                style.visibility === 'hidden' || Number(style.opacity) === 0 ||
+                control.closest('[aria-hidden="true"]')
+              ) continue
+
+              const label = (control.getAttribute('aria-label') || control.getAttribute('title') || control.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 100)
+              let scrollContainer = control.parentElement
+              let isInsideHorizontalScroller = false
+              while (scrollContainer && scrollContainer !== document.body) {
+                const overflowX = getComputedStyle(scrollContainer).overflowX
+                if ((overflowX === 'auto' || overflowX === 'scroll') && scrollContainer.scrollWidth > scrollContainer.clientWidth + 2) {
+                  isInsideHorizontalScroller = true
+                  break
+                }
+                scrollContainer = scrollContainer.parentElement
+              }
+              if (!isInsideHorizontalScroller && (rect.left < -1 || rect.right > viewportWidth + 1)) {
+                outsideControls.push({ label, left: rect.left, right: rect.right })
+              }
+              if (
+                control.textContent?.trim() && control.scrollWidth > control.clientWidth + 2 &&
+                !control.getAttribute('aria-label') && !control.getAttribute('title')
+              ) {
+                clippedControlLabels.push({ label, width: control.clientWidth, scrollWidth: control.scrollWidth })
+              }
+            }
+            return { viewportWidth, documentWidth: document.documentElement.scrollWidth, boxes, outsideControls, clippedControlLabels }
+          })
+
+          for (const box of canvas.boxes) {
+            expect(box.missing, `${route} ${theme} ${box.name} exists`).toBe(false)
+            expect(box.left, `${route} ${theme} ${box.name} starts within the viewport`).toBeGreaterThanOrEqual(-1)
+            expect(box.right, `${route} ${theme} ${box.name} reaches the viewport right edge`).toBeLessThanOrEqual(canvas.viewportWidth + 1)
+          }
+
+          const [documentCanvas, bodyCanvas, rootCanvas, appCanvas, navigationCanvas, mainCanvas, contentCanvas] = canvas.boxes
+          for (const [name, box] of [['root', rootCanvas], ['application shell', appCanvas]] as const) {
+            expect(box.width, `${route} ${theme} ${name} covers the full viewport`).toBeGreaterThanOrEqual(canvas.viewportWidth - 1)
+          }
+          expect(mainCanvas.left, `${route} ${theme} main view begins after the navigation rail`).toBeCloseTo(navigationCanvas.right, 0)
+          expect(mainCanvas.right, `${route} ${theme} main view reaches the application right edge`).toBeCloseTo(appCanvas.right, 0)
+          expect(contentCanvas.left, `${route} ${theme} view content begins at the main view edge`).toBeCloseTo(mainCanvas.left, 0)
+          expect(contentCanvas.right, `${route} ${theme} page content reaches the main view right edge`).toBeCloseTo(mainCanvas.right, 0)
+          expect(contentCanvas.width, `${route} ${theme} view content fills the main column`).toBeCloseTo(mainCanvas.width, 0)
+          expect(bodyCanvas.background, `${route} ${theme} body background joins the document canvas`).toBe(documentCanvas.background)
+          expect(rootCanvas.background, `${route} ${theme} root background joins the document canvas`).toBe(documentCanvas.background)
+          expect(appCanvas.background, `${route} ${theme} application background joins the document canvas`).toBe(documentCanvas.background)
+          expect(mainCanvas.background, `${route} ${theme} main background joins the document canvas`).toBe(documentCanvas.background)
+          expect(contentCanvas.background, `${route} ${theme} view background joins the document canvas`).toBe(documentCanvas.background)
+          expect(canvas.documentWidth, `${route} ${theme} cannot expand the viewport horizontally`).toBeLessThanOrEqual(canvas.viewportWidth + 1)
+          expect(canvas.outsideControls, `${route} ${theme} visible controls stay within the viewport or a deliberate horizontal scroller`).toEqual([])
+          expect(canvas.clippedControlLabels, `${route} ${theme} clipped control text keeps an accessible full label`).toEqual([])
+
+          if (width === 1440) {
+            const viewName = route === '/' ? 'home' : route.slice(1)
+            await page.screenshot({
+              path: testInfo.outputPath(`viewport-${theme}-${viewName}.png`),
+              fullPage: true,
+            })
+          }
+        }
+      }
     }
   })
 })
