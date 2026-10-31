@@ -164,7 +164,7 @@ async def test_dashboard_search_returns_new_cross_module_entities(seeded_admin_t
 
     monitoring_res = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Application",
+        "category": "App",
         "status": "Existing",
         "title": "SEARCH-MON-01",
         "platform": "Datadog",

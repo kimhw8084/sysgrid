@@ -171,9 +171,9 @@ def test_checks_stage_retains_canonical_backend_startup_and_frontend_coverage(st
     assert [event['args'] for event in events if event['command'] == 'npm'] == [
         ['run', 'check:operational-contracts'], ['run', 'typecheck'], ['run', 'test:coverage'], ['run', 'build']]
     assert [event['args'] for event in events if event['command'] == 'node'] == [
-        ['scripts/check-theme-preference.mjs'], ['scripts/check-dev-server-boundary.mjs'],
+        ['scripts/check-dev-server-boundary.mjs'],
         ['scripts/check-desktop-test-selection.mjs'], ['scripts/check-normal-release-selection.mjs'],
-        ['scripts/check-role-matrix-selection.mjs']]
+        ['scripts/check-role-matrix-selection.mjs'], ['scripts/check-theme-preference.mjs']]
 
 
 def test_failed_backend_batch_cleans_owned_temp_and_stops_later_checks(staged_executor):

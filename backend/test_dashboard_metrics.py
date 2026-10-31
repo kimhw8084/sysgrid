@@ -129,6 +129,14 @@ async def test_dashboard_metrics_rolls_up_seeded_operational_data(seeded_admin_t
     )
     assert connection_res.status_code == 200, connection_res.text
 
+    platform_options = await client.get(
+        "/api/v1/settings/options?category=MonitoringPlatform",
+        headers=headers,
+    )
+    assert platform_options.status_code == 200, platform_options.text
+    platform_values = [option["value"] for option in platform_options.json() if option.get("value")]
+    assert platform_values, "Monitoring Platform reference options should be provisioned"
+
     monitor_res = await client.post(
         "/api/v1/monitoring",
         json={
@@ -136,7 +144,7 @@ async def test_dashboard_metrics_rolls_up_seeded_operational_data(seeded_admin_t
             "category": "Hardware",
             "status": "Existing",
             "title": "METRICS-MONITOR",
-            "platform": "Zabbix",
+            "platform": platform_values[0],
             "purpose": "Metrics coverage",
             "notification_method": "Slack",
             "owner_team": "Metrics Team",
@@ -306,17 +314,38 @@ async def test_dashboard_search_returns_cross_domain_matches(seeded_admin_tenant
     )
     assert service_res.status_code == 200, service_res.text
 
+    platform_options = await client.get(
+        "/api/v1/settings/options?category=MonitoringPlatform",
+        headers=headers,
+    )
+    category_options = await client.get(
+        "/api/v1/settings/options?category=MonitoringCategory",
+        headers=headers,
+    )
+    notification_options = await client.get(
+        "/api/v1/settings/options?category=NotificationMethod",
+        headers=headers,
+    )
+    for response in (platform_options, category_options, notification_options):
+        assert response.status_code == 200, response.text
+    configured_values = {
+        "platform": [option["value"] for option in platform_options.json() if option.get("value")],
+        "category": [option["value"] for option in category_options.json() if option.get("value")],
+        "notification_method": [option["value"] for option in notification_options.json() if option.get("value")],
+    }
+    assert all(configured_values.values()), "Monitoring reference options should be provisioned"
+
     monitor_res = await client.post(
         "/api/v1/monitoring",
         json={
             "device_id": device["id"],
-            "category": "SearchMonitoring",
+            "category": configured_values["category"][0],
             "status": "Existing",
             "title": "SEARCH-MONITOR",
-            "platform": "SearchPlatform",
+            "platform": configured_values["platform"][0],
             "purpose": "Search reliability",
             "impact": "Search degraded",
-            "notification_method": "Slack",
+            "notification_method": configured_values["notification_method"][0],
             "owner_team": "Search Team",
         },
         headers=headers,

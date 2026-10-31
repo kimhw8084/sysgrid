@@ -2,6 +2,7 @@ import React from 'react'
 import { Bell, Bug, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { TenantSelector } from './TenantSelector'
+import { Tooltip } from '../ui/tooltip'
 
 type ErrorSummary = { acknowledged?: boolean }
 
@@ -38,33 +39,30 @@ export function ShellHeaderTools({
         <span className={`text-sm font-semibold ${statusTone}`}>{statusLabel}</span>
         {isOnline ? <span className="ml-2 text-xs tabular-nums text-[var(--text-muted)]">{latency} ms</span> : null}
       </div>
-      <button
+      <Tooltip content="Notifications"><button
         type="button"
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
         aria-label="Notifications"
-        title="Notifications"
       >
-        <Bell size={18} aria-hidden="true" />
-      </button>
-      <button
+        <Bell size={16} aria-hidden="true" />
+      </button></Tooltip>
+      <Tooltip content="Open error console"><button
         type="button"
         onClick={onOpenErrorConsole}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
         aria-label={outstandingErrors ? `Open error console, ${outstandingErrors} unacknowledged errors` : 'Open error console'}
-        title="Open error console"
       >
-        <Bug size={18} aria-hidden="true" />
+        <Bug size={16} aria-hidden="true" />
         {outstandingErrors > 0 ? <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-[var(--state-danger)] px-1 text-center text-[10px] font-semibold leading-5 text-white">{outstandingErrors}</span> : null}
-      </button>
-      <Link
+      </button></Tooltip>
+      <Tooltip content="Settings"><Link
         to="/settings"
-        className={`inline-flex h-10 w-10 items-center justify-center rounded-md border ${pathname === '/settings' ? 'border-[var(--action-primary)] bg-[var(--action-primary)] text-white' : 'border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'}`}
+        className={`inline-flex h-9 w-9 items-center justify-center rounded-md border ${pathname === '/settings' ? 'border-[var(--action-primary)] bg-[var(--action-primary)] text-white' : 'border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'}`}
         aria-current={pathname === '/settings' ? 'page' : undefined}
         aria-label="Open settings"
-        title="Settings"
       >
-        <Settings size={18} aria-hidden="true" />
-      </Link>
+        <Settings size={16} aria-hidden="true" />
+      </Link></Tooltip>
       {compact && onOpenPatchNotes && <button type="button" onClick={onOpenPatchNotes} className="min-h-10 rounded-md border border-[var(--border-default)] px-3 py-2 text-sm text-[var(--text-primary)]">Patch Notes</button>}
     </div>
   )

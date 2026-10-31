@@ -106,7 +106,7 @@ test.describe('Racks workflows', () => {
     await clickResilientButton(page, 'Decommission Site')
     await expect(rackCard(rackA1.id)).toBeVisible()
 
-    await page.getByTitle('View Plans').click()
+    await page.getByRole('button', { name: 'View Plans', exact: true }).click()
     await clickResilientButton(page, /New Blank Plan/i)
     await expect(page.getByText('Ghost Planner')).toBeVisible()
 

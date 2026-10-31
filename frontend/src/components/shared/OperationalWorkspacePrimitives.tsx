@@ -4,6 +4,8 @@ import { createPortal } from 'react-dom'
 import { OPERATIONAL_WORKSPACE_VISUALS } from './OperationalWorkspace'
 import { getWorkspaceAnchorLayer, WORKSPACE_LAYER_Z, useWorkspacePopupDismiss } from './WorkspaceOverlay'
 import { parseAppDate } from '../../utils/dateUtils'
+import { Badge } from '../ui/badge'
+import { Card } from '../ui/card'
 export { WORKSPACE_LAYER_Z } from './WorkspaceOverlay'
 
 export type WorkspaceModalSize = 'compact' | 'standard' | 'wide' | 'workspace' | 'fullscreen'
@@ -13,7 +15,6 @@ const join = (...parts: Array<string | false | null | undefined>) => parts.filte
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max)
 }
-
 
 export type WorkspaceAnchoredPlacement = 'above' | 'below'
 
@@ -82,8 +83,8 @@ export function getWorkspaceModalFrameClass(size: WorkspaceModalSize) {
 }
 
 export function getWorkspaceModalShellClass(size: WorkspaceModalSize) {
-  if (size === 'compact') return 'w-full max-w-lg max-h-[82vh]'
-  if (size === 'standard') return 'w-full max-w-3xl max-h-[86vh]'
+  if (size === 'compact') return 'w-full max-w-sm max-h-[82vh]'
+  if (size === 'standard') return 'w-full max-w-2xl max-h-[86vh]'
   if (size === 'wide') return 'w-full max-w-5xl max-h-[88vh]'
   if (size === 'workspace') return 'w-full max-w-[1440px] h-full sm:h-auto sm:max-h-[92vh]'
   return 'fixed inset-0 w-screen h-screen max-w-none max-h-none'
@@ -125,7 +126,7 @@ export function WorkspacePanelHint({ children }: { children: React.ReactNode }) 
 
 export function getWorkspaceFloatingPanelClass(kind: 'menu' | 'context' | 'detail' = 'menu') {
   return join(
-    `${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-[var(--border-default)] bg-[var(--surface-overlay)] text-[var(--text-primary)] shadow-[0_12px_36px_rgba(0,0,0,0.25)]`,
+    'rounded-lg border border-[var(--border-default)] bg-[var(--surface-overlay)] text-[var(--text-primary)] shadow-lg',
     kind === 'context' && 'workspace-context-panel',
   )
 }
@@ -274,7 +275,7 @@ export function WorkspaceFloatingPanel({
   kind?: 'menu' | 'context' | 'detail'
   style?: React.CSSProperties
 }) {
-  return <div className={join(getWorkspaceFloatingPanelClass(kind), className)} style={style}>{children}</div>
+  return <div data-slot="popover-content" data-popover-kind={kind} className={join(getWorkspaceFloatingPanelClass(kind), className)} style={style}>{children}</div>
 }
 
 export function WorkspaceSectionBadge({
@@ -296,9 +297,9 @@ export function WorkspaceSectionBadge({
             : 'border-white/10 bg-black/30 text-slate-400'
 
   return (
-    <span className={join(`${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border px-2.5 py-1 text-[9px] font-semibold`, toneClass)}>
+    <Badge variant="outline" className={join(`${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border px-2.5 py-1 text-[9px] font-semibold`, toneClass)}>
       {children}
-    </span>
+    </Badge>
   )
 }
 
@@ -319,7 +320,7 @@ export function WorkspaceEmptyState({
     <div
       className={join(
         `flex flex-col items-center justify-center ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-dashed border-[var(--border-default)] bg-[var(--surface-elevated)] text-center`,
-        compact ? 'px-4 py-8 space-y-2' : 'px-6 py-12 space-y-4'
+        compact ? 'px-4 py-8 space-y-2' : 'px-6 py-10 space-y-3'
       )}
     >
       {icon ? (
@@ -328,8 +329,8 @@ export function WorkspaceEmptyState({
         <div className="text-slate-700/40"><Info size={20} /></div>
       ) : null}
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold text-[var(--text-primary)]">{title}</p>
-        {description && <p className="max-w-md text-[10px] font-semibold leading-relaxed text-[var(--text-secondary)]">{description}</p>}
+        <p className="text-sm font-semibold text-[var(--text-primary)]">{title}</p>
+        {description && <p className="max-w-md text-xs font-normal leading-5 text-[var(--text-secondary)]">{description}</p>}
       </div>
       {action}
     </div>
@@ -554,6 +555,7 @@ export function WorkspaceSelectField({
           disabled={disabled}
           aria-expanded={isOpen}
           aria-haspopup="dialog"
+          data-slot="select-trigger"
           onClick={() => setIsOpen((current) => !current)}
           ref={(node) => {
             triggerRef.current = node
@@ -570,6 +572,7 @@ export function WorkspaceSelectField({
             ref={panelRef}
             style={panelStyle}
             data-workspace-panel="true"
+            data-slot="select-content"
             onMouseDown={(e) => e.stopPropagation()}
             className={`${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border border-white/10 bg-[#020617] p-2 shadow-[0_24px_60px_rgba(2,6,23,0.48)] backdrop-blur-xl flex flex-col`}
           >
@@ -592,6 +595,8 @@ export function WorkspaceSelectField({
                     key={String(option.value)}
                     type="button"
                     onClick={() => handleSelect(option.value)}
+                    data-slot="select-item"
+                    aria-pressed={active}
                     className={`w-full ${OPERATIONAL_WORKSPACE_VISUALS.standardRadius} border px-3 py-2 text-left transition-all ${active ? 'border-blue-500/30 bg-blue-500/10' : 'border-white/5 bg-black/20 hover:border-white/10 hover:bg-white/[0.03]'}`}
                   >
                     <div className="flex items-center gap-2">
@@ -639,13 +644,13 @@ export function WorkspaceSectionCard({
   icon?: React.ReactNode
   tone?: 'blue' | 'teal' | 'violet' | 'amber' | 'neutral'
 }) {
-  return <section {...props} data-workspace-section data-tone={tone} className={`${OPERATIONAL_WORKSPACE_VISUALS.panelSurface} workspace-section p-4 ${className}`}>
+  return <Card {...props} data-workspace-section data-tone={tone} className={join('workspace-section p-4', className)}>
     {title && <div className="workspace-section-heading">
       {icon && <span className="workspace-section-icon" aria-hidden="true">{icon}</span>}
       <div><h3>{title}</h3>{description && <p>{description}</p>}</div>
     </div>}
     {children}
-  </section>
+  </Card>
 }
 
 export function WorkspaceStickyIdentityBar({

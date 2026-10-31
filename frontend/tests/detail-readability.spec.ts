@@ -317,10 +317,12 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [14
     await expect(rows).toHaveCount(1)
     await page.waitForLoadState('networkidle')
     await checkHeader('repopulated')
-    await page.setViewportSize({ width: width <= 390 ? 1440 : 390, height: width <= 390 ? 1000 : 844 })
-    await checkHeader('resized')
-    await page.setViewportSize({ width, height: width <= 390 ? 844 : 1000 })
-    await checkHeader('original-viewport')
+    if (process.env.SYSGRID_DESKTOP_ONLY !== '1') {
+      await page.setViewportSize({ width: width <= 390 ? 1440 : 390, height: width <= 390 ? 1000 : 844 })
+      await checkHeader('resized')
+      await page.setViewportSize({ width, height: width <= 390 ? 844 : 1000 })
+      await checkHeader('original-viewport')
+    }
     const actorHeader = page.locator('.ag-header-cell[col-id="user_id"]')
     await page.evaluate(() => {
       const cell = document.querySelector<HTMLElement>('.ag-header-cell[col-id="user_id"]')!

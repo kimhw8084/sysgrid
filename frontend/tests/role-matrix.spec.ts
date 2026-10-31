@@ -82,12 +82,12 @@ for (const surface of [
     if (surface.module === 'monitoring') {
       await expect(page.getByRole('button', { name: 'Import monitoring rows', exact: true })).toBeDisabled()
       await expect(page.getByRole('button', { name: 'Edit configuration', exact: true }).first()).toBeDisabled()
-      await page.getByTitle('Registry configuration').click()
+      await page.getByRole('button', { name: 'Registry configuration', exact: true }).click()
       await expect(page.getByText('Monitoring Matrix Enumerations', { exact: true })).toBeVisible()
       await expect(page.getByTitle('This value is managed by the application.').first()).toBeDisabled()
     }
     if (surface.module === 'services') {
-      await page.getByTitle('Registry configuration').click()
+      await page.getByRole('button', { name: 'Registry configuration', exact: true }).click()
       await expect(page.getByText('Service Enumerations', { exact: true })).toBeVisible()
       await expect(page.getByTitle('Settings management permission is required.').first()).toBeDisabled()
     }

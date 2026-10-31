@@ -8,6 +8,7 @@ import {
   gotoView,
   openToolbarButton,
   resetBrowserState,
+  selectWorkspaceAppearance,
   seedOperationalScenario,
   selectGridCheckboxRows,
 } from './helpers/sysgrid'
@@ -216,8 +217,8 @@ test.describe('VendorsReal canonical runtime', () => {
     await expect(page.getByRole('button', { name: 'Display' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Import' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Bulk Actions' })).toBeVisible()
-    await expect(page.getByTitle('Export CSV')).toBeVisible()
-    await expect(page.getByTitle('Copy to clipboard')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Export CSV', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Copy to clipboard', exact: true })).toBeVisible()
 
     await openToolbarButton(page, 'Import')
     await expect(page.getByRole('heading', { name: 'Vendors Import' })).toBeVisible()
@@ -225,13 +226,13 @@ test.describe('VendorsReal canonical runtime', () => {
     await page.keyboard.press('Escape')
 
     await selectGridCheckboxRows(page, [0])
-    await page.getByTitle('Copy to clipboard').click()
+    await page.getByRole('button', { name: 'Copy to clipboard', exact: true }).click()
     await expectToast(page, /Table data copied to clipboard/i)
     const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
     expect(clipboardText).toContain(scenario.vendorName)
 
     const downloadPromise = page.waitForEvent('download')
-    await page.getByTitle('Export CSV').click()
+    await page.getByRole('button', { name: 'Export CSV', exact: true }).click()
     const download = await downloadPromise
     expect(download.suggestedFilename()).toMatch(/^SysGrid_Vendors_/)
 
@@ -342,7 +343,7 @@ test.describe('VendorsReal canonical runtime', () => {
     await expect(contractDetailsModal).toContainText('24x7')
     await expect(contractDetailsModal).toContainText('Pager rotation')
     await expect(contractDetailsModal).toContainText('Holiday coverage requires named backup')
-    await clickResilientButton(page, 'Infrastructure Coverage')
+    await clickResilientButton(page, 'Open infrastructure coverage section')
     await expect(contractDetailsModal).toContainText(scenario.systemName)
     await contractDetailsModal
       .getByText(scenario.workDescription, { exact: false })
@@ -360,7 +361,7 @@ test.describe('VendorsReal canonical runtime', () => {
     await openVendorBySearch(page, '/vendors-real', scenario.vendorName)
     await expect(page.getByRole('button', { name: 'Import' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Bulk Actions' })).toBeVisible()
-    await expect(page.getByTitle('Export CSV')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Export CSV', exact: true })).toBeVisible()
 
     const detailDialog = await openVendorByDeepLink(page, '/vendors-real', scenario.vendor.id, scenario.vendorName)
     await expect(detailDialog.getByText(`Partner ID: ${scenario.vendor.id}`, { exact: false })).toBeVisible()
@@ -375,7 +376,7 @@ test.describe('Vendor desktop column readability', () => {
       await resetBrowserState(page)
       await createVendorCandidateScenario(request)
       await gotoView(page, '/vendors', 'Vendors')
-      await page.getByRole('button', { name: theme, exact: true }).click()
+      await selectWorkspaceAppearance(page, theme)
       const fields = ['name', 'country', 'primary_personnel_name', 'primary_personnel_email', 'active_contract_count', 'contract_count']
       for (const field of fields) {
         await page.evaluate((id) => (window as any).__DEBUG_VENDORS_GRID_API__.ensureColumnVisible(id), field)

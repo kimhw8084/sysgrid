@@ -98,11 +98,14 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
       const settings = await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
       expect(settings.ok()).toBeTruthy()
       await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
-      const suffix = `${theme}-${viewport.width}`
+      const runStamp = Date.now()
+      const suffix = `${theme}-${viewport.width}-${runStamp}`
+      const uniqueIp = `10.${Math.floor(runStamp / 65_536) % 256}.${Math.floor(runStamp / 256) % 256}.${(runStamp % 254) + 1}`
+      const uniquePeerIp = `10.${Math.floor(runStamp / 65_536) % 256}.${Math.floor(runStamp / 256) % 256}.${((runStamp + 1) % 254) + 1}`
       const host = await createAsset(request, {
-        name: `orders-primary-${theme === 'pure-clarity' ? 'light' : 'dark'}-${viewport.width}`, system: `Platform ${suffix}`, type: 'Physical',
+        name: `orders-primary-${suffix}`, system: `Platform ${suffix}`, type: 'Physical',
         status: 'Active', model: 'R740', serial_number: `REFERENCE-${suffix}`, asset_tag: `REF-${suffix}`,
-        owner: 'Platform Operations', business_unit: 'Infrastructure', environment: 'Production', primary_ip: '10.42.8.12',
+        owner: 'Platform Operations', business_unit: 'Infrastructure', environment: 'Production', primary_ip: uniqueIp,
       })
       const service = await createService(request, {
         name: 'Orders database · Primary', service_type: 'Database', status: 'Active', environment: 'Production', device_id: host.id,
@@ -110,9 +113,9 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
         version: '16.4', config_json: { endpoint: 'orders-primary.production.internal:5432', replication: { mode: 'synchronous', replicas: 2 }, maintenance_window: 'Sunday 02:00–03:00 UTC', encryption: true },
       })
       const peer = await createAsset(request, {
-        name: `orders-standby-${theme === 'pure-clarity' ? 'light' : 'dark'}-${viewport.width}`, system: `Platform ${suffix}`, type: 'Physical',
+        name: `orders-standby-${suffix}`, system: `Platform ${suffix}`, type: 'Physical',
         status: 'Active', model: 'R740', serial_number: `REFERENCE-PEER-${suffix}`, asset_tag: `REF-PEER-${suffix}`,
-        owner: 'Platform Operations', business_unit: 'Infrastructure', environment: 'Production', primary_ip: '10.42.8.13',
+        owner: 'Platform Operations', business_unit: 'Infrastructure', environment: 'Production', primary_ip: uniquePeerIp,
       })
       const connection = await createConnection(request, { device_a_id: host.id, source_port: 'eth0', device_b_id: peer.id, target_port: 'eth1', link_type: 'Data', speed_gbps: 10, unit: 'Gbps', status: 'Active' })
       const site = await createSite(request, { name: `Regional hall ${suffix}`, address: 'Reference environment', color: '#2563eb' })

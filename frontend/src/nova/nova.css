@@ -1,0 +1,485 @@
+:root,
+.nova-app-shell {
+  --brand-blue: #2563eb;
+  --background: oklch(0.105 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.16 0 0);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.18 0 0);
+  --popover-foreground: oklch(0.96 0 0);
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.205 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.23 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: #60a5fa;
+  --radius: 0.625rem;
+  --page-header-min-height: 4rem;
+  --sg-space-1: 0.25rem;
+  --sg-space-2: 0.5rem;
+  --sg-space-3: 0.75rem;
+  --sg-space-4: 1rem;
+  --sg-layout-gutter: 2rem;
+  --sg-layout-gutter-compact: 1rem;
+  --sg-control-height: 2.25rem;
+  --sg-toolbar-height: 2.75rem;
+  --sg-motion-fast: 150ms;
+  --sg-motion-standard: 180ms;
+  --sg-motion-easing: cubic-bezier(0.2, 0, 0, 1);
+  --sg-shadow-card: 0 1px 2px rgb(0 0 0 / 12%);
+  --sg-shadow-overlay: 0 24px 80px rgb(0 0 0 / 28%);
+  --sg-nav-active-bg: #123b7a;
+  color-scheme: dark;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+
+  /* Compatibility bridge for the existing operational modules. */
+  --bg-primary: var(--background);
+  --bg-header: color-mix(in oklch, var(--background) 94%, transparent);
+  --glass-bg: var(--card);
+  --glass-border: var(--border);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --text-muted: var(--muted-foreground);
+  --accent-primary: var(--brand-blue);
+  --accent-glow: color-mix(in oklch, var(--primary) 12%, transparent);
+  --sidebar-bg: var(--background);
+  --grid-bg: var(--background);
+  --grid-header-bg: var(--muted);
+  --grid-border: var(--border);
+  --panel-item-bg: var(--card);
+  --input-bg: var(--background);
+  --surface-base: var(--background);
+  --overlay-scrim: rgb(0 0 0 / 55%);
+  --surface-elevated: var(--card);
+  --surface-overlay: var(--popover);
+  --surface-hover: color-mix(in oklch, var(--foreground) 6%, var(--card));
+  --border-subtle: var(--border);
+  --border-default: var(--border);
+  --focus-ring: var(--ring);
+  --action-primary: var(--primary);
+  --action-primary-hover: #2563eb;
+  --action-primary-muted: var(--accent);
+  --action-ink: #60a5fa;
+  --text-disabled: color-mix(in oklch, var(--muted-foreground) 56%, transparent);
+  --state-success: #22c55e;
+  --state-success-surface: rgb(22 163 74 / 12%);
+  --state-success-border: rgb(22 163 74 / 35%);
+  --state-warning: #fbbf24;
+  --state-warning-surface: rgb(217 119 6 / 12%);
+  --state-warning-border: rgb(217 119 6 / 35%);
+  --state-danger: #f87171;
+  --state-danger-surface: rgb(220 38 38 / 12%);
+  --state-danger-surface-strong: rgb(220 38 38 / 20%);
+  --state-danger-border: rgb(220 38 38 / 35%);
+  --state-info: #60a5fa;
+  --state-info-surface: rgb(37 99 235 / 12%);
+  --state-info-border: rgb(96 165 250 / 35%);
+  --nav-active-bg: var(--sg-nav-active-bg);
+  --nav-active-text: #bfdbfe;
+}
+
+:root[data-theme="pure-clarity"],
+.nova-app-shell[data-theme="pure-clarity"] {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.47 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: #2563eb;
+  --action-primary: #1d4ed8;
+  --action-primary-hover: #1e40af;
+  --action-ink: #1d4ed8;
+  --state-success: #166534;
+  --state-warning: #92400e;
+  --state-info: #1d4ed8;
+  --state-danger: #b91c1c;
+  --nav-active-bg: #eff6ff;
+  --nav-active-text: #1d4ed8;
+  color-scheme: light;
+}
+
+.nova-app-shell,
+.nova-app-shell * {
+  scrollbar-color: color-mix(in oklch, var(--muted-foreground) 32%, transparent) transparent;
+}
+
+.nova-app-shell button,
+.nova-app-shell input,
+.nova-app-shell select,
+.nova-app-shell textarea {
+  font-family: inherit;
+}
+
+/* All interactive controls follow one timing curve in every workspace. */
+.nova-app-shell :where(button, a, [role="button"], [role="menuitem"], input, select, textarea, [data-slot="button"], [data-slot="input"], [data-slot="select-trigger"]),
+.nova-app-shell :where(button, a, [role="button"]) > :where(span, svg) {
+  transition-duration: var(--sg-motion-fast);
+  transition-timing-function: var(--sg-motion-easing);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nova-app-shell *,
+  .nova-app-shell *::before,
+  .nova-app-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.nova-app-shell :where(button, a, input, select, textarea, [tabindex]):focus-visible:not([data-slot="button"]):not([data-slot="input"]):not([data-slot="select"]):not([data-slot="dropdown-trigger"]) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.nova-app-shell [data-sg-shell-header="true"] {
+  min-height: 3.25rem;
+  border-color: var(--border);
+  background: color-mix(in oklch, var(--background) 94%, transparent);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--foreground) 3%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.nova-app-shell [data-golden-page-header="true"] {
+  position: relative;
+  min-height: var(--page-header-min-height);
+  align-items: center;
+  gap: var(--sg-space-4);
+  padding: var(--sg-space-1) 0 var(--sg-space-3) var(--sg-space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.nova-app-shell [data-golden-page-header="true"] h1 {
+  font-size: clamp(1.375rem, 1.15rem + 0.35vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.nova-app-shell [data-golden-page-header="true"] p {
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.nova-app-shell [data-golden-page-header="true"] [class*="text-[10px]"] {
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.nova-app-shell [data-golden-page-toolbar="true"] {
+  min-height: var(--sg-toolbar-height);
+  gap: var(--sg-space-2) var(--sg-space-3);
+  border-color: var(--border);
+  border-radius: var(--radius-xl);
+  background: color-mix(in oklch, var(--card) 88%, transparent);
+  padding: var(--sg-space-2) var(--sg-space-3);
+  box-shadow: var(--sg-shadow-card);
+}
+
+.nova-app-shell [data-sg-content-panel="true"] {
+  gap: var(--sg-space-4);
+}
+
+.nova-app-shell :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+  background-color: color-mix(in oklch, var(--background) 72%, var(--card));
+  color: var(--foreground);
+}
+
+.nova-app-shell :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea)::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.78;
+}
+
+.nova-app-shell [data-slot="dialog-overlay"] {
+  background-color: var(--overlay-scrim);
+}
+
+.nova-app-shell [data-slot="dialog-content"],
+.nova-app-shell .workspace-dialog-frame > .glass-panel,
+.nova-app-shell [role="dialog"]:not([data-workspace-modal-root]):not(.workspace-dialog-frame):not([data-slot="dialog-overlay"]),
+.nova-app-shell [data-sg-dialog-content="true"] {
+  border-color: var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--sg-shadow-overlay);
+}
+
+.nova-app-shell .ag-row-hover {
+  background: color-mix(in oklch, var(--accent) 58%, transparent) !important;
+}
+
+.nova-app-shell[data-theme="pure-clarity"] .ag-row-hover {
+  background: color-mix(in oklch, var(--accent) 78%, transparent) !important;
+}
+
+.nova-app-shell .glass-panel {
+  border-color: var(--border);
+  background-color: var(--card);
+  box-shadow: var(--sg-shadow-card);
+  backdrop-filter: none;
+}
+
+.nova-app-shell .ag-theme-alpine-dark {
+  --ag-font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+  --ag-font-size: 12px;
+  --ag-background-color: var(--background);
+  --ag-header-background-color: var(--muted);
+  --ag-border-color: var(--border);
+  --ag-foreground-color: var(--foreground);
+  --ag-header-foreground-color: var(--muted-foreground);
+  --ag-odd-row-background-color: color-mix(in oklch, var(--background) 96%, var(--foreground));
+  --ag-row-hover-color: color-mix(in oklch, var(--accent) 72%, transparent);
+  --ag-selected-row-background-color: color-mix(in oklch, var(--accent) 86%, transparent);
+}
+
+.nova-app-shell .ag-header {
+  background: var(--muted);
+  border-color: var(--border);
+  font-weight: 600;
+}
+
+.nova-app-shell .ag-root-wrapper {
+  border-color: var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.nova-app-shell .ag-header-row,
+.nova-app-shell .ag-row {
+  border-color: var(--border);
+}
+
+.nova-app-shell .ag-header-cell,
+.nova-app-shell .ag-header-group-cell,
+.nova-app-shell .ag-cell,
+.nova-app-shell .ag-header-cell-label,
+.nova-app-shell .ag-header-group-cell-label {
+  border-color: var(--border);
+  font-family: "Inter", "SF Pro Display", system-ui, sans-serif;
+}
+
+.nova-app-shell [class~="border-white/5"],
+.nova-app-shell [class~="border-white/10"] {
+  border-color: var(--border);
+}
+
+.nova-app-shell [class~="bg-white/[0.03]"],
+.nova-app-shell [class~="bg-white/5"],
+.nova-app-shell [class~="bg-black/20"],
+.nova-app-shell [class~="bg-black/30"],
+.nova-app-shell [class~="bg-slate-950/70"] {
+  background-color: color-mix(in oklch, var(--background) 68%, var(--card));
+}
+
+.nova-app-shell [class~="bg-[#020617]"],
+.nova-app-shell [data-slot="popover-content"] {
+  border-color: var(--border);
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+}
+
+.nova-app-shell [class~="text-slate-100"],
+.nova-app-shell [class~="text-slate-200"] {
+  color: var(--foreground);
+}
+
+.nova-app-shell [class~="text-slate-300"],
+.nova-app-shell [class~="text-slate-400"],
+.nova-app-shell [class~="text-slate-500"],
+.nova-app-shell [class~="text-slate-600"] {
+  color: var(--muted-foreground);
+}
+
+.nova-app-shell [data-slot="select-trigger"] {
+  min-height: var(--sg-control-height);
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.nova-app-shell [data-slot="select-trigger"] > span {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.nova-app-shell [data-slot="select-content"] {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 18px 56px rgb(0 0 0 / 22%);
+  backdrop-filter: none;
+}
+
+body [data-slot="tooltip-content"] {
+  z-index: 9000;
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
+body [data-slot="popover-content"] {
+  border-color: var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 22%);
+}
+
+body [data-slot="dialog-overlay"] {
+  background-color: var(--overlay-scrim);
+}
+
+body [data-slot="dialog-content"] {
+  border-color: var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 28%);
+}
+
+.nova-app-shell [data-slot="select-content"] input {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.nova-app-shell [data-slot="select-item"] {
+  min-height: 2rem;
+  border-color: transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.nova-app-shell [data-slot="select-item"][aria-pressed="true"] {
+  border-color: var(--border);
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.nova-app-shell [data-slot="select-item"]:hover {
+  border-color: var(--border);
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+body [data-slot="popover-content"] {
+  border-color: var(--border);
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+}
+
+body [data-slot="select-content"] {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 18px 56px rgb(0 0 0 / 22%);
+  backdrop-filter: none;
+}
+
+body [data-slot="select-content"] input {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+body [data-slot="select-item"] {
+  min-height: 2rem;
+  border-color: transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+body [data-slot="select-item"][aria-pressed="true"],
+body [data-slot="select-item"]:hover {
+  border-color: var(--border);
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.nova-app-shell :is(
+  [class~="bg-[#020617]"],
+  [class~="bg-[#0a0c14]"],
+  [class~="bg-[#0b0c14]"],
+  [class~="bg-[#0b1220]"],
+  [class~="bg-[#0b1222]"],
+  [class~="bg-[#0d0e12]"],
+  [class~="bg-[#0d0f17]"],
+  [class~="bg-[#0d1425]"],
+  [class~="bg-[#0f111a]"],
+  [class~="bg-[#0f172a]"],
+  [class~="bg-[#1e293b]"]
+) {
+  background-color: var(--card);
+}
+
+.nova-app-shell :is(
+  [class~="bg-[#020617]"],
+  [class~="bg-[#0a0c14]"],
+  [class~="bg-[#0b0c14]"],
+  [class~="bg-[#0b1220]"],
+  [class~="bg-[#0b1222]"],
+  [class~="bg-[#0d0e12]"],
+  [class~="bg-[#0d0f17]"],
+  [class~="bg-[#0d1425]"],
+  [class~="bg-[#0f111a]"],
+  [class~="bg-[#0f172a]"],
+  [class~="bg-[#1e293b]"]
+):is([class~="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]),
+.nova-app-shell :is(
+  [class~="bg-[#020617]"],
+  [class~="bg-[#0a0c14]"],
+  [class~="bg-[#0b0c14]"],
+  [class~="bg-[#0b1220]"],
+  [class~="bg-[#0b1222]"],
+  [class~="bg-[#0d0e12]"],
+  [class~="bg-[#0d0f17]"],
+  [class~="bg-[#0d1425]"],
+  [class~="bg-[#0f111a]"],
+  [class~="bg-[#0f172a]"],
+  [class~="bg-[#1e293b]"]
+) :is([class~="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) {
+  color: var(--foreground);
+}

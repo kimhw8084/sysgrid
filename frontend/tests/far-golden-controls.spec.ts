@@ -38,7 +38,10 @@ test.describe('FAR Monitoring-golden controls', () => {
     for (const label of ['Views', 'Display', 'Filters', 'FAR domain tools', 'Activity', 'Compare', 'Bulk Actions', 'Import', 'Add Failure Mode']) {
       await expect(shell.getByRole('button', { name: new RegExp(label, 'i') }).first()).toBeVisible()
     }
-    await expect(shell.getByTitle('Export CSV')).toBeVisible()
+    const exportButton = shell.getByRole('button', { name: 'Export CSV', exact: true })
+    await expect(exportButton).toBeVisible()
+    await exportButton.hover()
+    await expect(page.locator('[data-slot="tooltip-content"]')).toHaveText('Export CSV')
     await expect(shell.getByRole('button', { name: 'Copy to clipboard', exact: true })).toBeVisible()
     await expect(shell.getByRole('button', { name: 'Registry configuration', exact: true })).toBeVisible()
 

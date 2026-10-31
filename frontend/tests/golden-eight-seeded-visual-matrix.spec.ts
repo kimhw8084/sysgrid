@@ -178,6 +178,44 @@ async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebro
   ).not.toBe('rgba(0, 0, 0, 0)')
 }
 
+async function expectViewportCanvasContinuity(page: Page, routeLabel: string) {
+  const geometry = await page.evaluate(() => {
+    const shell = document.querySelector<HTMLElement>('.sg-app-shell')
+    const main = document.querySelector<HTMLElement>('[data-sg-app-main="true"]')
+    const content = document.querySelector<HTMLElement>('#sg-main-content')
+    if (!shell || !main || !content) return { missing: true as const }
+    const bounds = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect()
+      return { left: rect.left, right: rect.right }
+    }
+    return {
+      missing: false as const,
+      viewport: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      bodyWidth: document.body.scrollWidth,
+      shell: bounds(shell),
+      main: bounds(main),
+      content: bounds(content),
+      backgrounds: {
+        html: getComputedStyle(document.documentElement).backgroundColor,
+        body: getComputedStyle(document.body).backgroundColor,
+        shell: getComputedStyle(shell).backgroundColor,
+        main: getComputedStyle(main).backgroundColor,
+      },
+    }
+  })
+  expect(geometry.missing, `${routeLabel} should expose the shared viewport canvas`).toBe(false)
+  if (geometry.missing) return
+  expect(Math.abs(geometry.shell.left), `${routeLabel} shell should start at the viewport edge: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(1)
+  expect(Math.abs(geometry.shell.right - geometry.viewport), `${routeLabel} shell should reach the viewport edge: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(1)
+  expect(Math.abs(geometry.main.right - geometry.shell.right), `${routeLabel} main should reach the shell edge: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(1)
+  expect(Math.abs(geometry.content.left - geometry.main.left), `${routeLabel} content should align with the main pane: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(1)
+  expect(Math.abs(geometry.content.right - geometry.main.right), `${routeLabel} content should reach the main pane edge: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(1)
+  expect(geometry.documentWidth, `${routeLabel} should not create page-level horizontal overflow: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(geometry.viewport + 1)
+  expect(geometry.bodyWidth, `${routeLabel} body should not create page-level horizontal overflow: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(geometry.viewport + 1)
+  expect(new Set(Object.values(geometry.backgrounds)).size, `${routeLabel} html, body, shell, and main backgrounds should form one continuous surface: ${JSON.stringify(geometry.backgrounds)}`).toBe(1)
+}
+
 async function createVendor(request: APIRequestContext, stamp: string) {
   const response = await request.post(`${apiBase}/vendors`, {
     data: {
@@ -293,6 +331,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         expect(new URL(page.url()).pathname).toBe(route.path)
         const workspace = page.locator('#sg-main-content')
         await expect(workspace, `${route.key} workspace should render`).toBeVisible()
+        await expectViewportCanvasContinuity(page, `${theme} ${route.key}`)
         if (route.key === 'external') await expectGoldenWorkspaceHeader(page, 'external', 'External Intelligence')
         await expectVisibleFormControlsHaveNames(page, route.key)
         // AG Grid's virtualized DOM order can start with a clipped overscan row;
@@ -342,6 +381,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         const importantColumns: Record<string, { apiName: string; columnIds: string[] }> = {
           assets: { apiName: '__DEBUG_OPERATIONAL_GRID_API__', columnIds: ['status', 'owner', 'primary_ip', 'management_ip', 'hardware_summary', 'hardware_age'] },
           external: { apiName: '__DEBUG_OPERATIONAL_GRID_API__', columnIds: ['internal_owner', 'status', 'environment', 'business_purpose', 'link_count'] },
+          network: { apiName: '__DEBUG_NETWORK_GRID_API__', columnIds: ['src_port', 'peer_node', 'peer_port', 'type', 'status'] },
           vendors: { apiName: '__DEBUG_VENDORS_GRID_API__', columnIds: ['country', 'primary_personnel_name', 'primary_personnel_email'] },
         }
         if (importantColumns[route.key]) {
@@ -351,14 +391,13 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           const widthColumnIds = route.key === 'assets' ? ['name', 'system', 'type', 'environment', ...target.columnIds] : route.key === 'vendors' ? ['name', ...target.columnIds] : target.columnIds
           await expectColumnsFullyVisible(page, row, route.key, target.apiName, target.columnIds)
           await expectColumnMinimumWidths(page, route.key, target.apiName, widthColumnIds, requiredMinimums, requiredMaximums)
+          if (route.key === 'network') await expectHeaderTextFits(page, route.key, target.apiName, 'type', 'Type')
+          if (route.key === 'network') await expectHeaderTextFits(page, route.key, target.apiName, 'status', 'Status')
           if (route.key === 'assets') await expectHeaderTextFits(page, route.key, target.apiName, 'owner', 'Owner')
           if (route.key === 'assets') await expectCellFullValueTitle(page, row, target.apiName, 'status', 'Maintenance')
           if (route.key === 'assets') await expectCellContentFits(page, row, route.key, 'status', '.operational-grid-badge')
           if (route.key === 'external') await expectCellFullValueTitle(page, row, target.apiName, 'business_purpose', 'Golden Eight deterministic visual validation')
           if (route.key === 'vendors') await expectCellFullValueTitle(page, row, target.apiName, 'primary_personnel_name', 'Unassigned')
-        }
-        if (route.key === 'network') {
-          await expect(page.locator('#sg-main-content .ag-body-horizontal-scroll').first(), 'Dense network records must expose the horizontal column scroll affordance').toBeVisible()
         }
         await row.hover()
         if (importantColumns[route.key]) {
@@ -391,6 +430,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       for (const route of supplementaryRoutes) {
         await page.goto(route.path)
         await waitForAppIdle(page)
+        await expectViewportCanvasContinuity(page, `${theme} ${route.key}`)
         if (route.key === 'home') {
           await expect(page.getByRole('heading', { name: /^Good (morning|afternoon|evening),/ })).toBeVisible()
         }
@@ -469,6 +509,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           await expect(page.locator('#sg-main-content'), `${routeLabel} workspace should remain visible`).toBeVisible()
           await expect(page.locator('#sg-main-content h1, #sg-main-content h2').first(), `${routeLabel} should expose a visible view heading`).toBeVisible()
           await expectVisibleFormControlsHaveNames(page, routeLabel)
+          await expectViewportCanvasContinuity(page, `${theme} ${routeLabel}`)
           await expect(page.locator('[data-sg-state="fatal-error"]'), `${routeLabel} should not render a fatal error`).toHaveCount(0)
           const documentGeometry = await page.evaluate(() => ({
             body: document.body.scrollWidth,

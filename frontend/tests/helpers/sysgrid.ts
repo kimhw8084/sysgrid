@@ -8,6 +8,14 @@ export const testApiHeaders: Record<string, string> = {
   'X-User-Id': testUserId,
   'X-Tenant-Id': testTenantId,
 }
+
+export async function selectWorkspaceAppearance(page: Page, theme: 'Dark' | 'Light') {
+  const themeId = theme === 'Light' ? 'pure-clarity' : 'nordic-frost-v1'
+  await page.getByRole('button', { name: 'Appearance', exact: true }).click()
+  await page.getByRole('menuitem', { name: `${theme} appearance`, exact: true }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', themeId)
+}
+
 export type WorkspaceId = 'monitoring' | 'network' | 'assets' | 'vendors'
 export type LogicalGridRow = {
   rowKey: string

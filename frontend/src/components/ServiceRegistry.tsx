@@ -912,7 +912,7 @@ export default function ServiceRegistry() {
          displayName="Service Registry" 
       />
       <style>{`
-        .ag-theme-alpine-dark { --ag-background-color: #1a1b26; --ag-header-background-color: #24283b; --ag-border-color: rgba(255, 255, 255, 0.05); --ag-foreground-color: #f1f5f9; --ag-header-foreground-color: #3b82f6; --ag-font-family: 'Inter', sans-serif; --ag-font-size: ${fontSize}px; }
+        .ag-theme-alpine-dark { --ag-background-color: #1a1b26; --ag-header-background-color: #24283b; --ag-border-color: rgba(255, 255, 255, 0.05); --ag-foreground-color: #f1f5f9; --ag-header-foreground-color: #3b82f6; --ag-font-family: 'Geist Variable', sans-serif; --ag-font-size: ${fontSize}px; }
         .ag-root-wrapper { border: none !important; }
         .ag-header-cell-label { font-size: ${fontSize}px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.1em !important; justify-content: center !important; }
         .ag-cell { display: flex; align-items: center; justify-content: center !important; font-weight: 700 !important; font-size: ${fontSize}px !important; }

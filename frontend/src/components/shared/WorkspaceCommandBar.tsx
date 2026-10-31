@@ -3,8 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { PageToolbar } from './LayoutPrimitives'
 import { ChevronDown, Sliders } from 'lucide-react'
 
-export const GOLDEN_COMMAND_BAR_STACK_CLASS = 'space-y-4'
-export const GOLDEN_COMMAND_BAR_SECONDARY_CLASS = 'px-4 py-3'
+export const GOLDEN_COMMAND_BAR_STACK_CLASS = 'flex flex-col gap-3'
+export const GOLDEN_COMMAND_BAR_SECONDARY_CLASS = 'px-3 py-2'
 export const GOLDEN_FILTER_CHIP_ROW_CLASS = 'flex flex-wrap items-center gap-2'
 
 export function WorkspaceCommandBar({
@@ -24,11 +24,11 @@ export function WorkspaceCommandBar({
   const controlsId = useId()
   const compactExpanded = !controls || toolsOpen
   return (
-    <div className={GOLDEN_COMMAND_BAR_STACK_CLASS} data-golden-command-bar="true">
+    <div className={GOLDEN_COMMAND_BAR_STACK_CLASS} data-golden-command-bar="true" data-slot="workspace-command-bar">
       <PageToolbar left={<>
         {left}
         {controls && <>
-          <button type="button" aria-expanded={toolsOpen} aria-controls={controlsId} onClick={() => setToolsOpen(open => !open)} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] px-3 text-xs font-semibold text-[var(--text-primary)] md:hidden">
+          <button type="button" aria-expanded={toolsOpen} aria-controls={controlsId} onClick={() => setToolsOpen(open => !open)} className="inline-flex min-h-9 items-center gap-2 rounded-md border border-[var(--border-default)] bg-[var(--surface-base)] px-3 text-xs font-semibold text-[var(--text-primary)] md:hidden">
             <Sliders size={14} aria-hidden="true" /> View & filters <ChevronDown size={14} aria-hidden="true" className={toolsOpen ? 'rotate-180' : ''} />
           </button>
           <div id={controlsId} data-workspace-view-tools className={`${toolsOpen ? 'flex' : 'hidden'} min-w-0 flex-wrap items-center gap-3 md:contents`}>{controls}</div>
@@ -48,7 +48,7 @@ export function WorkspaceCommandBar({
               <button
                 key={chip.id}
                 onClick={chip.onRemove}
-                className="min-h-10 min-w-0 max-w-full !whitespace-normal [overflow-wrap:anywhere] rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                className="min-h-9 min-w-0 max-w-full !whitespace-normal [overflow-wrap:anywhere] rounded-md border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-1.5 text-left text-xs font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
               >
                 {chip.label}
               </button>

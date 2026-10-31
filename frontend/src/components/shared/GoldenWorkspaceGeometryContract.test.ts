@@ -17,24 +17,35 @@ const views = [
 ] as const
 
 describe('Golden workspace geometry contract', () => {
+  it('keeps one full-viewport background and lets constrained button labels wrap', () => {
+    const globalStyles = read('../index.css')
+    expect(globalStyles).toContain('scrollbar-gutter: auto;')
+    expect(globalStyles).toContain('html,\nbody,\n#root')
+    expect(globalStyles).toContain('background-color: var(--background, var(--bg-primary));')
+    expect(globalStyles).toContain('.sg-app-shell > [data-sg-app-main="true"]')
+    expect(globalStyles).toContain('.sg-app-shell [data-sg-content-panel="true"]')
+    expect(globalStyles).toContain('max-inline-size: 100%;')
+    expect(globalStyles).not.toMatch(/button,\s*\.button-like\s*\{\s*white-space:\s*nowrap\s*!important;/)
+  })
+
   it('locks the accepted frame, toolbar, and grid geometry in shared owners', () => {
     const shell = read('shared/OperationalWorkspaceShells.tsx')
     const layout = read('shared/LayoutPrimitives.tsx')
     const commandBar = read('shared/WorkspaceCommandBar.tsx')
 
-    expect(shell).toContain("GOLDEN_WORKSPACE_GEOMETRY_VERSION = '1'")
-    expect(shell).toContain("GOLDEN_WORKSPACE_FRAME_CLASS = 'h-full min-h-0 flex flex-col space-y-4'")
+    expect(shell).toContain("GOLDEN_WORKSPACE_GEOMETRY_VERSION = '2'")
+    expect(shell).toContain("GOLDEN_WORKSPACE_FRAME_CLASS = 'flex h-full min-h-0 min-w-0 flex-col gap-4'")
     expect(shell).toContain("golden: 'rounded-lg'")
     expect(shell).toContain("'attached-panel': 'rounded-t-none border-x border-b border-white/5'")
     expect(shell).toContain('data-golden-geometry-version={GOLDEN_WORKSPACE_GEOMETRY_VERSION}')
 
-    expect(layout).toContain("GOLDEN_PAGE_HEADER_CLASS = 'flex min-w-0 shrink-0 flex-wrap items-start justify-between gap-4'")
-    expect(layout).toContain("GOLDEN_PAGE_TOOLBAR_CLASS = 'flex shrink-0 items-center gap-3 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 lg:flex-wrap lg:justify-between lg:overflow-visible'")
+    expect(layout).toContain("GOLDEN_PAGE_HEADER_CLASS = 'relative flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-4'")
+    expect(layout).toContain("GOLDEN_PAGE_TOOLBAR_CLASS = 'flex min-w-0 shrink-0 items-center gap-2 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 lg:flex-wrap lg:justify-between lg:overflow-visible'")
     expect(layout).toContain('data-golden-page-header="true"')
     expect(layout).toContain('data-golden-page-toolbar="true"')
 
-    expect(commandBar).toContain("GOLDEN_COMMAND_BAR_STACK_CLASS = 'space-y-4'")
-    expect(commandBar).toContain("GOLDEN_COMMAND_BAR_SECONDARY_CLASS = 'px-4 py-3'")
+    expect(commandBar).toContain("GOLDEN_COMMAND_BAR_STACK_CLASS = 'flex flex-col gap-3'")
+    expect(commandBar).toContain("GOLDEN_COMMAND_BAR_SECONDARY_CLASS = 'px-3 py-2'")
     expect(commandBar).toContain("GOLDEN_FILTER_CHIP_ROW_CLASS = 'flex flex-wrap items-center gap-2'")
     expect(commandBar).toContain('data-golden-command-bar="true"')
   })

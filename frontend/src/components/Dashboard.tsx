@@ -7,10 +7,10 @@ import {
   BarChart3,
   ChevronRight,
   ExternalLink,
-  Fingerprint,
   Globe,
   History,
   Info,
+  LoaderCircle,
   Layers,
   MapPin,
   Network,
@@ -35,6 +35,8 @@ import {
 } from 'recharts'
 import { apiFetch } from '../api/apiClient'
 import { useNavigate } from 'react-router-dom'
+import { Button as NovaButton } from './ui/button'
+import { PageHeader } from './shared/LayoutPrimitives'
 import { formatDistanceToNow } from 'date-fns'
 import { formatAppDate, parseAppDate } from '../utils/dateUtils'
 import {
@@ -129,7 +131,6 @@ const StatCard = ({
   metrics,
   truth,
   icon: Icon,
-  color,
   moduleId,
   path,
   delay = 0,
@@ -139,7 +140,6 @@ const StatCard = ({
   metrics: Record<string, Record<string, number>>
   truth: DashboardTruth
   icon: any
-  color: string
   moduleId: string
   path: string
   delay?: number
@@ -156,9 +156,9 @@ const StatCard = ({
       transition={{ delay, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       className="group relative h-full cursor-pointer overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4 transition-colors hover:border-[var(--accent-primary)] sm:p-5"
     >
-      <div className={`absolute -right-4 -top-4 h-24 w-24 bg-gradient-to-br ${color} opacity-[0.03] blur-2xl transition-opacity group-hover:opacity-[0.1]`} />
+      <div className="absolute -right-4 -top-4 h-24 w-24 bg-[var(--primary)] opacity-[0.03] blur-2xl transition-opacity group-hover:opacity-[0.1]" />
       <div className="relative z-10 flex flex-col items-start justify-between gap-3 sm:flex-row">
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${color}`}>
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]">
           <Icon size={18} className="text-white" aria-hidden="true" />
         </div>
         <div className="min-w-0 text-left sm:text-right">
@@ -240,11 +240,14 @@ const SiteIdentity = ({ site, delay }: { site: { id: number; name: string }; del
   </motion.div>
 )
 
-const StatePanel = ({ title, detail }: { title: string; detail: string }) => (
-  <div className="flex h-full min-h-[300px] w-full items-center justify-center bg-[var(--bg-primary)] p-8">
-    <div className="max-w-xl rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-8 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{title}</h1>
-      <p className="mt-3 text-sm text-[var(--text-secondary)]">{detail}</p>
+const StatePanel = ({ title, detail, loading, onRetry }: { title: string; detail: string; loading: boolean; onRetry: () => void }) => (
+  <div data-home-workspace className="flex min-h-0 w-full flex-1 flex-col gap-4" aria-busy={loading}>
+    <PageHeader eyebrow="System overview" title={title} subtitle={detail} />
+    <div role={loading ? 'status' : 'alert'} className="flex min-h-[300px] flex-1 items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-8 text-center">
+      <div className="flex flex-col items-center gap-4">
+        {loading ? <LoaderCircle size={20} className="animate-spin text-[var(--accent-primary)]" aria-hidden="true" /> : <Info size={20} className="text-[var(--state-danger)]" aria-hidden="true" />}
+        {loading ? <span className="text-sm text-[var(--text-secondary)]">Loading the latest dashboard snapshot…</span> : <NovaButton variant="outline" onClick={onRetry}>Retry dashboard</NovaButton>}
+      </div>
     </div>
   </div>
 )
@@ -266,7 +269,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   const [searchState, setSearchState] = useState<'idle' | 'loading' | 'unavailable'>('idle')
   const modulePolicy = useModulePolicy()
 
-  const { data: metrics, isLoading, isError } = useQuery({
+  const { data: metrics, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: async () => (await apiFetch('/api/v1/dashboard/metrics')).json(),
     refetchInterval: 10000,
@@ -297,8 +300,8 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
     return 'Good evening'
   }, [])
 
-  if (isLoading) return <StatePanel title="Loading Home data" detail="Reading persisted System Management records and release policy." />
-  if (isError || !metrics) return <StatePanel title="Home data unavailable" detail="The Home projection could not be read. No operational status is inferred from missing data." />
+  if (isLoading) return <StatePanel title="Loading Home data" detail="Reading persisted System Management records and release policy." loading onRetry={() => void refetch()} />
+  if (isError || !metrics) return <StatePanel title="Home data unavailable" detail="The Home projection could not be read. No operational status is inferred from missing data." loading={false} onRetry={() => void refetch()} />
 
   const handleGlobalSearch = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -336,34 +339,18 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
   }
 
   return (
-    <div data-home-workspace className="flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto pb-6 pr-1">
-      <div className="flex shrink-0 flex-wrap items-start justify-between gap-6">
-        <div className="flex min-w-0 items-center gap-4">
-          <div className="relative hidden sm:block">
-            <div className="absolute inset-0 rounded-full bg-blue-600/30 blur-2xl" />
-            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)]">
-              <Fingerprint size={24} className="text-[var(--accent-primary)]" aria-hidden="true" />
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
-            </div>
-          </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-xs font-medium text-[var(--accent-primary)]">Operator session</span>
-              <span className="text-xs text-[var(--text-secondary)]">System Management V1</span>
-            </div>
-            <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight text-[var(--text-primary)] sm:text-3xl">
-              {greeting}, <span className="text-[var(--accent-primary)]">{userProfile?.full_name?.split(' ')[0] || userProfile?.username || 'Operator'}</span>
-            </h1>
-            <p className="mt-2 text-sm text-[var(--text-secondary)]">Persisted inventory, configuration, and recorded activity</p>
-          </div>
-        </div>
-      </div>
+    <div data-home-workspace className="flex min-h-0 w-full flex-1 flex-col gap-4 overflow-y-auto pb-6">
+      <PageHeader
+        eyebrow="Operator session · System Management"
+        title={<>{greeting}, <span className="text-[var(--accent-primary)]">{userProfile?.full_name?.split(' ')[0] || userProfile?.username || 'Operator'}</span></>}
+        subtitle="Persisted inventory, configuration, and recorded activity"
+      />
 
       <div className="grid shrink-0 grid-cols-2 gap-3 xl:grid-cols-4 sm:gap-4">
-        <StatCard title="Infrastructure assets" total={metrics.asset_overview.total} metrics={metrics.asset_overview.breakdown} truth={metrics.asset_overview.truth} icon={Server} color="from-blue-600 to-blue-800" moduleId="assets" path="/asset" />
-        <StatCard title="Logical services" total={metrics.service_overview.total} metrics={metrics.service_overview.breakdown} truth={metrics.service_overview.truth} icon={Layers} color="from-indigo-600 to-indigo-800" moduleId="services" path="/services" />
-        <StatCard title="Network connections" total={metrics.network_overview.total} metrics={metrics.network_overview.breakdown} truth={metrics.network_overview.truth} icon={Network} color="from-emerald-600 to-emerald-800" moduleId="network" path="/network" />
-        <StatCard title="Monitoring definitions" total={metrics.monitoring_overview.total} metrics={metrics.monitoring_overview.breakdown} truth={metrics.monitoring_overview.truth} icon={Activity} color="from-rose-600 to-rose-800" moduleId="monitoring" path="/monitoring" />
+        <StatCard title="Infrastructure assets" total={metrics.asset_overview.total} metrics={metrics.asset_overview.breakdown} truth={metrics.asset_overview.truth} icon={Server} moduleId="assets" path="/asset" />
+        <StatCard title="Logical services" total={metrics.service_overview.total} metrics={metrics.service_overview.breakdown} truth={metrics.service_overview.truth} icon={Layers} moduleId="services" path="/services" />
+        <StatCard title="Network connections" total={metrics.network_overview.total} metrics={metrics.network_overview.breakdown} truth={metrics.network_overview.truth} icon={Network} moduleId="network" path="/network" />
+        <StatCard title="Monitoring definitions" total={metrics.monitoring_overview.total} metrics={metrics.monitoring_overview.breakdown} truth={metrics.monitoring_overview.truth} icon={Activity} moduleId="monitoring" path="/monitoring" />
       </div>
 
       <div className="grid shrink-0 grid-cols-1 gap-4 xl:grid-cols-12">

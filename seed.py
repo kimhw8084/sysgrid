@@ -16,6 +16,7 @@ import subprocess
 import sys
 import asyncio
 import random
+from hashlib import sha256
 from starlette.requests import Request
 from starlette.datastructures import State
 from collections import defaultdict
@@ -36,6 +37,7 @@ from app.models.config import ConfigBase, MasterSystemSetting, Tenant, UserTenan
 from app.models import models
 from app.models.models import Base, Operator, Role
 from app.schemas import schemas
+from app.reference_data import CODE_MANAGED_REFERENCE_OPTIONS
 
 # --- UTILITIES ---
 
@@ -121,7 +123,7 @@ def ensure_config_schema() -> None:
             ("MonitoringPlatform", "Prometheus", "Monitoring system platform", False),
             ("MonitoringPlatform", "Datadog", "Monitoring system platform", False),
             ("MonitoringCategory", "Hardware", "Monitoring category", False),
-            ("MonitoringCategory", "Application", "Monitoring category", False),
+            ("MonitoringCategory", "App", "Monitoring category", False),
             ("MonitoringCategory", "Network", "Monitoring category", False),
             ("MonitoringCategory", "Synthetic", "Monitoring category", False),
             ("NotificationMethod", "Email", "Notification delivery method", False),
@@ -184,10 +186,15 @@ def register_tenant_and_access(*, tenant_name: str, tenant_db_url: str, admin_us
             session.add(access)
 
         if select_for_user:
-            # Deselect others for this user
+            # Preserve the target row while deselecting other tenants. Updating
+            # the target to false first can leave it false when SQLAlchemy has
+            # already loaded its selected state into the session.
             session.execute(
                 UserTenantAccess.__table__.update()
-                .where(UserTenantAccess.user_id == admin_user)
+                .where(
+                    UserTenantAccess.user_id == admin_user,
+                    UserTenantAccess.tenant_id != tenant.id,
+                )
                 .values(is_selected=False)
             )
             access.is_selected = True
@@ -268,6 +275,7 @@ async def clear_domain_data(session: AsyncSession):
     print("Clearing domain data...")
     # Order matters for foreign keys
     tables = [
+        models.AuditLog,
         models.ProjectQA,
         models.ProjectComment,
         models.ProjectTask,
@@ -298,6 +306,7 @@ async def clear_domain_data(session: AsyncSession):
         models.NetworkInterface,
         models.DeviceSoftware,
         models.DeviceRelationship,
+        models.MaintenanceWindow,
         models.FirewallRule,
         models.Subnet,
         models.DeviceLocation,
@@ -329,24 +338,18 @@ async def clear_domain_data(session: AsyncSession):
 async def seed_domain_data(tenant_db_url: str):
     print(f"Seeding Mass Domain Data into {tenant_db_url}...")
     random.seed(42)
+    demo_now = datetime.now().replace(microsecond=0)
     engine = create_async_engine(tenant_db_url)
     async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     async with async_session() as session:
         await clear_domain_data(session)
         
-        # Seed Monitoring Options
-        monitoring_options = [
-            ("MonitoringPlatform", "Zabbix", "Monitoring system platform", False),
-            ("MonitoringPlatform", "Prometheus", "Monitoring system platform", False),
-            ("MonitoringPlatform", "Datadog", "Monitoring system platform", False),
-            ("MonitoringCategory", "Hardware", "Monitoring category", False),
-            ("MonitoringCategory", "Application", "Monitoring category", False),
-            ("MonitoringCategory", "Network", "Monitoring category", False),
-            ("MonitoringCategory", "Synthetic", "Monitoring category", False),
-            ("NotificationMethod", "Email", "Notification delivery method", False),
-            ("NotificationMethod", "Slack", "Notification delivery method", False),
-            ("NotificationMethod", "PagerDuty", "Notification delivery method", False),
+        # Seed the required application-owned options and the demo-only network options.
+        for definition in CODE_MANAGED_REFERENCE_OPTIONS:
+            session.add(models.SettingOption(**definition, metadata_keys=[], is_default=False))
+
+        other_options = [
             ("LinkPurpose", "Data", "Network link purpose", False),
             ("LinkPurpose", "Management", "Network link purpose", False),
             ("LinkPurpose", "Storage", "Network link purpose", False),
@@ -361,7 +364,7 @@ async def seed_domain_data(tenant_db_url: str):
             ("NetworkCableType", "DAC", "Network cable type", False),
             ("NetworkCableType", "AOC", "Network cable type", False),
         ]
-        for cat, val, desc, is_default in monitoring_options:
+        for cat, val, desc, is_default in other_options:
             session.add(models.SettingOption(category=cat, label=val, value=val, description=desc, is_default=is_default))
         await session.commit()
 
@@ -378,9 +381,9 @@ async def seed_domain_data(tenant_db_url: str):
         session.add_all(teams)
         
         sites = [
-            models.Site(name="HQ-01", address="123 Tech Way, Silicon Valley", color="#3b82f6"),
-            models.Site(name="FAB-08", address="456 Industry Blvd, Austin", color="#10b981"),
-            models.Site(name="DR-EAST", address="789 Backup Ln, Virginia", color="#f59e0b"),
+            models.Site(name="HQ-01", address="123 Tech Way, Silicon Valley", color="#2f6fe4"),
+            models.Site(name="FAB-08", address="456 Industry Blvd, Austin", color="#4d79a5"),
+            models.Site(name="DR-EAST", address="789 Backup Ln, Virginia", color="#7189a8"),
         ]
         session.add_all(sites)
         await session.commit()
@@ -460,10 +463,10 @@ async def seed_domain_data(tenant_db_url: str):
                 type=dev_type,
                 status=random.choice(["Active", "Provisioning", "Maintenance"]),
                 environment=random.choice(environments),
-                primary_ip=f"10.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}",
-                management_ip=f"172.20.{random.randint(0,32)}.{random.randint(1,254)}",
+                primary_ip=f"10.42.{device_sequence // 254}.{device_sequence % 254 + 1}",
+                management_ip=f"172.20.{device_sequence // 254}.{device_sequence % 254 + 1}",
                 management_url=f"https://console-{device_sequence:03}.sysgrid.local",
-                serial_number=f"SN-{random.getrandbits(32)}",
+                serial_number=f"DEMO-SN-{device_sequence:06}",
                 asset_tag=f"AT-{device_sequence:05}",
                 tenant_id=1,
                 manufacturer=mfr,
@@ -693,8 +696,8 @@ async def seed_domain_data(tenant_db_url: str):
                     session.add(models.ServiceSecret(
                         service_id=svc.id,
                         username=f"svc_{dev.system.lower()}_{svc_idx}",
-                        password=f"seed-only-{idx:04}",
-                        note="Disposable local seed credential",
+                        password=None,
+                        note="Demo vault placeholder; no secret material is stored.",
                     ))
 
         await session.commit()
@@ -746,13 +749,21 @@ async def seed_domain_data(tenant_db_url: str):
 
             for c_idx in range(2):
                 covered_assets = [d.id for d in random.sample(all_devices, k=min(8, len(all_devices)))]
+                if c_idx == 0:
+                    contract_status = "Completed"
+                    contract_effective = demo_now - timedelta(days=365)
+                    contract_expiry = demo_now + timedelta(days=180)
+                else:
+                    contract_status = ["Expired", "In Review", "Drafted", "Cancelled"][idx % 4]
+                    contract_effective = demo_now - timedelta(days=180) if contract_status != "Drafted" else None
+                    contract_expiry = demo_now - timedelta(days=30) if contract_status == "Expired" else None
                 session.add(models.VendorContract(
                     vendor_id=vendor.id,
                     title=f"{vendor_name} Support Agreement {c_idx + 1}",
                     contract_id=f"CTR-{idx:02}-{c_idx:02}",
-                    status=random.choice(["Completed", "In Review", "Expired"]),
-                    effective_date=datetime.now() - timedelta(days=random.randint(300, 900)),
-                    expiry_date=datetime.now() + timedelta(days=random.randint(90, 540)),
+                    status=contract_status,
+                    effective_date=contract_effective,
+                    expiry_date=contract_expiry,
                     covered_systems=random.sample(systems, k=min(3, len(systems))),
                     covered_assets=covered_assets,
                     scope_of_work=[
@@ -836,10 +847,10 @@ async def seed_domain_data(tenant_db_url: str):
         for i in range(72):
             dev = random.choice(all_devices)
             title = random.choice(['CPU High', 'Latency Spike', 'Disk Full', 'Auth Error'])
-            category = random.choice(valid_categories)
-            platform = random.choice(valid_platforms)
+            category = valid_categories[i % len(valid_categories)]
+            platform = valid_platforms[(i // len(valid_categories)) % len(valid_platforms)]
             
-            key = (dev.id, title, category, platform)
+            key = (dev.id, title, category, platform, i)
             if key in monitored_keys:
                 continue
             monitored_keys.add(key)
@@ -849,27 +860,29 @@ async def seed_domain_data(tenant_db_url: str):
                 k=1,
             )]
             recovery_docs = [doc.id for doc in random.sample(knowledge_entries, k=min(2, len(knowledge_entries)))]
+            monitoring_status = ["Existing", "Planned", "Cancelled"][i % 3]
             mon = models.MonitoringItem(
                 device_id=dev.id,
                 category=category,
-                status=random.choice(["Existing", "Planned", "Cancelled"]),
-                title=f"{dev.name}: {title}",
-                severity=random.choice(["Critical", "Warning", "Informational"]),
+                status=monitoring_status,
+                title=f"{dev.name}: {title} · {i + 1:02}",
+                severity=["Critical", "Warning", "Informational"][i % 3],
                 platform=platform,
-                is_active=True,
+                is_active=monitoring_status == "Existing",
                 impact="Potential service degradation",
                 purpose=random.choice(["Protect throughput", "Detect auth failures", "Guard replication health", "Catch operator-impacting regression"]),
                 notification_method=random.choice(["Email", "Slack", "PagerDuty"]),
                 notification_recipients=["ops@sysgrid.local", "sre@sysgrid.local"],
                 monitored_services=linked_services,
                 owner_team=random.choice([t.name for t in teams]),
-                recovery_docs=recovery_docs,
+                recovery_docs=[] if i == 0 else recovery_docs,
                 logic_json=[{"id": 1, "type": "Threshold", "description": "Auto-generated", "logic_info": "> 80%"}],
             )
             session.add(mon)
             await session.flush()
             monitoring_items.append(mon)
-            for owner_idx, operator in enumerate(random.sample(admin_operators, k=min(2, len(admin_operators)))):  # pragma: no branch
+            owner_count = min(2, len(admin_operators)) if i != 0 else 0
+            for owner_idx, operator in enumerate(random.sample(admin_operators, k=owner_count)):  # pragma: no branch
                 session.add(models.MonitoringOwner(
                     monitoring_item_id=mon.id,
                     operator_id=operator.id,
@@ -898,8 +911,8 @@ async def seed_domain_data(tenant_db_url: str):
                 type=random.choice(["API", "Equipment", "DB", "Script", "Physical Server"]),
                 subtype=random.choice(["B2B", "Telemetry", "Batch", "OEM"]),
                 owner_organization=random.choice(["Contoso Manufacturing", "Northwind Logistics", "Fabrikam Systems", "Wingtip Devices"]),
-                owner_team=team_ref.name,
-                ownership_mode=random.choice(["team", "individual"]),
+                owner_team=team_ref.name if idx % 2 == 0 else None,
+                ownership_mode="team" if idx % 2 == 0 else "individual",
                 internal_team_id=team_ref.id if idx % 2 == 0 else None,
                 internal_operator_id=(operator_ref.id if operator_ref and idx % 2 == 1 else None),
                 status=random.choice(["Active", "Planned", "Maintenance"]),
@@ -908,25 +921,25 @@ async def seed_domain_data(tenant_db_url: str):
                 notes="Contains realistic integration metadata for local feature validation.",
                 contacts_json=[{"full_name": f"Partner Contact {idx + 1}", "email": f"partner{idx + 1}@example.com", "phone": f"+1-555-30{idx:02}", "role": "Primary", "is_primary": True}],
                 business_purpose=random.choice(["Order exchange", "Manufacturing telemetry", "EDI settlement", "Patch distribution"]),
-                criticality=random.choice(["High", "Medium", "Low"]),
-                dependency_tier=random.choice(["Tier 1", "Tier 2", "Tier 3"]),
-                data_classification=random.choice(["Internal", "Restricted", "Confidential"]),
-                integration_mode=random.choice(["API", "SFTP", "Database", "Manual"]),
+                criticality=["Critical", "High", "Medium", "Low"][idx % 4],
+                dependency_tier=["Tier 1", "Tier 2", "Tier 3", "Tier 4"][idx % 4],
+                data_classification=["Public", "Internal", "Confidential", "Restricted"][idx % 4],
+                integration_mode=["API", "SFTP", "VPN", "Database", "Manual", "Other"][idx % 6],
                 primary_endpoint_url=f"https://partner-{idx + 1}.vendor.local/api",
                 secondary_endpoint_url=f"https://partner-{idx + 1}.vendor.local/dr",
-                auth_method=random.choice(["mTLS", "Basic", "OAuth2", "Token"]),
-                protocol_family=random.choice(["HTTPS", "SFTP", "TCP", "Database"]),
+                auth_method=["mTLS", "Basic", "OAuth2", "Token"][idx % 4],
+                protocol_family=["HTTP", "HTTPS", "TCP", "UDP", "SFTP", "SSH", "Database", "Other"][idx % 8],
                 port_override=random.choice([443, 8443, 22]),
                 supports_inbound=(idx % 2 == 0),
                 supports_outbound=True,
                 source_system=random.choice(systems),
                 source_record_id=f"SRC-{idx + 1000}",
-                risk_rating=random.choice(["Critical", "Elevated", "Moderate"]),
+                risk_rating=["Critical", "High", "Medium", "Low"][idx % 4],
                 contains_customer_data=(idx % 3 == 0),
-                contains_credentials=(idx % 4 == 0),
+                contains_credentials=(idx < 12),
                 stores_pii=(idx % 5 == 0),
                 internet_exposed=(idx % 6 == 0),
-                third_party_assessment_status=random.choice(["Approved", "Pending", "Review Needed"]),
+                third_party_assessment_status=["Required", "In Progress", "Approved", "Rejected", "Not Required"][idx % 5],
                 poc_json=[{"first_name": "Alex", "last_name": f"Partner{idx+1}", "id": f"EXTPOC-{idx+1}", "email": f"alex.partner{idx+1}@example.com", "phone": "+1-555-0100"}],
                 metadata_json={"businessWindow": random.choice(["24x7", "Plant Shift", "Business Hours"])},
             )
@@ -934,18 +947,20 @@ async def seed_domain_data(tenant_db_url: str):
             await session.flush()
             external_entities.append(entity)
             if idx < 12:
+                credential_status = ["Active", "RotationDue", "Disabled"][idx % 3]
+                rotation_age_days = 120 if credential_status == "RotationDue" else (30 if credential_status == "Active" else 180)
                 session.add(models.ExternalEntitySecret(
                     external_entity_id=entity.id,
                     secret_label="Primary Integration Credential",
-                    secret_type=random.choice(["SharedSecret", "Token", "VaultReference"]),
+                    secret_type="VaultReference",
                     username=f"ext_user_{idx + 1}",
-                    password=f"seed-secret-{idx + 1:03}",
+                    password=None,
                     vault_provider="Other",
-                    vault_path=f"/local/ext/{idx + 1}",
-                    note="Disposable local seed value",
-                    credential_status="Active",
+                    vault_path=f"vault://demo/external/{idx + 1:03}",
+                    note="Demo vault reference only; no secret material is stored.",
+                    credential_status=credential_status,
                     rotation_frequency_days=90,
-                    password_last_rotated_at=(datetime.now() - timedelta(days=random.randint(1, 80))).isoformat(),
+                    password_last_rotated_at=(demo_now - timedelta(days=rotation_age_days)).isoformat(),
                 ))
 
         await session.flush()
@@ -968,6 +983,24 @@ async def seed_domain_data(tenant_db_url: str):
                 credential_reference=f"vault://seed/ext/{entity.id}",
                 credentials={"username": f"link_user_{entity.id}", "note": "seed-only"},
             ))
+        # Keep one valid but intentionally sparse record so the UI exercises
+        # empty optional fields and the no-related-records state.
+        session.add(models.ExternalEntity(
+            name="DEMO - Minimal External Record",
+            external_key="DEMO-EXT-MIN",
+            type="API",
+            ownership_mode="team",
+            owner_team=teams[0].name,
+            internal_team_id=teams[0].id,
+            status="Planned",
+            business_purpose="Synthetic partner record for optional-field and no-link UI testing.",
+            criticality="Low",
+            dependency_tier="Tier 4",
+            risk_rating="Low",
+            third_party_assessment_status="Not Required",
+            contacts_json=[{"full_name": "Demo Contact", "role": "Operational", "is_primary": True}],
+            metadata_json={},
+        ))
         await session.commit()
 
         # 10. Strategic Projects (MASS)
@@ -1255,6 +1288,132 @@ async def seed_domain_data(tenant_db_url: str):
             snapshot={"name": flow.name, "status": flow.status},
             change_summary="Initial seeded topology baseline",
         ))
+
+        # Explicit edge records make the demo useful for empty-field,
+        # reservation, unassigned-device, and lifecycle checks without
+        # weakening any application validation rules.
+        session.add_all([
+            models.Device(
+                name="DEMO-OPTIONAL-FIELDS",
+                system=None,
+                environment="Production",
+                status="Active",
+                type="Virtual",
+                tenant_id=1,
+                manufacturer=None,
+                model=None,
+                serial_number="DEMO-OPTIONAL-001",
+                asset_tag="DEMO-OPTIONAL-001",
+                os_name=None,
+                os_version=None,
+                primary_ip=None,
+                management_ip=None,
+                management_url=None,
+                owner=None,
+                business_unit=None,
+                vendor=None,
+                size_u=1,
+                is_reservation=False,
+                logic_json=[],
+            ),
+            models.Device(
+                name="DEMO-RESERVATION-INBOUND",
+                system="PROCUREMENT",
+                environment="Staging",
+                status="Provisioning",
+                type="Physical",
+                tenant_id=1,
+                manufacturer="Example Hardware",
+                model="Pending delivery",
+                serial_number="DEMO-PENDING-001",
+                asset_tag="DEMO-RESERVATION-001",
+                size_u=2,
+                is_reservation=True,
+                reservation_info={
+                    "est_arrival": (demo_now + timedelta(days=30)).strftime("%Y-%m"),
+                    "requester": "demo.procurement",
+                },
+                logic_json=[],
+            ),
+            models.Device(
+                name="DEMO-DECOMMISSIONED",
+                system="LEGACY-ERP",
+                environment="Production",
+                status="Decommissioned",
+                type="Virtual",
+                tenant_id=1,
+                manufacturer="Example Hardware",
+                model="Retired workload",
+                serial_number="DEMO-RETIRED-001",
+                asset_tag="DEMO-RETIRED-001",
+                size_u=1,
+                logic_json=[],
+            ),
+            models.LogicalService(
+                device_id=None,
+                name="DEMO-UNASSIGNED-SERVICE",
+                service_type="API",
+                status="Active",
+                environment=None,
+                version=None,
+                purpose="Synthetic unassigned service for blank-state testing.",
+                config_json={},
+                logic_json=[],
+            ),
+            models.Vendor(
+                name="DEMO - No Contacts or Contracts",
+                country=None,
+                metadata_json={},
+            ),
+        ])
+        await session.flush()
+
+        maintenance_cases = [
+            ("DEMO · Upcoming change", all_devices[0].id, demo_now + timedelta(days=4), demo_now + timedelta(days=4, hours=1), "Scheduled"),
+            ("DEMO · Overlapping change", all_devices[0].id, demo_now + timedelta(days=4, minutes=30), demo_now + timedelta(days=4, hours=2), "Scheduled"),
+            ("DEMO · In progress", all_devices[1].id, demo_now - timedelta(minutes=30), demo_now + timedelta(hours=1), "Scheduled"),
+            ("DEMO · Completed change", all_devices[2].id, demo_now - timedelta(days=8, hours=2), demo_now - timedelta(days=8), "Completed"),
+            ("DEMO · Cancelled change", all_devices[3].id, demo_now + timedelta(days=2), demo_now + timedelta(days=2, hours=1), "Cancelled"),
+            ("DEMO · Short window", all_devices[4].id, demo_now + timedelta(days=1), demo_now + timedelta(days=1, minutes=15), "Scheduled"),
+        ]
+        seeded_windows = []
+        for index, (title, device_id, start_time, end_time, status) in enumerate(maintenance_cases, start=1):
+            window = models.MaintenanceWindow(
+                device_id=device_id,
+                title=title,
+                start_time=start_time,
+                end_time=end_time,
+                ticket_number=f"DEMO-CHG-{index:03}",
+                coordinator="demo.network",
+                status=status,
+                created_by_user_id="demo.seed",
+                cancelled_at=demo_now if status == "Cancelled" else None,
+                cancelled_by="demo.seed" if status == "Cancelled" else None,
+                cancellation_reason="Synthetic cancelled state for UI testing." if status == "Cancelled" else None,
+                creation_key_hash=sha256(f"local-demo:maintenance:{index}".encode()).hexdigest(),
+                creation_request_hash=sha256(f"local-demo:maintenance:{index}:{start_time.isoformat()}:{end_time.isoformat()}".encode()).hexdigest(),
+            )
+            session.add(window)
+            seeded_windows.append(window)
+        await session.flush()
+
+        audit_cases = [
+            ("CREATE", "devices", all_devices[0].id, "Synthetic demo asset event."),
+            ("UPDATE", "logical_services", logical_services[0].id, "Synthetic demo service update event."),
+            ("CREATE", "maintenance_windows", seeded_windows[0].id, "Synthetic demo maintenance event."),
+            ("CANCEL", "maintenance_windows", seeded_windows[4].id, "Synthetic demo cancellation event."),
+            ("CREATE", "external_entities", external_entities[0].id, "Synthetic demo external-system event."),
+        ]
+        for days_ago, (action, target_table, target_id, description) in enumerate(audit_cases):
+            session.add(models.AuditLog(
+                timestamp=demo_now - timedelta(days=days_ago),
+                user_id="demo.seed",
+                action=action,
+                target_table=target_table,
+                target_id=str(target_id),
+                changes={"fixture": "local-demo", "synthetic": True},
+                description=f"{description} No real operator action occurred.",
+            ))
         await session.commit()
 
     print("MASS DOMAIN SEEDING COMPLETE.")
@@ -1274,6 +1433,11 @@ def collect_bootstrap_report(*, tenant_name: str, tenant_db_url: str, users: lis
             select(Operator).where(Operator.username.in_(users))
         ).scalars().all()
 
+        selected_user_ids = {row.user_id for row in access_rows if row.is_selected}
+        missing_selected_users = set(users) - selected_user_ids
+        if missing_selected_users:
+            raise RuntimeError(f"users are missing selected tenant access: {sorted(missing_selected_users)}")
+
         counts = {
             "teams": tenant_session.query(models.Team).count(),
             "sites": tenant_session.query(models.Site).count(),
@@ -1288,6 +1452,8 @@ def collect_bootstrap_report(*, tenant_name: str, tenant_db_url: str, users: lis
             "external_links": tenant_session.query(models.ExternalLink).count(),
             "vendors": tenant_session.query(models.Vendor).count(),
             "vendor_contracts": tenant_session.query(models.VendorContract).count(),
+            "maintenance_windows": tenant_session.query(models.MaintenanceWindow).count(),
+            "audit_logs": tenant_session.query(models.AuditLog).count(),
             "knowledge_entries": tenant_session.query(models.KnowledgeEntry).count(),
             "far_failure_modes": tenant_session.query(models.FarFailureMode).count(),
             "rca_records": tenant_session.query(models.RcaRecord).count(),
@@ -1332,7 +1498,11 @@ def validate_seed_foundation(*, tenant_db_url: str, seeded_domain_data: bool) ->
         "logical_services": 40,
         "monitoring_items": 10,
         "external_entities": 5,
+        "external_links": 20,
         "vendors": 5,
+        "vendor_contracts": 20,
+        "maintenance_windows": 6,
+        "audit_logs": 5,
         "knowledge_entries": 10,
         "far_failure_modes": 4,
         "rca_records": 4,
@@ -1355,12 +1525,120 @@ def validate_seed_foundation(*, tenant_db_url: str, seeded_domain_data: bool) ->
             "logical_services": tenant_session.query(models.LogicalService).count(),
             "monitoring_items": tenant_session.query(models.MonitoringItem).count(),
             "external_entities": tenant_session.query(models.ExternalEntity).count(),
+            "external_links": tenant_session.query(models.ExternalLink).count(),
             "vendors": tenant_session.query(models.Vendor).count(),
+            "vendor_contracts": tenant_session.query(models.VendorContract).count(),
+            "maintenance_windows": tenant_session.query(models.MaintenanceWindow).count(),
+            "audit_logs": tenant_session.query(models.AuditLog).count(),
             "knowledge_entries": tenant_session.query(models.KnowledgeEntry).count(),
             "far_failure_modes": tenant_session.query(models.FarFailureMode).count(),
             "rca_records": tenant_session.query(models.RcaRecord).count(),
             "projects": tenant_session.query(models.Project).count(),
         }
+
+        if seeded_domain_data:
+            misaligned_monitor_states = tenant_session.query(models.MonitoringItem).filter(
+                models.MonitoringItem.is_active != (models.MonitoringItem.status == "Existing"),
+            ).count()
+            if misaligned_monitor_states:
+                raise RuntimeError(f"monitoring lifecycle and active flag disagree in {misaligned_monitor_states} rows")
+            monitor_statuses = {
+                row[0] for row in tenant_session.query(models.MonitoringItem.status).distinct().all()
+            }
+            if not {"Existing", "Planned", "Cancelled"}.issubset(monitor_statuses):
+                raise RuntimeError(f"monitoring seed is missing lifecycle states: {monitor_statuses}")
+
+            edge_asset_names = {"DEMO-OPTIONAL-FIELDS", "DEMO-RESERVATION-INBOUND", "DEMO-DECOMMISSIONED"}
+            observed_edge_assets = {
+                row[0] for row in tenant_session.query(models.Device.name).filter(models.Device.name.in_(edge_asset_names)).all()
+            }
+            if observed_edge_assets != edge_asset_names:
+                raise RuntimeError(f"asset edge-case fixtures are incomplete: {observed_edge_assets}")
+            optional_asset = tenant_session.query(models.Device).filter_by(name="DEMO-OPTIONAL-FIELDS").one()
+            if any((
+                optional_asset.manufacturer,
+                optional_asset.model,
+                optional_asset.primary_ip,
+                optional_asset.management_ip,
+                optional_asset.owner,
+                optional_asset.business_unit,
+            )):
+                raise RuntimeError("the optional-fields asset must retain its intentional blank fields")
+
+            if tenant_session.query(models.LogicalService).filter(models.LogicalService.device_id.is_(None)).count() < 1:
+                raise RuntimeError("an unassigned logical service is required for empty relationship-state testing")
+
+            enum_coverage = {
+                "criticality": {"Critical", "High", "Medium", "Low"},
+                "risk_rating": {"Critical", "High", "Medium", "Low"},
+                "dependency_tier": {"Tier 1", "Tier 2", "Tier 3", "Tier 4"},
+                "data_classification": {"Public", "Internal", "Confidential", "Restricted"},
+                "third_party_assessment_status": {"Required", "In Progress", "Approved", "Rejected", "Not Required"},
+            }
+            for field, required_values in enum_coverage.items():
+                observed_values = {
+                    value for (value,) in tenant_session.query(getattr(models.ExternalEntity, field)).distinct().all()
+                    if value is not None
+                }
+                if not required_values.issubset(observed_values):
+                    raise RuntimeError(f"external entity fixture lacks {field} cases: {required_values - observed_values}")
+
+            contract_statuses = {
+                value for (value,) in tenant_session.query(models.VendorContract.status).distinct().all()
+            }
+            if not {"Drafted", "In Review", "Completed", "Cancelled", "Expired"}.issubset(contract_statuses):
+                raise RuntimeError(f"vendor contracts are missing lifecycle states: {contract_statuses}")
+
+            maintenance_statuses = {
+                value for (value,) in tenant_session.query(models.MaintenanceWindow.status).distinct().all()
+            }
+            if not {"Scheduled", "Completed", "Cancelled"}.issubset(maintenance_statuses):
+                raise RuntimeError(f"maintenance fixtures are missing lifecycle states: {maintenance_statuses}")
+
+            empty_vendor = tenant_session.query(models.Vendor).filter(
+                models.Vendor.name == "DEMO - No Contacts or Contracts"
+            ).one_or_none()
+            if empty_vendor is None:
+                raise RuntimeError("the no-related-records vendor fixture is missing")
+            if tenant_session.query(models.VendorPersonnel).filter_by(vendor_id=empty_vendor.id).count() or tenant_session.query(
+                models.VendorContract
+            ).filter_by(vendor_id=empty_vendor.id).count():
+                raise RuntimeError("the no-related-records vendor fixture must not have contacts or contracts")
+            minimal_external = tenant_session.query(models.ExternalEntity).filter(
+                models.ExternalEntity.external_key == "DEMO-EXT-MIN"
+            ).one_or_none()
+            if minimal_external is None:
+                raise RuntimeError("the sparse external-system fixture is missing")
+            if tenant_session.query(models.ExternalLink).filter(
+                models.ExternalLink.external_entity_id == minimal_external.id
+            ).count():
+                raise RuntimeError("the sparse external-system fixture must remain unlinked")
+
+            secret_rows_with_material = sum((
+                tenant_session.query(models.ServiceSecret).filter(models.ServiceSecret.password.isnot(None)).count(),
+                tenant_session.query(models.ExternalEntitySecret).filter(models.ExternalEntitySecret.password.isnot(None)).count(),
+            ))
+            if secret_rows_with_material:
+                raise RuntimeError(f"demo seed must not contain secret material, found {secret_rows_with_material} rows")
+
+            expired_contracts_with_future_end = tenant_session.query(models.VendorContract).filter(
+                models.VendorContract.status == "Expired",
+                models.VendorContract.expiry_date >= datetime.now(),
+            ).count()
+            if expired_contracts_with_future_end:
+                raise RuntimeError(f"expired contracts must not have a future expiry, found {expired_contracts_with_future_end}")
+
+            due_credentials_without_overdue_rotation = tenant_session.query(models.ExternalEntitySecret).filter(
+                models.ExternalEntitySecret.credential_status == "RotationDue",
+                models.ExternalEntitySecret.password_last_rotated_at >= (datetime.now() - timedelta(days=90)).isoformat(),
+            ).count()
+            if due_credentials_without_overdue_rotation:
+                raise RuntimeError(f"rotation-due credentials must be older than their 90-day interval, found {due_credentials_without_overdue_rotation}")
+            secret_statuses = {
+                value for (value,) in tenant_session.query(models.ExternalEntitySecret.credential_status).distinct().all()
+            }
+            if not {"Active", "RotationDue", "Disabled"}.issubset(secret_statuses):
+                raise RuntimeError(f"external credential fixtures are missing lifecycle states: {secret_statuses}")
 
         occupancy_rows = tenant_session.execute(
             select(models.DeviceLocation.rack_id, func.count(models.DeviceLocation.id))
@@ -1400,9 +1678,9 @@ async def validate_seed_api_contracts(*, tenant_db_url: str, seeded_domain_data:
     validation_summary: dict[str, int] = {}
     failures: list[str] = []
 
-    async def validate_first(query, schema_cls, label: str, limit: int = 3):
+    async def validate_first(query, schema_cls, label: str, limit: int | None = None):
         async with session_factory() as session:
-            result = await session.execute(query.limit(limit))
+            result = await session.execute(query.limit(limit) if limit is not None else query)
             records = result.unique().scalars().all()
             if not records:
                 failures.append(f"{label}: no records returned for validation")
@@ -1472,11 +1750,32 @@ async def validate_seed_api_contracts(*, tenant_db_url: str, seeded_domain_data:
         schemas.ExternalEntityResponse,
         "external_entities",
     )
+    async with session_factory() as session:
+        entities = (await session.execute(
+            select(models.ExternalEntity).filter(models.ExternalEntity.is_deleted == False).order_by(models.ExternalEntity.id)
+        )).scalars().all()
+        for index, entity in enumerate(entities, start=1):
+            payload = {field: getattr(entity, field) for field in schemas.ExternalEntityCreate.model_fields}
+            try:
+                schemas.ExternalEntityCreate.model_validate(payload)
+            except Exception as exc:
+                failures.append(f"external entity {entity.id} failed write contract: {exc}")
+        validation_summary["external_entity_write_contract"] = len(entities)
+
     await validate_first(
         select(models.ExternalLink).order_by(models.ExternalLink.id.desc()),
         schemas.ExternalLinkResponse,
         "external_links",
     )
+    async with session_factory() as session:
+        links = (await session.execute(select(models.ExternalLink).order_by(models.ExternalLink.id))).scalars().all()
+        for link in links:
+            payload = {field: getattr(link, field) for field in schemas.ExternalLinkCreate.model_fields}
+            try:
+                schemas.ExternalLinkCreate.model_validate(payload)
+            except Exception as exc:
+                failures.append(f"external link {link.id} failed write contract: {exc}")
+        validation_summary["external_link_write_contract"] = len(links)
     await validate_first(
         select(models.MonitoringItem).options(
             selectinload(models.MonitoringItem.owners),
@@ -1504,6 +1803,23 @@ async def validate_seed_api_contracts(*, tenant_db_url: str, seeded_domain_data:
         schemas.VendorResponse,
         "vendors",
     )
+
+    async with session_factory() as session:
+        windows = (await session.execute(select(models.MaintenanceWindow).order_by(models.MaintenanceWindow.id))).scalars().all()
+        if len(windows) < 6:
+            failures.append(f"maintenance windows: expected at least 6 seeded cases, found {len(windows)}")
+        for window in windows:
+            payload = {field: getattr(window, field) for field in schemas.MaintenanceWindowCreate.model_fields}
+            try:
+                schemas.MaintenanceWindowCreate.model_validate(payload)
+            except Exception as exc:
+                failures.append(f"maintenance window {window.id} failed write contract: {exc}")
+        validation_summary["maintenance_windows"] = len(windows)
+
+        audit_rows = (await session.execute(select(models.AuditLog).order_by(models.AuditLog.id))).scalars().all()
+        if len(audit_rows) < 5 or any(row.user_id != "demo.seed" for row in audit_rows):
+            failures.append("audit log fixture must contain at least five clearly attributed synthetic events")
+        validation_summary["audit_logs"] = len(audit_rows)
 
     from app.api.logical_services import serialize_service
     from app.api.devices import get_devices
@@ -1536,7 +1852,6 @@ async def validate_seed_api_contracts(*, tenant_db_url: str, seeded_domain_data:
             )
             .filter(models.LogicalService.is_deleted == False)
             .order_by(models.LogicalService.id.desc())
-            .limit(3)
         )
         services = service_result.unique().scalars().all()
         if not services:

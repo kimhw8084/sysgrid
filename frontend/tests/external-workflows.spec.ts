@@ -1,7 +1,7 @@
 import { clickResilientButton } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
-import { createAsset, createExternalEntity, resetBrowserState } from './helpers/sysgrid'
+import { createAsset, createExternalEntity, resetBrowserState, selectWorkspaceAppearance } from './helpers/sysgrid'
 
 test.describe('External workflows', () => {
   test('matches the workspace shell contract and opens the shared import modal', async ({ page, sysApi: request }) => {
@@ -173,7 +173,7 @@ test.describe('External desktop column readability', () => {
       await createExternalEntity(request, { name: `PW-EXT-HEADERS-${Date.now()}`, type: 'API', status: 'Active', environment: 'Production' })
       await page.goto('/external')
       await expect(page.getByRole('heading', { name: 'External' })).toBeVisible()
-      await page.getByRole('button', { name: theme, exact: true }).click()
+      await selectWorkspaceAppearance(page, theme)
       for (const field of ['business_purpose', 'link_count']) {
         const columnReady = await page.evaluate((columnId) => {
           const api = (window as any).__DEBUG_OPERATIONAL_GRID_API__

@@ -81,7 +81,7 @@ async def test_monitoring_create_update_and_bulk_share_numeric_validation(seeded
     client = seeded_admin_tenant["client"]
     headers = {"X-User-Id": "admin_root", "X-Tenant-Id": str(seeded_admin_tenant["tenant_id"])}
     base_payload = {
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "SHARED-NUMERIC-CONTRACT",
     }
@@ -125,7 +125,7 @@ async def test_monitoring_create_uses_typed_request_and_rejects_raw_numeric_form
     assert request_schema["$ref"].endswith("/MonitoringItemCreate")
 
     base_payload = {
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "TYPED-NUMERIC-CONTRACT",
     }

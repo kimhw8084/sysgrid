@@ -1064,8 +1064,11 @@ export default function MonitoringGrid() {
     setHiddenColumns(config.hiddenColumns ?? [])
     setGroupBy(config.groupBy ?? 'raw')
     setShowFilterBar(config.showFilterBar ?? true)
+    clearPendingAutoSize()
     setColumnLayoutState(config.columnLayoutState ?? [])
-    setTransientManualColumnWidths(false)
+    setTransientManualColumnWidths(
+      (config.columnLayoutState ?? []).some((column: any) => Number.isFinite(column.width))
+    )
     setSearchTerm(config.quickFilter ?? '')
     setQuickFilters(config.quickFilters ?? { status: [] as string[], severity: [] as string[], platform: [] as string[], owner: [] as string[] })
     setGridFilterModel(config.filterModel ?? {})

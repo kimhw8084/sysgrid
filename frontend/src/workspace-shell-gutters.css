@@ -1,11 +1,11 @@
 /* Keep every workspace on the same outer content gutter as Assets. */
 #sg-main-content[data-sg-content-panel="true"] {
-  padding: 2rem !important;
+  padding: var(--sg-layout-gutter, 2rem) !important;
 }
 
 @media (max-width: 639px) {
   #sg-main-content[data-sg-content-panel="true"] {
-    padding: 1rem !important;
+    padding: var(--sg-layout-gutter-compact, 1rem) !important;
   }
 }
 

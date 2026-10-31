@@ -180,17 +180,27 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   })
 }
 
-test('a tenant-list failure is distinct from an empty list and can be retried', async ({ page }) => {
+test('a tenant registry failure blocks launch and recovers with retry', async ({ page }) => {
   await resetBrowserState(page)
-  await page.route('**/api/v1/tenants/me', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Tenant registry unavailable' }) }))
+  let tenantListRequests = 0
+  await page.route('**/api/v1/tenants/me', route => {
+    tenantListRequests += 1
+    if (tenantListRequests === 1) {
+      return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Tenant registry unavailable' }) })
+    }
+    return route.continue()
+  })
   await page.goto('/asset')
-  await expect(page.getByText('Tenant unavailable', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Switch tenant', exact: true }).click()
-  await expect(page.getByText('Available tenants could not be loaded.', { exact: true })).toBeVisible()
+  await expect(page.getByText('Bootstrap Failure', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Switch tenant', exact: true })).toHaveCount(0)
   await expect(page.getByText('No accessible tenants available', { exact: true })).not.toBeVisible()
-  await page.unroute('**/api/v1/tenants/me')
-  await page.getByRole('menuitem', { name: 'Retry tenant list', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Switch tenant', exact: true })).toContainText('Playwright Gate')
+  await page.getByRole('button', { name: 'Retry', exact: true }).click()
+  const tenantSwitcher = page.getByRole('button', { name: 'Switch tenant', exact: true })
+  await expect(tenantSwitcher).toHaveAttribute('aria-busy', 'false')
+  await expect(tenantSwitcher).toContainText('Current tenant')
+  await expect(tenantSwitcher).not.toContainText('Loading...')
+  expect(tenantListRequests).toBeGreaterThan(1)
 })
 
 test('a knowledge record opens with keyboard activation', async ({ page, sysApi: request }) => {

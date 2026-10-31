@@ -57,12 +57,13 @@
 .guided-entry input, .guided-entry textarea { font-size: .8125rem; min-height: 2.5rem; }
 .guided-entry section[data-tone] > div:first-child > p:first-child { color: var(--section-ink); font-size: .875rem; font-weight: 700; letter-spacing: normal; }
 /* Module identity is a restrained accent, not a replacement for the neutral page. */
-[data-golden-workspace='assets'] { --workspace-ink: var(--guide-blue); }
-[data-golden-workspace='monitoring'] { --workspace-ink: var(--guide-teal); }
-[data-golden-workspace='external'], [data-golden-workspace='racks'] { --workspace-ink: var(--guide-blue); }
-[data-golden-workspace='architecture'] { --workspace-ink: var(--guide-violet); }
-[data-golden-workspace='network'] { --workspace-ink: var(--guide-violet); }
-[data-golden-workspace='services'] { --workspace-ink: var(--guide-amber); }
+[data-golden-workspace='assets'] { --workspace-ink: var(--brand-blue, var(--guide-blue)); }
+[data-golden-workspace='monitoring'],
+[data-golden-workspace='external'],
+[data-golden-workspace='racks'],
+[data-golden-workspace='architecture'],
+[data-golden-workspace='network'],
+[data-golden-workspace='services'] { --workspace-ink: var(--brand-blue, var(--guide-blue)); }
 [data-golden-page-header] h1 > span > svg,
 [data-golden-page-header] h1 > div > svg,
 [data-golden-page-header] h1 > svg { color: var(--workspace-ink, var(--action-ink, var(--accent-primary))); }
@@ -79,15 +80,15 @@ header[data-golden-page-header] {
   top: 0;
   left: 0;
   width: 3px;
-  height: 4rem;
+  height: var(--page-header-min-height, 4rem);
   border-radius: 2px;
   background: var(--workspace-ink, var(--pv1-accent, var(--guide-blue, var(--action-ink, var(--accent-primary)))));
   pointer-events: none;
 }
 [data-golden-page-header] h1 {
   margin: 0 !important;
-  font-size: 1.375rem !important;
-  line-height: 1.625rem !important;
+  font-size: 1.5rem !important;
+  line-height: 1.75rem !important;
   font-weight: 700 !important;
   letter-spacing: -0.02em !important;
 }

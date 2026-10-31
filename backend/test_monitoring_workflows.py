@@ -273,7 +273,7 @@ async def test_monitoring_enforces_guardrails_and_security_rules(seeded_admin_te
 
     bad_frequency = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "BAD-FREQ",
         "platform": "Zabbix",
@@ -285,7 +285,7 @@ async def test_monitoring_enforces_guardrails_and_security_rules(seeded_admin_te
 
     bad_url = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "BAD-URL",
         "platform": "Zabbix",
@@ -297,7 +297,7 @@ async def test_monitoring_enforces_guardrails_and_security_rules(seeded_admin_te
 
     missing_bkm = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "NO-BKM",
         "platform": "Zabbix",
@@ -351,7 +351,7 @@ async def test_monitoring_allows_optional_and_combined_ownership(seeded_admin_te
 
     create_res = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "TEAMED-MONITOR",
         "platform": "Zabbix",
@@ -367,7 +367,7 @@ async def test_monitoring_allows_optional_and_combined_ownership(seeded_admin_te
 
     individual_res = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "USER-OWNED-MONITOR",
         "platform": "Zabbix",
@@ -382,7 +382,7 @@ async def test_monitoring_allows_optional_and_combined_ownership(seeded_admin_te
 
     team_owned_res = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "TEAM-ONLY-MONITOR",
         "platform": "Zabbix",
@@ -395,7 +395,7 @@ async def test_monitoring_allows_optional_and_combined_ownership(seeded_admin_te
 
     optional_owned_res = await client.post("/api/v1/monitoring", json={
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "UNOWNED-MONITOR",
         "platform": "Zabbix",
@@ -426,7 +426,7 @@ async def test_monitoring_rejects_active_duplicates_and_allows_recreate_after_ar
 
     payload = {
         "device_id": device["id"],
-        "category": "Infrastructure",
+        "category": "Hardware",
         "status": "Existing",
         "title": "DUPLICATE-MONITOR",
         "platform": "Zabbix",
