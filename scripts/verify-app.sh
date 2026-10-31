@@ -298,7 +298,6 @@ if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
 
 (
   cd "$FRONTEND_DIR"
-  node scripts/check-theme-preference.mjs
   node scripts/check-dev-server-boundary.mjs
   node scripts/check-desktop-test-selection.mjs
   node scripts/check-normal-release-selection.mjs
@@ -307,6 +306,7 @@ if [[ "$VERIFY_STAGE" == all || "$VERIFY_STAGE" == checks ]]; then
   npm run typecheck
   npm run test:coverage
   npm run build
+  node scripts/check-theme-preference.mjs
 )
 fi
 
