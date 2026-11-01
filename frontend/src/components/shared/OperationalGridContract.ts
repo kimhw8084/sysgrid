@@ -59,6 +59,15 @@ export const OPERATIONAL_GRID_WIDTHS = {
   dot: 56,
 } as const
 
+export const OPERATIONAL_GRID_DEFAULT_COLUMN_DEF = {
+  sortable: true,
+  resizable: true,
+  filter: true,
+  suppressMovable: false,
+  wrapText: false,
+  autoHeight: false,
+}
+
 type OperationalColumnCommonConfig = {
   field: string
   headerName: string

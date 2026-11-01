@@ -150,7 +150,7 @@ export function OperationalRowActionMenu({
                   <div
                     key={rowIdx}
                     className="flex gap-2"
-                    style={{ width: `${geometry.actionSetWidth}px` }}
+                    style={{ width: `${row.rowWidth}px` }}
                   >
                     {row.items.map((item, itemIdx) => {
                       const button = (

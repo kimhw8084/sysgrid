@@ -4,6 +4,12 @@ export const OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY = {
 
 export const OPERATIONAL_GRID_AUTO_SIZE_STRATEGY = OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY
 
+export const getOperationalGridHeaderHeight = (fontSize = 11) =>
+  Math.max(42, Math.ceil(fontSize + 31))
+
+export const getOperationalGridRowHeight = (fontSize = 11, rowDensity = 8) =>
+  Math.min(52, Math.max(32, Math.ceil(fontSize + rowDensity + 17)))
+
 export const getOperationalCompactGridHeight = (
   visibleRowCount: number,
   fontSize: number,
@@ -11,8 +17,8 @@ export const getOperationalCompactGridHeight = (
 ): number | null => {
   if (![visibleRowCount, fontSize, rowDensity].every(Number.isFinite) || visibleRowCount > 5) return null
   const rows = Math.max(2, Math.floor(visibleRowCount))
-  const headerHeight = fontSize + rowDensity + 10
-  const rowHeight = fontSize + rowDensity + 4
+  const headerHeight = getOperationalGridHeaderHeight(fontSize)
+  const rowHeight = getOperationalGridRowHeight(fontSize, rowDensity)
   return Math.ceil(headerHeight + rows * rowHeight + 16)
 }
 

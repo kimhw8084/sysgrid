@@ -7,6 +7,8 @@ import { WorkspaceDialogFrame } from './shared/WorkspaceDialogFrame'
 import { FormGuide } from './shared/FormGuide'
 import { useWorkspaceDialogLayer, useWorkspacePopupDismiss, WORKSPACE_LAYER_Z } from './shared/WorkspaceOverlay'
 import { getPointFloatingStyle } from './shared/OperationalGridInteractions'
+import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
+import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import { AgGridReact } from 'ag-grid-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -816,7 +818,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                   hasData={Boolean(logs)}
                   onRetry={() => void auditQuery.refetch()}
                 />
-                <div className="flex-1 relative ag-theme-alpine-dark">
+                <div className="flex-1 relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': '11px' } as React.CSSProperties}>
                   {!logs && (auditQuery.isLoading || auditQuery.isError) ? (
                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 p-8 backdrop-blur-sm">
                       <RackDataState
@@ -833,12 +835,12 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                       rowData={filteredLogs}
                       columnDefs={columnDefs}
                       onRowClicked={p => setSelectedLog(p.data)}
-                      defaultColDef={{ resizable: true, filter: true, sortable: true }}
+                      defaultColDef={OPERATIONAL_GRID_DEFAULT_COLUMN_DEF}
                       animateRows={true}
                       pagination={true}
                       paginationPageSize={100}
-                      headerHeight={44}
-                      rowHeight={44}
+                      headerHeight={getOperationalGridHeaderHeight()}
+                      rowHeight={getOperationalGridRowHeight()}
                     />
                   )}
                 </div>
@@ -911,33 +913,6 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               </div>
             </div>
 
-            <style>{`
-              .ag-theme-alpine-dark {
-                --ag-background-color: transparent;
-                --ag-header-background-color: rgba(15, 23, 42, 0.4);
-                --ag-border-color: rgba(255, 255, 255, 0.05);
-                --ag-foreground-color: #f1f5f9;
-                --ag-header-foreground-color: #6366f1;
-                --ag-font-family: 'Geist Variable', sans-serif;
-                --ag-font-size: 11px;
-                --ag-row-hover-color: rgba(99, 102, 241, 0.05);
-                --ag-selected-row-background-color: rgba(99, 102, 241, 0.1);
-              }
-              .ag-header-cell-label { 
-                font-weight: 900 !important; 
-                text-transform: uppercase !important; 
-                letter-spacing: 0.15em !important; 
-                font-size: 10px !important;
-                color: #64748b !important;
-              }
-              .ag-cell { 
-                display: flex; 
-                align-items: center; 
-                font-weight: 700 !important; 
-                border-right: 1px solid rgba(255,255,255,0.02) !important;
-              }
-              .ag-row { border-bottom: 1px solid rgba(255,255,255,0.03) !important; }
-            `}</style>
           </motion.div>
         </WorkspaceDialogFrame>
       )}

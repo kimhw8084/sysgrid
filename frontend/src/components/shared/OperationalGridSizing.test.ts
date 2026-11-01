@@ -1,13 +1,21 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyOperationalColumnSizing, applyOperationalColumnState, getOperationalCompactGridHeight, lockOperationalColumnWidth } from './OperationalGridSizing'
+import { applyOperationalColumnSizing, applyOperationalColumnState, getOperationalCompactGridHeight, getOperationalGridHeaderHeight, getOperationalGridRowHeight, lockOperationalColumnWidth } from './OperationalGridSizing'
 
 describe('compact operational grid sizing', () => {
   it('fits small filtered result sets without a tall blank panel', () => {
-    expect(getOperationalCompactGridHeight(0, 11, 24)).toBe(139)
-    expect(getOperationalCompactGridHeight(1, 11, 24)).toBe(139)
-    expect(getOperationalCompactGridHeight(5, 11, 24)).toBe(256)
+    expect(getOperationalCompactGridHeight(0, 11, 24)).toBe(162)
+    expect(getOperationalCompactGridHeight(1, 11, 24)).toBe(162)
+    expect(getOperationalCompactGridHeight(5, 11, 24)).toBe(318)
     expect(getOperationalCompactGridHeight(6, 11, 24)).toBeNull()
+  })
+
+  it('applies one row and header height scale across operational grids', () => {
+    expect(getOperationalGridHeaderHeight(11)).toBe(42)
+    expect(getOperationalGridRowHeight(11, 4)).toBe(32)
+    expect(getOperationalGridRowHeight(11, 8)).toBe(36)
+    expect(getOperationalGridRowHeight(11, 16)).toBe(44)
+    expect(getOperationalGridRowHeight(20, 24)).toBe(52)
   })
 })
 

@@ -13,7 +13,8 @@ import { parseAppDate, formatAppDate, formatAppDay } from '../utils/dateUtils'
 import { AgGridReact } from 'ag-grid-react'
 import { toast } from 'react-hot-toast'
 import { ConfirmationModal } from './shared/ConfirmationModal'
-import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY } from './shared/OperationalGridSizing'
+import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY, getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
+import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { StyledSelect } from './shared/StyledSelect'
 import { ConfigRegistryModal } from './ConfigRegistry'
 
@@ -40,7 +41,7 @@ export default function Vendor() {
   const queryClient = useQueryClient()
   const gridRef = React.useRef<any>(null)
   const [fontSize, setFontSize] = useState(11)
-  const [rowDensity, setRowDensity] = useState(10)
+  const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(true)
   const [showColumnPicker, setShowColumnPicker] = useState(false)
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([])
@@ -393,7 +394,7 @@ export default function Vendor() {
         )}
       </AnimatePresence>
 
-      <div className="flex-1 glass-panel rounded-lg overflow-hidden ag-theme-alpine-dark relative border-white/5">
+      <div className="operational-grid-shell flex-1 glass-panel rounded-lg overflow-hidden ag-theme-alpine-dark relative border-white/5" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
         {isLoading && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#020617]/80 backdrop-blur-sm space-y-4 text-blue-400">
              <RefreshCcw size={32} className="animate-spin" />
@@ -404,8 +405,9 @@ export default function Vendor() {
           ref={gridRef}
           rowData={processedVendors || []} 
           columnDefs={columnDefs} 
-          headerHeight={Math.max(42, fontSize + rowDensity + 10)}
-          rowHeight={Math.max(40, fontSize + rowDensity + 10)}
+          defaultColDef={OPERATIONAL_GRID_DEFAULT_COLUMN_DEF}
+          headerHeight={getOperationalGridHeaderHeight(fontSize)}
+          rowHeight={getOperationalGridRowHeight(fontSize, rowDensity)}
           quickFilterText={searchTerm}
           animateRows={true}
           enableCellTextSelection={true}
@@ -497,36 +499,6 @@ export default function Vendor() {
         )}
       </AnimatePresence>
 
-      <style>{`
-        .ag-theme-alpine-dark {
-          --ag-background-color: #1a1b26;
-          --ag-header-background-color: #24283b;
-          --ag-border-color: rgba(255, 255, 255, 0.05);
-          --ag-foreground-color: #f1f5f9;
-          --ag-header-foreground-color: #3b82f6;
-          --ag-font-family: 'Geist Variable', sans-serif;
-          --ag-font-size: ${fontSize}px;
-        }
-        .ag-root-wrapper { border: none !important; }
-        .ag-header-cell-label { 
-            font-weight: 700 !important; 
-            text-transform: uppercase !important; 
-            letter-spacing: 0.1em !important; 
-            font-size: ${fontSize}px !important; 
-            justify-content: center !important; 
-        }
-        .ag-cell { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center !important; 
-            font-weight: 700 !important;
-            font-size: ${fontSize}px !important;
-        }
-
-        }
-        .ag-row-hover { background-color: rgba(255,255,255,0.05) !important; }
-        .ag-row-selected { background-color: rgba(59, 130, 246, 0.2) !important; }
-      `}</style>
     </div>
   )
 }

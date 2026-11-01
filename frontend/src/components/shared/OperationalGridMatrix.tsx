@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { OPERATIONAL_GRID_CLASSES } from './OperationalGridContract'
+import { OPERATIONAL_GRID_CLASSES, OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './OperationalGridContract'
+import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './OperationalGridSizing'
 
 export const OperationalGridMatrix = React.memo(({
   gridRef,
@@ -33,15 +34,6 @@ export const OperationalGridMatrix = React.memo(({
   suppressRowClickSelection = true,
 }: any) => {
   const apiRef = useRef<any>(null)
-  const [phone, setPhone] = useState(() => window.matchMedia?.('(max-width: 767px)').matches ?? false)
-  useEffect(() => {
-    const media = window.matchMedia?.('(max-width: 767px)')
-    if (!media) return
-    const changed = () => setPhone(media.matches)
-    media.addEventListener('change', changed)
-    changed()
-    return () => media.removeEventListener('change', changed)
-  }, [])
   const unpinFrame = useRef<number>()
   const handleCellKeyDown = useCallback((event: any) => {
     const key = event?.event?.key
@@ -65,8 +57,8 @@ export const OperationalGridMatrix = React.memo(({
       const left = api.getDisplayedLeftColumns()
       const right = api.getDisplayedRightColumns()
       let pinnedWidth = [...left, ...right].reduce((total, column) => total + column.getActualWidth(), 0)
-      // Keep row commands reachable on phones. Release other pinned columns
-      // first, retaining AG Grid's minimum 50px center viewport and width rules.
+      // Keep row commands reachable when pinned columns threaten the center viewport.
+      // Release other pinned columns first, retaining the minimum center width.
       const candidates = [...right].reverse().filter(column => column.getColId() !== 'row_actions')
         .concat([...left].reverse(), right.filter((column: any) => column.getColId() === 'row_actions'))
       overflowing = []
@@ -88,12 +80,7 @@ export const OperationalGridMatrix = React.memo(({
   }, [])
 
   const defaultColDef = useMemo(() => ({
-    sortable: true,
-    resizable: true,
-    filter: true,
-    suppressMovable: false,
-    wrapText: false,
-    autoHeight: false,
+    ...OPERATIONAL_GRID_DEFAULT_COLUMN_DEF,
     tooltipValueGetter: (params: any) => {
       const value = params.valueFormatted ?? params.value
       return value == null ? null : String(value)
@@ -131,8 +118,8 @@ export const OperationalGridMatrix = React.memo(({
       getRowId={getRowId}
       rowSelection="multiple"
       animateRows={false}
-      headerHeight={Math.max(42, fontSize + rowDensity + 10)}
-      rowHeight={Math.max(phone ? 52 : 40, fontSize + rowDensity + 4)}
+      headerHeight={getOperationalGridHeaderHeight(fontSize)}
+      rowHeight={getOperationalGridRowHeight(fontSize, rowDensity)}
       rowBuffer={6}
       valueCache={true}
       context={context}

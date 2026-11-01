@@ -3009,20 +3009,6 @@ export default function AssetReal() {
         />
       </AnimatePresence>
 
-      <style>{`
-        .ag-theme-alpine-dark {
-          --ag-background-color: #1a1b26;
-          --ag-header-background-color: #24283b;
-          --ag-border-color: rgba(255, 255, 255, 0.05);
-          --ag-foreground-color: #f1f5f9;
-          --ag-header-foreground-color: #3b82f6;
-        }
-        .ag-root-wrapper { border: none !important; }
-	        .ag-row-hover { background-color: rgba(255,255,255,0.05) !important; }
-	        .ag-row-selected { background-color: rgba(59, 130, 246, 0.2) !important; }
-          .row-action-trigger { opacity: 1; }
-	        .ag-side-bar { background-color: #24283b !important; border-left: 1px solid rgba(255,255,255,0.05) !important; }
-	      `}</style>
     </OperationalWorkspaceFrame>
   )
 }

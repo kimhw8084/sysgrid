@@ -19,13 +19,13 @@ import {
   parseAuditResponse,
 } from './audit/auditQuery'
 import { resolveOperationalObjectReference } from './shared/OperationalObjectReference'
+import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
+import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 
 const AUDIT_DEFAULT_COLUMN_DEF: ColDef = {
-  resizable: true,
-  filter: true,
-  sortable: true,
+  ...OPERATIONAL_GRID_DEFAULT_COLUMN_DEF,
   menuTabs: ['filterMenuTab', 'generalMenuTab'],
 }
 
@@ -37,7 +37,7 @@ export default function AuditLogs() {
   const [gridApi, setGridApi] = useState<any>(null)
   const [gridColumnApi, setGridColumnApi] = useState<any>(null)
   const [fontSize, setFontSize] = useState(11)
-  const [rowDensity, setRowDensity] = useState(10)
+  const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(false)
   const [showCharts, setShowCharts] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   const [isMobileLayout, setIsMobileLayout] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches)
@@ -450,7 +450,7 @@ export default function AuditLogs() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark">
+      <div className="min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
         {isLoading && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[var(--surface-overlay)] backdrop-blur-sm space-y-4">
              <RefreshCcw size={32} className="text-blue-400 animate-spin" />
@@ -491,8 +491,8 @@ export default function AuditLogs() {
           animateRows={true}
           enableCellTextSelection={true}
           rowSelection="multiple"
-          headerHeight={Math.max(42, fontSize + rowDensity + 14)}
-          rowHeight={Math.max(40, fontSize + rowDensity + 16)}
+          headerHeight={getOperationalGridHeaderHeight(fontSize)}
+          rowHeight={getOperationalGridRowHeight(fontSize, rowDensity)}
           pagination={true}
           paginationPageSize={50}
         />
@@ -537,104 +537,6 @@ export default function AuditLogs() {
         )}
       </AnimatePresence>
 
-      <style>{`
-        [data-audit-ledger] .ag-theme-alpine-dark {
-          --ag-background-color: var(--grid-bg);
-          --ag-odd-row-background-color: var(--surface-base);
-          --ag-header-background-color: var(--grid-header-bg);
-          --ag-border-color: var(--grid-border);
-          --ag-foreground-color: var(--text-primary);
-          --ag-header-foreground-color: var(--text-secondary);
-          --ag-font-family: 'Geist Variable', sans-serif;
-          --ag-font-size: ${fontSize}px;
-          --ag-grid-size: 4px;
-          --ag-list-item-height: 24px;
-        }
-        [data-audit-ledger] .ag-root-wrapper { border: none !important; }
-        [data-audit-ledger] .ag-header-cell-label {
-            font-weight: 900 !important; 
-            text-transform: uppercase !important; 
-            letter-spacing: 0.15em !important; 
-            font-size: ${Math.max(10, fontSize - 1)}px !important;
-            justify-content: center !important; 
-            color: var(--text-secondary) !important;
-        }
-        [data-audit-ledger] .ag-header-cell-text {
-            white-space: nowrap !important;
-            word-break: normal !important;
-            overflow-wrap: normal !important;
-        }
-        [data-audit-ledger] .ag-cell-value {
-            white-space: nowrap !important;
-            word-break: normal !important;
-            overflow-wrap: normal !important;
-        }
-        [data-audit-ledger] .ag-header-cell[col-id="audit-actions"] .ag-header-cell-text,
-        [data-audit-ledger] .ag-header-cell[col-id="action"] .ag-header-cell-text,
-        [data-audit-ledger] .ag-header-cell[col-id="user_id"] .ag-header-cell-text {
-            white-space: nowrap !important;
-            word-break: normal !important;
-            overflow-wrap: normal !important;
-        }
-        [data-audit-ledger] .ag-header-cell-pinned::after {
-            background-color: rgba(59, 130, 246, 0.2) !important;
-        }
-        [data-audit-ledger] .ag-cell {
-            display: flex; 
-            align-items: center; 
-            justify-content: center !important; 
-            font-weight: 700 !important;
-            font-size: ${fontSize}px !important;
-            border-right: 1px solid var(--grid-border) !important;
-        }
-        [data-audit-ledger] .ag-cell-focus { border: 1px solid var(--accent-primary) !important; background-color: var(--accent-glow) !important; }
-        [data-audit-ledger] .ag-row { border-bottom: 1px solid var(--grid-border) !important; }
-        [data-audit-ledger] .ag-row-hover { background-color: var(--surface-hover) !important; }
-        [data-audit-ledger] .ag-row-selected { background-color: var(--accent-glow) !important; }
-        [data-audit-ledger] .ag-paging-panel {
-            background-color: var(--grid-header-bg) !important;
-            border-top: 1px solid var(--grid-border) !important;
-            color: var(--text-secondary) !important;
-            font-size: 11px !important;
-            font-weight: 500 !important;
-            height: 40px !important;
-        }
-        @media (max-width: 639px) {
-          [data-audit-ledger] [data-audit-date-range] {
-            display: grid;
-            grid-template-columns: 14px minmax(0, 1fr) 1px minmax(0, 1fr);
-            gap: 8px;
-          }
-          [data-audit-ledger] [data-audit-date-range] > div {
-            min-width: 0;
-            margin-left: 0;
-            margin-right: 0;
-          }
-          [data-audit-ledger] [data-audit-date-range] > svg { margin-left: 0; }
-          [data-audit-ledger] [data-audit-date-range] input[type="date"] {
-            width: 100%;
-            min-width: 0;
-          }
-        }
-        @media (max-width: 640px) {
-          [data-audit-ledger] .ag-paging-panel {
-            box-sizing: border-box;
-            height: auto !important;
-            min-height: 40px;
-            padding: 4px 6px;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 2px 4px;
-          }
-        }
-        [data-audit-ledger] .ag-icon { color: var(--accent-primary) !important; }
-        
-        /* Custom Scrollbar for Grid */
-        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar { width: 10px; height: 10px; }
-        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar-track { background: transparent; }
-        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar-thumb { background: var(--grid-border); border-radius: 10px; }
-        [data-audit-ledger] .ag-body-viewport::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-      `}</style>
     </div>
   )
 }

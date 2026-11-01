@@ -18,6 +18,8 @@ import { withServiceEditRevision } from '../utils/serviceRevision'
 import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { CredentialValue, credentialUpdatePayload } from './shared/CredentialValue'
 import { AssetDataState, fetchAssetArray } from './assets/assetDataState'
+import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
+import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 
 const SharedServiceModals = ({ 
   activeDetails, 
@@ -924,7 +926,7 @@ export default function AssetGrid() {
   const queryClient = useQueryClient()
   const gridRef = React.useRef<any>(null)
   const [fontSize, setFontSize] = useState(11)
-  const [rowDensity, setRowDensity] = useState(10)
+  const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(true)
 
   const [activeTab, setActiveTab] = useState<'inventory' | 'deleted'>('inventory')
@@ -1397,7 +1399,7 @@ export default function AssetGrid() {
       </AnimatePresence>
 
       {viewMode === 'grid' && (
-        <div className="flex-1 glass-panel rounded-lg overflow-hidden ag-theme-alpine-dark relative border-white/5">
+        <div className="operational-grid-shell flex-1 glass-panel rounded-lg overflow-hidden ag-theme-alpine-dark relative border-white/5" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
           {isLoading && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#020617]/80 backdrop-blur-sm space-y-4 text-blue-400">
                <RefreshCcw size={32} className="animate-spin" />
@@ -1408,9 +1410,10 @@ export default function AssetGrid() {
             ref={gridRef}
             rowData={assets || []} 
             columnDefs={columnDefs} 
+            defaultColDef={OPERATIONAL_GRID_DEFAULT_COLUMN_DEF}
             rowSelection="multiple"
-            headerHeight={Math.max(42, fontSize + rowDensity + 10)}
-            rowHeight={Math.max(40, fontSize + rowDensity + 10)}
+            headerHeight={getOperationalGridHeaderHeight(fontSize)}
+            rowHeight={getOperationalGridRowHeight(fontSize, rowDensity)}
             onSelectionChanged={e => setSelectedIds(e?.api?.getSelectedNodes().map((n: any) => n.data?.id).filter(Boolean) || [])}
             quickFilterText={searchTerm}
             animateRows={true}
@@ -1527,38 +1530,6 @@ export default function AssetGrid() {
         ]}
       />
 
-      <style>{`
-        .ag-theme-alpine-dark {
-          --ag-background-color: #1a1b26;
-          --ag-header-background-color: #24283b;
-          --ag-border-color: rgba(255, 255, 255, 0.05);
-          --ag-foreground-color: #f1f5f9;
-          --ag-header-foreground-color: #3b82f6;
-          --ag-font-family: 'Geist Variable', sans-serif;
-          --ag-font-size: ${fontSize}px;
-        }
-        .ag-root-wrapper { border: none !important; }
-        .ag-header-cell-label { 
-            font-weight: 900 !important; 
-            text-transform: uppercase !important; 
-            letter-spacing: 0.1em !important; 
-            font-size: ${fontSize}px !important; 
-            justify-content: center !important; 
-            font-style: !important;
-        }
-        .ag-cell { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center !important; 
-        }
-        .ag-row-hover { background-color: rgba(255,255,255,0.05) !important; }
-        .ag-row-selected { background-color: rgba(59, 130, 246, 0.2) !important; }
-        
-        /* Make filter popups non-transparent and on top */
-        .ag-popup { z-index: 1000 !important; }
-        .ag-filter-wrapper { background-color: #24283b !important; border: 1px solid rgba(255,255,255,0.1) !important; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4) !important; border-radius: 12px !important; opacity: 1 !important; }
-        .ag-filter-body { background-color: #24283b !important; padding: 12px !important; }
-      `}</style>
     </div>
   )
 }
