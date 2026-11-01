@@ -226,7 +226,7 @@ export function OperationalGroupedGridSection({
   children?: React.ReactNode
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)]">
+    <section data-operational-group-section="true" className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)]">
       <button
         type="button"
         onClick={onToggle}

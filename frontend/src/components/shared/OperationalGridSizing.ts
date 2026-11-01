@@ -46,10 +46,22 @@ const clampOperationalColumnWidth = (width: any, minWidth: any, maxWidth: any): 
 }
 
 export const normalizeOperationalColumnDefinition = (column: Record<string, any>) => {
+  const autoSizeMaxWidth = column.operationalAutoSizeMaxWidth ?? column.maxWidth
+  const autoSizeMinWidth = column.operationalAutoSizeMinWidth ?? column.minWidth
   const normalized: Record<string, any> = {
     ...column,
     resizable: true,
     minWidth: OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
+  }
+  if (typeof autoSizeMaxWidth === 'number' && Number.isFinite(autoSizeMaxWidth)) {
+    normalized.operationalAutoSizeMaxWidth = Math.max(OPERATIONAL_GRID_MIN_COLUMN_WIDTH, autoSizeMaxWidth)
+  }
+  if (typeof autoSizeMinWidth === 'number' && Number.isFinite(autoSizeMinWidth)) {
+    const maximum = normalized.operationalAutoSizeMaxWidth
+    normalized.operationalAutoSizeMinWidth = Math.min(
+      Math.max(OPERATIONAL_GRID_MIN_COLUMN_WIDTH, autoSizeMinWidth),
+      typeof maximum === 'number' ? maximum : Number.POSITIVE_INFINITY,
+    )
   }
   delete normalized.maxWidth
   delete normalized.operationalLockWidth
@@ -139,7 +151,11 @@ export const clampAutoSizedOperationalColumnWidths = (api: {
     const width = column.getActualWidth?.()
     if (typeof width !== 'number' || !Number.isFinite(width)) return []
     const definition = column.getColDef?.()
-    const boundedWidth = clampOperationalColumnWidth(width, definition?.minWidth, definition?.maxWidth)
+    const boundedWidth = clampOperationalColumnWidth(
+      width,
+      definition?.operationalAutoSizeMinWidth ?? definition?.minWidth,
+      definition?.operationalAutoSizeMaxWidth ?? definition?.maxWidth,
+    )
     return boundedWidth === width ? [] : [{ colId: column.getColId(), width: boundedWidth }]
   })
   if (!state.length || isOperationalGridDestroyed(api)) return

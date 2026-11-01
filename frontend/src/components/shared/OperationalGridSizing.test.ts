@@ -31,9 +31,12 @@ describe('resizable operational columns', () => {
       { headerName: 'Group', children: [{ colId: 'name', width: 220, minWidth: 180, maxWidth: 240, resizable: false }] },
     ])
     expect(utility).toMatchObject({ width: 64, minWidth: 40, resizable: true })
+    expect(utility.operationalAutoSizeMinWidth).toBe(64)
+    expect(utility.operationalAutoSizeMaxWidth).toBe(64)
     expect(utility).not.toHaveProperty('maxWidth')
     expect(utility).not.toHaveProperty('operationalLockWidth')
     expect(grouped.children[0]).toMatchObject({ width: 220, minWidth: 40, resizable: true })
+    expect(grouped.children[0].operationalAutoSizeMaxWidth).toBe(240)
     expect(grouped.children[0]).not.toHaveProperty('maxWidth')
   })
 
@@ -46,6 +49,7 @@ describe('resizable operational columns', () => {
     expect(column.width).toBe(900)
     expect(column.minWidth).toBe(40)
     expect(column.resizable).toBe(true)
+    expect(column.operationalAutoSizeMaxWidth).toBe(64)
     expect(column).not.toHaveProperty('maxWidth')
   })
 

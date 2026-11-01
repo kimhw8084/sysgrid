@@ -494,7 +494,7 @@ test.describe('Network workflows', () => {
     await expect(page.getByRole('heading', { name: 'Maintenance' })).toBeVisible()
 
     // Select a row inside "Active" group and see aggregation updates
-    const activeSection = page.locator('section.glass-panel').filter({ has: page.getByRole('heading', { name: 'Active' }) })
+    const activeSection = page.locator('[data-operational-group-section="true"]').filter({ has: page.getByRole('heading', { name: 'Active' }) })
     const activeRow = activeSection.locator('.ag-center-cols-container .ag-row').nth(0)
     await activeRow.locator('.ag-cell').first().click()
     await expect(activeRow).toHaveClass(/ag-row-selected/)
