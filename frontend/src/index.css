@@ -1657,6 +1657,11 @@ select option[value=""] {
   outline-offset: 2px;
 }
 
+[data-rack-elevation-card='true'] {
+  content-visibility: auto;
+  contain-intrinsic-size: 360px;
+}
+
 .rack-unit {
   --rack-unit-fill: var(--rack-unit-empty);
   --rack-unit-edge: var(--grid-border);

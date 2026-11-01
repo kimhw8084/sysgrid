@@ -2918,12 +2918,8 @@ export default function External() {
       workspace="external"
       header={{
         eyebrow: 'External Intelligence',
-        title: (
-          <div className="flex items-center gap-3">
-            <Globe className="text-blue-500" />
-            <span>{externalViewLabel}</span>
-          </div>
-        ),
+        title: externalViewLabel,
+        titleIcon: Globe,
         subtitle: `${externalRegistryLabel} and dependency intelligence`,
         actions: (
           <>

@@ -1756,12 +1756,8 @@ export default function ServicesReal() {
       className="overflow-hidden"
       header={{
         eyebrow: "Services",
-        title: (
-          <div className="flex items-center gap-3">
-            <Activity className="text-blue-500" />
-            <span>Services</span>
-          </div>
-        ),
+        title: 'Services',
+        titleIcon: Activity,
         subtitle: "Centralized logical service registry and operational ownership view",
         actions: (
           <>

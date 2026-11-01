@@ -172,18 +172,10 @@ const MiniBar = ({ value, max, colorFn, label, unit, overflowLabel = 'CAPACITY A
         </span>
       </div>
       <div className={`h-1.5 bg-[var(--grid-border)] rounded-lg overflow-hidden relative ${isOverflow ? 'ring-1 ring-rose-500/50' : ''}`}>
-        <motion.div 
+        <div
           className={`h-full rounded-lg transition-all duration-700 ease-out ${colorFn(pct)}`} 
           style={{ width: `${Math.min(pct, 100)}%` }} 
-          animate={isOverflow ? { opacity: [1, 0.6, 1], scaleY: [1, 1.2, 1] } : {}}
-          transition={isOverflow ? { repeat: Infinity, duration: 1 } : {}}
         />
-        {isOverflow && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 1 }}
-            className="absolute inset-0 bg-white/20"
-          />
-        )}
       </div>
     </div>
   )
@@ -865,7 +857,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                         <div className="w-1/3 p-8 border-r border-white/5 space-y-6 bg-white/[0.01]">
                           <div>
                             <div className="flex items-center gap-2 mb-2">
-                               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                               <div className="w-2 h-2 rounded-full bg-emerald-500" />
                                <h4 className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Discovery Trace</h4>
                             </div>
                             <h2 className="text-xl font-black text-white uppercase leading-tight">{selectedLog.action} TRANSACTION</h2>
@@ -902,11 +894,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                         {/* Visual Confirmation */}
                         <div className="w-64 p-8 flex flex-col items-center justify-center gap-4 bg-white/[0.02]">
                            <div className="w-24 h-24 rounded-lg border-4 border-emerald-500/20 flex items-center justify-center relative">
-                              <motion.div 
-                                animate={{ rotate: 360 }}
-                                transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                                className="absolute inset-0 rounded-lg border-4 border-emerald-500 border-t-transparent opacity-40" 
-                              />
+                              <div className="absolute inset-0 rounded-lg border-4 border-emerald-500 border-t-transparent opacity-40" />
                               <Check size={48} className="text-emerald-500" />
                            </div>
                            <div className="text-center">
@@ -958,15 +946,34 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
 // ─── Rack Elevation Card ───────────────────────────────────────────────────────
 
+const EMPTY_RACK_LOCATIONS: any[] = []
+const noRackAction = (..._args: any[]) => undefined
+
+const indexRackLocationsByUnit = (locations: any[], totalU: number) => {
+  const locationsByUnit = new Map<number, any>()
+  locations.forEach((location) => {
+    const startUnit = Number(location?.start_unit)
+    const sizeU = Number(location?.size_u)
+    if (!Number.isInteger(startUnit) || !Number.isInteger(sizeU) || sizeU < 1) return
+
+    const firstUnit = Math.max(1, startUnit)
+    const lastUnit = Math.min(totalU, startUnit + sizeU - 1)
+    for (let unit = firstUnit; unit <= lastUnit; unit += 1) {
+      if (!locationsByUnit.has(unit)) locationsByUnit.set(unit, location)
+    }
+  })
+  return locationsByUnit
+}
+
 interface RackElevationProps {
   rack: any
-  onDelete: (id: number) => void
+  onDelete: (rack: any) => void
   onEdit: (rack: any) => void
   onMove?: (dir: 'left' | 'right') => void
   onShowInfo?: (rack: any) => void
   searchTerm: string
   onMount: (rackId: number, u: number) => void
-  onManageDevice: (device: any, loc: any, event: React.MouseEvent) => void
+  onManageDevice: (device: any, loc: any, rack: any, event: React.MouseEvent) => void
   isSelected: boolean
   onToggleSelect: (id: number) => void
   onRestore?: (id: number) => void
@@ -980,7 +987,7 @@ interface RackElevationProps {
   className?: string
   }
 
-  const RackElevation = ({
+  const RackElevation = React.memo(({
   rack, onDelete, onEdit, onMove, onShowInfo, searchTerm, onMount, onManageDevice,
   isSelected, onToggleSelect, onRestore, isDeleted, rackWidth,
   focusedDeviceId, connectedDeviceIds, diffMode, liveRack, showCheckbox = true,
@@ -991,19 +998,23 @@ interface RackElevationProps {
   useWorkspacePopupDismiss(menuOpen, rackMenu.triggerRef, rackMenu.panelRef, () => setMenuOpen(false))
   const scrollRef = useRef<HTMLDivElement>(null)
   const totalU = rack.total_u || 42
-  const units = Array.from({ length: totalU }, (_, i) => totalU - i)
+  const locations = rack.device_locations || EMPTY_RACK_LOCATIONS
+  const liveLocations = liveRack?.device_locations || EMPTY_RACK_LOCATIONS
+  const units = useMemo(() => Array.from({ length: totalU }, (_, i) => totalU - i), [totalU])
+  const locationsByUnit = useMemo(() => indexRackLocationsByUnit(locations, totalU), [locations, totalU])
+  const liveLocationsByUnit = useMemo(
+    () => liveLocations === locations ? locationsByUnit : indexRackLocationsByUnit(liveLocations, totalU),
+    [liveLocations, locations, locationsByUnit, totalU]
+  )
 
   // Auto-scroll to first diff if in diffMode
   useEffect(() => {
     if (diffMode && liveRack && scrollRef.current) {
-      const liveLocations = liveRack.device_locations || []
-      const virtualLocations = rack.device_locations || []
-
       // Find first unit where there is a difference
       let firstDiffU = -1
       for (let u = 1; u <= totalU; u++) {
-        const liveAtU = liveLocations.find((l: any) => l.start_unit <= u && (l.start_unit + l.size_u) > u)
-        const virtAtU = virtualLocations.find((l: any) => l.start_unit <= u && (l.start_unit + l.size_u) > u)
+        const liveAtU = liveLocationsByUnit.get(u)
+        const virtAtU = locationsByUnit.get(u)
 
         if (JSON.stringify(liveAtU) !== JSON.stringify(virtAtU)) {
           firstDiffU = u
@@ -1018,23 +1029,23 @@ interface RackElevationProps {
         }
       }
     }
-  }, [diffMode, liveRack, rack.device_locations, totalU])
+  }, [diffMode, liveRack, liveLocationsByUnit, locationsByUnit, totalU])
 
   const occupiedU = useMemo(() =>
-    (rack.device_locations || []).reduce((acc: number, l: any) => acc + (l.size_u || 1), 0),
-  [rack.device_locations])
+    locations.reduce((acc: number, l: any) => acc + (l.size_u || 1), 0),
+  [locations])
 
   const serverCount = useMemo(() =>
-    (rack.device_locations || []).filter((l: any) => l.device?.type?.toLowerCase() === 'server' || l.device?.type?.toLowerCase() === 'physical').length,
-  [rack.device_locations])
+    locations.filter((l: any) => l.device?.type?.toLowerCase() === 'server' || l.device?.type?.toLowerCase() === 'physical').length,
+  [locations])
 
   const reservedCount = useMemo(() =>
-    (rack.device_locations || []).filter((l: any) => l.device?.status?.toLowerCase() === 'reserved').length,
-  [rack.device_locations])
+    locations.filter((l: any) => l.device?.status?.toLowerCase() === 'reserved').length,
+  [locations])
 
   const estimatedPowerKw = useMemo(() =>
-    (rack.device_locations || []).reduce((acc: number, l: any) => acc + ((l.device?.power_typical_w || 0) / 1000), 0),
-  [rack.device_locations])
+    locations.reduce((acc: number, l: any) => acc + ((l.device?.power_typical_w || 0) / 1000), 0),
+  [locations])
 
   const effectivePowerCapKw = useMemo(() => {
    const a = rack.pdu_a_cap_kw || 0
@@ -1054,6 +1065,7 @@ interface RackElevationProps {
   return (
    <div 
      data-rack-id={rack.id}
+     data-rack-elevation-card="true"
      style={{ width: `${rackWidth}px` }}
      className={`glass-panel max-w-none flex-shrink-0 rounded-lg overflow-hidden flex flex-col border transition-all group relative
      ${isSelected ? 'border-blue-500/60 shadow-blue-500/15 shadow-2xl bg-blue-900/[0.07]' : 'border-[var(--grid-border)] hover:border-[var(--accent-primary)]'}
@@ -1091,7 +1103,7 @@ interface RackElevationProps {
                   <RefreshCcw size={9} /> Restore
                 </button>
                 <button
-                  onClick={() => onDelete(rack.id)}
+                  onClick={() => onDelete(rack)}
                   className="p-1 hover:bg-rose-500/10 rounded-lg text-rose-500 transition-colors"
                   title="Permanent Delete"
                 >
@@ -1138,7 +1150,7 @@ interface RackElevationProps {
                           <Edit2 size={9} /> Edit Rack
                         </button>
                         <div className="h-px bg-white/5 my-1" />
-                        <button onClick={() => { onDelete(rack.id); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-[8px] font-bold uppercase text-rose-500 hover:bg-rose-500/10 rounded-lg flex items-center gap-2 transition-colors">
+                        <button onClick={() => { onDelete(rack); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-[8px] font-bold uppercase text-rose-500 hover:bg-rose-500/10 rounded-lg flex items-center gap-2 transition-colors">
                           <Trash2 size={9} /> Decommission
                         </button>
                       </motion.div>
@@ -1200,8 +1212,8 @@ interface RackElevationProps {
         <div ref={scrollRef} className="flex-1 min-h-[120px] overflow-y-auto custom-scrollbar px-5 py-2">
           <div className="bg-[var(--surface-base)] border border-[var(--grid-border)] rounded-lg overflow-hidden">
             {units.map(u => {
-              const loc = rack.device_locations?.find((l: any) => u >= l.start_unit && u < l.start_unit + l.size_u)
-              const liveLoc = liveRack?.device_locations?.find((l: any) => u >= l.start_unit && u < l.start_unit + l.size_u)
+              const loc = locationsByUnit.get(u)
+              const liveLoc = liveLocationsByUnit.get(u)
               
               return (
                 <RackUnit
@@ -1212,7 +1224,7 @@ interface RackElevationProps {
                   isBottom={loc ? u === loc.start_unit : false}
                   highlight={loc?.device ? isHighlighted(loc.device) : false}
                   onSelect={() => onMount(rack.id, u)}
-                  onManage={(device, l, e) => onManageDevice(device, l, e)}
+                  onManage={(device, l, e) => onManageDevice(device, l, rack, e)}
                   isDeleted={isDeleted}
                   isFocused={loc?.device_id === focusedDeviceId}
                   isConnected={connectedDeviceIds?.includes(loc?.device_id)}
@@ -1228,14 +1240,14 @@ interface RackElevationProps {
       {/* Footer - FIXED */}
       <div className="px-3 py-2 bg-[var(--grid-header-bg)] border-t border-[var(--grid-border)] flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-[10px] text-[var(--text-secondary)] font-medium">{(rack.device_locations || []).length} assets</span>
+          <span className="text-[10px] text-[var(--text-secondary)] font-medium">{locations.length} assets</span>
           <span className="text-[10px] text-[var(--text-secondary)] font-semibold">{totalU}U</span>
         </div>
         <span className="text-[10px] text-[var(--state-success)] font-semibold">{totalU - occupiedU}U free</span>
       </div>
     </div>
   )
-}
+})
 
 // ─── Asset Legend ──────────────────────────────────────────────────────────────
 
@@ -2230,7 +2242,7 @@ const RackInfoModal = ({ rack, onClose }: { rack: any; onClose: () => void }) =>
 
 // ─── Spatial Map (Top View) ───────────────────────────────────────────────────
 
-const SpatialMap = ({ racks, onRackClick, siteColor }: { racks: any[]; onRackClick: (rack: any) => void; siteColor?: string }) => {
+const SpatialMap = React.memo(({ racks, onRackClick, siteColor }: { racks: any[]; onRackClick: (rack: any) => void; siteColor?: string }) => {
   // Group racks by Site, then Aisle and Row
   const siteGroups = useMemo(() => {
     const data: Record<string, Record<string, Record<string, any[]>>> = {}
@@ -2273,11 +2285,11 @@ const SpatialMap = ({ racks, onRackClick, siteColor }: { racks: any[]; onRackCli
                             const isOver = fillPct >= 95
 
                             return (
-                              <motion.div
+                              <button
+                                type="button"
                                 key={rack.id}
-                                whileHover={{ scale: 1.05, y: -4 }}
                                 onClick={() => onRackClick(rack)}
-                                className={`w-44 h-32 rounded-lg border flex flex-col p-4 cursor-pointer transition-all relative overflow-hidden group
+                                className={`w-44 h-32 rounded-lg border flex flex-col p-4 text-left cursor-pointer transition-[transform,border-color,background-color] duration-150 hover:-translate-y-1 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] relative overflow-hidden group
                                   ${isOver ? 'bg-rose-500/10 border-rose-500/30' : 'bg-slate-900/60 border-white/10 hover:border-blue-500/50 shadow-lg'}
                                 `}
                               >
@@ -2327,11 +2339,10 @@ const SpatialMap = ({ racks, onRackClick, siteColor }: { racks: any[]; onRackCli
                                    })()}
                                 </div>
 
-                                {isOver && <div className="absolute inset-0 bg-rose-500/5 animate-pulse" />}
                                 <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                    <ExternalLink size={12} className="text-blue-400" />
                                 </div>
-                              </motion.div>
+                              </button>
                             )
                           })}
                         </div>
@@ -2345,7 +2356,7 @@ const SpatialMap = ({ racks, onRackClick, siteColor }: { racks: any[]; onRackCli
       </div>
     </div>
   )
-}
+})
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
@@ -2541,9 +2552,9 @@ export default function Racks() {
   } | null>(null)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'info' })
 
-  const openConfirm = (title: string, message: string, onConfirm: () => void, variant: any = 'danger') => {
+  const openConfirm = useCallback((title: string, message: string, onConfirm: () => void, variant: any = 'danger') => {
     setConfirmModal({ isOpen: true, title, message, onConfirm, variant })
-  }
+  }, [])
 
   const racksQuery = useQuery({
     queryKey: ['racks-all'],
@@ -2862,6 +2873,46 @@ export default function Racks() {
     onError: (e: any) => toast.error(e.message)
   })
 
+  const handleRackDelete = useCallback((rack: any) => {
+    const action = activeTab === 'deleted' ? 'purge' : 'delete'
+    const title = action === 'purge' ? 'Purge Rack' : 'Decommission Rack'
+    const message = action === 'purge'
+      ? `Permanently delete rack "${rack.name}"? This cannot be undone.`
+      : `Mark rack "${rack.name}" as decommissioned?`
+    openConfirm(title, message, () => bulkActionMutation.mutate({ action, ids: [rack.id] }))
+  }, [activeTab, bulkActionMutation.mutate, openConfirm])
+
+  const handleRackEdit = useCallback((rack: any) => {
+    setIsEditingRack({ ...rack, total_u: rack.total_u })
+  }, [])
+
+  const handlePlanRackEdit = useCallback((rack: any) => {
+    if (isPlanInitialized) setIsEditingRack({ ...rack, total_u: rack.total_u })
+  }, [isPlanInitialized])
+
+  const handleRackMount = useCallback((rackId: number, u: number) => {
+    setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' })
+    setProvisionMode('asset')
+  }, [])
+
+  const handlePlanRackMount = useCallback((rackId: number, u: number) => {
+    if (isPlanInitialized) setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' })
+  }, [isPlanInitialized])
+
+  const handleRackDeviceManage = useCallback((device: any, loc: any, rack: any, event: React.MouseEvent) => {
+    setOptionsMenu({ x: event.clientX, y: event.clientY, device, loc, rack })
+    setImpactAssetId(device.id)
+    setImpactCoords({ x: event.clientX, y: event.clientY })
+  }, [])
+
+  const handleRackSelectionToggle = useCallback((id: number) => {
+    setSelectedRacks((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
+  }, [])
+
+  const handleRackRestore = useCallback((id: number) => {
+    setRestoreWizard({ step: 'site-select', ids: [id], nameConflicts: [], assetWarnings: [], generalAssetWarning: false })
+  }, [])
+
   const proceedRestoreWizard = (targetSiteId?: number) => {
     if (!restoreWizard) return
     const ids = restoreWizard.ids
@@ -3006,6 +3057,17 @@ export default function Racks() {
   // ── Render ────────────────────────────────────────────────────────────────────
 
   const isMaskMode = isPlanInitialized || !!diffBaseVersion
+  const handleSpatialRackClick = useCallback((rack: any) => {
+    setActiveSite(rack.site_id)
+    setViewMode('elevation')
+    window.setTimeout(() => {
+      document.querySelector(`[data-rack-id="${rack.id}"]`)?.scrollIntoView({ behavior: 'smooth', inline: 'center' })
+    }, 100)
+  }, [])
+  const spatialSiteColor = useMemo(
+    () => activeSite ? sites?.find((site: any) => site.id === activeSite)?.color : undefined,
+    [activeSite, sites]
+  )
 
   const supportQueries = [
     { label: 'Device choices', query: devicesQuery },
@@ -3013,11 +3075,60 @@ export default function Racks() {
     { label: 'Network connections', query: connectionsQuery },
   ]
   const failedSupportQueries = supportQueries.filter(({ query }) => query.isError)
+  const rackPageHeader = (
+    <PageHeader
+      eyebrow="Infrastructure"
+      title="Racks"
+      titleIcon={Server}
+      subtitle="Physical capacity and spatial intelligence"
+      className={isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}
+      actions={activeTab === 'active' && allRacks && !isMaskMode ? (
+        <>
+          <ToolbarIconButton disabled={!allRacks} title="Import Bulk" onClick={() => setShowImportModal(true)}>
+            <Upload size={16} />
+          </ToolbarIconButton>
+          <ToolbarButton disabled={!allRacks} onClick={() => setShowAuditLogs(true)}>
+            <BarChart3 size={14} className="mr-2 inline-block" /> Logs
+          </ToolbarButton>
+          <div className="relative shrink-0">
+            <ToolbarButton ref={addMenu.triggerRef as any} disabled={!allRacks} variant="primary" aria-expanded={showAddMenu} onClick={() => setShowAddMenu(!showAddMenu)}>
+              <Plus size={14} className="mr-2 inline-block" /> Add
+            </ToolbarButton>
+            {showAddMenu && allRacks && createPortal(
+              <div ref={addMenu.panelRef} style={addMenu.panelStyle} data-workspace-panel="true">
+                <div className="bg-slate-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden p-1.5 min-w-[140px]">
+                  <button
+                    onClick={() => {
+                      setNewRack({
+                        name: '', aisle: '', row: '', total_u: 42, site_id: activeSite ? String(activeSite) : '', max_power_kw: 10.0,
+                        pdu_a_name: 'PDU-A', pdu_b_name: 'PDU-B', pdu_a_cap_kw: 10.0, pdu_b_cap_kw: 10.0
+                      })
+                      setIsAddingRack(true)
+                      setShowAddMenu(false)
+                    }}
+                    className="w-full text-left px-3 py-2.5 text-[9px] font-black uppercase text-blue-400 hover:bg-blue-500/10 rounded-lg flex items-center gap-3 transition-all"
+                  >
+                    <Server size={14} /> Add Rack
+                  </button>
+                  <button
+                    onClick={() => { setNewSite({ name: '', address: '', color: '#3b82f6' }); setIsAddingSite(true); setShowAddMenu(false) }}
+                    className="w-full text-left px-3 py-2.5 text-[9px] font-black uppercase text-emerald-400 hover:bg-emerald-500/10 rounded-lg flex items-center gap-3 transition-all"
+                  >
+                    <MapPin size={14} /> Add Site
+                  </button>
+                </div>
+              </div>, document.body
+            )}
+          </div>
+        </>
+      ) : null}
+    />
+  )
 
   if (!allRacks) {
     return (
-      <div data-golden-workspace="racks" className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
-        <PageHeader eyebrow="Infrastructure" title={<span className="inline-flex items-center gap-2"><Server size={20} aria-hidden="true" />Racks</span>} subtitle="Physical capacity and spatial intelligence" />
+      <div data-golden-workspace="racks" className="h-auto min-h-full min-w-0 flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
+        {rackPageHeader}
         <div className="flex flex-1 items-center justify-center rounded-lg border border-[var(--grid-border)] bg-[var(--panel-item-bg)] p-8">
           <RackDataState
             label="Rack records"
@@ -3032,7 +3143,7 @@ export default function Racks() {
   }
 
   return (
-    <div data-golden-workspace="racks" className="h-auto min-h-full flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
+    <div data-golden-workspace="racks" className="h-auto min-h-full min-w-0 flex flex-col gap-4 overflow-visible md:h-full md:min-h-0 md:overflow-y-auto">
       {editorConfirmation}
       
       {isPlanMode && (
@@ -3115,55 +3226,7 @@ export default function Racks() {
       )}
 
       {/* ── Page Header ── */}
-      <PageHeader 
-        eyebrow="Infrastructure"
-        title={<span className="inline-flex items-center gap-2"><Server size={20} aria-hidden="true" />Racks</span>}
-        subtitle="Physical capacity and spatial intelligence"
-        className={isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}
-
-        actions={
-          activeTab === 'active' && !isMaskMode && (
-            <>
-              <ToolbarIconButton title="Import Bulk" onClick={() => setShowImportModal(true)}>
-                <Upload size={16} />
-              </ToolbarIconButton>
-              <ToolbarButton onClick={() => setShowAuditLogs(true)}>
-                <BarChart3 size={14} className="mr-2 inline-block" /> Logs
-              </ToolbarButton>
-              <div className="relative shrink-0">
-                <ToolbarButton ref={addMenu.triggerRef as any} variant="primary" aria-expanded={showAddMenu} onClick={() => setShowAddMenu(!showAddMenu)}>
-                  <Plus size={14} className="mr-2 inline-block" /> Add
-                </ToolbarButton>
-                {showAddMenu && createPortal(
-                  <div ref={addMenu.panelRef} style={addMenu.panelStyle} data-workspace-panel="true">
-                    <div className="bg-slate-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden p-1.5 min-w-[140px]">
-                      <button
-                        onClick={() => { 
-                          setNewRack({ 
-                            name: '', aisle: '', row: '', total_u: 42, site_id: activeSite ? String(activeSite) : '', max_power_kw: 10.0,
-                            pdu_a_name: 'PDU-A', pdu_b_name: 'PDU-B', pdu_a_cap_kw: 10.0, pdu_b_cap_kw: 10.0
-                          }); 
-                          setIsAddingRack(true)
-                          setShowAddMenu(false)
-                        }}
-                        className="w-full text-left px-3 py-2.5 text-[9px] font-black uppercase text-blue-400 hover:bg-blue-500/10 rounded-lg flex items-center gap-3 transition-all"
-                      >
-                        <Server size={14} /> Add Rack
-                      </button>
-                      <button
-                        onClick={() => { setNewSite({ name: '', address: '', color: '#3b82f6' }); setIsAddingSite(true); setShowAddMenu(false) }}
-                        className="w-full text-left px-3 py-2.5 text-[9px] font-black uppercase text-emerald-400 hover:bg-emerald-500/10 rounded-lg flex items-center gap-3 transition-all"
-                      >
-                        <MapPin size={14} /> Add Site
-                      </button>
-                    </div>
-                  </div>, document.body
-                )}
-              </div>
-            </>
-          )
-        }
-      />
+      {rackPageHeader}
 
       {/* ── Page Toolbar ── */}
       <PageToolbar 
@@ -3387,11 +3450,8 @@ export default function Racks() {
         {viewMode === 'spatial' ? (
           <SpatialMap
             racks={displayedRacks}
-            onRackClick={(r) => { setActiveSite(r.site_id); setViewMode('elevation'); setTimeout(() => {
-              const el = document.querySelector(`[data-rack-id="${r.id}"]`)
-              el?.scrollIntoView({ behavior: 'smooth', inline: 'center' })
-            }, 100)}}
-            siteColor={activeSite ? sites?.find((s: any) => s.id === activeSite)?.color : undefined}
+            onRackClick={handleSpatialRackClick}
+            siteColor={spatialSiteColor}
           />
         ) : (<>
           {/* Connection Lines overlay */}
@@ -3449,12 +3509,12 @@ export default function Racks() {
                                     searchTerm={searchTerm}
                                     isSelected={false}
                                     showCheckbox={false}
-                                    onToggleSelect={() => {}}
-                                    onDelete={() => {}}
-                                    onEdit={() => {}}
-                                    onShowInfo={() => {}}
-                                    onMount={() => {}}
-                                    onManageDevice={() => {}}
+                                    onToggleSelect={noRackAction}
+                                    onDelete={noRackAction}
+                                    onEdit={noRackAction}
+                                    onShowInfo={noRackAction}
+                                    onMount={noRackAction}
+                                    onManageDevice={noRackAction}
                                     isDeleted={false}
                                     rackWidth={rackWidth}
                                     className="flex-1 min-h-0"
@@ -3467,16 +3527,13 @@ export default function Racks() {
                                     searchTerm={searchTerm}
                                     isSelected={false}
                                     showCheckbox={false}
-                                    onToggleSelect={() => {}}
-                                    onDelete={id => isPlanInitialized ? null : {}}
-                                    onEdit={rack => isPlanInitialized ? setIsEditingRack({ ...rack, total_u: rack.total_u }) : {}}
-                                    onShowInfo={rack => openRackInfo(rack)}
-                                    onMount={(rackId, u) => isPlanInitialized ? setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' }) : null}
-                                    onManageDevice={(device, l, e) => {
-                                      setOptionsMenu({ x: e.clientX, y: e.clientY, device, loc: l, rack: r })
-                                      setImpactAssetId(device.id)
-                                      setImpactCoords({ x: e.clientX, y: e.clientY })
-                                    }}                                    isDeleted={false}
+                                    onToggleSelect={noRackAction}
+                                    onDelete={noRackAction}
+                                    onEdit={handlePlanRackEdit}
+                                    onShowInfo={openRackInfo}
+                                    onMount={handlePlanRackMount}
+                                    onManageDevice={handleRackDeviceManage}
+                                    isDeleted={false}
                                     rackWidth={rackWidth}
                                     diffMode={true}
                                     liveRack={diffBaseVersion ? historicalRack : liveRack}
@@ -3493,23 +3550,14 @@ export default function Racks() {
                         rack={r}
                         searchTerm={searchTerm}
                         isSelected={selectedRacks.includes(r.id)}
-                        onToggleSelect={(id) => setSelectedRacks(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
-                        onDelete={id => {
-                          if (activeTab === 'deleted') {
-                            openConfirm('Purge Rack', `Permanently delete rack "${r.name}"? This cannot be undone.`, () => bulkActionMutation.mutate({ action: 'purge', ids: [id] }))
-                          } else {
-                            openConfirm('Decommission Rack', `Mark rack "${r.name}" as decommissioned?`, () => bulkActionMutation.mutate({ action: 'delete', ids: [id] }))
-                          }
-                        }}
-                        onEdit={rack => setIsEditingRack({ ...rack, total_u: rack.total_u })}
-                        onShowInfo={rack => openRackInfo(rack)}
-                        onMount={(rackId, u) => { setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' }); setProvisionMode('asset') }}
-                        onManageDevice={(device, l, e) => {
-                          setOptionsMenu({ x: e.clientX, y: e.clientY, device, loc: l, rack: r })
-                          setImpactAssetId(device.id)
-                          setImpactCoords({ x: e.clientX, y: e.clientY })
-                        }}                        isDeleted={activeTab === 'deleted'}
-                        onRestore={id => setRestoreWizard({ step: 'site-select', ids: [id], nameConflicts: [], assetWarnings: [], generalAssetWarning: false })}
+                        onToggleSelect={handleRackSelectionToggle}
+                        onDelete={handleRackDelete}
+                        onEdit={handleRackEdit}
+                        onShowInfo={openRackInfo}
+                        onMount={handleRackMount}
+                        onManageDevice={handleRackDeviceManage}
+                        isDeleted={activeTab === 'deleted'}
+                        onRestore={handleRackRestore}
                         rackWidth={rackWidth}
                         focusedDeviceId={focusedConnection?.sourceId ?? null}
                         connectedDeviceIds={focusedConnection?.targetIds}
@@ -3542,23 +3590,14 @@ export default function Racks() {
                       rack={r}
                       searchTerm={searchTerm}
                       isSelected={selectedRacks.includes(r.id)}
-                      onToggleSelect={(id) => setSelectedRacks(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
-                      onDelete={id => {
-                        if (activeTab === 'deleted') {
-                          openConfirm('Purge Rack', `Permanently delete rack "${r.name}"? This cannot be undone.`, () => bulkActionMutation.mutate({ action: 'purge', ids: [id] }))
-                        } else {
-                          openConfirm('Decommission Rack', `Mark rack "${r.name}" as decommissioned?`, () => bulkActionMutation.mutate({ action: 'delete', ids: [id] }))
-                        }
-                      }}
-                      onEdit={rack => setIsEditingRack({ ...rack, total_u: rack.total_u })}
-                      onShowInfo={rack => openRackInfo(rack)}
-                      onMount={(rackId, u) => { setIsProvisioning({ rackId, start_u: u, size_u: 1, orientation: 'Front', depth: 'Full' }); setProvisionMode('asset') }}
-                      onManageDevice={(device, l, e) => {
-                        setOptionsMenu({ x: e.clientX, y: e.clientY, device, loc: l, rack: r })
-                        setImpactAssetId(device.id)
-                        setImpactCoords({ x: e.clientX, y: e.clientY })
-                      }}                      isDeleted={activeTab === 'deleted'}
-                      onRestore={id => setRestoreWizard({ step: 'site-select', ids: [id], nameConflicts: [], assetWarnings: [], generalAssetWarning: false })}
+                      onToggleSelect={handleRackSelectionToggle}
+                      onDelete={handleRackDelete}
+                      onEdit={handleRackEdit}
+                      onShowInfo={openRackInfo}
+                      onMount={handleRackMount}
+                      onManageDevice={handleRackDeviceManage}
+                      isDeleted={activeTab === 'deleted'}
+                      onRestore={handleRackRestore}
                       rackWidth={rackWidth}
                       focusedDeviceId={focusedConnection?.sourceId ?? null}
                       connectedDeviceIds={focusedConnection?.targetIds}
