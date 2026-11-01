@@ -15,7 +15,6 @@ beforeEach(() => {
   vi.useFakeTimers()
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => setTimeout(() => callback(0), 16))
   vi.stubGlobal('cancelAnimationFrame', clearTimeout)
-  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
 })
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
 
@@ -87,22 +86,14 @@ it('does not replace ordinary keyboard navigation with a row menu', () => {
   expect(onCellContextMenu).not.toHaveBeenCalled()
 })
 
-it('gives phone identities and commands room and restores the configured desktop density', () => {
-  let changed: (() => void) | undefined
-  const media = { matches: true, addEventListener: vi.fn((_event, listener) => { changed = listener }), removeEventListener: vi.fn() }
-  const match = vi.spyOn(window, 'matchMedia').mockReturnValue(media as any)
+it('uses one compact desktop row scale and honors the density setting', () => {
   const { unmount, rerender } = render(<OperationalGridMatrix fontSize={11} rowDensity={8} />)
-  try {
-    expect(captured.props.rowHeight).toBe(52)
-    media.matches = false
-    act(() => changed?.())
-    expect(captured.props.rowHeight).toBe(40)
-    rerender(<OperationalGridMatrix fontSize={20} rowDensity={8} />)
-    expect(captured.props.rowHeight).toBe(40)
-    media.matches = true
-    act(() => changed?.())
-    expect(captured.props.rowHeight).toBe(52)
-    unmount()
-    expect(media.removeEventListener).toHaveBeenCalledWith('change', changed)
-  } finally { match.mockRestore() }
+  expect(captured.props.rowHeight).toBe(36)
+  expect(captured.props.headerHeight).toBe(42)
+  expect(captured.props.defaultColDef.resizable).toBe(true)
+  rerender(<OperationalGridMatrix fontSize={11} rowDensity={16} />)
+  expect(captured.props.rowHeight).toBe(44)
+  rerender(<OperationalGridMatrix fontSize={20} rowDensity={24} />)
+  expect(captured.props.rowHeight).toBe(52)
+  unmount()
 })

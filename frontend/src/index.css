@@ -835,7 +835,6 @@ body {
 }
 
 :is(.operational-grid-shell, .monitoring-grid-shell) .ag-header-cell-resize {
-  width: 10px !important;
   right: 0 !important;
   cursor: col-resize !important;
   pointer-events: auto !important;
@@ -1351,7 +1350,7 @@ select option[value=""] {
  */
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) {
   --ag-font-family: 'Inter', 'Geist Variable', system-ui, sans-serif !important;
-  --ag-font-size: 12px !important;
+  --ag-font-size: var(--operational-grid-font-size, 12px) !important;
   --ag-background-color: var(--grid-bg) !important;
   --ag-header-background-color: var(--grid-header-bg) !important;
   --ag-border-color: var(--grid-border) !important;
@@ -1364,6 +1363,10 @@ select option[value=""] {
   --ag-input-focus-border-color: var(--grid-focus-ring) !important;
   --ag-checkbox-checked-color: var(--accent-primary) !important;
   --ag-accent-color: var(--accent-primary) !important;
+  --ag-header-column-resize-handle-display: block !important;
+  --ag-header-column-resize-handle-width: 2px !important;
+  --ag-header-column-resize-handle-height: 42% !important;
+  --ag-header-column-resize-handle-color: var(--grid-column-divider) !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-root-wrapper {
@@ -1371,6 +1374,12 @@ select option[value=""] {
   border: 1px solid var(--grid-border) !important;
   border-radius: 10px !important;
   background: var(--grid-bg) !important;
+}
+
+:root :is(.ag-theme-alpine, .ag-theme-alpine-dark).operational-grid-shell .ag-root-wrapper {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-header {
@@ -1383,7 +1392,7 @@ select option[value=""] {
   color: var(--text-secondary) !important;
   border-left: 0 !important;
   border-right: 0 !important;
-  font-size: 11px !important;
+  font-size: max(10px, calc(var(--ag-font-size, 12px) - 1px)) !important;
   font-weight: 650 !important;
   letter-spacing: 0.025em !important;
   text-transform: none !important;
@@ -1394,15 +1403,25 @@ select option[value=""] {
   justify-content: flex-start !important;
   padding-right: 8px !important;
   color: var(--text-secondary) !important;
-  font-size: 11px !important;
+  font-size: max(10px, calc(var(--ag-font-size, 12px) - 1px)) !important;
   font-weight: 650 !important;
   letter-spacing: 0.025em !important;
   text-transform: none !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-header-cell-resize {
-  width: 8px !important;
+  width: 12px !important;
   cursor: col-resize !important;
+  z-index: 6 !important;
+}
+
+:root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-header-cell:hover {
+  --ag-header-column-resize-handle-color: var(--accent-primary) !important;
+}
+
+:root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-header-cell-resize:hover::after {
+  width: 3px !important;
+  border-radius: 999px !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-cell {
@@ -1417,7 +1436,7 @@ select option[value=""] {
   background: transparent !important;
   color: var(--text-primary) !important;
   font-family: 'Inter', 'Geist Variable', system-ui, sans-serif !important;
-  font-size: 12px !important;
+  font-size: var(--ag-font-size, 12px) !important;
   font-weight: 500 !important;
   line-height: 1.35 !important;
 }
@@ -1451,10 +1470,13 @@ select option[value=""] {
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-header,
-:root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-header,
+:root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-header {
+  background: var(--grid-header-bg) !important;
+}
+
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-cols-container,
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-cols-container {
-  background: var(--grid-header-bg) !important;
+  background: var(--grid-bg) !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-header,

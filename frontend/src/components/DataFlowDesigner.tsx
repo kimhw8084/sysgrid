@@ -7,6 +7,8 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { AgGridReact } from 'ag-grid-react'
+import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
+import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import { 
   Save, Plus, Server, Search, Database, Globe, Layout, Edit3, Network, ChevronLeft, 
   Settings2, Table as TableIcon, Activity, AlertTriangle, CheckCircle2, Clock, 
@@ -1164,31 +1166,19 @@ const ArchDashboard = ({ flows, onEdit, onAdd }: any) => {
               ))}
             </div>
           </div>
-          <div className="min-h-0 min-w-0 flex-1 ag-theme-alpine-dark">
+          <div className="operational-grid-shell min-h-0 min-w-0 flex-1 ag-theme-alpine-dark" style={{ '--operational-grid-font-size': '11px' } as React.CSSProperties}>
             <AgGridReact
               rowData={filtered}
               columnDefs={columnDefs}
+              defaultColDef={OPERATIONAL_GRID_DEFAULT_COLUMN_DEF}
               animateRows={true}
-              headerHeight={48}
-              rowHeight={56}
+              headerHeight={getOperationalGridHeaderHeight()}
+              rowHeight={getOperationalGridRowHeight()}
               enableCellTextSelection={true}
             />
           </div>
         </div>
       </div>
-      <style>{`
-        .ag-theme-alpine-dark {
-          --ag-background-color: transparent;
-          --ag-header-background-color: rgba(255, 255, 255, 0.02);
-          --ag-border-color: rgba(255, 255, 255, 0.05);
-          --ag-header-foreground-color: #3b82f6;
-          --ag-foreground-color: #f1f5f9;
-          --ag-font-family: 'Inter', sans-serif;
-        }
-        .ag-header-cell-label { font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.1em !important; }
-        .ag-cell { font-weight: 700 !important; }
-        .ag-row-hover { background-color: rgba(255, 255, 255, 0.05) !important; }
-      `}</style>
     </div>
   );
 };

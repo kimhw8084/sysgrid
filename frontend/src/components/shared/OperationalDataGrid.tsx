@@ -75,7 +75,7 @@ export function OperationalDataGrid({
   context,
   quickFilterText,
   fontSize = 11,
-  rowDensity = 24,
+  rowDensity = 8,
   noRowsLabel = 'No data found',
   loading = false,
   loadingIcon,
