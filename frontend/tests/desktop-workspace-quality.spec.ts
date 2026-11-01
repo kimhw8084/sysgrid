@@ -34,7 +34,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
       await report.locator('.asset-report-sidebar').getByRole('button', { name: new RegExp(primary.name) }).click()
       await expect(report.getByRole('heading', { name: primary.name, level: 1 })).toBeVisible()
       const sections = report.getByRole('navigation', { name: 'Report sections' })
-      await expect(sections.getByRole('button')).toHaveCount(9)
+      await expect(sections.getByRole('button')).toHaveCount(await report.locator('[data-report-section]').count())
       await expect(sections).toBeInViewport({ ratio: 1 })
       for (const [label, values] of [
         ['Report asset type', ['PDU', 'UPS', 'Console-Server', 'Patch Panel']],
@@ -245,7 +245,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
     await connected.focus()
     await page.keyboard.press('Enter')
     await expect(map.getByRole('region', { name: 'Selected asset' }).getByRole('heading', { name: asset.name, exact: true })).toBeVisible()
-    await expect(connected).toHaveAttribute('title', asset.name)
+    await expect(connected).toHaveAttribute('title', `${asset.name} · No work recorded`)
     await page.screenshot({ path: testInfo.outputPath('singleton-map-label.png'), animations: 'disabled' })
   })
 

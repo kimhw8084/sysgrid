@@ -1,9 +1,18 @@
 """Network forms and table edits preserve drafts, history, and concurrent work."""
 import pytest
-from sqlalchemy import event
+from sqlalchemy import event, select
 from app.models import models
 from test_chg13_authorization_security import _tenant_db
 from test_network_endpoint_authorization import network_scope, snapshot
+
+
+async def ensure_setting_option(db, category, value, label):
+    existing_id = await db.scalar(select(models.SettingOption.id).where(
+        models.SettingOption.category == category,
+        models.SettingOption.value == value,
+    ))
+    if existing_id is None:
+        db.add(models.SettingOption(category=category, value=value, label=label))
 
 
 async def listed(c):
@@ -48,7 +57,7 @@ async def test_bad_member_prevents_every_write(network_scope, setup_db, failure)
         expected = 422
     elif failure == 'unconfigured':
         async with _tenant_db(setup_db, c['tenant']) as db:
-            db.add(models.SettingOption(category='NetworkFarm', value='Prod', label='Production'))
+            await ensure_setting_option(db, 'NetworkFarm', 'Prod', 'Production')
             await db.commit()
         bad['changes'] = {'farm': 'Unregistered farm'}
         expected = 400

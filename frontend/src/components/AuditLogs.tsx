@@ -207,7 +207,7 @@ export default function AuditLogs() {
     },
     { 
         field: 'description', 
-        headerName: 'PAYLOAD & IMPACT',
+        headerName: 'CHANGE DETAILS',
         headerTooltip: 'Transaction payload and architectural impact',
         flex: 1,
         minWidth: 360,
