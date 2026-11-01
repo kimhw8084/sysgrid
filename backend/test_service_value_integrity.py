@@ -101,6 +101,18 @@ async def test_nonfinite_service_values_are_controlled_field_errors(service_scop
 @pytest.mark.parametrize('cost', [0, 12.5, '0012.50', None])
 async def test_valid_service_values_and_legacy_numeric_text_roundtrip(service_scope, setup_db, operation, cost):
     c = service_scope
+    # This test exercises scalar-value preservation, including values that are
+    # valid tenant-configured enums but are not part of the canonical defaults.
+    # The production import path correctly rejects unconfigured enum values.
+    async with _tenant_db(setup_db, c['tenant']) as db:
+        for category, value in [('ServiceType', 'Custom Type'), ('Environment', 'Custom Environment')]:
+            option_id = await db.scalar(select(models.SettingOption.id).where(
+                models.SettingOption.category == category,
+                models.SettingOption.value == value,
+            ))
+            if option_id is None:
+                db.add(models.SettingOption(category=category, value=value, label=value, is_default=False))
+        await db.commit()
     fields = {'name': 'Scalar service', 'service_type': 'Custom Type', 'status': 'Active', 'version': '000007',
               'environment': 'Custom Environment', 'cost': cost, 'license_key': '0000123',
               'purpose': None, 'config_json': {'values': [True, 0, 1.5]}, 'custom_attributes': {'code': '0001'},
