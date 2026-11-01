@@ -78,6 +78,8 @@ const getStatusCfg = (s: string, isReservation?: boolean) => {
   return STATUS_CONFIG[s] ?? STATUS_CONFIG['Offline']
 }
 const getTypeCfg = (t: string) => TYPE_CONFIG[t?.toLowerCase()] ?? { color: 'text-[var(--text-secondary)]', short: t?.slice(0,3).toUpperCase() || 'UNK', tone: 'unknown' }
+const RACK_CARD_GAP = 16
+const RACK_GROUP_GAP = 32
 
 const fillColor = (pct: number) => {
   if (pct >= 110) return 'bg-rose-600 shadow-[0_0_15px_rgba(225,29,72,0.8)]'
@@ -978,7 +980,6 @@ interface RackElevationProps {
   onToggleSelect: (id: number) => void
   onRestore?: (id: number) => void
   isDeleted: boolean
-  rackWidth: number
   focusedDeviceId?: number | null
   connectedDeviceIds?: number[]
   diffMode?: boolean
@@ -989,7 +990,7 @@ interface RackElevationProps {
 
   const RackElevation = React.memo(({
   rack, onDelete, onEdit, onMove, onShowInfo, searchTerm, onMount, onManageDevice,
-  isSelected, onToggleSelect, onRestore, isDeleted, rackWidth,
+  isSelected, onToggleSelect, onRestore, isDeleted,
   focusedDeviceId, connectedDeviceIds, diffMode, liveRack, showCheckbox = true,
   className = ''
   }: RackElevationProps) => {
@@ -1066,7 +1067,6 @@ interface RackElevationProps {
    <div 
      data-rack-id={rack.id}
      data-rack-elevation-card="true"
-     style={{ width: `${rackWidth}px` }}
      className={`glass-panel max-w-none flex-shrink-0 rounded-lg overflow-hidden flex flex-col border transition-all group relative
      ${isSelected ? 'border-blue-500/60 shadow-blue-500/15 shadow-2xl bg-blue-900/[0.07]' : 'border-[var(--grid-border)] hover:border-[var(--accent-primary)]'}
      ${isDeleted ? 'opacity-60 grayscale-[0.4]' : ''}
@@ -2531,6 +2531,7 @@ export default function Racks() {
   const [activeTab, setActiveTab] = useState<'active' | 'deleted'>('active')
   const [selectedRacks, setSelectedRacks] = useState<number[]>([])
   const [rackWidth, setRackWidth] = useState(208)
+  const [visibleRackGroupRange, setVisibleRackGroupRange] = useState({ start: 0, end: 12 })
   const racksGridRef = useRef<HTMLDivElement>(null)
   const [rackScrollState, setRackScrollState] = useState({ canScrollLeft: false, canScrollRight: false })
   const [showRelocateModal, setShowRelocateModal] = useState(false)
@@ -2652,6 +2653,46 @@ export default function Racks() {
     if (!isPlanInitialized) return displayedRacks
     return displayedRacks.filter((r: any) => sandboxRackIds.includes(r.id))
   }, [displayedRacks, isPlanInitialized, sandboxRackIds])
+  const isRackDiffActive = showDiff || !!diffBaseVersion
+  const isRackGroupedView = viewMode === 'elevation'
+    && !searchTerm
+    && !focusedConnection
+    && !showCompareOnly
+    && !isRackDiffActive
+  const rackGroups = useMemo(() => {
+    const grouped: Record<string, any[]> = {}
+    renderedRacks.forEach((rack: any) => {
+      const siteName = rack.site_name || 'UNASSIGNED SITE'
+      const groupName = rack.aisle ? `${siteName} · AISLE ${rack.aisle}` : siteName
+      if (!grouped[groupName]) grouped[groupName] = []
+      grouped[groupName].push(rack)
+    })
+
+    let nextOffset = 0
+    return Object.entries(grouped).sort().map(([groupName, groupRacks]) => {
+      const width = groupRacks.length * rackWidth + Math.max(0, groupRacks.length - 1) * RACK_CARD_GAP
+      const group = { groupName, groupRacks, offset: nextOffset, width }
+      nextOffset += width + RACK_GROUP_GAP
+      return group
+    })
+  }, [renderedRacks, rackWidth])
+  const updateVisibleRackGroupRange = useCallback(() => {
+    const rail = racksGridRef.current
+    if (!rail || !isRackGroupedView || rackGroups.length === 0) return
+
+    const overscan = Math.ceil(rail.clientWidth * 1.25)
+    const visibleStart = Math.max(0, rail.scrollLeft - overscan)
+    const visibleEnd = rail.scrollLeft + rail.clientWidth + overscan
+    let start = rackGroups.findIndex(group => group.offset + group.width >= visibleStart)
+    if (start < 0) start = rackGroups.length - 1
+    let end = start
+    while (end < rackGroups.length && rackGroups[end].offset <= visibleEnd) end += 1
+    end = Math.max(start + 1, end)
+
+    setVisibleRackGroupRange(current => current.start === start && current.end === end
+      ? current
+      : { start, end })
+  }, [isRackGroupedView, rackGroups])
   const updateRackScrollControls = useCallback(() => {
     const rail = racksGridRef.current
     if (!rail) return
@@ -2661,16 +2702,20 @@ export default function Racks() {
     }
     setRackScrollState(current => current.canScrollLeft === next.canScrollLeft && current.canScrollRight === next.canScrollRight ? current : next)
   }, [])
+  const updateRackViewport = useCallback(() => {
+    updateRackScrollControls()
+    updateVisibleRackGroupRange()
+  }, [updateRackScrollControls, updateVisibleRackGroupRange])
   useEffect(() => {
     const rail = racksGridRef.current
     if (!rail) return
-    updateRackScrollControls()
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateRackScrollControls)
+    updateRackViewport()
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateRackViewport)
     observer?.observe(rail)
     return () => {
       observer?.disconnect()
     }
-  }, [displayedRacks.length, rackWidth, viewMode, updateRackScrollControls])
+  }, [displayedRacks.length, rackWidth, viewMode, updateRackViewport])
   const scrollRackRail = (direction: number) => {
     const rail = racksGridRef.current
     if (!rail) return
@@ -3445,7 +3490,7 @@ export default function Racks() {
       )}
 
       {/* ── Rack Grid ── */}
-      <div id="racks-grid" ref={racksGridRef} onScroll={updateRackScrollControls} className="h-[480px] flex-none md:h-full md:min-h-0 md:flex-1 flex gap-8 overflow-x-auto overflow-y-auto pb-4 custom-scrollbar px-1 min-h-0 relative">
+      <div id="racks-grid" ref={racksGridRef} onScroll={updateRackViewport} style={{ '--rack-card-width': `${rackWidth}px` } as React.CSSProperties} className="h-[480px] flex-none md:h-full md:min-h-0 md:flex-1 flex gap-8 overflow-x-auto overflow-y-auto pb-4 custom-scrollbar px-1 min-h-0 relative">
         
         {viewMode === 'spatial' ? (
           <SpatialMap
@@ -3467,12 +3512,11 @@ export default function Racks() {
           )}
           {/* Render Racks Grouped by Aisle/Row if not searching */}
           {(() => {
-            const isDiffActive = showDiff || !!diffBaseVersion
             const racksToRender = renderedRacks
 
-            if (searchTerm || focusedConnection || showCompareOnly || isDiffActive) {
+            if (searchTerm || focusedConnection || showCompareOnly || isRackDiffActive) {
               return (
-                <div className={`flex gap-8 items-start h-full ${isDiffActive ? 'pb-10 pt-14' : ''}`}>
+                <div className={`flex gap-8 items-start h-full ${isRackDiffActive ? 'pb-10 pt-14' : ''}`}>
                   {racksToRender.map((r: any) => {
                     const liveRack = activeRacks.find((ar: any) => ar.id === r.id)
                     const historicalRack = diffBaseVersion 
@@ -3482,7 +3526,7 @@ export default function Racks() {
                       ? { ...r, device_locations: (r.device_locations || []).slice(0, Math.max(0, (r.device_locations?.length || 0) - (diffTargetVersion % 3 + 1))) }
                       : r
                     
-                        if (isDiffActive) {
+                        if (isRackDiffActive) {
                           const snapshotInfoBase = snapshots.find(s => s.id === diffBaseVersion)
                           const snapshotInfoTarget = diffTargetVersion ? snapshots.find(s => s.id === diffTargetVersion) : null
                           
@@ -3516,7 +3560,6 @@ export default function Racks() {
                                     onMount={noRackAction}
                                     onManageDevice={noRackAction}
                                     isDeleted={false}
-                                    rackWidth={rackWidth}
                                     className="flex-1 min-h-0"
                                   />
                                 </div>
@@ -3534,7 +3577,6 @@ export default function Racks() {
                                     onMount={handlePlanRackMount}
                                     onManageDevice={handleRackDeviceManage}
                                     isDeleted={false}
-                                    rackWidth={rackWidth}
                                     diffMode={true}
                                     liveRack={diffBaseVersion ? historicalRack : liveRack}
                                     className="flex-1 min-h-0"
@@ -3558,7 +3600,6 @@ export default function Racks() {
                         onManageDevice={handleRackDeviceManage}
                         isDeleted={activeTab === 'deleted'}
                         onRestore={handleRackRestore}
-                        rackWidth={rackWidth}
                         focusedDeviceId={focusedConnection?.sourceId ?? null}
                         connectedDeviceIds={focusedConnection?.targetIds}
                         showCheckbox={!isPlanInitialized}
@@ -3569,47 +3610,55 @@ export default function Racks() {
               )
             }
 
-            // Group by Aisle/Row
-            const groups: Record<string, any[]> = {}
-            racksToRender.forEach(r => {
-              const siteName = r.site_name || 'UNASSIGNED SITE'
-              const key = r.aisle ? `${siteName} · AISLE ${r.aisle}` : siteName
-              if (!groups[key]) groups[key] = []
-              groups[key].push(r)
-            })
+            return rackGroups.map((group, groupIndex) => {
+              const { groupName, groupRacks, width } = group
+              if (groupIndex < visibleRackGroupRange.start || groupIndex >= visibleRackGroupRange.end) {
+                return (
+                  <div
+                    key={groupName}
+                    data-rack-virtual-spacer="true"
+                    data-rack-group-index={groupIndex}
+                    data-rack-group-offset={group.offset}
+                    aria-hidden="true"
+                    className="h-full max-w-none shrink-0"
+                    style={{ width }}
+                  />
+                )
+              }
 
-            return Object.entries(groups).sort().map(([groupName, groupRacks]) => (
-              <div key={groupName} className="flex max-w-none flex-col gap-3 shrink-0 h-full" style={{ width: groupRacks.length * rackWidth + Math.max(0, groupRacks.length - 1) * 16 }} data-rack-id={groupRacks[0]?.id}>
-                <div className="flex min-h-10 min-w-0 items-center px-1 shrink-0">
-                  <span className="text-xs font-semibold leading-5 text-[var(--text-secondary)] [overflow-wrap:anywhere]">{groupName}</span>
+              return (
+                <div key={groupName} className="flex max-w-none flex-col gap-3 shrink-0 h-full" style={{ width }} data-rack-id={groupRacks[0]?.id} data-rack-group-index={groupIndex} data-rack-group-offset={group.offset}>
+                  <div className="flex min-h-10 min-w-0 items-center px-1 shrink-0">
+                    <span className="text-xs font-semibold leading-5 text-[var(--text-secondary)] [overflow-wrap:anywhere]">{groupName}</span>
+                  </div>
+                  <div className="flex gap-4 flex-1 min-h-0">
+                    {groupRacks.map((r: any) => (
+                      <RackElevation
+                        key={r.id}
+                        rack={r}
+                        searchTerm={searchTerm}
+                        isSelected={selectedRacks.includes(r.id)}
+                        onToggleSelect={handleRackSelectionToggle}
+                        onDelete={handleRackDelete}
+                        onEdit={handleRackEdit}
+                        onShowInfo={openRackInfo}
+                        onMount={handleRackMount}
+                        onManageDevice={handleRackDeviceManage}
+                        isDeleted={activeTab === 'deleted'}
+                        onRestore={handleRackRestore}
+                        focusedDeviceId={focusedConnection?.sourceId ?? null}
+                        connectedDeviceIds={focusedConnection?.targetIds}
+                        showCheckbox={!isPlanInitialized}
+                        diffMode={showDiff || !!diffBaseVersion}
+                        liveRack={diffBaseVersion
+                          ? { ...r, device_locations: (r.device_locations || []).slice(0, Math.max(0, (r.device_locations?.length || 0) - 1)) }
+                          : activeRacks.find((ar: any) => ar.id === r.id)}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="flex gap-4 flex-1 min-h-0">
-                  {groupRacks.map((r: any) => (
-                    <RackElevation
-                      key={r.id}
-                      rack={r}
-                      searchTerm={searchTerm}
-                      isSelected={selectedRacks.includes(r.id)}
-                      onToggleSelect={handleRackSelectionToggle}
-                      onDelete={handleRackDelete}
-                      onEdit={handleRackEdit}
-                      onShowInfo={openRackInfo}
-                      onMount={handleRackMount}
-                      onManageDevice={handleRackDeviceManage}
-                      isDeleted={activeTab === 'deleted'}
-                      onRestore={handleRackRestore}
-                      rackWidth={rackWidth}
-                      focusedDeviceId={focusedConnection?.sourceId ?? null}
-                      connectedDeviceIds={focusedConnection?.targetIds}
-                      showCheckbox={!isPlanInitialized}
-                      diffMode={showDiff || !!diffBaseVersion}
-                      liveRack={diffBaseVersion 
-                        ? { ...r, device_locations: (r.device_locations || []).slice(0, Math.max(0, (r.device_locations?.length || 0) - 1)) }
-                        : activeRacks.find((ar: any) => ar.id === r.id)}
-                      />                  ))}
-                </div>
-              </div>
-            ))
+              )
+            })
           })()}
         </>)}
 

@@ -17,6 +17,32 @@ export async function selectWorkspaceAppearance(page: Page, theme: 'Dark' | 'Lig
   await expect(page.locator('html')).toHaveAttribute('data-theme', themeId)
 }
 
+export async function scrollRackIntoRailView(page: Page, rackId: number) {
+  const rackCard = page.locator(`.glass-panel[data-rack-id="${rackId}"]`)
+  const rail = page.locator('#racks-grid')
+  const nextRacks = page.getByRole('button', { name: 'Scroll to next racks' })
+  const isInRailView = () => rackCard.evaluate(element => {
+    const railElement = element.closest('#racks-grid')
+    if (!railElement) return false
+    const cardBounds = element.getBoundingClientRect()
+    const railBounds = railElement.getBoundingClientRect()
+    return cardBounds.right > railBounds.left && cardBounds.left < railBounds.right
+  }).catch(() => false)
+
+  await rail.evaluate(element => { element.scrollLeft = 0 })
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    if (await rackCard.count()) {
+      await rackCard.scrollIntoViewIfNeeded()
+      if (await isInRailView()) return
+    }
+    if (!(await nextRacks.count())) break
+    if (!(await nextRacks.isEnabled())) break
+    await nextRacks.evaluate(button => (button as HTMLButtonElement).click())
+    await page.waitForTimeout(100)
+  }
+  await expect.poll(isInRailView, { timeout: 5000 }).toBe(true)
+}
+
 export type WorkspaceId = 'monitoring' | 'network' | 'assets' | 'vendors'
 export type LogicalGridRow = {
   rowKey: string

@@ -1658,6 +1658,7 @@ select option[value=""] {
 }
 
 [data-rack-elevation-card='true'] {
+  width: var(--rack-card-width, 208px);
   content-visibility: auto;
   contain-intrinsic-size: 360px;
 }

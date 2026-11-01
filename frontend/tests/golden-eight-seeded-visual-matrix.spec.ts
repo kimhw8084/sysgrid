@@ -181,6 +181,9 @@ async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebro
 }
 
 async function expectViewportCanvasContinuity(page: Page, routeLabel: string) {
+  await expect(page.locator('.sg-app-shell'), `${routeLabel} shared application shell should finish mounting`).toBeVisible()
+  await expect(page.locator('[data-sg-app-main="true"]'), `${routeLabel} main pane should finish mounting`).toBeVisible()
+  await expect(page.locator('#sg-main-content'), `${routeLabel} workspace canvas should finish mounting`).toBeVisible()
   const geometry = await page.evaluate(() => {
     const shell = document.querySelector<HTMLElement>('.sg-app-shell')
     const main = document.querySelector<HTMLElement>('[data-sg-app-main="true"]')

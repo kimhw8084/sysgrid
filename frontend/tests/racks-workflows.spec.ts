@@ -1,4 +1,4 @@
-import { clickResilientButton } from './helpers/sysgrid';
+import { clickResilientButton, scrollRackIntoRailView } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import { createAsset, resetBrowserState, seedRackScenario } from './helpers/sysgrid'
@@ -110,6 +110,7 @@ test.describe('Racks workflows', () => {
     await clickResilientButton(page, /New Blank Plan/i)
     await expect(page.getByText('Ghost Planner')).toBeVisible()
 
+    await scrollRackIntoRailView(page, rackA1.id)
     await rackCard(rackA1.id).locator('[data-u="1"]').getByRole('button', { name: 'Mount or reserve at U1', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Mount Asset' })).toBeVisible()
     await page.getByPlaceholder('Filter by name, type, or system...').fill(devicePrimary.name)
