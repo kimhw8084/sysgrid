@@ -75,6 +75,8 @@ REFERENCE_OPTIONS = (
     ("LinkPurpose", "Control", "Control", "Network connection type.", []),
     ("LinkPurpose", "Voice", "Voice", "Network connection type.", []),
     ("LinkPurpose", "Production", "Production", "Retained link type used by existing network records.", []),
+    ("LinkPurpose", "Loopback", "Loopback", "Supported link type for local and test-network connections.", []),
+    ("LinkPurpose", "SearchLink", "SearchLink", "Supported link type for indexed service traffic.", []),
     ("NetworkFarm", "Prod", "Prod", "Network farm selector default.", []),
     ("NetworkFarm", "Stage", "Stage", "Network farm selector default.", []),
     ("NetworkFarm", "Lab", "Lab", "Network farm selector default.", []),
