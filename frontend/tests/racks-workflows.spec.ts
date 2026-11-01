@@ -1,33 +1,7 @@
-import { clickResilientButton } from './helpers/sysgrid';
-import { expect, type Page } from '@playwright/test';
+import { clickResilientButton, scrollRackIntoRailView } from './helpers/sysgrid';
+import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
 import { createAsset, resetBrowserState, seedRackScenario } from './helpers/sysgrid'
-
-async function scrollRackIntoRailView(page: Page, rackId: number) {
-  const rackCard = page.locator(`.glass-panel[data-rack-id="${rackId}"]`)
-  const rail = page.locator('#racks-grid')
-  const nextRacks = page.getByRole('button', { name: 'Scroll to next racks' })
-  const isInRailView = () => rackCard.evaluate(element => {
-    const railElement = element.closest('#racks-grid')
-    if (!railElement) return false
-    const cardBounds = element.getBoundingClientRect()
-    const railBounds = railElement.getBoundingClientRect()
-    return cardBounds.right > railBounds.left && cardBounds.left < railBounds.right
-  }).catch(() => false)
-
-  await rail.evaluate(element => { element.scrollLeft = 0 })
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    if (await rackCard.count()) {
-      await rackCard.scrollIntoViewIfNeeded()
-      if (await isInRailView()) return
-    }
-    if (!(await nextRacks.count())) break
-    if (!(await nextRacks.isEnabled())) break
-    await nextRacks.evaluate(button => (button as HTMLButtonElement).click())
-    await page.waitForTimeout(100)
-  }
-  await expect.poll(isInRailView, { timeout: 5000 }).toBe(true)
-}
 
 test.describe('Racks workflows', () => {
   test('keeps rack data unavailable distinct from an empty rack list and recovers on retry', async ({ page }, testInfo) => {

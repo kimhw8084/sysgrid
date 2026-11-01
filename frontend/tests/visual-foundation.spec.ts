@@ -1,7 +1,7 @@
 import { expect, type Page, type TestInfo } from '@playwright/test'
 import { test } from './helpers/sysgrid-test'
 import { expectReadableGridText } from './helpers/grid-contrast'
-import { createAsset, createConnection, createEmbeddedKnowledgeFixture, createMonitoring, createRack, createService, createSite, mountRackDevice, resetBrowserState } from './helpers/sysgrid'
+import { createAsset, createConnection, createEmbeddedKnowledgeFixture, createMonitoring, createRack, createService, createSite, mountRackDevice, resetBrowserState, scrollRackIntoRailView } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const baselineCapture = process.env.SYSGRID_VISUAL_BASELINE === '1'
@@ -146,6 +146,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
         await capture(page, testInfo, route.slug)
         if (route.slug === 'racks' && viewport.width >= 1024) {
+          await scrollRackIntoRailView(page, rack.id)
           const elevation = page.locator(`#racks-grid .glass-panel[data-rack-id="${rack.id}"]`)
           const equipment = elevation.getByText(host.name, { exact: true })
           const geometry = await elevation.evaluate(node => ({ height: node.getBoundingClientRect().height, equipmentViewportHeight: node.querySelector('.overflow-y-auto')?.getBoundingClientRect().height ?? 0 }))
