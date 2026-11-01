@@ -274,7 +274,10 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                             <div className="flex min-w-0 items-start space-x-3 overflow-hidden">
                               <span className="pt-0.5 text-[9px] font-bold text-slate-600">{index + 1}</span>
                               <div className="min-w-0 space-y-1">
-                                <span className="block truncate text-[11px] font-bold tracking-tight text-slate-200">{displayLabel}</span>
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <span className="min-w-0 truncate text-[11px] font-bold tracking-tight text-slate-200">{displayLabel}</span>
+                                  {record.is_default && <span className="shrink-0 rounded border border-[var(--border-default)] bg-[var(--surface-hover)] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-[var(--accent-primary)]">Default</span>}
+                                </div>
                                 {detailText ? <span className="block truncate text-[9px] text-slate-500">{detailText}</span> : null}
                               </div>
                             </div>
@@ -295,10 +298,10 @@ export const ConfigSection = ({ title, category, options, icon: Icon, usageTarge
                                 <Edit2 size={12} />
                               </button>
                               <button
-                                disabled={!canEdit || deleteMutation.isPending}
+                                disabled={!canEdit || Boolean(record.is_default) || deleteMutation.isPending}
                                 aria-label={`Delete ${title} entry ${displayLabel}`}
-                                title={!canEdit ? editReason : 'Delete entry'}
-                                onClick={() => canEdit && deleteMutation.mutate(record.id)}
+                                title={!canEdit ? editReason : record.is_default ? 'Default options cannot be deleted' : 'Delete entry'}
+                                onClick={() => canEdit && !record.is_default && deleteMutation.mutate(record.id)}
                                 className="rounded-lg p-1.5 text-slate-500 transition-all hover:bg-rose-500/20 hover:text-rose-400 disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 <Trash2 size={12} />

@@ -541,7 +541,7 @@ export function OperationalImportModal({
       footerLeft={(
         <div className="space-y-1">
           <p className="text-[10px] font-semibold text-slate-400">
-            Import only commits checked valid rows. Invalid rows stay in the preview for correction.
+            Import creates only checked valid rows and never overwrites existing records. Invalid rows stay in the preview; use the table bulk actions to update existing records.
           </p>
         </div>
       )}

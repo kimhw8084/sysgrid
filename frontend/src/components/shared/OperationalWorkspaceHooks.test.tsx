@@ -3,7 +3,7 @@ import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-li
 import { Link, createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useOperationalDetailRoute, usePersistentJsonState, useWorkspaceOverlayController, useWorkspacePreferencePresence } from './OperationalWorkspaceHooks'
+import { useOperationalDetailRoute, useOperationalGridLayout, usePersistentJsonState, useWorkspaceOverlayController, useWorkspacePreferencePresence } from './OperationalWorkspaceHooks'
 import { WorkspaceModal } from './WorkspaceModal'
 
 function DirtyModalHarness({ isDirty }: { isDirty: boolean }) {
@@ -176,6 +176,33 @@ describe('validated persistent state', () => {
     const { result } = renderHook(() => usePersistentJsonState<number[]>(key, () => [9], normalize))
     expect(result.current[0]).toEqual([9])
     expect(normalize).not.toHaveBeenCalled()
+  })
+})
+
+describe('manual operational grid resizing', () => {
+  it('persists the dragged column when the grid also redistributes adjacent flex columns', () => {
+    const initial = [
+      { colId: 'service_name', width: 240 },
+      { colId: 'status', width: 120 },
+      { colId: 'purpose', width: 300 },
+    ]
+    const { result } = renderHook(() => useOperationalGridLayout(initial, false))
+    const api = {
+      getColumnState: () => [
+        { colId: 'service_name', width: 241 },
+        { colId: 'status', width: 119 },
+        { colId: 'purpose', width: 300 },
+      ],
+    }
+
+    act(() => result.current.handleColumnResized({ finished: true, source: 'uiColumnResized', api }))
+
+    expect(result.current.hasManualColumnWidths).toBe(true)
+    expect(result.current.columnLayoutState.map(({ colId, width }) => [colId, width])).toEqual([
+      ['service_name', 241],
+      ['status', 119],
+      ['purpose', 300],
+    ])
   })
 })
 

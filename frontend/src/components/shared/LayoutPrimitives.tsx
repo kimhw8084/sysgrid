@@ -50,8 +50,8 @@ export const PageHeader = ({
   <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} style={{ ...style, '--workspace-ink': 'var(--brand-blue, var(--accent-primary))' } as React.CSSProperties} data-golden-page-header="true" data-slot="page-header">
     <div className="min-w-0 basis-[240px] flex-1 space-y-1.5">
       {eyebrow && <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent-primary)]">{eyebrow}</div>}
-      <div className={join('min-w-0', TitleIcon && 'flex items-start gap-3')}>
-        {TitleIcon && <TitleIcon size={18} strokeWidth={2} className="mt-[3px] shrink-0 text-[var(--workspace-ink,var(--accent-primary))]" aria-hidden="true" />}
+      <div className={join('min-w-0', TitleIcon && 'flex items-center gap-3')}>
+        {TitleIcon && <span className="page-header-icon" aria-hidden="true"><TitleIcon size={18} strokeWidth={2} /></span>}
         <div className="min-w-0 space-y-0.5">
           <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{title}</h1>
           {subtitle && (

@@ -8,6 +8,7 @@ import { StatusPill } from '../shared/StatusPill'
 import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES, assetFilterOptions } from './assetRecordOptions'
 import { AssetServicesTable, MetadataViewer, MiniMonitoringTable } from '../AssetGrid_Legacy'
 import { HWTable, RelationshipsTab, SecretsTable } from './AssetDetailsView'
+import { getAssetWorkSignal } from './assetWorkSignals'
 
 type AssetLegacyReportSurfaceProps = {
   assets: any[]
@@ -22,6 +23,10 @@ type AssetLegacyReportSurfaceProps = {
   onEdit: (asset: any) => void
   onOpenDetails?: (asset: any) => void
   onOpenQuickLook?: (asset: any) => void
+  maintenanceWindows?: any[]
+  operationalActions?: any[]
+  workDataState?: { isLoading?: boolean; isError?: boolean; isFetching?: boolean; onRetry?: () => void }
+  onOpenMaintenance?: (asset: any) => void
   onViewServiceDetails: (service: any) => void
   onEditService: (service: any) => void
   getConsoleUrl?: (asset: any) => string | null
@@ -33,6 +38,7 @@ const REPORT_SECTION_LINKS = [
   { id: 'lifecycle', label: 'Lifecycle' },
   { id: 'services', label: 'Services' },
   { id: 'monitoring', label: 'Monitoring' },
+  { id: 'maintenance', label: 'Maintenance' },
   { id: 'security', label: 'Secrets' },
   { id: 'metadata', label: 'Metadata' },
   { id: 'components', label: 'Components' },
@@ -62,6 +68,10 @@ export function AssetLegacyReportSurface({
   onEdit,
   onOpenDetails,
   onOpenQuickLook,
+  maintenanceWindows = [],
+  operationalActions = [],
+  workDataState,
+  onOpenMaintenance,
   onViewServiceDetails,
   onEditService,
   getConsoleUrl,
@@ -108,6 +118,12 @@ export function AssetLegacyReportSurface({
     assetFilterOptions(defaults, getOptions(category), assets.map(asset => asset[field]))
   )
   const selectedConsoleUrl = selectedAsset ? getConsoleUrl?.(selectedAsset) || null : null
+  const workSignal = useMemo(() => selectedAsset
+    ? getAssetWorkSignal(selectedAsset.id, maintenanceWindows, operationalActions)
+    : null, [maintenanceWindows, operationalActions, selectedAsset])
+  const recentAssetActions = workSignal?.actions.slice().sort((left: any, right: any) =>
+    Date.parse(String(right.requested_at || '')) - Date.parse(String(left.requested_at || '')),
+  ) || []
 
   const scrollToSection = (sectionId: string) => {
     const section = reportSectionRefs.current[sectionId]
@@ -277,6 +293,29 @@ export function AssetLegacyReportSurface({
                 <MiniMonitoringTable deviceId={selectedAsset.id} />
               </div>
             </div>
+
+            <section ref={(node) => { reportSectionRefs.current.maintenance = node }} data-report-section="maintenance" className="space-y-6">
+              <SectionTitle icon={<Activity size={16} className="text-amber-400" />} title="Maintenance & Operational Work" />
+              {workDataState?.isLoading && <p role="status" className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4 text-sm text-[var(--text-secondary)]">Loading maintenance windows and recorded actions…</p>}
+              {workDataState?.isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-4 text-sm"><span>Work history is incomplete. Missing records are not treated as an empty history.</span>{workDataState.onRetry && <button type="button" onClick={workDataState.onRetry} disabled={workDataState.isFetching} className="rounded-md border border-[var(--border-default)] px-3 py-2 font-semibold">{workDataState.isFetching ? 'Retrying…' : 'Retry work history'}</button>}</div>}
+              <div className="asset-report-work-summary">
+                <div><span>Current signal</span><strong data-work-signal={workDataState?.isError ? 'unavailable' : workSignal?.level}>{workDataState?.isError ? 'Unavailable' : workSignal?.label || 'No work recorded'}</strong></div>
+                <div><span>Open maintenance windows</span><strong>{workDataState?.isError ? 'Unavailable' : workSignal?.scheduledWindows.length || 0}</strong></div>
+                <div><span>Recorded actions</span><strong>{workDataState?.isError ? 'Unavailable' : workSignal?.actions.length || 0}</strong></div>
+                {onOpenMaintenance && <button type="button" onClick={() => onOpenMaintenance(selectedAsset)} className="asset-report-maintenance-link">Open maintenance workspace <ExternalLink size={14} aria-hidden="true" /></button>}
+              </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                <div className="asset-report-work-list">
+                  <h4>Scheduled maintenance</h4>
+                  {workDataState?.isError ? <p>Unavailable until work history loads.</p> : workSignal?.scheduledWindows.length ? workSignal.scheduledWindows.slice(0, 8).map((window: any) => <article key={window.id}><strong>{window.title || 'Untitled window'}</strong><span>{window.status || 'Status not recorded'} · {formatAppDate(window.start_time)} – {formatAppDate(window.end_time)}</span></article>) : <p>No open maintenance windows recorded.</p>}
+                </div>
+                <div className="asset-report-work-list">
+                  <h4>Recent operational actions</h4>
+                  {workDataState?.isError ? <p>Unavailable until work history loads.</p> : recentAssetActions.length ? recentAssetActions.slice(0, 8).map((action: any) => <article key={action.id}><strong>{String(action.action_key || 'Operational action').replaceAll('.', ' ')}</strong><span>{String(action.status || 'Status not recorded').replaceAll('_', ' ')} · {formatAppDate(action.requested_at)}</span>{action.progress_message && <p>{action.progress_message}</p>}</article>) : <p>No recorded operational actions for this asset.</p>}
+                  {!workDataState?.isError && recentAssetActions.length > 8 && <p>Showing the latest 8 of {recentAssetActions.length} matching actions.</p>}
+                </div>
+              </div>
+            </section>
 
             <div ref={(node) => { reportSectionRefs.current.security = node }} data-report-section="security" className="space-y-6">
               <SectionTitle icon={<Shield size={16} className="text-amber-500" />} title="Security Credentials & Secrets" />

@@ -6,14 +6,23 @@ from test_chg13_authorization_security import _tenant_db
 from test_network_endpoint_authorization import network_scope, snapshot
 
 
+async def ensure_setting_option(db, category, value, label):
+    existing_id = await db.scalar(select(models.SettingOption.id).where(
+        models.SettingOption.category == category,
+        models.SettingOption.value == value,
+    ))
+    if existing_id is None:
+        db.add(models.SettingOption(category=category, value=value, label=label))
+
+
 @pytest.mark.asyncio
 async def test_unrelated_edit_preserves_all_legacy_network_values(network_scope, setup_db):
     c = network_scope
     async with _tenant_db(setup_db, c['tenant']) as db:
         row = await db.get(models.PortConnection, c['rows']['owned'])
         row.link_type, row.farm, row.cable_type, row.direction = 'Production', 'HQ-01', 'Cat6', 'Ingress'
-        db.add_all([models.SettingOption(category=category, value=value, label=value) for category, value in
-                    [('LinkPurpose', 'Data'), ('NetworkFarm', 'Prod'), ('NetworkCableType', 'Copper')]])
+        for category, value in [('LinkPurpose', 'Data'), ('NetworkFarm', 'Prod'), ('NetworkCableType', 'Copper')]:
+            await ensure_setting_option(db, category, value, value)
         await db.commit()
     response = await c['client'].put(f"/api/v1/networks/connections/{c['rows']['owned']}", headers=c['headers'],
         json={'purpose': 'Updated operator notes', 'link_type': 'Production', 'farm': 'HQ-01', 'cable_type': 'Cat6'})
@@ -29,7 +38,7 @@ async def test_changed_invalid_value_is_rejected_without_mutation(network_scope,
     c = network_scope
     if category:
         async with _tenant_db(setup_db, c['tenant']) as db:
-            db.add(models.SettingOption(category=category, value=valid, label=valid))
+            await ensure_setting_option(db, category, valid, valid)
             await db.commit()
     before = await snapshot(c, setup_db)
     response = await c['client'].put(f"/api/v1/networks/connections/{c['rows']['owned']}", headers=c['headers'], json={field: 'Unconfigured value'})

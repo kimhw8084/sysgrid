@@ -103,14 +103,15 @@ async function expectColumnMinimumWidths(page: Page, route: string, apiName: str
     return columnIds.map(columnId => {
       const column = api?.getColumn?.(columnId)
       const definition = column?.getColDef?.()
+      const sizingMetadata = api?.getGridOption?.('context')?.__sysgridOperationalColumnSizing?.[columnId]
       const declaredMinimum = Number(definition?.minWidth) || 0
       const declaredMaximum = Number(definition?.maxWidth)
-      return { columnId, actual: column?.getActualWidth?.() ?? 0, minimum: Math.max(declaredMinimum, requiredMinimums[columnId] || 0), maximum: Math.min(Number.isFinite(declaredMaximum) ? declaredMaximum : Number.POSITIVE_INFINITY, requiredMaximums[columnId] || Number.POSITIVE_INFINITY) }
+      return { columnId, actual: column?.getActualWidth?.() ?? 0, minimum: Math.max(declaredMinimum, requiredMinimums[columnId] || 0), maximum: Math.min(Number.isFinite(declaredMaximum) ? declaredMaximum : Number.POSITIVE_INFINITY, requiredMaximums[columnId] || Number.POSITIVE_INFINITY), sizingMetadata }
     })
   }, { apiName, columnIds, requiredMinimums, requiredMaximums })
   for (const column of widths) {
     expect(column.actual, `${route} ${column.columnId} should not be compressed below its declared minimum`).toBeGreaterThanOrEqual(column.minimum)
-    if (Number.isFinite(column.maximum)) expect(column.actual, `${route} ${column.columnId} should respect its declared maximum`).toBeLessThanOrEqual(column.maximum)
+    if (Number.isFinite(column.maximum)) expect(column.actual, `${route} ${column.columnId} should respect its declared maximum (${column.maximum}); sizing metadata: ${JSON.stringify(column.sizingMetadata)}`).toBeLessThanOrEqual(column.maximum)
   }
 }
 
@@ -471,7 +472,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           const idHeader = page.locator('[data-audit-ledger] .ag-header-cell[col-id="target_id"] .ag-header-cell-text')
           const payloadHeader = page.locator('[data-audit-ledger] .ag-header-cell[col-id="description"] .ag-header-cell-text')
           await expect(idHeader).toHaveText('ID')
-          await expect(payloadHeader).toHaveText('PAYLOAD & IMPACT')
+          await expect(payloadHeader).toHaveText('CHANGE DETAILS')
           const payloadHeaderFits = await payloadHeader.evaluate(element => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1)
           expect(payloadHeaderFits, 'Audit payload heading should be readable in the desktop table').toBe(true)
         }

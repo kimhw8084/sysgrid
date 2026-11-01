@@ -1,3 +1,5 @@
+import { OPERATIONAL_GRID_MIN_COLUMN_WIDTH } from './shared/OperationalGridContract'
+
 export type FarGoldenColumnGeometry = {
   colId: string
   headerName: string
@@ -38,7 +40,7 @@ export function sanitizeFarPersistedColumnGeometry(layout: any[]) {
     const geometry = FAR_GOLDEN_COLUMN_GEOMETRY_BY_ID.get(String(column?.colId || ''))
     if (!geometry) return column
     const width = Number(column?.width)
-    if (!Number.isFinite(width) || width >= geometry.minWidth) return column
+    if (!Number.isFinite(width) || width >= OPERATIONAL_GRID_MIN_COLUMN_WIDTH) return column
     repairedColumnIds.push(geometry.colId)
     const recovered = {
       ...column,

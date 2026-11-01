@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { AgGridReact } from 'ag-grid-react'
+import { OperationalAgGrid } from './OperationalAgGrid'
 import { OPERATIONAL_GRID_CLASSES, OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './OperationalGridContract'
 import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './OperationalGridSizing'
 
@@ -100,7 +100,7 @@ export const OperationalGridMatrix = React.memo(({
   }, [selectionScopeKey])
 
   return (
-    <AgGridReact
+    <OperationalAgGrid
       ref={(ref) => {
         apiRef.current = ref?.api
         if (gridRef) {

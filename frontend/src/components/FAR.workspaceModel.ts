@@ -1,3 +1,5 @@
+import { buildOperationalGroupSections } from './shared/OperationalGrouping'
+
 export type FarGroupBy = 'raw' | 'system_name' | 'failure_type' | 'status' | 'risk_band'
 
 export type FarQuickFilters = {
@@ -98,23 +100,14 @@ export const filterFarModes = (
 
 export const getFarGroupValue = (mode: any, groupBy: FarGroupBy) => {
   if (groupBy === 'risk_band') return getFarRiskBandLabel(mode)
-  if (groupBy === 'system_name') return String(mode?.system_name || 'Unspecified System')
-  if (groupBy === 'failure_type') return String(mode?.failure_type || 'Unspecified Type')
-  if (groupBy === 'status') return String(mode?.status || 'Unspecified Status')
+  if (groupBy === 'system_name') return String(mode?.system_name ?? 'Unspecified System')
+  if (groupBy === 'failure_type') return String(mode?.failure_type ?? 'Unspecified Type')
+  if (groupBy === 'status') return String(mode?.status ?? 'Unspecified Status')
   return 'Raw Rows'
 }
 
 export const groupFarModes = (modes: any[], groupBy: FarGroupBy) => {
-  if (groupBy === 'raw') return []
-  const groups = new Map<string, any[]>()
-  modes.forEach((mode) => {
-    const label = getFarGroupValue(mode, groupBy)
-    const current = groups.get(label) || []
-    current.push(mode)
-    groups.set(label, current)
-  })
-  const sections = Array.from(groups.entries())
-    .map(([label, items]) => ({ key: `${groupBy}:${label}`, label, items }))
+  const sections = buildOperationalGroupSections(modes, groupBy, mode => getFarGroupValue(mode, groupBy))
   if (groupBy === 'risk_band') {
     const order = new Map<string, number>(FAR_RISK_BAND_OPTIONS.map((option, index) => [option.label, index]))
     return sections.sort((a, b) => (order.get(a.label) ?? 999) - (order.get(b.label) ?? 999))

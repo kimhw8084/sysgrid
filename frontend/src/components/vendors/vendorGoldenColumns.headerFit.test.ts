@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { buildVendorGoldenColumns } from './vendorGoldenColumns'
 
-describe('Vendor header width constraints', () => {
-  it('leaves room for measured labels and header controls', () => {
+describe('Vendor header resize defaults', () => {
+  it('keeps a common minimum while preserving an initial readable width for each column', () => {
     const columns = buildVendorGoldenColumns({
       fontSize: 11,
       hiddenColumns: [],
@@ -16,8 +16,12 @@ describe('Vendor header width constraints', () => {
       renderPrimaryRowActions: () => null,
     })
 
-    expect(columns.find((column: any) => column.field === 'country')).toMatchObject({ minWidth: 136, maxWidth: 136 })
-    expect(columns.find((column: any) => column.field === 'primary_personnel_name')).toMatchObject({ minWidth: 192, maxWidth: 200 })
-    expect(columns.find((column: any) => column.field === 'personnel_count')).toMatchObject({ minWidth: 144 })
+    for (const field of ['country', 'primary_personnel_name', 'personnel_count']) {
+      const column = columns.find((candidate: any) => candidate.field === field)
+      expect(column?.initialWidth ?? column?.width).toBeGreaterThanOrEqual(40)
+      expect(column?.minWidth).toBe(40)
+      expect(column).not.toHaveProperty('maxWidth')
+      expect(column?.resizable).toBe(true)
+    }
   })
 })

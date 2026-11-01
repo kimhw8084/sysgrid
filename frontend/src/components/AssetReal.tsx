@@ -8,7 +8,7 @@ import { sql } from '@codemirror/lang-sql'
 import { javascript } from '@codemirror/lang-javascript'
 import {
   Activity, Plus, Search, Filter, ExternalLink,
-  Trash2, Edit2, Shield, Cpu, Database, Network,
+  Trash2, Edit2, Shield, Cpu, Database, Network, HardDrive,
   Globe, Bell, Info, ChevronRight, X, Check, Save,
   AlertCircle, Clock, Zap, Settings, ArrowRightLeft, Briefcase, UserCheck, Code,
   BookOpen, Eye, EyeOff, FileText, User, Users, Mail, MessageSquare, Monitor, MoreVertical,
@@ -66,14 +66,16 @@ import { WorkspaceCompareShell, WorkspaceDossierShell, WorkspaceHistoryShell } f
 import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalGridMatrix } from './shared/OperationalGridMatrix'
-import { OperationalDisplayPanel, OperationalGridSurface, OperationalSavedViewsPanel, OperationalWorkspaceFrame } from './shared/OperationalWorkspaceShells'
+import { buildOperationalGroupSections } from './shared/OperationalGrouping'
+import { OperationalDisplayPanel, OperationalGridSurface, OperationalGroupedGridSection, OperationalGroupedGridView, OperationalSavedViewsPanel, OperationalWorkspaceFrame } from './shared/OperationalWorkspaceShells'
 import { AssetDetailsView } from './assets/AssetDetailsView'
 import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES, assetFilterOptions, fetchAssetSettingOptions } from './assets/assetRecordOptions'
 import {
-  applyOperationalColumnSizing,
+  finalizeOperationalColumnDefinition,
   applyOperationalColumnState,
   autoSizeOperationalColumns,
   getOperationalColumnLayoutSnapshot,
+  getOperationalGridRowHeight,
   normalizeOperationalColumnLayout,
   OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
   OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
@@ -91,7 +93,7 @@ const MONITORING_WATCH_STORAGE_KEY = 'sysgrid_asset_real_watch_v1'
 const MONITORING_WORKSPACE_PREFERENCE_KEY = 'asset_real_workspace_state_v1'
 const MONITORING_WORKSPACE_PREFERENCE_VERSION = 2
 const BULK_MENU_MAX_HEIGHT = 560
-const MONITORING_FIXED_WIDTH_COLUMN_IDS = new Set([
+const MONITORING_AUTO_SIZE_SKIP_COLUMN_IDS = new Set([
   'select',
   'id',
   'recent_change',
@@ -160,18 +162,6 @@ type AssetLifecycleOperation = Readonly<{
   targetLabels: readonly string[]
 }>
 
-
-const MONITORING_SEVERITIES = [
-  { value: 'Critical', label: 'Critical', color: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
-  { value: 'Warning', label: 'Warning', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  { value: 'Info', label: 'Info', color: 'bg-sky-500/20 text-sky-400 border-sky-500/30' }
-]
-
-const MONITORING_OWNER_ROLES = [
-  { value: 'Primary Support', label: 'Primary Support' },
-  { value: 'Escalation', label: 'Escalation' },
-  { value: 'Observer', label: 'Observer' }
-]
 
 const MONITORING_REQUIRED_FIELD_NAMES = new Set(['title', 'category', 'status', 'severity'])
 
@@ -436,8 +426,8 @@ const getPointFloatingStyle = ({
 
 // Isolated component to prevent UI state changes (menus) from triggering AgGrid recalculations
 const getMonitorGroupValue = (item: any, field: string) => {
-  if (field === 'notification_method') return item.notification_method || 'No notification path'
-  return item[field] || 'Unspecified'
+  if (field === 'notification_method') return item.notification_method ?? 'No notification path'
+  return item[field] ?? 'Unspecified'
 }
 
 const readMonitoringUiState = () => {
@@ -558,8 +548,6 @@ const sanitizeAssetPayload = (item: any) => ({
   mount_orientation: item?.mount_orientation ? String(item.mount_orientation).trim() : 'Front',
   metadata_json: item?.metadata_json && typeof item.metadata_json === 'object' ? item.metadata_json : {},
 })
-const NETWORK_LINK_TYPES = ['Physical', 'Virtual', 'Storage', 'Switch', 'Firewall', 'Load Balancer', 'PDU', 'UPS', 'Console-Server', 'Patch Panel']
-const NETWORK_DIRECTIONS = ['Primary', 'Secondary', 'Out-of-band']
 const NETWORK_STATUSES = ASSET_STATUSES
 const getNetworkConnectionTitle = getAssetTitle
 
@@ -690,9 +678,6 @@ export default function AssetReal() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [showBulkMenu, setShowBulkMenu] = useState(false)
-  const [isBulkStatusOpen, setIsBulkStatusOpen] = useState(false)
-  const [isBulkSeverityOpen, setIsBulkSeverityOpen] = useState(false)
-  const [isBulkNotifyOpen, setIsBulkNotifyOpen] = useState(false)
   const [confirmModal, setConfirmModal] = useState<any>({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'info' })
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
   const [detailDeleteConfirm, setDetailDeleteConfirm] = useState(false)
@@ -777,7 +762,7 @@ export default function AssetReal() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       lastVisitedAt,
       searchTerm,
     }
@@ -968,7 +953,7 @@ export default function AssetReal() {
       if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
       autoSizeOperationalColumns({
         api: gridRef.current.api,
-        skipColumnIds: Array.from(MONITORING_FIXED_WIDTH_COLUMN_IDS),
+        skipColumnIds: Array.from(MONITORING_AUTO_SIZE_SKIP_COLUMN_IDS),
         onSized: () => {
           if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
           syncColumnLayoutState(gridRef.current.api, false)
@@ -1001,37 +986,6 @@ export default function AssetReal() {
     queryKey: ['settings-options'],
     queryFn: fetchAssetSettingOptions,
   })
-  const { data: operators } = useQuery({
-    queryKey: ['operators'],
-    queryFn: async () => (await (await apiFetch('/api/v1/settings/operators')).json())
-  })
-  const { data: teams } = useQuery({
-    queryKey: ['teams'],
-    queryFn: async () => (await (await apiFetch('/api/v1/settings/teams')).json())
-  })
-
-  const linkPurposeOptions = useMemo(() => {
-    const options = Array.isArray(settingsOptions) ? settingsOptions.filter((o:any) => o.category === "LinkPurpose") : []
-    return options.length > 0
-      ? options.map((option: any) => ({ value: option.value, label: option.label }))
-      : NETWORK_LINK_TYPES.map((value) => ({ value, label: value }))
-  }, [settingsOptions])
-  const farmOptions = useMemo(() => {
-    const options = Array.isArray(settingsOptions) ? settingsOptions.filter((o:any) => o.category === "NetworkFarm") : []
-    return options.length > 0
-      ? options.map((option: any) => ({ value: option.value, label: option.label }))
-      : ['Prod', 'Stage', 'Lab'].map((value) => ({ value, label: value }))
-  }, [settingsOptions])
-  const cableTypeOptions = useMemo(() => {
-    const options = Array.isArray(settingsOptions) ? settingsOptions.filter((o:any) => o.category === "NetworkCableType") : []
-    return options.length > 0
-      ? options.map((option: any) => ({ value: option.value, label: option.label }))
-      : ['Fiber', 'Copper', 'DAC', 'AOC'].map((value) => ({ value, label: value }))
-  }, [settingsOptions])
-  const notificationMethods = useMemo(() => NETWORK_DIRECTIONS.map((value) => ({ value, label: value })), [])
-  const severities = MONITORING_SEVERITIES
-  const ownerRoles = MONITORING_OWNER_ROLES
-
   const openConfirm = (title: string, message: string, onConfirm: () => void, variant: any = 'danger') => {
     setConfirmModal({ isOpen: true, title, message, onConfirm, variant })
   }
@@ -1554,18 +1508,7 @@ export default function AssetReal() {
   const compareItems = useMemo(() => selectedItems.slice(0, 5), [selectedItems])
 
   const groupedSections = useMemo(() => {
-    if (groupBy === 'raw') return []
-    const sections = sortedItemsForGrouped.reduce((acc: Array<{ key: string; label: string; items: any[] }>, item: any) => {
-      const label = String(getMonitorGroupValue(item, groupBy))
-      const existing = acc.find((section) => section.key === label)
-      if (existing) {
-        existing.items.push(item)
-      } else {
-        acc.push({ key: label, label, items: [item] })
-      }
-      return acc
-    }, [])
-    return sections.sort((a, b) => a.label.localeCompare(b.label))
+    return buildOperationalGroupSections(sortedItemsForGrouped, groupBy, item => getMonitorGroupValue(item, groupBy))
   }, [sortedItemsForGrouped, groupBy])
 
   useEffect(() => {
@@ -1633,7 +1576,7 @@ export default function AssetReal() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       selectedIds,
       expandedBulkSection,
       lastVisitedAt,
@@ -1782,22 +1725,19 @@ export default function AssetReal() {
       let res
       if (action === 'update') {
         const directPayload = {
-          ...(payload.status ? { status: payload.status } : {}),
-          ...(payload.environment ? { environment: payload.environment } : {}),
-          ...(payload.system ? { system: payload.system } : {}),
-          ...(payload.owner ? { owner: payload.owner } : {}),
+          ...(['status', 'environment', 'system', 'owner'] as const).reduce((changes, field) => {
+            const value = payload[field]
+            if (typeof value === 'string' && value.trim()) changes[field] = value.trim()
+            return changes
+          }, {} as Record<string, string>),
         }
         if (Object.keys(directPayload).length === 0) {
-          res = new Response(JSON.stringify({ changed: 0, summary: 'No asset fields selected' }), { status: 200 })
+          return { result: { changed: 0, summary: 'No asset fields selected' }, action, payload, idsToUse, previousSnapshots }
         } else {
-          for (const id of idsToUse) {
-            const putRes = await apiFetch(`/api/v1/devices/${id}`, {
-              method: 'PUT',
-              body: JSON.stringify(directPayload)
-            })
-            if (!putRes.ok) throw new Error(await putRes.text())
-          }
-          res = new Response(JSON.stringify({ changed: idsToUse.length, summary: `Updated ${idsToUse.length} assets` }), { status: 200 })
+          res = await apiFetch('/api/v1/devices/bulk-action', {
+            method: 'POST',
+            body: JSON.stringify({ ids: idsToUse, action: 'update', payload: directPayload })
+          })
         }
       } else {
         res = await apiFetch('/api/v1/devices/bulk-action', {
@@ -1812,11 +1752,9 @@ export default function AssetReal() {
     onSuccess: async ({ result, action, payload, idsToUse, previousSnapshots }: any) => {
       await queryClient.invalidateQueries({ queryKey: ['asset-real-devices'] })
       setShowBulkMenu(false)
+      if (action === 'update') setShowBulkEditModal(false)
       setExpandedBulkSection(null)
-        setBulkDraft({ status: '', link_type: '', direction: '' })
-      setIsBulkStatusOpen(false)
-      setIsBulkSeverityOpen(false)
-      setIsBulkNotifyOpen(false)
+      setBulkDraft({ status: '', link_type: '', direction: '' })
 
       const changedCount = Number(result?.changed ?? idsToUse.length)
       if (changedCount <= 0) {
@@ -1849,21 +1787,6 @@ export default function AssetReal() {
 
   const columnDefs = useMemo(() => {
     const layoutById = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
-    const lockFixedUtilityWidth = (column: any, layout?: any) => {
-      const colId = column.colId || column.field
-      const lockedWidth = layout?.width ?? column.width ?? column.initialWidth
-      if (!MONITORING_FIXED_WIDTH_COLUMN_IDS.has(colId) || lockedWidth == null) return column
-      return {
-        ...column,
-        width: lockedWidth,
-        initialWidth: lockedWidth,
-        minWidth: lockedWidth,
-        maxWidth: lockedWidth,
-        flex: undefined,
-        initialFlex: undefined,
-      }
-    }
-
     const renderText = (value: any, className = '') => (
       <span
         title={value == null ? '' : String(value)}
@@ -2284,13 +2207,13 @@ export default function AssetReal() {
         children: col.children.map((child: any) => {
           const colId = child.colId || child.field
           const layout = layoutById.get(colId)
-          return lockFixedUtilityWidth(applyOperationalColumnSizing(child, layout, preserveExplicitColumnWidths), layout)
+          return finalizeOperationalColumnDefinition(child, layout, preserveExplicitColumnWidths)
         })
       }
     }
     const colId = col.colId || col.field
     const layout = layoutById.get(colId)
-    const sizedColumn = lockFixedUtilityWidth(applyOperationalColumnSizing(col, layout, preserveExplicitColumnWidths), layout)
+    const sizedColumn = finalizeOperationalColumnDefinition(col, layout, preserveExplicitColumnWidths)
     if (sizedColumn.lockVisible) return sizedColumn
     return {
       ...sizedColumn,
@@ -2323,12 +2246,8 @@ export default function AssetReal() {
       workspace="assets"
       header={{
         eyebrow: "Infrastructure",
-        title: (
-          <div className="flex items-center gap-3">
-            <Activity className="text-blue-500" />
-            <span>Asset-Real</span>
-          </div>
-        ),
+        title: 'Assets',
+        titleIcon: HardDrive,
         subtitle: "Centralized asset registry and operational status",
         actions: (
           <HeaderScopeSwitch
@@ -2813,63 +2732,35 @@ export default function AssetReal() {
 
 	        </OperationalGridSurface>
       ) : (
-        <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
-          <div className="rounded-lg border border-white/5 bg-black/20 px-6 py-4 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-semibold text-slate-400">Grouped asset registry</p>
-              <p className="pt-1 text-[12px] font-semibold text-slate-100">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
-            </div>
-            <div className="flex items-center gap-3">
-               <button
-                 onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: false }), {}))}
-                 className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
-               >
-                 Expand All
-               </button>
-               <button
-                 onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: true }), {}))}
-                 className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
-               >
-                 Collapse All
-               </button>
-               <div className="w-px h-6 bg-white/10 mx-1" />
-               <button
-                 onClick={() => setGroupBy('raw')}
-                 className="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-[9px] font-semibold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-2"
-               >
-                 <X size={12} />
-                 <span>Cancel</span>
-               </button>
-            </div>
-          </div>
-          {groupedSections.map((section) => {
+        <OperationalGroupedGridView
+          summary={<div><p className="operational-group-summary-kicker">Grouped asset registry</p><p className="operational-group-summary-value">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p></div>}
+          actions={(
+            <>
+              <button type="button" onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section) => [section.key, false])))} className="operational-group-control">Expand All</button>
+              <button type="button" onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section) => [section.key, true])))} className="operational-group-control">Collapse All</button>
+              <button type="button" onClick={() => setGroupBy('raw')} className="operational-group-control operational-group-control-danger"><X size={12} aria-hidden="true" />Cancel grouping</button>
+            </>
+          )}
+          sections={groupedSections.map((section) => {
             const isCollapsed = collapsedGroups[section.key]
             const selectedCount = section.items.filter((item: any) => selectedIds.includes(item.id)).length
             return (
-              <section key={section.key} className="glass-panel overflow-hidden rounded-lg border border-white/5">
-                <button
-                  type="button"
-                  onClick={() => setCollapsedGroups((current) => ({ ...current, [section.key]: !current[section.key] }))}
-                  className="flex w-full items-center justify-between gap-4 border-b border-white/5 bg-white/[0.03] px-5 py-4 text-left transition-all hover:bg-white/[0.05]"
-                >
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="text-[9px] font-semibold text-blue-400">{groupOptions.find((option) => option.value === groupBy)?.label}</span>
-                      <h3 className="text-sm font-semibold text-slate-100">{section.label}</h3>
-                    </div>
-                    <p className="pt-1 text-[11px] text-slate-400">{section.items.length} assets{selectedCount ? ` · ${selectedCount} selected` : ''}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                  <span className="rounded-lg border border-white/5 bg-black/30 px-2.5 py-1 text-[9px] font-semibold text-slate-300">{section.items.length}</span>
-                    {isCollapsed ? <ChevronDown size={16} className="text-slate-500" /> : <ChevronUp size={16} className="text-slate-500" />}
-                  </div>
-                </button>
-                {!isCollapsed && (
+              <OperationalGroupedGridSection
+                key={section.key}
+                labelMeta={groupOptions.find((option) => option.value === groupBy)?.label}
+                label={section.label}
+                count={section.items.length}
+                countLabel="assets"
+                selectedCount={selectedCount}
+                collapsed={Boolean(isCollapsed)}
+                onToggle={() => setCollapsedGroups((current) => ({ ...current, [section.key]: !current[section.key] }))}
+              >
+                {!isCollapsed ? (
                   <OperationalGridSurface
                     style={{
                       '--ag-font-size': `${fontSize}px`,
                       '--ag-font-family': "'Geist Variable', sans-serif",
-                      height: `${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`
+                      height: `${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`
                     } as React.CSSProperties}
                   >
                     <OperationalGridMatrix
@@ -2898,23 +2789,12 @@ export default function AssetReal() {
                       noRowsLabel="No asset data found"
                     />
                   </OperationalGridSurface>
-                )}
-              </section>
+                ) : null}
+              </OperationalGroupedGridSection>
             )
           })}
-        </div>
+        />
       )}
-
-      <BulkActionModals
-        isStatusOpen={isBulkStatusOpen}
-        isSeverityOpen={isBulkSeverityOpen}
-        isNotifyOpen={isBulkNotifyOpen}
-        onClose={() => { setIsBulkStatusOpen(false); setIsBulkSeverityOpen(false); setIsBulkNotifyOpen(false); }}
-        onApply={(action, val) => bulkMutation.mutate({ action: 'update', payload: { [action]: val } })}
-        count={selectedIds.length}
-        severities={severities}
-        notificationMethods={notificationMethods}
-      />
 
       <ConfirmationModal
         isOpen={confirmModal.isOpen}
@@ -2973,20 +2853,14 @@ export default function AssetReal() {
         {compareOpen && <CompareMonitorsModal key={`monitoring-compare-${compareItems.map((item) => item.id).join('-') || 'empty'}`} items={compareItems} onClose={() => setCompareOpen(false)} />}
         {showBulkEditModal && (
           <BulkEditTableModal
-            key={`network-bulk-edit-${selectedItems.map((item) => item.id).join('-') || 'empty'}`}
+            key={`asset-bulk-edit-${selectedItems.map((item) => item.id).join('-') || 'empty'}`}
             items={selectedItems}
-            teams={teams || []}
-            operators={operators || []}
-            linkPurposeOptions={linkPurposeOptions}
-            farmOptions={farmOptions}
-            cableTypeOptions={cableTypeOptions}
-            severities={severities}
-            notificationMethods={notificationMethods}
+            statusOptions={assetFilterOptions(ASSET_STATUSES.filter((value) => value !== 'Deleted'), (settingsOptions || []).filter((option: any) => option.category === 'Status'), selectedItems.map((item) => item.status))}
+            systemOptions={assetFilterOptions([], (settingsOptions || []).filter((option: any) => option.category === 'LogicalSystem'), selectedItems.map((item) => item.system))}
+            environmentOptions={assetFilterOptions(ASSET_ENVIRONMENTS, (settingsOptions || []).filter((option: any) => option.category === 'Environment'), selectedItems.map((item) => item.environment))}
+            isPending={bulkMutation.isPending}
+            onApply={(payload: Record<string, string>) => bulkMutation.mutate({ action: 'update', payload })}
             onClose={() => setShowBulkEditModal(false)}
-            onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ['asset-real-devices'] })
-              setShowBulkEditModal(false)
-            }}
           />
         )}
         <OperationalImportModal
@@ -3124,252 +2998,56 @@ function CompareRow({ label, value, multiline = false, colorIndex = -1 }: { labe
   )
 }
 
-function BulkActionModals({ isStatusOpen, isSeverityOpen, isNotifyOpen, onClose, onApply, severities, notificationMethods }: any) {
-    const [val, setVal] = useState('')
+function BulkEditTableModal({ items, statusOptions, systemOptions, environmentOptions, isPending, onApply, onClose }: any) {
+  const [draft, setDraft] = useState({ status: '', system: '', environment: '', owner: '' })
+  const hasChanges = Object.values(draft).some((value) => value.trim().length > 0)
+  const handleClose = () => { if (!isPending) onClose() }
 
-    useEffect(() => { setVal(''); }, [isStatusOpen, isSeverityOpen, isNotifyOpen]);
-    useEscapeDismiss(onClose)
-    useBodyModalFlag()
+  useEscapeDismiss(handleClose)
+  useBodyModalFlag()
 
-    if (isStatusOpen) {
-        return (
-          <WorkspaceModal
-            isOpen={true}
-            onClose={onClose}
-            size="compact"
-            title="Update Status"
-            subtitle="Apply a global status change to selection."
-            icon={<Tag size={20} />}
-            footerRight={
-              <div className="flex items-center gap-3">
-                <ToolbarButton onClick={onClose}>Cancel</ToolbarButton>
-                <ToolbarButton
-                  disabled={!val}
-                  onClick={() => onApply('status', val)}
-                  variant="primary"
-                >
-                  Apply Status
-                </ToolbarButton>
-              </div>
-            }
-          >
-            <div className="p-2">
-              <AppDropdown
-                value={val}
-                onChange={v => setVal(v)}
-                options={STATUSES}
-                placeholder="Select Target Status..."
-                label="New Status"
-              />
-            </div>
-          </WorkspaceModal>
-        )
-    }
-
-    if (isSeverityOpen) {
-        return (
-          <WorkspaceModal
-            isOpen={true}
-            onClose={onClose}
-            size="compact"
-            title="Update Type"
-            subtitle="Recalibrate the connection type for selection."
-            icon={<Shield size={20} />}
-            footerRight={
-              <div className="flex items-center gap-3">
-                <ToolbarButton onClick={onClose}>Cancel</ToolbarButton>
-                <ToolbarButton
-                  disabled={!val}
-                  onClick={() => onApply('link_type', val)}
-                  variant="danger"
-                >
-                  Apply Type
-                </ToolbarButton>
-              </div>
-            }
-          >
-            <div className="p-2">
-              <AppDropdown
-                value={val}
-                onChange={v => setVal(v)}
-                options={NETWORK_LINK_TYPES.map((value) => ({ value, label: value }))}
-                placeholder="Select Type..."
-                label="Target Type"
-              />
-            </div>
-          </WorkspaceModal>
-        )
-    }
-
-    if (isNotifyOpen) {
-        return (
-          <WorkspaceModal
-            isOpen={true}
-            onClose={onClose}
-            size="compact"
-            title="Update Direction"
-            subtitle="Reroute the connection direction for selection."
-            icon={<Bell size={20} />}
-            footerRight={
-              <div className="flex items-center gap-3">
-                <ToolbarButton onClick={onClose}>Cancel</ToolbarButton>
-                <ToolbarButton
-                  disabled={!val}
-                  onClick={() => onApply('direction', val)}
-                  variant="primary"
-                >
-                  Apply Direction
-                </ToolbarButton>
-              </div>
-            }
-          >
-            <div className="p-2">
-              <AppDropdown
-                value={val}
-                onChange={v => setVal(v)}
-                options={NETWORK_DIRECTIONS.map((value) => ({ value, label: value }))}
-                placeholder="Select Direction..."
-                label="Target Direction"
-              />
-            </div>
-          </WorkspaceModal>
-        )
-    }
-
-    return null;
-}
-
-function BulkEditTableModal({ items, teams, operators, linkPurposeOptions, farmOptions, cableTypeOptions, severities, notificationMethods, onClose, onSuccess }: any) {
-  const [rows, setRows] = useState(() => items.map((item: any) => ({
-    id: item.id,
-    title: item.name || `Asset ${item.id}`,
-    status: item.status || '',
-    link_type: item.system || '',
-    direction: item.owner || '',
-    farm: item.environment || '',
-    purpose: item.role || '',
-    speed_gbps: item.size_u ?? '',
-    unit: item.primary_ip || '',
-    cable_type: item.management_ip || '',
-    request_link: item.management_url || '',
-    is_active: item.is_active !== false,
-  })))
-  const [isMaximized, setIsMaximized] = useState(false)
-
-  useEscapeDismiss(onClose)
-
-  const mergeOptionsWithCurrentValue = useCallback((options: Array<{ value: string; label: string }>, value: string) => {
-    const current = value ? [{ value, label: value }] : []
-    return Array.from(new Map([...(options || []), ...current].map((option: any) => [option.value, option])).values())
-  }, [])
-
-  const updateRow = (rowId: number, field: string, value: any) => {
-    setRows((current: any[]) => current.map((row: any) => row.id === rowId ? { ...row, [field]: value } : row))
+  const save = () => {
+    const payload = Object.fromEntries(
+      Object.entries(draft).filter(([, value]) => value.trim()).map(([field, value]) => [field, value.trim()]),
+    )
+    if (Object.keys(payload).length) onApply(payload)
   }
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      for (const row of rows) {
-        const payload = {
-          status: row.status,
-          system: row.link_type || null,
-          owner: row.direction || null,
-          environment: row.farm || null,
-          role: row.purpose || null,
-          size_u: row.speed_gbps === '' ? null : Number(row.speed_gbps),
-          primary_ip: row.unit || null,
-          management_ip: row.cable_type || null,
-          management_url: row.request_link || null,
-        }
-        const res = await apiFetch(`/api/v1/devices/${row.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(payload)
-        })
-        await res.json()
-      }
-    },
-    onSuccess: () => {
-      showWorkspaceToast(`Updated ${rows.length} asset${rows.length === 1 ? '' : 's'}`)
-      onSuccess()
-    },
-    meta: { handlesErrorToast: true },
-    onError: (error: any) => showWorkspaceToast(error.message || 'Bulk edit failed', { type: 'error' }),
-  })
 
   return (
     <WorkspaceModal
       isOpen={true}
-      onClose={onClose}
-      size="workspace"
-      isMaximized={isMaximized}
-      onMaximizeToggle={() => setIsMaximized(!isMaximized)}
-      title="Bulk Edit Asset-Real"
-      subtitle="Safe table-based edits for selected assets."
+      onClose={handleClose}
+      size="compact"
+      title="Bulk Edit Assets"
+      subtitle="Apply selected values to every asset in the selection."
       icon={<Edit2 size={20} />}
+      isDirty={hasChanges}
+      hideFooterClose={true}
+      dirtyConfirmTitle="Discard Bulk Edits?"
+      dirtyConfirmMessage="You have staged asset changes. Close this window and discard them?"
       footerRight={
         <div className="flex items-center gap-3">
-          <ToolbarButton onClick={onClose}>Close</ToolbarButton>
-          <ToolbarButton
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
-            variant="primary"
-            className="px-8 whitespace-nowrap"
-          >
-            {mutation.isPending ? <Clock className="animate-spin mr-2" size={14} /> : <Check className="mr-2" size={14} />}
-            <span>Save Bulk Edit</span>
+          <ToolbarButton onClick={handleClose} disabled={isPending}>Cancel</ToolbarButton>
+          <ToolbarButton onClick={save} disabled={!hasChanges || isPending} variant="primary">
+            {isPending ? <Clock className="animate-spin mr-2" size={14} /> : <Check className="mr-2" size={14} />}
+            <span>{isPending ? 'Saving…' : 'Apply to selected assets'}</span>
           </ToolbarButton>
         </div>
       }
     >
-      <div className="space-y-6">
-        <div className="rounded-lg border border-white/10 bg-black/20 px-5 py-4">
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Selection</p>
-          <p className="mt-1 text-[12px] font-bold text-slate-200">{rows.length} rows staged for modification</p>
+      <div className="space-y-4">
+        <div className="rounded-lg border border-white/10 bg-black/20 px-4 py-3">
+          <p className="text-sm font-semibold text-slate-200">{items.length} assets selected</p>
+          <p className="mt-1 text-xs leading-relaxed text-slate-400">Only fields with a chosen value will change. Blank fields keep each asset’s current value. The selected updates are submitted together.</p>
         </div>
-
-        <div className="overflow-x-auto rounded-lg border border-white/10 bg-black/20 custom-scrollbar">
-          <table className="sg-data-table min-w-full divide-y divide-white/10">
-            <thead className="bg-slate-950/90 sticky top-0 z-10">
-              <tr>
-                <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Asset</th>
-                <th className="min-w-[140px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Status</th>
-                <th className="min-w-[160px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">System</th>
-                <th className="min-w-[160px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Owner</th>
-                <th className="min-w-[180px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Environment</th>
-                <th className="min-w-[220px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Role</th>
-                <th className="min-w-[120px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Size U</th>
-                <th className="min-w-[160px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Primary IP</th>
-                <th className="min-w-[160px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Mgmt IP</th>
-                <th className="min-w-[220px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Mgmt URL</th>
-                <th className="min-w-[120px] px-4 py-3 text-left text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Control</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {rows.map((row: any) => (
-                <tr key={row.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="px-4 py-3 text-[10px] font-bold text-slate-200">{row.title}</td>
-                  <td className="px-2 py-2"><AppDropdown value={row.status} onChange={(value) => updateRow(row.id, 'status', value)} options={ASSET_STATUSES.filter((status) => status !== 'Deleted').map((status) => ({ value: status, label: status }))} placeholder="Status" /></td>
-                  <td className="px-2 py-2"><input value={row.link_type} onChange={(event) => updateRow(row.id, 'link_type', event.target.value)} placeholder="System" className={`${monitoringInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
-                  <td className="px-2 py-2"><input value={row.direction} onChange={(event) => updateRow(row.id, 'direction', event.target.value)} placeholder="Owner" className={`${monitoringInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
-                  <td className="px-2 py-2"><AppDropdown value={row.farm} onChange={(value) => updateRow(row.id, 'farm', value)} options={ASSET_ENVIRONMENTS.map((value) => ({ value, label: value }))} placeholder="Environment" /></td>
-                  <td className="px-2 py-2"><input value={row.purpose} onChange={(event) => updateRow(row.id, 'purpose', event.target.value)} placeholder="Role" className={`${monitoringInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
-                  <td className="px-2 py-2"><input type="number" value={row.speed_gbps} onChange={(event) => updateRow(row.id, 'speed_gbps', event.target.value)} placeholder="Size U" className={`${monitoringInputClass()} h-[42px] px-3 py-2 text-[10px] [appearance:textfield]`} /></td>
-                  <td className="px-2 py-2"><input value={row.unit} onChange={(event) => updateRow(row.id, 'unit', event.target.value)} placeholder="Primary IP" className={`${monitoringInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
-                  <td className="px-2 py-2"><input value={row.cable_type} onChange={(event) => updateRow(row.id, 'cable_type', event.target.value)} placeholder="Mgmt IP" className={`${monitoringInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
-                  <td className="px-2 py-2"><input value={row.request_link} onChange={(event) => updateRow(row.id, 'request_link', event.target.value)} placeholder="Mgmt URL" className={`${monitoringInputClass()} h-[42px] px-3 py-2 text-[10px]`} /></td>
-                  <td className="px-4 py-2">
-                    <button
-                      type="button"
-                      onClick={() => updateRow(row.id, 'is_active', !row.is_active)}
-                      className={`w-full rounded-lg border px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${row.is_active ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-white/10 bg-black/20 text-slate-500'}`}
-                    >
-                      {row.is_active ? 'Active' : 'Paused'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid gap-4 md:grid-cols-2">
+          <AppDropdown label="Status" value={draft.status} onChange={(value) => setDraft((current) => ({ ...current, status: value }))} options={statusOptions} placeholder="Keep each current status" />
+          <AppDropdown label="Logical system" value={draft.system} onChange={(value) => setDraft((current) => ({ ...current, system: value }))} options={systemOptions} placeholder="Keep each current system" />
+          <AppDropdown label="Environment" value={draft.environment} onChange={(value) => setDraft((current) => ({ ...current, environment: value }))} options={environmentOptions} placeholder="Keep each current environment" />
+          <label className="block space-y-2 text-xs font-semibold text-slate-300">
+            <span>Owner</span>
+            <input value={draft.owner} onChange={(event) => setDraft((current) => ({ ...current, owner: event.target.value }))} placeholder="Leave blank to keep each owner" className={`${monitoringInputClass()} h-10 px-3`} />
+          </label>
         </div>
       </div>
     </WorkspaceModal>

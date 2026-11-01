@@ -1,3 +1,5 @@
+import { OPERATIONAL_GRID_MIN_COLUMN_WIDTH } from './OperationalGridContract'
+
 export const OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY = {
   type: 'fitCellContents' as const,
 }
@@ -7,8 +9,15 @@ export const OPERATIONAL_GRID_AUTO_SIZE_STRATEGY = OPERATIONAL_GRID_CONTENT_AUTO
 export const getOperationalGridHeaderHeight = (fontSize = 11) =>
   Math.max(42, Math.ceil(fontSize + 31))
 
+export const OPERATIONAL_GRID_ROW_HEIGHT_MIN = 18
+export const OPERATIONAL_GRID_ROW_HEIGHT_MAX = 48
+export const OPERATIONAL_GRID_ROW_DENSITY_MAX = 33
+
 export const getOperationalGridRowHeight = (fontSize = 11, rowDensity = 8) =>
-  Math.min(52, Math.max(32, Math.ceil(fontSize + rowDensity + 17)))
+  Math.min(OPERATIONAL_GRID_ROW_HEIGHT_MAX, Math.max(OPERATIONAL_GRID_ROW_HEIGHT_MIN, Math.ceil(fontSize + rowDensity + 7)))
+
+export const getOperationalGridRowDensityForHeight = (rowHeight: number, fontSize = 11) =>
+  Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Math.round(rowHeight - fontSize - 7)))
 
 export const getOperationalCompactGridHeight = (
   visibleRowCount: number,
@@ -36,29 +45,128 @@ const clampOperationalColumnWidth = (width: any, minWidth: any, maxWidth: any): 
   return Math.max(minimum, Math.min(width, maximum))
 }
 
+type OperationalColumnSizingMetadata = {
+  autoSizeMinWidth?: number
+  autoSizeMaxWidth?: number
+  skipAutoSize?: boolean
+}
+
+export const OPERATIONAL_COLUMN_SIZING_CONTEXT_KEY = '__sysgridOperationalColumnSizing'
+const operationalColumnSizingMetadata = new WeakMap<object, OperationalColumnSizingMetadata>()
+
+export const getOperationalColumnSizingMetadata = (column: Record<string, any> | null | undefined) => {
+  if (!column || typeof column !== 'object') return {}
+  return operationalColumnSizingMetadata.get(column) ?? {
+    autoSizeMinWidth: column.operationalAutoSizeMinWidth,
+    autoSizeMaxWidth: column.operationalAutoSizeMaxWidth,
+    skipAutoSize: column.operationalSkipAutoSize,
+  }
+}
+
+const rememberOperationalColumnSizingMetadata = (
+  target: Record<string, any>,
+  metadata: OperationalColumnSizingMetadata,
+) => {
+  if (Object.values(metadata).some(value => value !== undefined)) {
+    operationalColumnSizingMetadata.set(target, metadata)
+  }
+  return target
+}
+
+export const normalizeOperationalColumnDefinition = (column: Record<string, any>) => {
+  const inheritedMetadata = getOperationalColumnSizingMetadata(column)
+  const autoSizeMaxWidth = column.operationalAutoSizeMaxWidth ?? inheritedMetadata.autoSizeMaxWidth ?? column.maxWidth
+  const autoSizeMinWidth = column.operationalAutoSizeMinWidth ?? inheritedMetadata.autoSizeMinWidth ?? column.minWidth
+  const normalized: Record<string, any> = {
+    ...column,
+    resizable: true,
+    minWidth: OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
+  }
+  const metadata: OperationalColumnSizingMetadata = {
+    ...inheritedMetadata,
+    ...(column.operationalSkipAutoSize !== undefined ? { skipAutoSize: column.operationalSkipAutoSize } : {}),
+  }
+  if (typeof autoSizeMaxWidth === 'number' && Number.isFinite(autoSizeMaxWidth)) {
+    metadata.autoSizeMaxWidth = Math.max(OPERATIONAL_GRID_MIN_COLUMN_WIDTH, autoSizeMaxWidth)
+  }
+  if (typeof autoSizeMinWidth === 'number' && Number.isFinite(autoSizeMinWidth)) {
+    const maximum = metadata.autoSizeMaxWidth
+    metadata.autoSizeMinWidth = Math.min(
+      Math.max(OPERATIONAL_GRID_MIN_COLUMN_WIDTH, autoSizeMinWidth),
+      typeof maximum === 'number' ? maximum : Number.POSITIVE_INFINITY,
+    )
+  }
+  delete normalized.operationalAutoSizeMinWidth
+  delete normalized.operationalAutoSizeMaxWidth
+  delete normalized.operationalSkipAutoSize
+  delete normalized.maxWidth
+  delete normalized.operationalLockWidth
+  if (typeof normalized.width === 'number') {
+    normalized.width = clampOperationalColumnWidth(normalized.width, OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
+  }
+  if (typeof normalized.initialWidth === 'number') {
+    normalized.initialWidth = clampOperationalColumnWidth(normalized.initialWidth, OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
+  }
+  return rememberOperationalColumnSizingMetadata(normalized, metadata)
+}
+
+const normalizedColumnDefinitionCache = new WeakMap<any[], any[]>()
+const EMPTY_OPERATIONAL_COLUMN_DEFINITIONS: any[] = []
+
+export const normalizeOperationalColumnDefinitions = (columnDefs?: any[] | null) => {
+  const source = Array.isArray(columnDefs) ? columnDefs : EMPTY_OPERATIONAL_COLUMN_DEFINITIONS
+  const cached = normalizedColumnDefinitionCache.get(source)
+  if (cached) return cached
+  const normalized = source.map((column: any) => column.children
+    ? { ...column, children: normalizeOperationalColumnDefinitions(column.children) }
+    : normalizeOperationalColumnDefinition(column))
+  normalizedColumnDefinitionCache.set(source, normalized)
+  return normalized
+}
+
+export const buildOperationalColumnSizingContext = (context: any, columnDefs: any[]) => {
+  const sizingByColumnId: Record<string, OperationalColumnSizingMetadata> = {}
+  const visit = (columns: any[]) => columns.forEach((column, index) => {
+    if (Array.isArray(column?.children)) {
+      visit(column.children)
+      return
+    }
+    const metadata = getOperationalColumnSizingMetadata(column)
+    if (!Object.values(metadata).some(value => value !== undefined)) return
+    const columnId = column?.colId ?? column?.field ?? column?.headerName ?? `column-${index}`
+    sizingByColumnId[String(columnId)] = metadata
+  })
+  visit(Array.isArray(columnDefs) ? columnDefs : [])
+  if (!Object.keys(sizingByColumnId).length) return context
+
+  const baseContext = context && typeof context === 'object' && !Array.isArray(context)
+    ? context
+    : context == null
+      ? {}
+      : { __sysgridOriginalGridContext: context }
+  return {
+    ...baseContext,
+    [OPERATIONAL_COLUMN_SIZING_CONTEXT_KEY]: {
+      ...baseContext[OPERATIONAL_COLUMN_SIZING_CONTEXT_KEY],
+      ...sizingByColumnId,
+    },
+  }
+}
+
+const getGridColumnSizingMetadata = (api: { getGridOption?: (key: string) => any } | null | undefined, column: any) => {
+  const columnId = column?.getColId?.()
+  const context = api?.getGridOption?.('context')
+  const fromContext = typeof columnId === 'string'
+    ? context?.[OPERATIONAL_COLUMN_SIZING_CONTEXT_KEY]?.[columnId]
+    : undefined
+  return fromContext ?? getOperationalColumnSizingMetadata(column?.getColDef?.())
+}
+
 const isOperationalGridDestroyed = (api: { isDestroyed?: () => boolean } | null | undefined) => {
   try {
     return api?.isDestroyed?.() === true
   } catch {
     return true
-  }
-}
-
-// Source of truth: protected sizing / resize behavior for fixed-width operational columns.
-export const lockOperationalColumnWidth = (
-  column: Record<string, any>,
-  layout?: Record<string, any>
-) => {
-  const lockedWidth = column.width ?? column.initialWidth
-  if (!column.operationalLockWidth || lockedWidth == null) return column
-  return {
-    ...column,
-    width: lockedWidth,
-    initialWidth: lockedWidth,
-    minWidth: lockedWidth,
-    maxWidth: lockedWidth,
-    flex: undefined,
-    initialFlex: undefined,
   }
 }
 
@@ -108,6 +216,7 @@ export const applyOperationalColumnState = (
 export const clampAutoSizedOperationalColumnWidths = (api: {
   getAllDisplayedColumns?: () => Array<{ getColId: () => string; getColDef?: () => Record<string, any>; getActualWidth?: () => number }>
   applyColumnState?: (config: any) => void
+  getGridOption?: (key: string) => any
   isDestroyed?: () => boolean
 } | null | undefined) => {
   if (!api?.getAllDisplayedColumns || !api.applyColumnState || isOperationalGridDestroyed(api)) return
@@ -117,7 +226,12 @@ export const clampAutoSizedOperationalColumnWidths = (api: {
     const width = column.getActualWidth?.()
     if (typeof width !== 'number' || !Number.isFinite(width)) return []
     const definition = column.getColDef?.()
-    const boundedWidth = clampOperationalColumnWidth(width, definition?.minWidth, definition?.maxWidth)
+    const sizing = getGridColumnSizingMetadata(api, column)
+    const boundedWidth = clampOperationalColumnWidth(
+      width,
+      sizing.autoSizeMinWidth ?? definition?.minWidth,
+      sizing.autoSizeMaxWidth ?? definition?.maxWidth,
+    )
     return boundedWidth === width ? [] : [{ colId: column.getColId(), width: boundedWidth }]
   })
   if (!state.length || isOperationalGridDestroyed(api)) return
@@ -135,6 +249,7 @@ export const autoSizeOperationalColumns = ({
     autoSizeColumns?: (keys: string[], skipHeader?: boolean) => void
     sizeColumnsToFit?: () => void
     applyColumnState?: (config: any) => void
+    getGridOption?: (key: string) => any
     isDestroyed?: () => boolean
   } | null | undefined
   fitGridWidth?: boolean
@@ -157,7 +272,7 @@ export const autoSizeOperationalColumns = ({
   const displayedColumns = api.getAllDisplayedColumns()
   if (!Array.isArray(displayedColumns)) return
   const columnIds = displayedColumns
-    .filter((column) => !column.getColDef?.()?.operationalSkipAutoSize)
+    .filter((column) => !getGridColumnSizingMetadata(api, column).skipAutoSize)
     .map((column) => column.getColId())
     .filter((colId) => !skipColumnIds.includes(colId))
 
@@ -181,19 +296,21 @@ export const applyOperationalColumnSizing = (
   layout: Record<string, any> | undefined,
   preserveExplicitWidths: boolean
 ) => {
+  const metadata = getOperationalColumnSizingMetadata(column)
+  const lockWidth = column.operationalLockWidth
   const nextColumn: Record<string, any> = { ...column }
 
-  if (!column.operationalLockWidth && nextColumn.width !== undefined) {
+  if (!lockWidth && nextColumn.width !== undefined) {
     nextColumn.initialWidth = nextColumn.width
     if (!preserveExplicitWidths) delete nextColumn.width
   }
 
-  if (!column.operationalLockWidth && nextColumn.flex !== undefined) {
+  if (!lockWidth && nextColumn.flex !== undefined) {
     nextColumn.initialFlex = nextColumn.flex
     if (!preserveExplicitWidths) delete nextColumn.flex
   }
 
-  if (!layout) return nextColumn
+  if (!layout) return rememberOperationalColumnSizingMetadata(nextColumn, metadata)
 
   // null is AG Grid's explicit unpinned state, including viewport overflow.
   if (layout.pinned !== undefined) nextColumn.pinned = layout.pinned
@@ -201,22 +318,28 @@ export const applyOperationalColumnSizing = (
     nextColumn.hide = layout.hide
   }
 
-  if (preserveExplicitWidths && !column.operationalLockWidth) {
+  if (preserveExplicitWidths && !lockWidth) {
     const restoredWidth = layout.width ?? nextColumn.width
     nextColumn.width = clampOperationalColumnWidth(restoredWidth, nextColumn.minWidth, nextColumn.maxWidth)
-    nextColumn.flex = layout.flex ?? nextColumn.flex
+    if (layout.flex !== undefined && layout.flex !== null) {
+      nextColumn.flex = layout.flex
+    } else if (layout.width !== undefined && layout.width !== null) {
+      delete nextColumn.flex
+      delete nextColumn.initialFlex
+    }
   }
 
-  return nextColumn
+  return rememberOperationalColumnSizingMetadata(nextColumn, metadata)
 }
 
 export const finalizeOperationalColumnDefinition = (
   column: Record<string, any>,
   layout: Record<string, any> | undefined,
   preserveExplicitWidths: boolean
-) => lockOperationalColumnWidth(
-  applyOperationalColumnSizing(column, layout, preserveExplicitWidths),
-  layout
+) => applyOperationalColumnSizing(
+  normalizeOperationalColumnDefinition(column),
+  layout,
+  preserveExplicitWidths
 )
 
 export const orderOperationalColumnDefinitions = (

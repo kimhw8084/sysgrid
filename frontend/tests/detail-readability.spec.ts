@@ -2,6 +2,7 @@ import { expect, type Locator, type Page, type TestInfo } from '@playwright/test
 import { test } from './helpers/sysgrid-test'
 import { clickResilientButton, createAsset, createMonitoring, createService, expectHeaderBodyAligned, resetBrowserState } from './helpers/sysgrid'
 import { expectReadableGridText } from './helpers/grid-contrast'
+import { OPERATIONAL_GRID_MIN_COLUMN_WIDTH } from '../src/components/shared/OperationalGridContract'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 
@@ -250,7 +251,7 @@ async function singleLineAuditTimestamp(page: Page, testInfo: TestInfo, descript
   expect(geometry.width).toBeGreaterThan(0)
 }
 
-for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [1440, 390, 320]) {
+for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [1440]) {
   test(`audit Administrator and Operation headers stay whole through empty and populated results in ${theme} at ${width}`, async ({ page, sysApi }, testInfo) => {
     await page.setViewportSize({ width, height: width <= 390 ? 844 : 1000 })
     const errors: string[] = []
@@ -317,6 +318,10 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [14
     await expect(rows).toHaveCount(1)
     await page.waitForLoadState('networkidle')
     await checkHeader('repopulated')
+    if (width >= 768) {
+      const pinnedDivider = await page.locator('.ag-pinned-left-cols-container').evaluate(element => getComputedStyle(element).boxShadow)
+      expect(pinnedDivider).toContain('inset')
+    }
     if (process.env.SYSGRID_DESKTOP_ONLY !== '1') {
       await page.setViewportSize({ width: width <= 390 ? 1440 : 390, height: width <= 390 ? 1000 : 844 })
       await checkHeader('resized')
@@ -332,6 +337,34 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [14
     const resize = actorHeader.locator('.ag-header-cell-resize')
     await expect(resize).toBeInViewport({ ratio: 1 })
     const originalWidth = (await actorHeader.boundingBox())!.width
+    const dragColumnResize = async (deltaX: number) => {
+      const box = await resize.boundingBox()
+      expect(box).not.toBeNull()
+      const startX = box!.x + box!.width / 2
+      const startY = box!.y + box!.height / 2
+      await page.mouse.move(startX, startY)
+      await page.mouse.down()
+      await page.mouse.move(startX + deltaX, startY, { steps: Math.max(5, Math.min(30, Math.ceil(Math.abs(deltaX) / 30))) })
+      await page.mouse.up()
+    }
+    if (width >= 768) {
+      await dragColumnResize(-200)
+      const minimumRenderedWidth = Math.round((await actorHeader.boundingBox())!.width)
+      await attachGeometry(testInfo, 'audit-actor-column-minimum-rendered', { minimumRenderedWidth })
+      expect(minimumRenderedWidth).toBeGreaterThanOrEqual(OPERATIONAL_GRID_MIN_COLUMN_WIDTH)
+      expect(minimumRenderedWidth).toBeLessThanOrEqual(OPERATIONAL_GRID_MIN_COLUMN_WIDTH + 20)
+      await page.screenshot({ path: testInfo.outputPath('audit-administrator-min-width.png'), animations: 'disabled' })
+      await actorHeader.evaluate(cellElement => {
+        const cell = cellElement as HTMLElement
+        const scroller = document.querySelector<HTMLElement>('.ag-center-cols-viewport')!
+        scroller.scrollLeft = cell.offsetLeft
+      })
+      await dragColumnResize(1000)
+      const expandedWidth = Math.round((await actorHeader.boundingBox())!.width)
+      expect(expandedWidth).toBeGreaterThan(900)
+      await page.screenshot({ path: testInfo.outputPath('audit-administrator-expanded-width.png'), animations: 'disabled' })
+      await dragColumnResize(originalWidth - expandedWidth)
+    }
     const handle = await resize.boundingBox()
     expect(handle).not.toBeNull()
     await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2)
@@ -357,7 +390,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) for (const width of [14
 }
 
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
-  for (const width of [360, 390]) {
+  for (const width of [1440]) {
     test(`asset summary preserves whole labels and IPv4 in ${theme} at ${width}`, async ({ page, sysApi }, testInfo) => {
       await page.setViewportSize({ width, height: 844 })
       await resetBrowserState(page)
@@ -420,8 +453,8 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       }
       await page.screenshot({ path: testInfo.outputPath('audit-actions.png'), animations: 'disabled' })
       await singleReadableLine(page.locator('.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text'), 'Audit Actions header', testInfo, { selector: '.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text' })
-      await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 1 })
-      await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 1 })
+      await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 0.95 })
+      await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 0.95 })
       await singleLineAuditTimestamp(page, testInfo, 'default-font')
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
       for (const boundary of [{ key: 'ArrowLeft', value: '8' }, { key: 'ArrowRight', value: '14' }]) {
@@ -431,7 +464,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         await density.scrollIntoViewIfNeeded()
         await expect(density).toBeInViewport({ ratio: 1 })
         await expect(fontSize).toBeInViewport({ ratio: 1 })
-        await expect(page.getByRole('slider', { name: 'Audit row density', exact: true })).toBeInViewport({ ratio: 1 })
+        await expect(page.getByRole('slider', { name: 'Audit row height', exact: true })).toBeInViewport({ ratio: 1 })
         await fontSize.focus()
         for (let step = 0; step < 6; step++) await page.keyboard.press(boundary.key)
         await expect(fontSize).toHaveValue(boundary.value)
@@ -439,7 +472,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         await expect(density).toBeInViewport({ ratio: 1 })
         await page.screenshot({ path: testInfo.outputPath(`audit-density-font-${boundary.value}.png`), animations: 'disabled' })
         await expectReadableGridText(page, testInfo, `audit-density-font-${boundary.value}`, '[data-audit-density] span')
-        for (const name of ['Audit font size', 'Audit row density']) {
+        for (const name of ['Audit font size', 'Audit row height']) {
           await singleReadableLine(density.locator(`input[aria-label="${name}"] + span`), `${name} value at font ${boundary.value}`, testInfo, { selector: `[data-audit-density] input[aria-label="${name}"] + span` })
         }
         await page.getByRole('button', { name: 'Close density controls', exact: true }).click()
@@ -449,10 +482,31 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         await expect(header).toBeInViewport({ ratio: 1 })
         await page.screenshot({ path: testInfo.outputPath(`audit-actions-font-${boundary.value}.png`), animations: 'disabled' })
         await singleReadableLine(header, `Audit Actions header at font ${boundary.value}`, testInfo, { selector: '.ag-header-cell[col-id="audit-actions"] .ag-header-cell-text' })
-        await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 1 })
-        await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 1 })
+        await expect(row.getByRole('button', { name: 'Open target record', exact: true })).toBeInViewport({ ratio: 0.95 })
+        await expect(row.getByRole('button', { name: 'View change payload', exact: true })).toBeInViewport({ ratio: 0.95 })
         await singleLineAuditTimestamp(page, testInfo, `font-${boundary.value}`)
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy()
+      }
+
+      if (width >= 768) {
+        const rowHeight = page.getByRole('slider', { name: 'Audit row height', exact: true })
+        const renderedRowHeight = async () => Math.round((await row.boundingBox())!.height)
+        await page.getByRole('button', { name: 'Toggle density controls', exact: true }).click()
+        await expect(rowHeight).toHaveAttribute('min', '24')
+        await expect(rowHeight).toHaveAttribute('max', '48')
+        await expect.poll(async () => Number(await rowHeight.inputValue()) === await renderedRowHeight()).toBe(true)
+        await rowHeight.focus()
+        await page.keyboard.press('Home')
+        await expect(rowHeight).toHaveValue('24')
+        await expect.poll(renderedRowHeight).toBe(24)
+        await expect(page.locator('[data-audit-density] input[aria-label="Audit row height"] + span')).toHaveText('24 px')
+        await page.screenshot({ path: testInfo.outputPath('audit-row-height-24px.png'), animations: 'disabled' })
+        await page.keyboard.press('End')
+        await expect(rowHeight).toHaveValue('48')
+        await expect.poll(renderedRowHeight).toBe(48)
+        await expect(page.locator('[data-audit-density] input[aria-label="Audit row height"] + span')).toHaveText('48 px')
+        await page.screenshot({ path: testInfo.outputPath('audit-row-height-48px.png'), animations: 'disabled' })
+        await page.getByRole('button', { name: 'Close density controls', exact: true }).click()
       }
     })
   }

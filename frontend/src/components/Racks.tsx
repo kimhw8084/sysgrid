@@ -7,9 +7,10 @@ import { WorkspaceDialogFrame } from './shared/WorkspaceDialogFrame'
 import { FormGuide } from './shared/FormGuide'
 import { useWorkspaceDialogLayer, useWorkspacePopupDismiss, WORKSPACE_LAYER_Z } from './shared/WorkspaceOverlay'
 import { getPointFloatingStyle } from './shared/OperationalGridInteractions'
+import { getRackImpactPopupLayout } from './rackPopupGeometry'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
-import { AgGridReact } from 'ag-grid-react'
+import { OperationalAgGrid } from './shared/OperationalAgGrid'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Plus, Zap, Trash2, Edit2, Search, MapPin, X, ArrowRightLeft, Server,
@@ -32,7 +33,7 @@ import {
 import { WorkspaceModal } from './shared/WorkspaceModal'
 import { WorkspaceTabStrip, WorkspaceEmptyState, useWorkspaceAnchoredLayer } from './shared/OperationalWorkspacePrimitives'
 import { formatAppDate, parseAppDate } from '../utils/dateUtils'
-import { BulkImportModal } from './shared/BulkImportModal'
+import { OperationalImportModal } from './shared/OperationalImportModal'
 import { ConfirmationModal } from './shared/ConfirmationModal'
 import { StyledSelect } from './shared/StyledSelect'
 import { ConnectionForensicsModal } from './shared/ConnectionForensicsModal'
@@ -168,8 +169,8 @@ const MiniBar = ({ value, max, colorFn, label, unit, overflowLabel = 'CAPACITY A
   return (
     <div className="space-y-0.5 group/bar relative">
       <div className="flex justify-between items-center">
-        <span className={`text-[11px] font-medium ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>
-          {label} {isOverflow && <span className="text-[6px] font-black ml-1">[{overflowLabel}]</span>}
+        <span className={`min-w-0 truncate text-[11px] font-medium ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>
+          {label} {isOverflow && <span title={overflowLabel} aria-label={overflowLabel} className="ml-1 rounded-sm border border-[var(--state-danger-border)] bg-[var(--state-danger-surface-strong)] px-1 py-px text-[7px] font-bold uppercase tracking-wide text-[var(--state-danger)]">Over</span>}
         </span>
         <span className={`text-[11px] font-semibold tabular-nums transition-colors ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-primary)]'}`}>
           {value.toFixed(1)}<span className="text-[var(--text-secondary)] font-normal">/{max}{unit}</span>
@@ -830,7 +831,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                       />
                     </div>
                   ) : (
-                    <AgGridReact
+                    <OperationalAgGrid
                       ref={gridRef}
                       rowData={filteredLogs}
                       columnDefs={columnDefs}
@@ -1035,7 +1036,6 @@ interface RackElevationProps {
   const isHighlighted = (device: any) =>
    !!searchTerm && device?.name?.toLowerCase().includes(searchTerm.toLowerCase())
 
-  const isPlanningEstimateOver = estimatedPowerKw > effectivePowerCapKw
   const isFillOver = occupiedU >= totalU
 
   return (
@@ -1058,11 +1058,11 @@ interface RackElevationProps {
       )}
 
       {/* Header - FIXED */}
-      <div className="px-3 pt-4 pb-3 bg-[var(--grid-header-bg)] border-b border-[var(--grid-border)] space-y-2.5 shrink-0">
-        <div className="flex items-start justify-between ml-6 gap-2">
+      <div className="flex h-[164px] shrink-0 flex-col gap-2 overflow-hidden border-b border-[var(--grid-border)] bg-[var(--grid-header-bg)] px-3 pb-3 pt-4">
+        <div className="flex h-10 min-h-10 items-start justify-between gap-2 pl-6">
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-sm text-[var(--text-primary)] leading-5 [overflow-wrap:anywhere]">{rack.name}</h3>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <h3 className="h-5 truncate text-sm font-semibold leading-5 text-[var(--text-primary)]" title={rack.name}>{rack.name}</h3>
+            <div className="mt-0.5 flex h-4 items-center gap-1.5">
               <MapPin size={9} className="text-slate-600 shrink-0" />
               <span className="text-[11px] text-[var(--text-secondary)] truncate" title={rack.site_name || 'Unassigned'}>{rack.site_name || 'Unassigned'}</span>
             </div>
@@ -1137,31 +1137,32 @@ interface RackElevationProps {
         </div>
 
         {/* Capacity bars */}
-        <div className="space-y-2 px-0.5">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-0.5 px-0.5">
-             <div className="flex gap-2">
-                <span className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-1">
+        <div className="flex min-h-0 flex-1 flex-col justify-between px-0.5">
+          <div className="flex h-4 min-w-0 items-center justify-between gap-2 overflow-hidden px-0.5">
+             <div className="flex min-w-0 items-center gap-2">
+                <span className="flex items-center gap-1 whitespace-nowrap text-[10px] font-medium text-[var(--text-secondary)]">
                    <Server size={8} /> {serverCount} SRV
                 </span>
-                <span className="text-[10px] font-medium text-[var(--text-secondary)] flex items-center gap-1">
+                <span className="flex items-center gap-1 whitespace-nowrap text-[10px] font-medium text-[var(--text-secondary)]">
                    <Package size={8} /> {reservedCount} RES
                 </span>
              </div>
-             <div className="flex flex-wrap gap-x-2 gap-y-1">
+             <div className="flex min-w-0 items-center justify-end gap-2 whitespace-nowrap">
                 <span className={`text-[10px] font-medium ${isFillOver ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>{Math.round((occupiedU/totalU)*100)}% slot</span>
-                <span className="text-[10px] font-medium text-[var(--text-secondary)]">Ceiling {effectivePowerCapKw.toFixed(1)}kW</span>
-                <span className={`text-[10px] font-medium ${isPlanningEstimateOver ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>Typ est {Math.round((estimatedPowerKw/effectivePowerCapKw)*100)}%</span>
+                <span className="truncate text-[10px] font-medium text-[var(--text-secondary)]">{effectivePowerCapKw.toFixed(1)}kW cap</span>
              </div>
           </div>
-          <MiniBar value={occupiedU} max={totalU} colorFn={fillColor} label="Fill" unit="U" />
-          <MiniBar
-            value={estimatedPowerKw}
-            max={effectivePowerCapKw}
-            colorFn={powerColor}
-            label="Typical estimate"
-            unit="kW"
-            overflowLabel="PLANNING ESTIMATE > CONFIGURED CEILING"
-          />
+          <div className="space-y-1.5">
+            <MiniBar value={occupiedU} max={totalU} colorFn={fillColor} label="Fill" unit="U" />
+            <MiniBar
+              value={estimatedPowerKw}
+              max={effectivePowerCapKw}
+              colorFn={powerColor}
+              label="Typical estimate"
+              unit="kW"
+              overflowLabel="PLANNING ESTIMATE > CONFIGURED CEILING"
+            />
+          </div>
         </div>
       </div>
 
@@ -1241,9 +1242,15 @@ const AssetLegend = () => (
 
 const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: { deviceId: number, devices: any[], connections: any[], onClose: () => void, coords: { x: number, y: number } | null }) => {
   const dialogLayer = useWorkspaceDialogLayer(true, onClose)
-  const x = useMotionValue(coords && coords.x > window.innerWidth / 2 ? 80 : Math.max(16, window.innerWidth - 470))
-  const y = useMotionValue(Math.max(80, Math.min((coords?.y ?? 300) - 200, window.innerHeight - 550)))
-  const [limits, setLimits] = useState({ left: 16, top: 16, right: Math.max(16, innerWidth - 466), bottom: 16 })
+  const anchor = coords ?? { x: Math.round(window.innerWidth / 3), y: 160 }
+  const initialPosition = getRackImpactPopupLayout(anchor, { width: window.innerWidth, height: window.innerHeight })
+  const x = useMotionValue(initialPosition.x)
+  const y = useMotionValue(initialPosition.y)
+  const [limits, setLimits] = useState({ left: 16, top: 16, right: Math.max(16, innerWidth - initialPosition.width - 16), bottom: 16 })
+  useEffect(() => {
+    x.set(initialPosition.x)
+    y.set(initialPosition.y)
+  }, [initialPosition.x, initialPosition.y, x, y])
   useEffect(() => {
     const clamp = () => {
       const rect = dialogLayer.ref.current?.getBoundingClientRect()
@@ -1286,50 +1293,50 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
     <motion.div
       {...dialogLayer}
       role="dialog" aria-modal="true" aria-label="Impact Analysis"
-      style={{ ...dialogLayer.style, x, y, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100dvh - 32px)' }}
+      style={{ ...dialogLayer.style, x, y, width: initialPosition.width, height: Math.min(564, initialPosition.maxHeight), maxWidth: 'calc(100vw - 32px)', maxHeight: initialPosition.maxHeight }}
       dragConstraints={limits} dragElastic={0}
       drag
       dragMomentum={false}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed top-0 left-0 z-[300] w-[450px] bg-slate-900/95 backdrop-blur-xl border border-blue-500/30 rounded-lg shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col cursor-move"
-    >       <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/5">
+      className="fixed top-0 left-0 z-[300] flex w-[450px] min-h-0 flex-col cursor-move overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-overlay)] shadow-2xl backdrop-blur-xl"
+    >       <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-default)] bg-[var(--surface-elevated)] px-6 py-4">
           <div className="flex items-center gap-3">
-             <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20 text-white">
+             <div className="rounded-lg bg-[var(--accent-primary)] p-2 text-white shadow-lg">
                 <Activity size={16} />
              </div>
              <div>
-                <h3 className="text-xs font-black uppercase tracking-tight text-white leading-none">Impact Analysis</h3>
-                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1.5 truncate max-w-[200px]">{device?.name}</p>
+                <h3 className="text-xs font-black uppercase leading-none tracking-tight text-[var(--text-primary)]">Impact Analysis</h3>
+                <p className="mt-1.5 max-w-[200px] truncate text-[8px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">{device?.name}</p>
              </div>
           </div>
-          <button aria-label="Close impact analysis" onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors cursor-pointer"><X size={16}/></button>
+          <button aria-label="Close impact analysis" onClick={onClose} className="cursor-pointer rounded-lg p-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"><X size={16}/></button>
        </div>
 
-       <div className="p-6 space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar">
+       <div className="min-h-0 flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
           <div className="grid grid-cols-2 gap-3">
-             <div className="p-3 bg-black/40 rounded-lg border border-white/5">
-                <p className="text-[7px] font-black text-slate-500 uppercase mb-1">Recorded Connections</p>
-                <p className="text-xl font-black text-white leading-none">{deviceConns.length}</p>
+             <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
+                <p className="mb-1 text-[7px] font-black uppercase text-[var(--text-muted)]">Recorded Connections</p>
+                <p className="text-xl font-black leading-none text-[var(--text-primary)]">{deviceConns.length}</p>
              </div>
-             <div className="p-3 bg-black/40 rounded-lg border border-white/5">
-                <p className="text-[7px] font-black text-slate-500 uppercase mb-1">Connected Systems</p>
-                <p className="text-xl font-black text-blue-400 leading-none">{Object.keys(distribution.system).length}</p>
+             <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
+                <p className="mb-1 text-[7px] font-black uppercase text-[var(--text-muted)]">Connected Systems</p>
+                <p className="text-xl font-black leading-none text-[var(--accent-primary)]">{Object.keys(distribution.system).length}</p>
              </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             {Object.entries(distribution).map(([category, data]) => (
               <div key={category} className="space-y-2">
-                <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">{category} Distribution</h4>
-                <div className="bg-black/20 rounded-lg border border-white/5 overflow-hidden">
+                <h4 className="px-1 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">{category} Distribution</h4>
+                <div className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)]">
                   {Object.entries(data).length === 0 ? (
-                    <p className="p-3 text-[8px] text-slate-600 italic">None</p>
+                    <p className="p-3 text-[8px] italic text-[var(--text-muted)]">None</p>
                   ) : (
                     Object.entries(data).sort((a,b) => b[1] - a[1]).map(([label, count]) => (
-                      <div key={label} className="flex justify-between items-center px-3 py-1.5 border-b border-white/[0.03] last:border-0">
-                        <span className="text-[9px] font-bold text-slate-300 uppercase truncate max-w-[100px]">{label}</span>
-                        <span className="text-[9px] font-black text-white tabular-nums">{count}</span>
+                      <div key={label} className="flex items-center justify-between border-b border-[var(--border-default)] px-3 py-1.5 last:border-0">
+                        <span className="max-w-[100px] truncate text-[9px] font-bold uppercase text-[var(--text-primary)]">{label}</span>
+                        <span className="text-[9px] font-black tabular-nums text-[var(--text-primary)]">{count}</span>
                       </div>
                     ))
                   )}
@@ -1339,9 +1346,9 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
           </div>
 
           <div className="space-y-2">
-             <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Network Fabric Trace</h4>
+             <h4 className="px-1 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Network Fabric Trace</h4>
              {deviceConns.length === 0 ? (
-               <p className="text-[10px] text-slate-600 italic px-1">No active connections for this asset.</p>
+               <p className="px-1 text-[10px] italic text-[var(--text-muted)]">No active connections for this asset.</p>
              ) : (
                <div className="space-y-1">
                   {deviceConns.slice(0, 5).map((c: any) => {
@@ -1349,28 +1356,28 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
                     const peerId = isSrc ? c.target_device_id : c.source_device_id
                     const peer = devices?.find(d => d.id === peerId)
                     return (
-                      <div key={c.id} className="p-2 bg-white/5 border border-white/5 rounded-lg flex items-center justify-between group hover:border-blue-500/20 transition-all">
+                      <div key={c.id} className="group flex items-center justify-between rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-2 transition-all hover:border-[var(--accent-primary)]">
                          <div className="flex flex-col">
-                            <span className="text-[8px] font-black text-blue-400 uppercase leading-none">{peer?.name || 'Unknown Peer'}</span>
-                            <span className="text-[6px] font-bold text-slate-500 uppercase mt-1">{isSrc ? c.source_port : c.target_port} → {isSrc ? c.target_port : c.source_port}</span>
+                            <span className="text-[8px] font-black uppercase leading-none text-[var(--accent-primary)]">{peer?.name || 'Unknown Peer'}</span>
+                            <span className="mt-1 text-[6px] font-bold uppercase text-[var(--text-secondary)]">{isSrc ? c.source_port : c.target_port} → {isSrc ? c.target_port : c.source_port}</span>
                          </div>
                          <div className="text-right">
-                            <span className="text-[8px] font-black text-slate-300 uppercase">{c.speed_gbps}G</span>
+                            <span className="text-[8px] font-black uppercase text-[var(--text-primary)]">{c.speed_gbps}G</span>
                          </div>
                       </div>
                     )
                   })}
                   {deviceConns.length > 5 && (
-                    <p className="text-[8px] text-slate-500 text-center font-bold uppercase tracking-widest pt-1">+{deviceConns.length - 5} additional vectors</p>
+                    <p className="pt-1 text-center text-[8px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">+{deviceConns.length - 5} additional vectors</p>
                   )}
                </div>
              )}
           </div>
        </div>
 
-       <div className="px-6 py-4 bg-black/40 border-t border-white/10 flex items-center gap-3">
-          <AlertTriangle size={14} className="text-amber-500 shrink-0" />
-          <p className="text-[8px] font-bold text-slate-400 leading-tight">
+       <div className="flex shrink-0 items-center gap-3 border-t border-[var(--border-default)] bg-[var(--surface-elevated)] px-6 py-4">
+          <AlertTriangle size={14} className="shrink-0 text-[var(--state-warning)]" />
+          <p className="text-[8px] font-bold leading-tight text-[var(--text-secondary)]">
              Service impact is unknown. Recorded network links do not establish service dependencies or failure propagation.
           </p>
        </div>
@@ -3413,11 +3420,15 @@ export default function Racks() {
                     style={isActive && s.color ? { backgroundColor: s.color, borderColor: 'rgba(255,255,255,0.1)' } : {}}
                   >
                     {s.name}
-                    <span className={`text-[7px] font-black px-1 py-0.5 rounded-lg tabular-nums ${
-                      siteFill >= 90 ? 'bg-rose-500/30 text-rose-300' :
-                      siteFill >= 70 ? 'bg-amber-500/30 text-amber-300' :
-                      isActive ? 'bg-white/20 text-white/70' : 'bg-white/5 text-slate-500'
-                    }`}>{siteFill}%</span>
+                    <span
+                      data-site-capacity-badge
+                      data-capacity-level={siteFill >= 90 ? 'high' : siteFill >= 70 ? 'watch' : 'normal'}
+                      title={`${siteFill}% of rack unit capacity used`}
+                      className="inline-flex shrink-0 items-center gap-1 rounded-md border border-white/30 bg-slate-950/90 px-1.5 py-1 text-[8px] font-bold leading-none tabular-nums text-white shadow-sm"
+                    >
+                      {siteFill >= 90 ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-rose-400" /> : null}
+                      {siteFill}%
+                    </span>
                   </button>
 
                   <button
@@ -3990,6 +4001,8 @@ export default function Racks() {
                       <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
                       <input 
                         autoFocus
+                        aria-label="Asset search"
+                        data-theme-search="true"
                         value={mountSearch}
                         onChange={e => setMountSearch(e.target.value)}
                         placeholder="Filter by name, type, or system..."
@@ -4425,7 +4438,7 @@ export default function Racks() {
           onClose={() => setShowAuditLogs(false)}
         />
 
-        <BulkImportModal 
+        <OperationalImportModal
            isOpen={showImportModal} 
            onClose={() => setShowImportModal(false)} 
            tableName="racks" 

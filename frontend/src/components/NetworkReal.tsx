@@ -38,8 +38,10 @@ import {
   OPERATIONAL_GRID_WIDTHS,
 } from './shared/OperationalGridContract'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
+import { buildOperationalGroupSections } from './shared/OperationalGrouping'
 import { apiFetch } from '../api/apiClient'
 import { changedNetworkFields, networkOptionsWithCurrent, networkTableChanges } from '../api/networkEdits'
+import { getOperationalNetworkOptions, NETWORK_LINK_TYPE_DEFAULTS, NETWORK_FARM_DEFAULTS, NETWORK_CABLE_TYPE_DEFAULTS } from './shared/OperationalNetworkOptions'
 import { FormGuide, focusFormIssue } from './shared/FormGuide'
 import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { ModulePolicyButton, useModuleActionPolicy, useModulePolicy } from '../policy/ModulePolicy'
@@ -98,10 +100,11 @@ import {
   OperationalWorkspaceShell
 } from './shared/OperationalWorkspaceShells'
 import {
-  applyOperationalColumnSizing,
+  finalizeOperationalColumnDefinition,
   applyOperationalColumnState,
   autoSizeOperationalColumns,
   getOperationalColumnLayoutSnapshot,
+  getOperationalGridRowHeight,
   normalizeOperationalColumnLayout,
   OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
   sanitizeOperationalColumnLayout,
@@ -124,7 +127,7 @@ const NETWORK_UI_STATE_KEY = 'sysgrid_network_ui_state_v1'
 const NETWORK_WATCH_STORAGE_KEY = 'sysgrid_network_watch_v1'
 const NETWORK_WORKSPACE_PREFERENCE_KEY = 'network_workspace_state_v1'
 const NETWORK_WORKSPACE_PREFERENCE_VERSION = 4
-const NETWORK_FIXED_WIDTH_COLUMN_IDS = new Set([
+const NETWORK_AUTO_SIZE_SKIP_COLUMN_IDS = new Set([
   'select',
   'id',
   'recent_change',
@@ -379,8 +382,8 @@ const slugifyViewId = (value: string) =>
 
 // Isolated component to prevent UI state changes (menus) from triggering AgGrid recalculations
 const getMonitorGroupValue = (item: any, field: string) => {
-  if (field === 'notification_method') return item.notification_method || 'No notification path'
-  return item[field] || 'Unspecified'
+  if (field === 'notification_method') return item.notification_method ?? 'No notification path'
+  return item[field] ?? 'Unspecified'
 }
 
 const readNetworkUiState = () => {
@@ -439,7 +442,6 @@ const sanitizeNetworkPayload = (item: any) => {
 }
 
 const NETWORK_STATUSES = ['Active', 'Maintenance', 'Down', 'Planned', 'Requested', 'Standby', 'Offline', 'Deleted']
-const NETWORK_LINK_TYPES = ['Data', 'Management', 'Storage', 'Backup', 'Control', 'Voice']
 const NETWORK_DIRECTIONS = ['Bidirectional', 'Unidirectional', 'Source to Target', 'Target to Source']
 const NETWORK_UNITS = ['Gbps', 'Mbps', 'Kbps']
 const getNetworkConnectionTitle = (connection: any) => {
@@ -831,7 +833,7 @@ export default function NetworkReal() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       lastVisitedAt,
       searchTerm,
     }
@@ -960,7 +962,7 @@ export default function NetworkReal() {
       if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
       autoSizeOperationalColumns({
         api: gridRef.current.api,
-        skipColumnIds: Array.from(NETWORK_FIXED_WIDTH_COLUMN_IDS),
+        skipColumnIds: Array.from(NETWORK_AUTO_SIZE_SKIP_COLUMN_IDS),
         onSized: () => {
           if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
           syncColumnLayoutState(gridRef.current.api, false)
@@ -1002,24 +1004,9 @@ export default function NetworkReal() {
     queryFn: async () => (await (await apiFetch('/api/v1/settings/teams')).json())
   })
 
-  const linkPurposeOptions = useMemo(() => {
-    const options = Array.isArray(settingsOptions) ? settingsOptions.filter((o:any) => o.category === "LinkPurpose") : []
-    return options.length > 0
-      ? options.map((option: any) => ({ value: option.value, label: option.label }))
-      : NETWORK_LINK_TYPES.map((value) => ({ value, label: value }))
-  }, [settingsOptions])
-  const farmOptions = useMemo(() => {
-    const options = Array.isArray(settingsOptions) ? settingsOptions.filter((o:any) => o.category === "NetworkFarm") : []
-    return options.length > 0
-      ? options.map((option: any) => ({ value: option.value, label: option.label }))
-      : ['Prod', 'Stage', 'Lab'].map((value) => ({ value, label: value }))
-  }, [settingsOptions])
-  const cableTypeOptions = useMemo(() => {
-    const options = Array.isArray(settingsOptions) ? settingsOptions.filter((o:any) => o.category === "NetworkCableType") : []
-    return options.length > 0
-      ? options.map((option: any) => ({ value: option.value, label: option.label }))
-      : ['Fiber', 'Copper', 'DAC', 'AOC'].map((value) => ({ value, label: value }))
-  }, [settingsOptions])
+  const linkPurposeOptions = useMemo(() => getOperationalNetworkOptions(settingsOptions, 'LinkPurpose', NETWORK_LINK_TYPE_DEFAULTS), [settingsOptions])
+  const farmOptions = useMemo(() => getOperationalNetworkOptions(settingsOptions, 'NetworkFarm', NETWORK_FARM_DEFAULTS), [settingsOptions])
+  const cableTypeOptions = useMemo(() => getOperationalNetworkOptions(settingsOptions, 'NetworkCableType', NETWORK_CABLE_TYPE_DEFAULTS), [settingsOptions])
   const notificationMethods = useMemo(() => NETWORK_DIRECTIONS.map((value) => ({ value, label: value })), [])
   const severities = NETWORK_SEVERITIES
   const ownerRoles = NETWORK_OWNER_ROLES
@@ -1521,18 +1508,7 @@ export default function NetworkReal() {
   const compareItems = useMemo(() => selectedItems.slice(0, 5), [selectedItems])
 
   const groupedSections = useMemo(() => {
-    if (groupBy === 'raw') return []
-    const sections = sortedItemsForGrouped.reduce((acc: Array<{ key: string; label: string; items: any[] }>, item: any) => {
-      const label = String(getMonitorGroupValue(item, groupBy))
-      const existing = acc.find((section) => section.key === label)
-      if (existing) {
-        existing.items.push(item)
-      } else {
-        acc.push({ key: label, label, items: [item] })
-      }
-      return acc
-    }, [])
-    return sections.sort((a, b) => a.label.localeCompare(b.label))
+    return buildOperationalGroupSections(sortedItemsForGrouped, groupBy, item => getMonitorGroupValue(item, groupBy))
   }, [sortedItemsForGrouped, groupBy])
 
   useEffect(() => {
@@ -1596,7 +1572,7 @@ export default function NetworkReal() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       selectedIds,
       expandedBulkSection,
       lastVisitedAt,
@@ -1865,21 +1841,6 @@ export default function NetworkReal() {
 
   const columnDefs = useMemo(() => {
     const layoutById = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
-    const lockFixedUtilityWidth = (column: any, layout?: any) => {
-      const colId = column.colId || column.field
-      const lockedWidth = layout?.width ?? column.width ?? column.initialWidth
-      if (!NETWORK_FIXED_WIDTH_COLUMN_IDS.has(colId) || lockedWidth == null) return column
-      return {
-        ...column,
-        width: lockedWidth,
-        initialWidth: lockedWidth,
-        minWidth: lockedWidth,
-        maxWidth: lockedWidth,
-        flex: undefined,
-        initialFlex: undefined,
-      }
-    }
-    
     const renderText = (value: any, className = '') => (
       <span
         title={value == null ? '' : String(value)}
@@ -1992,9 +1953,9 @@ export default function NetworkReal() {
         field: 'peer_port',
         colId: 'peer_port',
         headerName: 'Peer Port',
-        width: 144,
-        minWidth: 136,
-        maxWidth: 144,
+        width: 132,
+        minWidth: 128,
+        operationalAutoSizeMaxWidth: 132,
         operationalSkipAutoSize: true,
         resizable: true,
         filter: true,
@@ -2154,13 +2115,13 @@ export default function NetworkReal() {
         children: col.children.map((child: any) => {
           const colId = child.colId || child.field
           const layout = layoutById.get(colId)
-          return lockFixedUtilityWidth(applyOperationalColumnSizing(child, layout, preserveExplicitColumnWidths), layout)
+          return finalizeOperationalColumnDefinition(child, layout, preserveExplicitColumnWidths)
         })
       }
     }
     const colId = col.colId || col.field
     const layout = layoutById.get(colId)
-    const sizedColumn = lockFixedUtilityWidth(applyOperationalColumnSizing(col, layout, preserveExplicitColumnWidths), layout)
+    const sizedColumn = finalizeOperationalColumnDefinition(col, layout, preserveExplicitColumnWidths)
     if (sizedColumn.lockVisible) return sizedColumn
     return {
       ...sizedColumn,
@@ -2194,12 +2155,8 @@ export default function NetworkReal() {
       className="overflow-hidden"
       header={{
         eyebrow: "Connectivity",
-        title: (
-          <div className="flex items-center gap-3">
-            <Activity className="text-blue-500" />
-            <span>Network</span>
-          </div>
-        ),
+        title: 'Network',
+        titleIcon: Network,
         subtitle: "Centralized network connection registry and operational status",
         actions: (
           <>
@@ -2678,31 +2635,32 @@ export default function NetworkReal() {
         <OperationalGroupedGridView
           summary={(
             <div>
-              <p className="text-[10px] font-semibold text-slate-400">Grouped network matrix</p>
-              <p className="pt-1 text-[12px] font-semibold text-slate-100">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
+              <p className="operational-group-summary-kicker">Grouped network matrix</p>
+              <p className="operational-group-summary-value">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
             </div>
           )}
           actions={(
             <>
               <button 
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: false }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, false])))}
+                className="operational-group-control"
               >
                 Expand All
               </button>
               <button 
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: true }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, true])))}
+                className="operational-group-control"
               >
                 Collapse All
               </button>
-              <div className="w-px h-6 bg-white/10 mx-1" />
               <button 
+                type="button"
                 onClick={() => setGroupBy('raw')}
-                className="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-[9px] font-semibold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-2"
+                className="operational-group-control operational-group-control-danger"
               >
-                <X size={12} />
-                <span>Cancel</span>
+                <X size={12} aria-hidden="true" />Cancel grouping
               </button>
             </>
           )}
@@ -2712,7 +2670,7 @@ export default function NetworkReal() {
             return (
               <OperationalGroupedGridSection
                 key={section.key}
-                labelMeta={<span className="text-[9px] font-semibold text-blue-400">{groupOptions.find((option) => option.value === groupBy)?.label}</span>}
+                labelMeta={groupOptions.find((option) => option.value === groupBy)?.label}
                 label={section.label}
                 count={section.items.length}
                 countLabel="connections"
@@ -2735,7 +2693,7 @@ export default function NetworkReal() {
                     fontSize={fontSize}
                     rowDensity={rowDensity}
                     noRowsLabel="No network data found"
-                    height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                    height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
                     onFirstDataRendered={handleGridDataUpdated}
                     onRowDataUpdated={handleGridDataUpdated}
                     suppressRowClickSelection={false}
@@ -2751,6 +2709,7 @@ export default function NetworkReal() {
         isStatusOpen={isBulkStatusOpen}
         isSeverityOpen={isBulkSeverityOpen}
         isNotifyOpen={isBulkNotifyOpen}
+        linkPurposeOptions={linkPurposeOptions}
         onClose={() => { setIsBulkStatusOpen(false); setIsBulkSeverityOpen(false); setIsBulkNotifyOpen(false); }}
         onApply={(action, val) => requestBulkPreview({ action: 'update', payload: { [action]: val } })}
         count={selectedIds.length}
@@ -3002,7 +2961,7 @@ function CompareRow({ label, value, multiline = false, colorIndex = -1 }: { labe
   )
 }
 
-function BulkActionModals({ isStatusOpen, isSeverityOpen, isNotifyOpen, onClose, onApply, severities, notificationMethods }: any) {
+function BulkActionModals({ isStatusOpen, isSeverityOpen, isNotifyOpen, onClose, onApply, severities, notificationMethods, linkPurposeOptions }: any) {
     const [val, setVal] = useState('')
     
     useEffect(() => { setVal(''); }, [isStatusOpen, isSeverityOpen, isNotifyOpen]);
@@ -3070,7 +3029,7 @@ function BulkActionModals({ isStatusOpen, isSeverityOpen, isNotifyOpen, onClose,
               <AppDropdown
                 value={val}
                 onChange={v => setVal(v)}
-                options={NETWORK_LINK_TYPES.map((value) => ({ value, label: value }))}
+                options={linkPurposeOptions}
                 placeholder="Select Type..."
                 label="Target Type"
               />

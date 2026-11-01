@@ -3,17 +3,24 @@ import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Layers, X, Search, Edit2, Trash2, RefreshCcw, AlertCircle, Plus, LayoutGrid, Monitor, Database, Globe, Box, Settings, MoreVertical, FileJson, List, Sliders, Tag, Check, ExternalLink, Shield, Package, Workflow, Cpu, Activity, Zap, Clipboard, FileText, Eye, Upload } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { AgGridReact } from "ag-grid-react"
+import { OperationalAgGrid } from './shared/OperationalAgGrid'
 import toast from "react-hot-toast"
 import { apiFetch } from "../api/apiClient"
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { WorkspaceDetailFields, WorkspaceDetailSection } from './shared/WorkspaceModalShells'
 import { ToolbarButton } from "./shared/LayoutPrimitives"
-import { BulkImportModal } from "./shared/BulkImportModal"
+import { OperationalImportModal } from "./shared/OperationalImportModal"
 import { ConfigRegistryModal } from "./ConfigRegistry"
 import { ConfirmationModal } from "./shared/ConfirmationModal"
 import { WorkspaceValidationBanner } from "./shared/OperationalWorkspacePrimitives"
-import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY, getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
+import {
+  OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
+  getOperationalGridHeaderHeight,
+  getOperationalGridRowDensityForHeight,
+  getOperationalGridRowHeight,
+  OPERATIONAL_GRID_ROW_HEIGHT_MAX,
+  OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+} from './shared/OperationalGridSizing'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { StyledSelect } from "./shared/StyledSelect"
 import { AppDropdown } from "./shared/AppDropdown"
@@ -708,7 +715,7 @@ export default function ServiceRegistry() {
       if (gridRef.current?.api === api && !api.isDestroyed()) api.autoSizeAllColumns()
     }, 100)
     return () => window.clearTimeout(timer)
-  }, [fontSize, rowDensity, services])
+  }, [fontSize, services])
   const { data: devices } = useQuery({ queryKey: ["devices"], queryFn: async () => (await (await apiFetch("/api/v1/devices/")).json()) })
 
   const mutation = useMutation({
@@ -840,7 +847,7 @@ export default function ServiceRegistry() {
                   <div className="flex items-center space-x-3"><Activity size={16} className="text-blue-400" /><span className="text-[10px] font-bold uppercase tracking-widest text-blue-400 ">View Density Laboratory</span></div>
                   <div className="flex items-center space-x-6">
                      <div className="flex items-center space-x-4"><span className="text-[9px] font-bold text-slate-500 uppercase ">Font Size</span><div className="flex items-center space-x-2"><input type="range" min="8" max="14" step="1" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span></div></div>
-                     <div className="flex items-center space-x-4 border-l border-white/10 pl-6"><span className="text-[9px] font-bold text-slate-500 uppercase ">Row Density</span><div className="flex items-center space-x-2"><input type="range" min="4" max="24" step="2" value={rowDensity} onChange={e => setRowDensity(Number(e.target.value))} className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{rowDensity}px</span></div></div>
+                     <div className="flex items-center space-x-4 border-l border-white/10 pl-6"><span className="text-[9px] font-bold text-slate-500 uppercase ">Row height</span><div className="flex items-center space-x-2"><input type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Service row height" value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))} className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-10 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span></div></div>
                   </div>
                </div>
                <button onClick={() => setShowStyleLab(false)} className="text-slate-500 hover:text-white transition-colors"><X size={16}/></button>
@@ -850,7 +857,7 @@ export default function ServiceRegistry() {
 
       <div className="operational-grid-shell flex-1 glass-panel rounded-lg overflow-hidden ag-theme-alpine-dark relative" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
         {isLoading && <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#020617]/80 backdrop-blur-sm space-y-4 text-blue-400"><RefreshCcw size={32} className="animate-spin" /><p className="text-[10px] font-bold uppercase tracking-[0.3em] ">Scanning Logic Matrix...</p></div>}
-        <AgGridReact 
+        <OperationalAgGrid
             ref={gridRef} 
             rowData={services || []} 
             columnDefs={columnDefs} 
@@ -907,7 +914,7 @@ export default function ServiceRegistry() {
       </WorkspaceModal>
 
       <ConfigRegistryModal isOpen={showConfig} onClose={() => setShowConfig(false)} title="Service Matrix Registry" sections={[{ title: "Service Types", category: "ServiceType", icon: Database }, { title: "Status Options", category: "Status", icon: RefreshCcw }, { title: "Environments", category: "Environment", icon: Globe }]} />
-      <BulkImportModal 
+      <OperationalImportModal
          isOpen={showImportModal} 
          onClose={() => setShowImportModal(false)} 
          tableName="logical_services" 

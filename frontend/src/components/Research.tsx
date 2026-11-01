@@ -25,6 +25,12 @@ import { RootCauseFormModal, MitigationFormModal, PreventionFormModal } from './
 import { InvestigationTab } from './shared/InvestigationTab'
 import { OperationalWorkspaceShell } from './shared/OperationalWorkspaceShells'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
+import {
+  getOperationalGridRowDensityForHeight,
+  getOperationalGridRowHeight,
+  OPERATIONAL_GRID_ROW_HEIGHT_MAX,
+  OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+} from './shared/OperationalGridSizing'
 import { ToolbarButton, ToolbarGroup, ToolbarIconButton, ToolbarSearch } from './shared/LayoutPrimitives'
 
 async function fetchResearchList(path: string) {
@@ -709,9 +715,9 @@ export default function Research() {
                         <span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span>
                      </div>
                      <div className="flex items-center space-x-4 border-l border-white/10 pl-6">
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">Row Density</span>
-                        <input type="range" min="4" max="24" step="2" value={rowDensity} onChange={e => setRowDensity(Number(e.target.value))} className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
-                        <span className="text-[10px] text-white w-4 font-bold">{rowDensity}px</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Row height</span>
+                        <input type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Research row height" value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))} className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+                        <span className="text-[10px] text-white w-10 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span>
                      </div>
                   </div>
                </div>

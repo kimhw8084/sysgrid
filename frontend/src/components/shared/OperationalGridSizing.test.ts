@@ -1,21 +1,89 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyOperationalColumnSizing, applyOperationalColumnState, getOperationalCompactGridHeight, getOperationalGridHeaderHeight, getOperationalGridRowHeight, lockOperationalColumnWidth } from './OperationalGridSizing'
+import { applyOperationalColumnSizing, applyOperationalColumnState, finalizeOperationalColumnDefinition, getOperationalColumnSizingMetadata, getOperationalCompactGridHeight, getOperationalGridHeaderHeight, getOperationalGridRowDensityForHeight, getOperationalGridRowHeight, normalizeOperationalColumnDefinitions } from './OperationalGridSizing'
 
 describe('compact operational grid sizing', () => {
   it('fits small filtered result sets without a tall blank panel', () => {
-    expect(getOperationalCompactGridHeight(0, 11, 24)).toBe(162)
-    expect(getOperationalCompactGridHeight(1, 11, 24)).toBe(162)
-    expect(getOperationalCompactGridHeight(5, 11, 24)).toBe(318)
+    expect(getOperationalCompactGridHeight(0, 11, 24)).toBe(142)
+    expect(getOperationalCompactGridHeight(1, 11, 24)).toBe(142)
+    expect(getOperationalCompactGridHeight(5, 11, 24)).toBe(268)
     expect(getOperationalCompactGridHeight(6, 11, 24)).toBeNull()
   })
 
   it('applies one row and header height scale across operational grids', () => {
     expect(getOperationalGridHeaderHeight(11)).toBe(42)
-    expect(getOperationalGridRowHeight(11, 4)).toBe(32)
-    expect(getOperationalGridRowHeight(11, 8)).toBe(36)
-    expect(getOperationalGridRowHeight(11, 16)).toBe(44)
-    expect(getOperationalGridRowHeight(20, 24)).toBe(52)
+    expect(getOperationalGridRowHeight(11, 4)).toBe(22)
+    expect(getOperationalGridRowHeight(11, 8)).toBe(26)
+    expect(getOperationalGridRowHeight(11, 16)).toBe(34)
+    expect(getOperationalGridRowHeight(20, 24)).toBe(48)
+    expect(getOperationalGridRowDensityForHeight(24, 11)).toBe(6)
+    expect(getOperationalGridRowHeight(11, getOperationalGridRowDensityForHeight(48, 11))).toBe(48)
+    for (let rowHeight = 22; rowHeight <= 48; rowHeight += 1) {
+      expect(getOperationalGridRowHeight(11, getOperationalGridRowDensityForHeight(rowHeight, 11))).toBe(rowHeight)
+    }
+  })
+})
+
+describe('resizable operational columns', () => {
+  it('applies the same small minimum and removes per-column width locks', () => {
+    const [utility, grouped] = normalizeOperationalColumnDefinitions([
+      { colId: 'select', width: 64, minWidth: 64, maxWidth: 64, resizable: false, operationalLockWidth: true, operationalSkipAutoSize: true },
+      { headerName: 'Group', children: [{ colId: 'name', width: 220, minWidth: 180, maxWidth: 240, resizable: false }] },
+    ])
+    expect(utility).toMatchObject({ width: 64, minWidth: 40, resizable: true })
+    expect(getOperationalColumnSizingMetadata(utility)).toMatchObject({
+      autoSizeMinWidth: 64,
+      autoSizeMaxWidth: 64,
+      skipAutoSize: true,
+    })
+    expect(utility).not.toHaveProperty('operationalAutoSizeMinWidth')
+    expect(utility).not.toHaveProperty('operationalAutoSizeMaxWidth')
+    expect(utility).not.toHaveProperty('operationalSkipAutoSize')
+    expect(utility).not.toHaveProperty('maxWidth')
+    expect(utility).not.toHaveProperty('operationalLockWidth')
+    expect(grouped.children[0]).toMatchObject({ width: 220, minWidth: 40, resizable: true })
+    expect(getOperationalColumnSizingMetadata(grouped.children[0]).autoSizeMaxWidth).toBe(240)
+    expect(grouped.children[0]).not.toHaveProperty('maxWidth')
+
+    const normalizedAgain = normalizeOperationalColumnDefinitions([utility])[0]
+    expect(getOperationalColumnSizingMetadata(normalizedAgain)).toMatchObject({ autoSizeMaxWidth: 64 })
+    expect(normalizedAgain).not.toHaveProperty('operationalAutoSizeMaxWidth')
+    expect(normalizedAgain).not.toHaveProperty('operationalSkipAutoSize')
+
+    const finalizedWithoutLayout = finalizeOperationalColumnDefinition(
+      { colId: 'name', width: 210, minWidth: 180, maxWidth: 210 },
+      undefined,
+      false,
+    )
+    const normalizedFinalized = normalizeOperationalColumnDefinitions([finalizedWithoutLayout])[0]
+    expect(getOperationalColumnSizingMetadata(normalizedFinalized)).toMatchObject({
+      autoSizeMinWidth: 180,
+      autoSizeMaxWidth: 210,
+    })
+  })
+
+  it('restores saved widths beyond the former fixed bounds', () => {
+    const column = finalizeOperationalColumnDefinition(
+      { colId: 'favorite', width: 64, minWidth: 64, maxWidth: 64, resizable: false, operationalLockWidth: true },
+      { colId: 'favorite', width: 900 },
+      true,
+    )
+    expect(column.width).toBe(900)
+    expect(column.minWidth).toBe(40)
+    expect(column.resizable).toBe(true)
+    expect(getOperationalColumnSizingMetadata(column).autoSizeMaxWidth).toBe(64)
+    expect(column).not.toHaveProperty('maxWidth')
+  })
+
+  it('keeps a saved manual width from being overridden by a column flex setting', () => {
+    const column = finalizeOperationalColumnDefinition(
+      { colId: 'name', width: 220, flex: 1.2, initialFlex: 1.2, minWidth: 120 },
+      { colId: 'name', width: 580 },
+      true,
+    )
+    expect(column.width).toBe(580)
+    expect(column).not.toHaveProperty('flex')
+    expect(column).not.toHaveProperty('initialFlex')
   })
 })
 
@@ -30,26 +98,6 @@ describe('restored pin state', () => {
     const result = applyOperationalColumnSizing(column, { colId: 'select', pinned: null, width: 160 }, true)
     expect(result.pinned).toBeNull()
     expect(result.width).toBe(48)
-  })
-})
-
-describe('lockOperationalColumnWidth', () => {
-  it('ignores stale saved layout widths for locked operational columns', () => {
-    const column = lockOperationalColumnWidth(
-      {
-        colId: 'select',
-        operationalLockWidth: true,
-        width: 48,
-      },
-      {
-        width: 160,
-      },
-    )
-
-    expect(column.width).toBe(48)
-    expect(column.initialWidth).toBe(48)
-    expect(column.minWidth).toBe(48)
-    expect(column.maxWidth).toBe(48)
   })
 })
 

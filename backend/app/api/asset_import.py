@@ -13,6 +13,12 @@ from .devices import (
 )
 from .utils import build_audit_log, get_audit_actor
 
+ASSET_IMPORT_ENUM_DEFAULTS = {
+    'status': ('Status', ('Planned', 'Active', 'Maintenance', 'Standby', 'Failed', 'Decommissioned', 'Provisioning', 'Reserved', 'Deleted')),
+    'environment': ('Environment', ('Production', 'Staging', 'QA', 'Dev', 'DR', 'Lab', 'Sandbox', 'Legacy')),
+    'type': ('DeviceType', ('Physical', 'Virtual', 'Storage', 'Switch', 'Firewall', 'Load Balancer', 'PDU', 'UPS', 'Console-Server', 'Patch Panel')),
+}
+
 
 def _asset_import_row(raw_row):
     if not isinstance(raw_row, dict):
@@ -66,6 +72,31 @@ async def preview_asset_rows(request, db, rows):
         except HTTPException as exc:
             errors.append(exc.detail)
         results.append({'row': index + 1, 'source': raw, 'normalized': clean, 'errors': errors})
+
+    configured_options = {field: {value.casefold(): value for value in defaults}
+                          for field, (_, defaults) in ASSET_IMPORT_ENUM_DEFAULTS.items()}
+    option_rows = await db.execute(
+        select(models.SettingOption.category, models.SettingOption.value)
+        .where(models.SettingOption.category.in_({category for category, _ in ASSET_IMPORT_ENUM_DEFAULTS.values()}))
+    )
+    configured_rows = option_rows.all()
+    for field, (category, _) in ASSET_IMPORT_ENUM_DEFAULTS.items():
+        configured_options[field].update({value.casefold(): value for option_category, value in configured_rows
+                                          if option_category == category and value})
+
+    for result in results:
+        if result['errors']:
+            continue
+        for field in ASSET_IMPORT_ENUM_DEFAULTS:
+            value = result['normalized'].get(field)
+            if value is None:
+                continue
+            canonical_value = configured_options[field].get(str(value).casefold())
+            if canonical_value is None:
+                category = ASSET_IMPORT_ENUM_DEFAULTS[field][0]
+                result['errors'].append(f'{field} must match a configured {category} option')
+            else:
+                result['normalized'][field] = canonical_value
 
     names = sorted({row['normalized']['name'].lower() for row in results if not row['errors']})
     existing = set()

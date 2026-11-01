@@ -17,8 +17,8 @@ const buildColumns = () => buildAssetGoldenColumns({
   onToggleWatch: vi.fn(),
 })
 
-describe('Asset header width constraints', () => {
-  it('leaves room for visible labels and header controls after content sizing', () => {
+describe('Asset header resize defaults', () => {
+  it('keeps a common minimum while preserving an initial readable width for each column', () => {
     const columns = buildColumns()
     const expectedMinimumWidths = new Map([
       ['system', 112],
@@ -30,7 +30,11 @@ describe('Asset header width constraints', () => {
     ])
 
     for (const [field, minimumWidth] of expectedMinimumWidths) {
-      expect(columns.find((column: any) => column.field === field)?.minWidth).toBe(minimumWidth)
+      const column = columns.find((candidate: any) => candidate.field === field)
+      expect(column?.initialWidth ?? column?.width).toBeGreaterThanOrEqual(minimumWidth)
+      expect(column?.minWidth).toBe(40)
+      expect(column).not.toHaveProperty('maxWidth')
+      expect(column?.resizable).toBe(true)
     }
   })
 })

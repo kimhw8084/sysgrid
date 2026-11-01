@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Clipboard,
   Download,
@@ -38,6 +39,7 @@ import { WorkspaceFloatingPanel, useWorkspaceAnchoredLayer } from '../shared/Ope
 import { AssetBulkActionsPanel } from './AssetBulkActionsPanel'
 import { AssetCompareModal } from './AssetCompareModal'
 import { OperationalBulkPreviewModal } from '../shared/OperationalBulkPreviewModal'
+import { buildOperationalGroupSections } from '../shared/OperationalGrouping'
 import { useModulePolicy } from '../../policy/ModulePolicy'
 
 const GROUP_OPTIONS = [
@@ -53,6 +55,7 @@ const GROUP_OPTIONS = [
 
 export default function AssetGoldenOperationalWorkspace() {
   const workspace = useAssetGoldenWorkspace()
+  const navigate = useNavigate()
   const policy = useModulePolicy()
   const canWriteAssets = !policy.isError && policy.data?.modules.assets?.actions?.write === true
   const assetWriteReason = policy.isLoading ? 'Checking asset permissions' : 'Asset edit permission is required'
@@ -318,18 +321,19 @@ export default function AssetGoldenOperationalWorkspace() {
 
   useEffect(() => {
     if (workspace.groupBy === 'raw') return
-    const groupedSections = workspace.visibleAssets.reduce((acc: string[], asset: any) => {
-      const label = String(asset?.[workspace.groupBy] || 'Unassigned')
-      if (!acc.includes(label)) acc.push(label)
-      return acc
-    }, []).sort((a, b) => a.localeCompare(b))
+    const groupedSections = buildOperationalGroupSections(
+      workspace.visibleAssets,
+      workspace.groupBy,
+      (asset: any) => asset?.[workspace.groupBy],
+      'Unassigned',
+    )
     setCollapsedGroups((current) => {
       const next = { ...current }
       groupedSections.forEach((section) => {
-        if (!(section in next)) next[section] = false
+        if (!(section.key in next)) next[section.key] = false
       })
       Object.keys(next).forEach((key) => {
-        if (!groupedSections.includes(key)) delete next[key]
+        if (!groupedSections.some((section) => section.key === key)) delete next[key]
       })
       return next
     })
@@ -674,6 +678,7 @@ export default function AssetGoldenOperationalWorkspace() {
           reportAssetId={workspace.reportAssetId}
           reportFocusSection={workspace.reportFocusSection}
           onFocusSectionHandled={() => workspace.setReportFocusSection(null)}
+          onOpenMaintenance={(asset: any) => navigate(`/monitoring?workspace=maintenance&device_id=${encodeURIComponent(String(asset.id))}`)}
           systemsList={workspace.systemsList}
           onSelectionChanged={handleSelectionChanged}
           isSelected={isSelected}

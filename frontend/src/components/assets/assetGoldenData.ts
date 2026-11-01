@@ -11,7 +11,9 @@ import { ASSET_GOLDEN_ALLOWED_COLUMN_FIELDS } from './assetGoldenColumns'
 import { usePersistentJsonState } from '../shared/OperationalWorkspaceHooks'
 import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from '../shared/optionalStorage'
 import { fetchAssetSettingOptions } from './assetRecordOptions'
+import { getOperationalNetworkOptions, NETWORK_LINK_TYPE_DEFAULTS, NETWORK_FARM_DEFAULTS, NETWORK_CABLE_TYPE_DEFAULTS } from '../shared/OperationalNetworkOptions'
 import { fetchAssetArray } from './assetDataState'
+import { OPERATIONAL_GRID_ROW_DENSITY_MAX } from '../shared/OperationalGridSizing'
 
 export type AssetTab = 'inventory' | 'deleted'
 export type AssetViewMode = 'grid' | 'report' | 'map'
@@ -259,7 +261,7 @@ const sanitizeSavedViews = (value: any): AssetSavedView[] => {
         activeLens: VALID_LENSES.has(config.activeLens) ? config.activeLens : 'all',
         hiddenColumns: sanitizeHiddenColumns(config.hiddenColumns),
         fontSize: Number.isFinite(config.fontSize) ? Math.min(14, Math.max(10, Number(config.fontSize))) : 11,
-        rowDensity: Number.isFinite(config.rowDensity) ? Math.min(14, Math.max(6, Number(config.rowDensity))) : 8,
+        rowDensity: Number.isFinite(config.rowDensity) ? Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Number(config.rowDensity))) : 8,
         filters: sanitizeFilters(config.filters),
       },
     }]
@@ -290,7 +292,7 @@ const normalizeStoredWorkspace = (value: any) => {
     activeLens: VALID_LENSES.has(value?.activeLens) ? value.activeLens : 'all',
     hiddenColumns: sanitizeHiddenColumns(value?.hiddenColumns).length > 0 ? sanitizeHiddenColumns(value?.hiddenColumns) : DEFAULT_HIDDEN_COLUMNS,
     fontSize: Number.isFinite(value?.fontSize) ? Math.min(14, Math.max(10, Number(value.fontSize))) : 11,
-    rowDensity: Number.isFinite(value?.rowDensity) ? Math.min(14, Math.max(6, Number(value.rowDensity))) : 8,
+    rowDensity: Number.isFinite(value?.rowDensity) ? Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Number(value.rowDensity))) : 8,
     filters: sanitizeFilters(value?.filters),
     savedViews: normalizedSavedViews,
     activeViewId,
@@ -409,7 +411,7 @@ export function useAssetGoldenWorkspace() {
   const [activeLens, setActiveLens] = useState<AssetLens>(VALID_LENSES.has(stored?.activeLens) ? stored.activeLens : 'all')
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(sanitizeHiddenColumns(stored?.hiddenColumns).length > 0 ? sanitizeHiddenColumns(stored?.hiddenColumns) : DEFAULT_HIDDEN_COLUMNS)
   const [fontSize, setFontSize] = useState(Number.isFinite(stored?.fontSize) ? Math.min(14, Math.max(10, Number(stored.fontSize))) : 11)
-  const [rowDensity, setRowDensity] = useState(Number.isFinite(stored?.rowDensity) ? Math.min(14, Math.max(6, Number(stored.rowDensity))) : 8)
+  const [rowDensity, setRowDensity] = useState(Number.isFinite(stored?.rowDensity) ? Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Number(stored.rowDensity))) : 8)
   const [filters, setFilters] = useState<AssetQuickFilters>(sanitizeFilters(stored?.filters))
   const [savedViews, setSavedViews] = useState<AssetSavedView[]>(sanitizeSavedViews(stored?.savedViews))
   const [activeViewId, setActiveViewId] = useState<string | null>(stored?.activeViewId || null)
@@ -597,18 +599,15 @@ export function useAssetGoldenWorkspace() {
   }), [activeTab, allAssets.length, assetQueryFallbackError, devicesQuery.isError, devicesQuery.isFetching, devicesQuery.isLoading, devicesQuery.refetch, filteredAssets.length, hasIncludeDeletedAssetData, isUsingLiveFallback, liveDevicesQuery.isLoading, retryAssetRegistry, shouldShowAssetRegistryNotice, visiblePool.length])
 
   const linkPurposeOptions = useMemo(() => {
-    const options = Array.isArray(optionsQuery.data) ? optionsQuery.data.filter((item: any) => item.category === 'LinkPurpose') : []
-    return options.map((item: any) => ({ value: item.value, label: item.label }))
+    return getOperationalNetworkOptions(optionsQuery.data, 'LinkPurpose', NETWORK_LINK_TYPE_DEFAULTS)
   }, [optionsQuery.data])
 
   const farmOptions = useMemo(() => {
-    const options = Array.isArray(optionsQuery.data) ? optionsQuery.data.filter((item: any) => item.category === 'NetworkFarm') : []
-    return options.map((item: any) => ({ value: item.value, label: item.label }))
+    return getOperationalNetworkOptions(optionsQuery.data, 'NetworkFarm', NETWORK_FARM_DEFAULTS)
   }, [optionsQuery.data])
 
   const cableTypeOptions = useMemo(() => {
-    const options = Array.isArray(optionsQuery.data) ? optionsQuery.data.filter((item: any) => item.category === 'NetworkCableType') : []
-    return options.map((item: any) => ({ value: item.value, label: item.label }))
+    return getOperationalNetworkOptions(optionsQuery.data, 'NetworkCableType', NETWORK_CABLE_TYPE_DEFAULTS)
   }, [optionsQuery.data])
 
   const systemsList = useMemo(
@@ -842,7 +841,7 @@ export function useAssetGoldenWorkspace() {
     setActiveLens(VALID_LENSES.has(view.config.activeLens) ? view.config.activeLens : 'all')
     setHiddenColumns(sanitizeHiddenColumns(view.config.hiddenColumns).length > 0 ? sanitizeHiddenColumns(view.config.hiddenColumns) : DEFAULT_HIDDEN_COLUMNS)
     setFontSize(Number.isFinite(view.config.fontSize) ? Math.min(14, Math.max(10, Number(view.config.fontSize))) : 11)
-    setRowDensity(Number.isFinite(view.config.rowDensity) ? Math.min(14, Math.max(6, Number(view.config.rowDensity))) : 8)
+    setRowDensity(Number.isFinite(view.config.rowDensity) ? Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Number(view.config.rowDensity))) : 8)
     setFilters(sanitizeFilters(view.config.filters))
   }, [])
 

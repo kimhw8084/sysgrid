@@ -5,6 +5,7 @@ import {
   OperationalGroupedGridView,
 } from './shared/OperationalWorkspaceShells'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
+import { getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import { useOperationalGroupedSelection } from './shared/OperationalGridInteractions'
 import {
   FAR_GROUP_OPTIONS,
@@ -162,8 +163,8 @@ export function FAROperationalGridView({
     <OperationalGroupedGridView
       summary={
         <div>
-          <p className="text-[10px] font-semibold text-slate-400">Grouped failure matrix</p>
-          <p className="pt-1 text-[12px] font-semibold text-slate-100">Grouped by {groupLabel}</p>
+          <p className="operational-group-summary-kicker">Grouped failure matrix</p>
+          <p className="operational-group-summary-value">Grouped by {groupLabel}</p>
         </div>
       }
       actions={
@@ -171,14 +172,14 @@ export function FAROperationalGridView({
           <button
             type="button"
             onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section) => [section.key, false])))}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+            className="operational-group-control"
           >
             Expand All
           </button>
           <button
             type="button"
             onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section) => [section.key, true])))}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+            className="operational-group-control"
           >
             Collapse All
           </button>
@@ -190,7 +191,7 @@ export function FAROperationalGridView({
         return (
           <OperationalGroupedGridSection
             key={section.key}
-            labelMeta={<span className="text-[9px] font-semibold text-rose-400">{groupLabel}</span>}
+            labelMeta={groupLabel}
             label={section.label}
             count={section.items.length}
             countLabel="failure modes"
@@ -213,7 +214,7 @@ export function FAROperationalGridView({
                 selectionScopeKey={selectionScopeKey}
                 onSelectionChanged={(event) => handleSelectionChanged(event, section.key)}
                 suppressRowClickSelection={false}
-                height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
               />
             ) : null}
           </OperationalGroupedGridSection>

@@ -1,6 +1,6 @@
 import { WorkspaceDialogFrame } from './shared/WorkspaceDialogFrame'
 import React, { useMemo, useState } from 'react'
-import { AgGridReact } from 'ag-grid-react'
+import { OperationalAgGrid } from './shared/OperationalAgGrid'
 import type { ColDef } from 'ag-grid-community'
 import { useQuery } from '@tanstack/react-query'
 import { Activity, Calendar, RefreshCcw, Zap, Layers, X, Search, Filter, Download, BarChart2, Clock } from 'lucide-react'
@@ -19,8 +19,14 @@ import {
   parseAuditResponse,
 } from './audit/auditQuery'
 import { resolveOperationalObjectReference } from './shared/OperationalObjectReference'
-import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
-import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
+import { OPERATIONAL_GRID_BADGE_CLASS, OPERATIONAL_GRID_BADGE_TEXT_CLASS, OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
+import {
+  getOperationalGridHeaderHeight,
+  getOperationalGridRowDensityForHeight,
+  getOperationalGridRowHeight,
+  OPERATIONAL_GRID_ROW_HEIGHT_MAX,
+  OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+} from './shared/OperationalGridSizing'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 
@@ -108,7 +114,7 @@ export default function AuditLogs() {
       if (gridRef.current?.api === api && !api.isDestroyed()) api.autoSizeAllColumns()
     }, 100)
     return () => window.clearTimeout(timer)
-  }, [fontSize, rowDensity, showCharts]) // Filtering preserves manual widths and horizontal position.
+  }, [fontSize, showCharts]) // Filtering and row density preserve manual widths and horizontal position.
 
   const handleExportCSV = () => {
     if (gridRef.current?.api) {
@@ -156,16 +162,12 @@ export default function AuditLogs() {
       cellClass: 'text-center',
       headerClass: 'text-center',
       cellRenderer: (params: any) => {
-        const colors: Record<string, string> = { 
-            CREATE: 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20',
-            UPDATE: 'bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20',
-            DELETE: 'bg-rose-500/10 text-rose-800 dark:text-rose-400 border-rose-500/20',
-            MOUNT: 'bg-indigo-500/10 text-indigo-800 dark:text-indigo-400 border-indigo-500/20',
-            LINK: 'bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20'
-        }
+        const tone = ({ CREATE: 'success', UPDATE: 'info', DELETE: 'danger', MOUNT: 'accent', LINK: 'warning' } as Record<string, string>)[params.value] || 'neutral'
         return (
-          <div className={`px-2 py-1 rounded-lg border ${colors[params.value] || 'bg-slate-500/10 text-slate-600 dark:text-slate-400'} font-black text-[9px] uppercase tracking-widest`}>
-             {params.value || 'N/A'}
+          <div className="flex h-full w-full items-center justify-center px-2">
+              <span data-operational-tone={tone} className={`${OPERATIONAL_GRID_BADGE_CLASS} px-2 text-[9px] font-semibold uppercase tracking-wide`}>
+                <span className={OPERATIONAL_GRID_BADGE_TEXT_CLASS}>{params.value || 'N/A'}</span>
+            </span>
           </div>
         )
       }
@@ -173,7 +175,7 @@ export default function AuditLogs() {
     { 
         field: 'user_id', 
         headerName: 'ADMINISTRATOR', 
-        width: 140, 
+        width: 152,
         // Short actor values must not let autosizing clip the full heading.
         minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 'ADMINISTRATOR'.length),
         filter: true, 
@@ -205,7 +207,7 @@ export default function AuditLogs() {
     },
     { 
         field: 'description', 
-        headerName: 'PAYLOAD & IMPACT',
+        headerName: 'CHANGE DETAILS',
         headerTooltip: 'Transaction payload and architectural impact',
         flex: 1,
         minWidth: 360,
@@ -219,9 +221,8 @@ export default function AuditLogs() {
     {
         headerName: 'ACTIONS',
         colId: 'audit-actions',
-        width: 104,
-        minWidth: 104,
-        maxWidth: 104,
+      width: 104,
+      minWidth: 104,
         pinned: 'right' as const,
         sortable: false,
         filter: false,
@@ -235,12 +236,12 @@ export default function AuditLogs() {
                 disabled={!target}
                 disabledReason={!target ? 'No target route recorded.' : undefined}
                 onClick={() => openTarget(params.data)}
-                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-blue-400 transition-all"
+                className="p-0.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-blue-400 transition-all"
                 aria-label="Open target record"
               >
                 <Search size={14} />
               </ModulePolicyButton>
-              <button onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setActiveLog(params.data) }} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload" aria-label="View change payload">
+              <button onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setActiveLog(params.data) }} className="p-0.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload" aria-label="View change payload">
                 <Layers size={14} />
               </button>
             </div>
@@ -254,11 +255,8 @@ export default function AuditLogs() {
       <div className="min-w-0 shrink-0 space-y-4 border-b border-[var(--grid-border)] bg-[var(--surface-base)]">
         <PageHeader
           eyebrow="Registry"
-          title={
-            <span className="flex items-center gap-3 uppercase">
-              <Zap className="text-blue-500" fill="currentColor" /> Audit Ledger
-            </span>
-          }
+          title="Audit Ledger"
+          titleIcon={Zap}
           subtitle="Immutable record of system state changes and operator actions"
           meta={
             <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
@@ -415,7 +413,7 @@ export default function AuditLogs() {
                <div className="flex w-full flex-col items-start gap-3 sm:w-auto sm:flex-row sm:items-center sm:space-x-12">
                   <div className="flex items-center space-x-3">
                      <Activity size={16} className="text-[var(--accent-primary)]" />
-                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)]">View Density Laboratory</span>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--grid-tone-info-ink)]">View Density Laboratory</span>
                   </div>
                   
                   <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:space-x-6">
@@ -432,14 +430,14 @@ export default function AuditLogs() {
                      </div>
 
                      <div className="flex items-center space-x-4 border-l border-[var(--grid-border)] pl-6">
-                        <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase">Row Density</span>
+                        <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase">Row height</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="0" max="24" step="2" aria-label="Audit row density"
-                            value={rowDensity} onChange={e => setRowDensity(Number(e.target.value))}
+                            type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Audit row height"
+                            value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))}
                             className="w-32 accent-[var(--accent-primary)] h-1.5 bg-[var(--grid-border)] rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-[var(--text-primary)] w-8 shrink-0 font-bold tabular-nums">{rowDensity}px</span>
+                            <span className="text-[10px] text-[var(--text-primary)] w-10 shrink-0 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span>
                         </div>
                      </div>
                   </div>
@@ -450,7 +448,7 @@ export default function AuditLogs() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
+      <div className="operational-grid-shell min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
         {isLoading && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[var(--surface-overlay)] backdrop-blur-sm space-y-4">
              <RefreshCcw size={32} className="text-blue-400 animate-spin" />
@@ -477,7 +475,7 @@ export default function AuditLogs() {
             {isError && <ToolbarButton onClick={() => void refetch()} disabled={isFetching} variant="primary">{isFetching ? 'Retrying…' : 'Retry audit records'}</ToolbarButton>}
           </div>
         )}
-        <AgGridReact
+        <OperationalAgGrid
           ref={gridRef}
           rowData={logs}
           columnDefs={columnDefs}
