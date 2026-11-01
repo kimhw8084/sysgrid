@@ -1,3 +1,5 @@
+import { OPERATIONAL_GRID_MIN_COLUMN_WIDTH } from './OperationalGridContract'
+
 export const OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY = {
   type: 'fitCellContents' as const,
 }
@@ -7,8 +9,15 @@ export const OPERATIONAL_GRID_AUTO_SIZE_STRATEGY = OPERATIONAL_GRID_CONTENT_AUTO
 export const getOperationalGridHeaderHeight = (fontSize = 11) =>
   Math.max(42, Math.ceil(fontSize + 31))
 
+export const OPERATIONAL_GRID_ROW_HEIGHT_MIN = 24
+export const OPERATIONAL_GRID_ROW_HEIGHT_MAX = 48
+export const OPERATIONAL_GRID_ROW_DENSITY_MAX = 33
+
 export const getOperationalGridRowHeight = (fontSize = 11, rowDensity = 8) =>
-  Math.min(52, Math.max(32, Math.ceil(fontSize + rowDensity + 17)))
+  Math.min(OPERATIONAL_GRID_ROW_HEIGHT_MAX, Math.max(OPERATIONAL_GRID_ROW_HEIGHT_MIN, Math.ceil(fontSize + rowDensity + 7)))
+
+export const getOperationalGridRowDensityForHeight = (rowHeight: number, fontSize = 11) =>
+  Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Math.round(rowHeight - fontSize - 7)))
 
 export const getOperationalCompactGridHeight = (
   visibleRowCount: number,
@@ -36,29 +45,46 @@ const clampOperationalColumnWidth = (width: any, minWidth: any, maxWidth: any): 
   return Math.max(minimum, Math.min(width, maximum))
 }
 
+export const normalizeOperationalColumnDefinition = (column: Record<string, any>) => {
+  const initialMinimum = Math.max(
+    OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
+    typeof column.minWidth === 'number' && Number.isFinite(column.minWidth) ? column.minWidth : OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
+  )
+  const normalized: Record<string, any> = {
+    ...column,
+    resizable: true,
+    minWidth: OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
+  }
+  delete normalized.maxWidth
+  delete normalized.operationalLockWidth
+  if (typeof normalized.width === 'number') {
+    normalized.width = clampOperationalColumnWidth(Math.max(normalized.width, initialMinimum), OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
+  }
+  if (typeof normalized.initialWidth === 'number') {
+    normalized.initialWidth = clampOperationalColumnWidth(Math.max(normalized.initialWidth, initialMinimum), OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
+  }
+  return normalized
+}
+
+const normalizedColumnDefinitionCache = new WeakMap<any[], any[]>()
+const EMPTY_OPERATIONAL_COLUMN_DEFINITIONS: any[] = []
+
+export const normalizeOperationalColumnDefinitions = (columnDefs?: any[] | null) => {
+  const source = Array.isArray(columnDefs) ? columnDefs : EMPTY_OPERATIONAL_COLUMN_DEFINITIONS
+  const cached = normalizedColumnDefinitionCache.get(source)
+  if (cached) return cached
+  const normalized = source.map((column: any) => column.children
+    ? { ...column, children: normalizeOperationalColumnDefinitions(column.children) }
+    : normalizeOperationalColumnDefinition(column))
+  normalizedColumnDefinitionCache.set(source, normalized)
+  return normalized
+}
+
 const isOperationalGridDestroyed = (api: { isDestroyed?: () => boolean } | null | undefined) => {
   try {
     return api?.isDestroyed?.() === true
   } catch {
     return true
-  }
-}
-
-// Source of truth: protected sizing / resize behavior for fixed-width operational columns.
-export const lockOperationalColumnWidth = (
-  column: Record<string, any>,
-  layout?: Record<string, any>
-) => {
-  const lockedWidth = column.width ?? column.initialWidth
-  if (!column.operationalLockWidth || lockedWidth == null) return column
-  return {
-    ...column,
-    width: lockedWidth,
-    initialWidth: lockedWidth,
-    minWidth: lockedWidth,
-    maxWidth: lockedWidth,
-    flex: undefined,
-    initialFlex: undefined,
   }
 }
 
@@ -204,7 +230,12 @@ export const applyOperationalColumnSizing = (
   if (preserveExplicitWidths && !column.operationalLockWidth) {
     const restoredWidth = layout.width ?? nextColumn.width
     nextColumn.width = clampOperationalColumnWidth(restoredWidth, nextColumn.minWidth, nextColumn.maxWidth)
-    nextColumn.flex = layout.flex ?? nextColumn.flex
+    if (layout.flex !== undefined && layout.flex !== null) {
+      nextColumn.flex = layout.flex
+    } else if (layout.width !== undefined && layout.width !== null) {
+      delete nextColumn.flex
+      delete nextColumn.initialFlex
+    }
   }
 
   return nextColumn
@@ -214,9 +245,10 @@ export const finalizeOperationalColumnDefinition = (
   column: Record<string, any>,
   layout: Record<string, any> | undefined,
   preserveExplicitWidths: boolean
-) => lockOperationalColumnWidth(
-  applyOperationalColumnSizing(column, layout, preserveExplicitWidths),
-  layout
+) => applyOperationalColumnSizing(
+  normalizeOperationalColumnDefinition(column),
+  layout,
+  preserveExplicitWidths
 )
 
 export const orderOperationalColumnDefinitions = (

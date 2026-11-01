@@ -5,6 +5,12 @@ import { AppDropdown } from './AppDropdown'
 import { PageHeader } from './LayoutPrimitives'
 import { WorkspaceCommandBar } from './WorkspaceCommandBar'
 import { WorkspaceFloatingPanel } from './OperationalWorkspacePrimitives'
+import {
+  getOperationalGridRowDensityForHeight,
+  getOperationalGridRowHeight,
+  OPERATIONAL_GRID_ROW_HEIGHT_MAX,
+  OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+} from './OperationalGridSizing'
 
 const join = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ')
 type WorkspaceFilterChip = { id: string; label: string; onRemove: () => void }
@@ -306,18 +312,19 @@ export function OperationalDisplayPanel({
                 </div>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[10px] font-semibold text-slate-400">Rows</span>
+                <span className="text-[10px] font-semibold text-slate-400">Row height</span>
                 <div className="flex items-center gap-2">
                   <input
                     type="range"
-                    min="0"
-                    max="20"
-                    step="2"
-                    value={rowDensity}
-                    onChange={(event) => onRowDensityChange(Number(event.target.value))}
+                    min={OPERATIONAL_GRID_ROW_HEIGHT_MIN}
+                    max={OPERATIONAL_GRID_ROW_HEIGHT_MAX}
+                    step="1"
+                    aria-label="Grid row height"
+                    value={getOperationalGridRowHeight(fontSize, rowDensity)}
+                    onChange={(event) => onRowDensityChange(getOperationalGridRowDensityForHeight(Number(event.target.value), fontSize))}
                     className="h-1.5 w-28 cursor-pointer appearance-none rounded-lg bg-slate-800 accent-blue-500"
                   />
-                  <span className="w-8 text-right text-[10px] font-black tabular-nums text-white">{rowDensity}px</span>
+                  <span className="w-10 text-right text-[10px] font-black tabular-nums text-white">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span>
                 </div>
               </div>
             </div>

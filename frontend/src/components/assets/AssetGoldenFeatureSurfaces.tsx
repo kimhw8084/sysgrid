@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { X } from 'lucide-react'
 import { OperationalDataGrid } from '../shared/OperationalDataGrid'
 import { OperationalGroupedGridView, OperationalGroupedGridSection } from '../shared/OperationalWorkspaceShells'
+import { getOperationalGridRowHeight } from '../shared/OperationalGridSizing'
 import { AssetLegacyReportSurface } from './AssetLegacyReportSurface'
 import { AssetLegacyMapSurface } from './AssetLegacyMapSurface'
 
@@ -174,7 +175,7 @@ export function AssetGoldenFeatureSurfaces({
                   rowDensity={rowDensity}
                   noRowsLabel="No assets found"
                   className="w-full"
-                  height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                  height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
                   context={gridContext}
                   suppressRowClickSelection={false}
                 />

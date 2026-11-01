@@ -6,7 +6,7 @@ import ReactFlow, {
   ConnectionMode, NodeChange, EdgeChange, useViewport
 } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { AgGridReact } from 'ag-grid-react'
+import { OperationalAgGrid } from './shared/OperationalAgGrid'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import { 
@@ -1167,7 +1167,7 @@ const ArchDashboard = ({ flows, onEdit, onAdd }: any) => {
             </div>
           </div>
           <div className="operational-grid-shell min-h-0 min-w-0 flex-1 ag-theme-alpine-dark" style={{ '--operational-grid-font-size': '11px' } as React.CSSProperties}>
-            <AgGridReact
+            <OperationalAgGrid
               rowData={filtered}
               columnDefs={columnDefs}
               defaultColDef={OPERATIONAL_GRID_DEFAULT_COLUMN_DEF}

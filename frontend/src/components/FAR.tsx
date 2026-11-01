@@ -36,6 +36,12 @@ import { ProjectForm } from './Projects'
 import { RootCauseFormModal, MitigationFormModal, PreventionFormModal, ResolutionManagerModal } from './shared/FARModals'
 import { EnhancedRcaDetails } from './Research'
 import { OperationalWorkspaceShell } from './shared/OperationalWorkspaceShells'
+import {
+  getOperationalGridRowDensityForHeight,
+  getOperationalGridRowHeight,
+  OPERATIONAL_GRID_ROW_HEIGHT_MAX,
+  OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+} from './shared/OperationalGridSizing'
 import { FARFilterBar, FAROperationalGridView } from './FARGoldenWorkspaceInteraction'
 import {
   buildFarDelimitedText,
@@ -961,7 +967,7 @@ export default function FAR() {
                   </div>
                   <div className="flex items-center space-x-6">
                      <div className="flex items-center space-x-4"><span className="text-[9px] font-bold text-slate-500 uppercase">Font Size</span><div className="flex items-center space-x-2"><input type="range" min="8" max="14" step="1" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span></div></div>
-                     <div className="flex items-center space-x-4 border-l border-white/10 pl-6"><span className="text-[9px] font-bold text-slate-500 uppercase">Row Density</span><div className="flex items-center space-x-2"><input type="range" min="4" max="24" step="2" value={rowDensity} onChange={e => setRowDensity(Number(e.target.value))} className="w-32 accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{rowDensity}px</span></div></div>
+                     <div className="flex items-center space-x-4 border-l border-white/10 pl-6"><span className="text-[9px] font-bold text-slate-500 uppercase">Row height</span><div className="flex items-center space-x-2"><input type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="FAR row height" value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))} className="w-32 accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-10 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span></div></div>
                   </div>
                </div>
                <button onClick={() => setShowStyleLab(false)} className="text-slate-500 hover:text-white transition-colors"><X size={16}/></button>

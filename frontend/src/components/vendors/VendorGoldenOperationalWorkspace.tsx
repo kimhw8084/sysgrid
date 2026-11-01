@@ -79,6 +79,7 @@ import {
   applyOperationalColumnState,
   autoSizeOperationalColumns,
   getOperationalColumnLayoutSnapshot,
+  getOperationalGridRowHeight,
   normalizeOperationalColumnLayout,
   OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
   sanitizeOperationalColumnLayout,
@@ -1522,7 +1523,7 @@ export default function VendorsReal() {
                         onFirstDataRendered={handleGridDataUpdated}
                         onRowDataUpdated={handleGridDataUpdated}
                         noRowsLabel="No vendors in this group"
-                        height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                        height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
                         suppressRowClickSelection={false}
                       />
                     ) : null}

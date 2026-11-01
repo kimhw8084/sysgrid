@@ -97,6 +97,7 @@ import {
   applyOperationalColumnState,
   autoSizeOperationalColumns,
   getOperationalColumnLayoutSnapshot,
+  getOperationalGridRowHeight,
   normalizeOperationalColumnLayout,
   sanitizeOperationalColumnLayout,
   sanitizeOperationalFilterModel,
@@ -2290,7 +2291,7 @@ export default function ServicesReal() {
                       getRowClass={getRowClass}
                       onFirstDataRendered={handleGridDataUpdated}
                       noRowsLabel="No service data found"
-                      height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                      height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
                     />
                 ) : null}
               </OperationalGroupedGridSection>

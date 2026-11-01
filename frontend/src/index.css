@@ -86,6 +86,7 @@
   --grid-row-selected: color-mix(in srgb, var(--accent-primary) 17%, var(--grid-bg));
   --grid-row-divider: color-mix(in srgb, var(--grid-border) 85%, transparent);
   --grid-column-divider: color-mix(in srgb, var(--grid-border) 52%, transparent);
+  --grid-pinned-divider: color-mix(in srgb, var(--accent-primary) 56%, var(--grid-border));
   --grid-focus-ring: var(--accent-primary);
   --grid-tone-accent: #c4a5ff;
   --panel-item-bg: #0f172a;
@@ -300,6 +301,7 @@
   --grid-row-selected: #dce8ff;
   --grid-row-divider: #d7dee8;
   --grid-column-divider: #e3e8ef;
+  --grid-pinned-divider: #8593a5;
   --grid-focus-ring: #1d4ed8;
   --grid-tone-accent: #6b21a8;
   --rack-unit-empty: #f2f4f7;
@@ -368,6 +370,7 @@
   --grid-row-selected: #dce8ff;
   --grid-row-divider: #d7dee8;
   --grid-column-divider: #e3e8ef;
+  --grid-pinned-divider: #8593a5;
   --grid-focus-ring: #1d4ed8;
   --grid-tone-accent: #6b21a8;
   --rack-unit-empty: #f2f4f7;
@@ -1481,12 +1484,12 @@ select option[value=""] {
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-header,
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-cols-container {
-  box-shadow: 5px 0 12px -10px var(--text-primary) !important;
+  box-shadow: inset -1px 0 0 var(--grid-pinned-divider), 5px 0 12px -10px var(--text-primary) !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-header,
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-cols-container {
-  box-shadow: -5px 0 12px -10px var(--text-primary) !important;
+  box-shadow: inset 1px 0 0 var(--grid-pinned-divider), -5px 0 12px -10px var(--text-primary) !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) :is(.operational-grid-centered-cell, .operational-grid-utility-cell, .operational-grid-action-cell, .text-center) {

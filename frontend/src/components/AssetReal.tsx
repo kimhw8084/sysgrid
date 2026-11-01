@@ -70,10 +70,11 @@ import { OperationalDisplayPanel, OperationalGridSurface, OperationalSavedViewsP
 import { AssetDetailsView } from './assets/AssetDetailsView'
 import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES, assetFilterOptions, fetchAssetSettingOptions } from './assets/assetRecordOptions'
 import {
-  applyOperationalColumnSizing,
+  finalizeOperationalColumnDefinition,
   applyOperationalColumnState,
   autoSizeOperationalColumns,
   getOperationalColumnLayoutSnapshot,
+  getOperationalGridRowHeight,
   normalizeOperationalColumnLayout,
   OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
   OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
@@ -91,7 +92,7 @@ const MONITORING_WATCH_STORAGE_KEY = 'sysgrid_asset_real_watch_v1'
 const MONITORING_WORKSPACE_PREFERENCE_KEY = 'asset_real_workspace_state_v1'
 const MONITORING_WORKSPACE_PREFERENCE_VERSION = 2
 const BULK_MENU_MAX_HEIGHT = 560
-const MONITORING_FIXED_WIDTH_COLUMN_IDS = new Set([
+const MONITORING_AUTO_SIZE_SKIP_COLUMN_IDS = new Set([
   'select',
   'id',
   'recent_change',
@@ -968,7 +969,7 @@ export default function AssetReal() {
       if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
       autoSizeOperationalColumns({
         api: gridRef.current.api,
-        skipColumnIds: Array.from(MONITORING_FIXED_WIDTH_COLUMN_IDS),
+        skipColumnIds: Array.from(MONITORING_AUTO_SIZE_SKIP_COLUMN_IDS),
         onSized: () => {
           if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
           syncColumnLayoutState(gridRef.current.api, false)
@@ -1849,21 +1850,6 @@ export default function AssetReal() {
 
   const columnDefs = useMemo(() => {
     const layoutById = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
-    const lockFixedUtilityWidth = (column: any, layout?: any) => {
-      const colId = column.colId || column.field
-      const lockedWidth = layout?.width ?? column.width ?? column.initialWidth
-      if (!MONITORING_FIXED_WIDTH_COLUMN_IDS.has(colId) || lockedWidth == null) return column
-      return {
-        ...column,
-        width: lockedWidth,
-        initialWidth: lockedWidth,
-        minWidth: lockedWidth,
-        maxWidth: lockedWidth,
-        flex: undefined,
-        initialFlex: undefined,
-      }
-    }
-
     const renderText = (value: any, className = '') => (
       <span
         title={value == null ? '' : String(value)}
@@ -2284,13 +2270,13 @@ export default function AssetReal() {
         children: col.children.map((child: any) => {
           const colId = child.colId || child.field
           const layout = layoutById.get(colId)
-          return lockFixedUtilityWidth(applyOperationalColumnSizing(child, layout, preserveExplicitColumnWidths), layout)
+          return finalizeOperationalColumnDefinition(child, layout, preserveExplicitColumnWidths)
         })
       }
     }
     const colId = col.colId || col.field
     const layout = layoutById.get(colId)
-    const sizedColumn = lockFixedUtilityWidth(applyOperationalColumnSizing(col, layout, preserveExplicitColumnWidths), layout)
+    const sizedColumn = finalizeOperationalColumnDefinition(col, layout, preserveExplicitColumnWidths)
     if (sizedColumn.lockVisible) return sizedColumn
     return {
       ...sizedColumn,
@@ -2869,7 +2855,7 @@ export default function AssetReal() {
                     style={{
                       '--ag-font-size': `${fontSize}px`,
                       '--ag-font-family': "'Geist Variable', sans-serif",
-                      height: `${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`
+                      height: `${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`
                     } as React.CSSProperties}
                   >
                     <OperationalGridMatrix

@@ -111,7 +111,7 @@ export function sanitizeFarWorkspaceViewConfig(value: unknown): FarWorkspaceView
   return {
     lifecycleScope: source.lifecycleScope === 'archived' ? 'archived' : 'active',
     fontSize: clampNumber(source.fontSize, 8, 14, 11),
-    rowDensity: clampNumber(source.rowDensity, 0, 20, 8),
+    rowDensity: clampNumber(source.rowDensity, 0, 33, 8),
     hiddenColumns: normalizeStrings(source.hiddenColumns)
       .filter((field) => FAR_PERSISTED_COLUMN_IDS.has(field))
       .filter((field) => !columnLayout.recovered || !FAR_RECOVERY_COLUMN_IDS.has(field)),

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { AgGridReact } from 'ag-grid-react'
+import { OperationalAgGrid } from './shared/OperationalAgGrid'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import ForceGraph2D from 'react-force-graph-2d'
 import { Plus, Trash2, Cpu, Package, X, RefreshCcw, Search, Edit2, LayoutGrid, List, FileJson, Check, MoreVertical, Settings, Sliders, Globe, Eye, ArrowRightLeft, Tag, AlertCircle, Layers, Terminal, FileText, Filter, Calendar, Activity, Link as LinkIcon, Database, HardDrive, Cpu as CpuIcon, Box, Zap, Clipboard, Share2, ZoomIn, ZoomOut, Maximize2, Shield } from 'lucide-react'
@@ -19,7 +19,13 @@ import { parseOperationalApiValidationError } from './shared/OperationalFieldVal
 import { CredentialValue, credentialUpdatePayload } from './shared/CredentialValue'
 import { AssetDataState, fetchAssetArray } from './assets/assetDataState'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
-import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
+import {
+  getOperationalGridHeaderHeight,
+  getOperationalGridRowDensityForHeight,
+  getOperationalGridRowHeight,
+  OPERATIONAL_GRID_ROW_HEIGHT_MAX,
+  OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+} from './shared/OperationalGridSizing'
 
 const SharedServiceModals = ({ 
   activeDetails, 
@@ -988,7 +994,7 @@ export default function AssetGrid() {
     if (gridRef.current?.api) {
       setTimeout(() => gridRef.current.api.autoSizeAllColumns(), 100)
     }
-  }, [fontSize, rowDensity, assets])
+  }, [fontSize, assets])
 
   const mutation = useMutation({
     mutationFn: async ({ data }: any) => {
@@ -1380,14 +1386,14 @@ export default function AssetGrid() {
                      </div>
 
                      <div className="flex items-center space-x-4 border-l border-white/10 pl-6">
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">Row Density</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Row height</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="0" max="20" step="2" 
-                            value={rowDensity} onChange={e => setRowDensity(Number(e.target.value))}
+                            type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Asset row height"
+                            value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))}
                             className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-white w-4 font-bold">{rowDensity}px</span>
+                            <span className="text-[10px] text-white w-10 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span>
                         </div>
                      </div>
                   </div>
@@ -1406,7 +1412,7 @@ export default function AssetGrid() {
                <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Syncing asset registry...</p>
             </div>
           )}
-          <AgGridReact 
+          <OperationalAgGrid
             ref={gridRef}
             rowData={assets || []} 
             columnDefs={columnDefs} 

@@ -9,7 +9,7 @@ import { useWorkspaceDialogLayer, useWorkspacePopupDismiss, WORKSPACE_LAYER_Z } 
 import { getPointFloatingStyle } from './shared/OperationalGridInteractions'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
-import { AgGridReact } from 'ag-grid-react'
+import { OperationalAgGrid } from './shared/OperationalAgGrid'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Plus, Zap, Trash2, Edit2, Search, MapPin, X, ArrowRightLeft, Server,
@@ -830,7 +830,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                       />
                     </div>
                   ) : (
-                    <AgGridReact
+                    <OperationalAgGrid
                       ref={gridRef}
                       rowData={filteredLogs}
                       columnDefs={columnDefs}

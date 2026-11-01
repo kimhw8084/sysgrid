@@ -5,6 +5,7 @@ import {
   OperationalGroupedGridView,
 } from './shared/OperationalWorkspaceShells'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
+import { getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import { useOperationalGroupedSelection } from './shared/OperationalGridInteractions'
 import {
   FAR_GROUP_OPTIONS,
@@ -213,7 +214,7 @@ export function FAROperationalGridView({
                 selectionScopeKey={selectionScopeKey}
                 onSelectionChanged={(event) => handleSelectionChanged(event, section.key)}
                 suppressRowClickSelection={false}
-                height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
               />
             ) : null}
           </OperationalGroupedGridSection>

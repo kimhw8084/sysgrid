@@ -65,6 +65,7 @@ import {
 } from './shared/OperationalDependencyGuard'
 import {
   autoSizeOperationalColumns,
+  getOperationalGridRowHeight,
   OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY,
   sanitizeOperationalColumnLayout,
   sanitizeOperationalFilterModel,
@@ -3618,7 +3619,7 @@ export default function External() {
                     rowDensity={rowDensity}
                     noRowsLabel="No external registry data found"
                     className="w-full"
-                    height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                    height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
                   />
                 )}
               </OperationalGroupedGridSection>

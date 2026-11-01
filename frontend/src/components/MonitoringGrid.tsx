@@ -105,6 +105,7 @@ import {
 import {
   applyOperationalColumnState,
   autoSizeOperationalColumns,
+  getOperationalGridRowHeight,
   getOperationalColumnLayoutSnapshot,
   normalizeOperationalColumnLayout,
   sanitizeOperationalColumnLayout,
@@ -2326,7 +2327,7 @@ export default function MonitoringGrid() {
                     rowDensity={rowDensity}
                     noRowsLabel="No monitoring data found"
                     className="w-full"
-                    height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                    height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
                   />
                 )}
               </OperationalGroupedGridSection>

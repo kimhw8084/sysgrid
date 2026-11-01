@@ -98,10 +98,11 @@ import {
   OperationalWorkspaceShell
 } from './shared/OperationalWorkspaceShells'
 import {
-  applyOperationalColumnSizing,
+  finalizeOperationalColumnDefinition,
   applyOperationalColumnState,
   autoSizeOperationalColumns,
   getOperationalColumnLayoutSnapshot,
+  getOperationalGridRowHeight,
   normalizeOperationalColumnLayout,
   OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
   sanitizeOperationalColumnLayout,
@@ -124,7 +125,7 @@ const NETWORK_UI_STATE_KEY = 'sysgrid_network_ui_state_v1'
 const NETWORK_WATCH_STORAGE_KEY = 'sysgrid_network_watch_v1'
 const NETWORK_WORKSPACE_PREFERENCE_KEY = 'network_workspace_state_v1'
 const NETWORK_WORKSPACE_PREFERENCE_VERSION = 4
-const NETWORK_FIXED_WIDTH_COLUMN_IDS = new Set([
+const NETWORK_AUTO_SIZE_SKIP_COLUMN_IDS = new Set([
   'select',
   'id',
   'recent_change',
@@ -960,7 +961,7 @@ export default function NetworkReal() {
       if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
       autoSizeOperationalColumns({
         api: gridRef.current.api,
-        skipColumnIds: Array.from(NETWORK_FIXED_WIDTH_COLUMN_IDS),
+        skipColumnIds: Array.from(NETWORK_AUTO_SIZE_SKIP_COLUMN_IDS),
         onSized: () => {
           if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
           syncColumnLayoutState(gridRef.current.api, false)
@@ -1865,21 +1866,6 @@ export default function NetworkReal() {
 
   const columnDefs = useMemo(() => {
     const layoutById = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
-    const lockFixedUtilityWidth = (column: any, layout?: any) => {
-      const colId = column.colId || column.field
-      const lockedWidth = layout?.width ?? column.width ?? column.initialWidth
-      if (!NETWORK_FIXED_WIDTH_COLUMN_IDS.has(colId) || lockedWidth == null) return column
-      return {
-        ...column,
-        width: lockedWidth,
-        initialWidth: lockedWidth,
-        minWidth: lockedWidth,
-        maxWidth: lockedWidth,
-        flex: undefined,
-        initialFlex: undefined,
-      }
-    }
-    
     const renderText = (value: any, className = '') => (
       <span
         title={value == null ? '' : String(value)}
@@ -2154,13 +2140,13 @@ export default function NetworkReal() {
         children: col.children.map((child: any) => {
           const colId = child.colId || child.field
           const layout = layoutById.get(colId)
-          return lockFixedUtilityWidth(applyOperationalColumnSizing(child, layout, preserveExplicitColumnWidths), layout)
+          return finalizeOperationalColumnDefinition(child, layout, preserveExplicitColumnWidths)
         })
       }
     }
     const colId = col.colId || col.field
     const layout = layoutById.get(colId)
-    const sizedColumn = lockFixedUtilityWidth(applyOperationalColumnSizing(col, layout, preserveExplicitColumnWidths), layout)
+    const sizedColumn = finalizeOperationalColumnDefinition(col, layout, preserveExplicitColumnWidths)
     if (sizedColumn.lockVisible) return sizedColumn
     return {
       ...sizedColumn,
@@ -2735,7 +2721,7 @@ export default function NetworkReal() {
                     fontSize={fontSize}
                     rowDensity={rowDensity}
                     noRowsLabel="No network data found"
-                    height={`${Math.min(600, section.items.length * (fontSize + rowDensity + 5) + 40)}px`}
+                    height={`${Math.min(600, section.items.length * getOperationalGridRowHeight(fontSize, rowDensity) + 40)}px`}
                     onFirstDataRendered={handleGridDataUpdated}
                     onRowDataUpdated={handleGridDataUpdated}
                     suppressRowClickSelection={false}

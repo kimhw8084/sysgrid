@@ -30,6 +30,7 @@ export const OPERATIONAL_GRID_CLASSES = {
 } as const
 
 export const OPERATIONAL_GRID_TEXT_CLASS = 'operational-grid-text'
+export const OPERATIONAL_GRID_MIN_COLUMN_WIDTH = 40
 export const OPERATIONAL_GRID_PLAIN_VALUE_CLASS = 'operational-grid-text operational-grid-plain-value'
 export const OPERATIONAL_GRID_PRIMARY_TEXT_CLASS = 'operational-grid-text operational-grid-plain-value operational-grid-primary-text'
 export const OPERATIONAL_GRID_PRIMARY_BUTTON_CLASS = 'operational-grid-text operational-grid-plain-value operational-grid-primary-button'
@@ -62,6 +63,7 @@ export const OPERATIONAL_GRID_WIDTHS = {
 export const OPERATIONAL_GRID_DEFAULT_COLUMN_DEF = {
   sortable: true,
   resizable: true,
+  minWidth: OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
   filter: true,
   suppressMovable: false,
   wrapText: false,

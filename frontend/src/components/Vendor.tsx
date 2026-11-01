@@ -10,10 +10,17 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { apiFetch } from '../api/apiClient'
 import { parseAppDate, formatAppDate, formatAppDay } from '../utils/dateUtils'
-import { AgGridReact } from 'ag-grid-react'
+import { OperationalAgGrid } from './shared/OperationalAgGrid'
 import { toast } from 'react-hot-toast'
 import { ConfirmationModal } from './shared/ConfirmationModal'
-import { OPERATIONAL_GRID_AUTO_SIZE_STRATEGY, getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
+import {
+  OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
+  getOperationalGridHeaderHeight,
+  getOperationalGridRowDensityForHeight,
+  getOperationalGridRowHeight,
+  OPERATIONAL_GRID_ROW_HEIGHT_MAX,
+  OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+} from './shared/OperationalGridSizing'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { StyledSelect } from './shared/StyledSelect'
 import { ConfigRegistryModal } from './ConfigRegistry'
@@ -72,7 +79,7 @@ export default function Vendor() {
       if (gridRef.current?.api === api && !api.isDestroyed()) api.autoSizeAllColumns()
     }, 100)
     return () => window.clearTimeout(timer)
-  }, [fontSize, rowDensity, vendors])
+  }, [fontSize, vendors])
 
   const handleExportCSV = () => {
     if (gridRef.current?.api) {
@@ -376,14 +383,14 @@ export default function Vendor() {
                      </div>
 
                      <div className="flex items-center space-x-4 border-l border-white/10 pl-6">
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">Row Density</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Row height</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="4" max="24" step="2" 
-                            value={rowDensity} onChange={e => setRowDensity(Number(e.target.value))}
+                            type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Vendor row height"
+                            value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))}
                             className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-white w-4 font-bold">{rowDensity}px</span>
+                            <span className="text-[10px] text-white w-10 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span>
                         </div>
                      </div>
                   </div>
@@ -401,7 +408,7 @@ export default function Vendor() {
              <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Syncing partner data...</p>
           </div>
         )}
-        <AgGridReact 
+        <OperationalAgGrid
           ref={gridRef}
           rowData={processedVendors || []} 
           columnDefs={columnDefs} 
