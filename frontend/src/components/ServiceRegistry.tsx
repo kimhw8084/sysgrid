@@ -9,7 +9,7 @@ import { apiFetch } from "../api/apiClient"
 import { WorkspaceModal } from "./shared/WorkspaceModal"
 import { WorkspaceDetailFields, WorkspaceDetailSection } from './shared/WorkspaceModalShells'
 import { ToolbarButton } from "./shared/LayoutPrimitives"
-import { BulkImportModal } from "./shared/BulkImportModal"
+import { OperationalImportModal } from "./shared/OperationalImportModal"
 import { ConfigRegistryModal } from "./ConfigRegistry"
 import { ConfirmationModal } from "./shared/ConfirmationModal"
 import { WorkspaceValidationBanner } from "./shared/OperationalWorkspacePrimitives"
@@ -914,7 +914,7 @@ export default function ServiceRegistry() {
       </WorkspaceModal>
 
       <ConfigRegistryModal isOpen={showConfig} onClose={() => setShowConfig(false)} title="Service Matrix Registry" sections={[{ title: "Service Types", category: "ServiceType", icon: Database }, { title: "Status Options", category: "Status", icon: RefreshCcw }, { title: "Environments", category: "Environment", icon: Globe }]} />
-      <BulkImportModal 
+      <OperationalImportModal
          isOpen={showImportModal} 
          onClose={() => setShowImportModal(false)} 
          tableName="logical_services" 

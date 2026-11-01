@@ -19,7 +19,7 @@ import {
   parseAuditResponse,
 } from './audit/auditQuery'
 import { resolveOperationalObjectReference } from './shared/OperationalObjectReference'
-import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
+import { OPERATIONAL_GRID_BADGE_CLASS, OPERATIONAL_GRID_BADGE_TEXT_CLASS, OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import {
   getOperationalGridHeaderHeight,
   getOperationalGridRowDensityForHeight,
@@ -162,16 +162,12 @@ export default function AuditLogs() {
       cellClass: 'text-center',
       headerClass: 'text-center',
       cellRenderer: (params: any) => {
-        const colors: Record<string, string> = { 
-            CREATE: 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20',
-            UPDATE: 'bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20',
-            DELETE: 'bg-rose-500/10 text-rose-800 dark:text-rose-400 border-rose-500/20',
-            MOUNT: 'bg-indigo-500/10 text-indigo-800 dark:text-indigo-400 border-indigo-500/20',
-            LINK: 'bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20'
-        }
+        const tone = ({ CREATE: 'success', UPDATE: 'info', DELETE: 'danger', MOUNT: 'accent', LINK: 'warning' } as Record<string, string>)[params.value] || 'neutral'
         return (
-          <div className={`px-2 py-1 rounded-lg border ${colors[params.value] || 'bg-slate-500/10 text-slate-600 dark:text-slate-400'} font-black text-[9px] uppercase tracking-widest`}>
-             {params.value || 'N/A'}
+          <div className="flex h-full w-full items-center justify-center px-2">
+              <span data-operational-tone={tone} className={`${OPERATIONAL_GRID_BADGE_CLASS} px-2 text-[9px] font-semibold uppercase tracking-wide`}>
+                <span className={OPERATIONAL_GRID_BADGE_TEXT_CLASS}>{params.value || 'N/A'}</span>
+            </span>
           </div>
         )
       }
@@ -259,11 +255,8 @@ export default function AuditLogs() {
       <div className="min-w-0 shrink-0 space-y-4 border-b border-[var(--grid-border)] bg-[var(--surface-base)]">
         <PageHeader
           eyebrow="Registry"
-          title={
-            <span className="flex items-center gap-3 uppercase">
-              <Zap className="text-blue-500" fill="currentColor" /> Audit Ledger
-            </span>
-          }
+          title="Audit Ledger"
+          titleIcon={Zap}
           subtitle="Immutable record of system state changes and operator actions"
           meta={
             <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
@@ -455,7 +448,7 @@ export default function AuditLogs() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
+      <div className="operational-grid-shell min-h-[220px] min-w-0 flex-1 overflow-hidden relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': `${fontSize}px` } as React.CSSProperties}>
         {isLoading && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[var(--surface-overlay)] backdrop-blur-sm space-y-4">
              <RefreshCcw size={32} className="text-blue-400 animate-spin" />

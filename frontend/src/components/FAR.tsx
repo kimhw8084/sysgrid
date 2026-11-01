@@ -463,10 +463,26 @@ export default function FAR() {
     ...(options?.filter((o: any) => o.category === 'LogicalSystem').map((s: any) => String(s.value || '')).filter(Boolean) || []),
     ...lifecycleModes.map((mode: any) => String(mode.system_name || '')).filter(Boolean),
   ])).sort(), [lifecycleModes, options])
-  const availableFailureTypes = useMemo(() => Array.from(new Set([
-    ...FAILURE_TYPES.map((type) => type.value),
-    ...lifecycleModes.map((mode: any) => String(mode.failure_type || '')).filter(Boolean),
-  ])).sort(), [lifecycleModes])
+  const availableFailureTypeOptions = useMemo(() => {
+    const byValue = new Map<string, { value: string; label: string; description?: string }>(
+      FAILURE_TYPES.map((type) => [type.value, type] as const),
+    )
+    for (const option of options || []) {
+      if (option.category === 'RiskCategory' && typeof option.value === 'string' && option.value.trim()) {
+        byValue.set(option.value, {
+          value: option.value,
+          label: typeof option.label === 'string' && option.label.trim() ? option.label : option.value,
+          description: option.description,
+        })
+      }
+    }
+    for (const mode of lifecycleModes) {
+      const value = String(mode.failure_type || '').trim()
+      if (value && !byValue.has(value)) byValue.set(value, { value, label: value })
+    }
+    return Array.from(byValue.values()).sort((left, right) => left.label.localeCompare(right.label, undefined, { sensitivity: 'base' }))
+  }, [lifecycleModes, options])
+  const availableFailureTypes = useMemo(() => availableFailureTypeOptions.map((option) => option.value), [availableFailureTypeOptions])
   const availableStatuses = useMemo(() => Array.from(new Set(
     lifecycleModes.map((mode: any) => String(mode.status || '')).filter(Boolean)
   )).sort(), [lifecycleModes])
@@ -702,7 +718,7 @@ export default function FAR() {
       minWidth: 120,
       filter: 'agTextColumnFilter',
       tooltipField: 'system_name',
-      valueClassName: 'operational-grid-text font-bold text-rose-400 uppercase',
+      valueClassName: 'operational-grid-text font-semibold text-[var(--text-primary)] uppercase',
       hide: hiddenColumns.includes('system_name'),
     }),
     createOperationalGoldenTextColumn({
@@ -881,12 +897,8 @@ export default function FAR() {
       floatingPanels={goldenWorkspace.floatingPanels}
       header={{
         eyebrow: 'Analysis',
-        title: (
-          <div className="flex items-center gap-3">
-            <Target size={22} className="text-rose-500" />
-            <span>Failure Matrix</span>
-          </div>
-        ),
+        title: 'Failure Matrix',
+        titleIcon: Target,
         subtitle: 'Reliability Knowledge Engine // FMEA Studio',
         actions: (
           <div className="flex items-center gap-2">
@@ -1217,7 +1229,7 @@ export default function FAR() {
         errorDetail={farRegistryDiagnosticDetail}
       />
 
-      <ConfigRegistryModal isOpen={showConfig} onClose={() => setShowConfig(false)} title="Reliability Matrix Registry" sections={[{ title: "Systems", category: "LogicalSystem", icon: LayoutGrid }, { title: "Risk Cats", category: "RiskCategory", icon: Target }, { title: "Teams", category: "BusinessUnit", icon: User }]} />
+      <ConfigRegistryModal isOpen={showConfig} onClose={() => setShowConfig(false)} title="Reliability Matrix Registry" sections={[{ title: "Systems", category: "LogicalSystem", icon: LayoutGrid }, { title: "Failure Classifications", category: "RiskCategory", icon: Target }, { title: "Teams", category: "BusinessUnit", icon: User }]} />
       <OperationalImportModal
         isOpen={operatorLoopSession?.surface === 'import'}
         onClose={() => closeFarOperatorSurface('import')}
@@ -1228,6 +1240,7 @@ export default function FAR() {
       <FARAuthoringModal
         isOpen={showWizard}
         initialData={selectedMode}
+        failureTypeOptions={availableFailureTypeOptions}
         onClose={() => setShowWizard(false)}
         onComplete={() => {
           setShowWizard(false)
@@ -1554,7 +1567,7 @@ export function GaugeSelector({ label, value, onChange, levels, color, accent }:
   )
 }
 
-function FARAuthoringModal({ isOpen, initialData, onClose, onComplete }: any) {
+function FARAuthoringModal({ isOpen, initialData, failureTypeOptions, onClose, onComplete }: any) {
   const [activeTab, setActiveTab] = useState<FarAuthoringTab>('definition')
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [generalError, setGeneralError] = useState('')
@@ -1764,7 +1777,7 @@ function FARAuthoringModal({ isOpen, initialData, onClose, onComplete }: any) {
                   required
                   disabled={isArchived}
                   value={formData.failure_type}
-                  options={FAILURE_TYPES}
+                  options={failureTypeOptions}
                   placeholder="Select failure classification"
                   error={formErrors.failure_type}
                   onChange={(next) => patchFormData({ failure_type: String(next) })}

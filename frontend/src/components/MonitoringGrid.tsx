@@ -83,6 +83,7 @@ import {
 import { WorkspaceCompareShell, WorkspaceDetailFields, WorkspaceDetailSection, WorkspaceDossierShell, WorkspaceHistoryShell } from './shared/WorkspaceModalShells'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
+import { buildOperationalGroupSections } from './shared/OperationalGrouping'
 import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
 import { OPERATIONAL_ACTION_LABELS } from './shared/OperationalActionLabels'
@@ -293,7 +294,7 @@ const normalizeMonitoringWorkspaceState = (value: any) => {
       quickFilters: normalizeMonitoringQuickFilters(uiState.quickFilters),
       groupBy: typeof uiState.groupBy === 'string' && MONITORING_VALID_GROUP_BY.has(uiState.groupBy) ? uiState.groupBy : 'raw',
       showFilterBar: uiState.showFilterBar !== false,
-      columnLayoutState: sanitizeOperationalColumnLayout(Array.isArray(uiState.columnLayoutState) ? uiState.columnLayoutState : [], MONITORING_PERSISTED_COLUMN_IDS, false),
+      columnLayoutState: sanitizeOperationalColumnLayout(Array.isArray(uiState.columnLayoutState) ? uiState.columnLayoutState : [], MONITORING_PERSISTED_COLUMN_IDS, true),
       lastVisitedAt: Number.isFinite(uiState.lastVisitedAt) ? uiState.lastVisitedAt : 0,
       searchTerm: typeof uiState.searchTerm === 'string' ? uiState.searchTerm : '',
     }
@@ -319,8 +320,8 @@ const slugifyViewId = (value: string) =>
   // Removed stale positioning helpers.
 
 const getMonitorGroupValue = (item: any, field: string) => {
-  if (field === 'notification_method') return item.notification_method || 'No notification path'
-  return item[field] || 'Unspecified'
+  if (field === 'notification_method') return item.notification_method ?? 'No notification path'
+  return item[field] ?? 'Unspecified'
 }
 
 const readMonitoringUiState = () => {
@@ -698,7 +699,7 @@ export default function MonitoringGrid() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       lastVisitedAt,
       searchTerm,
     }
@@ -1408,18 +1409,7 @@ export default function MonitoringGrid() {
   const compareItems = useMemo(() => selectedItems.slice(0, 5), [selectedItems])
 
   const groupedSections = useMemo(() => {
-    if (groupBy === 'raw') return []
-    const sections = sortedItemsForGrouped.reduce((acc: Array<{ key: string; label: string; items: any[] }>, item: any) => {
-      const label = String(getMonitorGroupValue(item, groupBy))
-      const existing = acc.find((section) => section.key === label)
-      if (existing) {
-        existing.items.push(item)
-      } else {
-        acc.push({ key: label, label, items: [item] })
-      }
-      return acc
-    }, [])
-    return sections.sort((a, b) => a.label.localeCompare(b.label))
+    return buildOperationalGroupSections(sortedItemsForGrouped, groupBy, item => getMonitorGroupValue(item, groupBy))
   }, [sortedItemsForGrouped, groupBy])
 
   useEffect(() => {
@@ -1468,7 +1458,7 @@ export default function MonitoringGrid() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       selectedIds,
       lastVisitedAt,
       searchTerm
@@ -1847,12 +1837,8 @@ export default function MonitoringGrid() {
       workspace="monitoring"
       header={{
         eyebrow: "Observability",
-        title: (
-          <div className="flex items-center gap-3">
-            <Activity className="text-blue-500" />
-            <span>Monitoring</span>
-          </div>
-        ),
+        title: 'Monitoring',
+        titleIcon: Activity,
         subtitle: "Centralized monitoring configuration and operational status",
         actions: (
           <>
@@ -2267,31 +2253,32 @@ export default function MonitoringGrid() {
         <OperationalGroupedGridView
           summary={
             <div>
-              <p className="text-[10px] font-semibold text-slate-400">Grouped monitoring matrix</p>
-              <p className="pt-1 text-[12px] font-semibold text-slate-100">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
+              <p className="operational-group-summary-kicker">Grouped monitoring matrix</p>
+              <p className="operational-group-summary-value">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
             </div>
           }
           actions={
             <>
               <button 
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: false }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, false])))}
+                className="operational-group-control"
               >
                 Expand All
               </button>
               <button 
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: true }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, true])))}
+                className="operational-group-control"
               >
                 Collapse All
               </button>
-              <div className="w-px h-6 bg-white/10 mx-1" />
               <button 
+                type="button"
                 onClick={() => setGroupBy('raw')}
-                className="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-[9px] font-semibold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-2"
+                className="operational-group-control operational-group-control-danger"
               >
-                <X size={12} />
-                <span>Cancel</span>
+                <X size={12} aria-hidden="true" />Cancel grouping
               </button>
             </>
           }
@@ -2301,7 +2288,7 @@ export default function MonitoringGrid() {
             return (
               <OperationalGroupedGridSection
                 key={section.key}
-                labelMeta={<span className="text-[9px] font-semibold text-blue-400">{groupOptions.find((option) => option.value === groupBy)?.label}</span>}
+                labelMeta={groupOptions.find((option) => option.value === groupBy)?.label}
                 label={section.label}
                 count={section.items.length}
                 countLabel="monitors"

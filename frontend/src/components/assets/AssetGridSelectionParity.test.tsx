@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
 import { AssetGoldenFeatureSurfaces } from './AssetGoldenFeatureSurfaces'
 
@@ -13,6 +14,11 @@ vi.mock('../shared/OperationalDataGrid', () => ({
 }))
 
 describe('Asset Grid Selection Parity (Blocker C)', () => {
+  const renderWithQueryClient = (ui: React.ReactElement) => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
+  }
+
   const getMockProps = () => ({
     gridRef: { current: null },
     allAssets: [
@@ -67,7 +73,7 @@ describe('Asset Grid Selection Parity (Blocker C)', () => {
 
   it('proves standard grid instantiation passes suppressRowClickSelection={false} for rich click selection and range selections', () => {
     const props = getMockProps()
-    render(<AssetGoldenFeatureSurfaces {...props as any} />)
+    renderWithQueryClient(<AssetGoldenFeatureSurfaces {...props as any} />)
 
     const grid = screen.getByTestId('mock-operational-grid')
     expect(grid).toBeInTheDocument()
@@ -83,7 +89,7 @@ describe('Asset Grid Selection Parity (Blocker C)', () => {
     props.groupOptions = [{ value: 'system', label: 'System Grouping' }]
     props.collapsedGroups = { 'Sys-A': false }
 
-    render(<AssetGoldenFeatureSurfaces {...props as any} />)
+    renderWithQueryClient(<AssetGoldenFeatureSurfaces {...props as any} />)
 
     const grids = screen.getAllByTestId('mock-operational-grid')
     expect(grids.length).toBeGreaterThan(0)

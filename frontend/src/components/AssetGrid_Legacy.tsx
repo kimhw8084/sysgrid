@@ -1237,6 +1237,7 @@ export default function AssetGrid() {
       <PageHeader
         eyebrow="Infrastructure Asset Registry"
         title="Assets"
+        titleIcon={HardDrive}
         subtitle="Manage logical and physical compute, storage, and networking resources."
         actions={
           <ToolbarGroup>

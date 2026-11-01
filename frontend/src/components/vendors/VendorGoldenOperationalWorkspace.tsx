@@ -65,6 +65,7 @@ import { useOperationalGridLayout, usePersistentJsonState, useWorkspaceDismissHa
 import { WorkspaceDossierShell } from '../shared/WorkspaceModalShells'
 import { OperationalImportModal } from '../shared/OperationalImportModal'
 import { OperationalDataGrid } from '../shared/OperationalDataGrid'
+import { buildOperationalGroupSections } from '../shared/OperationalGrouping'
 import { resolveOperationalDataState } from '../shared/OperationalDataState'
 import {
   OperationalAnchoredPanel,
@@ -221,7 +222,7 @@ const normalizeVendorWorkspaceState = (value: any) => {
       quickFilters:      normalizeVendorQuickFilters(uiState.quickFilters),
       groupBy:           typeof uiState.groupBy === 'string' && VENDOR_VALID_GROUP_BY.has(uiState.groupBy) ? uiState.groupBy : 'raw',
       showFilterBar:     uiState.showFilterBar !== false,
-      columnLayoutState: sanitizeOperationalColumnLayout(Array.isArray(uiState.columnLayoutState) ? uiState.columnLayoutState : [], VENDOR_PERSISTED_COLUMN_IDS, false),
+      columnLayoutState: sanitizeOperationalColumnLayout(Array.isArray(uiState.columnLayoutState) ? uiState.columnLayoutState : [], VENDOR_PERSISTED_COLUMN_IDS, true),
       lastVisitedAt:     Number.isFinite(uiState.lastVisitedAt) ? uiState.lastVisitedAt : 0,
       searchTerm:        typeof uiState.searchTerm === 'string' ? uiState.searchTerm : '',
     }
@@ -256,8 +257,8 @@ const getAnchoredFloatingStyle = ({ rect, width, height, zIndex, offset = 4 }: {
 }
 
 const getVendorGroupValue = (item: any, field: string) => {
-  if (field === 'country') return item.country || 'Unknown Region'
-  return item[field] || 'Unspecified'
+  if (field === 'country') return item.country ?? 'Unknown Region'
+  return item[field] ?? 'Unspecified'
 }
 
 // ---------------------------------------------------------------------------
@@ -489,7 +490,7 @@ export default function VendorsReal() {
     version: VENDOR_WORKSPACE_PREFERENCE_VERSION,
     savedViews, activeViewId, favoriteIds, watchIds,
     uiState: { fontSize, rowDensity, hiddenColumns, quickFilters, groupBy, showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false), lastVisitedAt, searchTerm }
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true), lastVisitedAt, searchTerm }
   }), [savedViews, activeViewId, favoriteIds, watchIds, fontSize, rowDensity, hiddenColumns, quickFilters, groupBy, showFilterBar, columnLayoutState, lastVisitedAt, searchTerm])
 
   useEffect(() => clearPendingAutoSize, [clearPendingAutoSize])
@@ -861,14 +862,7 @@ export default function VendorsReal() {
   })
 
   const groupedSections = useMemo(() => {
-    if (groupBy === 'raw') return []
-    const sections = sortedItemsForGrouped.reduce((acc: Array<{ key: string; label: string; items: any[] }>, item: any) => {
-      const label = String(getVendorGroupValue(item, groupBy))
-      const existing = acc.find((s) => s.key === label)
-      if (existing) { existing.items.push(item) } else { acc.push({ key: label, label, items: [item] }) }
-      return acc
-    }, [])
-    return sections.sort((a, b) => a.label.localeCompare(b.label))
+    return buildOperationalGroupSections(sortedItemsForGrouped, groupBy, item => getVendorGroupValue(item, groupBy))
   }, [sortedItemsForGrouped, groupBy])
 
   useEffect(() => {
@@ -919,7 +913,7 @@ export default function VendorsReal() {
   }, [displayedItems, selectedIds])
   useEffect(() => {
     if (typeof window === 'undefined') return
-    writeOptionalStorage(VENDOR_UI_STATE_KEY, JSON.stringify({ fontSize, rowDensity, hiddenColumns, quickFilters, groupBy, showFilterBar, columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false), lastVisitedAt, searchTerm }))
+    writeOptionalStorage(VENDOR_UI_STATE_KEY, JSON.stringify({ fontSize, rowDensity, hiddenColumns, quickFilters, groupBy, showFilterBar, columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true), lastVisitedAt, searchTerm }))
   }, [columnLayoutState, fontSize, groupBy, hiddenColumns, lastVisitedAt, quickFilters, rowDensity, searchTerm, showFilterBar])
   useEffect(() => {
     return () => {
@@ -1126,12 +1120,8 @@ export default function VendorsReal() {
       workspace="vendors"
       header={{
         eyebrow: 'Resources',
-        title: (
-          <div className="flex items-center gap-3">
-            <Globe className="text-blue-500" />
-            <span>Vendors</span>
-          </div>
-        ),
+        title: 'Vendors',
+        titleIcon: Globe,
         subtitle: 'Vendor capability, contract intelligence & personnel directory',
         actions: (
           <HeaderScopeSwitch
@@ -1462,21 +1452,23 @@ export default function VendorsReal() {
         <OperationalGroupedGridView
           summary={(
             <div>
-              <p className="text-[10px] font-semibold text-slate-400">Grouped vendor registry</p>
-              <p className="pt-1 text-[12px] font-semibold text-slate-100">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
+              <p className="operational-group-summary-kicker">Grouped vendor registry</p>
+              <p className="operational-group-summary-value">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
             </div>
           )}
           actions={(
             <>
               <button
-                onClick={() => setCollapsedGroups(groupedSections.reduce((accumulator: any, section: any) => ({ ...accumulator, [section.key]: false }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, false])))}
+                className="operational-group-control"
               >
                 Expand All
               </button>
               <button
-                onClick={() => setCollapsedGroups(groupedSections.reduce((accumulator: any, section: any) => ({ ...accumulator, [section.key]: true }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, true])))}
+                className="operational-group-control"
               >
                 Collapse All
               </button>
@@ -1498,7 +1490,7 @@ export default function VendorsReal() {
                 return (
                   <OperationalGroupedGridSection
                     key={section.key}
-                    labelMeta={<span className="text-[9px] font-semibold text-blue-400">{groupOptions.find((option) => option.value === groupBy)?.label}</span>}
+                    labelMeta={groupOptions.find((option) => option.value === groupBy)?.label}
                     label={section.label}
                     count={section.items.length}
                     countLabel="vendors"

@@ -211,7 +211,11 @@ export function useOperationalGridLayout(
   const [columnLayoutState, setColumnLayoutState] = useState<any[]>(initialLayout)
   const [hasManualColumnWidths, setHasManualColumnWidths] = useState(false)
 
-  const preserveExplicitColumnWidths = Boolean((hasSavedViewWidths || hasManualColumnWidths) && columnLayoutState.length)
+  const hasStoredColumnWidths = columnLayoutState.some((column: any) => (
+    (typeof column?.width === 'number' && Number.isFinite(column.width) && column.width > 0) ||
+    (typeof column?.flex === 'number' && Number.isFinite(column.flex) && column.flex > 0)
+  ))
+  const preserveExplicitColumnWidths = Boolean((hasSavedViewWidths || hasManualColumnWidths || hasStoredColumnWidths) && columnLayoutState.length)
 
   const syncColumnLayoutState = useCallback((api: any, _preserveWidths: boolean = preserveExplicitColumnWidths) => {
     const nextLayout = getOperationalColumnLayoutSnapshot(api, true)
@@ -241,24 +245,16 @@ export function useOperationalGridLayout(
     const previousState = columnLayoutState || []
     const previousWidths = new Map(previousState.map((column: any) => [column.colId, column.width]))
     const changedColumns = nextState.filter((column: any) => previousWidths.get(column.colId) !== column.width)
-    const widthChanged = changedColumns.length > 0
     const isAutoResizeSource = isOperationalAutoResizeSource(source)
 
-    if (!isAutoResizeSource) {
-      const isAccidentalResize = !widthChanged || changedColumns.length !== 1 || changedColumns.some((column: any) => {
-        const previousWidth = previousWidths.get(column.colId)
-        return previousWidth == null || column.width == null || Math.abs(column.width - previousWidth) <= 1
-      })
-      if (isAccidentalResize) {
-        applyColumnLayoutState(event.api, previousState, true)
-        return
-      }
+    if (!isAutoResizeSource && changedColumns.length > 0) {
       setHasManualColumnWidths(true)
       syncColumnLayoutState(event.api, true)
       return
     }
+
     syncColumnLayoutState(event.api, false)
-  }, [applyColumnLayoutState, columnLayoutState, syncColumnLayoutState])
+  }, [columnLayoutState, syncColumnLayoutState])
 
   const setTransientManualColumnWidths = useCallback((value: boolean) => {
     setHasManualColumnWidths(value)

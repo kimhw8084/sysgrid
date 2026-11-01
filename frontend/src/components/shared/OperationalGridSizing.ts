@@ -9,7 +9,7 @@ export const OPERATIONAL_GRID_AUTO_SIZE_STRATEGY = OPERATIONAL_GRID_CONTENT_AUTO
 export const getOperationalGridHeaderHeight = (fontSize = 11) =>
   Math.max(42, Math.ceil(fontSize + 31))
 
-export const OPERATIONAL_GRID_ROW_HEIGHT_MIN = 24
+export const OPERATIONAL_GRID_ROW_HEIGHT_MIN = 18
 export const OPERATIONAL_GRID_ROW_HEIGHT_MAX = 48
 export const OPERATIONAL_GRID_ROW_DENSITY_MAX = 33
 
@@ -46,10 +46,6 @@ const clampOperationalColumnWidth = (width: any, minWidth: any, maxWidth: any): 
 }
 
 export const normalizeOperationalColumnDefinition = (column: Record<string, any>) => {
-  const initialMinimum = Math.max(
-    OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
-    typeof column.minWidth === 'number' && Number.isFinite(column.minWidth) ? column.minWidth : OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
-  )
   const normalized: Record<string, any> = {
     ...column,
     resizable: true,
@@ -58,10 +54,10 @@ export const normalizeOperationalColumnDefinition = (column: Record<string, any>
   delete normalized.maxWidth
   delete normalized.operationalLockWidth
   if (typeof normalized.width === 'number') {
-    normalized.width = clampOperationalColumnWidth(Math.max(normalized.width, initialMinimum), OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
+    normalized.width = clampOperationalColumnWidth(normalized.width, OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
   }
   if (typeof normalized.initialWidth === 'number') {
-    normalized.initialWidth = clampOperationalColumnWidth(Math.max(normalized.initialWidth, initialMinimum), OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
+    normalized.initialWidth = clampOperationalColumnWidth(normalized.initialWidth, OPERATIONAL_GRID_MIN_COLUMN_WIDTH, undefined)
   }
   return normalized
 }

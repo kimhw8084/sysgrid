@@ -12,13 +12,13 @@ describe('compact operational grid sizing', () => {
 
   it('applies one row and header height scale across operational grids', () => {
     expect(getOperationalGridHeaderHeight(11)).toBe(42)
-    expect(getOperationalGridRowHeight(11, 4)).toBe(24)
+    expect(getOperationalGridRowHeight(11, 4)).toBe(22)
     expect(getOperationalGridRowHeight(11, 8)).toBe(26)
     expect(getOperationalGridRowHeight(11, 16)).toBe(34)
     expect(getOperationalGridRowHeight(20, 24)).toBe(48)
     expect(getOperationalGridRowDensityForHeight(24, 11)).toBe(6)
     expect(getOperationalGridRowHeight(11, getOperationalGridRowDensityForHeight(48, 11))).toBe(48)
-    for (let rowHeight = 24; rowHeight <= 48; rowHeight += 1) {
+    for (let rowHeight = 22; rowHeight <= 48; rowHeight += 1) {
       expect(getOperationalGridRowHeight(11, getOperationalGridRowDensityForHeight(rowHeight, 11))).toBe(rowHeight)
     }
   })

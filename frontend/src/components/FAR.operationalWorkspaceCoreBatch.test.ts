@@ -78,7 +78,7 @@ describe('PC-50 FAR operational workspace core + saved-view continuity exact G b
     expectAll(farSource, [
       'workspace="far"',
       "eyebrow: 'Analysis'",
-      '<span>Failure Matrix</span>',
+      "title: 'Failure Matrix'",
       "subtitle: 'Reliability Knowledge Engine // FMEA Studio'",
       'placeholder="Scan risk vectors..."',
       'goldenWorkspace.toolbarControls',
@@ -142,15 +142,15 @@ describe('PC-50 FAR operational workspace core + saved-view continuity exact G b
       { colId: 'rpn', width: 40, pinned: null },
       { colId: 'system_name', width: 160, pinned: null },
     ])
-    expect(repaired.repairedColumnIds).toEqual(['title', 'rpn'])
-    expect(repaired.layout.find((entry) => entry.colId === 'title')?.width).toBe(260)
-    expect(repaired.layout.find((entry) => entry.colId === 'rpn')?.width).toBe(130)
+    expect(repaired.repairedColumnIds).toEqual([])
+    expect(repaired.layout.find((entry) => entry.colId === 'title')?.width).toBe(80)
+    expect(repaired.layout.find((entry) => entry.colId === 'rpn')?.width).toBe(40)
     expect(repaired.layout.find((entry) => entry.colId === 'system_name')?.width).toBe(160)
 
     expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'title')).toMatchObject({ minWidth: 200, defaultWidth: 260 })
     expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'rpn')).toMatchObject({ minWidth: 130, defaultWidth: 130 })
     expectAll(hooksSource, [
-      'changedColumns.length !== 1',
+      'if (!isAutoResizeSource && changedColumns.length > 0)',
       'setHasManualColumnWidths(true)',
       'syncColumnLayoutState(event.api, true)',
       'handleColumnMoved',

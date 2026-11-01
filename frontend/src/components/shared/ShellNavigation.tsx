@@ -180,7 +180,7 @@ export function ShellNavGroup({
         <span>{label}</span>
         <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
       </summary>
-      <div id={id} className="mt-1 space-y-1 border-l border-[var(--border-subtle)] pl-2">
+      <div id={id} className="mt-1 space-y-1 pl-2">
         {children}
       </div>
     </details>

@@ -92,8 +92,6 @@ const sanitizeFarColumnLayout = (value: unknown) => {
         pinned: column?.colId === 'id' ? 'left' : null,
         ...(FAR_RECOVERY_COLUMN_IDS.has(column?.colId) ? { hide: false } : {}),
       }
-      delete recoveredColumn.width
-      delete recoveredColumn.flex
       return recoveredColumn
     }),
   }

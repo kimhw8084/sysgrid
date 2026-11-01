@@ -66,6 +66,7 @@ import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { downloadOperationalImportFile } from './shared/OperationalImportExport'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
+import { buildOperationalGroupSections } from './shared/OperationalGrouping'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
 import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail } from './shared/OperationalDataStatus'
@@ -133,7 +134,7 @@ const SERVICES_BULK_FIELD_LABELS: Record<string, string> = {
   environment: 'Environment',
 }
 const SERVICES_PURGE_BLOCKED_REASON = 'Purge is unavailable because logical-services backend does not support truthful purge/revert yet.'
-const SERVICE_FIXED_WIDTH_COLUMN_IDS = new Set([
+const SERVICE_AUTO_SIZE_SKIP_COLUMN_IDS = new Set([
   'select',
   'id',
   'recent_change',
@@ -143,15 +144,7 @@ const SERVICE_FIXED_WIDTH_COLUMN_IDS = new Set([
 ])
 
 const sanitizeServiceColumnLayout = (layout: any[], preserveWidths: boolean) => {
-  const sanitized = sanitizeOperationalColumnLayout(layout, SERVICE_PERSISTED_COLUMN_IDS, preserveWidths).map((column: any) => (
-    preserveWidths && SERVICE_FIXED_WIDTH_COLUMN_IDS.has(column?.colId)
-      ? {
-          ...column,
-          width: undefined,
-          flex: undefined,
-        }
-      : column
-  ))
+  const sanitized = sanitizeOperationalColumnLayout(layout, SERVICE_PERSISTED_COLUMN_IDS, preserveWidths)
 
   return [...sanitized].sort((a: any, b: any) => {
     const aIndex = SERVICE_DEFAULT_COLUMN_ORDER_MAP.get(a?.colId) ?? 1000
@@ -321,7 +314,7 @@ const normalizeServiceWorkspaceState = (value: any) => {
       quickFilters: normalizeServiceQuickFilters(uiState.quickFilters),
       groupBy: typeof uiState.groupBy === 'string' && SERVICE_VALID_GROUP_BY.has(uiState.groupBy) ? uiState.groupBy : 'raw',
       showFilterBar: uiState.showFilterBar !== false,
-      columnLayoutState: sanitizeServiceColumnLayout(Array.isArray(uiState.columnLayoutState) ? uiState.columnLayoutState : [], false),
+      columnLayoutState: sanitizeServiceColumnLayout(Array.isArray(uiState.columnLayoutState) ? uiState.columnLayoutState : [], true),
       lastVisitedAt: Number.isFinite(uiState.lastVisitedAt) ? uiState.lastVisitedAt : 0,
       searchTerm: typeof uiState.searchTerm === 'string' ? uiState.searchTerm : '',
     }
@@ -348,7 +341,7 @@ const slugifyViewId = (value: string) =>
 
 // Isolated component to prevent UI state changes (menus) from triggering AgGrid recalculations
 const getServiceGroupValue = (item: any, field: string) => {
-  return item[field] || 'Unspecified'
+  return item[field] ?? 'Unspecified'
 }
 
 const readServiceUiState = () => {
@@ -679,7 +672,7 @@ export default function ServicesReal() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       lastVisitedAt,
       searchTerm,
     }
@@ -794,7 +787,7 @@ export default function ServicesReal() {
       if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
       autoSizeOperationalColumns({
         api: gridRef.current.api,
-        skipColumnIds: Array.from(SERVICE_FIXED_WIDTH_COLUMN_IDS),
+        skipColumnIds: Array.from(SERVICE_AUTO_SIZE_SKIP_COLUMN_IDS),
         onSized: () => {
           if (!gridRef.current?.api || preserveExplicitColumnWidthsRef.current) return
           syncColumnLayoutState(gridRef.current.api, false)
@@ -1373,18 +1366,7 @@ export default function ServicesReal() {
   const compareItems = useMemo(() => selectedItems.slice(0, 5), [selectedItems])
 
   const groupedSections = useMemo(() => {
-    if (groupBy === 'raw') return []
-    const sections = sortedItemsForGrouped.reduce((acc: Array<{ key: string; label: string; items: any[] }>, item: any) => {
-      const label = String(getServiceGroupValue(item, groupBy))
-      const existing = acc.find((section) => section.key === label)
-      if (existing) {
-        existing.items.push(item)
-      } else {
-        acc.push({ key: label, label, items: [item] })
-      }
-      return acc
-    }, [])
-    return sections.sort((a, b) => a.label.localeCompare(b.label))
+    return buildOperationalGroupSections(sortedItemsForGrouped, groupBy, item => getServiceGroupValue(item, groupBy))
   }, [sortedItemsForGrouped, groupBy])
 
   useEffect(() => {
@@ -1434,7 +1416,7 @@ export default function ServicesReal() {
       quickFilters,
       groupBy,
       showFilterBar,
-      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, false),
+      columnLayoutState: normalizeOperationalColumnLayout(columnLayoutState, true),
       selectedIds,
       expandedBulkSection,
       lastVisitedAt,
@@ -2231,31 +2213,32 @@ export default function ServicesReal() {
         <OperationalGroupedGridView
           summary={(
             <div>
-              <p className="text-[10px] font-semibold text-slate-400">Grouped service registry</p>
-              <p className="pt-1 text-[12px] font-semibold text-slate-100">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
+              <p className="operational-group-summary-kicker">Grouped service registry</p>
+              <p className="operational-group-summary-value">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
             </div>
           )}
           actions={(
             <>
               <button
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: false }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, false])))}
+                className="operational-group-control"
               >
                 Expand All
               </button>
               <button
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: true }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, true])))}
+                className="operational-group-control"
               >
                 Collapse All
               </button>
-              <div className="w-px h-6 bg-white/10 mx-1" />
               <button
+                type="button"
                 onClick={() => setGroupBy('raw')}
-                className="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-[9px] font-semibold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-2"
+                className="operational-group-control operational-group-control-danger"
               >
-                <X size={12} />
-                <span>Cancel</span>
+                <X size={12} aria-hidden="true" />Cancel grouping
               </button>
             </>
           )}
@@ -2267,7 +2250,7 @@ export default function ServicesReal() {
             return (
               <OperationalGroupedGridSection
                 key={section.key}
-                labelMeta={<span className="text-[9px] font-semibold text-blue-400">{groupOptions.find((option) => option.value === groupBy)?.label}</span>}
+                labelMeta={groupOptions.find((option) => option.value === groupBy)?.label}
                 label={section.label}
                 count={section.items.length}
                 countLabel="services"

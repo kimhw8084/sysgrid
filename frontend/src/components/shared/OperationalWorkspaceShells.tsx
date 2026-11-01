@@ -4,7 +4,7 @@ import { AlertTriangle, Check, ChevronDown, ChevronUp, CloudOff, Copy, Pencil, R
 import { AppDropdown } from './AppDropdown'
 import { PageHeader } from './LayoutPrimitives'
 import { WorkspaceCommandBar } from './WorkspaceCommandBar'
-import { WorkspaceFloatingPanel } from './OperationalWorkspacePrimitives'
+import { WorkspaceEmptyState, WorkspaceFloatingPanel } from './OperationalWorkspacePrimitives'
 import {
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
@@ -189,13 +189,19 @@ export function OperationalGroupedGridView({
   actions?: React.ReactNode
   sections: React.ReactNode
 }) {
+  const hasSections = React.Children.count(sections) > 0
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar" data-slot="workspace-body">
-      <div className="rounded-lg border border-white/5 bg-black/20 px-6 py-4 flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3">
         {summary}
-        {actions ? <div className="flex items-center gap-3">{actions}</div> : null}
+        {actions ? <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div> : null}
       </div>
-      {sections}
+      {hasSections ? sections : (
+        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-8">
+          <WorkspaceEmptyState title="No groups in this scope" description="Adjust the current filters or choose a different grouping field." />
+        </div>
+      )}
     </div>
   )
 }
@@ -220,22 +226,23 @@ export function OperationalGroupedGridSection({
   children?: React.ReactNode
 }) {
   return (
-    <section className="glass-panel overflow-hidden rounded-lg border border-white/5">
+    <section className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)]">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 border-b border-white/5 bg-white/[0.03] px-5 py-4 text-left transition-all hover:bg-white/[0.05]"
+        aria-expanded={!collapsed}
+        className="flex min-h-14 w-full items-center justify-between gap-4 border-b border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 text-left transition-colors hover:bg-[var(--surface-hover)]"
       >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            {labelMeta}
-            <h3 className="text-sm font-semibold text-slate-100">{label}</h3>
+            <span className="operational-group-meta">{labelMeta}</span>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">{label}</h3>
           </div>
-          <p className="pt-1 text-[11px] text-slate-400">{count} {countLabel}{selectedCount ? ` · ${selectedCount} selected` : ''}</p>
+          <p className="pt-1 text-[11px] text-[var(--text-secondary)]">{count} {countLabel}{selectedCount ? ` · ${selectedCount} selected` : ''}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="rounded-lg border border-white/5 bg-black/30 px-2.5 py-1 text-[9px] font-semibold text-slate-300">{count}</span>
-          {collapsed ? <ChevronDown size={16} className="text-slate-500" /> : <ChevronUp size={16} className="text-slate-500" />}
+          <span className="rounded-md border border-[var(--border-default)] bg-[var(--surface-base)] px-2 py-1 text-[10px] font-semibold tabular-nums text-[var(--text-primary)]">{count}</span>
+          {collapsed ? <ChevronDown size={16} className="text-[var(--text-secondary)]" /> : <ChevronUp size={16} className="text-[var(--text-secondary)]" />}
         </div>
       </button>
       {children}

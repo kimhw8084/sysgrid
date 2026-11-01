@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { Crosshair, Maximize2, Minus, Plus } from 'lucide-react'
 import { ASSET_TOPOLOGY_COLORS, type AssetTopology } from './assetTopology'
@@ -9,8 +9,9 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
   const host = useRef<HTMLDivElement>(null)
   const engine = useRef<any>(null)
   const lastFit = useRef<AssetTopology | null>(null)
+  const labelLayout = useRef<Map<number, string>>(new Map())
   const [size, setSize] = useState({ width: 320, height: 300 })
-  const [appearance, setAppearance] = useState({ ink: '#e1e1e1', network: '#2dd4bf', dependency: '#a78bfa' })
+  const [appearance, setAppearance] = useState({ ink: '#e1e1e1', surface: '#202020', network: '#2dd4bf', dependency: '#a78bfa', attention: '#e4a5a0', active: '#73d5c3', scheduled: '#e5c583' })
   const reducedMotion = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
   const duration = reducedMotion ? 0 : 250
   useEffect(() => {
@@ -30,8 +31,12 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
       const style = getComputedStyle(document.documentElement)
       setAppearance({
         ink: style.getPropertyValue('--text-primary').trim() || '#e1e1e1',
+        surface: style.getPropertyValue('--surface-elevated').trim() || '#202020',
         network: style.getPropertyValue('--topology-network').trim() || '#2dd4bf',
         dependency: style.getPropertyValue('--topology-dependency').trim() || '#a78bfa',
+        attention: style.getPropertyValue('--state-danger').trim() || '#e4a5a0',
+        active: style.getPropertyValue('--guide-teal').trim() || '#73d5c3',
+        scheduled: style.getPropertyValue('--guide-amber').trim() || '#e5c583',
       })
     }
     update()
@@ -39,6 +44,16 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
     return () => observer.disconnect()
   }, [])
+  const labelCandidates = useMemo(() => {
+    const budget = Math.min(graph.nodes.length, Math.max(8, Math.floor((size.width * size.height) / 16_000)))
+    const priority = (node: any) => Number(node.id) === selectedId ? 0
+      : node.workSignal?.level === 'attention' ? 1
+        : node.workSignal?.level === 'active' ? 2
+          : node.workSignal?.level === 'scheduled' ? 3
+            : 4
+    return graph.nodes.slice().sort((left: any, right: any) => priority(left) - priority(right) || String(left.name).localeCompare(String(right.name)))
+      .slice(0, budget)
+  }, [graph.nodes, selectedId, size.height, size.width])
   const fit = () => engine.current?.zoomToFit(duration, 96)
   useEffect(() => {
     const canvas = host.current?.querySelector('canvas')
@@ -74,6 +89,46 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
         nodeRelSize={5} nodeVal={(node: any) => Number(node.id) === selectedId ? 49 / 25 : 1}
         cooldownTicks={reducedMotion ? 1 : 80} warmupTicks={reducedMotion ? 80 : 0} backgroundColor="rgba(0,0,0,0)"
         onEngineStop={() => { if (lastFit.current !== graph) { lastFit.current = graph; fit() } }}
+        onRenderFramePre={(context: CanvasRenderingContext2D, scale: number) => {
+          const placements: Array<{ left: number; right: number; top: number; bottom: number }> = []
+          const nextLayout = new Map<number, string>()
+          context.save()
+          context.font = `600 ${12 / scale}px Inter, sans-serif`
+          for (const node of labelCandidates) {
+            if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) continue
+            const selected = Number(node.id) === selectedId
+            const hasWorkSignal = ['attention', 'active', 'scheduled'].includes(node.workSignal?.level)
+            if (scale < 1.25 && graph.nodes.length > labelCandidates.length && !selected && !hasWorkSignal) continue
+
+            const maxWidth = Math.min(160, Math.max(16, size.width - 32)) / scale
+            const characters = Array.from(String(node.name || 'Asset'))
+            let label = characters.join('')
+            if (context.measureText(label).width > maxWidth) {
+              let low = 0, high = characters.length
+              while (low < high) {
+                const middle = Math.ceil((low + high) / 2)
+                if (context.measureText(characters.slice(0, middle).join('') + '…').width <= maxWidth) low = middle
+                else high = middle - 1
+              }
+              label = characters.slice(0, low).join('') + '…'
+            }
+
+            const textWidth = context.measureText(label).width
+            const padX = 5 / scale
+            const labelY = Number(node.y) + 9 / scale
+            const bounds = {
+              left: Number(node.x) - textWidth / 2 - padX,
+              right: Number(node.x) + textWidth / 2 + padX,
+              top: labelY - 1 / scale,
+              bottom: labelY + 15 / scale,
+            }
+            if (placements.some((placed) => bounds.left < placed.right && bounds.right > placed.left && bounds.top < placed.bottom && bounds.bottom > placed.top)) continue
+            placements.push(bounds)
+            nextLayout.set(Number(node.id), label)
+          }
+          context.restore()
+          labelLayout.current = nextLayout
+        }}
         onNodeClick={(node: any) => onSelect?.(Number(node.id))}
         nodeLabel={(node: any) => safeLabel(`${node.name} · ${node.type || 'Asset'}`)}
         linkLabel={(link: any) => safeLabel(`${link.label} · ${link.direction === 'unspecified' ? 'Direction not recorded or unrecognized' : link.direction === 'both' ? 'Bidirectional' : link.direction === 'reverse' ? 'Target to Source' : 'Source to Target'}`)}
@@ -98,21 +153,23 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
           context.beginPath(); context.arc(node.x, node.y, selected ? 7 : 5, 0, Math.PI * 2)
           context.fillStyle = ASSET_TOPOLOGY_COLORS[node.type] || '#94a3b8'; context.fill()
           if (selected) { context.strokeStyle = appearance.ink; context.lineWidth = 2 / scale; context.stroke() }
+          const signalColor = node.workSignal?.level === 'attention' ? appearance.attention
+            : node.workSignal?.level === 'active' ? appearance.active
+              : node.workSignal?.level === 'scheduled' ? appearance.scheduled : null
+          if (signalColor) {
+            context.beginPath(); context.arc(node.x, node.y, (selected ? 9 : 7) / scale, 0, Math.PI * 2)
+            context.strokeStyle = signalColor; context.lineWidth = 2.5 / scale; context.stroke()
+          }
+          const label = labelLayout.current.get(Number(node.id))
+          if (!label) return
           context.font = `600 ${12 / scale}px Inter, sans-serif`
           context.textAlign = 'center'; context.textBaseline = 'top'; context.fillStyle = appearance.ink
-          let label = String(node.name)
-          const maxWidth = Math.min(160, Math.max(16, size.width - 32)) / scale
-          if (context.measureText(label).width > maxWidth) {
-            const characters = Array.from(label)
-            let low = 0, high = characters.length
-            while (low < high) {
-              const middle = Math.ceil((low + high) / 2)
-              if (context.measureText(characters.slice(0, middle).join('') + '…').width <= maxWidth) low = middle
-              else high = middle - 1
-            }
-            label = characters.slice(0, low).join('') + '…'
-          }
-          context.fillText(label, node.x, node.y + 9)
+          const textWidth = context.measureText(label).width
+          const padX = 5 / scale, labelY = node.y + 9 / scale
+          context.fillStyle = appearance.surface
+          context.fillRect(node.x - textWidth / 2 - padX, labelY - 1 / scale, textWidth + padX * 2, 16 / scale)
+          context.fillStyle = appearance.ink
+          context.fillText(label, node.x, labelY + 1 / scale)
         }} />
     </div>
   </div>

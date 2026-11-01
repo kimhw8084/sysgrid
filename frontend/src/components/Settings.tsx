@@ -1898,6 +1898,9 @@ export default function SettingsPage() {
   const metadataViewBindings = {
     MonitoringPlatform: [{ label: 'Monitoring', path: '/monitoring' }],
     MonitoringCategory: [{ label: 'Monitoring', path: '/monitoring' }],
+    MonitoringSeverity: [{ label: 'Monitoring', path: '/monitoring' }],
+    MonitoringOwnerRole: [{ label: 'Monitoring', path: '/monitoring' }],
+    NotificationMethod: [{ label: 'Monitoring', path: '/monitoring' }],
     MonitoringTeam: [{ label: 'Monitoring', path: '/monitoring' }, { label: 'Groups', path: '/settings?tab=groups' }],
     Status: [{ label: 'Assets', path: '/asset' }, { label: 'Services', path: '/services' }, { label: 'External', path: '/external' }],
     Environment: [{ label: 'Assets', path: '/asset' }, { label: 'Services', path: '/services' }, { label: 'External', path: '/external' }],
@@ -2156,6 +2159,33 @@ export default function SettingsPage() {
                       description="Feeds monitor category selectors, imports, and grid metadata."
                       usageTargets={metadataViewBindings.MonitoringCategory}
                       options={(options || []).filter((o:any) => o.category === "MonitoringCategory")} 
+                   />
+                   <ConfigSection
+                      wrapHeaderOnMobile
+                      title="Monitoring Severity Levels"
+                      category="MonitoringSeverity"
+                      icon={AlertTriangle}
+                      description="Code-managed severity values used by monitoring records and imports."
+                      usageTargets={metadataViewBindings.MonitoringSeverity}
+                      options={(options || []).filter((o:any) => o.category === "MonitoringSeverity")}
+                   />
+                   <ConfigSection
+                      wrapHeaderOnMobile
+                      title="Monitoring Owner Roles"
+                      category="MonitoringOwnerRole"
+                      icon={Users}
+                      description="Code-managed role values used when assigning monitoring ownership."
+                      usageTargets={metadataViewBindings.MonitoringOwnerRole}
+                      options={(options || []).filter((o:any) => o.category === "MonitoringOwnerRole")}
+                   />
+                   <ConfigSection
+                      wrapHeaderOnMobile
+                      title="Notification Methods"
+                      category="NotificationMethod"
+                      icon={Bell}
+                      description="Code-managed notification values used by monitoring configuration and imports."
+                      usageTargets={metadataViewBindings.NotificationMethod}
+                      options={(options || []).filter((o:any) => o.category === "NotificationMethod")}
                    />
                    <ConfigSection 
                       wrapHeaderOnMobile

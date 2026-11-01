@@ -50,6 +50,7 @@ import {
 import { useWorkspaceAnchoredLayer, WorkspaceEmptyState, useEscapeDismiss, useBodyModalFlag, WorkspaceFloatingPanel, WorkspaceSplitView } from './shared/OperationalWorkspacePrimitives'
 import { OperationalAnchoredPanel, OperationalDisplayPanel, OperationalGroupedGridSection, OperationalGroupedGridView, OperationalSavedViewsPanel, OperationalWorkspaceShell } from './shared/OperationalWorkspaceShells'
 import { OperationalImportModal } from './shared/OperationalImportModal'
+import { buildOperationalGroupSections } from './shared/OperationalGrouping'
 import { downloadOperationalImportFile } from './shared/OperationalImportExport'
 // (Removed duplicate imports)
 import { EXTERNAL_WORKSPACE_STANDARD } from './shared/OperationalWorkspace'
@@ -194,15 +195,22 @@ const EXTERNAL_UI_STATE_KEY = 'sysgrid_external_ui_state_v1'
 const EXTERNAL_FAVORITES_STORAGE_KEY = 'sysgrid_external_favorites_v1'
 const EXTERNAL_WATCH_STORAGE_KEY = 'sysgrid_external_watch_v1'
 const EXTERNAL_SUPPORTS_COMPARE = EXTERNAL_WORKSPACE_STANDARD.sharedCapabilities.includes('compare')
-const EXTERNAL_DEFAULT_GROUP_OPTIONS = [
+const EXTERNAL_ACTIVE_TABS = ['active', 'deleted', 'links'] as const
+type ExternalActiveTab = (typeof EXTERNAL_ACTIVE_TABS)[number]
+const EXTERNAL_ENTITY_GROUP_OPTIONS = [
   { value: 'raw', label: 'Raw Registry' },
   { value: 'type', label: 'Type' },
   { value: 'status', label: 'Status' },
   { value: 'environment', label: 'Environment' },
   { value: 'criticality', label: 'Criticality' },
 ]
-const EXTERNAL_ACTIVE_TABS = ['active', 'deleted', 'links'] as const
-type ExternalActiveTab = (typeof EXTERNAL_ACTIVE_TABS)[number]
+const EXTERNAL_LINK_GROUP_OPTIONS = [
+  { value: 'raw', label: 'Raw Links' },
+  { value: 'direction', label: 'Direction' },
+  { value: 'protocol', label: 'Protocol' },
+  { value: 'link_status', label: 'Link status' },
+]
+const getExternalGroupOptions = (tab: ExternalActiveTab) => tab === 'links' ? EXTERNAL_LINK_GROUP_OPTIONS : EXTERNAL_ENTITY_GROUP_OPTIONS
 const EXTERNAL_PERSISTED_COLUMN_IDS = new Set([
   'select',
   'id',
@@ -245,12 +253,14 @@ const normalizeExternalQuickFilters = (value: any) => ({
 
 export const sanitizeExternalViewConfig = (config: any) => {
   const safeConfig = config && typeof config === 'object' ? config : {}
+  const activeTab = normalizeExternalActiveTab(safeConfig.activeTab)
+  const groupOptions = getExternalGroupOptions(activeTab)
   return {
     fontSize: Number.isFinite(safeConfig.fontSize) ? safeConfig.fontSize : 11,
     rowDensity: Number.isFinite(safeConfig.rowDensity) ? safeConfig.rowDensity : 8,
     hiddenColumns: normalizeExternalHiddenColumns(safeConfig.hiddenColumns),
-    groupBy: typeof safeConfig.groupBy === 'string' ? safeConfig.groupBy : 'raw',
-    activeTab: normalizeExternalActiveTab(safeConfig.activeTab),
+    groupBy: groupOptions.some((option) => option.value === safeConfig.groupBy) ? safeConfig.groupBy : 'raw',
+    activeTab,
     searchTerm: typeof safeConfig.searchTerm === 'string' ? safeConfig.searchTerm : '',
     showFilterBar: safeConfig.showFilterBar !== false,
     quickFilters: normalizeExternalQuickFilters(safeConfig.quickFilters),
@@ -286,7 +296,7 @@ export const describeExternalSavedView = (view: any) => {
   const activeTab = normalizeExternalActiveTab(view?.config?.activeTab)
   const tabLabel = activeTab === 'deleted' ? 'Archive' : activeTab === 'links' ? 'Links' : 'Registry'
   const groupLabel = view?.config?.groupBy && view.config.groupBy !== 'raw'
-    ? `Grouped by ${EXTERNAL_DEFAULT_GROUP_OPTIONS.find((option) => option.value === view.config.groupBy)?.label || view.config.groupBy}`
+    ? `Grouped by ${getExternalGroupOptions(activeTab).find((option) => option.value === view.config.groupBy)?.label || view.config.groupBy}`
     : 'Raw Table'
 
   return `${tabLabel} · ${groupLabel} · ${view?.config?.searchTerm ? 'Scoped search' : 'Full workspace'}`
@@ -1890,26 +1900,14 @@ export default function External() {
 
   const getEntityGroupValue = (item: any, field: string) => {
     if (field === 'owner') return item.internal_owner || 'Unassigned'
-    return item[field] || 'Unspecified'
+    return item[field] ?? 'Unspecified'
   }
 
   const groupedSections = useMemo(() => {
-    if (groupBy === 'raw') return []
     const items = activeTab === 'links' ? filteredLinks : filteredEntities
-    const sections = items.reduce((acc: Array<{ key: string; label: string; items: any[] }>, item: any) => {
-      const val = activeTab === 'links' 
-        ? (groupBy === 'owner' ? 'Unassigned' : (item[groupBy] || 'Unspecified'))
-        : getEntityGroupValue(item, groupBy)
-      const label = String(val)
-      const existing = acc.find((section) => section.key === label)
-      if (existing) {
-        existing.items.push(item)
-      } else {
-        acc.push({ key: label, label, items: [item] })
-      }
-      return acc
-    }, [])
-    return sections.sort((a, b) => a.label.localeCompare(b.label))
+    return buildOperationalGroupSections(items, groupBy, item => (
+      activeTab === 'links' ? item[groupBy] ?? 'Unspecified' : getEntityGroupValue(item, groupBy)
+    ))
   }, [filteredEntities, filteredLinks, groupBy, activeTab])
 
   const selectionScopeKey = useMemo(() => {
@@ -2931,7 +2929,9 @@ export default function External() {
                 : `${registryCounts.active} active · ${registryCounts.archived} archived · ${registryCounts.links} links`}
               value={activeTab}
               onChange={(value) => {
-                setActiveTab(value as 'active' | 'deleted' | 'links')
+                const nextTab = value as ExternalActiveTab
+                setActiveTab(nextTab)
+                setGroupBy(current => getExternalGroupOptions(nextTab).some(option => option.value === current) ? current : 'raw')
                 setSelectedIds([])
               }}
               options={[
@@ -3195,7 +3195,7 @@ export default function External() {
             onRowDensityChange={setRowDensity}
             groupBy={groupBy}
             onGroupByChange={setGroupBy}
-            groupOptions={EXTERNAL_DEFAULT_GROUP_OPTIONS}
+    groupOptions={getExternalGroupOptions(activeTab)}
             columns={columnDefs}
             hiddenColumns={hiddenColumns}
             onToggleColumn={(field) => {
@@ -3559,31 +3559,32 @@ export default function External() {
         <OperationalGroupedGridView
           summary={
             <div>
-              <p className="text-[10px] font-semibold text-slate-400">Grouped registry matrix</p>
-              <p className="pt-1 text-[12px] font-semibold text-slate-100">Sorted by {EXTERNAL_DEFAULT_GROUP_OPTIONS.find((option) => option.value === groupBy)?.label || groupBy}</p>
+              <p className="operational-group-summary-kicker">Grouped registry matrix</p>
+              <p className="operational-group-summary-value">Sorted by {getExternalGroupOptions(activeTab).find((option) => option.value === groupBy)?.label || groupBy}</p>
             </div>
           }
           actions={
             <>
               <button
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: false }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, false])))}
+                className="operational-group-control"
               >
                 Expand All
               </button>
               <button
-                onClick={() => setCollapsedGroups(groupedSections.reduce((acc: any, s: any) => ({ ...acc, [s.key]: true }), {}))}
-                className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[9px] font-semibold text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+                type="button"
+                onClick={() => setCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, true])))}
+                className="operational-group-control"
               >
                 Collapse All
               </button>
-              <div className="w-px h-6 bg-white/10 mx-1" />
               <button
+                type="button"
                 onClick={() => setGroupBy('raw')}
-                className="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-[9px] font-semibold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-2"
+                className="operational-group-control operational-group-control-danger"
               >
-                <X size={12} />
-                <span>Cancel</span>
+                <X size={12} aria-hidden="true" />Cancel grouping
               </button>
             </>
           }
@@ -3593,7 +3594,7 @@ export default function External() {
             return (
               <OperationalGroupedGridSection
                 key={section.key}
-                labelMeta={<span className="text-[9px] font-semibold text-blue-400">{EXTERNAL_DEFAULT_GROUP_OPTIONS.find((option) => option.value === groupBy)?.label}</span>}
+                labelMeta={getExternalGroupOptions(activeTab).find((option) => option.value === groupBy)?.label}
                 label={section.label}
                 count={section.items.length}
                 countLabel="peers"

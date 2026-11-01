@@ -1,8 +1,12 @@
 import React, { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { OperationalDataGrid } from '../shared/OperationalDataGrid'
 import { OperationalGroupedGridView, OperationalGroupedGridSection } from '../shared/OperationalWorkspaceShells'
 import { getOperationalGridRowHeight } from '../shared/OperationalGridSizing'
+import { buildOperationalGroupSections } from '../shared/OperationalGrouping'
+import { getRequestScopeKey } from '../../api/apiClient'
+import { fetchOperationalArray } from '../shared/operationalArrayFetch'
 import { AssetLegacyReportSurface } from './AssetLegacyReportSurface'
 import { AssetLegacyMapSurface } from './AssetLegacyMapSurface'
 
@@ -40,6 +44,7 @@ export function AssetGoldenFeatureSurfaces({
   reportAssetId,
   reportFocusSection,
   onFocusSectionHandled,
+  onOpenMaintenance,
   systemsList,
   onSelectionChanged,
   isSelected,
@@ -78,11 +83,33 @@ export function AssetGoldenFeatureSurfaces({
   reportAssetId?: number | null
   reportFocusSection?: string | null
   onFocusSectionHandled?: () => void
+  onOpenMaintenance?: (asset: any) => void
   systemsList: string[]
   onSelectionChanged: (event: any, groupKey?: string) => void
   isSelected: (id: number) => boolean
   gridContext?: any
 }) {
+  const workDataEnabled = viewMode === 'map' || viewMode === 'report'
+  const requestScope = getRequestScopeKey()
+  const maintenanceQuery = useQuery({
+    queryKey: ['maintenance-windows', requestScope, ''],
+    queryFn: () => fetchOperationalArray('/api/v1/maintenance', 'Asset maintenance windows'),
+    enabled: workDataEnabled,
+    staleTime: 30_000,
+  })
+  const actionQuery = useQuery({
+    queryKey: ['maintenance-actions', requestScope, '', '', 500],
+    queryFn: () => fetchOperationalArray('/api/v1/operational-actions?limit=500', 'Asset operational work history'),
+    enabled: workDataEnabled,
+    staleTime: 30_000,
+  })
+  const workDataState = {
+    isLoading: workDataEnabled && (maintenanceQuery.isPending || actionQuery.isPending),
+    isError: maintenanceQuery.isError || actionQuery.isError,
+    isFetching: maintenanceQuery.isFetching || actionQuery.isFetching,
+    onRetry: () => { void maintenanceQuery.refetch(); void actionQuery.refetch() },
+  }
+
   if (viewMode === 'report') {
     return (
       <AssetLegacyReportSurface
@@ -94,6 +121,10 @@ export function AssetGoldenFeatureSurfaces({
         selectedAssetId={reportAssetId}
         focusSection={reportFocusSection}
         onFocusSectionHandled={onFocusSectionHandled}
+        maintenanceWindows={maintenanceQuery.data || []}
+        operationalActions={actionQuery.data || []}
+        workDataState={workDataState}
+        onOpenMaintenance={onOpenMaintenance}
         onSelectAsset={onSelectReportAsset}
         onEdit={onEditAsset}
         onOpenDetails={onOpenDetails}
@@ -106,43 +137,31 @@ export function AssetGoldenFeatureSurfaces({
   }
 
   if (viewMode === 'map') {
-    return <AssetLegacyMapSurface assets={allAssets} visibleAssets={visibleAssets} connections={connections} relationships={relationships} selectedAssetId={reportAssetId} systemsList={systemsList} onOpenDetails={onOpenDetails} onEdit={onEditAsset} />
+    return <AssetLegacyMapSurface assets={allAssets} visibleAssets={visibleAssets} connections={connections} relationships={relationships} selectedAssetId={reportAssetId} systemsList={systemsList} maintenanceWindows={maintenanceQuery.data || []} operationalActions={actionQuery.data || []} workDataState={workDataState} onOpenDetails={onOpenDetails} onOpenMaintenance={onOpenMaintenance} onEdit={onEditAsset} />
   }
 
-  const groupedSections = groupBy === 'raw'
-    ? []
-    : rows.reduce((acc: Array<{ key: string; label: string; items: any[] }>, item: any) => {
-        const label = String(item?.[groupBy] || 'Unassigned')
-        const existing = acc.find((section) => section.key === label)
-        if (existing) {
-          existing.items.push(item)
-        } else {
-          acc.push({ key: label, label, items: [item] })
-        }
-        return acc
-      }, []).sort((a, b) => a.label.localeCompare(b.label))
+  const groupedSections = buildOperationalGroupSections(rows, groupBy, item => item?.[groupBy], 'Unassigned')
 
   if (groupBy !== 'raw') {
     return (
       <OperationalGroupedGridView
         summary={(
           <div>
-            <p className="text-[10px] font-semibold text-slate-400">Grouped asset matrix</p>
-            <p className="pt-1 text-[12px] font-semibold text-slate-100">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
+            <p className="operational-group-summary-kicker">Grouped asset matrix</p>
+            <p className="operational-group-summary-value">Sorted by {groupOptions.find((option) => option.value === groupBy)?.label || groupBy}</p>
           </div>
         )}
         actions={(
           <>
-            <button type="button" onClick={() => onSetCollapsedGroups(groupedSections.reduce((acc: any, section: any) => ({ ...acc, [section.key]: false }), {}))} className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] font-semibold text-slate-400 transition-all hover:bg-white/10 hover:text-white">
+            <button type="button" onClick={() => onSetCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, false])))} className="operational-group-control">
               Expand All
             </button>
-            <button type="button" onClick={() => onSetCollapsedGroups(groupedSections.reduce((acc: any, section: any) => ({ ...acc, [section.key]: true }), {}))} className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] font-semibold text-slate-400 transition-all hover:bg-white/10 hover:text-white">
+            <button type="button" onClick={() => onSetCollapsedGroups(Object.fromEntries(groupedSections.map((section: any) => [section.key, true])))} className="operational-group-control">
               Collapse All
             </button>
-            <div className="mx-1 h-6 w-px bg-white/10" />
-            <button type="button" onClick={onCancelGrouping} className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-[9px] font-semibold text-rose-400 transition-all hover:bg-rose-500/20">
-              <X size={12} />
-              <span>Cancel</span>
+            <button type="button" onClick={onCancelGrouping} className="operational-group-control operational-group-control-danger">
+              <X size={12} aria-hidden="true" />
+              Cancel grouping
             </button>
           </>
         )}
@@ -152,7 +171,7 @@ export function AssetGoldenFeatureSurfaces({
           return (
             <OperationalGroupedGridSection
               key={section.key}
-              labelMeta={<span className="text-[9px] font-semibold text-blue-400">{groupOptions.find((option) => option.value === groupBy)?.label}</span>}
+              labelMeta={groupOptions.find((option) => option.value === groupBy)?.label}
               label={section.label}
               count={section.items.length}
               countLabel="assets"

@@ -11,6 +11,7 @@ import { ASSET_GOLDEN_ALLOWED_COLUMN_FIELDS } from './assetGoldenColumns'
 import { usePersistentJsonState } from '../shared/OperationalWorkspaceHooks'
 import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from '../shared/optionalStorage'
 import { fetchAssetSettingOptions } from './assetRecordOptions'
+import { getOperationalNetworkOptions, NETWORK_LINK_TYPE_DEFAULTS, NETWORK_FARM_DEFAULTS, NETWORK_CABLE_TYPE_DEFAULTS } from '../shared/OperationalNetworkOptions'
 import { fetchAssetArray } from './assetDataState'
 import { OPERATIONAL_GRID_ROW_DENSITY_MAX } from '../shared/OperationalGridSizing'
 
@@ -598,18 +599,15 @@ export function useAssetGoldenWorkspace() {
   }), [activeTab, allAssets.length, assetQueryFallbackError, devicesQuery.isError, devicesQuery.isFetching, devicesQuery.isLoading, devicesQuery.refetch, filteredAssets.length, hasIncludeDeletedAssetData, isUsingLiveFallback, liveDevicesQuery.isLoading, retryAssetRegistry, shouldShowAssetRegistryNotice, visiblePool.length])
 
   const linkPurposeOptions = useMemo(() => {
-    const options = Array.isArray(optionsQuery.data) ? optionsQuery.data.filter((item: any) => item.category === 'LinkPurpose') : []
-    return options.map((item: any) => ({ value: item.value, label: item.label }))
+    return getOperationalNetworkOptions(optionsQuery.data, 'LinkPurpose', NETWORK_LINK_TYPE_DEFAULTS)
   }, [optionsQuery.data])
 
   const farmOptions = useMemo(() => {
-    const options = Array.isArray(optionsQuery.data) ? optionsQuery.data.filter((item: any) => item.category === 'NetworkFarm') : []
-    return options.map((item: any) => ({ value: item.value, label: item.label }))
+    return getOperationalNetworkOptions(optionsQuery.data, 'NetworkFarm', NETWORK_FARM_DEFAULTS)
   }, [optionsQuery.data])
 
   const cableTypeOptions = useMemo(() => {
-    const options = Array.isArray(optionsQuery.data) ? optionsQuery.data.filter((item: any) => item.category === 'NetworkCableType') : []
-    return options.map((item: any) => ({ value: item.value, label: item.label }))
+    return getOperationalNetworkOptions(optionsQuery.data, 'NetworkCableType', NETWORK_CABLE_TYPE_DEFAULTS)
   }, [optionsQuery.data])
 
   const systemsList = useMemo(

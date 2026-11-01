@@ -25,16 +25,16 @@ describe('FAR golden column geometry', () => {
     ])
   })
 
-  it('repairs stale narrow persisted widths but preserves legitimate manual widths', () => {
+  it('preserves manual widths below the preferred geometry and repairs only invalid widths', () => {
     const result = sanitizeFarPersistedColumnGeometry([
       { colId: 'title', width: 48, flex: 1 },
       { colId: 'status', width: 164 },
       { colId: 'vectors', width: 196 },
       { colId: 'id', width: 44 },
     ])
-    expect(result.repairedColumnIds).toEqual(['title'])
+    expect(result.repairedColumnIds).toEqual([])
     expect(result.layout).toEqual([
-      { colId: 'title', width: 260 },
+      { colId: 'title', width: 48, flex: 1 },
       { colId: 'status', width: 164 },
       { colId: 'vectors', width: 196 },
       { colId: 'id', width: 44 },

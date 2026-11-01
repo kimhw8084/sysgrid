@@ -83,6 +83,70 @@ export const architectureSearch = (projection: ArchitectureProjection, query: st
 
 export const architecturePosition = (object: ArchitectureObject, index: number, membership?: ArchitectureMembership): { x: number; y: number; width: number; height: number } => membership ? { x: membership.x, y: membership.y, width: membership.width, height: membership.height } : { x: 24 + (index % 4) * 210, y: 24 + Math.floor(index / 4) * 120, width: 180, height: 80 }
 
+/** Preserve stored placement where possible, repair invalid boxes, and prevent overlapping diagram cards. */
+export const layoutArchitecturePositions = (
+  objects: ArchitectureObject[],
+  memberships: ReadonlyMap<string, ArchitectureMembership>,
+  gap = 24,
+): Map<string, { x: number; y: number; width: number; height: number }> => {
+  const placed: Array<{ x: number; y: number; width: number; height: number }> = []
+  const positions = new Map<string, { x: number; y: number; width: number; height: number }>()
+
+  objects.forEach((object, index) => {
+    const fallback = architecturePosition(object, index)
+    const source = architecturePosition(object, index, memberships.get(`object:${object.id}`))
+    const box = {
+      x: Number.isFinite(source.x) ? source.x : fallback.x,
+      y: Number.isFinite(source.y) ? source.y : fallback.y,
+      width: Math.min(640, Math.max(180, Number.isFinite(source.width) ? source.width : fallback.width)),
+      height: Math.min(320, Math.max(80, Number.isFinite(source.height) ? source.height : fallback.height)),
+    }
+
+    while (true) {
+      const overlaps = placed.filter((previous) => (
+        box.x < previous.x + previous.width + gap &&
+        box.x + box.width + gap > previous.x &&
+        box.y < previous.y + previous.height + gap &&
+        box.y + box.height + gap > previous.y
+      ))
+      if (!overlaps.length) break
+      box.y = Math.max(...overlaps.map((previous) => previous.y + previous.height + gap))
+    }
+
+    positions.set(object.id, box)
+    placed.push(box)
+  })
+
+  return positions
+}
+
+/** Wrap SVG card labels to the available width and height without drawing through neighboring cards. */
+export const wrapArchitectureLabel = (value: unknown, availableWidth: number, fontSize: number, maxLines: number) => {
+  const text = String(value || '').trim()
+  if (!text) return ['']
+  const maxCharacters = Math.max(4, Math.floor(Math.max(24, availableWidth) / Math.max(6, fontSize * 0.58)))
+  const lineLimit = Math.max(1, Math.floor(maxLines))
+  const words = text.split(/\s+/)
+  const lines: string[] = []
+  let line = ''
+
+  for (const word of words) {
+    if (word.length > maxCharacters) {
+      if (line) { lines.push(line); line = '' }
+      for (let offset = 0; offset < word.length; offset += maxCharacters) {
+        lines.push(word.slice(offset, offset + maxCharacters))
+      }
+      continue
+    }
+    if (!line) line = word
+    else if (`${line} ${word}`.length <= maxCharacters) line = `${line} ${word}`
+    else { lines.push(line); line = word }
+  }
+  if (line) lines.push(line)
+  if (lines.length <= lineLimit) return lines
+  return [...lines.slice(0, lineLimit - 1), `${lines[lineLimit - 1].slice(0, Math.max(1, maxCharacters - 1))}…`]
+}
+
 export const architectureDiagramBounds = (
   positions: Iterable<{ x: number; y: number; width: number; height: number }>,
   padding = 24,

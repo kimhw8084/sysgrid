@@ -341,7 +341,10 @@ async def rename_setting_option_references(db: AsyncSession, category: str, old_
         await db.execute(update(models.Device).where(models.Device.type == old_value).values(type=new_value))
     elif category == "LogicalSystem":
         await db.execute(update(models.Device).where(models.Device.system == old_value).values(system=new_value))
+        await db.execute(update(models.FarFailureMode).where(models.FarFailureMode.system_name == old_value).values(system_name=new_value))
         await rename_json_string_list_references(db, models.VendorContract, "covered_systems", old_value, new_value)
+    elif category == "RiskCategory":
+        await db.execute(update(models.FarFailureMode).where(models.FarFailureMode.failure_type == old_value).values(failure_type=new_value))
     elif category == "VendorCountry":
         await db.execute(update(models.Vendor).where(models.Vendor.country == old_value).values(country=new_value))
     elif category == "VendorDeviceType":
@@ -391,8 +394,11 @@ async def setting_option_is_in_use(db: AsyncSession, category: str, value: str) 
     if category == "LogicalSystem":
         return any([
             (await db.execute(select(models.Device.id).filter(models.Device.system == value))).scalars().first(),
+            (await db.execute(select(models.FarFailureMode.id).filter(models.FarFailureMode.system_name == value))).scalars().first(),
             (await db.execute(select(models.VendorContract.id).filter(models.VendorContract.covered_systems.contains([value])))).scalars().first(),
         ])
+    if category == "RiskCategory":
+        return bool((await db.execute(select(models.FarFailureMode.id).filter(models.FarFailureMode.failure_type == value))).scalars().first())
     if category == "VendorCountry":
         return bool((await db.execute(select(models.Vendor.id).filter(models.Vendor.country == value))).scalars().first())
     if category == "VendorDeviceType":
@@ -1048,6 +1054,8 @@ async def delete_option(
         raise HTTPException(status_code=400, detail="This monitoring category is code-managed and cannot be edited in settings")
     if opt.category in RELATIONAL_OPTION_CATEGORIES:
         raise HTTPException(status_code=400, detail="This category is managed by relational settings data and cannot be edited as an enum")
+    if opt.is_default:
+        raise HTTPException(status_code=400, detail="Default enum options cannot be deleted")
 
     if await setting_option_is_in_use(db, opt.category, opt.value):
         raise HTTPException(status_code=400, detail="Cannot delete option that is currently in use")

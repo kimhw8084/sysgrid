@@ -4,6 +4,7 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime
 import io
 import json
+import math
 import re
 import zipfile
 from typing import Any, Awaitable, Callable, Dict, List, Optional
@@ -13,7 +14,7 @@ from pydantic import ValidationError
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
-from sqlalchemy import and_, func, inspect, or_, select
+from sqlalchemy import JSON, and_, func, inspect, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
@@ -96,6 +97,22 @@ GENERIC_EXCLUDE_COLUMNS = {
     "open_incident_count",
 }
 
+GENERIC_PROFILE_EXCLUDED_COLUMNS = {
+    models.Rack: {'is_deleted'},
+    # Contacts must be imported through their owning vendor workflow. Linking
+    # a new vendor row to someone else's contact would create invalid ownership.
+    models.Vendor: {'is_deleted', 'primary_personnel_id'},
+}
+
+GENERIC_ENUM_OPTION_CATEGORIES = {
+    models.Device: {'status': 'Status', 'environment': 'Environment', 'type': 'DeviceType'},
+    models.LogicalService: {'service_type': 'ServiceType', 'status': 'Status', 'environment': 'Environment'},
+}
+
+
+def generic_profile_excluded_columns(model: Any) -> set[str]:
+    return GENERIC_EXCLUDE_COLUMNS | GENERIC_PROFILE_EXCLUDED_COLUMNS.get(model, set())
+
 
 def normalize_scalar(value: Any) -> Any:
     if value is None:
@@ -123,6 +140,14 @@ def coerce_bool(value: Any) -> bool:
     raise ValueError("must be a boolean")
 
 
+def json_container_type(column: Any) -> Optional[type]:
+    """Return the declared JSON container shape when the model supplies one."""
+    if not isinstance(column.type, JSON):
+        return None
+    default_factory = getattr(column.default, "arg", None)
+    return default_factory if default_factory in {dict, list} else None
+
+
 def coerce_value_for_column(column: Any, value: Any) -> Any:
     normalized = normalize_scalar(value)
     if normalized is None:
@@ -131,12 +156,35 @@ def coerce_value_for_column(column: Any, value: Any) -> Any:
     if python_type == bool:
         return coerce_bool(normalized)
     if python_type == int:
+        if isinstance(normalized, bool):
+            raise ValueError('must be an integer')
+        if isinstance(normalized, float) and (not math.isfinite(normalized) or not normalized.is_integer()):
+            raise ValueError('must be an integer')
+        if isinstance(normalized, str) and not re.fullmatch(r'[+-]?\d+', normalized.strip()):
+            raise ValueError('must be an integer')
         return int(normalized)
     if python_type == float:
-        return float(normalized)
+        if isinstance(normalized, bool):
+            raise ValueError('must be a finite number')
+        number = float(normalized)
+        if not math.isfinite(number):
+            raise ValueError('must be a finite number')
+        return number
+    if isinstance(column.type, JSON):
+        if isinstance(normalized, str):
+            normalized = json.loads(normalized)
+        expected_container = json_container_type(column)
+        if expected_container is not None and not isinstance(normalized, expected_container):
+            raise ValueError(f'must be a JSON {"object" if expected_container is dict else "array"}')
+        # Reject NaN/Infinity and other values the JSON storage contract cannot
+        # represent consistently across supported database engines.
+        json.dumps(normalized, allow_nan=False)
+        return normalized
     if python_type in {dict, list}:
         if isinstance(normalized, str):
-            return json.loads(normalized)
+            normalized = json.loads(normalized)
+        if not isinstance(normalized, python_type):
+            raise ValueError(f'must be a JSON {"object" if python_type is dict else "array"}')
         return normalized
     return normalized
 
@@ -180,13 +228,16 @@ def generic_fields_for_model(model: Any) -> list[ImportField]:
     mapper = inspect(model)
     fields: list[ImportField] = []
     for column in mapper.columns:
-        if column.primary_key or column.name in GENERIC_EXCLUDE_COLUMNS:
+        if column.primary_key or column.name in generic_profile_excluded_columns(model):
             continue
         if model is models.Device and column.name not in _DEVICE_WRITABLE_FIELDS:
             continue
         hint = "[STRING]"
         try:
             python_type = column.type.python_type
+            json_type = json_container_type(column)
+            if json_type is not None:
+                python_type = json_type
             if python_type == int:
                 hint = "[INTEGER]"
             elif python_type == float:
@@ -197,15 +248,22 @@ def generic_fields_for_model(model: Any) -> list[ImportField]:
                 hint = "[JSON_OBJECT]"
             elif python_type == list:
                 hint = "[JSON_ARRAY]"
+            elif isinstance(column.type, JSON):
+                hint = "[JSON]"
         except NotImplementedError:
             pass
+        enum_category = GENERIC_ENUM_OPTION_CATEGORIES.get(model, {}).get(column.name)
+        is_vendor_country = model is models.Vendor and column.name == 'country'
         fields.append(
             ImportField(
                 name=column.name,
                 label=column.name.replace("_", " ").title(),
                 required=(model is models.Device and column.name in {'name', 'system'}) or
+                         (model in {models.Rack, models.Vendor} and column.name == 'name') or
                          (not column.nullable and column.default is None and column.server_default is None),
-                template_hint=hint,
+                template_hint=f'[Configured {enum_category} option]' if enum_category else '[Configured vendor country]' if is_vendor_country else hint,
+                input_control='select' if enum_category or is_vendor_country else 'text',
+                options_key=column.name if enum_category else 'country' if is_vendor_country else None,
             )
         )
     return fields
@@ -216,15 +274,18 @@ async def preview_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
     relevant_columns = {
         column.name: column
         for column in mapper.columns
-        if not column.primary_key and column.name not in GENERIC_EXCLUDE_COLUMNS
+        if not column.primary_key and column.name not in generic_profile_excluded_columns(model)
     }
     results = []
     for index, raw_row in enumerate(rows):
         normalized_row: dict[str, Any] = {}
         errors: list[str] = []
+        source_row = raw_row if isinstance(raw_row, dict) else {}
+        if not isinstance(raw_row, dict):
+            errors.append('Each import row must be an object')
         for column_name, column in relevant_columns.items():
             try:
-                normalized_row[column_name] = coerce_value_for_column(column, raw_row.get(column_name))
+                normalized_row[column_name] = coerce_value_for_column(column, source_row.get(column_name))
             except (ValueError, TypeError, OverflowError, json.JSONDecodeError):
                 errors.append(f"{column_name} has an invalid value")
 
@@ -239,6 +300,130 @@ async def preview_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
             "status": "VALID" if not errors else "INVALID",
             "errors": errors,
         })
+
+    enum_categories = GENERIC_ENUM_OPTION_CATEGORIES.get(model, {})
+    allowed_values_by_field: dict[str, dict[str, str]] = {}
+    for field_name, category in enum_categories.items():
+        options = await fetch_setting_options(db, category)
+        allowed_values_by_field[field_name] = {
+            str(option['value']).casefold(): str(option['value'])
+            for option in options if option.get('value')
+        }
+    for result in results:
+        if result['errors']:
+            continue
+        for field_name, allowed_values in allowed_values_by_field.items():
+            value = result['normalized'].get(field_name)
+            if value is None:
+                continue
+            canonical_value = allowed_values.get(str(value).casefold())
+            if canonical_value is None:
+                category = enum_categories[field_name]
+                result['errors'].append(f'{field_name} must match a configured {category} option')
+            else:
+                result['normalized'][field_name] = canonical_value
+        result['status'] = 'INVALID' if result['errors'] else 'VALID'
+
+    if model is models.Rack:
+        candidate_pairs: set[tuple[Optional[int], str]] = set()
+        candidate_names: set[str] = set()
+        for result in results:
+            row = result['normalized']
+            if result['errors']:
+                continue
+            name = str(row.get('name') or '').strip()
+            room_id = row.get('room_id')
+            if row.get('total_u_height') is not None and not 1 <= row['total_u_height'] <= 100:
+                result['errors'].append('total_u_height must be a whole number from 1 to 100 U')
+            for field_name in ('max_power_kw', 'pdu_a_cap_kw', 'pdu_b_cap_kw'):
+                value = row.get(field_name)
+                if value is not None and (value < 0 or value > 1000):
+                    result['errors'].append(f'{field_name} must be from 0 to 1000 kW')
+            for field_name in ('typical_power_kw', 'max_weight_kg'):
+                value = row.get(field_name)
+                if value is not None and value < 0:
+                    result['errors'].append(f'{field_name} cannot be negative')
+            if not name:
+                result['errors'].append('name is required')
+                continue
+            pair = (room_id, name.casefold())
+            if pair in candidate_pairs:
+                result['errors'].append('Duplicate rack name in the same room in this import batch')
+            candidate_pairs.add(pair)
+            candidate_names.add(name.casefold())
+
+        room_ids = {room_id for room_id, _ in candidate_pairs if room_id is not None}
+        valid_room_ids: set[int] = set()
+        if room_ids:
+            room_result = await db.execute(select(models.Room.id).where(models.Room.id.in_(room_ids)))
+            valid_room_ids = set(room_result.scalars().all())
+
+        existing_pairs: set[tuple[Optional[int], str]] = set()
+        if candidate_names:
+            existing_result = await db.execute(
+                select(models.Rack.room_id, func.lower(models.Rack.name))
+                .where(models.Rack.is_deleted == False, func.lower(models.Rack.name).in_(candidate_names))
+            )
+            existing_pairs = {(room_id, name) for room_id, name in existing_result.all()}
+
+        for result in results:
+            row = result['normalized']
+            if result['errors']:
+                continue
+            room_id = row.get('room_id')
+            name = str(row.get('name') or '').strip().casefold()
+            if room_id is not None and room_id not in valid_room_ids:
+                result['errors'].append('room_id does not match an existing room')
+            if (room_id, name) in existing_pairs:
+                result['errors'].append('A rack with this name already exists in this room')
+
+        for result in results:
+            result['status'] = 'INVALID' if result['errors'] else 'VALID'
+
+    if model is models.Vendor:
+        country_options = await fetch_setting_options(db, 'VendorCountry')
+        allowed_countries = {str(option['value']).strip().casefold() for option in country_options if option.get('value')}
+        candidate_names: set[str] = set()
+        seen_names: set[str] = set()
+        for result in results:
+            row = result['normalized']
+            if result['errors']:
+                continue
+            name = str(row.get('name') or '').strip()
+            if not name:
+                result['errors'].append('name is required')
+                continue
+            row['name'] = name
+            country = normalize_scalar(row.get('country'))
+            if country is not None:
+                country = str(country).strip()
+                row['country'] = country
+                if country.casefold() not in allowed_countries:
+                    result['errors'].append('country must match a configured Vendor Country option')
+            name_key = name.casefold()
+            if name_key in seen_names:
+                result['errors'].append('Duplicate vendor name in this import batch')
+            seen_names.add(name_key)
+            candidate_names.add(name_key)
+
+        existing_names: set[str] = set()
+        if candidate_names:
+            existing_result = await db.execute(
+                select(func.lower(models.Vendor.name)).where(
+                    models.Vendor.is_deleted == False,
+                    func.lower(models.Vendor.name).in_(candidate_names),
+                )
+            )
+            existing_names = {name for name in existing_result.scalars().all() if name}
+        for result in results:
+            row = result['normalized']
+            if result['errors']:
+                continue
+            if str(row.get('name') or '').strip().casefold() in existing_names:
+                result['errors'].append('A vendor with this name already exists')
+
+        for result in results:
+            result['status'] = 'INVALID' if result['errors'] else 'VALID'
 
     valid = [result for result in results if result["status"] == "VALID"]
     invalid = [result for result in results if result["status"] == "INVALID"]
@@ -261,20 +446,22 @@ async def execute_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
     relevant_columns = {
         column.name: column
         for column in mapper.columns
-        if not column.primary_key and column.name not in GENERIC_EXCLUDE_COLUMNS
+        if not column.primary_key and column.name not in generic_profile_excluded_columns(model)
     }
     count = 0
     for raw_row in rows:
         clean_data = {}
         for column_name, column in relevant_columns.items():
-            clean_data[column_name] = coerce_value_for_column(column, raw_row.get(column_name))
+            value = coerce_value_for_column(column, raw_row.get(column_name))
+            if value is None and (column.default is not None or column.server_default is not None):
+                continue
+            clean_data[column_name] = value
         clean_data = filter_valid_columns(model, clean_data)
         if hasattr(model, "created_by_user_id") and user_id:
             clean_data["created_by_user_id"] = user_id
         db.add(model(**clean_data))
         count += 1
 
-    await db.commit()
     if user_id:
         db.add(models.AuditLog(
             user_id=user_id,
@@ -283,7 +470,11 @@ async def execute_generic_rows(db: AsyncSession, model: Any, rows: list[dict[str
             target_id="MULTIPLE",
             description=f"Bulk imported {count} records into {model.__tablename__}.",
         ))
+    try:
         await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        return {"status": "failed", "errors": ["The import conflicts with current database records. Refresh the preview and retry."], "count": 0}
     return {"status": "success", "count": count}
 
 
@@ -528,6 +719,16 @@ async def fetch_setting_options(db: AsyncSession, category: str) -> list[dict[st
         for value, label, description in result.all()
         if value
     ]
+
+
+async def build_generic_enum_schema_context(db: AsyncSession, model: Any) -> dict[str, Any]:
+    categories = GENERIC_ENUM_OPTION_CATEGORIES.get(model, {})
+    return {
+        'options': {
+            field_name: await fetch_setting_options(db, category)
+            for field_name, category in categories.items()
+        },
+    }
 
 
 async def build_monitoring_schema_context(db: AsyncSession) -> dict[str, Any]:
@@ -1100,6 +1301,24 @@ async def build_network_schema_context(request: Request, db: AsyncSession) -> di
     }
 
 
+async def build_vendor_schema_context(db: AsyncSession) -> dict[str, Any]:
+    country_options = await fetch_setting_options(db, 'VendorCountry')
+    result = await db.execute(
+        select(models.Vendor.id, models.Vendor.name)
+        .where(models.Vendor.is_deleted == False)
+        .order_by(models.Vendor.name)
+        .limit(100)
+    )
+    return {
+        'options': {'country': country_options},
+        'example_records': [
+            {'id': vendor_id, 'label': name}
+            for vendor_id, name in result.all()
+            if name
+        ],
+    }
+
+
 def _normalize_network_import_text(value: Any) -> Optional[str]:
     normalized = normalize_scalar(value)
     if normalized is None:
@@ -1571,8 +1790,8 @@ async def execute_monitoring_rows(db: AsyncSession, rows: list[dict[str, Any]], 
 
 def build_far_import_fields() -> list[ImportField]:
     return [
-        ImportField("system_name", "System", required=True, template_hint="[Logical system]", validation_rules=["Required."]),
-        ImportField("failure_type", "Failure Type", required=True, template_hint="[Design|Process|Hardware|Software|Network|Human|Environment]", validation_rules=["Required."]),
+        ImportField("system_name", "System", required=True, input_control="select", options_key="system_name", template_hint="[Configured logical system]", validation_rules=["Required. Select a configured logical system."]),
+        ImportField("failure_type", "Failure Type", required=True, input_control="select", options_key="failure_type", template_hint="[Configured failure classification]", validation_rules=["Required. Select a configured failure classification."]),
         ImportField("title", "Failure Mode", required=True, template_hint="[Short failure-mode title]", validation_rules=["Required."]),
         ImportField("effect", "Effect", input_kind="multiline", input_control="textarea", template_hint="[Operational effect]"),
         ImportField("severity", "Severity", required=True, input_control="number", template_hint="[1-10]", validation_rules=["Integer from 1 to 10."]),
@@ -1641,6 +1860,25 @@ async def preview_far_rows(db: AsyncSession, rows: list[dict[str, Any]]) -> dict
             "status": "VALID" if not errors else "INVALID",
             "errors": errors,
         })
+    allowed_values_by_field = {}
+    for field_name, category in (("system_name", "LogicalSystem"), ("failure_type", "RiskCategory")):
+        allowed_values_by_field[field_name] = {
+            str(option["value"]).casefold(): str(option["value"])
+            for option in await fetch_setting_options(db, category)
+            if option.get("value")
+        }
+    for result in results:
+        if result["errors"]:
+            continue
+        for field_name, allowed_values in allowed_values_by_field.items():
+            value = result["normalized"].get(field_name)
+            canonical_value = allowed_values.get(str(value).casefold()) if value is not None else None
+            if canonical_value is None:
+                category = "LogicalSystem" if field_name == "system_name" else "RiskCategory"
+                result["errors"].append(f"{field_name} must match a configured {category} option")
+            else:
+                result["normalized"][field_name] = canonical_value
+        result["status"] = "INVALID" if result["errors"] else "VALID"
     valid = [result for result in results if result["status"] == "VALID"]
     invalid = [result for result in results if result["status"] == "INVALID"]
     return {
@@ -1698,6 +1936,26 @@ async def serialize_far_example_row(db: AsyncSession, item: models.FarFailureMod
     }
 
 
+async def build_far_schema_context(db: AsyncSession) -> dict[str, Any]:
+    example_rows = await db.execute(
+        select(models.FarFailureMode.id, models.FarFailureMode.title)
+        .where(models.FarFailureMode.is_deleted == False)
+        .order_by(models.FarFailureMode.updated_at.desc(), models.FarFailureMode.id.desc())
+        .limit(20)
+    )
+    return {
+        "options": {
+            "system_name": await fetch_setting_options(db, "LogicalSystem"),
+            "failure_type": await fetch_setting_options(db, "RiskCategory"),
+        },
+        "example_records": [
+            {"id": mode_id, "label": title}
+            for mode_id, title in example_rows.all()
+            if title
+        ],
+    }
+
+
 def profile_fields_to_payload(fields: list[ImportField], context: Optional[dict[str, Any]] = None) -> list[dict[str, Any]]:
     options_map = (context or {}).get("options", {})
     return [
@@ -1724,6 +1982,7 @@ GENERIC_MODEL_MAPPING = {
     "devices": models.Device,
     "racks": models.Rack,
     "logical_services": models.LogicalService,
+    "vendors": models.Vendor,
 }
 
 
@@ -1756,6 +2015,7 @@ def build_import_profiles() -> dict[str, ImportProfile]:
             fields=FAR_IMPORT_FIELDS,
             preview_rows=preview_far_rows,
             execute_rows=execute_far_rows,
+            schema_context=build_far_schema_context,
             serialize_example_row=serialize_far_example_row,
         ),
     }
@@ -1768,6 +2028,9 @@ def build_import_profiles() -> dict[str, ImportProfile]:
             fields=generic_fields_for_model(model),
             preview_rows=lambda db, rows, current_model=model: preview_generic_rows(db, current_model, rows),
             execute_rows=lambda db, rows, user_id, current_model=model: execute_generic_rows(db, current_model, rows, user_id),
+            schema_context=build_vendor_schema_context if model is models.Vendor else (
+                lambda db, current_model=model: build_generic_enum_schema_context(db, current_model)
+            ) if model in GENERIC_ENUM_OPTION_CATEGORIES else None,
         )
     return profiles
 
@@ -1782,6 +2045,7 @@ IMPORT_PROFILE_MODULES = {
     "devices": "assets",
     "racks": "racks",
     "logical_services": "services",
+    "vendors": "vendors",
 }
 
 
@@ -1802,6 +2066,7 @@ def get_import_profile(table_name: str, request: Request) -> ImportProfile:
             ],
             preview_rows=lambda db, rows: preview_service_rows(request, db, rows),
             execute_rows=lambda db, rows, _user_id: execute_service_rows(request, db, rows),
+            schema_context=lambda db: build_generic_enum_schema_context(db, models.LogicalService),
         )
     if table_name == 'port_connections':
         # Bind trusted request identity without retaining it in the global registry.
@@ -1992,11 +2257,10 @@ async def download_snapshot(table_name: str, request: Request, export_token: Opt
             data.append({column: serialized.get(column, "") for column in columns})
         df = pd.DataFrame(data, columns=columns)
     else:
-        mapper = inspect(model)
-        exclude = {"id", "created_at", "updated_at", "created_by_user_id", "edit_revision"}
-        cols = [column.name for column in mapper.columns if column.name not in exclude]
-        if model is models.Device:
-            cols = [field.name for field in profile.fields]
+        # Keep the round-trip export schema identical to the fields exposed by
+        # the preview and template endpoints. This prevents internal lifecycle
+        # and relationship columns from leaking into imports.
+        cols = [field.name for field in profile.fields]
 
         query = select(model)
         if model is models.Device:

@@ -1479,7 +1479,7 @@ select option[value=""] {
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-cols-container,
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-cols-container {
-  background: var(--grid-bg) !important;
+  background: transparent !important;
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-header,
@@ -1487,9 +1487,177 @@ select option[value=""] {
   box-shadow: inset -1px 0 0 var(--grid-pinned-divider), 5px 0 12px -10px var(--text-primary) !important;
 }
 
+:root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-header .ag-header-cell:last-child,
+:root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-left-cols-container .ag-row .ag-cell:last-child {
+  border-right: 1px solid var(--grid-pinned-divider) !important;
+  box-shadow: inset -1px 0 0 var(--grid-pinned-divider) !important;
+}
+
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-header,
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-cols-container {
   box-shadow: inset 1px 0 0 var(--grid-pinned-divider), -5px 0 12px -10px var(--text-primary) !important;
+}
+
+:root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-pinned-right-cols-container .ag-row .ag-cell:first-child {
+  border-left: 1px solid var(--grid-pinned-divider) !important;
+  box-shadow: inset 1px 0 0 var(--grid-pinned-divider) !important;
+}
+
+/* Keep every search field on the same theme-aware input surface, including legacy dialogs. */
+:root :is(input, textarea):is(
+  [data-theme-search='true'], [placeholder*='search' i], [aria-label*='search' i], [aria-label*='find' i], [aria-label*='filter' i]
+) {
+  background-color: var(--input-bg) !important;
+  border-color: var(--grid-border) !important;
+  color: var(--text-primary) !important;
+}
+
+:root :is(input, textarea):is(
+  [data-theme-search='true'], [placeholder*='search' i], [aria-label*='search' i], [aria-label*='find' i], [aria-label*='filter' i]
+)::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+}
+
+:root :is(input, textarea):is(
+  [data-theme-search='true'], [placeholder*='search' i], [aria-label*='search' i], [aria-label*='find' i], [aria-label*='filter' i]
+):focus-visible {
+  border-color: var(--grid-focus-ring) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--grid-focus-ring) 22%, transparent) !important;
+}
+
+/* Rack devices use saturated, state-coded fills in both themes for instant recognition. */
+:root:not([data-theme='solarized-light']):not([data-theme='pure-clarity']):not([data-theme='light']) {
+  --rack-active-bg: #166534;
+  --rack-active-border: #4ade80;
+  --rack-active-ink: #ffffff;
+  --rack-active-accent: #86efac;
+  --rack-maintenance-bg: #9a4d08;
+  --rack-maintenance-border: #fdba74;
+  --rack-maintenance-ink: #ffffff;
+  --rack-maintenance-accent: #fed7aa;
+  --rack-retired-bg: #9f1239;
+  --rack-retired-border: #fb7185;
+  --rack-retired-ink: #ffffff;
+  --rack-retired-accent: #fda4af;
+  --rack-offline-bg: #475569;
+  --rack-offline-border: #cbd5e1;
+  --rack-offline-ink: #ffffff;
+  --rack-offline-accent: #e2e8f0;
+  --rack-standby-bg: #075985;
+  --rack-standby-border: #38bdf8;
+  --rack-standby-ink: #ffffff;
+  --rack-standby-accent: #7dd3fc;
+  --rack-reserved-bg: #5b21b6;
+  --rack-reserved-border: #c4b5fd;
+  --rack-reserved-ink: #ffffff;
+  --rack-reserved-accent: #ddd6fe;
+}
+
+:root:is([data-theme='solarized-light'], [data-theme='pure-clarity'], [data-theme='light']) {
+  --rack-active-bg: #166534;
+  --rack-active-border: #4ade80;
+  --rack-active-ink: #ffffff;
+  --rack-active-accent: #86efac;
+  --rack-maintenance-bg: #9a4d08;
+  --rack-maintenance-border: #fdba74;
+  --rack-maintenance-ink: #ffffff;
+  --rack-maintenance-accent: #fed7aa;
+  --rack-retired-bg: #9f1239;
+  --rack-retired-border: #fb7185;
+  --rack-retired-ink: #ffffff;
+  --rack-retired-accent: #fda4af;
+  --rack-offline-bg: #475569;
+  --rack-offline-border: #cbd5e1;
+  --rack-offline-ink: #ffffff;
+  --rack-offline-accent: #e2e8f0;
+  --rack-standby-bg: #075985;
+  --rack-standby-border: #38bdf8;
+  --rack-standby-ink: #ffffff;
+  --rack-standby-accent: #7dd3fc;
+  --rack-reserved-bg: #5b21b6;
+  --rack-reserved-border: #c4b5fd;
+  --rack-reserved-ink: #ffffff;
+  --rack-reserved-accent: #ddd6fe;
+}
+
+.page-header-icon {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 36%, var(--grid-border));
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--surface-elevated));
+  color: var(--accent-primary);
+}
+
+[data-site-capacity-badge] {
+  border-color: #64748b !important;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+[data-site-capacity-badge][data-capacity-level='watch'] {
+  border-color: #f59e0b !important;
+}
+[data-site-capacity-badge][data-capacity-level='high'] {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 1px rgb(248 113 113 / 22%) !important;
+}
+
+.operational-group-summary-kicker {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.operational-group-summary-value {
+  padding-top: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.operational-group-meta {
+  color: var(--accent-primary);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.operational-group-control {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--grid-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: var(--surface-base);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.operational-group-control:hover {
+  border-color: color-mix(in srgb, var(--accent-primary) 45%, var(--grid-border));
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.operational-group-control-danger {
+  border-color: var(--state-danger-border);
+  background: var(--state-danger-surface);
+  color: var(--state-danger);
+}
+
+.operational-group-control-danger:hover {
+  border-color: var(--state-danger);
+  background: color-mix(in srgb, var(--state-danger) 16%, var(--surface-elevated));
+  color: var(--state-danger);
 }
 
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) :is(.operational-grid-centered-cell, .operational-grid-utility-cell, .operational-grid-action-cell, .text-center) {
@@ -1874,7 +2042,7 @@ select option[value=""] {
 
 .rack-unit-device-name {
   overflow: hidden;
-  color: var(--text-primary);
+  color: var(--rack-unit-ink);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.1;

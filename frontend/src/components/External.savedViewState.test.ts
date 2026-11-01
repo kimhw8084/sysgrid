@@ -12,6 +12,12 @@ describe('External saved view state', () => {
     expect(sanitizeExternalViewConfig({ activeTab: 'links' }).activeTab).toBe('links')
   })
 
+  it('validates group fields against the selected External table', () => {
+    expect(sanitizeExternalViewConfig({ activeTab: 'links', groupBy: 'link_status' }).groupBy).toBe('link_status')
+    expect(sanitizeExternalViewConfig({ activeTab: 'links', groupBy: 'status' }).groupBy).toBe('raw')
+    expect(sanitizeExternalViewConfig({ activeTab: 'active', groupBy: 'status' }).groupBy).toBe('status')
+  })
+
   it('preserves active and deleted while still falling back invalid tabs to active', () => {
     expect(normalizeExternalActiveTab('active')).toBe('active')
     expect(normalizeExternalActiveTab('deleted')).toBe('deleted')
