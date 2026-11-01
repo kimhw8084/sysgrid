@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { applyOperationalColumnState, autoSizeOperationalColumns, clampAutoSizedOperationalColumnWidths } from './OperationalGridSizing'
+import { applyOperationalColumnState, autoSizeOperationalColumns, buildOperationalColumnSizingContext, clampAutoSizedOperationalColumnWidths, normalizeOperationalColumnDefinitions } from './OperationalGridSizing'
 
 describe('auto-sized operational column width bounds', () => {
   it('restores declared minimums and maximums after content sizing', () => {
@@ -46,6 +46,30 @@ describe('auto-sized operational column width bounds', () => {
     }
     applyOperationalColumnState(savedApi, [{ colId: 'title', width: 761 }], true)
     expect(restored.state).toEqual([{ colId: 'title', width: 761 }])
+  })
+
+  it('keeps auto-size metadata out of AG Grid column definitions and carries it through grid context', () => {
+    const [definition] = normalizeOperationalColumnDefinitions([{
+      colId: 'title',
+      minWidth: 80,
+      operationalAutoSizeMaxWidth: 340,
+    }])
+    expect(definition).not.toHaveProperty('operationalAutoSizeMaxWidth')
+    expect(definition).not.toHaveProperty('operationalAutoSizeMinWidth')
+
+    const context = buildOperationalColumnSizingContext({ feature: 'test-grid' }, [definition])
+    const agGridDefinitionCopy = { ...definition }
+    let applied: any
+    clampAutoSizedOperationalColumnWidths({
+      getGridOption: () => context,
+      getAllDisplayedColumns: () => [
+        { getColId: () => 'title', getColDef: () => agGridDefinitionCopy, getActualWidth: () => 761 },
+      ],
+      applyColumnState: (config: any) => { applied = config },
+    })
+
+    expect(context.feature).toBe('test-grid')
+    expect(applied.state).toEqual([{ colId: 'title', width: 340 }])
   })
 
   it('does not call or resize a grid after AG Grid destroys its API', () => {

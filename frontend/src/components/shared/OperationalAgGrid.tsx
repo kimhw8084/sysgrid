@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { isOperationalAutoResizeSource, normalizeOperationalColumnDefinitions } from './OperationalGridSizing'
+import { buildOperationalColumnSizingContext, isOperationalAutoResizeSource, normalizeOperationalColumnDefinitions } from './OperationalGridSizing'
 import { readOptionalStorage, writeOptionalStorage } from './optionalStorage'
 
 const getOperationalGridColumnIds = (definitions: any[] = []) => {
@@ -34,6 +34,10 @@ export const OperationalAgGrid = React.forwardRef<any, any>(({ columnDefs, ...pr
     () => normalizeOperationalColumnDefinitions(columnDefs),
     [columnDefs],
   )
+  const operationalContext = useMemo(
+    () => buildOperationalColumnSizingContext(props.context, normalizedColumnDefs),
+    [normalizedColumnDefs, props.context],
+  )
   const storageKey = useMemo(() => {
     if (typeof window === 'undefined' || typeof props.onColumnResized === 'function') return null
     const ids = getOperationalGridColumnIds(columnDefs)
@@ -61,7 +65,7 @@ export const OperationalAgGrid = React.forwardRef<any, any>(({ columnDefs, ...pr
     if (columns.length) writeOptionalStorage(storageKey, JSON.stringify({ version: 1, columns }))
   }
 
-  return <AgGridReact {...props} autoSizeStrategy={autoSizeStrategy} onGridReady={onGridReady} onColumnResized={onColumnResized} columnDefs={normalizedColumnDefs} ref={ref} />
+  return <AgGridReact {...props} context={operationalContext} autoSizeStrategy={autoSizeStrategy} onGridReady={onGridReady} onColumnResized={onColumnResized} columnDefs={normalizedColumnDefs} ref={ref} />
 })
 
 OperationalAgGrid.displayName = 'OperationalAgGrid'

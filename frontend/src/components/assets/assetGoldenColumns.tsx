@@ -145,7 +145,7 @@ export function buildAssetGoldenColumns({
       headerName: 'Env',
       width: 92,
       minWidth: 92,
-      maxWidth: 104,
+      maxWidth: 96,
       hide: hiddenColumns.includes('environment'),
     },
     {

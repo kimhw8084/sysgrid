@@ -744,9 +744,9 @@ body {
   font-weight: 700 !important;
   justify-content: flex-start !important;
   white-space: nowrap !important;
-  letter-spacing: 0.07em !important;
+  letter-spacing: 0.02em !important;
   text-transform: uppercase !important;
-  padding-right: 10px !important;
+  padding-right: 0 !important;
 }
 
 .operational-grid-shell .ag-header-cell.network-direction-header .ag-header-cell-label {
@@ -1404,7 +1404,7 @@ select option[value=""] {
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-header-cell-label,
 :root :is(.ag-theme-alpine, .ag-theme-alpine-dark) .ag-header-group-cell-label {
   justify-content: flex-start !important;
-  padding-right: 8px !important;
+  padding-right: 0 !important;
   color: var(--text-secondary) !important;
   font-size: max(10px, calc(var(--ag-font-size, 12px) - 1px)) !important;
   font-weight: 650 !important;
