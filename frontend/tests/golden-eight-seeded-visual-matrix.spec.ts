@@ -472,7 +472,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           const idHeader = page.locator('[data-audit-ledger] .ag-header-cell[col-id="target_id"] .ag-header-cell-text')
           const payloadHeader = page.locator('[data-audit-ledger] .ag-header-cell[col-id="description"] .ag-header-cell-text')
           await expect(idHeader).toHaveText('ID')
-          await expect(payloadHeader).toHaveText('PAYLOAD & IMPACT')
+          await expect(payloadHeader).toHaveText('CHANGE DETAILS')
           const payloadHeaderFits = await payloadHeader.evaluate(element => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1)
           expect(payloadHeaderFits, 'Audit payload heading should be readable in the desktop table').toBe(true)
         }
