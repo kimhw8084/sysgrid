@@ -2259,88 +2259,91 @@ const SpatialMap = React.memo(({ racks, onRackClick, siteColor }: { racks: any[]
   }, [racks])
 
   return (
-    <div className="flex-1 overflow-auto p-8 custom-scrollbar bg-slate-950/20 rounded-lg border border-white/5 relative">
-      <div className="flex flex-col gap-16">
+    <div data-rack-spatial-canvas className="relative flex-1 overflow-auto rounded-lg border border-[var(--border-default)] bg-[var(--rack-spatial-canvas)] p-6 custom-scrollbar lg:p-8">
+      <div className="flex flex-col gap-12">
         {Object.entries(siteGroups).sort().map(([siteName, aisles]) => (
-          <div key={siteName} className="space-y-10">
-             <div className="flex items-center gap-6">
-                <h2 className="text-xl font-black text-white uppercase tracking-[0.3em] shrink-0">{siteName}</h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-white/20 to-transparent" />
+          <div key={siteName} className="space-y-6">
+             <div className="flex min-w-0 items-center gap-4">
+                <span aria-hidden="true" className="h-7 w-1 shrink-0 rounded-full bg-[var(--rack-spatial-accent)]" />
+                <h2 className="min-w-0 shrink truncate text-lg font-semibold text-[var(--text-primary)]">{siteName}</h2>
+                <div aria-hidden="true" className="h-px min-w-8 flex-1 bg-[var(--border-default)]" />
              </div>
              
-             <div className="flex flex-col gap-12 pl-4">
+             <div className="flex flex-col gap-8 pl-5">
                 {Object.entries(aisles).sort().map(([aisleName, rows]) => (
-                  <div key={aisleName} className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-px w-8 bg-white/10" />
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">{aisleName !== 'General' ? `AISLE ${aisleName}` : siteName}</span>
-                      <div className="h-px flex-1 bg-white/5" />
-                    </div>                    <div className="flex flex-col gap-6">
+                  <div key={aisleName} className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-[var(--text-secondary)]">{aisleName !== 'General' ? `Aisle ${aisleName}` : siteName}</span>
+                      <div aria-hidden="true" className="h-px flex-1 bg-[var(--border-subtle)]" />
+                    </div>
+                    <div className="flex flex-col gap-4">
                       {Object.entries(rows).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).map(([rowNum, rackList]) => (
-                        <div key={rowNum} className="flex flex-wrap gap-4 justify-start">
+                        <div key={rowNum} className="flex flex-wrap justify-start gap-3">
                           {rackList.map(rack => {
                             const occupiedU = (rack.device_locations || []).reduce((a: number, l: any) => a + (l.size_u || 1), 0)
                             const totalU = rack.total_u || 42
                             const fillPct = Math.round((occupiedU / totalU) * 100)
                             const isOver = fillPct >= 95
+                            const realDevices = (rack.device_locations || []).filter((l: any) => !l.device?.is_reservation).length
+                            const reservations = (rack.device_locations || []).filter((l: any) => l.device?.is_reservation).length
+                            const estPowerKw = (rack.device_locations || []).reduce((a: number, l: any) => a + ((l.device?.power_typical_w || 0) / 1000), 0)
+                            const powerCapKw = rack.max_power_kw || 10
+                            const typicalEstimatePct = Math.round((estPowerKw / powerCapKw) * 100)
 
                             return (
                               <button
                                 type="button"
                                 key={rack.id}
                                 onClick={() => onRackClick(rack)}
-                                className={`w-44 h-32 rounded-lg border flex flex-col p-4 text-left cursor-pointer transition-[transform,border-color,background-color] duration-150 hover:-translate-y-1 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] relative overflow-hidden group
-                                  ${isOver ? 'bg-rose-500/10 border-rose-500/30' : 'bg-slate-900/60 border-white/10 hover:border-blue-500/50 shadow-lg'}
-                                `}
+                                data-spatial-rack-card
+                                data-capacity-warning={isOver ? 'true' : undefined}
+                                className={`group relative flex h-36 w-52 flex-col overflow-hidden rounded-lg border bg-[var(--rack-spatial-card)] p-3 text-left shadow-sm transition-[transform,border-color,background-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-[var(--rack-spatial-card-hover)] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] ${isOver ? 'border-[var(--rack-spatial-danger)]' : 'border-[var(--rack-spatial-border)] hover:border-[var(--rack-spatial-accent)]'}`}
+                                aria-label={`${rack.name}, ${fillPct}% rack-unit capacity, ${typicalEstimatePct}% typical power estimate`}
                               >
-                                <div className="absolute top-0 inset-x-0 h-1 transition-all" style={{ backgroundColor: rack.site_color || siteColor || '#3b82f6' }} />
+                                <div aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${isOver ? 'bg-[var(--rack-spatial-danger)]' : 'bg-[var(--rack-spatial-accent)]'}`} style={!isOver && (rack.site_color || siteColor) ? { backgroundColor: rack.site_color || siteColor } : undefined} />
                                 
-                                <div className="flex justify-between items-start mb-3">
-                                   <span className="text-[10px] font-black text-white uppercase tracking-tighter truncate max-w-[100px]">{rack.name}</span>
-                                   <div className="flex gap-1.5">
-                                      <div className="flex flex-col items-end">
-                                         <span className="text-[8px] font-black text-white leading-none">{(rack.device_locations || []).filter((l: any) => !l.device?.is_reservation).length}</span>
-                                         <span className="text-[6px] font-bold text-slate-500 uppercase">REAL</span>
+                                <div className="mb-3 flex min-w-0 items-start justify-between gap-2 pl-1.5">
+                                   <span className="min-w-0 truncate text-sm font-semibold text-[var(--rack-spatial-ink)]">{rack.name}</span>
+                                   <div className="flex shrink-0 items-center gap-2 text-right">
+                                      <div className="flex flex-col">
+                                         <span className="text-xs font-bold leading-none tabular-nums text-[var(--rack-spatial-ink)]">{realDevices}</span>
+                                         <span className="mt-1 text-[9px] font-medium leading-none text-[var(--rack-spatial-muted)]">Devices</span>
                                       </div>
-                                      <div className="w-px h-4 bg-white/10 mt-1" />
-                                      <div className="flex flex-col items-end">
-                                         <span className="text-[8px] font-black text-violet-400 leading-none">{(rack.device_locations || []).filter((l: any) => l.device?.is_reservation).length}</span>
-                                         <span className="text-[6px] font-bold text-slate-500 uppercase">RES</span>
-                                      </div>
-                                   </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                   <div className="space-y-1">
-                                      <div className="flex justify-between items-center px-0.5">
-                                         <span className="text-[7px] font-black text-slate-500 uppercase">Slot Usage</span>
-                                         <span className={`text-[8px] font-black tabular-nums ${isOver ? 'text-rose-500' : 'text-slate-300'}`}>{fillPct}%</span>
-                                      </div>
-                                      <div className="w-full h-1.5 bg-white/5 rounded-lg overflow-hidden">
-                                        <div className={`h-full ${fillColor(fillPct)} transition-all duration-500`} style={{ width: `${fillPct}%` }} />
-                                      </div>
-                                   </div>
-
-                                   {(() => {
-                                      const estPowerKw = (rack.device_locations || []).reduce((a: number, l: any) => a + ((l.device?.power_typical_w || 0) / 1000), 0)
-                                      const powerCapKw = rack.max_power_kw || 10
-                                      const typicalEstimatePct = Math.round((estPowerKw / powerCapKw) * 100)
-                                      return (
-                                        <div className="space-y-1">
-                                          <div className="flex justify-between items-center px-0.5">
-                                            <span className="text-[7px] font-black text-slate-500 uppercase">Typical Est. / Ceiling {powerCapKw}kW</span>
-                                            <span className={`text-[8px] font-black tabular-nums ${typicalEstimatePct >= 100 ? 'text-rose-500' : 'text-sky-400'}`}>TYP EST {typicalEstimatePct}%</span>
-                                          </div>
-                                          <div className="w-full h-1.5 bg-white/5 rounded-lg overflow-hidden">
-                                            <div className={`h-full ${powerColor(typicalEstimatePct)} transition-all duration-500`} style={{ width: `${Math.min(typicalEstimatePct, 100)}%` }} />
-                                          </div>
+                                      {reservations > 0 && <>
+                                        <span aria-hidden="true" className="h-6 w-px bg-[var(--border-default)]" />
+                                        <div className="flex flex-col">
+                                          <span className="text-xs font-bold leading-none tabular-nums text-[var(--rack-spatial-accent)]">{reservations}</span>
+                                          <span className="mt-1 text-[9px] font-medium leading-none text-[var(--rack-spatial-muted)]">Reserved</span>
                                         </div>
-                                      )
-                                   })()}
+                                      </>}
+                                      {rack.row != null && <span className="rounded-sm border border-[var(--border-default)] px-1.5 py-1 text-[9px] font-medium leading-none text-[var(--rack-spatial-muted)]">Row {rack.row}</span>}
+                                   </div>
                                 </div>
 
-                                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                   <ExternalLink size={12} className="text-blue-400" />
+                                <div className="space-y-3 pl-1.5">
+                                   <div className="space-y-1">
+                                      <div className="flex items-center justify-between px-0.5">
+                                         <span className="text-[10px] font-medium text-[var(--rack-spatial-muted)]">Rack capacity</span>
+                                         <span className={`text-[11px] font-semibold tabular-nums ${isOver ? 'text-[var(--rack-spatial-danger)]' : 'text-[var(--rack-spatial-ink)]'}`}>{fillPct}%</span>
+                                      </div>
+                                      <div aria-hidden="true" className="h-2 w-full overflow-hidden rounded-full bg-[var(--rack-spatial-track)]">
+                                        <div className={`h-full transition-[width,background-color] duration-300 ${isOver ? 'bg-[var(--rack-spatial-danger)]' : 'bg-[var(--rack-spatial-accent)]'}`} style={{ width: `${Math.min(fillPct, 100)}%` }} />
+                                      </div>
+                                   </div>
+
+                                   <div className="space-y-1">
+                                     <div className="flex items-center justify-between px-0.5">
+                                       <span className="text-[10px] font-medium text-[var(--rack-spatial-muted)]">Typical power · {powerCapKw} kW cap</span>
+                                       <span className={`text-[11px] font-semibold tabular-nums ${typicalEstimatePct >= 100 ? 'text-[var(--rack-spatial-danger)]' : 'text-[var(--rack-spatial-ink)]'}`}>{typicalEstimatePct}%</span>
+                                     </div>
+                                     <div aria-hidden="true" className="h-2 w-full overflow-hidden rounded-full bg-[var(--rack-spatial-track)]">
+                                       <div className={`h-full transition-[width,background-color] duration-300 ${typicalEstimatePct >= 100 ? 'bg-[var(--rack-spatial-danger)]' : 'bg-[var(--rack-spatial-accent)]'}`} style={{ width: `${Math.min(typicalEstimatePct, 100)}%` }} />
+                                     </div>
+                                   </div>
+                                </div>
+
+                                <div aria-hidden="true" className="absolute bottom-3 right-3 text-[var(--rack-spatial-accent)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                                   <ExternalLink size={13} />
                                 </div>
                               </button>
                             )

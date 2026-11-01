@@ -4,6 +4,7 @@
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-alpine.css';
 @import './theme-compatibility.css';
+@import './theme-surface-law.css';
 @import './workspace-experience.css';
 @config "../tailwind.config.js";
 

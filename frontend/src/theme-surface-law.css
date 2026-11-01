@@ -1,0 +1,185 @@
+/*
+ * Global surface law for legacy utilities and portaled workspace layers.
+ * Neutral surfaces stay neutral in both themes; blue and semantic state colors
+ * remain reserved for actions, focus, and operational meaning.
+ */
+:root {
+  --surface-inset: #171717;
+  --surface-tint: rgb(255 255 255 / 5%);
+  --rack-spatial-canvas: var(--background);
+  --rack-spatial-card: var(--card);
+  --rack-spatial-card-hover: var(--surface-hover);
+  --rack-spatial-border: #555555;
+  --rack-spatial-ink: #ececec;
+  --rack-spatial-muted: #b8b8b8;
+  --rack-spatial-accent: #3b82f6;
+  --rack-spatial-track: #484848;
+  --rack-spatial-danger: #f87171;
+}
+
+:root:is([data-theme='pure-clarity'], [data-theme='light']),
+.nova-app-shell:is([data-theme='pure-clarity'], [data-theme='light']) {
+  --surface-inset: #f2f4f7;
+  --surface-tint: #f7f8fa;
+  --rack-spatial-canvas: #ffffff;
+  --rack-spatial-card: #ffffff;
+  --rack-spatial-card-hover: #f6f7f9;
+  --rack-spatial-border: #aab4c2;
+  --rack-spatial-ink: #101828;
+  --rack-spatial-muted: #475467;
+  --rack-spatial-accent: #1d4ed8;
+  --rack-spatial-track: #cbd3de;
+  --rack-spatial-danger: #b91c1c;
+}
+
+/* Bring dark-authored neutral text into the light palette across every view. */
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  .text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300,
+  .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700,
+  .text-slate-800, .text-slate-900
+) {
+  color: var(--text-primary);
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700
+) {
+  color: var(--text-secondary);
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-slate-950'], [class~='bg-slate-950/20'], [class~='bg-slate-950/40'],
+  [class~='bg-slate-950/50'], [class~='bg-slate-950/60'], [class~='bg-slate-950/68'],
+  [class~='bg-slate-950/70'], [class~='bg-slate-950/75'], [class~='bg-slate-950/78'],
+  [class~='bg-slate-950/80'], [class~='bg-slate-950/86'], [class~='bg-slate-950/88'],
+  [class~='bg-slate-950/90'], [class~='bg-slate-950/95'],
+  [class~='bg-slate-900'], [class~='bg-slate-900/20'], [class~='bg-slate-900/30'],
+  [class~='bg-slate-900/40'], [class~='bg-slate-900/50'], [class~='bg-slate-900/60'],
+  [class~='bg-slate-900/78'], [class~='bg-slate-900/80'], [class~='bg-slate-900/82'],
+  [class~='bg-slate-900/95']
+) {
+  background-color: var(--surface-elevated);
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-slate-700'], [class~='bg-slate-700/40'], [class~='bg-slate-800'],
+  [class~='bg-slate-800/50'], [class~='bg-slate-800/80']
+) {
+  background-color: var(--surface-inset);
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-white/2'], [class~='bg-white/5'], [class~='bg-white/10'],
+  [class~='bg-white/20'], [class~='bg-white/60'], [class~='bg-black/10'],
+  [class~='bg-black/15'], [class~='bg-black/20'], [class~='bg-black/30'],
+  [class~='bg-black/40'], [class~='bg-black/60'], [class~='bg-black/70'],
+  [class~='bg-black/75'], [class~='bg-black/80'], [class~='bg-black/85'],
+  [class~='bg-black/90'], [class~='bg-black/95']
+):not(.fixed.inset-0) {
+  background-color: var(--surface-inset);
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-[#020617]'], [class~='bg-[#020617]/30'], [class~='bg-[#020617]/40'],
+  [class~='bg-[#020617]/80'], [class~='bg-[#0f172a]'], [class~='bg-[#0f172a]/40'],
+  [class~='bg-[#0f172a]/90'], [class~='bg-[#0f172a]/95'], [class~='bg-[#0a0c14]'],
+  [class~='bg-[#0a0c14]/30'], [class~='bg-[#0a0c14]/40'], [class~='bg-[#0a0c14]/50'],
+  [class~='bg-[#0a0c14]/80'], [class~='bg-[#0a0c14]/95'], [class~='bg-[#0b0c14]'],
+  [class~='bg-[#0b1220]'], [class~='bg-[#0b1222]'], [class~='bg-[#0d0e12]'],
+  [class~='bg-[#0d0f17]'], [class~='bg-[#0d0f17]/50'], [class~='bg-[#0d0f17]/80'],
+  [class~='bg-[#0d1425]'], [class~='bg-[#0f111a]'], [class~='bg-[#1e293b]'],
+  [class~='bg-[#1e293b]/50'], [class~='bg-[#1e293b]/90'], [class~='bg-[#252525]']
+):not(.fixed.inset-0):not(.absolute.inset-0) {
+  background-color: var(--surface-elevated);
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  .fixed.inset-0, .absolute.inset-0
+):is([class~='bg-black/60'], [class~='bg-black/70'], [class~='bg-black/75'], [class~='bg-black/80']) {
+  background-color: var(--overlay-scrim);
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='border-white'], [class~='border-white/5'], [class~='border-white/8'],
+  [class~='border-white/10'], [class~='border-white/15'], [class~='border-white/20'],
+  [class~='border-white/30'], [class~='border-white/40'], [class~='border-white/80'],
+  [class~='border-slate-700'], [class~='border-slate-800']
+) {
+  border-color: var(--border-default);
+}
+
+/* White labels on old neutral surfaces need ink contrast after the surface flips. */
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  .glass-panel, [role='dialog'], [role='alertdialog'], [role='menu'], [role='listbox'],
+  [role='tooltip'], [data-workspace-panel], [data-workspace-modal-root],
+  .workspace-context-panel, .workspace-tooltip, [data-workspace-toast]
+) .text-white,
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class*='bg-slate-'], [class*='bg-black/'], [class*='bg-white/'],
+  [class*='bg-[#020617]'], [class*='bg-[#0f172a]'], [class*='bg-[#0a0c14]'],
+  [class*='bg-[#0d0f17]'], [class*='bg-[#0c121e]'], [class*='bg-[#0b1220]'],
+  [class*='bg-[#0b0c14]'], [class*='bg-[#0d1425]'], [class*='bg-[#0f111a]'],
+  [class*='bg-[#1e293b]'], [class*='bg-[#0b1222]'], [class*='bg-[#0d0e12]'],
+  [class*='bg-[#252525]']
+) .text-white,
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  .glass-panel, [role='dialog'], [role='alertdialog'], [role='menu'], [role='listbox'],
+  [role='tooltip'], [data-workspace-panel], [data-workspace-modal-root],
+  .workspace-context-panel, .workspace-tooltip, [data-workspace-toast]
+).text-white,
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class*='bg-slate-'], [class*='bg-black/'], [class*='bg-white/'],
+  [class*='bg-[#020617]'], [class*='bg-[#0f172a]'], [class*='bg-[#0a0c14]'],
+  [class*='bg-[#0d0f17]'], [class*='bg-[#0c121e]'], [class*='bg-[#0b1220]'],
+  [class*='bg-[#0b0c14]'], [class*='bg-[#0d1425]'], [class*='bg-[#0f111a]'],
+  [class*='bg-[#1e293b]'], [class*='bg-[#0b1222]'], [class*='bg-[#0d0e12]'],
+  [class*='bg-[#252525]']
+).text-white {
+  color: var(--text-primary);
+}
+
+/* Keep white type only over deliberately saturated, solid action/status fills. */
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-blue-500'], [class~='bg-blue-600'], [class~='bg-blue-700'],
+  [class~='bg-indigo-500'], [class~='bg-indigo-600'], [class~='bg-indigo-700'],
+  [class~='bg-emerald-500'], [class~='bg-emerald-600'], [class~='bg-emerald-700'],
+  [class~='bg-green-500'], [class~='bg-green-600'], [class~='bg-green-700'],
+  [class~='bg-rose-500'], [class~='bg-rose-600'], [class~='bg-rose-700'],
+  [class~='bg-red-500'], [class~='bg-red-600'], [class~='bg-red-700'],
+  [class~='bg-amber-500'], [class~='bg-amber-600'], [class~='bg-orange-500'],
+  [class~='bg-orange-600'], [class~='bg-violet-500'], [class~='bg-violet-600'],
+  [class~='bg-purple-500'], [class~='bg-purple-600'], [class~='bg-[#034EA2]'],
+  [class~='bg-[#1a0a0c]']
+).text-white,
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-blue-500'], [class~='bg-blue-600'], [class~='bg-blue-700'],
+  [class~='bg-indigo-500'], [class~='bg-indigo-600'], [class~='bg-indigo-700'],
+  [class~='bg-emerald-500'], [class~='bg-emerald-600'], [class~='bg-emerald-700'],
+  [class~='bg-green-500'], [class~='bg-green-600'], [class~='bg-green-700'],
+  [class~='bg-rose-500'], [class~='bg-rose-600'], [class~='bg-rose-700'],
+  [class~='bg-red-500'], [class~='bg-red-600'], [class~='bg-red-700'],
+  [class~='bg-amber-500'], [class~='bg-amber-600'], [class~='bg-orange-500'],
+  [class~='bg-orange-600'], [class~='bg-violet-500'], [class~='bg-violet-600'],
+  [class~='bg-purple-500'], [class~='bg-purple-600'], [class~='bg-[#034EA2]'],
+  [class~='bg-[#1a0a0c]']
+)[class~='text-white'] {
+  color: #ffffff;
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-[var(--action-primary)]'], [class~='bg-[var(--primary)]'],
+  [class~='bg-[var(--state-success)]'], [class~='bg-[var(--state-warning)]'],
+  [class~='bg-[var(--state-danger)]'], [class~='bg-[var(--state-info)]']
+).text-white,
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) :is(
+  [class~='bg-[var(--action-primary)]'], [class~='bg-[var(--primary)]'],
+  [class~='bg-[var(--state-success)]'], [class~='bg-[var(--state-warning)]'],
+  [class~='bg-[var(--state-danger)]'], [class~='bg-[var(--state-info)]']
+) [class~='text-white'] {
+  color: #ffffff;
+}
+
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) [class*='hover:bg-white/']:hover,
+:is(html[data-theme='pure-clarity'], html[data-theme='light']) [class*='hover:bg-black/']:hover {
+  background-color: var(--surface-hover);
+}

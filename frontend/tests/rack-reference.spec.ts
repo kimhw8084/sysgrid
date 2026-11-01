@@ -94,6 +94,49 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
 
     await page.getByRole('button', { name: `Open site ${coreSite.name}`, exact: true }).click()
     await page.getByRole('button', { name: 'Spatial', exact: true }).click()
+    const spatialCanvas = page.locator('[data-rack-spatial-canvas]')
+    const spatialRack = spatialCanvas.locator('[data-spatial-rack-card]').first()
+    await expect(spatialCanvas).toBeVisible()
+    await expect(spatialRack).toBeVisible()
+    const spatialPalette = await page.evaluate(() => {
+      const canvas = document.querySelector<HTMLElement>('[data-rack-spatial-canvas]')!
+      const rack = canvas.querySelector<HTMLElement>('[data-spatial-rack-card]')!
+      const title = rack.querySelector<HTMLElement>('span')!
+      const rootStyle = getComputedStyle(document.documentElement)
+      const resolveSurface = (token: string) => {
+        const probe = document.createElement('span')
+        probe.style.backgroundColor = `var(${token})`
+        document.body.append(probe)
+        const color = getComputedStyle(probe).backgroundColor
+        probe.remove()
+        return color
+      }
+      const srgb = (color: string) => {
+        const context = document.createElement('canvas').getContext('2d')!
+        context.fillStyle = color
+        context.fillRect(0, 0, 1, 1)
+        return Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3)
+      }
+      return {
+        theme: document.documentElement.dataset.theme,
+        colorScheme: rootStyle.colorScheme,
+        canvas: srgb(getComputedStyle(canvas).backgroundColor),
+        card: srgb(getComputedStyle(rack).backgroundColor),
+        appBackground: srgb(resolveSurface('--background')),
+        appCard: srgb(resolveSurface('--card')),
+        titleColor: getComputedStyle(title).color,
+        accent: rootStyle.getPropertyValue('--rack-spatial-accent').trim(),
+      }
+    })
+    expect(spatialPalette.theme).toBe(theme)
+    expect(spatialPalette.colorScheme).toBe(theme === 'pure-clarity' ? 'light' : 'dark')
+    expect(spatialPalette.canvas).toEqual(spatialPalette.appBackground)
+    expect(spatialPalette.card).toEqual(spatialPalette.appCard)
+    expect(await textContrast(spatialRack.locator('span').first())).toBeGreaterThanOrEqual(4.5)
+    await testInfo.attach('rack-spatial-palette', { body: JSON.stringify(spatialPalette), contentType: 'application/json' })
+    const spatialScreenshot = testInfo.outputPath('racks-spatial-desktop.png')
+    await page.screenshot({ path: spatialScreenshot, animations: 'disabled' })
+    await testInfo.attach('rack-spatial-desktop', { path: spatialScreenshot, contentType: 'image/png' })
     await page.getByText(racks[2].name, { exact: true }).click()
     await expect(card(racks[2].id)).toBeVisible()
     await card(racks[2].id).locator('button').first().click()

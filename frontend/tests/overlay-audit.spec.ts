@@ -20,6 +20,27 @@ async function expectReachable(panel: Locator, page: Page) {
   expect(obscured, 'A higher layer must not cover the popup').toBe(false)
 }
 
+async function expectThemeLayer(layer: Locator, theme: string) {
+  const state = await layer.evaluate(element => {
+    const root = document.documentElement
+    const rootStyle = getComputedStyle(root)
+    const layerStyle = getComputedStyle(element)
+    return {
+      theme: root.dataset.theme,
+      rootColorScheme: rootStyle.colorScheme,
+      layerColorScheme: layerStyle.colorScheme,
+      foreground: layerStyle.color,
+      background: layerStyle.backgroundColor,
+    }
+  })
+  const expectedScheme = theme === 'pure-clarity' ? 'light' : 'dark'
+  expect(state.theme).toBe(theme)
+  expect(state.rootColorScheme).toBe(expectedScheme)
+  expect(state.layerColorScheme).toBe(expectedScheme)
+  expect(state.foreground).not.toBe('rgba(0, 0, 0, 0)')
+  await expect(layer).toBeVisible()
+}
+
 for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
   for (const width of [1024, 1440]) {
     test(`overlay palette, layering and resize ${theme} ${width}`, async ({ page, sysApi: request }, testInfo) => {
@@ -41,6 +62,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
           await page.getByRole('button', { name, exact: true }).click()
           const popup = page.locator('[data-workspace-panel]').last()
           await expectReachable(popup, page)
+          await expectThemeLayer(popup, theme)
           await expectReadableGridText(page, testInfo, `${route.slice(1)}-${name}`, '[data-workspace-panel]')
           await page.setViewportSize({ width: width === 1024 ? 1280 : 1024, height: 650 })
           await expectReachable(popup, page)
@@ -55,9 +77,11 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await page.getByRole('button', { name: 'Register Asset', exact: true }).click()
       const form = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'Create Asset', exact: true }) })
       await expect(form).toBeVisible()
+      await expectThemeLayer(form, theme)
       await form.getByRole('button', { name: 'Physical', exact: true }).click()
       const selector = page.locator('[data-workspace-panel]').last()
       await expectReachable(selector, page)
+      await expectThemeLayer(selector, theme)
       await expectReadableGridText(page, testInfo, 'asset-type-selector', '[data-workspace-panel]')
       await page.screenshot({ path: testInfo.outputPath('asset-form-selector.png'), animations: 'disabled' })
       await page.keyboard.press('Escape')
@@ -75,6 +99,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await importer.getByTitle('Close', { exact: true }).click()
       const discard = page.getByRole('alertdialog', { name: 'Unsaved Changes' })
       await expectReachable(discard, page)
+      await expectThemeLayer(discard, theme)
       await expectReadableGridText(page, testInfo, 'fullscreen-discard', '[role="alertdialog"]')
       await page.screenshot({ path: testInfo.outputPath('fullscreen-discard.png'), animations: 'disabled' })
       await discard.getByRole('button', { name: 'Discard Changes', exact: true }).click()
@@ -84,6 +109,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await page.getByRole('button', { name: /^Export CSV/ }).click()
       const notice = page.locator('[data-workspace-toast][data-visible="true"]').filter({ hasText: 'Asset CSV exported' })
       await expectReachable(notice, page)
+      await expectThemeLayer(notice, theme)
       await notice.hover()
       await expect(notice.locator('[data-toast-gauge] > div')).toBeVisible()
       await expectReadableGridText(page, testInfo, 'notification', '[data-workspace-toast][data-visible="true"]')
@@ -93,7 +119,9 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
 
       await page.goto('/racks')
       await page.getByRole('button', { name: 'Configure PDU A', exact: true }).first().hover()
-      await expectReachable(page.getByRole('tooltip'), page)
+      const pduTooltip = page.getByRole('tooltip')
+      await expectReachable(pduTooltip, page)
+      await expectThemeLayer(pduTooltip, theme)
       await expectReadableGridText(page, testInfo, 'rack-pdu-hint', '[role="tooltip"]')
       await page.screenshot({ path: testInfo.outputPath('rack-pdu-hint.png'), animations: 'disabled' })
       await page.keyboard.press('Escape')
@@ -102,30 +130,40 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
       await page.getByRole('button', { name: 'Add Site', exact: true }).click()
       const siteDialog = page.getByRole('dialog').last()
       await expectReachable(siteDialog.locator(':scope > :first-child'), page)
+      await expectThemeLayer(siteDialog, theme)
       await expectReadableGridText(page, testInfo, 'rack-site-dialog', '[role="dialog"]')
       await page.screenshot({ path: testInfo.outputPath('rack-site-dialog.png'), animations: 'disabled' })
       await siteDialog.getByRole('textbox').first().fill('Unsaved site draft')
       await page.keyboard.press('Escape')
       const siteDiscard = page.getByRole('dialog', { name: 'Discard site changes?', exact: true })
       await expectReachable(siteDiscard.locator(':scope > :first-child'), page)
+      await expectThemeLayer(siteDiscard, theme)
       await siteDiscard.getByRole('button', { name: 'Keep editing', exact: true }).click()
       await expect(siteDialog.getByRole('textbox').first()).toHaveValue('Unsaved site draft')
       await page.keyboard.press('Escape')
       await siteDiscard.getByRole('button', { name: 'Discard changes', exact: true }).click()
       await expect(siteDialog).not.toBeVisible()
       await page.getByRole('button', { name: `Site actions for ${site.name}`, exact: true }).click()
-      await expectReachable(page.locator('[data-workspace-panel]').last(), page)
+      const siteMenu = page.locator('[data-workspace-panel]').last()
+      await expectReachable(siteMenu, page)
+      await expectThemeLayer(siteMenu, theme)
       await page.keyboard.press('Escape')
 
       await page.getByRole('button', { name: /^Open error console/ }).click()
       const errorConsole = page.getByRole('dialog', { name: 'Error console', exact: true })
       await expectReachable(errorConsole.locator(':scope > :first-child'), page)
+      await expectThemeLayer(errorConsole, theme)
       await page.keyboard.press('Escape')
       await expect(errorConsole).not.toBeVisible()
       await page.getByRole('button', { name: 'Search released and authorized records', exact: true }).click()
-      await page.getByRole('textbox', { name: 'Search released and authorized records' }).fill('no-matching-record-987654321')
+      const search = page.getByRole('textbox', { name: 'Search released and authorized records' })
+      await search.fill('no-matching-record-987654321')
+      const searchWindow = page.getByRole('dialog').last()
+      await expectThemeLayer(searchWindow, theme)
+      await expectReadableGridText(page, testInfo, 'global-search-window', '[role="dialog"]')
+      await page.screenshot({ path: testInfo.outputPath('global-search-window.png'), animations: 'disabled' })
       await page.keyboard.press('Escape')
-      await expect(page.getByRole('textbox', { name: 'Search released and authorized records' })).not.toBeVisible()
+      await expect(search).not.toBeVisible()
       expect(errors).toEqual([])
     })
   }

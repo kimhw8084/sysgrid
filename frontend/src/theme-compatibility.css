@@ -710,7 +710,7 @@
   background-color: var(--action-primary); color: #fff;
 }
 :is([data-theme='pure-clarity'], [data-theme='light']) button:is(.bg-emerald-500,.bg-emerald-600,.bg-green-500,.bg-green-600) {
-  background-color: #047857; color: #fff;
+  background-color: var(--action-primary); color: #fff;
 }
 button:is(.bg-amber-500,.bg-amber-600,.bg-orange-500,.bg-orange-600) { background-color: #92400e; color: #fff; }
 button:is(.bg-rose-500,.bg-rose-600,.bg-red-500,.bg-red-600) { background-color: #be123c; color: #fff; }
