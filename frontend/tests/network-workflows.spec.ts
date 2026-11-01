@@ -83,7 +83,7 @@ test.describe('Network workflows', () => {
     await page.goto('/network')
     await expect(page.locator('.ag-header-cell[col-id="peer_port"]')).toBeAttached()
 
-    const endpointVisibility = await page.evaluate(() => {
+    await expect.poll(() => page.evaluate(() => {
       const grid = document.querySelector('.ag-root-wrapper')?.getBoundingClientRect()
       const actions = document.querySelector('.ag-header-cell[col-id="row_actions"]')?.getBoundingClientRect()
       if (!grid || !actions) return null
@@ -91,9 +91,7 @@ test.describe('Network workflows', () => {
         const box = document.querySelector(`.ag-header-cell[col-id="${colId}"]`)?.getBoundingClientRect()
         return Boolean(box && box.width > 0 && box.left >= grid.left && box.right <= actions.left + 1)
       })
-    })
-
-    expect(endpointVisibility).toEqual([true, true, true, true])
+    })).toEqual([true, true, true, true])
   })
 
   test('opens exact source and peer assets from a connection and preserves network history', async ({ page, sysApi: request }) => {
