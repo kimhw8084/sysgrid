@@ -3082,7 +3082,7 @@ export default function Racks() {
       titleIcon={Server}
       subtitle="Physical capacity and spatial intelligence"
       className={isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}
-      actions={activeTab === 'active' && !isMaskMode ? (
+      actions={activeTab === 'active' && allRacks && !isMaskMode ? (
         <>
           <ToolbarIconButton disabled={!allRacks} title="Import Bulk" onClick={() => setShowImportModal(true)}>
             <Upload size={16} />
