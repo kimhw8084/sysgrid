@@ -42,12 +42,8 @@ export default function AssetGoldenShellScaffold({
       className={`relative overflow-hidden${viewMode === 'report' ? ' asset-report-workspace' : ''}`}
       header={{
         eyebrow: 'Infrastructure',
-        title: (
-          <div className="flex items-center gap-3">
-            <Server className="text-blue-500" size={18} />
-            <span>Assets</span>
-          </div>
-        ),
+        title: 'Assets',
+        titleIcon: Server,
         subtitle: 'Operational asset inventory, topology context, and ownership status',
         actions: (
           <div className="flex items-center gap-4">

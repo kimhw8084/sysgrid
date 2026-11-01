@@ -3078,7 +3078,8 @@ export default function Racks() {
   const rackPageHeader = (
     <PageHeader
       eyebrow="Infrastructure"
-      title={<div className="flex items-center gap-3"><Server size={24} className="text-blue-500" aria-hidden="true" /><span>Racks</span></div>}
+      title="Racks"
+      titleIcon={Server}
       subtitle="Physical capacity and spatial intelligence"
       className={isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}
       actions={activeTab === 'active' && !isMaskMode ? (
