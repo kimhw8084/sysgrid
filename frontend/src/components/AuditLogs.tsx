@@ -175,7 +175,7 @@ export default function AuditLogs() {
     { 
         field: 'user_id', 
         headerName: 'ADMINISTRATOR', 
-        width: 152, 
+        width: 152,
         // Short actor values must not let autosizing clip the full heading.
         minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 'ADMINISTRATOR'.length),
         filter: true, 
