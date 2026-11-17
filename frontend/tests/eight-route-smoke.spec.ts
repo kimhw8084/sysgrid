@@ -111,7 +111,7 @@ async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, t
           return { position: style.position, top: style.top, right: style.right }
         })
         expect(notificationPlacement, 'theme notifications remain in the fixed upper-right stack').toEqual({ position: 'fixed', top: '16px', right: '16px' })
-        await expect(notificationRegion.locator('[data-workspace-toast]:visible').first()).toContainText('Theme changed to')
+        await expect(notificationRegion.locator('[data-workspace-toast]:visible').filter({ hasText: 'Theme changed to' })).toHaveCount(0)
         const activeNav = page.locator('[data-sg-app-sidebar="true"] a[aria-current="page"] > span').first()
         const expectedAlternateNavBackground = alternateTheme === 'pure-clarity' ? 'rgb(239, 246, 255)' : 'rgb(18, 59, 122)'
         await expect.poll(

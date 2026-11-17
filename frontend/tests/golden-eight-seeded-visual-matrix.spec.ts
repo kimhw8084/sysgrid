@@ -593,9 +593,10 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           expect(focusedGridCell.title, 'the keyboard-focused cell should retain a full-value pointer disclosure').toBe(seeded.primary.name)
           expect(focusedGridCell.focusHit, 'the keyboard-focused grid cell should remain visibly hit-testable').toBe(true)
           // The route-level search above intentionally narrows this grid to the
-          // primary asset. Clear it before asserting the five seeded identities.
+          // primary asset. Clear it before asserting all five seeded identities;
+          // shared synthetic tenants may also contain other existing rows.
           await fillGridSearch(page, routeSearches.assets.placeholder, '')
-          await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBe(5)
+          await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBeGreaterThanOrEqual(5)
           const visibleAssetIdentities = [seeded.primary.name, seeded.secondary.name, seeded.tertiary.name, racks.devicePrimary.name, racks.deviceSecondary.name]
           const accessibleAssetIdentityEvidence = []
           for (const identity of visibleAssetIdentities) {
