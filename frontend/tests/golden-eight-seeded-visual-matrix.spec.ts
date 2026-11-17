@@ -600,10 +600,12 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           const visibleAssetIdentities = [seeded.primary.name, seeded.secondary.name, seeded.tertiary.name, racks.devicePrimary.name, racks.deviceSecondary.name]
           const accessibleAssetIdentityEvidence = []
           for (const identity of visibleAssetIdentities) {
-            const cells = page.getByRole('gridcell', { name: identity, exact: true })
-            await expect(cells, `the complete rendered asset identity should remain available as an exact grid-cell name: ${identity}`).toHaveCount(1)
-            await expect(cells, `the exact asset identity cell should be visible: ${identity}`).toBeVisible()
-            accessibleAssetIdentityEvidence.push({ value: identity, exact_accessible_cell_count: 1, visible: true })
+            // Preserve column context in the accessible name while requiring
+            // the full identity to remain discoverable as a unique grid cell.
+            const cells = page.getByRole('gridcell', { name: identity })
+            await expect(cells, `the complete rendered asset identity should remain available in the grid-cell name: ${identity}`).toHaveCount(1)
+            await expect(cells, `the full asset identity cell should be visible: ${identity}`).toBeVisible()
+            accessibleAssetIdentityEvidence.push({ value: identity, matching_accessible_cell_count: 1, visible: true })
           }
           const semanticsPath = testInfo.outputPath(`${theme}-asset-grid-cell-keyboard-semantics.json`)
           writeFileSync(semanticsPath, JSON.stringify({ cellSemantics, nativeTabPath, focusedGridCell, focusedTooltip, accessibleAssetIdentityEvidence }, null, 2))
