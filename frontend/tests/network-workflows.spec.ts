@@ -87,15 +87,28 @@ test.describe('Network workflows', () => {
     await page.goto('/network')
     await expect(page.locator('.ag-header-cell[col-id="peer_port"]')).toBeAttached()
 
-    await expect.poll(() => page.evaluate(() => {
+    const endpointLayout = () => page.evaluate(() => {
       const grid = document.querySelector('.ag-root-wrapper')?.getBoundingClientRect()
       const actions = document.querySelector('.ag-header-cell[col-id="row_actions"]')?.getBoundingClientRect()
-      if (!grid || !actions) return null
-      return ['src_node', 'src_port', 'peer_node', 'peer_port'].map((colId) => {
+      if (!grid || !actions) return { ready: false, columns: [] as Array<Record<string, unknown>> }
+      const columns = ['src_node', 'src_port', 'peer_node', 'peer_port'].map((colId) => {
         const box = document.querySelector(`.ag-header-cell[col-id="${colId}"]`)?.getBoundingClientRect()
-        return Boolean(box && box.width > 0 && box.left >= grid.left && box.right <= actions.left + 1)
+        return {
+          colId,
+          left: box?.left ?? null,
+          right: box?.right ?? null,
+          width: box?.width ?? null,
+          visible: Boolean(box && box.width > 0 && box.left >= grid.left && box.right <= actions.left + 1),
+        }
       })
-    })).toEqual([true, true, true, true])
+      return { ready: true, grid: { left: grid.left, right: grid.right }, actionsLeft: actions.left, columns }
+    })
+    try {
+      await expect.poll(async () => (await endpointLayout()).columns.map(column => column.visible)).toEqual([true, true, true, true])
+    } catch (error) {
+      const rendered = await endpointLayout()
+      throw new Error(`${String(error)}; rendered endpoint geometry=${JSON.stringify(rendered)}`)
+    }
   })
 
   test('opens exact source and peer assets from a connection and preserves network history', async ({ page, sysApi: request }) => {
