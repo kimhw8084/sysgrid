@@ -68,6 +68,7 @@ import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalGridMatrix } from './shared/OperationalGridMatrix'
 import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from './shared/OperationalGrouping'
 import { OperationalDisplayPanel, OperationalGridSurface, OperationalGroupedGridSection, OperationalGroupedGridView, OperationalSavedViewsPanel, OperationalWorkspaceFrame } from './shared/OperationalWorkspaceShells'
+import { OperationalGridTextValue } from './shared/OperationalGridStandard'
 import { AssetDetailsView } from './assets/AssetDetailsView'
 import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES, assetFilterOptions, fetchAssetSettingOptions } from './assets/assetRecordOptions'
 import {
@@ -1779,13 +1780,11 @@ export default function AssetReal() {
   const columnDefs = useMemo(() => {
     const layoutById = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
     const renderText = (value: any, className = '') => (
-      <span
-        title={value == null ? '' : String(value)}
+      <OperationalGridTextValue
+        value={value ?? 'N/A'}
         style={{ fontSize: `${fontSize}px` }}
         className={`block w-full min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis ${className}`}
-      >
-        {value ?? 'N/A'}
-      </span>
+      />
     )
 
     const defs = [
