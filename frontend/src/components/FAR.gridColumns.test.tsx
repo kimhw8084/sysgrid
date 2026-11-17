@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   FAR_MATURITY_LEVELS,
   createFarAnalyticalColumns,
+  freezeFarIdentityColumn,
+  FAR_FROZEN_IDENTITY_COLUMN_IDS,
   getFarIncidentToneClass,
   getFarMaturityLevel,
   getFarVectorSummary,
@@ -28,6 +30,19 @@ function modeFor(level: number) {
 }
 
 describe('FAR analytical grid convergence', () => {
+  it('pins the primary failure identity while leaving system and analytical columns available', () => {
+    expect(FAR_FROZEN_IDENTITY_COLUMN_IDS).toEqual(['title'])
+    for (const field of FAR_FROZEN_IDENTITY_COLUMN_IDS) {
+      expect(freezeFarIdentityColumn({ field, resizable: true })).toMatchObject({
+        field,
+        pinned: 'left',
+        lockPinned: true,
+        lockPosition: 'left',
+        resizable: true,
+      })
+    }
+  })
+
   it('keeps one canonical maturity algorithm for every level', () => {
     for (let level = 0; level <= 8; level += 1) {
       expect(getFarMaturityLevel(modeFor(level))).toBe(level)
@@ -111,6 +126,8 @@ describe('FAR analytical grid convergence', () => {
     expect(source).toContain('hiddenColumns.includes(col.field || col.colId)')
     expect(source).toContain('{col.headerName || col.field || col.colId}')
     expect(source).toContain("from './FAR.gridColumns'")
+    expect(source).toContain('...createOperationalUtilityColumns(operatorIntelligence.utilityColumnsConfig).map(freezeFarIdentityColumn)')
+    expect(source).toContain('freezeFarIdentityColumn(createOperationalGoldenTextColumn({')
     expect(source).toContain('...createFarAnalyticalColumns({')
     expect(source).toContain('const lv = getFarMaturityLevel(mode)')
     expect(source).toContain('FAR_MATURITY_LEVELS.slice().reverse()')

@@ -40,7 +40,7 @@ import {
   resolveSettingsPrivilegePolicy,
   type SettingsTab,
 } from "./settings/settingsPrivilegePolicy"
-import { normalizeTheme } from './shared/theme'
+import { applySysGridTheme, normalizeTheme } from './shared/theme'
 import { formatRecordedPermissions, hasCompleteHistoryPermissions, historyPermissionViews, normalizeHistoryPermissionLevel, recordedPermissionLevel, recordedPermissionState } from './settings/historyPermissions'
 
 const PERMISSION_COMMIT_DEBOUNCE_MS = 900
@@ -1021,7 +1021,7 @@ export default function SettingsPage() {
     }
   });
 
-  const currentTheme = normalizeTheme(userSettings?.theme || readOptionalStorage('sysgrid-theme'));
+  const currentTheme = normalizeTheme(readOptionalStorage('sysgrid-theme') || userSettings?.theme);
 
   const userSettingsMutation = useMutation({
     mutationFn: async (settings: any) => {
@@ -1038,13 +1038,10 @@ export default function SettingsPage() {
   const changeTheme = (themeId: string) => {
     const normalizedTheme = normalizeTheme(themeId)
     writeOptionalStorage('sysgrid-theme', normalizedTheme)
-    document.documentElement.setAttribute('data-theme', normalizedTheme)
-    const isLight = normalizedTheme === 'pure-clarity'
-    if (isLight) document.documentElement.classList.remove('dark')
-    else document.documentElement.classList.add('dark')
+    applySysGridTheme(normalizedTheme)
+    window.dispatchEvent(new CustomEvent('sysgrid-theme-change', { detail: { theme: normalizedTheme } }))
     
     userSettingsMutation.mutate({ theme: normalizedTheme })
-    showWorkspaceToast(`Theme switched to ${normalizedTheme === 'nordic-frost-v1' ? 'Dark Mode' : 'Light Mode'}`)
   }
 
   const { data: envSettings, isLoading: isEnvLoading, isError: isEnvError } = useQuery({

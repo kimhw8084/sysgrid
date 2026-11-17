@@ -21,10 +21,10 @@ describe('AssetGoldenColumns Hardening', () => {
     }
   }
 
-  it('starts the status column at a readable width while allowing the shared minimum and unlimited growth', () => {
+  it('keeps the status badge above its readable resize minimum without limiting growth', () => {
     const statusColumn = buildAssetGoldenColumns(getMockArgs()).find((column: any) => column.field === 'status')
     expect(statusColumn?.initialWidth).toBe(132)
-    expect(statusColumn?.minWidth).toBe(40)
+    expect(statusColumn?.minWidth).toBe(120)
     expect(statusColumn).not.toHaveProperty('maxWidth')
     expect(statusColumn?.resizable).toBe(true)
   })

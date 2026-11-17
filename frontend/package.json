@@ -11,7 +11,7 @@
     "check:form-contracts": "node scripts/check-form-contracts.cjs",
     "check:row-action-contracts": "node scripts/check-row-action-contracts.cjs",
     "check:shell-contracts": "node scripts/check-shell-contracts.cjs",
-    "check:operational-contracts": "npm run check:operational-registry-drift && npm run check:form-contracts && npm run check:row-action-contracts && npm run check:shell-contracts",
+    "check:operational-contracts": "npm run check:operational-registry-drift && npm run check:form-contracts && npm run check:row-action-contracts && npm run check:shell-contracts && npm run check:golden-g2-rack-api && npm run check:golden-active-ui-api",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -24,7 +24,9 @@
     "test:e2e:all": "SYSGRID_VERIFY_PROFILE=root-preview bash ../scripts/run-e2e.sh --config=playwright.all.config.ts",
     "test:e2e:release": "playwright test --config=playwright.release.config.ts --workers=1",
     "test:e2e:chaos": "playwright test --config=playwright.chaos.config.ts",
-    "test:e2e:evidence": "playwright test --config=playwright.evidence.config.ts --workers=1"
+    "test:e2e:evidence": "playwright test --config=playwright.evidence.config.ts --workers=1",
+    "check:golden-g2-rack-api": "python3 scripts/check_rack_api_contract.py",
+    "check:golden-active-ui-api": "python3 scripts/check_active_ui_api_contracts.py"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",

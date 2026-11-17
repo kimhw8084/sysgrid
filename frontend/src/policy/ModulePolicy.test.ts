@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { effectiveIdentityChanged, moduleIsReleased, resolveModuleActionState, type EffectiveModulePolicy } from './ModulePolicy'
+import { SYSGRID_SEPARATE_APP_MODULE_IDS } from './moduleCatalog'
 
 const policyFor = (moduleId: string, override: Partial<EffectiveModulePolicy> = {}) => ({
   modules: {
@@ -71,7 +72,7 @@ describe('central module release action policy', () => {
     expect(retired.reason).toMatch(/module retired/i)
   })
 
-  it.each(['projects', 'research', 'knowledge', 'architecture'])('keeps %s actions unavailable even while the shared API remains available', moduleId => {
+  it.each([...SYSGRID_SEPARATE_APP_MODULE_IDS])('keeps %s actions unavailable even while the shared API remains available', moduleId => {
     const policy = policyFor(moduleId, { stage: 'production', available: true, blocked_reason: null, root_preview: false })
     const separateApp = resolveModuleActionState(moduleId, {
       data: policy,

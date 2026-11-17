@@ -34,6 +34,7 @@ export const FAR_PERSISTED_COLUMN_IDS = new Set([
   'linked_rcas',
   'created_by_user_id',
 ])
+export const FAR_LEFT_PINNED_COLUMN_IDS = new Set(['id', 'title'])
 
 export type FarLifecycleScope = 'active' | 'archived'
 
@@ -77,7 +78,9 @@ const sanitizeFarColumnLayout = (value: unknown) => {
     true,
   )
   const geometry = sanitizeFarPersistedColumnGeometry(normalizedLayout)
-  const layout = geometry.layout
+  const layout = geometry.layout.map((column: any) => FAR_LEFT_PINNED_COLUMN_IDS.has(String(column?.colId))
+    ? { ...column, pinned: 'left' }
+    : column)
   const recoveryCoreFullyPinned = Array.from(FAR_RECOVERY_COLUMN_IDS).every((colId) => {
     const column = layout.find((entry: any) => entry?.colId === colId)
     return column?.pinned === 'left' || column?.pinned === 'right'
@@ -89,7 +92,7 @@ const sanitizeFarColumnLayout = (value: unknown) => {
     layout: layout.map((column: any) => {
       const recoveredColumn: any = {
         ...column,
-        pinned: column?.colId === 'id' ? 'left' : null,
+        pinned: FAR_LEFT_PINNED_COLUMN_IDS.has(String(column?.colId)) ? 'left' : null,
         ...(FAR_RECOVERY_COLUMN_IDS.has(column?.colId) ? { hide: false } : {}),
       }
       return recoveredColumn

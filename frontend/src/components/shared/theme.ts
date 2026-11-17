@@ -12,3 +12,17 @@ export const normalizeTheme = (theme?: string | null): SysGridTheme => {
   if (theme === 'pure-clarity' || theme === 'nordic-frost-v1') return theme
   return 'nordic-frost-v1'
 }
+
+export const shouldInitializeThemeFromServer = (hasLocalPreference: boolean, serverPreferenceAlreadyChecked: boolean) => (
+  !hasLocalPreference && !serverPreferenceAlreadyChecked
+)
+
+export function applySysGridTheme(theme?: string | null) {
+  const normalizedTheme = normalizeTheme(theme)
+  if (typeof document === 'undefined') return normalizedTheme
+
+  document.documentElement.setAttribute('data-theme', normalizedTheme)
+  document.documentElement.classList.toggle('dark', normalizedTheme !== 'pure-clarity')
+  document.querySelector<HTMLElement>('.nova-app-shell')?.setAttribute('data-theme', normalizedTheme)
+  return normalizedTheme
+}

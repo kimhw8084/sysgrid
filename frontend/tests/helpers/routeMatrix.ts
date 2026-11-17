@@ -1,21 +1,22 @@
-export const appRouteMatrix = [
-  { path: '/', name: 'Dashboard' },
-  { path: '/projects', name: 'Projects' },
-  { path: '/racks', name: 'Racks' },
-  { path: '/asset', name: 'Assets' },
-  { path: '/services', name: 'Services' },
-  { path: '/external', name: 'External' },
-  { path: '/network', name: 'Network' },
-  { path: '/architecture', name: 'Architecture' },
-  { path: '/research', name: 'Research' },
-  { path: '/far', name: 'FAR' },
-  { path: '/monitoring', name: 'Monitoring' },
-  { path: '/vendors', name: 'Vendors' },
-  { path: '/knowledge', name: 'Knowledge' },
-  { path: '/logs', name: 'Audit Logs' },
-  { path: '/settings', name: 'Settings' },
-] as const
+import { MODULE_CATALOG } from '../../src/policy/moduleCatalog'
 
-export const protectedAppRoutes = appRouteMatrix
+const asRoute = (module: (typeof MODULE_CATALOG.modules)[number]) => ({
+  moduleId: module.id,
+  path: module.canonical_route,
+  name: module.label,
+  aliases: module.aliases,
+})
+
+export const activeSysGridRouteMatrix = MODULE_CATALOG.modules
+  .filter((module) => module.sysgrid_route_class === 'active')
+  .map(asRoute)
+
+export const retiredSysGridRouteMatrix = MODULE_CATALOG.modules
+  .filter((module) => module.sysgrid_route_class === 'retired_notice')
+  .map(asRoute)
+
+export const appRouteMatrix = MODULE_CATALOG.modules.map(asRoute)
+
+export const protectedAppRoutes = activeSysGridRouteMatrix
   .filter((route) => route.path !== '/')
   .map((route) => route.path)

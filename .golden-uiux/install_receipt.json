@@ -1,0 +1,425 @@
+{
+  "package_id": "golden-uiux-0.2.6-experimental-pilot",
+  "client": "both",
+  "status": "LOCAL_PACKAGE_NOT_APP_QUALIFIED",
+  "created_files": [
+    {
+      "path": ".agents/skills/ui-accessibility-contract/SKILL.md",
+      "sha256": "56b691194c351e58d5360b2d88db20b074f67d7f7eb29881e68765b53e05d83c"
+    },
+    {
+      "path": ".agents/skills/ui-content-localization/SKILL.md",
+      "sha256": "582a39af5a96e75105f868da3f1bf15fd69a798f3fb1d6f5b603a2baa047623b"
+    },
+    {
+      "path": ".agents/skills/ui-data-and-status/SKILL.md",
+      "sha256": "10159cb2b27f5990cc63cef38d77fa9740a9e00584b3768c63faa4f7a0c0d43a"
+    },
+    {
+      "path": ".agents/skills/ui-design-adapter/SKILL.md",
+      "sha256": "4c7a149bf91e180011e523daa18ab84581e103bb3332e707907b0568b2286d3a"
+    },
+    {
+      "path": ".agents/skills/ui-evidence-gate/SKILL.md",
+      "sha256": "0b0bf333cafe911fd902ec247537237d188c634072b4b5b70278ebab5827b9ac"
+    },
+    {
+      "path": ".agents/skills/ui-form-interactions/SKILL.md",
+      "sha256": "aa0d3ace4a77932aac13e013d8c1f2305b1ae26111bae53a8f3810b683840ce5"
+    },
+    {
+      "path": ".agents/skills/ui-intent-router/SKILL.md",
+      "sha256": "ba13ccc59666f9d2cb9324f6f135c749b67d875ca0924bfbf39e5431d0199b95"
+    },
+    {
+      "path": ".agents/skills/ui-pattern-resolution/SKILL.md",
+      "sha256": "05760717cfe8a01659c305d229d94676114dfb717d7113b74e3f3509fd5054bd"
+    },
+    {
+      "path": ".agents/skills/ui-responsive-geometry/SKILL.md",
+      "sha256": "e9e53b25c527bd4b446d2a0423b6362b63dea0cd5501d9035434d949ab1a16a6"
+    },
+    {
+      "path": ".golden-uiux/data/adapter_schema.json",
+      "sha256": "0def298dab8411226b0b195fe4075ba0624219f57f8e4c0927470647fbf44ecf"
+    },
+    {
+      "path": ".golden-uiux/data/adversarial_paper_cases.json",
+      "sha256": "77b644435120c565f746fb22e53815bafd026639cfeb06ef2ae26cabd94b1e6a"
+    },
+    {
+      "path": ".golden-uiux/data/patterns.json",
+      "sha256": "5fc594df354a6b87492afbdf3b95973b678ca9f0977625126fef617c80037980"
+    },
+    {
+      "path": ".golden-uiux/data/proof_schema.json",
+      "sha256": "c56480b75295758e9eb47d95ada6b611b42d9612c8972e562737f0edf608f7f3"
+    },
+    {
+      "path": ".golden-uiux/data/release_identity.json",
+      "sha256": "8264476677d28b55c596c1066c10d687cf4669a75c1bbfe8ed5fd2692076a93a"
+    },
+    {
+      "path": ".golden-uiux/devtools/browser_capability_gate.py",
+      "sha256": "2269ce6ff55a279e4cc6bab48b136706a46e411313a304dcc7296d038d2fb718"
+    },
+    {
+      "path": ".golden-uiux/devtools/build_manifest.py",
+      "sha256": "ea2ffc8c4f9acfc1dea8b7f32b2863c93779f06eb46b6e2a6e1455ad4424aa36"
+    },
+    {
+      "path": ".golden-uiux/devtools/pilot_smoke.py",
+      "sha256": "0069324314037ba1b81d195e7852e9b898109f2c69607290bc559722b3ac7c37"
+    },
+    {
+      "path": ".golden-uiux/devtools/preflight.py",
+      "sha256": "90c8e14c5aa672211753730cac72958e80c37738bf6dde251293294e5e0eafce"
+    },
+    {
+      "path": ".golden-uiux/devtools/render_patterns.py",
+      "sha256": "d6f848d39be4671675ab97dbd5b454dce7e1db7156bdc25185be5fed2ac44252"
+    },
+    {
+      "path": ".golden-uiux/devtools/run_visual_fixture.py",
+      "sha256": "3d1acd4c3a55c0c33bacdbd478656cf95e639e5a45c578e59d13b8e77ae983b5"
+    },
+    {
+      "path": ".golden-uiux/devtools/test_owner_guide.cjs",
+      "sha256": "369adb45f8ba45ba5adbf54c04277c29c032c154ee50ab42dbca725781f73e74"
+    },
+    {
+      "path": ".golden-uiux/devtools/visual_enforcer.mjs",
+      "sha256": "208b725c81aea1da926efd426982d981dce605b806949418f0b3398a016bdcf6"
+    },
+    {
+      "path": ".golden-uiux/docs/ACCEPTANCE_AND_LIMITS.md",
+      "sha256": "08558f54fefea46efbfd5833c029a532dd17e60bc15d1da93a2756d9eedd1bbe"
+    },
+    {
+      "path": ".golden-uiux/docs/BROWSER_EVIDENCE_GUIDE.md",
+      "sha256": "3332ac3f0e7fb2833a9f84f73cc4af7d61f91bd538e6b9f09835eb579b175b2e"
+    },
+    {
+      "path": ".golden-uiux/docs/BUILD_AND_AUDIT.md",
+      "sha256": "e1c058a757ea91b4d6677072081aa4e7cde3303f1513a0e2e7cedcaf58873936"
+    },
+    {
+      "path": ".golden-uiux/docs/CLIENT_VALIDATION.md",
+      "sha256": "454564bf61f56be805303496c112122dea5afc83a4ea51caf739038114f66fc2"
+    },
+    {
+      "path": ".golden-uiux/docs/CODEX_SYSGrid_KICKOFF.md",
+      "sha256": "271fbceca6436f88ef2b767edafa1b7b3665b92103bb1a895afabc967aa7d014"
+    },
+    {
+      "path": ".golden-uiux/docs/COMPANY_TRANSFER.md",
+      "sha256": "f4024e011c66c1e484d9fc85d73a559506b7ae5e8a1a8c87c5e7d2d1ba40cea5"
+    },
+    {
+      "path": ".golden-uiux/docs/CRITIQUE_RESPONSE_AND_GAP_REGISTER.md",
+      "sha256": "9e80a0c1c975a0250572db2657f0a0b9bb9db43678a692ea756a63366b47957a"
+    },
+    {
+      "path": ".golden-uiux/docs/FOCUSED_COMPLETION_2026-11-12.md",
+      "sha256": "60253041b9dff78b06c6e233a6921d3a6d05f5fce2e4c9a2cdd583aabb11c425"
+    },
+    {
+      "path": ".golden-uiux/docs/OPENCODE_COMPATIBILITY.md",
+      "sha256": "09ce9c4f24ea1501e5796d1f02bd4fb455b6a1862765710dabf205cd9c3eeb09"
+    },
+    {
+      "path": ".golden-uiux/docs/RELEASE_SECURITY_AND_SBOM.md",
+      "sha256": "5c37a64439b77d3b1544516a9af663241747b96e2d0828e0594b06d22e62afc1"
+    },
+    {
+      "path": ".golden-uiux/docs/SBOM.cdx.json",
+      "sha256": "17fb52cd7fbd6e012120ec8af9bf13ec443f0f5217383cd5ce3476cf6c53a17e"
+    },
+    {
+      "path": ".golden-uiux/docs/TEAM_PILOT_PROTOCOL.md",
+      "sha256": "0cb17bcf1a46fbf22106615b53cce781d66aa86c9e3ec89568958c6605a762e6"
+    },
+    {
+      "path": ".golden-uiux/docs/V021_PRIOR_FINDINGS_ARCHIVE.md",
+      "sha256": "c5c3e8f140ace22af5bf94e56e7f66942fce07abc1cf1b0494a0b870eb1a80b4"
+    },
+    {
+      "path": ".golden-uiux/docs/V022_CRITIQUE_RESPONSE_AND_OPEN_GATES.md",
+      "sha256": "4f673e9c3a9161073db44336532073eebd9121ee97cf30bb45fb0a62ce3bfeba"
+    },
+    {
+      "path": ".golden-uiux/docs/V022_INTEGRATION_PROMPT.txt",
+      "sha256": "2ef2c5606cb22a6467d0a4847ff1aeeb700707535f02a68e2c3b2265342b4c05"
+    },
+    {
+      "path": ".golden-uiux/docs/V023_CODEX_KICKOFF_PROMPT.txt",
+      "sha256": "3622d0a630bef35453d8a6868fe57dd74917e7f87dd77f49f37e75def98a8255"
+    },
+    {
+      "path": ".golden-uiux/docs/V023_PORTABILITY_RESOLUTION.md",
+      "sha256": "cb5099956f36f77e3b70774160fa203791bd0aec7c2a76a798da2688af9d0689"
+    },
+    {
+      "path": ".golden-uiux/docs/V026_EXECUTABLE_IMPROVEMENTS.md",
+      "sha256": "0096141042b2de96268595380cbfe9773df31b8e227bbe2f69e60a54116bdf89"
+    },
+    {
+      "path": ".golden-uiux/docs/VISUAL_ENFORCEMENT_BASELINE.md",
+      "sha256": "7cbb8a90026201c689c98eaf02d0631b928bc3065772a81154403e89f4b96822"
+    },
+    {
+      "path": ".golden-uiux/docs/VISUAL_ENFORCEMENT_CANDIDATE_RESULTS.md",
+      "sha256": "db381e473b1717cef8d2123a032e4b95f9be330f36bb0b7cc1fd240eee785617"
+    },
+    {
+      "path": ".golden-uiux/examples/after-geometry.json",
+      "sha256": "b672c7a38798dbb23cfa455cf13b90da531d1905f9593ffa7fc94ae231a7140c"
+    },
+    {
+      "path": ".golden-uiux/examples/before-geometry.json",
+      "sha256": "703c3d3b115d6a4e1af01589284cd1c3ea04ce58742546454d6018e9705a4fb9"
+    },
+    {
+      "path": ".golden-uiux/examples/browser_audit_LOCAL_ONLY.json",
+      "sha256": "e2339e31ef4bf508a44fbe95d170b951021e11419b97a94152a10103deeac50c"
+    },
+    {
+      "path": ".golden-uiux/examples/design-session-fixture/request.json",
+      "sha256": "94085433280a7858e731fd5dd134432ade4b21465d3b7f11ae3431d7fe0d79e4"
+    },
+    {
+      "path": ".golden-uiux/examples/design-session-fixture/source/conventions.md",
+      "sha256": "2dc8ca8873bb9b80bc6244c9c45c91ed2498c199f71fabd5b4929f67e85f1642"
+    },
+    {
+      "path": ".golden-uiux/examples/design-session-fixture/source/queue.html",
+      "sha256": "38467db2d34b193bedd5c305b9ec14e09372022f3a3a1be742f11826ab4db6ce"
+    },
+    {
+      "path": ".golden-uiux/examples/feature_intake_DRAFT.json",
+      "sha256": "04ccdd59934143479433c202c1a5d6557bdba4bad104c711e9057d3a303bc145"
+    },
+    {
+      "path": ".golden-uiux/examples/plan_DRAFT.json",
+      "sha256": "e416ee389d3b15db45b148de5ff4fcf401e3d207e1f95357cd3b580452cf1ce1"
+    },
+    {
+      "path": ".golden-uiux/examples/project_profile_DRAFT.json",
+      "sha256": "0dc81f5e1ef32665a2cf1e0c58807f804fcf311c1238d5e6f434e666eb967aee"
+    },
+    {
+      "path": ".golden-uiux/examples/rack_spatial_intent.json",
+      "sha256": "cba5afbf8a8e9df0c2658ebcc5918a3f30763a11dd6920e16cf89c604901560e"
+    },
+    {
+      "path": ".golden-uiux/examples/skill_trigger_heldout_cases.json",
+      "sha256": "b69889f30635a69fc0f7c3e1e28cd8441880ef310a14641b97d59ca71331b0d4"
+    },
+    {
+      "path": ".golden-uiux/examples/sysgrid_profile_INTAKE_ONLY.json",
+      "sha256": "cf4e804f13035eedabf515498eaf363c2b16c3b7247b460525b0e92b6d889a7e"
+    },
+    {
+      "path": ".golden-uiux/examples/sysgrid_profile_SOURCE_OBSERVED_NOT_APPROVED.json",
+      "sha256": "ea3a4089d4a476b21a8298761189fcdcb7bce8c24f7a463001c3b4d055092315"
+    },
+    {
+      "path": ".golden-uiux/examples/sysgrid_visual_enforcement_profile_PROPOSED.json",
+      "sha256": "2cb96895ee29c43d069aa2daa88fb8aeade0ef1f300109857d5edba6a7e0ac1a"
+    },
+    {
+      "path": ".golden-uiux/examples/visual-enforcement/fixture/index.html",
+      "sha256": "9807bfa65c1ff6a019ff2b0831016662d1a8f633f2da7ba8ee6d7ef547b76a27"
+    },
+    {
+      "path": ".golden-uiux/examples/visual-enforcement/fixture/visual-profile.json",
+      "sha256": "f4ca4296d6ed126643ec04adb1cb91655e5d95cb0cb1c45a37a69135680227b9"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/__init__.py",
+      "sha256": "54c915074dd255731a4f055357d167912da87c24fadd1f7c30df7274523e77e3"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/accessibility_gates.py",
+      "sha256": "448fba71e5ce68d4a76601bf948ba6220d0281f711d51699581813a65beb85d9"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/browser_audit.py",
+      "sha256": "dc10886d5ef8c2ae830139498e451648e93bbd05cc0d16ecb86878544afd001f"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/candidate_gates.py",
+      "sha256": "bf362010aecdea4b7291950dc2468e6572b07e4e7c7b459eff76cc96ba3c34be"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/cli.py",
+      "sha256": "cefb0f7724496b03cf5c73d0b2d02c6eb3afa6e394a01adf7d8bee191ace14ec"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/core.py",
+      "sha256": "0c02c16f7b7a56c5247d17b01c6445f212e2e96f80cf08a1c2290253636fbefb"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/design_execution.py",
+      "sha256": "cf6989b048a80e64c3bcfef751d94649902b7c54a9dc498bb49487e4737d6156"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/design_workflow.py",
+      "sha256": "9f5f3fd85b93a2b650d8775ffed2f586042ef37caf6f1a546ed4322f029c017a"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/gate_envelope.py",
+      "sha256": "eec6f23cc9c44401c9606f54bdb138c821676dabf852934ccac909cd5084042d"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/gate_ids.py",
+      "sha256": "faf526516333137dc14fb75e3e2e84b972a08bfc009d63271a3271497c85f535"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/gate_pipeline.py",
+      "sha256": "1812a7218ec1ea45214fe0fa5d090cd7ff710914ec86b37640df876a20bc0807"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/geometry_gates.py",
+      "sha256": "9cda696b83dcf922ebded84c3698dde3453d9f6485d53fc7b87b1bf66ff89044"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/hard_gates.py",
+      "sha256": "cddbf298f1ccc879134daf5ea55fc91c39a4822ba000a42a04589319421cb54d"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/mcp.py",
+      "sha256": "50b3a97d826db040340e9072182adb12d7faf24d873407b154c9e3b666bd57ff"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/navigation_gates.py",
+      "sha256": "712b69c3a74dd2e8156ce03149c5d8e2d19e54fb91450cc107b8e84c3de86919"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/patch_integrity.py",
+      "sha256": "2c8950f422818bd32f59954bc18799b6b92667d07f1298e2133f82ecc580465a"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/skill_delivery_gates.py",
+      "sha256": "dbb8bf3b7f865f7554669c7ce9bb171094f7a78526befd8958ab2f23b47d7c5a"
+    },
+    {
+      "path": ".golden-uiux/golden_uiux/visual_enforcement.py",
+      "sha256": "dec1f7870651f2f6d2147b541e669101983928b459457d4adca113df96aeef0f"
+    },
+    {
+      "path": ".golden-uiux/source_spec/00_MASTER_NONFINAL.md",
+      "sha256": "f74b911ffb66196985328ede4483d1379f8320ee207ce55d36b2938f5c5091bf"
+    },
+    {
+      "path": ".golden-uiux/source_spec/01_P0_P1_CANONICAL_REPLACEMENTS_NONFINAL.md",
+      "sha256": "955a2c6881c8cc54646418453b5fd1f74ee240a15a612072de5cdf9012e6444c"
+    },
+    {
+      "path": ".golden-uiux/source_spec/02_14_COMPLETE_PATTERN_CONTRACTS_NONFINAL.md",
+      "sha256": "65d33179b49e3885854627fcd2aaa63b22fe01424f3419de8c1a2539c38378c1"
+    },
+    {
+      "path": ".golden-uiux/source_spec/04_ADAPTER_CONTRACT_AND_EXAMPLES_NONFINAL.md",
+      "sha256": "30f9e39a501bea29798bbf92477435f285833221a08a157e4f30338504f461c9"
+    },
+    {
+      "path": ".golden-uiux/source_spec/05_QUALITY_GATES_NONFINAL.md",
+      "sha256": "d34893e10079707851b037d15624e2dae7eb57048750dcc70f329f364a119bb4"
+    },
+    {
+      "path": ".golden-uiux/source_spec/06_EVALUATION_PROTOCOL_NONFINAL.md",
+      "sha256": "fa322e6c8b63f40d8fac36af52c9489c21eca638a17986d6a528b4bade7b7753"
+    },
+    {
+      "path": ".golden-uiux/source_spec/07_SKILL_ROUTING_NONFINAL.md",
+      "sha256": "27260a463075f690a9895347bb57bb3d4aea0a681d21a5b996f8643bd758397a"
+    },
+    {
+      "path": ".golden-uiux/source_spec/08_REFERENCES_AND_LIMITS.md",
+      "sha256": "5ea7d66bbdc601404283ca05865d24bf479ce524b98ef4f81803dc9d0af8f83f"
+    },
+    {
+      "path": ".golden-uiux/source_spec/10_PAPER_DECISION_TRACES_NONFINAL.md",
+      "sha256": "b7514070efa73d75b61b455cf91f6fee736bf569977bf047a0970620cbb0e095"
+    },
+    {
+      "path": ".golden-uiux/source_spec/12_READINESS_MATRIX_NONFINAL.md",
+      "sha256": "734d164fe19402185952dd9b2494df02eaeb2b6bd1186fa4fcc9176000f5ac57"
+    },
+    {
+      "path": ".golden-uiux/source_spec/V026_EXECUTABLE_RULES_CANDIDATE.md",
+      "sha256": "9123f5d35a4fa568e9980e65f032e975cac6648b18b3eadb47734f61dabc2ebc"
+    },
+    {
+      "path": ".golden-uiux/uiux.py",
+      "sha256": "7a2c27aef88020edc1334b110e70a980bcdc8ecc38e1147247a929c7522a8046"
+    },
+    {
+      "path": ".opencode/skills/ui-accessibility-contract/SKILL.md",
+      "sha256": "56b691194c351e58d5360b2d88db20b074f67d7f7eb29881e68765b53e05d83c"
+    },
+    {
+      "path": ".opencode/skills/ui-content-localization/SKILL.md",
+      "sha256": "582a39af5a96e75105f868da3f1bf15fd69a798f3fb1d6f5b603a2baa047623b"
+    },
+    {
+      "path": ".opencode/skills/ui-data-and-status/SKILL.md",
+      "sha256": "10159cb2b27f5990cc63cef38d77fa9740a9e00584b3768c63faa4f7a0c0d43a"
+    },
+    {
+      "path": ".opencode/skills/ui-design-adapter/SKILL.md",
+      "sha256": "4c7a149bf91e180011e523daa18ab84581e103bb3332e707907b0568b2286d3a"
+    },
+    {
+      "path": ".opencode/skills/ui-evidence-gate/SKILL.md",
+      "sha256": "0b0bf333cafe911fd902ec247537237d188c634072b4b5b70278ebab5827b9ac"
+    },
+    {
+      "path": ".opencode/skills/ui-form-interactions/SKILL.md",
+      "sha256": "aa0d3ace4a77932aac13e013d8c1f2305b1ae26111bae53a8f3810b683840ce5"
+    },
+    {
+      "path": ".opencode/skills/ui-intent-router/SKILL.md",
+      "sha256": "ba13ccc59666f9d2cb9324f6f135c749b67d875ca0924bfbf39e5431d0199b95"
+    },
+    {
+      "path": ".opencode/skills/ui-pattern-resolution/SKILL.md",
+      "sha256": "05760717cfe8a01659c305d229d94676114dfb717d7113b74e3f3509fd5054bd"
+    },
+    {
+      "path": ".opencode/skills/ui-responsive-geometry/SKILL.md",
+      "sha256": "e9e53b25c527bd4b446d2a0423b6362b63dea0cd5501d9035434d949ab1a16a6"
+    }
+  ],
+  "unowned_identical_count": 2,
+  "ownership_migration": {
+    "schema": "golden.install-ownership-migration.v1",
+    "from_receipt_sha256": "2566eda68aae56b8f82b71045bf060691ca563c03e4851f018f4ca1b3925a97e",
+    "from_package_id": "golden-uiux-0.2.6-experimental-pilot",
+    "to_package_id": "golden-uiux-0.2.6-experimental-pilot",
+    "reconciled_package_manifest_sha256": "0cebcf81f9c1c7676683c5592661adfe3202662bb56dd7336756c417ad9d6ddb",
+    "transition_counts": {
+      "unchanged_owned": 83,
+      "update_owned": 5,
+      "new": 9,
+      "preserved_unowned": 2
+    },
+    "preserved_unowned_paths": [
+      {
+        "path": ".golden-uiux/golden_uiux/backend_contracts.py",
+        "prior_receipt_sha256": "9a0352f695fb663b9f5d924f59b7577b08afef8ec449c2317c9fda4b6a15de14",
+        "preserved_sha256": "751b61d8fedc3197f07c15c4f908672c347fde0dfee67750e046cdb28911e401",
+        "current_sha256": "751b61d8fedc3197f07c15c4f908672c347fde0dfee67750e046cdb28911e401",
+        "reason": "previously approved local G2 nullable OpenAPI behavior retained; excluded from Golden ownership"
+      },
+      {
+        "path": ".golden-uiux/golden_uiux/data_api_gates.py",
+        "prior_receipt_sha256": "1f4998d28a1f218e11d8c36469e746999fdb21fac597212fdd14b8aa7e14de71",
+        "preserved_sha256": "c2d47b8cc7508354163c031fe79dea51a1d250ba0dac5ed240294d28310cb29e",
+        "current_sha256": "c2d47b8cc7508354163c031fe79dea51a1d250ba0dac5ed240294d28310cb29e",
+        "reason": "previously approved local G2 nullable OpenAPI behavior retained; excluded from Golden ownership"
+      }
+    ]
+  }
+}

@@ -1,5 +1,6 @@
 import React from 'react'
 import { WorkspaceTooltip } from './WorkspaceTooltip'
+import { OperationalGridTextValue } from './OperationalGridStandard'
 import {
   OPERATIONAL_GRID_BADGE_CLASS,
   OPERATIONAL_GRID_BADGE_TEXT_CLASS,
@@ -104,8 +105,8 @@ export function createOperationalGoldenTextColumn({
     cellRenderer: (params: any) => {
       const resolvedValue = formatValue ? formatValue(params.value, params) : params.value
       return resolvedValue !== undefined && resolvedValue !== null && resolvedValue !== ''
-        ? <span className={valueClassName}>{resolvedValue}</span>
-        : <span className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS}>{emptyValue}</span>
+        ? <OperationalGridTextValue value={resolvedValue} className={valueClassName} />
+        : <OperationalGridTextValue value={emptyValue} className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS} />
     },
     hide,
   }

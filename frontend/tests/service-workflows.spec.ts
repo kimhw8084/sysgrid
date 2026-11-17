@@ -50,7 +50,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await form.locator('label').filter({ hasText: /^Version$/ }).click()
     await expect(form.getByLabel('Version', { exact: true })).toBeFocused()
     await page.getByRole('button', { name: 'Dismiss notification', exact: true }).click()
-    await date.scrollIntoViewIfNeeded()
+    await date.evaluate(element => element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }))
     await page.screenshot({ path: testInfo.outputPath(`service-form-error-${theme}.png`), animations: 'disabled' })
     await date.fill('2026-10-03')
     await expect(date).toHaveAttribute('aria-invalid', 'false')

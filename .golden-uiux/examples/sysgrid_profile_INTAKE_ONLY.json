@@ -1,0 +1,43 @@
+{
+  "project_id": "sysgrid",
+  "profile_id": "sysgrid-uiux-candidate-UNAPPROVED",
+  "profile_version": "0.0.0-draft",
+  "approval_status": "PROPOSED",
+  "reviewer_identity_reference": null,
+  "source_revision": "UNKNOWN",
+  "component_registry": {},
+  "token_profile": {},
+  "density_modes": {
+    "candidate_note": "Existing discussions mention eligible compact 11px/24px values only for SysGrid; NOT universal and NOT independently verified",
+    "approval": "PROPOSED_ONLY"
+  },
+  "accessibility_policy": {
+    "baseline": "WCAG 2.2 AA WHERE APPLICABLE",
+    "exceptions": "NONE_ASSERTED"
+  },
+  "geometry_baselines": [],
+  "quality_gate_map": {
+    "G1_DATA_TRUTH": "NOT_RUN",
+    "G2_API_CONTRACT": "NOT_RUN",
+    "G3_ACCESSIBILITY": "NOT_RUN",
+    "G4_RENDERED_CONTRAST": "NOT_RUN",
+    "G5_ELEMENT_GEOMETRY": "NOT_RUN",
+    "G6_EVIDENCE_AND_RULE_DELIVERY": "NOT_RUN"
+  },
+  "known_unknowns": [
+    "Verify actual SysGrid components and design tokens from repository",
+    "Verify owner-authorized B2.1 palette and individual 11px/24px eligible controls before use",
+    "Verify saved 8–14px requested font settings and effective a11y behavior",
+    "Verify CI, branch protections and project-specific geometry baselines",
+    "Obtain separate adapter approval"
+  ],
+  "promotion_controls": {
+    "authorization_preflight": "NOT_RUN",
+    "structural_review": "NOT_RUN",
+    "behavioral_review": "NOT_RUN",
+    "integration_review": "NOT_RUN",
+    "independent_review": "NOT_RUN",
+    "publication_review": "NOT_RUN"
+  },
+  "profile_digest": "6c61d728b797ff61e9272112b9672926fe64991475db197377f592a3ce30760a"
+}

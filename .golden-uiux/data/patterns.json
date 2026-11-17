@@ -1,0 +1,1229 @@
+{
+  "schema_version": "48-to-02-review-candidate",
+  "status": "NON_FINAL_IMPLEMENTABLE_CONTRACTS_NOT_APP_QUALIFIED",
+  "parent": "round46",
+  "patterns": [
+    {
+      "id": "P01",
+      "family": "Page shell & navigation",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "task hierarchy, number of destinations, route/state restoration",
+      "when_to_select": "Reuse established shell, landmarks, page title, wayfinding, predictable primary region; preserve deep links and browser history",
+      "implementation_guidance_candidate": "Many destinations: preserve approved navigation hierarchy and labels; choose shallow link structure appropriate to user goals",
+      "hard_invariants": "Semantic landmarks, route/deep-link restoration, browser back/forward, keyboard nav; content not obscured",
+      "escalate_when": "Changing authorized IA taxonomy, unclear restricted route",
+      "verification_probe": "Semantic landmarks, route/back/forward continuity, narrow viewport",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Give users stable orientation and access to authorized destinations while preserving route continuity.",
+      "select": [
+        "Existing application: retain its primary navigation and semantic landmark structure.",
+        "Choose breadcrumbs for true hierarchy, tabs for sibling views of one context, and ordinary links for destinations.",
+        "Place the primary content in a single discernible main region; use approved project navigation components.",
+        "Use the approved application shell, navigation regions, page gutters, content grid, headings and scroll ownership; do not introduce a second shell."
+      ],
+      "avoid": [
+        "Do not invent a global sidebar for a one-page task.",
+        "Do not replace a known route hierarchy to achieve aesthetic consistency.",
+        "Do not use tabs to hide independent, deep-linkable product destinations without documented approval."
+      ],
+      "states": [
+        "Initial/default route",
+        "Deep link to a nested route",
+        "Browser back/forward",
+        "Forbidden/unknown route",
+        "Small viewport expanded/collapsed navigation",
+        "Keyboard and zoom navigation"
+      ],
+      "accept": [
+        "Exactly one perceivable primary main landmark where appropriate; navigation names disambiguate multiple nav regions.",
+        "Deep links/reload/back/forward retain correct view and authorized selection.",
+        "No blocked content, clipped focus, unauthorized route exposure, or surprise geometry expansion.",
+        "Layout shell/header/title areas align with the approved project baseline without clipping at supported widths."
+      ],
+      "probes": [
+        "Open authorized deep link, reload and go Back/Forward with selection retained.",
+        "Keyboard navigate all destinations, inspect landmarks and narrow/zoomed rendering.",
+        "Attempt forbidden route; verify denial without leaking content.",
+        "Measure page title/header/navigation gutters, scroll regions and offscreen surfaces across supported routes and states."
+      ],
+      "escalate": [
+        "New product information architecture or destination taxonomy.",
+        "Conflict between existing route semantics and approved requirements.",
+        "Permission mapping for a new destination is absent."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P02",
+      "family": "Record collection & search",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "row quantity, inspect vs edit, sorting/filtering/selection",
+      "when_to_select": "Use simple semantic table for read-only comparison; interactive grid only when cell/row navigation or edits require it; select search/filter/action grammar by task",
+      "implementation_guidance_candidate": "Read-only comparison: native table. Editable large set: grid only if keyboard cell interactions required. High-cardinality search uses filtering/pagination/virtualization according to baseline",
+      "hard_invariants": "Sorting/filter selection correctness, row/cell keyboard semantics, selected state, pagination, focus under virtualization, no performance regressions",
+      "escalate_when": "Destructive bulk semantics unowned, ambiguous record selection",
+      "verification_probe": "Keyboard traversal, sort/filter state, pagination/virtualization, density and focus",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Support finding, comparing and acting on records with correct semantics and efficient navigation.",
+      "select": [
+        "Use a native HTML table for non-interactive tabular comparison.",
+        "Use an ARIA grid only for genuinely composite keyboard cell navigation or editing and only with a verified implementation.",
+        "Choose cards for heterogeneous records where side-by-side column comparison is not the dominant need.",
+        "Use approved server paging/virtualization only when measured content volume requires it.",
+        "When task and project contract require them, specify zebra-striping, frozen columns, user-driven resizing, persisted widths, grouping, context menus, badges and density preferences; otherwise preserve existing behavior."
+      ],
+      "avoid": [
+        "Do not default to an ARIA grid for every table; it adds focus-management duties.",
+        "Do not ship filter-only search that misrepresents server-filtered data.",
+        "Do not make selection and row activation use an ambiguous single click."
+      ],
+      "states": [
+        "Default unselected",
+        "Search/filter/sort",
+        "Multiple selection and bulk actions",
+        "No results vs no records",
+        "Loading and page transition",
+        "Stale, error, permission denial",
+        "Keyboard focus with virtualization"
+      ],
+      "accept": [
+        "Displayed rows and counts agree with query/sort/filter/page model.",
+        "Selection stays unambiguous across pagination, filtering and deletion.",
+        "Keyboard access, visible focus, row names and action scope work without mouse.",
+        "No focus loss, wrong record activation, or hidden selection on virtualized rows.",
+        "If resizing, pinning or grouping applies, column widths/order/focus and saved preferences persist correctly through sort/filter/reload."
+      ],
+      "probes": [
+        "Sort dates and numeric values with adversarial examples.",
+        "Filter then change pages; confirm visible and selected records.",
+        "Keyboard test row traversal or native table links and virtualization, if used.",
+        "Exercise large rows, resize/pin/group, selection across filters, context menu keyboard access, theme changes and saved widths."
+      ],
+      "escalate": [
+        "Destructive bulk semantics or select-all-across-pages remain undefined.",
+        "Performance requirements demand a new virtualization strategy.",
+        "Data ownership and permission model for hidden records are unclear."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/",
+        "https://www.w3.org/WAI/ARIA/apg/patterns/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P03",
+      "family": "Record detail & inspection",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "information groups, context transitions, read-only and audit demands",
+      "when_to_select": "Use structured detail layout; progressive disclosure for secondary material; retain native domain tabs, links and state",
+      "implementation_guidance_candidate": "Structured detail and related context, progressive disclosure only when it does not conceal essential tasks; preserve provenance/history",
+      "hard_invariants": "Persistent selection, correct back/deeplink, accurate read-only/edit affordances, no data loss",
+      "escalate_when": "New entity relationship or unresolved edit concurrency",
+      "verification_probe": "Information hierarchy, navigation continuity, no data loss",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Expose record facts, context and transitions without obscuring ownership or edit risk.",
+      "select": [
+        "Use the approved record-detail shell, named sections, and domain-native tabs when contexts are peers.",
+        "Use progressive disclosure for supplementary information only, not required actions or errors.",
+        "Use inspector/detail page based on task continuity, not aesthetics."
+      ],
+      "avoid": [
+        "Do not collapse a specialized domain dossier into generic cards.",
+        "Do not remove provenance, history or archived/read-only cues.",
+        "Do not use a destructive modal as a passive record viewer."
+      ],
+      "states": [
+        "Viewing current record",
+        "Switch related context/tab",
+        "Read-only/archived",
+        "Stale or concurrent edit",
+        "Missing/deleted record",
+        "Deep-link restoration",
+        "Dirty navigation attempt"
+      ],
+      "accept": [
+        "Record identity, relationship context and provenance remain visible as required.",
+        "No unauthorized edits for archived/read-only records.",
+        "Navigation retains user context and unsaved input is not silently discarded."
+      ],
+      "probes": [
+        "Navigate from list to record and back; reload a nondefault context.",
+        "Open archived record and attempt editing.",
+        "Simulate missing/deleted record and concurrent update."
+      ],
+      "escalate": [
+        "New record relationship or provenance source lacks a product owner.",
+        "Conflict about edit permissions or audit retention.",
+        "Changing native investigative view taxonomy."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P04",
+      "family": "Form & editing workflows",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "field count, dependencies, reversibility, frequency",
+      "when_to_select": "Inline editing for few local reversible fields; form for coherent changes; stepper only when real stage dependencies justify it",
+      "implementation_guidance_candidate": "Simple reversible edit: inline where approved; complex coherent edit: form; stepper only for real dependency sequence",
+      "hard_invariants": "Labels, hints, error association, async validation, dirty draft close, retry/double-submit, concurrency",
+      "escalate_when": "Unapproved workflow/financial/legal effects",
+      "verification_probe": "Labels, errors, keyboard, async save, stale drafts, recovery",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Collect and modify user data with unambiguous validation, persistence and recovery.",
+      "select": [
+        "Use inline editing for a bounded reversible field with known persistence behavior.",
+        "Use grouped forms for coherent changes; step-by-step wizard only for genuine irreversible dependencies.",
+        "Use native labeled inputs and established project validation primitives.",
+        "Group fields by user task; use relational choices with trusted validity and progressively reveal advanced fields only without hiding mandatory information."
+      ],
+      "avoid": [
+        "Do not create multi-step flows merely to hide complexity.",
+        "Do not disable Submit without discoverable explanation.",
+        "Do not silently discard typed changes or transform an optimistic save into a success without server acknowledgment."
+      ],
+      "states": [
+        "Pristine",
+        "Editing/dirty",
+        "Field invalid",
+        "Pending async validation",
+        "Submitting",
+        "Server rejection",
+        "Conflict/expired session",
+        "Saved/confirmed",
+        "Cancel/close with dirty draft"
+      ],
+      "accept": [
+        "Every input has a programmatic label; help and errors are associated appropriately.",
+        "Invalid data cannot silently pass; focus/announcements lead users to actionable errors.",
+        "Repeat clicks do not double-commit; failures preserve draft and recovery path.",
+        "Successful state reflects authoritative persisted result.",
+        "Defaults and relational choices never introduce unauthorized or destructive data semantics."
+      ],
+      "probes": [
+        "Keyboard complete a form; submit both valid/invalid.",
+        "Deny and timeout save; retry without duplication.",
+        "Close/reload while dirty and simulate concurrent edit."
+      ],
+      "escalate": [
+        "Unapproved irreversible effects or legally significant consent.",
+        "Unknown validation authority or conflicting server/client rules.",
+        "Unsaved draft recovery requirements unresolved."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/",
+        "https://www.w3.org/WAI/ARIA/apg/patterns/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P05",
+      "family": "Action placement & command hierarchy",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "frequency, risk, scope, selection, state",
+      "when_to_select": "Keep primary actions consistent with established shell; group rare actions; separate destructive actions with confirmation appropriate to risk",
+      "implementation_guidance_candidate": "One clear primary action per context if warranted; scope and selection explicit; destructive actions separated and risk-checked",
+      "hard_invariants": "Keyboard reachable, focus, permission denial, disabled reasons, no accidental action",
+      "escalate_when": "New access role/approval/destructive semantics",
+      "verification_probe": "Discoverability, permission feedback, no accidental triggers",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Place actions so scope, priority, consequence and authorization are evident.",
+      "select": [
+        "Primary action belongs near the affected workflow in the existing approved command region.",
+        "Secondary and rare actions go to approved contextual menus with visible access alternatives.",
+        "Bulk actions appear only when a defined selection exists; dangerous commands are separated."
+      ],
+      "avoid": [
+        "Do not add a second toolbar merely because the feature has new commands.",
+        "Do not make a hover-only control the sole access path.",
+        "Do not expose disabled-looking actions that still execute."
+      ],
+      "states": [
+        "No selection",
+        "Single selection",
+        "Multiple selection",
+        "Disabled with reason",
+        "Permission denied",
+        "Action pending",
+        "Success/failure",
+        "Destructive confirmation/undo where supported"
+      ],
+      "accept": [
+        "Every action has an identifiable scope, accessible name and predictable effect.",
+        "Permissions are enforced by trusted backend, not appearance.",
+        "Dangerous actions require risk-appropriate friction and never misrepresent completion."
+      ],
+      "probes": [
+        "Exercise all actions using keyboard, with/without selection.",
+        "Try denied action by direct API path and verify authorization boundary.",
+        "Attempt repeated destructive trigger while pending."
+      ],
+      "escalate": [
+        "Approval or irreversible action not covered by task grant.",
+        "Unresolved destructive semantics or permission ownership.",
+        "Adding commands would violate approved geometry."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P06",
+      "family": "Overlays, menus & dialogs",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "blocking need, context, form length, viewport available",
+      "when_to_select": "Popover/menu for bounded contextual tasks; modal only for blocking decisions; side panel/drawer only when established pattern fits",
+      "implementation_guidance_candidate": "Choose popover/menu/dialog/drawer based on interaction risk, task focus, modality and space; no arbitrary modal for passive details",
+      "hard_invariants": "Escape/close rules, focus trap and restoration, edge viewport/scroll, dirty draft guard, screen-reader title",
+      "escalate_when": "Modal opens destructive or novel approval action",
+      "verification_probe": "Focus return, escape/close, flip/shift, dirty guard, overlay geometry",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Present contextual choices and blocking interactions with correct focus and containment.",
+      "select": [
+        "Use dropdown/popover for short nonblocking contextual options.",
+        "Use modal dialog only when a blocking decision or task genuinely requires it.",
+        "Choose project-native drawer/side panel when context must remain visible and pattern is approved.",
+        "Anchor nonmodal surfaces to their actual triggering element; use verified edge collision placement and safe overflow containment."
+      ],
+      "avoid": [
+        "Do not display passive information in a modal by default.",
+        "Do not rely on hover-only popovers or trap keyboard focus in nonmodal overlays.",
+        "Do not force-close a dirty dialog without explicit safeguard."
+      ],
+      "states": [
+        "Closed",
+        "Opened via pointer and keyboard",
+        "Nested menu",
+        "Escape/cancel",
+        "Viewport edge and scroll",
+        "Validation failure",
+        "Dirty close attempt",
+        "Async pending",
+        "Return focus"
+      ],
+      "accept": [
+        "Dialog has accessible label, correct modality and focus management.",
+        "Escape/close behavior conforms to actual pattern including dirty-draft protection.",
+        "Popup is reachable and fits/repositions within supported viewport; no clipped actions."
+      ],
+      "probes": [
+        "Open/close using mouse and keyboard; verify focus return to sensible trigger.",
+        "Test narrow/zoomed viewport with scroll and edge collision.",
+        "Attempt close while dirty and while submit pending.",
+        "At screen edges and zoom, test tooltip/popover collision, anchor tracking, scroll and focus restoration."
+      ],
+      "escalate": [
+        "Nested modality would make focus ownership ambiguous.",
+        "New irreversible approval/consent flow.",
+        "Approved overlay size cannot fit required essential content."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/",
+        "https://www.w3.org/WAI/ARIA/apg/patterns/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P07",
+      "family": "Dashboards & analytical views",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "decision question, metrics, frequency, comparison type",
+      "when_to_select": "Choose metric, table, chart or narrative according to the operator question; chart only when visual encoding adds decision value",
+      "implementation_guidance_candidate": "Select comparison chart according to question, encoding, units, uncertainty; show table alternatives where useful",
+      "hard_invariants": "Correct values/axes/legend/time ranges, keyboard/text alternatives, empty/error states, performance",
+      "escalate_when": "Metric semantics/aggregation unowned, misleading visualization risk",
+      "verification_probe": "Legible labels, accessible data alternative, honest axes, responsive behavior",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Help users make accurate comparisons with transparent measures and honest visualization.",
+      "select": [
+        "Choose a chart only when shape, trend, ranking or distribution matters more than exact lookup.",
+        "Choose a table when exact values or comparison of heterogeneous attributes matters.",
+        "Select encoding by question: ordered categories for bars, continuous time for line trends, proportion only when denominator explicit."
+      ],
+      "avoid": [
+        "Do not use truncated axes or normalized percentages without disclosure when misleading.",
+        "Do not use 3D/decorative chart elements to imply significance.",
+        "Do not invent missing data, error bars, denominators or categorical order."
+      ],
+      "states": [
+        "Loaded and sourced",
+        "Filtering or time range change",
+        "Missing/stale measurement",
+        "Zero/empty observations",
+        "Loading/error",
+        "Small viewport",
+        "Accessible alternative"
+      ],
+      "accept": [
+        "Units, denominators, time range, aggregation and freshness are explicit.",
+        "Axes, labels and color encodings do not distort meaning.",
+        "Data table or equivalent text explains information without reliance on visual-only marks.",
+        "Metrics disclose definition, unit, denominator, time range, source, freshness and applicable uncertainty before consequential use."
+      ],
+      "probes": [
+        "Cross-check sampled plotted values against underlying records.",
+        "Test zero, missing, negative and extreme data; keyboard/AT alternatives.",
+        "Resize and zoom with long labels and dense categories.",
+        "Check chart update performance with representative large datasets and invalid/extreme series."
+      ],
+      "escalate": [
+        "Metric definition, aggregation or ownership ambiguous.",
+        "Analytical comparison requires statistical inference absent in approved scope.",
+        "Risk of misleading consequential decision."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P08",
+      "family": "Monitoring & status",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "severity, recency, false-positive risk, actionability",
+      "when_to_select": "Distinguish status from action; use semantic severity, freshness and clear next-step cues, never color alone",
+      "implementation_guidance_candidate": "Operational status must distinguish current/late/unknown and severity; alerts actionable; live updates non-disruptive",
+      "hard_invariants": "Freshness/state transitions, screen reader announcements without spam, alert keyboard path, false positive/negative tests",
+      "escalate_when": "Safety-critical alarm thresholds or unknown escalation ownership",
+      "verification_probe": "State meaning, refresh failure, stale data, alarm accessibility",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Communicate condition, urgency and freshness to support safe operational response.",
+      "select": [
+        "Separate system condition (status), severity (impact), and actionability (what to do).",
+        "Use stable human-readable labels, icons and timestamps; encode semantic categories with approved project tokens.",
+        "Make unknown/stale distinct from healthy."
+      ],
+      "avoid": [
+        "Do not communicate severity by color alone.",
+        "Do not mark an unconfirmed operation successful.",
+        "Do not make a noisy real-time update disrupt an in-progress task or focus."
+      ],
+      "states": [
+        "Healthy",
+        "Warning",
+        "Critical",
+        "Acknowledged",
+        "Stale",
+        "Unknown",
+        "Disconnected",
+        "Recovered",
+        "Pending user action"
+      ],
+      "accept": [
+        "Severity and freshness can be understood without color.",
+        "Unknown/stale is not rendered as normal.",
+        "Refresh and transitions do not unexpectedly reset keyboard focus or user filters.",
+        "Operational and alert severity meanings are stable across themes; no unconfirmed success/status claims."
+      ],
+      "probes": [
+        "Inject stale/unknown state; verify visible difference from success.",
+        "Check focus stability under update frequency.",
+        "Verify announcement urgency and that notices can be acknowledged/dismissed as appropriate."
+      ],
+      "escalate": [
+        "Severity and escalation policy missing.",
+        "Monitoring alerts could trigger an irreversible workflow.",
+        "Conflicting status sources or timestamps."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P09",
+      "family": "Empty, loading, error & permission states",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "data availability, source latency, retry safety",
+      "when_to_select": "Require useful empty state, predictable loading, actionable error, denied and offline variants as applicable",
+      "implementation_guidance_candidate": "Enumerate loading, empty, error, offline, permission, stale, partial, conflicting-edit, success states as applicable; no blank-screen fallback",
+      "hard_invariants": "Real state transitions under failure injection, retry, cancellation, unavailable semantics, accessible feedback",
+      "escalate_when": "Undefined error/privacy messaging policy",
+      "verification_probe": "Meaningful messages, recovery, accessibility, no fake success",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Represent operational and data availability states truthfully, with recoverable actions.",
+      "select": [
+        "Use bounded skeletons for expected pending layouts only when they do not obscure progress.",
+        "Differentiate empty dataset, no search results, permission denial, unavailable source and timeout.",
+        "Offer retry only when safe and state-reconciliation rules are clear."
+      ],
+      "avoid": [
+        "Do not turn outage into a comforting empty state.",
+        "Do not spin forever without progress or timeout ownership.",
+        "Do not automatically retry non-idempotent writes without reconciliation."
+      ],
+      "states": [
+        "Initial loading",
+        "Long pending",
+        "Empty by design",
+        "Filtered no results",
+        "Permission denied",
+        "Offline/disconnected",
+        "Timeout",
+        "Partial results",
+        "Canceled",
+        "Recovered",
+        "Filtered-empty distinctly from true empty",
+        "Partial data distinctly from complete data"
+      ],
+      "accept": [
+        "Each state explains what happened and what action is available.",
+        "Sensitive information does not leak on denial.",
+        "Retries preserve context and do not duplicate effects; errors log safe provenance.",
+        "Only genuinely applicable state obligations are required; omitted states must have reviewed applicability rationale."
+      ],
+      "probes": [
+        "Inject 403, 404, 500, timeout, canceled request and partial source response.",
+        "Verify semantics and permitted retry for reads versus writes.",
+        "Check screen-reader status announcement without excessive repetition."
+      ],
+      "escalate": [
+        "Write retry semantics unknown.",
+        "Auth failure indistinguishable from source absence.",
+        "Partial results could be mistaken for complete authoritative data."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P10",
+      "family": "Responsive adaptation & density",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "viewport, text zoom, device interaction, data priority",
+      "when_to_select": "Preserve task-critical content; adapt/reflow by available space; respect saved user density; avoid surprise toolbar or card expansion",
+      "implementation_guidance_candidate": "Adapt by available measured space and data needs; maintain project/user density preferences and accessible zoom",
+      "hard_invariants": "Small/large viewports, 200% text/400% zoom as applicable, scroll containment, overlap, visible-work capacity",
+      "escalate_when": "Necessary a11y accommodation conflicts with unapproved geometry budget",
+      "verification_probe": "Paired geometry, clipping, zoom, no unwanted expansion",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Maintain task access, information priority and user preferences across viewport and zoom.",
+      "select": [
+        "Derive breakpoints from content failure and approved component behavior, not device labels alone.",
+        "Allow overflow/scroll where preserving tabular comparisons requires it; use alternative detail view when approved.",
+        "Respect actual font/zoom, text length, locale and safe effective density.",
+        "Respect the approved supported viewport matrix; a documented desktop-only product does not acquire an unsupported mobile/touch layout obligation, while applicable zoom/reflow/accessibility obligations remain."
+      ],
+      "avoid": [
+        "Do not globally increase spacing to repair one narrow viewport.",
+        "Do not hide essential actions or change task meaning at mobile widths.",
+        "Do not overwrite saved user density or panel widths with a new default."
+      ],
+      "states": [
+        "Wide",
+        "Intermediate",
+        "Narrow",
+        "200% and 400% zoom as applicable",
+        "Long text/translation",
+        "High-density saved preference",
+        "Touch/keyboard",
+        "Orientation change"
+      ],
+      "accept": [
+        "No essential content loss or unapproved geometry growth.",
+        "Content and controls remain operable at applicable reflow/zoom criteria.",
+        "Requested preferences survive; safety minimum may affect effective dimensions without destroying stored request."
+      ],
+      "probes": [
+        "Capture paired bounding rectangles and visible row capacity at same viewport/state/profile.",
+        "Exercise reflow, zoom, long labels and RTL where supported.",
+        "Change density and navigate/reload; check persisted requested values.",
+        "Measure supported desktop widths plus required text/zoom accessibility states; avoid inventing mobile design requirements."
+      ],
+      "escalate": [
+        "Responsive priorities conflict with product-critical content.",
+        "Existing approved layout cannot meet applicable accessibility requirement.",
+        "No approved change allowance for required safety enlargement."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/",
+        "https://www.w3.org/WAI/ARIA/apg/patterns/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P11",
+      "family": "Visual tokens, typography & motion",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "approved profile, themes, contrast, reduced motion",
+      "when_to_select": "Resolve all visuals through approved project tokens and existing components; use approved optional starter profile only for new projects",
+      "implementation_guidance_candidate": "Use project tokens and components; typography and motion respect intent/reduced-motion settings; do not invent visual language",
+      "hard_invariants": "Token provenance and alias validity, text/nontext contrast, readable states, reduced motion, no layout inflation",
+      "escalate_when": "Absent approved profile, new brand or conflicting tokens",
+      "verification_probe": "Token traceability, theme variants, contrast, no hardcoded drift",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Apply visual identity consistently without compromising contrast, perception or established geometry.",
+      "select": [
+        "Resolve semantic tokens from approved project profile, with version pin and fallback behavior.",
+        "Use native typography hierarchy, spacing steps and restrained motion per existing project.",
+        "Prefer reduced-motion setting and semantic state colors where applicable.",
+        "Map semantic light/dark tokens for surface, text, focus, positive/negative status, charts, overlays and controls to approved project design system rather than fixed colors."
+      ],
+      "avoid": [
+        "Do not invent a universal brand palette or force B2.1 onto other apps.",
+        "Do not use color token changes as cover for layout and padding alterations.",
+        "Do not copy token values from untrusted tool output into authority without review."
+      ],
+      "states": [
+        "Light",
+        "Dark",
+        "High contrast/forced colors where supported",
+        "Focus/hover/active/disabled",
+        "Success/warning/error",
+        "Reduced motion",
+        "Font scaling"
+      ],
+      "accept": [
+        "Semantic state differences remain perceivable and not color-only.",
+        "Contrast meets applicable criterion for text and meaningful UI parts.",
+        "Theme change does not alter unchanged geometry except documented exceptions.",
+        "State tokens and type hierarchy obey actual approved project definitions; typography change does not silently inflate layout."
+      ],
+      "probes": [
+        "Inspect token resolution and theme/forced-color states.",
+        "Check contrast of actual rendered foreground/background pairs.",
+        "Compare dimensions of stable component fixtures before/after palette changes."
+      ],
+      "escalate": [
+        "Unapproved brand identity or token source.",
+        "Unknown contrast pair or state vocabulary.",
+        "Requested motion would create an accessibility risk."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P12",
+      "family": "Accessibility, keyboard & semantics",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "interaction modality, focus order, names/roles/states",
+      "when_to_select": "Use native semantics first, WAI-ARIA behavior where appropriate, WCAG 2.2 AA as declared acceptance target; exceptions require documented justification",
+      "implementation_guidance_candidate": "Native HTML semantics first; accessible custom widgets only if needed; pattern-specific keyboard behavior documented",
+      "hard_invariants": "Focus order, labels, keyboard support, error association, semantics, relevant actual assistive-tech checks",
+      "escalate_when": "Non-standard composite widget without approved behavior",
+      "verification_probe": "Keyboard path, focus visibility, target geometry, reduced motion, manual AT",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Provide accessible semantics and interaction for keyboard, assistive tech and varied input modes.",
+      "select": [
+        "Prefer native HTML semantics and tested library components; use custom ARIA widgets only when task requires them.",
+        "Select APG pattern matching actual keyboard/focus behavior, not visual appearance.",
+        "Define focus order, names, states, validation and announcements before implementation."
+      ],
+      "avoid": [
+        "Do not add ARIA roles to override correct native semantics.",
+        "Do not rely only on axe-like automated checks for assistive-tech quality.",
+        "Do not treat WCAG 2.5.8 as proof every visible control must make a 24px-high row (exceptions and spacing apply)."
+      ],
+      "states": [
+        "Keyboard-only",
+        "Screen reader",
+        "Touch pointer",
+        "Zoom/reflow",
+        "Focus after modal",
+        "Validation error",
+        "Disabled/denied",
+        "Forced colors and reduced motion"
+      ],
+      "accept": [
+        "Applicable WCAG 2.2 AA criteria met with documented exceptions where allowed.",
+        "Programmatic name/role/state and focus behavior accurately match controls.",
+        "Manual assistive-tech evaluations cover critical flows when applicable."
+      ],
+      "probes": [
+        "Keyboard every critical task without pointer.",
+        "Real screen reader focus and announcements for dialog, grid and form.",
+        "Inspect target dimensions plus spacing/equivalent exceptions under 2.5.8."
+      ],
+      "escalate": [
+        "New custom widget lacks tested keyboard pattern.",
+        "Conflicting accessible behavior and approved compactness.",
+        "Missing actual assistive tech or owner required for mandatory acceptance."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/",
+        "https://www.w3.org/WAI/ARIA/apg/patterns/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P13",
+      "family": "Collaborative and persistent state",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "autosave, shared drafts, user preferences, concurrency",
+      "when_to_select": "Preserve saved views and user requests; detect stale writes/conflicts; avoid silent preference coercion or draft loss",
+      "implementation_guidance_candidate": "Explicit draft, concurrent edit, offline/resume and selection lifecycle; never infer remote write succeeded",
+      "hard_invariants": "Unsaved work preservation, conflict resolution, idempotency, cancel/retry, resume and failure recovery",
+      "escalate_when": "Irreversible state effects / missing conflict ownership",
+      "verification_probe": "Reload, cross-session state, conflict, rollback",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Preserve drafts and preferences, prevent stale overwrites and make shared changes understandable.",
+      "select": [
+        "Define authoritative persisted state, pending edits and conflict resolution per workflow.",
+        "Use versioned preferences and saved views with explicit precedence.",
+        "Make autosave progress and conflicts observable without repeating noise."
+      ],
+      "avoid": [
+        "Do not silently discard dirty state on navigation or update.",
+        "Do not treat client optimistic state as authoritative server persistence.",
+        "Do not clear saved preferences to fix a migration issue."
+      ],
+      "states": [
+        "Clean",
+        "Dirty",
+        "Autosaving",
+        "Saved",
+        "Save failed",
+        "Conflict",
+        "Offline",
+        "Concurrent change",
+        "Version mismatch",
+        "Restore saved view"
+      ],
+      "accept": [
+        "Draft and user preferences are preserved according to documented policy.",
+        "Concurrent change either merges safely per approved semantics or blocks with choices.",
+        "Version migrations preserve requested settings even when effective safety constraints differ.",
+        "Autosave/conflict and input persistence cover failed network calls, retry idempotency, and eventual authoritative server confirmation."
+      ],
+      "probes": [
+        "Simulate concurrent editors, restart, offline and retry.",
+        "Verify dirty close guard, confirmation, restore and schema migration.",
+        "Test unauthorized access to other users saved state."
+      ],
+      "escalate": [
+        "Ownership or retention of shared state undefined.",
+        "Automated conflict merge could destroy data.",
+        "State migration cannot preserve a value or is incompatible."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    },
+    {
+      "id": "P14",
+      "family": "Content, localization & feedback",
+      "status": "PROPOSAL_NOT_ACTIVE",
+      "classification_inputs": "audience, task vocabulary, language, urgency",
+      "when_to_select": "Use project vocabulary, concise actionable labels, consistent feedback; prepare for localization and variable string length",
+      "implementation_guidance_candidate": "Task-focused plain language, status feedback, unit/locale correctness, respectful pluralization; no misleading confirmation",
+      "hard_invariants": "Strings reviewed, overflow for translated text, accessible status, locale date/number, no invented success",
+      "escalate_when": "Regulated wording or unsupported language/legal claim",
+      "verification_probe": "Labels, help text, announcements, long-text and RTL where supported",
+      "scope": "universal behavior only; project profile supplies component and geometry",
+      "evidence_state": "NOT_RUN",
+      "human_review_state": "NOT_REVIEWED",
+      "authority": "not an addition to SysGrid Constitution",
+      "intent": "Use precise language and feedback that supports task understanding across locales and expertise.",
+      "select": [
+        "Use product vocabulary already approved, clear action verbs and short next steps.",
+        "Externalize localizable text and handle plural, date/number and bidirectional rendering with approved utilities.",
+        "Make actionable feedback tied to the actual state and severity."
+      ],
+      "avoid": [
+        "Do not promise success before verification.",
+        "Do not localize code keys or inject untranslated dynamic values without escape.",
+        "Do not use vague buttons like Okay for irreversible actions."
+      ],
+      "states": [
+        "Default locale",
+        "Longest supported translation",
+        "RTL where supported",
+        "Missing localized string",
+        "Error/permission denial",
+        "Long validation text",
+        "Success and undo feedback"
+      ],
+      "accept": [
+        "Labels and validation remain comprehensible and consistent with domain terminology.",
+        "Direction/long text do not clip essential controls.",
+        "Feedback is timely, actionable, and accurately reflects authoritative outcome."
+      ],
+      "probes": [
+        "Run pseudo-localization or long-string fixtures at supported breakpoints.",
+        "Review high-risk action/error microcopy with language expert.",
+        "Verify status announcements and focus when feedback appears."
+      ],
+      "escalate": [
+        "Legal, safety or regulated copy not approved.",
+        "Missing domain translation owner.",
+        "Conflicting terms could alter decision meaning."
+      ],
+      "decision_precedence": [
+        "approved project policy + existing components",
+        "universal accessible interaction invariants",
+        "approved fallback or escalate"
+      ],
+      "hard_gate_policy": "UNKNOWN/NOT_RUN is not PASS; source-bound and independent acceptance required at applicable lifecycle stage.",
+      "verification_status": "NOT_RUN",
+      "approval_status": "NON_FINAL_PROPOSAL",
+      "evidence_fields": [
+        "source_commit",
+        "catalog_digest",
+        "profile_digest",
+        "scenario_id",
+        "test_id",
+        "runner_identity",
+        "result",
+        "artifact_digest",
+        "independent_reviewer_or_gate",
+        "exception_reference"
+      ],
+      "source_refs": [
+        "https://www.w3.org/TR/WCAG22/"
+      ],
+      "cross_cutting_policy_ids": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04"
+      ],
+      "design_stage_state": "PROPOSAL_SPECIFIED_NOT_PROVEN",
+      "promotion_requirement": "canonical evidence status source-bound, independent where required; never infer PASS from spec"
+    }
+  ],
+  "pattern_count": 14,
+  "all_evidence_status": "NOT_RUN",
+  "canonical_corrections_file": "01_P0_P1_CANONICAL_REPLACEMENTS_NONFINAL.md"
+}

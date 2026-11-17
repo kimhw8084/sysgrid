@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from 'react'
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useWorkspacePopupDismiss } from "./WorkspaceOverlay"
 import { ChevronDown, Check } from 'lucide-react'
@@ -27,6 +27,7 @@ interface AppDropdownProps {
   onChange: (value: any) => void
   options: Option[]
   label?: string
+  ariaLabel?: string
   required?: boolean
   placeholder?: string
   className?: string
@@ -41,6 +42,7 @@ export const AppDropdown = ({
   onChange,
   options,
   label,
+  ariaLabel,
   required = false,
   placeholder,
   className = '',
@@ -51,6 +53,7 @@ export const AppDropdown = ({
 }: AppDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const restoreTriggerFocusRef = useRef(false)
   const describedById = useId()
   const { triggerRef, panelRef, panelStyle } = useWorkspaceAnchoredLayer(isOpen, { minWidth: 200 })
   const uniqueOptions = options.filter((option, index, items) => (
@@ -58,6 +61,12 @@ export const AppDropdown = ({
   ))
 
   useWorkspacePopupDismiss(isOpen, triggerRef, panelRef, () => setIsOpen(false))
+
+  useLayoutEffect(() => {
+    if (isOpen || !restoreTriggerFocusRef.current) return
+    restoreTriggerFocusRef.current = false
+    if (triggerRef.current?.isConnected) triggerRef.current.focus({ preventScroll: true })
+  }, [isOpen, triggerRef])
 
   useEffect(() => {
     if (isOpen) setSearchTerm('')
@@ -84,6 +93,7 @@ export const AppDropdown = ({
       onChange(nextValues)
     } else {
       onChange(optValue)
+      restoreTriggerFocusRef.current = true
       setIsOpen(false)
     }
   }
@@ -122,6 +132,7 @@ export const AppDropdown = ({
           disabled={disabled}
           aria-expanded={isOpen}
           aria-haspopup="dialog"
+          aria-label={ariaLabel ? `${ariaLabel}: ${getLabel()}` : undefined}
           aria-invalid={!!error}
           aria-describedby={describedBy}
           className={`

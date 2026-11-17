@@ -1,6 +1,6 @@
 :root,
 .nova-app-shell {
-  --brand-blue: #2563eb;
+  --brand-blue: #6a92ff;
   --background: oklch(0.105 0 0);
   --foreground: oklch(0.96 0 0);
   --card: oklch(0.16 0 0);
@@ -88,6 +88,7 @@
 
 :root[data-theme="pure-clarity"],
 .nova-app-shell[data-theme="pure-clarity"] {
+  --brand-blue: #2563eb;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

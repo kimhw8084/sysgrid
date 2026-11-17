@@ -1,0 +1,86 @@
+{
+  "status": "NOT_RUN_REAL_CLIENT_TESTS_REQUIRED",
+  "cases": [
+    {
+      "skill_id": "ui-intent-router",
+      "positive_prompt": "What UI patterns should govern editable records with permissions?",
+      "negative_prompt": "Explain an unrelated PostgreSQL migration lock.",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-pattern-resolution",
+      "positive_prompt": "Choose native table or keyboard grid for this record workflow.",
+      "negative_prompt": "Calculate compound interest for a savings account.",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-design-adapter",
+      "positive_prompt": "Use the approved UI tokens and existing components for this page.",
+      "negative_prompt": "Summarize a backend API response schema only.",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-form-interactions",
+      "positive_prompt": "Design a dialog form with validation and unsaved draft recovery.",
+      "negative_prompt": "What is a Redis TTL?",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-data-and-status",
+      "positive_prompt": "Design trustworthy monitoring charts with stale data.",
+      "negative_prompt": "Explain database indexing.",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-responsive-geometry",
+      "positive_prompt": "Find clipping and toolbar growth at approved zoom and width.",
+      "negative_prompt": "Compare two sorting algorithms.",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-accessibility-contract",
+      "positive_prompt": "Specify keyboard and screen-reader modal focus.",
+      "negative_prompt": "Write a SQL JOIN query.",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-content-localization",
+      "positive_prompt": "Design localized error messages and long-label overflow.",
+      "negative_prompt": "Describe server DNS routing.",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    },
+    {
+      "skill_id": "ui-evidence-gate",
+      "positive_prompt": "Define independent source-bound UI acceptance criteria.",
+      "negative_prompt": "How do TCP handshakes work?",
+      "positive_expected": "SHOULD_TRIGGER",
+      "negative_expected": "SHOULD_NOT_TRIGGER",
+      "codex_result": "NOT_RUN",
+      "opencode_result": "NOT_RUN"
+    }
+  ]
+}

@@ -77,6 +77,7 @@ type OperationalColumnCommonConfig = {
   width?: number
   minWidth?: number
   maxWidth?: number
+  operationalMinimumWidth?: number
   filter?: any
   lockWidth?: boolean
 }

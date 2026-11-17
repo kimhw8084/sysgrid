@@ -90,7 +90,19 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
         cooldownTicks={reducedMotion ? 1 : 80} warmupTicks={reducedMotion ? 80 : 0} backgroundColor="rgba(0,0,0,0)"
         onEngineStop={() => { if (lastFit.current !== graph) { lastFit.current = graph; fit() } }}
         onRenderFramePre={(context: CanvasRenderingContext2D, scale: number) => {
-          const placements: Array<{ left: number; right: number; top: number; bottom: number }> = []
+          const placements: Array<{ left: number; right: number; top: number; bottom: number }> = graph.nodes
+            .filter((node) => Number.isFinite(node.x) && Number.isFinite(node.y))
+            .map((node: any) => {
+              const selected = Number(node.id) === selectedId
+              const hasWorkSignal = ['attention', 'active', 'scheduled'].includes(node.workSignal?.level)
+              const radius = (hasWorkSignal ? selected ? 11 : 9 : selected ? 8 : 6) / scale
+              return {
+                left: Number(node.x) - radius,
+                right: Number(node.x) + radius,
+                top: Number(node.y) - radius,
+                bottom: Number(node.y) + radius,
+              }
+            })
           const nextLayout = new Map<number, string>()
           context.save()
           context.font = `600 ${12 / scale}px Inter, sans-serif`
@@ -115,7 +127,9 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
 
             const textWidth = context.measureText(label).width
             const padX = 5 / scale
-            const labelY = Number(node.y) + 9 / scale
+            // Keep the label clear of the node and its outer work-signal ring.
+            const labelOffset = hasWorkSignal ? (selected ? 14 : 12) : selected ? 12 : 9
+            const labelY = Number(node.y) + labelOffset / scale
             const bounds = {
               left: Number(node.x) - textWidth / 2 - padX,
               right: Number(node.x) + textWidth / 2 + padX,
@@ -165,7 +179,9 @@ export function AssetTopologyCanvas({ graph, selectedId, onSelect, className = '
           context.font = `600 ${12 / scale}px Inter, sans-serif`
           context.textAlign = 'center'; context.textBaseline = 'top'; context.fillStyle = appearance.ink
           const textWidth = context.measureText(label).width
-          const padX = 5 / scale, labelY = node.y + 9 / scale
+          const hasWorkSignal = ['attention', 'active', 'scheduled'].includes(node.workSignal?.level)
+          const labelOffset = hasWorkSignal ? (selected ? 14 : 12) : selected ? 12 : 9
+          const padX = 5 / scale, labelY = node.y + labelOffset / scale
           context.fillStyle = appearance.surface
           context.fillRect(node.x - textWidth / 2 - padX, labelY - 1 / scale, textWidth + padX * 2, 16 / scale)
           context.fillStyle = appearance.ink

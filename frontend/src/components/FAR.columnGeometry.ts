@@ -5,21 +5,23 @@ export type FarGoldenColumnGeometry = {
   headerName: string
   defaultWidth: number
   minWidth: number
+  maxWidth: number
   dynamicDefault?: boolean
 }
 
 export const FAR_GOLDEN_COLUMN_GEOMETRY: readonly FarGoldenColumnGeometry[] = [
-  { colId: 'system_name', headerName: 'System', defaultWidth: 132, minWidth: 120, dynamicDefault: true },
-  { colId: 'failure_type', headerName: 'Type', defaultWidth: 108, minWidth: 96, dynamicDefault: true },
-  { colId: 'title', headerName: 'Failure Mode', defaultWidth: 260, minWidth: 200, dynamicDefault: true },
-  { colId: 'severity', headerName: 'S', defaultWidth: 72, minWidth: 68 },
-  { colId: 'occurrence', headerName: 'O', defaultWidth: 84, minWidth: 84 },
-  { colId: 'detection', headerName: 'D', defaultWidth: 72, minWidth: 68 },
-  { colId: 'rpn', headerName: 'RPN', defaultWidth: 130, minWidth: 130 },
-  { colId: 'status', headerName: 'Maturity', defaultWidth: 164, minWidth: 152 },
-  { colId: 'vectors', headerName: 'Vectors', defaultWidth: 160, minWidth: 140 },
-  { colId: 'linked_rcas', headerName: 'Incidents', defaultWidth: 120, minWidth: 112 },
-  { colId: 'created_by_user_id', headerName: 'Created By', defaultWidth: 136, minWidth: 128, dynamicDefault: true },
+  { colId: 'id', headerName: 'ID', defaultWidth: 90, minWidth: 72, maxWidth: 140 },
+  { colId: 'system_name', headerName: 'System', defaultWidth: 120, minWidth: 120, maxWidth: 220, dynamicDefault: true },
+  { colId: 'failure_type', headerName: 'Type', defaultWidth: 108, minWidth: 96, maxWidth: 160, dynamicDefault: true },
+  { colId: 'title', headerName: 'Failure Mode', defaultWidth: 220, minWidth: 200, maxWidth: 360, dynamicDefault: true },
+  { colId: 'severity', headerName: 'S', defaultWidth: 72, minWidth: 68, maxWidth: 100 },
+  { colId: 'occurrence', headerName: 'O', defaultWidth: 84, minWidth: 84, maxWidth: 110 },
+  { colId: 'detection', headerName: 'D', defaultWidth: 72, minWidth: 68, maxWidth: 100 },
+  { colId: 'rpn', headerName: 'RPN', defaultWidth: 130, minWidth: 130, maxWidth: 180 },
+  { colId: 'status', headerName: 'Maturity', defaultWidth: 164, minWidth: 152, maxWidth: 220 },
+  { colId: 'vectors', headerName: 'Vectors', defaultWidth: 160, minWidth: 140, maxWidth: 220 },
+  { colId: 'linked_rcas', headerName: 'Incidents', defaultWidth: 120, minWidth: 112, maxWidth: 200 },
+  { colId: 'created_by_user_id', headerName: 'Created By', defaultWidth: 136, minWidth: 128, maxWidth: 220, dynamicDefault: true },
 ] as const
 
 export const FAR_GOLDEN_COLUMN_GEOMETRY_BY_ID = new Map(
@@ -31,6 +33,7 @@ export const FAR_GOLDEN_COLUMN_GEOMETRY_FINGERPRINT = FAR_GOLDEN_COLUMN_GEOMETRY
   headerName: entry.headerName,
   defaultWidth: entry.defaultWidth,
   minWidth: entry.minWidth,
+  maxWidth: entry.maxWidth,
   dynamicDefault: Boolean(entry.dynamicDefault),
 }))
 
@@ -40,7 +43,7 @@ export function sanitizeFarPersistedColumnGeometry(layout: any[]) {
     const geometry = FAR_GOLDEN_COLUMN_GEOMETRY_BY_ID.get(String(column?.colId || ''))
     if (!geometry) return column
     const width = Number(column?.width)
-    if (!Number.isFinite(width) || width >= OPERATIONAL_GRID_MIN_COLUMN_WIDTH) return column
+    if (!Number.isFinite(width) || width >= OPERATIONAL_GRID_MIN_COLUMN_WIDTH && width <= geometry.maxWidth) return column
     repairedColumnIds.push(geometry.colId)
     const recovered = {
       ...column,
@@ -68,7 +71,7 @@ export function buildFarGoldenGeometryResetState(columnDefs: any[]) {
     return [{
       colId,
       hide: false,
-      pinned: definition?.pinned ?? null,
+      pinned: ['id', 'title'].includes(colId) ? 'left' : null,
       width,
     }]
   })

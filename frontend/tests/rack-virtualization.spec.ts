@@ -28,8 +28,8 @@ test('keeps virtual aisle spacers aligned through far-right rack navigation', as
   }
 
   await page.goto('/racks')
-  await expect(page.getByRole('button', { name: `Open site ${site.name}`, exact: true })).toBeVisible()
-  await page.getByRole('button', { name: `Open site ${site.name}`, exact: true }).click()
+  await expect(page.getByRole('button', { name: `Filter racks by site ${site.name}`, exact: true })).toBeVisible()
+  await page.getByRole('button', { name: `Filter racks by site ${site.name}`, exact: true }).click()
 
   const rail = page.locator('#racks-grid')
   const cards = rail.locator('.glass-panel[data-rack-id]')

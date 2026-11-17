@@ -1166,7 +1166,7 @@ const ArchDashboard = ({ flows, onEdit, onAdd }: any) => {
               ))}
             </div>
           </div>
-          <div className="operational-grid-shell min-h-0 min-w-0 flex-1 ag-theme-alpine-dark" style={{ '--operational-grid-font-size': '11px' } as React.CSSProperties}>
+          <div className="operational-grid-shell min-h-0 min-w-0 flex-1 ag-theme-alpine-dark" style={{ '--operational-grid-font-size': '12px' } as React.CSSProperties}>
             <OperationalAgGrid
               rowData={filtered}
               columnDefs={columnDefs}

@@ -11,7 +11,12 @@
       (function() {
         let theme = 'nordic-frost-v1';
         try {
-          theme = localStorage.getItem('sysgrid-theme') || theme;
+          const storedTheme = localStorage.getItem('sysgrid-theme');
+          if (storedTheme === 'pure-clarity' || storedTheme === 'light') {
+            theme = 'pure-clarity';
+          } else if (storedTheme === 'nordic-frost-v1' || storedTheme === 'dark') {
+            theme = 'nordic-frost-v1';
+          }
         } catch (error) {
           if (!(error instanceof DOMException && ['SecurityError', 'QuotaExceededError', 'NS_ERROR_DOM_QUOTA_REACHED'].includes(error.name))) throw error;
         }

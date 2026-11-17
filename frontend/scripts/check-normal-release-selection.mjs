@@ -5,7 +5,11 @@ import path from 'node:path'
 
 // Collect only. Ensure every newly released workflow is actually selected in
 // the normal-user stage while its root-capability regression remains intact.
-const required = JSON.parse(readFileSync('tests/qualification-suite.json', 'utf8')).release_blocking
+const qualificationSuite = JSON.parse(readFileSync('tests/qualification-suite.json', 'utf8'))
+const required = qualificationSuite.release_blocking
+const retiredNotices = qualificationSuite.retired_route_notices
+assert(Array.isArray(retiredNotices) && retiredNotices.length > 0, 'Retired route notices must have a separate normal-user qualification inventory')
+assert.deepEqual(retiredNotices.filter(name => required.includes(name)), [])
 const report = JSON.parse(execFileSync(process.execPath, [
   'node_modules/@playwright/test/cli.js', 'test', '--config=playwright.v1.config.ts', '--list', '--reporter=json',
 ], { encoding: 'utf8', env: { ...process.env, SYSGRID_DESKTOP_ONLY: '1', SYSGRID_VERIFY_PROFILE: 'normal-v1' } }))
@@ -22,7 +26,7 @@ function collect(suite, inheritedFile = '') {
   for (const child of suite.suites || []) collect(child, file)
 }
 for (const suite of report.suites) collect(suite)
-for (const name of required) {
+for (const name of [...required, ...retiredNotices]) {
   const specs = byFile.get(name) || []
   assert(specs.length > 0, `Missing normal-role release workflow ${name}`)
   assert(specs.every(spec => spec.tests.length > 0 && spec.tests.every(test => test.expectedStatus === 'passed')), `Skipped normal-role release workflow ${name}`)
@@ -47,5 +51,5 @@ for (const [file, prefix] of [
     assert(byFile.get(file).some(spec => spec.title === `${prefix} ${theme} theme`), `Missing ${file} ${theme} heading regression`)
   }
 }
-console.log(JSON.stringify({ selected: Object.fromEntries(required.map(name => [name, byFile.get(name).length])) }, null, 2))
-console.log('Normal-role released workflow selection: PASS')
+console.log(JSON.stringify({ selected: Object.fromEntries(required.map(name => [name, byFile.get(name).length])), retired_route_notices: Object.fromEntries(retiredNotices.map(name => [name, byFile.get(name).length])) }, null, 2))
+console.log('Normal-role active workflows and separate retired-route notices selection: PASS')

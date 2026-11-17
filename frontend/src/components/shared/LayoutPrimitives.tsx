@@ -1,5 +1,5 @@
 import React, { ReactNode, useLayoutEffect, useRef } from 'react'
-import { Maximize2, Minimize2, Search, type LucideIcon } from 'lucide-react'
+import { Maximize2, Minimize2, Search } from 'lucide-react'
 import { isGoldenActivityColumnsTitle } from './OperationalGoldenToolbarContract'
 import { Button as NovaButton } from '../ui/button'
 import { Input as NovaInput } from '../ui/input'
@@ -31,7 +31,6 @@ export const ShellHeader = ({
 export const PageHeader = ({
   eyebrow,
   title,
-  titleIcon: TitleIcon,
   subtitle,
   meta,
   actions,
@@ -40,7 +39,6 @@ export const PageHeader = ({
 }: {
   eyebrow?: ReactNode
   title: ReactNode
-  titleIcon?: LucideIcon
   subtitle?: ReactNode
   meta?: ReactNode
   actions?: ReactNode
@@ -50,16 +48,13 @@ export const PageHeader = ({
   <section className={join(GOLDEN_PAGE_HEADER_CLASS, className)} style={{ ...style, '--workspace-ink': 'var(--brand-blue, var(--accent-primary))' } as React.CSSProperties} data-golden-page-header="true" data-slot="page-header">
     <div className="min-w-0 basis-[240px] flex-1 space-y-1.5">
       {eyebrow && <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent-primary)]">{eyebrow}</div>}
-      <div className={join('min-w-0', TitleIcon && 'flex items-center gap-3')}>
-        {TitleIcon && <span className="page-header-icon" aria-hidden="true"><TitleIcon size={18} strokeWidth={2} /></span>}
-        <div className="min-w-0 space-y-0.5">
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{title}</h1>
-          {subtitle && (
-            <p className="max-w-3xl text-sm leading-5 text-[var(--text-secondary)]">
-              {subtitle}
-            </p>
-          )}
-        </div>
+      <div className="min-w-0 space-y-0.5">
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{title}</h1>
+        {subtitle && (
+          <p className="max-w-3xl text-sm leading-5 text-[var(--text-secondary)]">
+            {subtitle}
+          </p>
+        )}
       </div>
       {meta && <div className="flex flex-wrap items-center gap-3">{meta}</div>}
     </div>

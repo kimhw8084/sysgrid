@@ -69,7 +69,7 @@ describe('FAR Monitoring-golden structural contract', () => {
     expect(far).toContain('width: farDefaultWidths.failure_type')
     expect(far).toContain('width: farDefaultWidths.title')
     expect(far).toContain('width: farDefaultWidths.created_by_user_id')
-    expect(far).toContain("headerName: 'Failure Mode', values: loadedModes.map((mode: any) => mode.title), minWidth: 200, fallbackWidth: 260, maxDefaultWidth: 360")
+    expect(far).toContain("headerName: 'Failure Mode', values: loadedModes.map((mode: any) => mode.title), minWidth: 200, fallbackWidth: 220, maxDefaultWidth: 300")
 
     expect((far.match(/createOperationalMetricBadgeColumn\(\{/g) || []).length).toBe(4)
     expect(far).toContain("resolveTone: (value) => value >= 8 ? 'critical' : value >= 5 ? 'warning' : 'healthy'")

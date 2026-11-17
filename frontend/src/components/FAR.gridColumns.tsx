@@ -24,6 +24,12 @@ export type FarAnalyticalMode = {
   [key: string]: any
 }
 
+export const FAR_FROZEN_IDENTITY_COLUMN_IDS = ['title'] as const
+
+export function freezeFarIdentityColumn(column: Record<string, any>): Record<string, any> {
+  return { ...column, pinned: 'left', lockPinned: true, lockPosition: 'left' }
+}
+
 export type FarMaturityLevelDefinition = {
   lv: number
   label: string
@@ -44,14 +50,17 @@ export const FAR_MATURITY_LEVELS: ReadonlyArray<FarMaturityLevelDefinition> = [
   { lv: 0, label: 'Exposed', desc: 'No Monitoring / No Action', color: 'bg-rose-600', tooltip: 'SYSTEM EXPOSED: Critical blind spot. No telemetry, no workaround, and no permanent resolution identified. High risk.' },
 ]
 
-export function getFarMaturityLevel(mode: FarAnalyticalMode) {
-  const hasVerifiedPrevention = (mode.prevention_actions || []).some((action: any) =>
+export function getFarMaturityLevel(mode: FarAnalyticalMode | null | undefined) {
+  const preventionActions = Array.isArray(mode?.prevention_actions) ? mode.prevention_actions : []
+  const mitigations = Array.isArray(mode?.mitigations) ? mode.mitigations : []
+  const causes = Array.isArray(mode?.causes) ? mode.causes : []
+  const hasVerifiedPrevention = preventionActions.some((action: any) =>
     action?.status === 'Verified' || action?.status === 'Completed'
   )
-  if (mode.status === 'Prevented' || hasVerifiedPrevention) return 8
-  const hasMonitoring = mode.mitigations?.some((mitigation) => mitigation.mitigation_type === 'Monitoring') || false
-  const hasWorkaround = mode.mitigations?.some((mitigation) => mitigation.mitigation_type === 'Workaround') || false
-  const hasResolution = mode.causes?.some((cause) => (cause.resolutions?.length || 0) > 0) || false
+  if (mode?.status === 'Prevented' || hasVerifiedPrevention) return 8
+  const hasMonitoring = mitigations.some((mitigation) => mitigation?.mitigation_type === 'Monitoring')
+  const hasWorkaround = mitigations.some((mitigation) => mitigation?.mitigation_type === 'Workaround')
+  const hasResolution = causes.some((cause) => Array.isArray(cause?.resolutions) && cause.resolutions.length > 0)
 
   if (hasMonitoring && hasResolution && hasWorkaround) return 7
   if (hasMonitoring && hasResolution) return 6

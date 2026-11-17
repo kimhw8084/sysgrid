@@ -13,11 +13,11 @@ import { applyOperationalHeaderWidthBounds } from '../shared/operationalHeaderWi
 export const ASSET_GOLDEN_COLUMN_FIELDS = [
   'name',
   'system',
+  'manufacturer',
   'type',
   'status',
   'environment',
   'owner',
-  'manufacturer',
   'model',
   'os_name',
   'os_version',
@@ -108,11 +108,21 @@ export function buildAssetGoldenColumns({
       kind: 'plain',
       field: 'system',
       headerName: 'System',
-      width: 118,
+      // System is an operational identifier. Give the common full value room
+      // in the default grid so users do not have to discover it with hover.
+      width: 150,
       minWidth: 112,
-      maxWidth: 128,
+      maxWidth: 150,
       hide: hiddenColumns.includes('system'),
       emptyValue: 'Unassigned',
+    },
+    {
+      kind: 'plain',
+      field: 'manufacturer',
+      headerName: 'Make',
+      width: 104,
+      minWidth: 104,
+      hide: hiddenColumns.includes('manufacturer'),
     },
     {
       kind: 'mappedText',
@@ -131,8 +141,9 @@ export function buildAssetGoldenColumns({
       field: 'status',
       headerName: 'Status',
       width: OPERATIONAL_GRID_WIDTHS.badge,
-      minWidth: OPERATIONAL_GRID_WIDTHS.badge,
+      minWidth: OPERATIONAL_GRID_WIDTHS.badgeMin,
       maxWidth: 144,
+      operationalMinimumWidth: OPERATIONAL_GRID_WIDTHS.badgeMin,
       fontSize,
       colorMap: ASSET_STATUS_COLORS,
       knownValues: Object.keys(ASSET_STATUS_COLORS),
@@ -146,6 +157,7 @@ export function buildAssetGoldenColumns({
       width: 92,
       minWidth: 92,
       maxWidth: 96,
+      operationalMinimumWidth: 92,
       hide: hiddenColumns.includes('environment'),
     },
     {
@@ -157,14 +169,6 @@ export function buildAssetGoldenColumns({
       maxWidth: 112,
       hide: hiddenColumns.includes('owner'),
       emptyValue: 'Unowned',
-    },
-    {
-      kind: 'plain',
-      field: 'manufacturer',
-      headerName: 'Make',
-      width: 104,
-      minWidth: 104,
-      hide: hiddenColumns.includes('manufacturer'),
     },
     {
       kind: 'plain',
@@ -318,7 +322,7 @@ export function buildAssetGoldenColumns({
     },
     {
       kind: 'action',
-      width: 170,
+      width: 160,
       renderActions: (asset) => renderOperationalActionButtons(
         <>
           <button
@@ -375,7 +379,8 @@ export function buildAssetGoldenColumns({
           >
             <MoreVertical size={13} />
           </button>
-        </>
+        </>,
+        'gap-0.5',
       ),
     },
   ]

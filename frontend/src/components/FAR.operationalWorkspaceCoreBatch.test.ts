@@ -147,7 +147,7 @@ describe('PC-50 FAR operational workspace core + saved-view continuity exact G b
     expect(repaired.layout.find((entry) => entry.colId === 'rpn')?.width).toBe(40)
     expect(repaired.layout.find((entry) => entry.colId === 'system_name')?.width).toBe(160)
 
-    expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'title')).toMatchObject({ minWidth: 200, defaultWidth: 260 })
+    expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'title')).toMatchObject({ minWidth: 200, defaultWidth: 220 })
     expect(FAR_GOLDEN_COLUMN_GEOMETRY.find((entry) => entry.colId === 'rpn')).toMatchObject({ minWidth: 130, defaultWidth: 130 })
     expectAll(hooksSource, [
       'if (!isAutoResizeSource && changedColumns.length > 0)',

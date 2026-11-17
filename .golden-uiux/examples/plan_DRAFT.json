@@ -1,0 +1,42 @@
+{
+  "task_id": "DEMO-001",
+  "source_revision": "UNCOMMITTED_REVIEW_ONLY",
+  "pattern_ids": [
+    "P02",
+    "P04",
+    "P12"
+  ],
+  "state_matrix": {
+    "P02": [
+      "default",
+      "filter",
+      "permission-denied"
+    ],
+    "P04": [
+      "pristine",
+      "dirty",
+      "invalid",
+      "pending",
+      "rejected",
+      "persisted"
+    ],
+    "P12": [
+      "keyboard",
+      "focus",
+      "screen reader"
+    ]
+  },
+  "acceptance_cases": [
+    {
+      "id": "demo-1",
+      "outcome": "Keyboard-operable form and filtering",
+      "status": "NOT_RUN"
+    }
+  ],
+  "risk_scope": {
+    "allowed_paths": [],
+    "permission_scope": "UNKNOWN",
+    "destructive_changes": false
+  },
+  "claims_complete": false
+}

@@ -269,7 +269,7 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
     queryKey: ['device-services', formData.device_id],
     queryFn: async () => {
       if (!formData.device_id) return []
-      return (await apiFetch(`/api/v1/logical-services/?device_id=${formData.device_id}`)).json()
+      return (await apiFetch(`/api/v1/logical-services?device_id=${formData.device_id}`)).json()
     },
     enabled: !!formData.device_id
   })
@@ -277,7 +277,7 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
   // Fetch knowledge entries for recovery docs
   const { data: knowledgeEntries } = useQuery({
     queryKey: ['knowledge-entries', 'monitoring', item?.id || 'new'],
-    queryFn: async () => (await apiFetch(`/api/v1/knowledge/?embedded_consumer=monitoring&monitoring_id=${item!.id}`)).json(),
+    queryFn: async () => (await apiFetch(`/api/v1/knowledge?embedded_consumer=monitoring&monitoring_id=${item!.id}`)).json(),
     // A new monitor has no embedded target yet. Do not issue an unscoped
     // preview projection request; the recovery picker is populated for an
     // existing monitor or after the saved monitor is reopened.
@@ -295,7 +295,7 @@ export function MonitoringForm({ item: incomingItem, devices, categories, severi
   const mutation = useMutation({
     meta: { handlesErrorToast: true },
     mutationFn: async (data: any) => {
-      const url = item ? `/api/v1/monitoring/${item.id}` : '/api/v1/monitoring/'
+      const url = item ? `/api/v1/monitoring/${item.id}` : '/api/v1/monitoring'
       const method = item ? 'PUT' : 'POST'
       if (item && !/^[0-9a-f]{32}$/.test(item.edit_revision || '')) {
         throw new Error('The monitor edit revision is unavailable. Your draft is preserved. Copy your changes, then reload and reopen the monitor before saving.')

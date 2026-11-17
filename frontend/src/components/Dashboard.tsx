@@ -44,6 +44,7 @@ import {
   resolveModuleActionState,
   useModulePolicy,
 } from '../policy/ModulePolicy'
+import { DashboardStatusDistribution } from './DashboardStatusDistribution'
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
@@ -175,20 +176,7 @@ const StatCard = ({
                 <span className="truncate text-[var(--text-secondary)]">{key}</span>
                 <span className="font-medium text-[var(--text-primary)]">{totalForType}</span>
               </div>
-              <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-[var(--surface-hover)] p-0.5" aria-label={`${key} persisted counts`}>
-                {Object.entries(value).map(([status, count]) => (
-                  <div
-                    key={status}
-                    title={`${status}: ${count}`}
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      status === 'Active' || status === 'Operational' || status === 'Existing' ? 'bg-emerald-500' :
-                      status === 'Critical' || status === 'Down' ? 'bg-rose-500' :
-                      status === 'Maintenance' || status === 'Warning' ? 'bg-amber-500' : 'bg-blue-500'
-                    }`}
-                    style={{ width: `${totalForType ? (count / totalForType) * 100 : 0}%` }}
-                  />
-                ))}
-              </div>
+              <DashboardStatusDistribution category={key} values={value} total={totalForType} />
             </div>
           )
         })}
@@ -424,7 +412,7 @@ export default function Dashboard({ onNavigate: _onNavigate }: { onNavigate?: (t
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={serviceStatusData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+                  <XAxis dataKey="name" padding={{ left: 0, right: 32 }} axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
                   <YAxis hide />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]} isAnimationActive={false}>

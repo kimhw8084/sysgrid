@@ -3,7 +3,16 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
 
-import { ToolbarButton, ToolbarSegmented } from './LayoutPrimitives'
+import { PageHeader, ToolbarButton, ToolbarSegmented } from './LayoutPrimitives'
+
+describe('PageHeader', () => {
+  it('keeps title typography aligned without repeating the navigation icon', () => {
+    render(<PageHeader title="Assets" subtitle="Inventory" />)
+
+    expect(screen.getByRole('heading', { name: 'Assets' })).toHaveClass('text-2xl', 'font-bold')
+    expect(document.querySelector('.page-header-icon')).toBeNull()
+  })
+})
 
 describe('ToolbarButton', () => {
   it('keeps the shared inline layout contract', () => {

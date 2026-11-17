@@ -1,0 +1,302 @@
+{
+  "accessibility_policy": {
+    "baseline": "WCAG 2.2 Level A/AA criteria are applicable Golden evaluation targets where relevant; no SysGrid-wide WCAG 2.2 AA conformance claim is made.",
+    "exceptions": [],
+    "project_specific_sources": [
+      "README.md",
+      "docs/ui-table-standard.md"
+    ],
+    "project_specific_thresholds": "The table standard recommends at least 4.5:1 text contrast and 3:1 focus/non-text state-boundary contrast.",
+    "source_status": "SysGrid repository source establishes desktop-only scope, keyboard use, accessibility zoom, and specific grid contrast/focus conventions. It does not establish a blanket WCAG 2.2 AA project contract. Actual route-level conformance remains NOT_RUN."
+  },
+  "api_contract_authority": {
+    "api_prefix_source": "backend/app/core/config.py",
+    "identity_and_tenant_resolution_sources": [
+      "backend/app/database.py",
+      "backend/app/api/utils.py"
+    ],
+    "openapi_evidence_policy": "G2 requires fresh backend-generated OpenAPI bound to these source hashes. No hand-authored server_route substitutes are accepted.",
+    "rack_collection_source": "backend/app/api/racks.py",
+    "route_mount_source": "backend/app/main.py",
+    "source_files_sha256": {
+      "backend/app/api/racks.py": "b953568a35ae983223332c38da97a7e4abb6f8f94891e043ed047e825dc9dd7b",
+      "backend/app/api/utils.py": "4baa9c8b2198628ca69046f70dc0f75d6c06cefc108a8470643592cc9f55dc72",
+      "backend/app/core/config.py": "9675b69ac7bc0dcd13323d717cbc22434a3424e7c72ab26d364a64fdf50b851b",
+      "backend/app/database.py": "af49d9963e138119e900fa01a524f395fc9f2d2c05064df149eb1a69d2a04587",
+      "backend/app/main.py": "b3c8d8a79c3cbad7db2951640745f637c6609c95c9f354bcd9d3dce74fff363b",
+      "backend/app/schemas/rack_collection.py": "fed3aaad8b8a83bd96007a106ba6604f0c3fa6f697c9da391a309d9fa0bfdfd0",
+      "backend/requirements.lock": "f1e9343844b48c5281bffd6274615f94e331b5167626f8cbd49a0fb8639d9f27",
+      "contracts/monitoring_domain_contract_v1.json": "be19c1fefdc01e89b42278e2778613446a2f1a6855813a817c6475b2b8c5be5c"
+    },
+    "source_of_truth": "FastAPI route table and request/response declarations emitted by backend.app.main:app.openapi(); source definitions remain authoritative."
+  },
+  "approval_status": "PROPOSED",
+  "component_files_sha256": {
+    "app_shell": "3af50bc1b36845faefe644ea2a76abe65b2b10d7f2d5154f310dab7832fae870",
+    "asset_registry": "38059df3f26972013406b29286a299b50b370401e8dd311bfbd3959a0646893b",
+    "badge": "f37c6cda6a1b385f2c455071bfa4ef13ea6a129c93cea435638c02eba43cc04a",
+    "button": "0c60e3e48ae4494e41681ab0c496843d554c64881cd11ab73fff62c5c70e2dd5",
+    "dropdown_menu": "a6ef13a992e5f893ca455d11512868ae28c24790db87cbe0a41d841d959a312e",
+    "input": "f51690fa0baf79b8624ef7caf6689351f480e79cd03067a4577de6db48ec5a89",
+    "monitoring_grid": "28ea5b6e37546b32911e65fd8e0c72bad18ed62bfba1f18daf77decf86236843",
+    "navigation": "0ca6c263b4ed7487c146280fb52edef9b48f186d4ab2704eb5c7fa04e1015e64",
+    "rack_view": "79b511e2772dbbf0c0cfde7e6c581a8fef64fb2a72f1bfcf4a42819b3f4e4330",
+    "record_grid": "329d113cb7b3d8c4fa98a32e555c5c031e946f60742341bf276033071724ef63",
+    "route_ownership": "24f2adaa0f8fe38f9a26d04d9c5ca605bd0fe53aa8711d0b3e3bc595d3edc8c4",
+    "route_policy": "79341f5c1f15a21d243d0b60aae5385ec51a08036ed0772932b4e4a5abf04a0f",
+    "select": "84b2ef15be33622bc672d0a967054480a2373db6aad5f0d1d16841b474a2d4c6",
+    "tooltip": "04ae6b75401739514e432a4482c9a9e04755ddee9c9cdea68ef0d577c3988656"
+  },
+  "component_registry": {
+    "app_shell": "frontend/src/App.tsx",
+    "asset_registry": "frontend/src/components/FAR.tsx",
+    "badge": "frontend/src/components/ui/badge.tsx",
+    "button": "frontend/src/components/ui/button.tsx",
+    "dropdown_menu": "frontend/src/components/ui/dropdown-menu.tsx",
+    "input": "frontend/src/components/ui/input.tsx",
+    "monitoring_grid": "frontend/src/components/MonitoringGrid.tsx",
+    "navigation": "frontend/src/components/shared/ShellNavigation.tsx",
+    "rack_view": "frontend/src/components/Racks.tsx",
+    "record_grid": "frontend/src/components/shared/OperationalGridMatrix.tsx",
+    "route_ownership": "frontend/src/policy/moduleCatalog.ts",
+    "route_policy": "frontend/src/policy/ModulePolicy.tsx",
+    "select": "frontend/src/components/ui/select.tsx",
+    "tooltip": "frontend/src/components/ui/tooltip.tsx"
+  },
+  "density_modes": {
+    "approved_for_profile": false,
+    "density_override_policy": "Preserve this existing source convention; do not infer a new compact density.",
+    "observed_operational_grid": {
+      "body_text_px": 12,
+      "column_label_px": 11,
+      "minimum_desktop_row_px": 40,
+      "minimum_header_px": 42
+    },
+    "source_standard": "docs/ui-table-standard.md"
+  },
+  "geometry_baselines": [],
+  "known_unknowns": [
+    "Supported desktop viewport bounds and zoom behavior remain UNKNOWN.",
+    "Which observed token values are approved product identity rather than compatibility code.",
+    "Cross-user and cross-tenant preference isolation remains UNVERIFIED.",
+    "Route-specific visual baselines and rendered G1, G3, G4, and G5 results remain NOT_RUN. G2 API contract evaluation passes against backend-generated OpenAPI and synthetic in-process ASGI evidence; live-server HTTP and live identity authorization remain NOT_RUN.",
+    "Live Codex/OpenCode skill delivery (G6) remains UNKNOWN.",
+    "Independent current application qualification remains NOT_RUN; production readiness is NOT_ASSESSED.",
+    "SysGrid visual-enforcement profile amendment is PROPOSED and not applied to the active project.",
+    "SysGrid browser enforcement for the current source snapshot is NOT_RUN because the Mac-local app/browser runtime is inaccessible in this session.",
+    "The configured baseline enforces only collisions, clipping, and document-level horizontal overflow; route-specific contrast, geometry, focus, scroll, overlays, image, token, and temporal checks remain NOT_RUN or NOT_CONFIGURED as listed in visual_enforcement."
+  ],
+  "observed_source_repository": "SysGrid frozen local source snapshot (inspected in a disposable reconciliation copy)",
+  "owner_identity_reference": "Explicit sole-owner decision in the Codex conversation recorded 2026-11-11T11:39:50Z; not a cryptographic signature.",
+  "profile_digest": "fda34fd703a0fb286e350ba8df607553998de2062e199e57a1c572c27def137d",
+  "profile_id": "sysgrid-visual-enforcement-profile-proposal",
+  "profile_version": "0.2.6-visual-enforcement-proposed-1",
+  "project_id": "sysgrid",
+  "promotion_allowed": false,
+  "promotion_controls": {
+    "authorization_preflight": "NOT_RUN",
+    "behavioral_review": "NOT_RUN",
+    "independent_review": "NOT_RUN",
+    "integration_review": "NOT_RUN",
+    "publication_review": "NOT_RUN",
+    "structural_review": "NOT_RUN"
+  },
+  "quality_gate_map": {
+    "G1_DATA_TRUTH": "NOT_RUN",
+    "G2_API_CONTRACT": "PASS",
+    "G3_ACCESSIBILITY": "NOT_RUN",
+    "G4_RENDERED_CONTRAST": "NOT_RUN",
+    "G5_ELEMENT_GEOMETRY": "NOT_RUN",
+    "G6_EVIDENCE_AND_RULE_DELIVERY": "UNKNOWN"
+  },
+  "reconciliation_history": {
+    "previous_profile": {
+      "historical_dirty_status_count": 105,
+      "historical_overlay_sha256": "315dff086f985dd29b94aaa577ae8ea44e566bbb88c1e69dafe45b82a87ed3b3",
+      "profile_file_sha256": "9768c68dc9a60a77d9a5bcfd367569069a896542fe0b7653598cffd4a70f4c21",
+      "profile_semantic_sha256": "2f437b170ba629bc5fceee05a1590481146c21e82dcfff6f3897678b13b58e00",
+      "profile_version": "0.2.5-draft-2026-11-08",
+      "source_provenance": "Read-only inspection of the local checkout on 2026-11-08. Git HEAD 36a34cb659bf5fc05ec518d9b1910daeb79748cb; 105 dirty status entries; complete visible overlay lock sha256:315dff086f985dd29b94aaa577ae8ea44e566bbb88c1e69dafe45b82a87ed3b3. This is source-observed, not owner-approved or an application qualification.",
+      "source_revision": "git:36a34cb659bf5fc05ec518d9b1910daeb79748cb;working-tree-overlay-sha256:315dff086f985dd29b94aaa577ae8ea44e566bbb88c1e69dafe45b82a87ed3b3",
+      "status": "SUPERSEDED_PROVENANCE_PRESERVED_FOR_AUDIT"
+    },
+    "removed_empty_placeholder_reference": {
+      "observed_bytes": 0,
+      "path": "docs/operational-workspace-law.md",
+      "previous_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": "The prior source binding is the SHA-256 of an empty file; retained as historical audit data and excluded from active authority."
+    }
+  },
+  "reviewer_identity_reference": null,
+  "route_ownership": {
+    "active_route_aliases": {
+      "/asset": [
+        "/asset-real"
+      ],
+      "/network": [
+        "/network-real"
+      ],
+      "/vendors": [
+        "/vendors-real"
+      ]
+    },
+    "active_sysgrid_canonical_routes": [
+      "/",
+      "/asset",
+      "/external",
+      "/far",
+      "/logs",
+      "/monitoring",
+      "/network",
+      "/racks",
+      "/services",
+      "/settings",
+      "/vendors"
+    ],
+    "catalog_is_ui_route_ownership_only": true,
+    "retained_retired_route_notices": [
+      "/architecture",
+      "/knowledge",
+      "/projects",
+      "/research"
+    ],
+    "separate_application_ownership_preserved": true,
+    "source_of_truth": "contracts/system_management_v1.json plus frontend/src/policy/moduleCatalog.ts"
+  },
+  "source_files_sha256": {
+    "backend/app/api/racks.py": "b953568a35ae983223332c38da97a7e4abb6f8f94891e043ed047e825dc9dd7b",
+    "backend/app/api/utils.py": "4baa9c8b2198628ca69046f70dc0f75d6c06cefc108a8470643592cc9f55dc72",
+    "backend/app/core/config.py": "9675b69ac7bc0dcd13323d717cbc22434a3424e7c72ab26d364a64fdf50b851b",
+    "backend/app/database.py": "af49d9963e138119e900fa01a524f395fc9f2d2c05064df149eb1a69d2a04587",
+    "backend/app/main.py": "b3c8d8a79c3cbad7db2951640745f637c6609c95c9f354bcd9d3dce74fff363b",
+    "backend/requirements.lock": "f1e9343844b48c5281bffd6274615f94e331b5167626f8cbd49a0fb8639d9f27",
+    "contracts/monitoring_domain_contract_v1.json": "be19c1fefdc01e89b42278e2778613446a2f1a6855813a817c6475b2b8c5be5c",
+    "contracts/system_management_v1.json": "edacddc0b4406f1f3b5b1f23b0bbba91b0488bc13524b7705288a05fd59907d5",
+    "docs/ui-table-standard.md": "b592952438ba402f48e623638f786b83f62b92ee63540a51e203de0837dbef15",
+    "frontend/components.json": "799981ee7fd0dd684e520311b88eacbba6f9f9bc99c13577fd1634ea79a99323",
+    "frontend/package.json": "4c4a85216178c346a3ef3c4530a526e350fb4fed71fddcde1ff9033ec1e176d7",
+    "frontend/src/App.tsx": "3af50bc1b36845faefe644ea2a76abe65b2b10d7f2d5154f310dab7832fae870",
+    "frontend/src/index.css": "de561a768d7b329de6e5de9f302d36ec0651fd4e8e476d1e8983755d1ca26242",
+    "frontend/src/policy/moduleCatalog.ts": "24f2adaa0f8fe38f9a26d04d9c5ca605bd0fe53aa8711d0b3e3bc595d3edc8c4",
+    "frontend/src/theme-compatibility.css": "93a4be06b7d6417d84c8c782e0e16a19748ed9d142b8dba968587b23ed9d2019",
+    "frontend/src/theme-surface-law.css": "c734133e7b344688d72768dc8b0a5a39483bdb3cf8eb4ceb89297760b726b4c3"
+  },
+  "source_provenance": "Isolated proposed visual-enforcement overlay bound to the current 3,758-file SysGrid source inventory (6fa5b3d634dc67106a6bbca79a86508cb9ed405f6bffdb3445b51d72236e1f5b); the complete inventory was rehashed and matched with zero mismatches. The lock excludes dotenv paths; backend/.env was not inspected. This proposal does not alter the approved active profile or application source.",
+  "source_revision": "git:36a34cb659bf5fc05ec518d9b1910daeb79748cb;source-snapshot-sha256:6fa5b3d634dc67106a6bbca79a86508cb9ed405f6bffdb3445b51d72236e1f5b",
+  "supported_viewports": {
+    "mobile_product_scope": "OUT_OF_SCOPE",
+    "reference_reported": "1440x900",
+    "source": "README.md: desktop-only product experience; reference viewport is an observed qualification point, not a supported-bound claim.",
+    "supported_bounds": "UNKNOWN"
+  },
+  "token_profile": {
+    "component_system": {
+      "icons": "lucide",
+      "observed": "frontend/components.json",
+      "style": "base-nova",
+      "tailwind_css_variables": true
+    },
+    "dark_fallback": "root without data-theme uses dark tokens (source-observed)",
+    "font_family_observed": "Geist Variable / SF Pro Display / system-ui; Inter also used in grid selectors (source-observed, not a global typography approval)",
+    "rack_spatial_tokens": {
+      "dark": {
+        "accent": "#3b82f6",
+        "ink": "#ececec",
+        "inset": "#171717",
+        "muted": "#b8b8b8"
+      },
+      "light": {
+        "accent": "#1d4ed8",
+        "ink": "#101828",
+        "inset": "#f2f4f7",
+        "muted": "#475467"
+      }
+    },
+    "source_refs_sha256": {
+      "contracts/system_management_v1.json": "edacddc0b4406f1f3b5b1f23b0bbba91b0488bc13524b7705288a05fd59907d5",
+      "docs/ui-table-standard.md": "b592952438ba402f48e623638f786b83f62b92ee63540a51e203de0837dbef15",
+      "frontend/components.json": "799981ee7fd0dd684e520311b88eacbba6f9f9bc99c13577fd1634ea79a99323",
+      "frontend/package.json": "4c4a85216178c346a3ef3c4530a526e350fb4fed71fddcde1ff9033ec1e176d7",
+      "frontend/src/App.tsx": "3af50bc1b36845faefe644ea2a76abe65b2b10d7f2d5154f310dab7832fae870",
+      "frontend/src/index.css": "de561a768d7b329de6e5de9f302d36ec0651fd4e8e476d1e8983755d1ca26242",
+      "frontend/src/policy/moduleCatalog.ts": "24f2adaa0f8fe38f9a26d04d9c5ca605bd0fe53aa8711d0b3e3bc595d3edc8c4",
+      "frontend/src/theme-compatibility.css": "93a4be06b7d6417d84c8c782e0e16a19748ed9d142b8dba968587b23ed9d2019",
+      "frontend/src/theme-surface-law.css": "c734133e7b344688d72768dc8b0a5a39483bdb3cf8eb4ceb89297760b726b4c3"
+    },
+    "theme_stylesheets": [
+      "frontend/src/index.css",
+      "frontend/src/theme-compatibility.css",
+      "frontend/src/theme-surface-law.css"
+    ],
+    "themes_observed": {
+      "dark": "nordic-frost-v1",
+      "dark_alias": "dark",
+      "light": "pure-clarity",
+      "light_alias": "light"
+    }
+  },
+  "user_preferences": {
+    "cross_user_tenant_isolation": "UNVERIFIED",
+    "source_reference": "frontend/src/components/FAR.workspacePreference.ts"
+  },
+  "proposal_lineage": {
+    "parent_approved_profile_digest": "860d7e1600701dc776a668f3857c4ac7934e17efef9bfed393738afb898768da",
+    "parent_approval_status": "APPROVED",
+    "this_overlay_owner_decision": "NOT_REQUESTED",
+    "provenance": "The existing approved profile is preserved as the parent; this visual-enforcement amendment remains PROPOSED."
+  },
+  "visual_enforcement": {
+    "baseline_id": "golden.visual-enforcement-baseline.v1",
+    "baseline_rationale": "Enables objective text-collision, text-clipping, and document-level horizontal-overflow checks. Numeric tolerances are the candidate runner defaults, not newly invented SysGrid design requirements.",
+    "mandatory_checks": [
+      "collisions",
+      "clipping",
+      "page_overflow"
+    ],
+    "tolerance_css_px": 1,
+    "minimum_collision_area_css_px": 4,
+    "minimum_collision_fraction": 0.12,
+    "forbid_page_horizontal_overflow": true,
+    "project_specific_checks": {
+      "contrast": {
+        "status": "NOT_CONFIGURED",
+        "source": "docs/ui-table-standard.md",
+        "source_sha256": "b592952438ba402f48e623638f786b83f62b92ee63540a51e203de0837dbef15",
+        "declared_targets": "4.5:1 text; 3:1 focus and non-text state boundaries",
+        "reason": "Rendered selector and state coverage has not been source-bound and measured."
+      },
+      "operational_grid_geometry": {
+        "status": "NOT_CONFIGURED",
+        "source": "docs/ui-table-standard.md",
+        "source_sha256": "b592952438ba402f48e623638f786b83f62b92ee63540a51e203de0837dbef15",
+        "declared_targets": {
+          "header_min_height_css_px": 42,
+          "desktop_row_min_height_css_px": 40,
+          "body_font_size_css_px": 12,
+          "column_label_font_size_css_px": 11
+        },
+        "reason": "The contract applies to populated operational-grid states; this runner revision has global geometry selectors, so missing-route false failures are avoided until route-scoped state policies are implemented or supplied."
+      },
+      "keyboard_focus_and_restoration": {
+        "status": "NOT_RUN",
+        "reason": "Requires native key paths, targets, interaction states and focus-restoration evidence for each route."
+      },
+      "scrolling_and_positioned_surfaces": {
+        "status": "NOT_RUN",
+        "reason": "Requires route-specific scroll containers, dialog/menu/tooltip states and target selectors."
+      },
+      "design_tokens": {
+        "status": "NOT_RUN",
+        "reason": "Theme-token assertions require element/root scope verified in actual rendered states."
+      },
+      "images": {
+        "status": "NOT_RUN",
+        "reason": "The runner can analyze rendered images, but app route/source instances have not been captured."
+      },
+      "temporal_transitions": {
+        "status": "NOT_RUN",
+        "reason": "Requires a route-specific action and watched/forbidden selectors."
+      }
+    }
+  }
+}

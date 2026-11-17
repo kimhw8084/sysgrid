@@ -37,10 +37,12 @@ import { RootCauseFormModal, MitigationFormModal, PreventionFormModal, Resolutio
 import { EnhancedRcaDetails } from './Research'
 import { OperationalWorkspaceShell } from './shared/OperationalWorkspaceShells'
 import {
+  getEffectiveOperationalGridFontSize,
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
   OPERATIONAL_GRID_ROW_HEIGHT_MAX,
   OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+  OPERATIONAL_GRID_MIN_FONT_SIZE,
 } from './shared/OperationalGridSizing'
 import { FARFilterBar, FAROperationalGridView } from './FARGoldenWorkspaceInteraction'
 import {
@@ -85,6 +87,7 @@ import {
 import { buildFarDossierSearchParams, getFarDeepLinkNotice, getFarGridDataState, parseFarDossierTab, resolveFarDeepLink } from './FAR.deepLink'
 import DataStatusPill, { DataDiagnosticModal } from './shared/OperationalDataStatus'
 import { buildFarRegistryDiagnosticDetail } from './FAR.diagnostics'
+import { buildFarWorkspaceSummary } from './FAR.workspaceSummary'
 import {
   buildFarOperatorLoopReceipt,
   buildFarOperatorLoopSnapshot,
@@ -110,6 +113,7 @@ import {
 import {
   FAR_MATURITY_LEVELS,
   createFarAnalyticalColumns,
+  freezeFarIdentityColumn,
   getFarMaturityLevel,
 } from './FAR.gridColumns'
 import {
@@ -288,7 +292,7 @@ export default function FAR() {
   const [resolutionManagerModal, setResolutionManagerModal] = useState<{show: boolean, cause: any}>({ show: false, cause: null })
 
   // Column Picker & Style Lab State (Mirrored from Assets)
-  const [fontSize, setFontSize] = useState(11)
+  const [fontSize, setFontSize] = useState(12)
   const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(false)
   const [showFilterBar, setShowFilterBar] = useState(true)
@@ -496,14 +500,14 @@ export default function FAR() {
   if (!farDefaultWidthsRef.current && modes !== undefined) {
     const loadedModes = activeModes
     farDefaultWidthsRef.current = {
-      system_name: getOperationalContentAwareWidth({
-        headerName: 'System', values: loadedModes.map((mode: any) => mode.system_name), minWidth: 120, fallbackWidth: 132, maxDefaultWidth: 220,
+        system_name: getOperationalContentAwareWidth({
+        headerName: 'System', values: loadedModes.map((mode: any) => mode.system_name), minWidth: 120, fallbackWidth: 120, maxDefaultWidth: 200,
       }),
-      failure_type: getOperationalContentAwareWidth({
+        failure_type: getOperationalContentAwareWidth({
         headerName: 'Type', values: loadedModes.map((mode: any) => mode.failure_type), minWidth: 96, fallbackWidth: 108, maxDefaultWidth: 160,
       }),
-      title: getOperationalContentAwareWidth({
-        headerName: 'Failure Mode', values: loadedModes.map((mode: any) => mode.title), minWidth: 200, fallbackWidth: 260, maxDefaultWidth: 360,
+        title: getOperationalContentAwareWidth({
+        headerName: 'Failure Mode', values: loadedModes.map((mode: any) => mode.title), minWidth: 200, fallbackWidth: 220, maxDefaultWidth: 300,
       }),
       created_by_user_id: getOperationalContentAwareWidth({
         headerName: 'Created By', values: loadedModes.map((mode: any) => mode.created_by_user_id || 'SYSTEM'), minWidth: 148, fallbackWidth: 156, maxDefaultWidth: 220,
@@ -511,9 +515,9 @@ export default function FAR() {
     }
   }
   const farDefaultWidths = farDefaultWidthsRef.current || {
-    system_name: 132,
+    system_name: 120,
     failure_type: 108,
-    title: 260,
+    title: 220,
     created_by_user_id: 156,
   }
 
@@ -710,7 +714,7 @@ export default function FAR() {
 
   // AgGrid Defs (High Density)
   const columnDefs = useMemo(() => [
-    ...createOperationalUtilityColumns(operatorIntelligence.utilityColumnsConfig),
+    ...createOperationalUtilityColumns(operatorIntelligence.utilityColumnsConfig).map(freezeFarIdentityColumn),
     createOperationalGoldenTextColumn({
       field: 'system_name',
       headerName: 'System',
@@ -731,7 +735,7 @@ export default function FAR() {
       valueClassName: 'operational-grid-text font-bold text-slate-400 uppercase',
       hide: hiddenColumns.includes('failure_type'),
     }),
-    createOperationalGoldenTextColumn({
+    freezeFarIdentityColumn(createOperationalGoldenTextColumn({
       field: 'title',
       headerName: 'Failure Mode',
       width: farDefaultWidths.title,
@@ -741,7 +745,7 @@ export default function FAR() {
       valueClassName: 'operational-grid-text font-bold uppercase text-[var(--text-primary)]',
       alignment: 'left',
       hide: hiddenColumns.includes('title'),
-    }),
+    })),
     createOperationalMetricBadgeColumn({
       field: 'severity', headerName: 'S', width: 72, minWidth: 68, fontSize,
       resolveTone: (value) => value >= 8 ? 'critical' : value >= 5 ? 'warning' : 'healthy',
@@ -818,9 +822,9 @@ export default function FAR() {
 
   // Advanced Metrics Calculation
   const metrics = useMemo(() => {
+    const summary = buildFarWorkspaceSummary(filteredModes)
     const activeModes = filteredModes || []
-    const totalRPN = activeModes.reduce((acc: number, m: any) => acc + (m.rpn || 0), 0)
-    const avgRPN = activeModes.length ? totalRPN / activeModes.length : 0
+    const avgRPN = summary.averageRPN
     const sri = Math.max(0, Math.round(100 * (1 - avgRPN / 500))) 
     
     const maturityDist = activeModes.reduce((acc: any, mode: any) => {
@@ -829,11 +833,8 @@ export default function FAR() {
       return acc;
     }, {} as Record<number, number>);
 
-    const mitigated = activeModes.filter((m: any) => (m.mitigations?.length || 0) > 0).length
-    const mitRatio = activeModes.length ? Math.round((mitigated / activeModes.length) * 100) : 0
-    const totalAssets = activeModes.reduce((acc: number, m: any) => acc + (m.affected_assets?.length || 0), 0)
-    const riskDensity = totalAssets ? (totalRPN / totalAssets).toFixed(1) : '0.0'
-    return { sri, mitRatio, riskDensity, avgRPN: Math.round(avgRPN), maturityDist }
+    const riskDensity = summary.totalAffectedAssets ? (summary.totalRPN / summary.totalAffectedAssets).toFixed(1) : '0.0'
+    return { ...summary, sri, mitRatio: summary.mitigationRatio, riskDensity, avgRPN: Math.round(avgRPN), maturityDist }
   }, [filteredModes])
 
   const goldenWorkspace = useFARGoldenWorkspaceControls({
@@ -892,13 +893,13 @@ export default function FAR() {
 
   return (
     <OperationalWorkspaceShell
+      className="overflow-y-auto overscroll-contain"
       archetype="analytical"
       workspace="far"
       floatingPanels={goldenWorkspace.floatingPanels}
       header={{
         eyebrow: 'Analysis',
         title: 'Failure Matrix',
-        titleIcon: Target,
         subtitle: 'Reliability Knowledge Engine // FMEA Studio',
         actions: (
           <div className="flex items-center gap-2">
@@ -978,7 +979,7 @@ export default function FAR() {
                      <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400">Display Density</span>
                   </div>
                   <div className="flex items-center space-x-6">
-                     <div className="flex items-center space-x-4"><span className="text-[9px] font-bold text-slate-500 uppercase">Font Size</span><div className="flex items-center space-x-2"><input type="range" min="8" max="14" step="1" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span></div></div>
+                     <div className="flex items-center space-x-4"><span className="text-[9px] font-bold text-slate-500 uppercase">Font Size</span><div className="flex items-center space-x-2"><input type="range" min={OPERATIONAL_GRID_MIN_FONT_SIZE} max="14" step="1" value={getEffectiveOperationalGridFontSize(fontSize)} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{getEffectiveOperationalGridFontSize(fontSize)}px</span></div></div>
                      <div className="flex items-center space-x-4 border-l border-white/10 pl-6"><span className="text-[9px] font-bold text-slate-500 uppercase">Row height</span><div className="flex items-center space-x-2"><input type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="FAR row height" value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))} className="w-32 accent-rose-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-10 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span></div></div>
                   </div>
                </div>
@@ -1030,7 +1031,33 @@ export default function FAR() {
       {goldenWorkspace.activityPanel}
       {goldenWorkspace.compareModal}
 
-      <div className="relative flex min-h-0 flex-1 flex-col">
+      <section data-testid="far-quick-guide" className="grid shrink-0 gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4 lg:grid-cols-[minmax(0,1fr)_minmax(33rem,1.5fr)]">
+        <div>
+          <h2 className="text-xs font-bold text-[var(--text-primary)]">FAR register at a glance</h2>
+          <p className="mt-1 text-[11px] leading-4 text-[var(--text-secondary)]">
+            {lifecycleScope === 'archived'
+              ? 'Archived records are read only. Switch to Active to add or update a failure analysis.'
+              : 'For a system you own or support: choose the system, describe the failure and its effect, score S × O × D, then add safeguards and affected assets.'}
+          </p>
+          <p className="mt-1 text-[10px] text-[var(--text-secondary)]">RPN is a prioritization signal, not a predicted outage probability. Use “Add Failure Mode” in the toolbar to register one.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" aria-label="Current FAR summary">
+          {[
+            { label: 'Records in view', value: modesLoading ? '—' : metrics.recordCount },
+            { label: 'Priority RPN ≥ 80', value: modesLoading ? '—' : metrics.priorityCount },
+            { label: 'Critical RPN ≥ 150', value: modesLoading ? '—' : metrics.criticalCount },
+            { label: 'Mitigation coverage', value: modesLoading ? '—' : metrics.recordCount ? `${metrics.mitigationRatio}%` : '—' },
+            { label: 'Systems covered', value: modesLoading ? '—' : metrics.systemsCovered },
+          ].map(({ label, value }) => (
+            <div key={label} className="min-w-0 rounded-md border border-[var(--border-default)] bg-[var(--surface-base)] px-3 py-2">
+              <p className="min-h-6 whitespace-normal break-words text-[10px] leading-3 font-medium text-[var(--text-secondary)]">{label}</p>
+              <p className="mt-0.5 text-base font-bold tabular-nums text-[var(--text-primary)]">{value}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="relative flex min-h-[350px] flex-1 flex-col">
         <FAROperationalGridView
           gridRef={gridRef}
           rows={displayedModes}
@@ -2121,8 +2148,8 @@ function RoadmapTab({ mode, readOnly, onUpdate }: any) {
   const deletingMitigationIdRef = React.useRef<number | null>(null)
   
   const queryClient = useQueryClient()
-  const { data: bkms } = useQuery({ queryKey: ['knowledge', 'bkms'], queryFn: async () => (await apiFetch('/api/v1/knowledge/?category=BKM')).json() })
-  const { data: monitoring } = useQuery({ queryKey: ['monitoring-items'], queryFn: async () => (await apiFetch('/api/v1/monitoring/')).json() })
+  const { data: bkms } = useQuery({ queryKey: ['knowledge', 'bkms'], queryFn: async () => (await apiFetch('/api/v1/knowledge?category=BKM')).json() })
+  const { data: monitoring } = useQuery({ queryKey: ['monitoring-items'], queryFn: async () => (await apiFetch('/api/v1/monitoring')).json() })
   const bkmById = useMemo(() => new Map((bkms || []).map((item: any) => [Number(item.id), item])), [bkms])
   const monitoringById = useMemo(() => new Map((monitoring || []).map((item: any) => [Number(item.id), item])), [monitoring])
   const deleteMitigationMutation = useMutation({

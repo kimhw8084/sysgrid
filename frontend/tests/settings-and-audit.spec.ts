@@ -4,7 +4,7 @@ import { test } from './helpers/sysgrid-test';
 import { resetBrowserState, seedOperationalScenario } from './helpers/sysgrid'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
-const testUserId = process.env.SYSGRID_VERIFY_USER_ID || 'haewon.kim'
+const testUserId = process.env.SYSGRID_VERIFY_USER_ID || process.env.USER_ID || 'haewon.kim'
 const hasControlPlaneAuthority = () => (process.env.CONTROL_PLANE_ADMIN_USER_IDS || '')
   .split(',')
   .map((value) => value.trim())

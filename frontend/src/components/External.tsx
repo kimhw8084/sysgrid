@@ -50,7 +50,7 @@ import {
 import { useWorkspaceAnchoredLayer, WorkspaceEmptyState, useEscapeDismiss, useBodyModalFlag, WorkspaceFloatingPanel, WorkspaceSplitView } from './shared/OperationalWorkspacePrimitives'
 import { OperationalAnchoredPanel, OperationalDisplayPanel, OperationalGroupedGridSection, OperationalGroupedGridView, OperationalSavedViewsPanel, OperationalWorkspaceShell } from './shared/OperationalWorkspaceShells'
 import { OperationalImportModal } from './shared/OperationalImportModal'
-import { buildOperationalGroupSections } from './shared/OperationalGrouping'
+import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from './shared/OperationalGrouping'
 import { downloadOperationalImportFile } from './shared/OperationalImportExport'
 // (Removed duplicate imports)
 import { EXTERNAL_WORKSPACE_STANDARD } from './shared/OperationalWorkspace'
@@ -1704,7 +1704,7 @@ export default function External() {
 
   const { data: devices, isFetching: isDeviceFetching, isError: isDeviceError, error: deviceError, refetch: retryDevices } = useQuery({
     queryKey: ['devices'], 
-    queryFn: () => fetchOperationalArray('/api/v1/devices/', 'Linked asset choices'),
+    queryFn: () => fetchOperationalArray('/api/v1/devices', 'Linked asset choices'),
   })
   const deviceRecords = useMemo(() => Array.isArray(devices) ? devices : [], [devices])
 
@@ -2067,16 +2067,7 @@ export default function External() {
 
   useEffect(() => {
     if (groupBy === 'raw') return
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => {
-        if (!(section.key in next)) next[section.key] = false
-      })
-      Object.keys(next).forEach((key) => {
-        if (!groupedSections.some((section) => section.key === key)) delete next[key]
-      })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [groupBy, groupedSections])
 
   useEffect(() => {
@@ -2586,7 +2577,7 @@ export default function External() {
   const linkMutation = useMutation({
     mutationFn: async (data: any) => {
       const isEdit = Boolean(data.id)
-      const url = isEdit ? `/api/v1/intelligence/links/${data.id}` : '/api/v1/intelligence/links/'
+      const url = isEdit ? `/api/v1/intelligence/links/${data.id}` : '/api/v1/intelligence/links'
       const res = await apiFetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2809,6 +2800,7 @@ export default function External() {
             field: 'type',
             headerName: 'Type',
             width: 140,
+            minWidth: 112,
             fontSize,
             colorMap: EXTERNAL_TYPE_COLORS,
             hide: hiddenColumns.includes('type'),
@@ -2818,6 +2810,7 @@ export default function External() {
             field: 'internal_owner',
             headerName: 'Owner',
             width: 140,
+            minWidth: 132,
             hide: hiddenColumns.includes('internal_owner'),
           },
           {
@@ -2918,7 +2911,6 @@ export default function External() {
       header={{
         eyebrow: 'External Intelligence',
         title: externalViewLabel,
-        titleIcon: Globe,
         subtitle: `${externalRegistryLabel} and dependency intelligence`,
         actions: (
           <>
@@ -3917,7 +3909,7 @@ function LinkForm({ entities, devices, onClose, onSave, isPending, initialExtern
 
   const { data: services, isLoading: isServicesLoading, isFetching: isServicesFetching, isError: isServicesError, refetch: retryServices } = useQuery({
     queryKey: ['device-services', formData.device_id],
-    queryFn: () => fetchOperationalArray(`/api/v1/logical-services/?device_id=${formData.device_id}`, 'Linked service choices'),
+    queryFn: () => fetchOperationalArray(`/api/v1/logical-services?device_id=${formData.device_id}`, 'Linked service choices'),
     enabled: !!formData.device_id
   })
 

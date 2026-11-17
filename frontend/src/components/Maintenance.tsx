@@ -64,10 +64,22 @@ export default function Maintenance() {
   return <OperationalWorkspaceShell workspace="maintenance" archetype="hybrid" header={{
     eyebrow: 'Monitoring / Operations', title: 'Maintenance', subtitle: 'Prepare, review and verify operational work with durable evidence.',
     actions: <Link to="/monitoring" className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[var(--border-default)] px-3 text-xs font-semibold text-[var(--text-primary)]"><ArrowLeft size={14} aria-hidden="true" />Monitoring</Link>,
-  }} toolbarSearch={<div className="flex flex-wrap gap-2"><ToolbarButton active={!planning && !actionId && !windowRoute} onClick={() => route({ plan: null, action: null, window: null })}>Action history</ToolbarButton><ToolbarButton disabled={!canWrite || !supportedSimulation || invalidDevice} active={planning} variant="primary" onClick={() => route({ plan: 'new', action: null, window: null })}><Plus size={14} aria-hidden="true" />New plan</ToolbarButton><ToolbarButton disabled={!canSchedule || invalidDevice} active={windowRoute === 'new'} onClick={() => route({ plan: null, action: null, window: 'new' })}><Plus size={14} aria-hidden="true" />New window</ToolbarButton></div>}
+  }} toolbarSearch={<div className="flex flex-wrap gap-2"><ToolbarButton active={!planning && !actionId && !windowRoute} onClick={() => route({ plan: null, action: null, window: null })}>Action history</ToolbarButton><ToolbarButton disabled={!canWrite || !supportedSimulation || invalidDevice} active={planning} variant="primary" title="Records a simulated change plan; it does not execute work on company systems." ariaLabel="Simulate plan" onClick={() => route({ plan: 'new', action: null, window: null })}><Plus size={14} aria-hidden="true" />Simulate plan</ToolbarButton><ToolbarButton disabled={!canSchedule || invalidDevice} active={windowRoute === 'new'} onClick={() => route({ plan: null, action: null, window: 'new' })}><Plus size={14} aria-hidden="true" />New window</ToolbarButton></div>}
     toolbarActions={<ToolbarButton disabled={actions.isFetching || catalog.isFetching} onClick={() => { void actions.refetch(); void catalog.refetch(); if (windows.isEnabled) void windows.refetch(); void policy.refetch() }}><RefreshCw size={14} aria-hidden="true" />Refresh workspace</ToolbarButton>}>
     <div data-maintenance-content className="min-h-0 flex-1 space-y-4 overflow-auto pb-6 pr-1 text-[var(--text-primary)]">
-      <div className="rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] p-4 text-sm text-[var(--text-primary)]"><strong>Simulation only.</strong> This workspace uses the deterministic recording adapter. It records workflow outcomes without changing company systems. Live adapter execution is not enabled here.</div>
+      <section data-maintenance-purpose className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-4">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)]">What this workspace is for</h2>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div className="rounded-md border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
+            <p className="text-xs font-semibold text-[var(--text-primary)]">Schedule a maintenance window</p>
+            <p className="mt-1 text-[11px] leading-4 text-[var(--text-secondary)]">Creates a durable maintenance record for an asset and time range. Canceling keeps the reason and audit history. It does not make infrastructure changes.</p>
+          </div>
+          <div className="rounded-md border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
+            <p className="text-xs font-semibold text-[var(--text-primary)]">Rehearse an operational plan</p>
+            <p className="mt-1 text-[11px] leading-4 text-[var(--text-secondary)]">The configured recording adapter stores plan outcomes for review only. It does not execute commands on company systems; live execution is not configured.</p>
+          </div>
+        </div>
+      </section>
       {invalidDevice && <p role="alert">The asset filter is invalid. <button className="underline" onClick={() => route({ device_id: null })}>Clear asset filter</button></p>}
       {catalog.isPending && <p role="status">Loading operational capabilities…</p>}
       {catalog.isError && <Card title="Capabilities unavailable"><p role="alert">{maintenanceError(catalog.error)}</p><ToolbarButton onClick={() => void catalog.refetch()}>Retry capabilities</ToolbarButton></Card>}

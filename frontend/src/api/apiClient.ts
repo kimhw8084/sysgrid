@@ -281,9 +281,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const hasBody = options.body != null
   const isBodylessReadRequest = (method === 'GET' || method === 'HEAD') && !hasBody
 
-  // PV1 is online-first. A failed write is surfaced to the caller and is
-  // never placed in a browser or query-library replay queue.
-  if (isWriteMethod(method) && typeof navigator !== 'undefined' && navigator.onLine === false) {
+  // navigator.onLine only reports external connectivity; it can be false while
+  // a same-origin or configured API remains reachable (for example, in an
+  // isolated deployment). Let the API request establish whether that write can
+  // be sent. Unconfigured external writes still fail fast, and failed API writes
+  // are never placed in a browser or query-library replay queue.
+  if (isWriteMethod(method) && !isConfiguredApiTarget(url) && typeof navigator !== 'undefined' && navigator.onLine === false) {
     const offlineError = decorateApiError(new Error('Offline. The change was not sent; reconnect and review the current revision before retrying.'), {
       status: 0,
       url,

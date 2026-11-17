@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Security, status
 from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_, update, func
 from sqlalchemy.orm import joinedload, selectinload
 from ..database import get_db
+from ..core.config import settings
 from ..models import models
+from ..schemas.rack_collection import RackApiErrorResponse, RackCollectionItem
 from typing import List, Optional
 import math
 from .utils import build_audit_log
@@ -14,6 +17,24 @@ router = APIRouter(
     prefix="/racks",
     tags=["Racks"],
     dependencies=[Depends(require_module_access("racks"))],
+)
+
+# In trusted-proxy deployments this header is the principal assertion that the
+# API actually consumes. `auto_error=False` keeps this documentation dependency
+# behavior-neutral; the existing get_db/module-access dependencies remain the
+# runtime enforcement point and return the established 401/403 responses.
+_trusted_proxy_identity = APIKeyHeader(
+    name=settings.TRUSTED_PROXY_USER_HEADER,
+    scheme_name="SysGridTrustedProxyIdentity",
+    description=(
+        "Authenticated principal asserted by the configured trusted proxy. "
+        "The proxy must strip caller-supplied copies and inject this header; "
+        "the application trusts it only in trusted_proxy identity mode."
+    ),
+    auto_error=False,
+)
+_rack_openapi_dependencies = (
+    [Security(_trusted_proxy_identity)] if settings.identity_mode == "trusted_proxy" else []
 )
 
 
@@ -86,8 +107,43 @@ async def delete_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
     await db.commit()
     return {"status": "deleted"}
 
-@router.get("")
-async def get_racks(site_id: Optional[str] = None, include_deleted: bool = False, db: AsyncSession = Depends(get_db)):
+@router.get(
+    "",
+    responses={
+        200: {"model": list[RackCollectionItem], "description": "Tenant-scoped Rack collection with mounted-device details."},
+        401: {"model": RackApiErrorResponse, "description": "Identity source is missing or invalid."},
+        403: {"model": RackApiErrorResponse, "description": "Tenant membership or Rack read access is denied."},
+        404: {"model": RackApiErrorResponse, "description": "The selected tenant does not exist or is inactive."},
+        422: {"model": RackApiErrorResponse, "description": "A query value is invalid."},
+    },
+    dependencies=_rack_openapi_dependencies,
+    openapi_extra={
+        "x-sysgrid-identity-scope": ["tenant_id", "user_id"],
+        "x-sysgrid-identity-contract": {
+            "development": "X-User-Id is an untrusted development/test identity assertion, not authentication.",
+            "trusted_proxy": "The configured trusted-proxy header carries an upstream-authenticated principal.",
+            "environment": "The principal is supplied by the server process; no client identity header is required.",
+        },
+        "x-sysgrid-tenant-access": (
+            "X-Tenant-Id is an optional tenant selector. If supplied, the tenant must be active and the principal "
+            "must have UserTenantAccess; if absent, the selected or first authorized tenant is resolved. Rack module "
+            "read capability is enforced by require_module_access."
+        ),
+    },
+)
+async def get_racks(
+    site_id: Optional[str] = None,
+    include_deleted: bool = False,
+    x_tenant_id: Optional[str] = Header(
+        default=None,
+        alias="X-Tenant-Id",
+        description=(
+            "Optional tenant selector. If omitted, the backend resolves the current user's selected or first "
+            "authorized tenant. A supplied tenant must be active and linked to the current identity."
+        ),
+    ),
+    db: AsyncSession = Depends(get_db),
+):
     if site_id == "missing":
         query = select(models.Rack).filter(models.Rack.room_id == None)
     elif site_id and site_id != "null" and site_id != "":

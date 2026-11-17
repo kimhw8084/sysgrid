@@ -83,7 +83,7 @@ import {
 import { WorkspaceCompareShell, WorkspaceDetailFields, WorkspaceDetailSection, WorkspaceDossierShell, WorkspaceHistoryShell } from './shared/WorkspaceModalShells'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
-import { buildOperationalGroupSections } from './shared/OperationalGrouping'
+import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from './shared/OperationalGrouping'
 import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
 import { OPERATIONAL_ACTION_LABELS } from './shared/OperationalActionLabels'
@@ -1414,16 +1414,7 @@ export default function MonitoringGrid() {
 
   useEffect(() => {
     if (groupBy === 'raw') return
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => {
-        if (!(section.key in next)) next[section.key] = false
-      })
-      Object.keys(next).forEach((key) => {
-        if (!groupedSections.some((section) => section.key === key)) delete next[key]
-      })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [groupBy, groupedSections])
 
   const isRecentChange = useCallback((item: any) => {
@@ -1552,7 +1543,7 @@ export default function MonitoringGrid() {
 
   const { data: devices } = useQuery({
     queryKey: ['devices'],
-    queryFn: async () => (await apiFetch('/api/v1/devices/')).json()
+    queryFn: async () => (await apiFetch('/api/v1/devices')).json()
   })
 
   const runUndo = async (undo: any) => {
@@ -1838,7 +1829,6 @@ export default function MonitoringGrid() {
       header={{
         eyebrow: "Observability",
         title: 'Monitoring',
-        titleIcon: Activity,
         subtitle: "Centralized monitoring configuration and operational status",
         actions: (
           <>

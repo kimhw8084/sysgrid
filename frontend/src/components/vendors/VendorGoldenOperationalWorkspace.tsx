@@ -65,7 +65,7 @@ import { useOperationalGridLayout, usePersistentJsonState, useWorkspaceDismissHa
 import { WorkspaceDossierShell } from '../shared/WorkspaceModalShells'
 import { OperationalImportModal } from '../shared/OperationalImportModal'
 import { OperationalDataGrid } from '../shared/OperationalDataGrid'
-import { buildOperationalGroupSections } from '../shared/OperationalGrouping'
+import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from '../shared/OperationalGrouping'
 import { resolveOperationalDataState } from '../shared/OperationalDataState'
 import {
   OperationalAnchoredPanel,
@@ -734,7 +734,7 @@ export default function VendorsReal() {
   })
   const { data: devices, isLoading: isDevicesLoading, isFetching: isDevicesFetching, isError: isDevicesError, refetch: retryDevices } = useQuery({
     queryKey: ['devices'],
-    queryFn: () => fetchOperationalArray('/api/v1/devices/', 'Vendor asset choices'),
+    queryFn: () => fetchOperationalArray('/api/v1/devices', 'Vendor asset choices'),
   })
   const { data: systems, isLoading: isSystemsLoading, isFetching: isSystemsFetching, isError: isSystemsError, refetch: retrySystems } = useQuery({
     queryKey: ['settings', 'LogicalSystem'],
@@ -867,12 +867,7 @@ export default function VendorsReal() {
 
   useEffect(() => {
     if (groupBy === 'raw') return
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => { if (!(section.key in next)) next[section.key] = false })
-      Object.keys(next).forEach((key) => { if (!groupedSections.some((s) => s.key === key)) delete next[key] })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [groupBy, groupedSections])
 
   const isRecentChange = useCallback((item: any) => {
@@ -1121,7 +1116,6 @@ export default function VendorsReal() {
       header={{
         eyebrow: 'Resources',
         title: 'Vendors',
-        titleIcon: Globe,
         subtitle: 'Vendor capability, contract intelligence & personnel directory',
         actions: (
           <HeaderScopeSwitch
@@ -1600,7 +1594,7 @@ function VendorCreateForm({ item, onClose, onSuccess }: any) {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      const url    = data.id ? `/api/v1/vendors/${data.id}` : '/api/v1/vendors/'
+      const url    = data.id ? `/api/v1/vendors/${data.id}` : '/api/v1/vendors'
       const method = data.id ? 'PUT' : 'POST'
       const res = await apiFetch(url, { method, body: JSON.stringify(data) })
       if (!res.ok) throw new Error(await res.text())
@@ -1686,7 +1680,7 @@ function VendorDetailPanel({ vendor, devices, systems, coverageChoicesLoading, c
   const contractMutation = useMutation({
     mutationFn: async (data: any) => {
       const payload = { ...data, vendor_id: vendor.id }
-      const url = payload.id ? `/api/v1/vendors/contracts/${payload.id}` : `/api/v1/vendors/contracts/`
+      const url = payload.id ? `/api/v1/vendors/contracts/${payload.id}` : '/api/v1/vendors/contracts'
       const response = await apiFetch(url, { method: payload.id ? 'PUT' : 'POST', body: JSON.stringify(payload) })
       if (!response.ok) throw new Error(await response.text())
       return response.json()

@@ -376,9 +376,11 @@ const assetMatchesLens = (asset: any, lens: AssetLens) => {
   return true
 }
 
-const matchesTerm = (asset: any, term: string) => {
+export const matchesTerm = (asset: any, term: string) => {
   const haystack = [
     asset.name,
+    asset.asset_tag,
+    asset.serial_number,
     asset.system,
     asset.type,
     asset.status,
@@ -464,11 +466,11 @@ export function useAssetGoldenWorkspace() {
 
   const devicesQuery = useQuery({
     queryKey: ['asset-golden-devices'],
-    queryFn: () => fetchAssetArray('/api/v1/devices/?include_deleted=true'),
+    queryFn: () => fetchAssetArray('/api/v1/devices?include_deleted=true'),
   })
   const liveDevicesQuery = useQuery({
     queryKey: ['devices'],
-    queryFn: () => fetchAssetArray('/api/v1/devices/'),
+    queryFn: () => fetchAssetArray('/api/v1/devices'),
     enabled: devicesQuery.isError,
   })
   const optionsQuery = useQuery({

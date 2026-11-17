@@ -20,6 +20,17 @@ describe('theme before the application starts', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 
+  it.each([
+    ['light', 'pure-clarity', false],
+    ['dark', 'nordic-frost-v1', true],
+    ['an-unsupported-legacy-theme', 'nordic-frost-v1', true],
+  ])('normalizes the saved theme %s before painting', (storedTheme, expectedTheme, expectsDarkClass) => {
+    localStorage.setItem('sysgrid-theme', storedTheme)
+    bootstrap()
+    expect(document.documentElement.dataset.theme).toBe(expectedTheme)
+    expect(document.documentElement.classList.contains('dark')).toBe(expectsDarkClass)
+  })
+
   it('does not swallow an unexpected script error', () => {
     vi.spyOn(localStorage, 'getItem').mockImplementation(() => { throw new TypeError('Unexpected bootstrap bug') })
     expect(() => bootstrap()).toThrow('Unexpected bootstrap bug')

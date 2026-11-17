@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:golden-uiux:proof:v0.2.4-experimental-pilot",
+  "title": "NON-FINAL source-bound evidence metadata v0.2.4 experimental pilot; not external approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rule_id",
+    "gate_id",
+    "phase",
+    "applicability",
+    "status",
+    "source_revision",
+    "source_tree_digest",
+    "catalog_digest",
+    "profile_digest",
+    "environment",
+    "check_identity",
+    "test_command_or_case",
+    "started_at",
+    "completed_at",
+    "runner_identity",
+    "reviewer_authority",
+    "reviewer_independence",
+    "evidence_artifact",
+    "evidence_digest",
+    "evidence_location",
+    "dependency_fingerprint"
+  ],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gate_id": {
+      "type": "string",
+      "enum": [
+        "G1_DATA_TRUTH",
+        "G2_API_CONTRACT",
+        "G3_ACCESSIBILITY",
+        "G4_RENDERED_CONTRAST",
+        "G5_ELEMENT_GEOMETRY",
+        "G6_EVIDENCE_AND_RULE_DELIVERY"
+      ]
+    },
+    "phase": {
+      "enum": [
+        "DESIGN",
+        "DEVELOPMENT",
+        "PROMOTION"
+      ]
+    },
+    "applicability": {
+      "enum": [
+        "APPLICABLE",
+        "NOT_APPLICABLE",
+        "UNKNOWN"
+      ]
+    },
+    "status": {
+      "enum": [
+        "NOT_RUN",
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_APPLICABLE",
+        "WAIVED"
+      ]
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_tree_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "catalog_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "environment": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "check_identity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runner_identity": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewer_authority": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dependency_fingerprint": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "waiver_owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "waiver_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "waiver_expiration": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "test_command_or_case": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "minLength": 1
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "minLength": 1
+    },
+    "reviewer_independence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_location": {
+      "type": "string",
+      "minLength": 1
+    },
+    "applicability_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "waiver_authority": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exception_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PASS"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "runner_identity",
+          "evidence_artifact",
+          "evidence_digest"
+        ],
+        "properties": {
+          "runner_identity": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_artifact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_digest": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "WAIVED"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "waiver_owner",
+          "waiver_reason",
+          "waiver_expiration",
+          "waiver_authority"
+        ],
+        "properties": {
+          "waiver_owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "waiver_reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "waiver_expiration": {
+            "type": "string",
+            "minLength": 1
+          },
+          "waiver_authority": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NOT_APPLICABLE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "applicability": {
+            "const": "NOT_APPLICABLE"
+          },
+          "applicability_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "applicability_reason"
+        ]
+      }
+    }
+  ]
+}

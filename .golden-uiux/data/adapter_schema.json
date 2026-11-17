@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:golden-uiux:adapter:r48-proposal",
+  "title": "NON-FINAL project adapter proposal (not an approved profile)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "profile_id",
+    "profile_version",
+    "approval_status",
+    "profile_digest",
+    "source_revision",
+    "component_registry",
+    "token_profile",
+    "density_modes",
+    "accessibility_policy",
+    "geometry_baselines",
+    "quality_gate_map",
+    "promotion_controls"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "approval_status": {
+      "enum": [
+        "PROPOSED",
+        "APPROVED",
+        "REVOKED",
+        "EXPIRED",
+        "UNKNOWN"
+      ]
+    },
+    "reviewer_identity_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_digest": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "component_registry": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "token_profile": {
+      "type": "object"
+    },
+    "density_modes": {
+      "type": "object"
+    },
+    "accessibility_policy": {
+      "type": "object"
+    },
+    "geometry_baselines": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "quality_gate_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "G1_DATA_TRUTH",
+        "G2_API_CONTRACT",
+        "G3_ACCESSIBILITY",
+        "G4_RENDERED_CONTRAST",
+        "G5_ELEMENT_GEOMETRY",
+        "G6_EVIDENCE_AND_RULE_DELIVERY"
+      ],
+      "properties": {
+        "G1_DATA_TRUTH": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "G2_API_CONTRACT": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "G3_ACCESSIBILITY": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "G4_RENDERED_CONTRAST": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "G5_ELEMENT_GEOMETRY": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "G6_EVIDENCE_AND_RULE_DELIVERY": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]}
+      }
+    },
+    "promotion_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization_preflight",
+        "structural_review",
+        "behavioral_review",
+        "integration_review",
+        "independent_review",
+        "publication_review"
+      ],
+      "properties": {
+        "authorization_preflight": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "structural_review": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "behavioral_review": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "integration_review": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "independent_review": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]},
+        "publication_review": {"enum": ["NOT_RUN", "PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE", "WAIVED", "UNKNOWN"]}
+      }
+    },
+    "interaction_profile": {
+      "type": "object"
+    },
+    "supported_locales": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "user_preferences": {
+      "type": "object"
+    },
+    "baseline_exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "owner_identity_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "offline_snapshot": {
+      "type": "object"
+    },
+    "rollback_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "known_unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

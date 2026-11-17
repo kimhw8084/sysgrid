@@ -33,6 +33,60 @@ import {
 import { finalizeOperationalColumnDefinition, orderOperationalColumnDefinitions } from './OperationalGridSizing'
 import { WorkspaceHoverPreview as HoverPreview } from './OperationalWorkspacePrimitives'
 
+/**
+ * A grid value keeps its full text in the semantic cell while assigning the
+ * rendered text node a stable-in-instance id. Golden can then bind a visual
+ * ellipsis measurement to the corresponding keyboard-navigable grid cell.
+ * The native title is a pointer convenience; it is not the accessibility proof.
+ */
+export function OperationalGridTextValue({
+  value,
+  className,
+  style,
+}: {
+  value: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const id = React.useId()
+  const title = typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint'
+    ? String(value)
+    : undefined
+  const textRef = React.useRef<HTMLSpanElement>(null)
+  React.useLayoutEffect(() => {
+    if (title === undefined) return
+    const text = textRef.current
+    const cell = text?.closest<HTMLElement>('[role="gridcell"], [role="cell"], td, th')
+    if (!text?.id || !cell) return
+
+    const labelledBy = cell.getAttribute('aria-labelledby')
+    const label = cell.getAttribute('aria-label')
+    if (labelledBy !== null) {
+      const ids = labelledBy.split(/\s+/).filter(Boolean)
+      if (ids.includes(text.id)) return
+      cell.setAttribute('aria-labelledby', [...ids, text.id].join(' '))
+      return () => {
+        const current = (cell.getAttribute('aria-labelledby') || '').split(/\s+/).filter(Boolean)
+        const remaining = current.filter((id) => id !== text.id)
+        if (remaining.length) cell.setAttribute('aria-labelledby', remaining.join(' '))
+        else cell.removeAttribute('aria-labelledby')
+      }
+    }
+
+    const accessibleLabel = label
+      ? label.includes(title) ? label : `${label}: ${title}`
+      : title
+    if (accessibleLabel === label) return
+    cell.setAttribute('aria-label', accessibleLabel)
+    return () => {
+      if (cell.getAttribute('aria-label') !== accessibleLabel) return
+      if (label === null) cell.removeAttribute('aria-label')
+      else cell.setAttribute('aria-label', label)
+    }
+  }, [title])
+  return <span ref={textRef} id={`sg-operational-grid-value-${id}`} title={title} style={style} className={className}>{value}</span>
+}
+
 const hasOperationalId = (ids: any[] | undefined, id: any) => (
   Array.isArray(ids) &&
   ids.map((value) => Number(value)).includes(Number(id))
@@ -163,7 +217,7 @@ export function renderOperationalRowActions(children: React.ReactNode, label?: s
   </div>
 }
 
-export function renderOperationalActionButtons(children: React.ReactNode) {
+export function renderOperationalActionButtons(children: React.ReactNode, gapClass = 'gap-1.5') {
   const normalizedChildren = React.Children.map(children, (child) => {
     if (!React.isValidElement(child)) return child
     const currentClassName = typeof child.props.className === 'string' ? child.props.className : ''
@@ -173,7 +227,7 @@ export function renderOperationalActionButtons(children: React.ReactNode) {
     })
   })
 
-  return <div className="flex items-center justify-center gap-1.5">{normalizedChildren}</div>
+  return <div className={`flex items-center justify-center ${gapClass}`}>{normalizedChildren}</div>
 }
 
 export function createOperationalIdentityColumnDefinition({
@@ -206,10 +260,10 @@ export function createOperationalIdentityColumnDefinition({
           }}
           className={OPERATIONAL_GRID_PRIMARY_BUTTON_CLASS}
         >
-          {p.value}
+          <OperationalGridTextValue value={p.value} className="block min-w-0 truncate whitespace-nowrap text-ellipsis" />
         </button>
       ) : (
-        <span className={OPERATIONAL_GRID_PRIMARY_TEXT_CLASS}>{p.value}</span>
+        <OperationalGridTextValue value={p.value} className={OPERATIONAL_GRID_PRIMARY_TEXT_CLASS} />
       )
     ),
     hide,
@@ -262,8 +316,8 @@ export function createOperationalPlainValueColumn({
       const resolvedValue = formatValue ? formatValue(p.value, p) : p.value
       const displayValue = resolvedValue || emptyValue
       return resolvedValue
-        ? <span className={valueClassName || OPERATIONAL_GRID_PLAIN_VALUE_CLASS}>{resolvedValue}</span>
-        : <span className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS}>{displayValue}</span>
+        ? <OperationalGridTextValue value={resolvedValue} className={valueClassName || OPERATIONAL_GRID_PLAIN_VALUE_CLASS} />
+        : <OperationalGridTextValue value={displayValue} className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS} />
     },
     hide,
   }
@@ -296,12 +350,11 @@ export function createOperationalMappedTextColumn({
     cellClass: OPERATIONAL_GRID_CLASSES.centeredCell,
     headerClass: OPERATIONAL_GRID_CLASSES.centeredHeader,
     cellRenderer: (p: any) => (
-      <span
+      <OperationalGridTextValue
+        value={p.value || emptyValue}
         style={{ fontSize: `${fontSize}px` }}
         className={`${OPERATIONAL_GRID_PLAIN_VALUE_CLASS} ${resolveOperationalColorClass(p.value, colorMap, p.value ? fallbackClass : 'text-slate-500')}`}
-      >
-        {p.value || emptyValue}
-      </span>
+      />
     ),
     hide,
   }
@@ -332,9 +385,10 @@ export function createOperationalProseColumn({
     cellClass: proseMode === 'wrap' ? OPERATIONAL_GRID_CLASSES.leftBodyWrapCell : OPERATIONAL_GRID_CLASSES.leftBodyCell,
     headerClass: OPERATIONAL_GRID_CLASSES.primaryHeader,
     cellRenderer: (p: any) => (
-      <span className={`${p.value ? OPERATIONAL_GRID_PLAIN_VALUE_CLASS : OPERATIONAL_GRID_EMPTY_VALUE_CLASS} truncate`}>
-        {p.value || emptyValue}
-      </span>
+      <OperationalGridTextValue
+        value={p.value || emptyValue}
+        className={`${p.value ? OPERATIONAL_GRID_PLAIN_VALUE_CLASS : OPERATIONAL_GRID_EMPTY_VALUE_CLASS} truncate`}
+      />
     ),
     hide,
   }
@@ -561,7 +615,7 @@ export function createOperationalDateColumn({
     cellRenderer: (p: any) => p.value ? (
       <div className={OPERATIONAL_GRID_ICON_VALUE_CLASS}>
         <Clock size={12} className="opacity-40" />
-        <span className={OPERATIONAL_GRID_PLAIN_VALUE_CLASS}>{formatAppDate(p.value)}</span>
+        <OperationalGridTextValue value={formatAppDate(p.value)} className={OPERATIONAL_GRID_PLAIN_VALUE_CLASS} />
       </div>
     ) : <span className={OPERATIONAL_GRID_EMPTY_VALUE_CLASS}>N/A</span>,
     hide,
@@ -739,7 +793,8 @@ export function createOperationalUtilityColumns({
 
 export function buildOperationalColumnDefinition(config: OperationalColumnConfig) {
   // Source of truth: shared column contract kind-to-renderer mapping.
-  switch (config.kind) {
+  const definition = (() => {
+    switch (config.kind) {
     case 'plain':
       return createOperationalPlainValueColumn(config)
     case 'identity':
@@ -768,7 +823,12 @@ export function buildOperationalColumnDefinition(config: OperationalColumnConfig
     default:
       const exhaustiveCheck: never = config
       return exhaustiveCheck
-  }
+    }
+  })()
+  const operationalMinimumWidth = (config as OperationalColumnConfig & { operationalMinimumWidth?: number }).operationalMinimumWidth
+  return typeof operationalMinimumWidth === 'number'
+    ? { ...definition, operationalMinimumWidth }
+    : definition
 }
 
 export function buildOperationalColumnDefinitions(configs: OperationalColumnConfig[]) {

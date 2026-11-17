@@ -70,6 +70,7 @@ import {
   DEFAULT_FAR_VIEW_CONFIG,
   FAR_ACTIVE_VIEW_KEY,
   FAR_COLLABORATIVE_VIEW_MIGRATION_KEY,
+  FAR_LEFT_PINNED_COLUMN_IDS,
   FAR_PERSISTED_COLUMN_IDS,
   FAR_SYSTEM_VIEW_IDS,
   FAR_VIEW_STORAGE_KEY,
@@ -110,7 +111,7 @@ const compareValue = (value: unknown) => {
 
 const FAR_RECOVERY_COLUMN_IDS = ['system_name', 'title', 'rpn', 'status'] as const
 const FAR_MIN_DESKTOP_CENTER_VIEWPORT_WIDTH = 600
-const FAR_DEFAULT_LEFT_PINNED_COLUMN_IDS = new Set(['id'])
+const FAR_DEFAULT_LEFT_PINNED_COLUMN_IDS = FAR_LEFT_PINNED_COLUMN_IDS
 
 const hasExplicitColumnSizing = (layout: any[] = []) => layout.some((column: any) => {
   const width = Number(column?.width)

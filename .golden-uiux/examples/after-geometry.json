@@ -1,0 +1,31 @@
+{
+  "context": {
+    "viewport": "1440x900",
+    "zoom": 1,
+    "font_px": 12,
+    "state": "default",
+    "route": "/demo",
+    "data_hash": "demo"
+  },
+  "measurements": {
+    "toolbar_height": 48,
+    "grid_row_height": 24,
+    "visible_rows": 20
+  },
+  "metric_rules": {
+    "toolbar_height": {
+      "direction": "unchanged",
+      "max_increase": 0,
+      "max_decrease": 0
+    },
+    "grid_row_height": {
+      "direction": "unchanged",
+      "max_increase": 0,
+      "max_decrease": 0
+    },
+    "visible_rows": {
+      "direction": "no_decrease",
+      "max_decrease": 0
+    }
+  }
+}

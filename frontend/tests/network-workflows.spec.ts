@@ -74,7 +74,11 @@ test.describe('Network workflows', () => {
     await page.goto(`/network?id=${connection.id}`)
     await expect(page.getByRole('heading', { name: 'Connection Forensics' })).toBeVisible()
     await page.getByRole('button', { name: 'History', exact: true }).click()
-    await expect(page.getByRole('heading', { name: 'Change History' })).toBeVisible()
+    const activity = page.getByRole('dialog', { name: 'Connection activity' })
+    await expect(activity).toBeVisible()
+    await expect(activity.getByRole('heading', { name: /Established link between dev/ })).toBeVisible()
+    await expect(activity.getByText('Recorded change data')).toBeVisible()
+    await expect(activity.getByRole('button', { name: /restore/i })).toHaveCount(0)
   })
 
   test('shows source and peer endpoints together in the initial desktop grid viewport', async ({ page }) => {

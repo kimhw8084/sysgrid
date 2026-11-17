@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>SysGrid · Home chart shortlist</title>
+  <style>
+    :root { color-scheme: light; --page:#f4f6f9; --surface:#fff; --surface-2:#f7f9fc; --ink:#152033; --muted:#596579; --line:#dce2eb; --blue:#1457c5; --blue-soft:#eaf1ff; --green:#146b48; --red:#a92c37; --amber:#815800; --shadow:0 12px 30px #14223a0d; }
+    html[data-theme="dark"] { color-scheme:dark; --page:#15181d; --surface:#1e2229; --surface-2:#242a33; --ink:#edf1f7; --muted:#b2bdcc; --line:#39424e; --blue:#79a7ff; --blue-soft:#20385d; --green:#77d4a8; --red:#ff9da3; --amber:#f0cb75; --shadow:0 12px 30px #0004; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--page); color:var(--ink); font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button,input,select,textarea { font:inherit; }
+    button { color:inherit; }
+    .shell { max-width:1440px; margin:auto; padding:28px clamp(16px,3vw,40px) 64px; }
+    .top { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:22px; }
+    .eyebrow { margin:0 0 8px; color:var(--blue); font-size:11px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(24px,3vw,34px); line-height:1.12; letter-spacing:-.035em; }
+    .intro { max-width:780px; margin:10px 0 0; color:var(--muted); }
+    .actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+    .btn { min-height:38px; padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); font-weight:700; cursor:pointer; }
+    .btn:hover { border-color:var(--blue); }
+    .btn.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+    html[data-theme="dark"] .btn.primary { color:#101722; }
+    .summary { display:grid; grid-template-columns:repeat(4,minmax(120px,1fr)); gap:10px; margin:22px 0 16px; }
+    .stat { padding:13px 15px; border:1px solid var(--line); border-radius:10px; background:var(--surface); box-shadow:var(--shadow); }
+    .stat small { display:block; color:var(--muted); font-size:11px; font-weight:700; }
+    .stat strong { display:block; margin-top:3px; font-size:22px; line-height:1.2; font-variant-numeric:tabular-nums; }
+    .toolbar { position:sticky; top:8px; z-index:5; display:flex; flex-wrap:wrap; gap:9px; align-items:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:color-mix(in srgb,var(--surface) 94%,transparent); box-shadow:var(--shadow); backdrop-filter:blur(12px); }
+    .toolbar input[type="search"] { min-width:220px; flex:1 1 260px; }
+    .control { min-height:38px; padding:8px 10px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); }
+    .save-state { margin-left:auto; color:var(--muted); font-size:11px; font-weight:700; }
+    .save-state[data-state="saved"] { color:var(--green); }
+    .save-state[data-state="error"] { color:var(--amber); }
+    .section-head { display:flex; align-items:end; justify-content:space-between; gap:12px; margin:24px 2px 10px; }
+    .section-head h2 { margin:0; font-size:15px; }
+    .section-head p { margin:0; color:var(--muted); font-size:12px; }
+    .cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .card { min-width:0; padding:15px; border:1px solid var(--line); border-radius:11px; background:var(--surface); box-shadow:var(--shadow); }
+    .card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .id { display:inline-block; margin-right:7px; color:var(--blue); font-size:11px; font-weight:850; letter-spacing:.04em; }
+    .card h3 { display:inline; margin:0; font-size:14px; line-height:1.35; }
+    .priority { flex:none; padding:3px 7px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:10px; font-weight:800; }
+    .priority[data-rank="1"] { border-color:color-mix(in srgb,var(--red) 40%,var(--line)); color:var(--red); }
+    .priority[data-rank="2"] { border-color:color-mix(in srgb,var(--amber) 40%,var(--line)); color:var(--amber); }
+    .meta { display:flex; flex-wrap:wrap; gap:6px; margin:9px 0; }
+    .tag { padding:3px 7px; border-radius:5px; background:var(--surface-2); color:var(--muted); font-size:10px; font-weight:700; }
+    .chart-kind { color:var(--blue); background:var(--blue-soft); }
+    .decision { margin:0; color:var(--muted); font-size:12px; }
+    .why { margin:5px 0 0; font-size:12px; }
+    .choices { display:flex; flex-wrap:wrap; gap:7px; margin-top:13px; }
+    .choice { min-height:32px; padding:5px 10px; border:1px solid var(--line); border-radius:7px; background:var(--surface); font-size:11px; font-weight:750; cursor:pointer; }
+    .choice[aria-pressed="true"][data-choice="yes"] { color:var(--green); border-color:var(--green); background:color-mix(in srgb,var(--green) 12%,var(--surface)); }
+    .choice[aria-pressed="true"][data-choice="no"] { color:var(--red); border-color:var(--red); background:color-mix(in srgb,var(--red) 10%,var(--surface)); }
+    .choice[aria-pressed="true"][data-choice="maybe"] { color:var(--amber); border-color:var(--amber); background:color-mix(in srgb,var(--amber) 12%,var(--surface)); }
+    .feedback { width:100%; min-height:50px; margin-top:9px; padding:8px 9px; resize:vertical; border:1px solid var(--line); border-radius:7px; background:var(--surface-2); color:var(--ink); font-size:12px; }
+    .empty { grid-column:1/-1; padding:28px; border:1px dashed var(--line); border-radius:10px; color:var(--muted); text-align:center; }
+    .foot { margin-top:18px; color:var(--muted); font-size:11px; }
+    @media (max-width:760px) { .top { display:block; } .actions { justify-content:flex-start; margin-top:16px; } .summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .cards { grid-template-columns:1fr; } .save-state { width:100%; margin-left:0; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div>
+        <p class="eyebrow">SysGrid · Home dashboard research</p>
+        <h1>Choose the charts that earn their space</h1>
+        <p class="intro">A ranked shortlist of operational visuals for infrastructure owners and stakeholders. Mark each idea Yes, No or Maybe, then leave a note. Your choices save in this browser as you work; this file makes no network requests and does not change the app.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="themeToggle" type="button">Dark appearance</button>
+        <button class="btn" id="copyReview" type="button">Copy review JSON</button>
+        <button class="btn primary" id="downloadReview" type="button">Download review</button>
+      </div>
+    </header>
+    <section class="summary" aria-label="Review progress">
+      <div class="stat"><small>Chart candidates</small><strong id="totalCount">—</strong></div>
+      <div class="stat"><small>Reviewed</small><strong id="reviewedCount">—</strong></div>
+      <div class="stat"><small>Yes</small><strong id="yesCount">—</strong></div>
+      <div class="stat"><small>Maybe</small><strong id="maybeCount">—</strong></div>
+    </section>
+    <section class="toolbar" aria-label="Filter chart candidates">
+      <input class="control" id="search" type="search" placeholder="Search chart, decision or audience…" aria-label="Search chart candidates">
+      <select class="control" id="category" aria-label="Filter by category"><option value="all">All categories</option></select>
+      <select class="control" id="reviewFilter" aria-label="Filter by review status"><option value="all">All review states</option><option value="unreviewed">Not reviewed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
+      <select class="control" id="sort" aria-label="Sort chart candidates"><option value="rank">Recommended priority</option><option value="category">Category</option><option value="name">Name</option></select>
+      <button class="btn" id="yesVisible" type="button">Yes to visible</button>
+      <span class="save-state" id="saveState" role="status" aria-live="polite">Ready · changes save automatically</span>
+    </section>
+    <div class="section-head"><div><h2 id="listTitle">42 ranked chart candidates</h2><p>Priority ranks are an initial recommendation; your choices decide the shortlist.</p></div></div>
+    <section class="cards" id="cards" aria-label="Chart options"></section>
+    <p class="foot">Review data stays in this browser under <code>sysgrid-home-chart-review-v1</code>. Use “Download review” to bring your decisions and comments back into the project discussion.</p>
+  </main>
+  <script>
+    (() => {
+      const KEY = 'sysgrid-home-chart-review-v1';
+      const candidates = [
+        {id:'H01',name:'Critical estate by lifecycle and owner',category:'Portfolio health',kind:'Stacked horizontal bars',audience:'System owners · leadership',decision:'Which owners are carrying the most critical or end-of-life hardware?',value:'Prioritizes accountable work and replacement decisions from one scan.',rank:1},
+        {id:'H02',name:'System health and risk portfolio',category:'Portfolio health',kind:'Ranked scorecard + sparkline',audience:'System owners · leadership',decision:'Which systems need attention today, and is each getting better?',value:'Combines criticality, open incidents, overdue work and trend without hiding the underlying signals.',rank:1},
+        {id:'H03',name:'Site capacity headroom',category:'Capacity and facilities',kind:'Bullet charts',audience:'Facilities · capacity planners',decision:'Which sites are nearest to space, power or cooling limits?',value:'Turns separate capacity limits into a fast, actionable constraint view.',rank:1},
+        {id:'H04',name:'Rack unit occupancy by rack',category:'Capacity and facilities',kind:'Rack heatmap',audience:'Data center operators',decision:'Where is the usable space, and which racks are nearly full?',value:'Shows physical placement and remaining capacity in the shape operators already use.',rank:1},
+        {id:'H05',name:'Power draw versus circuit ceiling',category:'Capacity and facilities',kind:'Bullet chart + trend',audience:'Data center operators · facilities',decision:'Which racks or circuits are near their safe operating limit?',value:'Surfaces overload risk and headroom before a move or installation.',rank:1},
+        {id:'H06',name:'Thermal margin across rooms and racks',category:'Capacity and facilities',kind:'Heatmap + temperature trend',audience:'Facilities · reliability engineers',decision:'Where are inlet temperatures rising or cooling margins shrinking?',value:'Connects physical location to thermal exposure and trend.',rank:1},
+        {id:'H07',name:'Open incident severity and aging',category:'Reliability and incidents',kind:'Stacked aging bars',audience:'Operations · system owners',decision:'What is open, how severe is it, and how long has it been waiting?',value:'Separates urgent risk from stale work in one compact view.',rank:1},
+        {id:'H08',name:'Availability against service objective',category:'Reliability and incidents',kind:'Time series with target band',audience:'Service owners · stakeholders',decision:'Is availability meeting its target, and when did it slip?',value:'Makes service reliability and target gaps immediately legible.',rank:1},
+        {id:'H09',name:'Maintenance due and overdue',category:'Work planning',kind:'Calendar heatmap',audience:'System owners · maintenance planners',decision:'What maintenance is due soon, overdue, or concentrated on one week?',value:'Turns maintenance obligation into a prioritized workload.',rank:1},
+        {id:'H10',name:'Failure risk by severity and likelihood',category:'Risk and resilience',kind:'Risk matrix / bubble plot',audience:'Reliability engineers · system owners',decision:'Which failure modes combine high impact, frequency and poor detection?',value:'Shows risk concentration while retaining the RPN factors for context.',rank:1},
+        {id:'H11',name:'Unmitigated risk trend',category:'Risk and resilience',kind:'Line chart + risk bands',audience:'System owners · leadership',decision:'Is the documented high-risk backlog shrinking or growing?',value:'Measures whether corrective work is reducing exposure over time.',rank:1},
+        {id:'H12',name:'End-of-support countdown',category:'Lifecycle and exposure',kind:'Horizon bars',audience:'Asset owners · procurement',decision:'What reaches end of support in 30, 90, 180 or 365 days?',value:'Creates a clear replacement runway and reduces surprise renewals.',rank:1},
+        {id:'H13',name:'Vulnerability exposure by criticality and age',category:'Lifecycle and exposure',kind:'Severity heatmap',audience:'Security · infrastructure owners',decision:'Which old or critical assets carry the most unresolved exposure?',value:'Focuses patch and retirement work where the service impact is greatest.',rank:1},
+        {id:'H14',name:'Backup and recovery coverage',category:'Risk and resilience',kind:'Coverage matrix',audience:'Service owners · continuity leads',decision:'Which critical systems lack verified backup or recovery evidence?',value:'Reveals gaps that inventory counts alone cannot show.',rank:1},
+        {id:'H15',name:'Network link utilization and headroom',category:'Network',kind:'Time series with capacity bands',audience:'Network operations · service owners',decision:'Which links are saturating, and how fast is demand growing?',value:'Pairs current utilization with a near-term capacity signal.',rank:1},
+        {id:'H16',name:'Dependency blast radius',category:'Network',kind:'Interactive dependency graph',audience:'Incident commanders · architects',decision:'What depends on this asset or service if it fails?',value:'Supports incident triage and change review by exposing downstream impact.',rank:1},
+        {id:'H17',name:'Data completeness and confidence',category:'Data quality',kind:'Completeness matrix',audience:'Data stewards · system owners',decision:'Which systems have missing owner, location, lifecycle or support records?',value:'Improves trust in every other operational view by surfacing weak source data.',rank:1},
+        {id:'H18',name:'Maintenance backlog age and priority',category:'Work planning',kind:'Stacked aging bars',audience:'Maintenance leads · system owners',decision:'Which planned jobs are aging, blocked or past their target date?',value:'Helps allocate engineering time to the work most likely to become risk.',rank:1},
+        {id:'H19',name:'MTTR by system and incident class',category:'Reliability and incidents',kind:'Box plot + percentile labels',audience:'Operations · service owners',decision:'Where does recovery take longest, including the slow tail?',value:'Shows typical recovery and outliers without letting averages hide hard incidents.',rank:2},
+        {id:'H20',name:'MTBF and repeat-failure rate',category:'Reliability and incidents',kind:'Reliability trend',audience:'Reliability engineers · system owners',decision:'Which assets or systems are failing more often than their own baseline?',value:'Highlights recurring reliability issues for prevention work.',rank:2},
+        {id:'H21',name:'Incident recurrence Pareto',category:'Reliability and incidents',kind:'Pareto bars + cumulative line',audience:'Problem managers · operators',decision:'Which small set of causes drives most repeat incidents?',value:'Directs root-cause effort toward the largest recurring sources.',rank:2},
+        {id:'H22',name:'Change activity against incidents',category:'Reliability and incidents',kind:'Event timeline overlay',audience:'Change managers · incident commanders',decision:'Do incidents cluster after changes or maintenance windows?',value:'Speeds correlation review while preserving event chronology.',rank:2},
+        {id:'H23',name:'Configuration drift by fleet',category:'Lifecycle and exposure',kind:'Small-multiple trend lines',audience:'Platform teams · security',decision:'Which fleets are diverging from their approved baseline?',value:'Shows spread and direction of drift by platform or site.',rank:2},
+        {id:'H24',name:'Firmware and patch compliance',category:'Lifecycle and exposure',kind:'Stacked compliance bars',audience:'Security · platform teams',decision:'What is current, behind, unsupported or blocked from patching?',value:'Turns fleet compliance into a count and a work queue.',rank:2},
+        {id:'H25',name:'Warranty and vendor support runway',category:'Lifecycle and exposure',kind:'Coverage timeline',audience:'Procurement · asset owners',decision:'Where do warranty, support and contract dates leave a coverage gap?',value:'Aligns service coverage with refresh and purchasing plans.',rank:2},
+        {id:'H26',name:'Port utilization and link state',category:'Network',kind:'Port density heatmap',audience:'Network operators',decision:'Which switches are full, which ports are unused, and what is down?',value:'Makes port capacity and physical connectivity scannable at a glance.',rank:2},
+        {id:'H27',name:'Network latency by path and time',category:'Network',kind:'Path flow + latency bands',audience:'Network operations · service owners',decision:'Where along the dependency path does latency accumulate?',value:'Connects topology to actual user performance experience.',rank:2},
+        {id:'H28',name:'Site inventory mix',category:'Portfolio health',kind:'Treemap / stacked bars',audience:'Operations · procurement',decision:'How is the estate split by physical/virtual, platform and location?',value:'Summarizes inventory composition while preserving useful dimensions.',rank:2},
+        {id:'H29',name:'Orphaned and unowned assets',category:'Data quality',kind:'Ranked bars by site and age',audience:'Data stewards · system owners',decision:'Which assets have no accountable owner or linked system?',value:'Finds ownership and support gaps that slow incident response.',rank:2},
+        {id:'H30',name:'Duplicate and conflicting records',category:'Data quality',kind:'Exception trend + review queue',audience:'Data stewards · operators',decision:'Where are duplicate identifiers or conflicting records increasing?',value:'Makes data cleanup measurable and directs review to high-risk conflicts.',rank:2},
+        {id:'H31',name:'Capacity utilization forecast',category:'Capacity and facilities',kind:'Forecast fan chart',audience:'Capacity planners · finance',decision:'When will compute, storage or network headroom run out?',value:'Adds a planning horizon with uncertainty, not a false precise date.',rank:2},
+        {id:'H32',name:'Refresh investment versus risk avoided',category:'Financial planning',kind:'Bubble scatter plot',audience:'Leadership · finance · owners',decision:'Which refresh investments protect the most critical services per dollar?',value:'Connects lifecycle spend to service criticality and exposure reduction.',rank:2},
+        {id:'H33',name:'Refresh spend by quarter and system',category:'Financial planning',kind:'Waterfall + forecast',audience:'Finance · procurement · owners',decision:'What spend is committed, forecast, or still unplanned?',value:'Shows the timing and funding gap behind replacement plans.',rank:2},
+        {id:'H34',name:'Procurement lead time and stock risk',category:'Financial planning',kind:'Lead-time distribution',audience:'Procurement · capacity planners',decision:'Which replacement parts could arrive too late for planned work?',value:'Protects maintenance schedules against long or volatile supplier lead times.',rank:2},
+        {id:'H35',name:'Alert volume versus actionable yield',category:'Operations efficiency',kind:'Stacked bars + signal ratio',audience:'Monitoring owners · operations',decision:'Which alerts result in action, and where is alert noise growing?',value:'Shows alert burden alongside the signals that lead to real work.',rank:2},
+        {id:'H36',name:'N+1 and redundancy coverage',category:'Risk and resilience',kind:'Resilience coverage matrix',audience:'Reliability engineers · system owners',decision:'Which critical services lose resilience after one component fails?',value:'Finds single points of failure before an outage exposes them.',rank:2},
+        {id:'H37',name:'Rack installation readiness',category:'Capacity and facilities',kind:'Readiness checklist heatmap',audience:'Data center operators · change managers',decision:'Does a proposed installation fit power, space, cooling and connectivity?',value:'Prevents incomplete moves by surfacing prerequisite gaps together.',rank:3},
+        {id:'H38',name:'Maintenance window collisions',category:'Work planning',kind:'Resource timeline',audience:'Change managers · operators',decision:'Do planned jobs overlap on a shared site, system or owner?',value:'Reduces avoidable operational contention and change risk.',rank:3},
+        {id:'H39',name:'Asset utilization distribution',category:'Capacity and facilities',kind:'Histogram + outlier list',audience:'Capacity planners · system owners',decision:'Is capacity underused, overused or concentrated in a few assets?',value:'Identifies stranded capacity and overload candidates for rebalancing.',rank:3},
+        {id:'H40',name:'Physical / virtual / cloud footprint',category:'Portfolio health',kind:'Layered area chart',audience:'Architecture · procurement · owners',decision:'How is the supported estate changing across infrastructure types?',value:'Tracks footprint shifts that affect cost, support and operational coverage.',rank:3},
+        {id:'H41',name:'Vendor concentration and exposure',category:'Financial planning',kind:'Concentration bars + treemap',audience:'Procurement · leadership',decision:'Where do support, lifecycle or supply risks depend on one vendor?',value:'Makes concentration risk and contract exposure visible.',rank:3},
+        {id:'H42',name:'System ownership workload',category:'Operations efficiency',kind:'Ranked owner workload bars',audience:'Team leads · operations',decision:'Is operational workload concentrated on a small number of owners?',value:'Supports balanced assignment and clearer accountability.',rank:3}
+      ];
+      const $ = (id) => document.getElementById(id);
+      const cards = $('cards');
+      const state = { votes: {}, feedback: {}, theme: 'light' };
+      try {
+        const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (saved && typeof saved === 'object') {
+          Object.assign(state, saved);
+          state.votes = saved.votes && typeof saved.votes === 'object' ? saved.votes : {};
+          state.feedback = saved.feedback && typeof saved.feedback === 'object' ? saved.feedback : {};
+        }
+      } catch {}
+      const categories = [...new Set(candidates.map((item) => item.category))].sort();
+      categories.forEach((value) => { const option = document.createElement('option'); option.value = value; option.textContent = value; $('category').append(option); });
+      const setSaveState = (label, mode) => { $('saveState').textContent = label; $('saveState').dataset.state = mode || ''; };
+      const save = () => {
+        try { localStorage.setItem(KEY, JSON.stringify({version:1, votes:state.votes, feedback:state.feedback, theme:state.theme, updatedAt:new Date().toISOString()})); setSaveState('Saved in this browser', 'saved'); }
+        catch { setSaveState('Browser storage unavailable · download your review', 'error'); }
+        updateSummary();
+      };
+      const updateSummary = () => {
+        const votes = Object.values(state.votes);
+        $('totalCount').textContent = candidates.length;
+        $('reviewedCount').textContent = votes.filter((vote) => ['yes','no','maybe'].includes(vote)).length;
+        $('yesCount').textContent = votes.filter((vote) => vote === 'yes').length;
+        $('maybeCount').textContent = votes.filter((vote) => vote === 'maybe').length;
+      };
+      const currentCandidates = () => {
+        const search = $('search').value.trim().toLowerCase();
+        const category = $('category').value;
+        const filter = $('reviewFilter').value;
+        const sort = $('sort').value;
+        return candidates.filter((item) => {
+          const text = [item.id,item.name,item.category,item.kind,item.audience,item.decision,item.value].join(' ').toLowerCase();
+          const vote = state.votes[item.id] || 'unreviewed';
+          return (!search || text.includes(search)) && (category === 'all' || item.category === category) && (filter === 'all' || vote === filter);
+        }).sort((a,b) => sort === 'name' ? a.name.localeCompare(b.name) : sort === 'category' ? a.category.localeCompare(b.category) || a.rank-b.rank : a.rank-b.rank || a.id.localeCompare(b.id));
+      };
+      const render = () => {
+        const visible = currentCandidates();
+        $('listTitle').textContent = `${visible.length} chart candidate${visible.length === 1 ? '' : 's'}`;
+        cards.replaceChildren();
+        if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No chart ideas match these filters.'; cards.append(empty); return; }
+        visible.forEach((item) => {
+          const card = document.createElement('article'); card.className = 'card'; card.dataset.id = item.id;
+          const top = document.createElement('div'); top.className = 'card-top';
+          const title = document.createElement('div');
+          const id = document.createElement('span'); id.className = 'id'; id.textContent = item.id;
+          const heading = document.createElement('h3'); heading.textContent = item.name;
+          title.append(id, heading);
+          const priority = document.createElement('span'); priority.className = 'priority'; priority.dataset.rank = item.rank; priority.textContent = `PRIORITY ${item.rank}`;
+          top.append(title, priority); card.append(top);
+          const meta = document.createElement('div'); meta.className = 'meta';
+          [[item.category,'tag'],[item.kind,'tag chart-kind'],[item.audience,'tag']].forEach(([text, className]) => { const tag = document.createElement('span'); tag.className = className; tag.textContent = text; meta.append(tag); });
+          card.append(meta);
+          const decision = document.createElement('p'); decision.className = 'decision'; decision.textContent = `Decision: ${item.decision}`;
+          const why = document.createElement('p'); why.className = 'why'; why.textContent = `Value: ${item.value}`;
+          card.append(decision, why);
+          const choices = document.createElement('div'); choices.className = 'choices'; choices.setAttribute('role','group'); choices.setAttribute('aria-label',`${item.id} decision`);
+          [['yes','Yes'],['no','No'],['maybe','Maybe']].forEach(([value,label]) => {
+            const button = document.createElement('button'); button.type='button'; button.className='choice'; button.dataset.choice=value; button.textContent=label; button.setAttribute('aria-pressed',String(state.votes[item.id]===value));
+            button.addEventListener('click', () => { state.votes[item.id] = state.votes[item.id] === value ? '' : value; render(); save(); }); choices.append(button);
+          });
+          const feedback = document.createElement('textarea'); feedback.className='feedback'; feedback.placeholder=`Feedback for ${item.id} (optional) …`; feedback.setAttribute('aria-label',`Feedback for ${item.id}`); feedback.value=state.feedback[item.id] || '';
+          feedback.addEventListener('input', () => { state.feedback[item.id]=feedback.value; save(); });
+          choices.append(feedback); card.append(choices); cards.append(card);
+        });
+      };
+      const reviewObject = () => ({
+        version:1,
+        generatedAt:new Date().toISOString(),
+        summary:{total:candidates.length, reviewed:Object.keys(state.votes).filter((id) => state.votes[id]).length, yes:Object.values(state.votes).filter((vote) => vote==='yes').length, no:Object.values(state.votes).filter((vote) => vote==='no').length, maybe:Object.values(state.votes).filter((vote) => vote==='maybe').length},
+        decisions:candidates.map((item) => ({...item, decision:state.votes[item.id] || 'unreviewed', feedback:state.feedback[item.id] || ''})),
+      });
+      const json = () => JSON.stringify(reviewObject(), null, 2);
+      $('search').addEventListener('input', render);
+      $('category').addEventListener('change', render);
+      $('reviewFilter').addEventListener('change', render);
+      $('sort').addEventListener('change', render);
+      $('yesVisible').addEventListener('click', () => { currentCandidates().forEach((item) => { state.votes[item.id]='yes'; }); render(); save(); });
+      $('copyReview').addEventListener('click', async () => { try { await navigator.clipboard.writeText(json()); setSaveState('Review JSON copied', 'saved'); } catch { setSaveState('Clipboard unavailable · use Download review', 'error'); } });
+      $('downloadReview').addEventListener('click', () => { const blob = new Blob([json()], {type:'application/json'}); const anchor = document.createElement('a'); anchor.href=URL.createObjectURL(blob); anchor.download='sysgrid-home-chart-review.json'; anchor.click(); setTimeout(() => URL.revokeObjectURL(anchor.href),1000); });
+      $('themeToggle').addEventListener('click', () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = state.theme; $('themeToggle').textContent = state.theme === 'dark' ? 'Light appearance' : 'Dark appearance'; save(); });
+      document.documentElement.dataset.theme = state.theme === 'dark' ? 'dark' : 'light';
+      $('themeToggle').textContent = state.theme === 'dark' ? 'Light appearance' : 'Dark appearance';
+      render(); updateSummary();
+    })();
+  </script>
+</body>
+</html>

@@ -15,11 +15,13 @@ import { ConfirmationModal } from "./shared/ConfirmationModal"
 import { WorkspaceValidationBanner } from "./shared/OperationalWorkspacePrimitives"
 import {
   OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
+  getEffectiveOperationalGridFontSize,
   getOperationalGridHeaderHeight,
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
   OPERATIONAL_GRID_ROW_HEIGHT_MAX,
   OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+  OPERATIONAL_GRID_MIN_FONT_SIZE,
 } from './shared/OperationalGridSizing'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { StyledSelect } from "./shared/StyledSelect"
@@ -659,7 +661,7 @@ export default function ServiceRegistry() {
   const gridRef = React.useRef<any>(null)
   const [, setGridApi] = useState<any>(null)
   const [, setGridColumnApi] = useState<any>(null)
-  const [fontSize, setFontSize] = useState(11)
+  const [fontSize, setFontSize] = useState(12)
   const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(true)
   const [showColumnPicker, setShowColumnPicker] = useState(false)
@@ -685,7 +687,7 @@ export default function ServiceRegistry() {
   }
 
   const { data: options } = useQuery({ queryKey: ['settings-options'], queryFn: async () => (await (await apiFetch('/api/v1/settings/options')).json()) })
-  const { data: allServices, isLoading } = useQuery({ queryKey: ["logical-services"], queryFn: async () => (await (await apiFetch("/api/v1/logical-services/?include_deleted=true")).json()) })
+  const { data: allServices, isLoading } = useQuery({ queryKey: ["logical-services"], queryFn: async () => (await (await apiFetch("/api/v1/logical-services?include_deleted=true")).json()) })
   const services = useMemo(() => {
     if (!allServices) return []
     return activeTab === 'active' ? allServices.filter((s: any) => !s.is_deleted) : allServices.filter((s: any) => s.is_deleted)
@@ -716,12 +718,12 @@ export default function ServiceRegistry() {
     }, 100)
     return () => window.clearTimeout(timer)
   }, [fontSize, services])
-  const { data: devices } = useQuery({ queryKey: ["devices"], queryFn: async () => (await (await apiFetch("/api/v1/devices/")).json()) })
+  const { data: devices } = useQuery({ queryKey: ["devices"], queryFn: async () => (await (await apiFetch("/api/v1/devices")).json()) })
 
   const mutation = useMutation({
     meta: { handlesErrorToast: true },
     mutationFn: async (data: any) => {
-      const url = data.id ? `/api/v1/logical-services/${data.id}` : "/api/v1/logical-services/"
+      const url = data.id ? `/api/v1/logical-services/${data.id}` : "/api/v1/logical-services"
       const res = await apiFetch(url, { method: data.id ? "PUT" : "POST", body: JSON.stringify(withServiceEditRevision(data, data)) })
       if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })
       return res.json()
@@ -846,7 +848,7 @@ export default function ServiceRegistry() {
                <div className="flex items-center space-x-12">
                   <div className="flex items-center space-x-3"><Activity size={16} className="text-blue-400" /><span className="text-[10px] font-bold uppercase tracking-widest text-blue-400 ">View Density Laboratory</span></div>
                   <div className="flex items-center space-x-6">
-                     <div className="flex items-center space-x-4"><span className="text-[9px] font-bold text-slate-500 uppercase ">Font Size</span><div className="flex items-center space-x-2"><input type="range" min="8" max="14" step="1" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span></div></div>
+                     <div className="flex items-center space-x-4"><span className="text-[9px] font-bold text-slate-500 uppercase ">Font Size</span><div className="flex items-center space-x-2"><input type="range" min={OPERATIONAL_GRID_MIN_FONT_SIZE} max="14" step="1" value={getEffectiveOperationalGridFontSize(fontSize)} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-4 font-bold">{getEffectiveOperationalGridFontSize(fontSize)}px</span></div></div>
                      <div className="flex items-center space-x-4 border-l border-white/10 pl-6"><span className="text-[9px] font-bold text-slate-500 uppercase ">Row height</span><div className="flex items-center space-x-2"><input type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Service row height" value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))} className="w-32 accent-indigo-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"/><span className="text-[10px] text-white w-10 font-bold tabular-nums">{getOperationalGridRowHeight(fontSize, rowDensity)} px</span></div></div>
                   </div>
                </div>

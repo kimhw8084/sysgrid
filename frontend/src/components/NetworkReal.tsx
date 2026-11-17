@@ -10,7 +10,7 @@ import {
   Globe, Bell, Info, ChevronRight, X, Check, Save,
   AlertCircle, Clock, Zap, Settings, ArrowRightLeft, Briefcase, UserCheck, Code,
   BookOpen, Eye, EyeOff, FileText, User, Users, Mail, MessageSquare, Monitor, MoreVertical,
-  Download, Copy, ChevronUp, Layers, RefreshCcw, Tag, Sliders, Clipboard, Lightbulb, Maximize2, Minimize2, Star, GitCompare, Undo2, List, LayoutGrid, Upload, Terminal, History as HistoryIcon, Edit2 as EditIcon
+  Download, Copy, ChevronUp, Layers, RefreshCcw, Tag, Sliders, Clipboard, Lightbulb, Maximize2, Minimize2, Star, GitCompare, Undo2, List, LayoutGrid, Upload, Terminal, Edit2 as EditIcon
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -38,21 +38,21 @@ import {
   OPERATIONAL_GRID_WIDTHS,
 } from './shared/OperationalGridContract'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
-import { buildOperationalGroupSections } from './shared/OperationalGrouping'
+import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from './shared/OperationalGrouping'
 import { apiFetch } from '../api/apiClient'
+import { NetworkActivityModal } from './network/NetworkActivityModal'
 import { changedNetworkFields, networkOptionsWithCurrent, networkTableChanges } from '../api/networkEdits'
 import { getOperationalNetworkOptions, NETWORK_LINK_TYPE_DEFAULTS, NETWORK_FARM_DEFAULTS, NETWORK_CABLE_TYPE_DEFAULTS } from './shared/OperationalNetworkOptions'
 import { FormGuide, focusFormIssue } from './shared/FormGuide'
 import { parseOperationalApiValidationError } from './shared/OperationalFieldValidation'
 import { ModulePolicyButton, useModuleActionPolicy, useModulePolicy } from '../policy/ModulePolicy'
-import { formatAppDate, formatAppTime, formatAppDay, parseAppDate } from '../utils/dateUtils'
+import { formatAppDate, parseAppDate } from '../utils/dateUtils'
 import { AppDropdown } from './shared/AppDropdown'
 import { ConfigRegistryModal } from "./ConfigRegistry"
 import { ConfirmationModal } from "./shared/ConfirmationModal"
 import { WorkspaceModal } from './shared/WorkspaceModal'
 import {
   WorkspaceCollapsibleHeader,
-  WorkspaceEmptyState,
   WorkspaceFieldError as FieldError,
   WorkspaceFieldLabel as FieldLabel,
   WorkspaceFloatingPanel,
@@ -87,7 +87,7 @@ import {
   useWorkspaceOverlayController,
   useOperationalWorkspaceController,
 } from './shared/OperationalWorkspaceHooks'
-import { WorkspaceCompareShell, WorkspaceDossierShell, WorkspaceHistoryShell } from './shared/WorkspaceModalShells'
+import { WorkspaceCompareShell, WorkspaceDossierShell } from './shared/WorkspaceModalShells'
 import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { downloadOperationalImportFile } from './shared/OperationalImportExport'
@@ -123,6 +123,7 @@ import { resolveOperationalObjectReference } from './shared/OperationalObjectRef
 const NETWORK_VIEW_STORAGE_KEY = 'sysgrid_network_views_v1'
 const NETWORK_ACTIVE_VIEW_KEY = 'sysgrid_network_active_view_v1'
 const NETWORK_FAVORITES_STORAGE_KEY = 'sysgrid_network_favorites_v1'
+const NETWORK_MOBILE_ACTION_WIDTH = 48
 const NETWORK_UI_STATE_KEY = 'sysgrid_network_ui_state_v1'
 const NETWORK_WATCH_STORAGE_KEY = 'sysgrid_network_watch_v1'
 const NETWORK_WORKSPACE_PREFERENCE_KEY = 'network_workspace_state_v1'
@@ -626,6 +627,16 @@ const ObservabilityHUD = ({ items }: any) => {
 }
 
 export default function NetworkReal() {
+  const [isMobileViewport, setIsMobileViewport] = useState(() => (
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  ))
+  useEffect(() => {
+    const viewport = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobileViewport(viewport.matches)
+    update()
+    viewport.addEventListener('change', update)
+    return () => viewport.removeEventListener('change', update)
+  }, [])
   const policy = useModulePolicy()
   const canWrite = !policy.isError && policy.data?.modules.network?.actions?.write === true
   const writeReason = policy.isLoading ? 'Checking network permissions' : 'Connection edit permission is required'
@@ -726,6 +737,7 @@ export default function NetworkReal() {
     initialQuickFilters: persistedUiState?.quickFilters ?? { status: [] as string[], farm: [] as string[], type: [] as string[], direction: [] as string[] },
   })
   const [gridSortModel, setGridSortModel] = useState<any[]>([{ colId: 'favorite', sort: 'desc' }])
+  const suppressResponsiveColumnSyncRef = useRef(false)
   const [savedViews, setSavedViews] = usePersistentJsonState<any[]>(NETWORK_VIEW_STORAGE_KEY, () => {
     return initialWorkspaceState?.savedViews ?? normalizeNetworkSavedViews([])
   }, normalizeNetworkSavedViews)
@@ -1037,6 +1049,27 @@ export default function NetworkReal() {
     setWatchIds((current) => current.includes(id) ? current.filter((i) => i !== id) : [...current, id])
   }, [])
 
+  const applyResponsiveColumnPresentation = useCallback((api = gridRef.current?.api) => {
+    if (!api?.applyColumnState) return
+    const savedLayout = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
+    suppressResponsiveColumnSyncRef.current = true
+    api.applyColumnState({
+      state: isMobileViewport
+        ? [
+            { colId: 'id', hide: true },
+            { colId: 'favorite', hide: true },
+            { colId: 'row_actions', width: NETWORK_MOBILE_ACTION_WIDTH },
+          ]
+        : [
+            { colId: 'id', hide: savedLayout.get('id')?.hide ?? false },
+            { colId: 'favorite', hide: savedLayout.get('favorite')?.hide ?? false },
+            { colId: 'row_actions', width: OPERATIONAL_GRID_WIDTHS.standardAction },
+          ],
+      applyOrder: false,
+    })
+    requestAnimationFrame(() => { suppressResponsiveColumnSyncRef.current = false })
+  }, [columnLayoutState, isMobileViewport])
+
   const openCompare = () => {
     if (selectedIds.length < 2 || selectedIds.length > 5) return
     setCompareOpen(true)
@@ -1044,6 +1077,25 @@ export default function NetworkReal() {
 
   const renderPrimaryRowActions = (item: any) => {
     const isPending = pendingIds.includes(item.id)
+    if (isMobileViewport) {
+      return (
+        <div className={`flex h-full items-center justify-center ${isPending ? 'opacity-20 grayscale pointer-events-none' : ''}`}>
+          <button
+            type="button"
+            aria-label={`Open actions for ${getNetworkConnectionTitle(item)}`}
+            title="Open connection actions"
+            onClick={(event) => {
+              event.stopPropagation()
+              const bounds = event.currentTarget.getBoundingClientRect()
+              openRowActionMenuAtPoint(item, bounds.left, bounds.bottom)
+            }}
+            className="rounded-lg p-1 text-slate-300 transition-colors hover:bg-slate-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+          >
+            <MoreVertical size={16} aria-hidden="true" />
+          </button>
+        </div>
+      )
+    }
     return (
       <div className={`flex items-center justify-end gap-1.5 pr-2 ${isPending ? 'opacity-20 grayscale pointer-events-none' : ''}`}>
         <button
@@ -1471,16 +1523,22 @@ export default function NetworkReal() {
 
   const networkGridRuntime = useMemo(() => ({
     preserveExplicitColumnWidths,
-    handleGridReady,
+    handleGridReady: (params: any) => {
+      handleGridReady(params)
+      requestAnimationFrame(() => applyResponsiveColumnPresentation(params.api))
+    },
     handleColumnResized,
     handleColumnMoved,
     handleDragStopped,
     handleColumnPinned,
-    handleColumnVisible,
+    handleColumnVisible: (event: any) => {
+      if (!suppressResponsiveColumnSyncRef.current) handleColumnVisible(event)
+    },
     handleFilterChanged,
     handleSortChanged,
   }), [
     preserveExplicitColumnWidths,
+    applyResponsiveColumnPresentation,
     handleGridReady,
     handleColumnResized,
     handleColumnMoved,
@@ -1490,6 +1548,10 @@ export default function NetworkReal() {
     handleFilterChanged,
     handleSortChanged,
   ])
+
+  useEffect(() => {
+    applyResponsiveColumnPresentation()
+  }, [applyResponsiveColumnPresentation])
 
   const networkRowInteractions = useMemo(() => ({
     handleRowClicked,
@@ -1513,16 +1575,7 @@ export default function NetworkReal() {
 
   useEffect(() => {
     if (groupBy === 'raw') return
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => {
-        if (!(section.key in next)) next[section.key] = false
-      })
-      Object.keys(next).forEach((key) => {
-        if (!groupedSections.some((section) => section.key === key)) delete next[key]
-      })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [groupBy, groupedSections])
 
   const isRecentChange = useCallback((item: any) => {
@@ -1666,7 +1719,7 @@ export default function NetworkReal() {
 
   const { data: devices } = useQuery({
     queryKey: ['devices'],
-    queryFn: async () => (await apiFetch('/api/v1/devices/')).json()
+    queryFn: async () => (await apiFetch('/api/v1/devices')).json()
   })
 
   const refreshNetworkConnections = useCallback(
@@ -1841,11 +1894,14 @@ export default function NetworkReal() {
 
   const columnDefs = useMemo(() => {
     const layoutById = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
-    const renderText = (value: any, className = '') => (
+    const renderText = (value: any, className = '', wrapOnMobile = false) => (
       <span
         title={value == null ? '' : String(value)}
-        style={{ fontSize: `${fontSize}px` }}
-        className={`block w-full min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis ${className}`}
+        style={{
+          fontSize: `${fontSize}px`,
+          ...(wrapOnMobile && isMobileViewport ? { whiteSpace: 'normal', overflowWrap: 'anywhere' as const } : {}),
+        }}
+        className={`block w-full min-w-0 ${wrapOnMobile && isMobileViewport ? '' : 'truncate whitespace-nowrap overflow-hidden text-ellipsis'} ${className}`}
       >
         {value ?? 'N/A'}
       </span>
@@ -1857,7 +1913,7 @@ export default function NetworkReal() {
       includeWatch: true,
       isIntelligenceExpanded,
       hideRecentChange: !isIntelligenceExpanded,
-      hideFavorite: false,
+      hideFavorite: isMobileViewport,
       hideWatch: !isIntelligenceExpanded,
       isRecentChange,
       onToggleFavorite: toggleFavorite,
@@ -1875,12 +1931,13 @@ export default function NetworkReal() {
         minWidth: 120,
         maxWidth: 180,
         pinned: 'left',
+        autoHeight: isMobileViewport,
         operationalSkipAutoSize: true,
         resizable: true,
         filter: true,
         cellClass: 'text-left flex items-center justify-start font-bold',
         headerClass: 'text-left',
-        cellRenderer: (p: any) => renderText(p.value, 'text-slate-200 font-bold'),
+        cellRenderer: (p: any) => renderText(p.value, 'text-slate-200 font-bold', true),
       },
       {
         field: 'src_rack_slot',
@@ -2129,18 +2186,29 @@ export default function NetworkReal() {
     }
   })
 
-  // Ensure column order is maintained from state to prevent "jumping" during re-renders
+  // Ensure column order is maintained from state to prevent "jumping" during re-renders.
+  // On phones, the identity value and one actions button take priority over utility columns.
+  const responsiveMergedDefs = isMobileViewport
+    ? mergedDefs.map((column: any) => {
+        if (column.colId === 'id' || column.colId === 'favorite') return { ...column, hide: true }
+        if (column.colId === 'row_actions') {
+          return { ...column, headerName: '', width: NETWORK_MOBILE_ACTION_WIDTH, minWidth: NETWORK_MOBILE_ACTION_WIDTH, maxWidth: NETWORK_MOBILE_ACTION_WIDTH }
+        }
+        return column
+      })
+    : mergedDefs
+
   if (columnLayoutState.length > 0) {
     const orderMap = new Map(columnLayoutState.map((col: any, index: number) => [col.colId, index]))
-    return [...mergedDefs].sort((a: any, b: any) => {
+    return [...responsiveMergedDefs].sort((a: any, b: any) => {
       const aId = a.colId || a.field
       const bId = b.colId || b.field
       return (orderMap.get(aId) ?? 1000) - (orderMap.get(bId) ?? 1000)
     })
   }
 
-  return mergedDefs
-}, [fontSize, hiddenColumns, columnLayoutState, isIntelligenceExpanded, preserveExplicitColumnWidths]) as any
+  return responsiveMergedDefs
+}, [fontSize, hiddenColumns, columnLayoutState, isIntelligenceExpanded, preserveExplicitColumnWidths, isMobileViewport]) as any
 
   const gridContext = useMemo(() => ({ favoriteIds, watchIds }), [favoriteIds, watchIds])
   const autoSizeStrategy = useMemo(
@@ -2156,7 +2224,6 @@ export default function NetworkReal() {
       header={{
         eyebrow: "Connectivity",
         title: 'Network',
-        titleIcon: Network,
         subtitle: "Centralized network connection registry and operational status",
         actions: (
           <>
@@ -2547,6 +2614,13 @@ export default function NetworkReal() {
                   tone: 'success' as OperationalRowActionTone, 
                   onClick: () => { setEditingItem(item); setIsFormOpen(true); setRowActionMenu(null); } 
                 },
+                ...(isMobileViewport ? [{
+                  id: 'favorite',
+                  label: favoriteIds.includes(item.id) ? 'Unpin connection' : 'Pin connection',
+                  icon: Star,
+                  tone: 'neutral' as OperationalRowActionTone,
+                  onClick: () => { toggleFavorite(item.id); setRowActionMenu(null) },
+                }] : []),
               ]
             },
             {
@@ -2806,7 +2880,7 @@ export default function NetworkReal() {
             deleteConfirm={detailDeleteConfirm}
           />
         )}
-        {historyItem && <NetworkHistoryModal key={`network-history-${historyItem.id}`} item={historyItem} onClose={() => setHistoryItem(null)} />}
+        {historyItem && <NetworkActivityModal key={`network-history-${historyItem.id}`} item={historyItem} onClose={() => setHistoryItem(null)} />}
         {compareOpen && <CompareConnectionsModal key={`network-compare-${compareItems.map((item) => item.id).join('-') || 'empty'}`} items={compareItems} onClose={() => setCompareOpen(false)} />}
         {showBulkEditModal && (
           <BulkEditTableModal
@@ -3874,264 +3948,6 @@ export function NetworkConnectionForm({ item: incomingItem, devices, onClose, on
             </fieldset>
           </div>
         }
-      />
-    </WorkspaceModal>
-  )
-}
-
-function NetworkHistoryModal({ item, onClose }: any) {
-  useEscapeDismiss(onClose)
-  useBodyModalFlag()
-  const [isMaximized, setIsMaximized] = useState(false)
-  const queryClient = useQueryClient()
-  const { data: history, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['network-history', item.id],
-    queryFn: async () => {
-      const response = await apiFetch(`/api/v1/networks/connections/${item.id}/history`)
-      if (!response.ok) throw new Error(await response.text() || 'Network history could not be loaded.')
-      return response.json()
-    }
-  })
-
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([0])
-
-  const toggleSelection = (idx: number) => {
-    if (selectedIndices.includes(idx)) {
-       if (selectedIndices.length > 1) {
-          setSelectedIndices(selectedIndices.filter(i => i !== idx))
-       }
-    } else {
-       if (selectedIndices.length === 2) {
-          setSelectedIndices([selectedIndices[1], idx])
-       } else {
-          setSelectedIndices([...selectedIndices, idx].sort((a, b) => a - b))
-       }
-    }
-  }
-
-  const indexedVersions = (Array.isArray(history) ? history : []).map((h: any, i: number) => ({
-    ...h,
-    v_num: h.version,
-    label: formatAppDate(h.created_at)
-  }))
-
-  const newer = indexedVersions?.[Math.min(...selectedIndices)]
-  const older = selectedIndices.length > 1 
-    ? indexedVersions?.[Math.max(...selectedIndices)] 
-    : (selectedIndices[0] + 1 < indexedVersions.length ? indexedVersions[selectedIndices[0] + 1] : null)
-
-  const getDiff = (curr: any, prev: any) => {
-    if (!curr) return []
-    const isImmediatePrevious = !prev || curr.previous_version === prev.version
-    if (isImmediatePrevious && Array.isArray(curr.delta)) {
-      return curr.delta.map((entry: any) => ({
-        field: entry.field,
-        label: entry.label || String(entry.field || '').replace(/_/g, ' '),
-        old: entry.before,
-        new: entry.after,
-        changeType: entry.change_type || 'changed',
-      }))
-    }
-
-    const s1 = curr.snapshot || {}
-    const s2 = prev?.snapshot || {}
-    const keys = Array.from(new Set([...Object.keys(s1), ...Object.keys(s2)]))
-    return keys.filter(k => {
-      if (['updated_at', 'created_at', 'id', 'version', 'is_deleted', 'monitored_service_names', 'recovery_doc_titles', 'device_name'].includes(k)) return false
-      return JSON.stringify(s1[k]) !== JSON.stringify(s2[k])
-    }).map(k => ({
-      field: k,
-      label: k.replace(/_/g, ' '),
-      old: s2[k],
-      new: s1[k],
-      changeType: s2[k] == null ? 'added' : s1[k] == null ? 'removed' : 'changed',
-    }))
-  }
-
-  const diffs = getDiff(newer, older)
-
-  return (
-    <WorkspaceModal
-      isOpen={true}
-      onClose={onClose}
-      size="workspace"
-      isMaximized={isMaximized}
-      onMaximizeToggle={() => setIsMaximized(!isMaximized)}
-      title="Change History"
-      subtitle={`Temporal lineage for ${item.title}`}
-      icon={<HistoryIcon size={20} />}
-      status={
-        <div className="flex items-center gap-4">
-          <StatusPill value={item?.status} />
-          <div className="h-4 w-px bg-white/10" />
-          <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest italic whitespace-nowrap">
-            {indexedVersions?.length || 0} Snapshot(s)
-          </p>
-        </div>
-      }
-      footerRight={
-        <ToolbarButton onClick={onClose}>Dismiss</ToolbarButton>
-      }
-    >
-      <WorkspaceHistoryShell
-          header={null}
-          sidebar={
-           <div className="flex h-full flex-col min-h-0">
-              <div className="mb-4 flex items-center justify-between px-1">
-                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Change Timeline</h3>
-                 <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-lg border border-blue-500/20">{indexedVersions.length} revisions</span>
-              </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
-                {isLoading ? (
-                   <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                      <RefreshCcw size={24} className="animate-spin text-blue-500" />
-                      <span className="text-[10px] font-black text-blue-500 animate-pulse uppercase tracking-widest">Syncing revisions...</span>
-                   </div>
-                ) : isError ? (
-                  <WorkspaceEmptyState compact icon={<HistoryIcon size={20} />} title="History unavailable" description={error instanceof Error ? error.message : 'Could not load connection revisions.'} action={<button type="button" onClick={() => void refetch()} className="rounded-lg border border-blue-500/30 px-3 py-2 text-xs font-semibold text-blue-400">Retry</button>} />
-                ) : indexedVersions.length ? (
-                  indexedVersions.map((h: any, idx: number) => {
-                    const isSelected = selectedIndices.includes(idx);
-                    const isNewest = idx === Math.min(...selectedIndices);
-                    return (
-                      <div
-                        key={h.id}
-                        className={`w-full rounded-lg border text-left transition-all relative group overflow-hidden ${
-                          isSelected
-                            ? isNewest ? 'bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/5' : 'bg-slate-800 border-slate-600'
-                            : 'bg-white/5 border-white/5 hover:border-white/10'
-                        }`}
-                      >
-                        {isSelected && (
-                          <div className={`absolute top-0 right-0 px-2 py-0.5 text-[8px] font-black uppercase rounded-lg ${isNewest ? 'bg-blue-400 text-blue-950' : 'bg-slate-500 text-slate-200'}`}>
-                             {isNewest ? 'Primary' : 'Ref'}
-                          </div>
-                        )}
-                        <button type="button" aria-pressed={isSelected} onClick={() => toggleSelection(idx)} className="w-full p-4 text-left">
-                          <div className="flex items-center justify-between mb-2">
-                             <span className={`text-[11px] font-black tracking-tighter ${isSelected ? 'text-white' : 'text-blue-400'}`}>v{h.v_num}</span>
-                             <span className={`text-[9px] font-bold ${isSelected ? 'text-white/60' : 'text-slate-500'}`}>
-                                {formatAppDay(h.created_at)}
-                             </span>
-                          </div>
-                          <p className={`text-[10px] font-bold leading-tight line-clamp-2 ${isSelected ? 'text-white/90' : 'text-slate-300'}`}>
-                             {h.change_summary || 'Connection Modification'}
-                          </p>
-                          {Array.isArray(h.changed_labels) && h.changed_labels.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                              {h.changed_labels.slice(0, 3).map((label: string) => (
-                                <span key={label} className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-400">
-                                  {label}
-                                </span>
-                              ))}
-                              {h.changed_labels.length > 3 && (
-                                <span className="rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] font-bold text-slate-500">
-                                  +{h.changed_labels.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </button>
-                        <div className="flex items-center justify-between px-4 pb-4">
-                           <div className="flex items-center space-x-2">
-                             <Clock size={10} className={isSelected ? 'text-white/40' : 'text-slate-600'} />
-                             <span className={`text-[8px] font-semibold ${isSelected ? 'text-white/40' : 'text-slate-600'}`}>
-                                {formatAppTime(h.created_at)}
-                             </span>
-                           </div>
-                           <button
-                             type="button"
-                             onClick={() => {
-                               const restoreVersion = async () => {
-                                 const response = await apiFetch(`/api/v1/networks/connections/${item.id}/restore/${h.id}`, { method: 'POST' })
-                                 if (!response.ok) throw new Error(await response.text() || 'Restore failed')
-                                 await Promise.all([
-                                   queryClient.invalidateQueries({ queryKey: ['network-connections'] }),
-                                   queryClient.invalidateQueries({ queryKey: ['network-history', item.id] }),
-                                 ])
-                               }
-                               void toast.promise(restoreVersion(), {
-                                 loading: 'Restoring state...',
-                                 success: 'Restored successfully',
-                                 error: (restoreError: any) => restoreError?.message || 'Restore failed',
-                               })
-                             }}
-                             className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${isSelected ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/40' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
-                           >
-                             Restore
-                           </button>
-                        </div>
-                      </div>
-                    )
-                  })
-                ) : (
-                  <WorkspaceEmptyState compact icon={<HistoryIcon size={20} />} title="No revisions yet" description="Changes to this connection will appear here." />
-                )}
-              </div>
-           </div>
-          }
-          content={
-           <>
-              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md sticky top-0 z-10">
-                 <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                       <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-[12px] font-black">v{newer?.v_num}</div>
-                       <div className="w-4 h-px bg-slate-700" />
-                       <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center text-slate-500 text-[12px] font-black">{older ? `v${older.v_num}` : 'Ø'}</div>
-                    </div>
-                    <div>
-                       <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest">Semantic Delta</h3>
-                       <p className="text-[9px] font-bold text-slate-600">{diffs.length} modification vectors detected</p>
-                    </div>
-                 </div>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-                 {isError ? (
-                    <WorkspaceEmptyState icon={<HistoryIcon size={32} />} title="History unavailable" description={error instanceof Error ? error.message : 'Could not load connection revisions.'} action={<button type="button" onClick={() => void refetch()} className="rounded-lg border border-blue-500/30 px-3 py-2 text-xs font-semibold text-blue-400">Retry history</button>} />
-                 ) : diffs.length > 0 ? (
-                    <div className="space-y-6">
-                       <div className="overflow-hidden rounded-lg border border-white/5 bg-black/20">
-                          <table className="sg-data-table w-full text-left border-collapse">
-                             <thead>
-                                <tr className="bg-white/5 text-[9px] font-black uppercase text-slate-500 tracking-widest">
-                                   <th className="p-4 w-1/4">Property</th>
-                                   <th className="p-4 w-3/8 text-rose-500/70">Previous (v{older?.v_num || 'Ø'})</th>
-                                   <th className="p-4 w-3/8 text-emerald-500/70">Current (v{newer?.v_num})</th>
-                                </tr>
-                             </thead>
-                             <tbody className="divide-y divide-white/5">
-                                {diffs.map((d: any, i: number) => (
-                                   <tr key={`${i}-row`} className="hover:bg-white/[0.02] transition-colors">
-                                      <td className="p-4 align-top">
-                                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{d.label || d.field}</span>
-                                      </td>
-                                      <td className="p-4 align-top">
-                                         <div className={`rounded-lg p-3 overflow-hidden ${d.changeType === 'added' ? 'bg-slate-500/5 border border-slate-500/10' : 'bg-rose-500/5 border border-rose-500/10'}`}>
-                                            <pre className={`text-[10px] whitespace-pre-wrap font-mono leading-relaxed break-all ${d.changeType === 'added' ? 'text-slate-600' : 'text-slate-500 line-through'}`}>
-                                               {typeof d.old === 'object' ? JSON.stringify(d.old, null, 2) : String(d.old ?? '(empty)')}
-                                            </pre>
-                                         </div>
-                                      </td>
-                                      <td className="p-4 align-top">
-                                         <div className={`rounded-lg p-3 overflow-hidden ${d.changeType === 'removed' ? 'bg-slate-500/5 border border-slate-500/10' : 'bg-emerald-500/5 border border-emerald-500/10'}`}>
-                                            <pre className={`text-[10px] whitespace-pre-wrap font-mono font-bold leading-relaxed break-all ${d.changeType === 'removed' ? 'text-slate-500' : 'text-emerald-400'}`}>
-                                               {typeof d.new === 'object' ? JSON.stringify(d.new, null, 2) : String(d.new ?? '(empty)')}
-                                            </pre>
-                                         </div>
-                                      </td>
-                                   </tr>
-                                ))}
-                             </tbody>
-                          </table>
-                       </div>
-                    </div>
-                 ) : !isLoading ? (
-                    <WorkspaceEmptyState icon={<HistoryIcon size={32} />} title="No Diff Data" description="Select two revisions to compare or pick a revision to see changes from its predecessor." />
-                 ) : null}
-              </div>
-           </>
-          }
       />
     </WorkspaceModal>
   )

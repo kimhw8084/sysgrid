@@ -1,5 +1,5 @@
 import React from 'react'
-import { FileText, Globe, LayoutGrid, Server } from 'lucide-react'
+import { FileText, Globe, LayoutGrid } from 'lucide-react'
 import { HeaderScopeSwitch, ToolbarSearch } from '../shared/LayoutPrimitives'
 import { OperationalWorkspaceShell } from '../shared/OperationalWorkspaceShells'
 
@@ -43,10 +43,19 @@ export default function AssetGoldenShellScaffold({
       header={{
         eyebrow: 'Infrastructure',
         title: 'Assets',
-        titleIcon: Server,
         subtitle: 'Operational asset inventory, topology context, and ownership status',
         actions: (
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
+            <HeaderScopeSwitch
+              label={<span className="hidden lg:inline">Registry Scope</span>}
+              value={activeTab}
+              onChange={(next) => onTabChange(next as 'inventory' | 'deleted')}
+              options={[
+                { label: `Existing (${existingCount})`, value: 'inventory' },
+                { label: `Archived (${purgedCount})`, value: 'deleted' },
+              ]}
+            />
+            <div aria-hidden="true" className="h-8 w-px bg-[var(--border-default)]" />
             <HeaderScopeSwitch
               label={<span className="hidden lg:inline">View Surface</span>}
               value={viewMode}
@@ -57,20 +66,6 @@ export default function AssetGoldenShellScaffold({
                 { label: <span className="flex items-center gap-2"><Globe size={13} /> Map</span>, value: 'map' },
               ]}
             />
-            {viewMode === 'grid' ? (
-              <>
-                <div className="h-8 w-px bg-white/5" />
-                <HeaderScopeSwitch
-                  label={<span className="hidden lg:inline">Registry Scope</span>}
-                  value={activeTab}
-                  onChange={(next) => onTabChange(next as 'inventory' | 'deleted')}
-                  options={[
-                    { label: `Existing (${existingCount})`, value: 'inventory' },
-                    { label: `Archived (${purgedCount})`, value: 'deleted' },
-                  ]}
-                />
-              </>
-            ) : null}
           </div>
         ),
       }}

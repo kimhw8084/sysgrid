@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { buildVendorGoldenColumns } from './vendorGoldenColumns'
 
 describe('Vendor header resize defaults', () => {
-  it('keeps a common minimum while preserving an initial readable width for each column', () => {
+  it('enforces declared header minima while preserving resizable columns', () => {
     const columns = buildVendorGoldenColumns({
       fontSize: 11,
       hiddenColumns: [],
@@ -16,10 +16,16 @@ describe('Vendor header resize defaults', () => {
       renderPrimaryRowActions: () => null,
     })
 
-    for (const field of ['country', 'primary_personnel_name', 'personnel_count']) {
+    const expectedMinimumWidths = new Map([
+      ['country', 136],
+      ['primary_personnel_name', 192],
+      ['primary_personnel_email', 190],
+      ['personnel_count', 144],
+    ])
+    for (const [field, minimumWidth] of expectedMinimumWidths) {
       const column = columns.find((candidate: any) => candidate.field === field)
-      expect(column?.initialWidth ?? column?.width).toBeGreaterThanOrEqual(40)
-      expect(column?.minWidth).toBe(40)
+      expect(column?.initialWidth ?? column?.width).toBeGreaterThanOrEqual(minimumWidth)
+      expect(column?.minWidth).toBe(minimumWidth)
       expect(column).not.toHaveProperty('maxWidth')
       expect(column?.resizable).toBe(true)
     }

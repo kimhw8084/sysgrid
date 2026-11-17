@@ -1,30 +1,56 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyOperationalColumnSizing, applyOperationalColumnState, finalizeOperationalColumnDefinition, getOperationalColumnSizingMetadata, getOperationalCompactGridHeight, getOperationalGridHeaderHeight, getOperationalGridRowDensityForHeight, getOperationalGridRowHeight, normalizeOperationalColumnDefinitions } from './OperationalGridSizing'
+import { applyOperationalColumnSizing, applyOperationalColumnState, finalizeOperationalColumnDefinition, getEffectiveOperationalGridFontSize, getOperationalColumnSizingMetadata, getOperationalCompactGridHeight, getOperationalContentAutoSizeStrategy, getOperationalGridHeaderHeight, getOperationalGridRowDensityForHeight, getOperationalGridRowHeight, normalizeOperationalColumnDefinitions, OPERATIONAL_GRID_MIN_FONT_SIZE } from './OperationalGridSizing'
 
 describe('compact operational grid sizing', () => {
+  it('keeps the effective body size at the project minimum without rewriting saved requests', () => {
+    expect(OPERATIONAL_GRID_MIN_FONT_SIZE).toBe(12)
+    expect(getEffectiveOperationalGridFontSize(8)).toBe(12)
+    expect(getEffectiveOperationalGridFontSize(11)).toBe(12)
+    expect(getEffectiveOperationalGridFontSize(13)).toBe(13)
+    expect(getEffectiveOperationalGridFontSize(18)).toBe(18)
+    expect(getEffectiveOperationalGridFontSize(Number.NaN)).toBe(12)
+    expect(getEffectiveOperationalGridFontSize(Number.NaN, 13)).toBe(13)
+  })
+
   it('fits small filtered result sets without a tall blank panel', () => {
-    expect(getOperationalCompactGridHeight(0, 11, 24)).toBe(142)
-    expect(getOperationalCompactGridHeight(1, 11, 24)).toBe(142)
-    expect(getOperationalCompactGridHeight(5, 11, 24)).toBe(268)
-    expect(getOperationalCompactGridHeight(6, 11, 24)).toBeNull()
+    expect(getOperationalCompactGridHeight(0, 12, 24)).toBe(142)
+    expect(getOperationalCompactGridHeight(1, 12, 24)).toBe(142)
+    expect(getOperationalCompactGridHeight(5, 12, 24)).toBe(268)
+    expect(getOperationalCompactGridHeight(6, 12, 24)).toBeNull()
   })
 
   it('applies one row and header height scale across operational grids', () => {
-    expect(getOperationalGridHeaderHeight(11)).toBe(42)
-    expect(getOperationalGridRowHeight(11, 4)).toBe(22)
-    expect(getOperationalGridRowHeight(11, 8)).toBe(26)
-    expect(getOperationalGridRowHeight(11, 16)).toBe(34)
-    expect(getOperationalGridRowHeight(20, 24)).toBe(48)
-    expect(getOperationalGridRowDensityForHeight(24, 11)).toBe(6)
-    expect(getOperationalGridRowHeight(11, getOperationalGridRowDensityForHeight(48, 11))).toBe(48)
-    for (let rowHeight = 22; rowHeight <= 48; rowHeight += 1) {
-      expect(getOperationalGridRowHeight(11, getOperationalGridRowDensityForHeight(rowHeight, 11))).toBe(rowHeight)
+    expect(getOperationalGridHeaderHeight(12)).toBe(42)
+    expect(getOperationalGridRowHeight(12, 0)).toBe(40)
+    expect(getOperationalGridRowHeight(12, 4)).toBe(40)
+    expect(getOperationalGridRowHeight(12, 8)).toBe(40)
+    expect(getOperationalGridRowHeight(12, 16)).toBe(40)
+    expect(getOperationalGridRowHeight(12, 24)).toBe(42)
+    expect(getOperationalGridRowHeight(14, 33)).toBe(48)
+    expect(getOperationalGridRowDensityForHeight(24, 12)).toBe(6)
+    expect(getOperationalGridRowHeight(12, getOperationalGridRowDensityForHeight(24, 12))).toBe(40)
+    expect(getOperationalGridRowHeight(12, getOperationalGridRowDensityForHeight(48, 12))).toBe(48)
+    for (let rowHeight = 40; rowHeight <= 48; rowHeight += 1) {
+      expect(getOperationalGridRowHeight(12, getOperationalGridRowDensityForHeight(rowHeight, 12))).toBe(rowHeight)
     }
   })
 })
 
 describe('resizable operational columns', () => {
+  it('excludes columns marked skip-auto-size from the initial content-size strategy', () => {
+    const [identity, country] = normalizeOperationalColumnDefinitions([
+      { field: 'name', width: 220, minWidth: 180, maxWidth: 220, operationalSkipAutoSize: true },
+      { field: 'country', width: 136, operationalAutoSizeMaxWidth: 136 },
+    ])
+    expect(getOperationalContentAutoSizeStrategy({ type: 'fitCellContents' }, [identity, country]))
+      .toEqual({ type: 'fitCellContents', colIds: ['country'] })
+    expect(getOperationalContentAutoSizeStrategy({ type: 'fitCellContents', colIds: ['name'] }, [identity, country]))
+      .toBeUndefined()
+    expect(getOperationalContentAutoSizeStrategy({ type: 'fitGridWidth' }, [identity, country]))
+      .toEqual({ type: 'fitGridWidth' })
+  })
+
   it('applies the same small minimum and removes per-column width locks', () => {
     const [utility, grouped] = normalizeOperationalColumnDefinitions([
       { colId: 'select', width: 64, minWidth: 64, maxWidth: 64, resizable: false, operationalLockWidth: true, operationalSkipAutoSize: true },
@@ -60,6 +86,18 @@ describe('resizable operational columns', () => {
       autoSizeMinWidth: 180,
       autoSizeMaxWidth: 210,
     })
+  })
+
+  it('enforces an explicit user-resize minimum only for columns that require complete labels', () => {
+    const [ordinary, required] = normalizeOperationalColumnDefinitions([
+      { colId: 'ordinary', minWidth: 180 },
+      { colId: 'administrator', minWidth: 180, operationalMinimumWidth: 180 },
+    ])
+    expect(ordinary.minWidth).toBe(40)
+    expect(required.minWidth).toBe(180)
+    expect(getOperationalColumnSizingMetadata(required).userMinWidth).toBe(180)
+    expect(required).not.toHaveProperty('operationalMinimumWidth')
+    expect(normalizeOperationalColumnDefinitions([required])[0].minWidth).toBe(180)
   })
 
   it('restores saved widths beyond the former fixed bounds', () => {
