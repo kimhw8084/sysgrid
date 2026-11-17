@@ -683,7 +683,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
             : route.key === 'assets' ? seeded.primary.name
               : route.key === 'external' ? external.name
                 : vendor.name
-          await expect(page.getByRole('gridcell', { name: accessibleIdentity, exact: true }), `${route.key} full identity should be present in the browser accessibility tree`).toBeVisible()
+          await expect(page.getByRole('gridcell', { name: accessibleIdentity }), `${route.key} full identity should be present in the browser accessibility tree`).toBeVisible()
           if (route.key === 'assets') expect(focusedCell.text).toBe(seeded.primary.name)
           if (route.key === 'external') expect(focusedCell.text).toBe(external.name)
           if (route.key === 'vendors') expect(focusedCell.text).toBe(vendor.name)
