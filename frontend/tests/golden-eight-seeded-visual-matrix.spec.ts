@@ -615,6 +615,10 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           await testInfo.attach(`${theme}-asset-grid-cell-keyboard-semantics`, { path: semanticsPath, contentType: 'application/json' })
         }
         if (['assets', 'external', 'far', 'vendors'].includes(route.key)) {
+          if (route.key === 'assets') {
+            await fillGridSearch(page, routeSearches.assets.placeholder, seeded.primary.name)
+            await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBe(1)
+          }
           const identityColumn = route.key === 'far' ? 'system_name' : 'name'
           const identityHeaderSelector = route.key === 'external'
             ? '.ag-header-cell[col-id="name"], .ag-header-cell[col-id="external_entity_name"]'
