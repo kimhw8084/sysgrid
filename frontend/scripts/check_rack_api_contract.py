@@ -247,7 +247,7 @@ def choose_backend_python(requested: Path | None = None) -> Path:
 
 def run_synthetic_asgi_probe(backend_python: Path) -> dict:
     """Exercise actual Rack auth, tenant lookup, route and body via in-process ASGI."""
-    with tempfile.TemporaryDirectory(prefix="sysgrid-g2-asgi-", dir="/private/tmp") as temp:
+    with tempfile.TemporaryDirectory(prefix="sysgrid-g2-asgi-") as temp:
         scratch = Path(temp)
         observation_path = scratch / "asgi-observation.json"
         if (scratch / ".env").exists():
@@ -282,7 +282,7 @@ def generate_backend_openapi(backend_python: Path | None = None) -> tuple[dict, 
     """Import the actual copied FastAPI app with isolated synthetic config, no lifespan or request."""
     bindings_before = source_bindings()
     python = choose_backend_python(backend_python)
-    with tempfile.TemporaryDirectory(prefix="sysgrid-g2-openapi-", dir="/private/tmp") as temp:
+    with tempfile.TemporaryDirectory(prefix="sysgrid-g2-openapi-") as temp:
         scratch = Path(temp)
         storage = scratch / "tenant-storage"
         storage.mkdir()

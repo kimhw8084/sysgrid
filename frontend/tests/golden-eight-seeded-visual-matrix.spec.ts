@@ -276,8 +276,31 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
     expect(setup.maximum, `rack ${index} elevation should have scrollable rack units`).toBeGreaterThan(1)
     expect(setup.hitInside, `rack ${index} wheel point should hit its visible elevation scroller: ${JSON.stringify(setup)}`).toBe(true)
     await page.mouse.move(setup.point.x, setup.point.y)
+    await scroller.evaluate(element => {
+      const scroll = element as HTMLElement
+      scroll.dataset.goldenTestLastWheel = 'not-observed'
+      scroll.addEventListener('wheel', event => {
+        scroll.dataset.goldenTestLastWheel = JSON.stringify({
+          deltaX: event.deltaX,
+          deltaY: event.deltaY,
+          defaultPrevented: event.defaultPrevented,
+          target: (event.target as HTMLElement | null)?.tagName ?? null,
+        })
+      }, { capture: true, once: true })
+    })
     await page.mouse.wheel(0, 120)
-    await expect.poll(() => scroller.evaluate(element => (element as HTMLElement).scrollTop), { message: `native wheel input should scroll rack ${index} elevation` }).toBeGreaterThan(setup.before)
+    try {
+      await expect.poll(
+        () => scroller.evaluate(element => (element as HTMLElement).scrollTop),
+        { message: `native wheel input should scroll rack ${index} elevation; setup=${JSON.stringify(setup)}` },
+      ).toBeGreaterThan(setup.before)
+    } catch (error) {
+      const wheelResult = await scroller.evaluate(element => ({
+        scrollTop: (element as HTMLElement).scrollTop,
+        wheel: (element as HTMLElement).dataset.goldenTestLastWheel ?? 'no wheel event received',
+      }))
+      throw new Error(`native wheel input did not scroll rack ${index} elevation; setup=${JSON.stringify(setup)}; result=${JSON.stringify(wheelResult)}; ${String(error)}`)
+    }
     await scroller.evaluate((element, initial) => { (element as HTMLElement).scrollTop = initial }, setup.before)
   }
 }
