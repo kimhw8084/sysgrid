@@ -288,7 +288,22 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
         })
       }, { capture: true, once: true })
     })
-    await page.mouse.wheel(0, 120)
+    // Dispatch the Chromium wheel input at the measured hit-test point. The
+    // Playwright mouse helper produced no wheel event in CI despite the
+    // pointer being over this scroller; dispatch the same browser input at the
+    // verified hit-test point and still require the real scroll position to move.
+    const input = await page.context().newCDPSession(page)
+    try {
+      await input.send('Input.dispatchMouseEvent', {
+        type: 'mouseWheel',
+        x: setup.point.x,
+        y: setup.point.y,
+        deltaX: 0,
+        deltaY: 120,
+      })
+    } finally {
+      await input.detach()
+    }
     try {
       await expect.poll(
         () => scroller.evaluate(element => (element as HTMLElement).scrollTop),
