@@ -134,6 +134,10 @@ const NETWORK_AUTO_SIZE_SKIP_COLUMN_IDS = new Set([
   'recent_change',
   'favorite',
   'watch',
+  'src_node',
+  'src_port',
+  'peer_node',
+  'peer_port',
   'row_actions',
 ])
 
