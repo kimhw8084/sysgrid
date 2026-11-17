@@ -18,7 +18,7 @@ import unittest
 from pathlib import Path
 
 
-SCRATCH = Path(tempfile.mkdtemp(prefix="sysgrid-rack-contract-", dir="/private/tmp"))
+SCRATCH = Path(tempfile.mkdtemp(prefix="sysgrid-rack-contract-"))
 CONFIG_DB = SCRATCH / "config.sqlite"
 TENANT_DB = SCRATCH / "tenant.sqlite"
 STORAGE = SCRATCH / "tenant-storage"
