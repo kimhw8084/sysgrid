@@ -721,19 +721,26 @@ test.describe('Network workflows', () => {
       expect(headerNames).toContain(headerName)
     }
 
-    // Verify relative positions while the endpoint headers are in the default viewport.
+    // Verify the complete displayed-column order through AG Grid's API. Header
+    // DOM nodes for off-screen columns are intentionally omitted by horizontal
+    // virtualization; the dedicated initial-viewport test covers visibility.
     const colLabels = [
       { id: 'src_node', label: 'Source Node' },
       { id: 'src_port', label: 'Source Port' },
       { id: 'peer_node', label: 'Peer Node' },
       { id: 'peer_port', label: 'Peer Port' }
     ]
-    let lastX = -1
+    const displayedColumnIds = await page.evaluate(() => {
+      // @ts-ignore
+      const api = window.__DEBUG_NETWORK_GRID_API__
+      return api ? api.getAllDisplayedColumns().map((column: any) => column.getColId()) : []
+    })
+    let lastIndex = -1
     for (const col of colLabels) {
-      const box = await page.locator(`.ag-header-cell[col-id="${col.id}"]`).first().boundingBox()
-      if (!box) throw new Error(`Header for ${col.id} not found in DOM`)
-      expect(box.x).toBeGreaterThan(lastX)
-      lastX = box.x
+      const index = displayedColumnIds.indexOf(col.id)
+      expect(index, `${col.label} should be in the displayed column sequence`).toBeGreaterThan(-1)
+      expect(index, `${col.label} should follow the preceding endpoint columns`).toBeGreaterThan(lastIndex)
+      lastIndex = index
     }
 
     // Scroll Source Node and Source Rack Slot visible to ensure left columns are rendered in the DOM
