@@ -250,7 +250,9 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
   expect(cardCount, 'the seeded rack scenario should exercise the full visible rack set').toBeGreaterThanOrEqual(8)
   for (let index = 0; index < cardCount; index += 1) {
     const card = elevationCards.nth(index)
-    const scroller = card.locator('[data-rack-elevation-scroll="true"]')
+    const rackId = await card.getAttribute('data-rack-id')
+    expect(rackId, `rack ${index} should expose a stable identity for its elevation scroller`).toBeTruthy()
+    const scroller = page.locator(`[data-rack-elevation-card="true"][data-rack-id="${rackId}"] [data-rack-elevation-scroll="true"]`)
     await scroller.scrollIntoViewIfNeeded()
     const setup = await scroller.evaluate(element => {
       const scroll = element as HTMLElement
@@ -267,6 +269,7 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
       const hit = point.x >= visible.left && point.x < visible.right && point.y >= visible.top && point.y < visible.bottom ? document.elementFromPoint(point.x, point.y) : null
       return {
         point,
+        rackId: scroll.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null,
         visible,
         before: scroll.scrollTop,
         maximum: scroll.scrollHeight - scroll.clientHeight,
@@ -284,6 +287,7 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
           deltaY: event.deltaY,
           defaultPrevented: event.defaultPrevented,
           target: (event.target as HTMLElement | null)?.tagName ?? null,
+          rackId: (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null,
         })
       }, { capture: true, once: true })
       document.documentElement.dataset.goldenTestLastWindowWheel = 'not-observed'
@@ -291,6 +295,7 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
         document.documentElement.dataset.goldenTestLastWindowWheel = JSON.stringify({
           deltaY: event.deltaY,
           target: (event.target as HTMLElement | null)?.tagName ?? null,
+          rackId: (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null,
         })
       }, { capture: true, once: true })
     })
@@ -308,6 +313,8 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
           tag: hit?.tagName ?? null,
           className: hit instanceof HTMLElement ? hit.className : null,
           insideScroller: Boolean(hit && (hit === element || element.contains(hit))),
+          rackId: hit instanceof HTMLElement ? hit.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null : null,
+          scrollableAncestorRackId: hit instanceof HTMLElement ? hit.closest<HTMLElement>('[data-rack-elevation-scroll="true"]')?.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null : null,
         }
       }, setup.point)
       await input.send('Input.dispatchMouseEvent', {
