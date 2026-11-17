@@ -140,12 +140,6 @@ const NETWORK_AUTO_SIZE_SKIP_COLUMN_IDS = new Set([
   'peer_port',
   'row_actions',
 ])
-const NETWORK_AUTO_SIZE_COLUMN_LIMITS = [
-  { colId: 'src_node', maxWidth: 180 },
-  { colId: 'src_port', maxWidth: 164 },
-  { colId: 'peer_node', maxWidth: 180 },
-  { colId: 'peer_port', maxWidth: 132 },
-]
 
 export const STATUSES = [
   { value: 'Existing', label: 'Existing', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
@@ -2222,11 +2216,17 @@ export default function NetworkReal() {
 
   const gridContext = useMemo(() => ({ favoriteIds, watchIds }), [favoriteIds, watchIds])
   const autoSizeStrategy = useMemo(
-    () => (preserveExplicitColumnWidths ? undefined : {
-      ...OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
-      columnLimits: NETWORK_AUTO_SIZE_COLUMN_LIMITS,
-    }),
-    [preserveExplicitColumnWidths]
+    () => {
+      if (preserveExplicitColumnWidths) return undefined
+      const contentSizedColumnIds = columnDefs
+        .filter((column: any) => !column.hide)
+        .map((column: any) => column.colId || column.field)
+        .filter((columnId: unknown): columnId is string => (
+          typeof columnId === 'string' && !NETWORK_AUTO_SIZE_SKIP_COLUMN_IDS.has(columnId)
+        ))
+      return { ...OPERATIONAL_GRID_AUTO_SIZE_STRATEGY, colIds: contentSizedColumnIds }
+    },
+    [columnDefs, preserveExplicitColumnWidths]
   )
 
   return (
