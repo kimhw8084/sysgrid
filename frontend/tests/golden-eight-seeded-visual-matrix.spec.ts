@@ -250,7 +250,7 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
   expect(cardCount, 'the seeded rack scenario should exercise the full visible rack set').toBeGreaterThanOrEqual(8)
   for (let index = 0; index < cardCount; index += 1) {
     const card = elevationCards.nth(index)
-    const scroller = card.locator('.overflow-y-auto.custom-scrollbar').first()
+    const scroller = card.locator('[data-rack-elevation-scroll="true"]')
     await scroller.scrollIntoViewIfNeeded()
     const setup = await scroller.evaluate(element => {
       const scroll = element as HTMLElement
@@ -275,7 +275,6 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
     })
     expect(setup.maximum, `rack ${index} elevation should have scrollable rack units`).toBeGreaterThan(1)
     expect(setup.hitInside, `rack ${index} wheel point should hit its visible elevation scroller: ${JSON.stringify(setup)}`).toBe(true)
-    await page.mouse.move(setup.point.x, setup.point.y)
     await scroller.evaluate(element => {
       const scroll = element as HTMLElement
       scroll.dataset.goldenTestLastWheel = 'not-observed'
@@ -287,13 +286,30 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
           target: (event.target as HTMLElement | null)?.tagName ?? null,
         })
       }, { capture: true, once: true })
+      document.documentElement.dataset.goldenTestLastWindowWheel = 'not-observed'
+      window.addEventListener('wheel', event => {
+        document.documentElement.dataset.goldenTestLastWindowWheel = JSON.stringify({
+          deltaY: event.deltaY,
+          target: (event.target as HTMLElement | null)?.tagName ?? null,
+        })
+      }, { capture: true, once: true })
     })
-    // Dispatch the Chromium wheel input at the measured hit-test point. The
-    // Playwright mouse helper produced no wheel event in CI despite the
-    // pointer being over this scroller; dispatch the same browser input at the
-    // verified hit-test point and still require the real scroll position to move.
     const input = await page.context().newCDPSession(page)
+    let postMoveHit: unknown
     try {
+      await input.send('Input.dispatchMouseEvent', {
+        type: 'mouseMoved',
+        x: setup.point.x,
+        y: setup.point.y,
+      })
+      postMoveHit = await scroller.evaluate((element, point) => {
+        const hit = document.elementFromPoint(point.x, point.y)
+        return {
+          tag: hit?.tagName ?? null,
+          className: hit instanceof HTMLElement ? hit.className : null,
+          insideScroller: Boolean(hit && (hit === element || element.contains(hit))),
+        }
+      }, setup.point)
       await input.send('Input.dispatchMouseEvent', {
         type: 'mouseWheel',
         x: setup.point.x,
@@ -301,10 +317,6 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
         deltaX: 0,
         deltaY: 120,
       })
-    } finally {
-      await input.detach()
-    }
-    try {
       await expect.poll(
         () => scroller.evaluate(element => (element as HTMLElement).scrollTop),
         { message: `native wheel input should scroll rack ${index} elevation; setup=${JSON.stringify(setup)}` },
@@ -313,8 +325,11 @@ async function expectRackLabelsAndElevationScrolling(page: Page) {
       const wheelResult = await scroller.evaluate(element => ({
         scrollTop: (element as HTMLElement).scrollTop,
         wheel: (element as HTMLElement).dataset.goldenTestLastWheel ?? 'no wheel event received',
+        windowWheel: document.documentElement.dataset.goldenTestLastWindowWheel ?? 'no window wheel event received',
       }))
-      throw new Error(`native wheel input did not scroll rack ${index} elevation; setup=${JSON.stringify(setup)}; result=${JSON.stringify(wheelResult)}; ${String(error)}`)
+      throw new Error(`native wheel input did not scroll rack ${index} elevation; setup=${JSON.stringify(setup)}; postMoveHit=${JSON.stringify(postMoveHit)}; result=${JSON.stringify(wheelResult)}; ${String(error)}`)
+    } finally {
+      await input.detach()
     }
     await scroller.evaluate((element, initial) => { (element as HTMLElement).scrollTop = initial }, setup.before)
   }
