@@ -34,7 +34,7 @@ for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] 
     expect(rows).toHaveLength(1)
     expect(rows[0].start_time).toBe('2030-01-01T10:00:00')
     const windowId = rows[0].id
-    await page.getByRole('button', { name: 'New plan', exact: true }).click()
+    await page.getByRole('button', { name: 'Simulate plan', exact: true }).click()
     await page.getByLabel('Plan title').fill('Window-bound action')
     await page.getByLabel('Existing maintenance window (optional)').selectOption(String(windowId))
     await page.getByRole('button', { name: 'Save plan', exact: true }).click()
@@ -68,7 +68,7 @@ for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
     await page.locator('[data-maintenance-content]').evaluate(element => { element.scrollTop = 0 })
     await page.screenshot({ path: testInfo.outputPath('cancelled.png'), animations: 'disabled' })
-    await page.getByRole('button', { name: 'New plan', exact: true }).click()
+    await page.getByRole('button', { name: 'Simulate plan', exact: true }).click()
     await expect(page.getByLabel('Existing maintenance window (optional)').getByRole('option', { name: /Planned maintenance test/ })).toHaveCount(0)
   })
 }
@@ -123,7 +123,7 @@ test('a late window save respects the workspace chosen after departure', async (
   try {
     await page.getByRole('button', { name: 'Save window', exact: true }).click()
     await serverRecorded
-    await page.getByRole('button', { name: 'New plan', exact: true }).click()
+    await page.getByRole('button', { name: 'Simulate plan', exact: true }).click()
     await page.getByRole('dialog', { name: 'Leave maintenance changes?' }).getByRole('button', { name: 'Discard and leave', exact: true }).click()
     await page.getByLabel('Plan title').fill('Keep this newer draft')
     const response = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/maintenance'))

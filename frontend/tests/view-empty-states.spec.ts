@@ -10,7 +10,7 @@ test.describe('View empty states', () => {
     const impossibleTerm = `PW-NO-MATCH-${Date.now()}`
 
     const expectations = [
-      { path: '/racks', placeholder: 'Search racks & devices...', text: `No results for "${impossibleTerm}"` },
+      { path: '/racks', placeholder: 'Search racks or asset IDs…', text: `No racks match "${impossibleTerm}"` },
     ]
 
     for (const entry of expectations) {

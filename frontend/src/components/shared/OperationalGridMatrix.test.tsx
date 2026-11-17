@@ -20,12 +20,20 @@ afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
 
 it('defers automatic unpinning outside resize delivery and coalesces the latest decision', () => {
   render(<OperationalGridMatrix />)
-  const api = { isDestroyed: () => false, setColumnsPinned: vi.fn() }
-  expect(captured.props.processUnpinnedColumns({ columns: ['old'], api })).toEqual([])
-  expect(captured.props.processUnpinnedColumns({ columns: ['latest'], api })).toEqual([])
+  const old = { getColId: () => 'old', getActualWidth: () => 100, getColDef: () => ({}) }
+  const latest = { getColId: () => 'latest', getActualWidth: () => 100, getColDef: () => ({}) }
+  const displayedColumns = [[old], [latest]]
+  const api = {
+    isDestroyed: () => false,
+    setColumnsPinned: vi.fn(),
+    getDisplayedLeftColumns: vi.fn(() => displayedColumns.shift() ?? []),
+    getDisplayedRightColumns: () => [],
+  }
+  expect(captured.props.processUnpinnedColumns({ api, viewportWidth: 120 })).toEqual([])
+  expect(captured.props.processUnpinnedColumns({ api, viewportWidth: 120 })).toEqual([])
   expect(api.setColumnsPinned).not.toHaveBeenCalled()
   act(() => vi.advanceTimersByTime(16))
-  expect(api.setColumnsPinned).toHaveBeenCalledExactlyOnceWith(['latest'], null)
+  expect(api.setColumnsPinned).toHaveBeenCalledExactlyOnceWith([latest], null)
 })
 
 it('cancels pending work on unmount and never changes a destroyed grid', () => {
@@ -86,15 +94,17 @@ it('does not replace ordinary keyboard navigation with a row menu', () => {
   expect(onCellContextMenu).not.toHaveBeenCalled()
 })
 
-it('uses one compact desktop row scale and honors the density setting', () => {
+it('enforces the documented 40px operational row floor and honors larger density settings', () => {
   const { unmount, rerender } = render(<OperationalGridMatrix fontSize={11} rowDensity={8} columnDefs={[{ colId: 'fixed', width: 64, minWidth: 64, maxWidth: 64, resizable: false }]} />)
-  expect(captured.props.rowHeight).toBe(26)
+  expect(captured.props.rowHeight).toBe(40)
   expect(captured.props.headerHeight).toBe(42)
   expect(captured.props.defaultColDef.resizable).toBe(true)
   expect(captured.props.columnDefs[0]).toMatchObject({ minWidth: 40, resizable: true })
   expect(captured.props.columnDefs[0]).not.toHaveProperty('maxWidth')
   rerender(<OperationalGridMatrix fontSize={11} rowDensity={16} />)
-  expect(captured.props.rowHeight).toBe(34)
+  expect(captured.props.rowHeight).toBe(40)
+  rerender(<OperationalGridMatrix fontSize={11} rowDensity={24} />)
+  expect(captured.props.rowHeight).toBe(42)
   rerender(<OperationalGridMatrix fontSize={20} rowDensity={24} />)
   expect(captured.props.rowHeight).toBe(48)
   unmount()

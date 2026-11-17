@@ -74,7 +74,11 @@ test.describe('Network workflows', () => {
     await page.goto(`/network?id=${connection.id}`)
     await expect(page.getByRole('heading', { name: 'Connection Forensics' })).toBeVisible()
     await page.getByRole('button', { name: 'History', exact: true }).click()
-    await expect(page.getByRole('heading', { name: 'Change History' })).toBeVisible()
+    const activity = page.getByRole('dialog', { name: 'Connection activity' })
+    await expect(activity).toBeVisible()
+    await expect(activity.getByRole('heading', { name: /Established link between dev/ })).toBeVisible()
+    await expect(activity.getByText('Recorded change data')).toBeVisible()
+    await expect(activity.getByRole('button', { name: /restore/i })).toHaveCount(0)
   })
 
   test('shows source and peer endpoints together in the initial desktop grid viewport', async ({ page }) => {
@@ -83,15 +87,28 @@ test.describe('Network workflows', () => {
     await page.goto('/network')
     await expect(page.locator('.ag-header-cell[col-id="peer_port"]')).toBeAttached()
 
-    await expect.poll(() => page.evaluate(() => {
+    const endpointLayout = () => page.evaluate(() => {
       const grid = document.querySelector('.ag-root-wrapper')?.getBoundingClientRect()
       const actions = document.querySelector('.ag-header-cell[col-id="row_actions"]')?.getBoundingClientRect()
-      if (!grid || !actions) return null
-      return ['src_node', 'src_port', 'peer_node', 'peer_port'].map((colId) => {
+      if (!grid || !actions) return { ready: false, columns: [] as Array<Record<string, unknown>> }
+      const columns = ['src_node', 'src_port', 'peer_node', 'peer_port'].map((colId) => {
         const box = document.querySelector(`.ag-header-cell[col-id="${colId}"]`)?.getBoundingClientRect()
-        return Boolean(box && box.width > 0 && box.left >= grid.left && box.right <= actions.left + 1)
+        return {
+          colId,
+          left: box?.left ?? null,
+          right: box?.right ?? null,
+          width: box?.width ?? null,
+          visible: Boolean(box && box.width > 0 && box.left >= grid.left && box.right <= actions.left + 1),
+        }
       })
-    })).toEqual([true, true, true, true])
+      return { ready: true, grid: { left: grid.left, right: grid.right }, actionsLeft: actions.left, columns }
+    })
+    try {
+      await expect.poll(async () => (await endpointLayout()).columns.map(column => column.visible)).toEqual([true, true, true, true])
+    } catch (error) {
+      const rendered = await endpointLayout()
+      throw new Error(`${String(error)}; rendered endpoint geometry=${JSON.stringify(rendered)}`)
+    }
   })
 
   test('opens exact source and peer assets from a connection and preserves network history', async ({ page, sysApi: request }) => {
@@ -717,19 +734,26 @@ test.describe('Network workflows', () => {
       expect(headerNames).toContain(headerName)
     }
 
-    // Verify relative positions while the endpoint headers are in the default viewport.
+    // Verify the complete displayed-column order through AG Grid's API. Header
+    // DOM nodes for off-screen columns are intentionally omitted by horizontal
+    // virtualization; the dedicated initial-viewport test covers visibility.
     const colLabels = [
       { id: 'src_node', label: 'Source Node' },
       { id: 'src_port', label: 'Source Port' },
       { id: 'peer_node', label: 'Peer Node' },
       { id: 'peer_port', label: 'Peer Port' }
     ]
-    let lastX = -1
+    const displayedColumnIds = await page.evaluate(() => {
+      // @ts-ignore
+      const api = window.__DEBUG_NETWORK_GRID_API__
+      return api ? api.getAllDisplayedColumns().map((column: any) => column.getColId()) : []
+    })
+    let lastIndex = -1
     for (const col of colLabels) {
-      const box = await page.locator(`.ag-header-cell[col-id="${col.id}"]`).first().boundingBox()
-      if (!box) throw new Error(`Header for ${col.id} not found in DOM`)
-      expect(box.x).toBeGreaterThan(lastX)
-      lastX = box.x
+      const index = displayedColumnIds.indexOf(col.id)
+      expect(index, `${col.label} should be in the displayed column sequence`).toBeGreaterThan(-1)
+      expect(index, `${col.label} should follow the preceding endpoint columns`).toBeGreaterThan(lastIndex)
+      lastIndex = index
     }
 
     // Scroll Source Node and Source Rack Slot visible to ensure left columns are rendered in the DOM

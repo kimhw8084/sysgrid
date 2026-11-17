@@ -26,10 +26,12 @@ import { InvestigationTab } from './shared/InvestigationTab'
 import { OperationalWorkspaceShell } from './shared/OperationalWorkspaceShells'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
 import {
+  getEffectiveOperationalGridFontSize,
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
   OPERATIONAL_GRID_ROW_HEIGHT_MAX,
   OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+  OPERATIONAL_GRID_MIN_FONT_SIZE,
 } from './shared/OperationalGridSizing'
 import { ToolbarButton, ToolbarGroup, ToolbarIconButton, ToolbarSearch } from './shared/LayoutPrimitives'
 
@@ -201,7 +203,7 @@ export default function Research() {
   const gridRef = React.useRef<any>(null)
   const typeParam = searchParams.get('type')
   const idParam = searchParams.get('id')
-  const [fontSize, setFontSize] = useState(11)
+  const [fontSize, setFontSize] = useState(12)
   const [rowDensity, setRowDensity] = useState(10)
   const [showStyleLab, setShowStyleLab] = useState(false)
   const [showYearFilters, setShowYearFilters] = useState(false)
@@ -711,8 +713,8 @@ export default function Research() {
                   <div className="flex items-center space-x-6">
                      <div className="flex items-center space-x-4">
                         <span className="text-[9px] font-bold text-slate-500 uppercase">Font Size</span>
-                        <input type="range" min="8" max="14" step="1" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
-                        <span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span>
+                        <input type="range" min={OPERATIONAL_GRID_MIN_FONT_SIZE} max="14" step="1" value={getEffectiveOperationalGridFontSize(fontSize)} onChange={e => setFontSize(Number(e.target.value))} className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+                        <span className="text-[10px] text-white w-4 font-bold">{getEffectiveOperationalGridFontSize(fontSize)}px</span>
                      </div>
                      <div className="flex items-center space-x-4 border-l border-white/10 pl-6">
                         <span className="text-[9px] font-bold text-slate-500 uppercase">Row height</span>

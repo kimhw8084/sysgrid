@@ -4,7 +4,7 @@ import {
   getOperationalGridSurfaceStyle,
   OperationalGridSurface,
 } from './OperationalWorkspaceShells'
-import { clampAutoSizedOperationalColumnWidths, getOperationalCompactGridHeight, OPERATIONAL_GRID_AUTO_SIZE_STRATEGY } from './OperationalGridSizing'
+import { clampAutoSizedOperationalColumnWidths, getEffectiveOperationalGridFontSize, getOperationalCompactGridHeight, OPERATIONAL_GRID_AUTO_SIZE_STRATEGY, OPERATIONAL_GRID_MIN_FONT_SIZE } from './OperationalGridSizing'
 import { WorkspaceEmptyState } from './OperationalWorkspacePrimitives'
 import type { OperationalDataState } from './OperationalDataState'
 
@@ -24,6 +24,7 @@ type OperationalGridRuntimeLike = {
 type OperationalRowInteractionsLike = {
   handleRowClicked?: (event: any) => void
   handleRowDoubleClicked?: (event: any) => void
+  handleCellKeyDown?: (event: any) => void
 }
 
 type OperationalContextMenuLike = {
@@ -74,7 +75,7 @@ export function OperationalDataGrid({
   selectionScopeKey,
   context,
   quickFilterText,
-  fontSize = 11,
+  fontSize = OPERATIONAL_GRID_MIN_FONT_SIZE,
   rowDensity = 8,
   noRowsLabel = 'No data found',
   loading = false,
@@ -87,6 +88,7 @@ export function OperationalDataGrid({
   compactWhenFewRows = Boolean(quickFilterText?.trim()) || height !== undefined,
   suppressRowClickSelection = true,
 }: OperationalDataGridProps) {
+  const effectiveFontSize = getEffectiveOperationalGridFontSize(fontSize)
   const [displayedRowCount, setDisplayedRowCount] = useState(() => rows?.length ?? 0)
   useEffect(() => setDisplayedRowCount(rows?.length ?? 0), [rows])
   const updateDisplayedRowCount = useCallback((event: any) => {
@@ -94,15 +96,15 @@ export function OperationalDataGrid({
     if (typeof count === 'number' && Number.isFinite(count)) setDisplayedRowCount(count)
   }, [])
   const surfaceStyle = useMemo(() => {
-    const style = getOperationalGridSurfaceStyle(fontSize, height)
-    const compactHeight = loading || !compactWhenFewRows ? null : getOperationalCompactGridHeight(displayedRowCount, fontSize, rowDensity)
+    const style = getOperationalGridSurfaceStyle(effectiveFontSize, height)
+    const compactHeight = loading || !compactWhenFewRows ? null : getOperationalCompactGridHeight(displayedRowCount, effectiveFontSize, rowDensity)
     if (compactHeight !== null) {
       style.height = `${compactHeight}px`
       style.minHeight = `${compactHeight}px`
       style.flex = '0 0 auto'
     }
     return style
-  }, [compactWhenFewRows, displayedRowCount, fontSize, height, loading, rowDensity])
+  }, [compactWhenFewRows, displayedRowCount, effectiveFontSize, height, loading, rowDensity])
   const autoSizeStrategy = useMemo(
     () => (runtime?.preserveExplicitColumnWidths ? undefined : runtime?.autoSizeStrategy ?? OPERATIONAL_GRID_AUTO_SIZE_STRATEGY),
     [runtime?.preserveExplicitColumnWidths, runtime?.autoSizeStrategy]
@@ -159,7 +161,7 @@ export function OperationalDataGrid({
     return (
       <OperationalGridSurface
         className={className}
-        style={getOperationalGridSurfaceStyle(fontSize, height)}
+        style={getOperationalGridSurfaceStyle(effectiveFontSize, height)}
         loading={false}
         variant={surfaceVariant}
       >
@@ -178,7 +180,7 @@ export function OperationalDataGrid({
     return (
       <OperationalGridSurface
         className={className}
-        style={getOperationalGridSurfaceStyle(fontSize, height)}
+        style={getOperationalGridSurfaceStyle(effectiveFontSize, height)}
         loading={false}
         variant={surfaceVariant}
       >
@@ -210,7 +212,7 @@ export function OperationalDataGrid({
           columnDefs={columnDefs}
           autoSizeStrategy={autoSizeStrategy}
           colResizeDefault="normal"
-          fontSize={fontSize}
+          fontSize={effectiveFontSize}
           rowDensity={rowDensity}
           context={context}
           quickFilterText={quickFilterText}
@@ -233,6 +235,7 @@ export function OperationalDataGrid({
           onRowClicked={rowInteractions?.handleRowClicked}
           onRowDoubleClicked={rowInteractions?.handleRowDoubleClicked}
           onCellContextMenu={contextMenu?.handleCellContextMenu}
+          onCellKeyDown={rowInteractions?.handleCellKeyDown}
           onFirstDataRendered={handleFirstDataRendered}
           onRowDataUpdated={event => { onRowDataUpdated?.(event); updateDisplayedRowCount(event) }}
           noRowsLabel={dataState?.noRowsLabel || noRowsLabel}

@@ -1,0 +1,74 @@
+{
+  "schema": "golden-uiux.design-session-request.v1",
+  "context_id": "maintenance-queue-fixture",
+  "product_context": {
+    "name": "Maintenance Queue Fixture",
+    "purpose": "Help facilities operators find the next work order and inspect its context before acting.",
+    "observed_identity": [
+      "restrained green/cream direction",
+      "sentence-case operations language",
+      "read-only sample records"
+    ],
+    "source_revision_sha256": "8a6320cfcf663e218105bbe67bc5f1c8e3281ca8a331fb6c8298d691ad0481dc",
+    "source_references": [
+      {
+        "path": "conventions.md",
+        "sha256": "2dc8ca8873bb9b80bc6244c9c45c91ed2498c199f71fabd5b4929f67e85f1642"
+      },
+      {
+        "path": "queue.html",
+        "sha256": "38467db2d34b193bedd5c305b9ec14e09372022f3a3a1be742f11826ab4db6ce"
+      }
+    ]
+  },
+  "task": "Help a facilities operator find urgent work, compare due dates, inspect the selected work order, and return to the queue without losing context.",
+  "intent_spec": {
+    "intent_id": "maintenance_work_queue",
+    "workflow_steps": [
+      "find or narrow a work order",
+      "compare priority and due date",
+      "inspect its details",
+      "return without losing queue context"
+    ],
+    "component_needs": [
+      "record_grid",
+      "record_search",
+      "record_filter",
+      "record_inspector",
+      "status_indicators",
+      "responsive_layout",
+      "keyboard_accessible",
+      "empty_error_states"
+    ],
+    "constraints": [
+      "preserve_visual_identity",
+      "preserve_selection_context",
+      "responsive_viewports",
+      "explicit_recovery_states",
+      "keyboard_accessible"
+    ]
+  },
+  "implementation_inputs": [
+    "queue.html"
+  ],
+  "existing_alternatives": [
+    {
+      "id": "Q-A",
+      "name": "Urgency-ranked queue with persistent inspector",
+      "composition": "A searchable urgency-ranked list beside a persistent selected-order inspector.",
+      "hierarchy": "Priority and due date lead the queue; selected-order context remains visible alongside it.",
+      "task_flow": "Find and compare an order, inspect it, then return to the same queue state.",
+      "responsive_behavior": "Stack the queue and inspector at narrow widths without discarding selection.",
+      "tradeoffs": "Supports side-by-side urgency comparison; the inspector consumes horizontal room."
+    },
+    {
+      "id": "Q-B",
+      "name": "Status lanes with focused record view",
+      "composition": "Three status lanes with a selected order replacing the board for full-width inspection.",
+      "hierarchy": "Workflow status leads; urgency and due date are secondary within each lane.",
+      "task_flow": "Choose a lane, inspect an order, then return to the board.",
+      "responsive_behavior": "Allow lane navigation at narrow widths and keep selected details in reading order.",
+      "tradeoffs": "Useful for stage dispatch; cross-status urgency comparison requires more navigation."
+    }
+  ]
+}

@@ -124,7 +124,16 @@ export function useWorkspacePopupDismiss(
     }
     document.addEventListener('mousedown', outside)
     document.addEventListener('keydown', key)
-    const focusFrame = requestAnimationFrame(() => panelRef.current?.querySelector<HTMLElement>('input:not([disabled]), button:not([disabled])')?.focus())
+    const focusFrame = requestAnimationFrame(() => {
+      // Opening a popup schedules its initial focus, but a fast keyboard user
+      // may already have moved to another control before the next frame. Only
+      // apply the default when focus is still on the trigger (or the document
+      // fallback); never steal focus back from the user's navigation.
+      const active = document.activeElement
+      if (active === triggerRef.current || active === document.body) {
+        panelRef.current?.querySelector<HTMLElement>('input:not([disabled]), button:not([disabled])')?.focus()
+      }
+    })
     window.addEventListener('workspace:modal-open', close)
     return () => {
       document.removeEventListener('mousedown', outside)

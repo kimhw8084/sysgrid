@@ -1,0 +1,27 @@
+{
+  "intent_id": "rack_spatial_inventory",
+  "workflow_steps": [
+    "Find racks by stable name and identity",
+    "Use site, aisle and row context to select the intended rack",
+    "Inspect spatial placement, elevation and mounted asset facts",
+    "Return to the spatial view without losing selection"
+  ],
+  "component_needs": [
+    "spatial_map",
+    "rack_elevation",
+    "asset_details",
+    "record_search",
+    "selection_controls",
+    "responsive_layout",
+    "keyboard_accessible",
+    "theme_tokens",
+    "empty_error_states"
+  ],
+  "constraints": [
+    "responsive_viewports",
+    "preserve_visual_identity",
+    "keyboard_accessible",
+    "preserve_selection_context"
+  ],
+  "scope_mode": "isolated_prototype"
+}

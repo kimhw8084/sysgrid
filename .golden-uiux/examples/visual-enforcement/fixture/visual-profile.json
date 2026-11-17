@@ -1,0 +1,131 @@
+{
+  "profile_id": "golden-unrelated-visual-fixture",
+  "status": "FIXTURE_ONLY_NOT_A_PRODUCT_PROFILE",
+  "visual_enforcement": {
+    "mandatory_checks": [
+      "collisions",
+      "clipping",
+      "controls",
+      "scrolling",
+      "page_overflow",
+      "contrast",
+      "geometry",
+      "images",
+      "focus",
+      "temporal",
+      "positioned_surfaces",
+      "design_tokens"
+    ],
+    "tolerance_css_px": 1,
+    "minimum_collision_area_css_px": 5,
+    "minimum_collision_fraction": 0.1,
+    "forbid_page_horizontal_overflow": true,
+    "image_aspect_log_tolerance": 0.03,
+    "required_controls": [
+      "#offscreen-cta",
+      "#focus-target"
+    ],
+    "states": {
+      "default": {
+        "required_controls": [
+          "#offscreen-cta",
+          "#focus-target"
+        ]
+      },
+      "dialog": {
+        "required_controls": [
+          "#close-dialog"
+        ],
+        "analysis_scope": [
+          "dialog[open]"
+        ]
+      }
+    },
+    "contrast": [
+      {
+        "selector": "#low-contrast",
+        "min_ratio": 4.5
+      }
+    ],
+    "geometry_constraints": [
+      {
+        "selector": "#icon",
+        "min_width": 14,
+        "min_height": 14,
+        "align_with": {
+          "selector": "#icon-label",
+          "axis": "centerY",
+          "tolerance_css_px": 2
+        }
+      },
+      {
+        "selector": "#panel",
+        "font_size_min_px": 12,
+        "padding_constraints": {
+          "top": {
+            "min_px": 12,
+            "max_px": 32
+          },
+          "left": {
+            "min_px": 12,
+            "max_px": 32
+          }
+        }
+      }
+    ],
+    "positioned_surfaces": [
+      {
+        "selector": "#tooltip",
+        "kind": "tooltip",
+        "required": false
+      },
+      {
+        "selector": "dialog[open]",
+        "kind": "dialog",
+        "required": false
+      }
+    ],
+    "permitted_overlay_selectors": [
+      "#tooltip",
+      "dialog[open]"
+    ],
+    "intentional_truncation": [
+      {
+        "selector": "#intentional-trunc",
+        "keyboard_discoverable": true,
+        "exact_content_available": true,
+        "reason": "Long identifier remains in the DOM and is exposed verbatim by its matching accessible name."
+      }
+    ],
+    "design_tokens": [
+      {
+        "name": "--surface",
+        "values_by_theme": {
+          "light": "#ffffff",
+          "dark": "#101114"
+        }
+      },
+      {
+        "name": "--text",
+        "values_by_theme": {
+          "light": "#17191d",
+          "dark": "#f3f4f6"
+        }
+      }
+    ],
+    "icon_constraints": [
+      {
+        "selector": "#icon",
+        "required": false,
+        "min_width": 14,
+        "min_height": 14,
+        "align_with": {
+          "selector": "#icon-label",
+          "axis": "centerY",
+          "tolerance_css_px": 2
+        },
+        "preserve_aspect": true
+      }
+    ]
+  }
+}

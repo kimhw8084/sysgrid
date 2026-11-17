@@ -14,24 +14,24 @@ describe('shell navigation', () => {
   )
 
   it('matches nested routes without matching sibling paths', () => {
-    expect(isShellRouteActive('/projects/42/timeline', '/projects')).toBe(true)
-    expect(isShellRouteActive('/project-status', '/projects')).toBe(false)
+    expect(isShellRouteActive('/services/42/details', '/services')).toBe(true)
+    expect(isShellRouteActive('/service-status', '/services')).toBe(false)
     expect(isShellRouteActive('/network-real', '/network', ['/network-real'])).toBe(true)
   })
 
   it('exposes the active state and an accessible name when collapsed', () => {
     render(
       withQueryClient(
-        <MemoryRouter initialEntries={['/projects/42/timeline']}>
-          <ShellNavItem icon={LayoutDashboard} label="Projects" path="/projects" active isOpen={false} />
+        <MemoryRouter initialEntries={['/services/42/details']}>
+          <ShellNavItem icon={LayoutDashboard} label="Services" path="/services" active isOpen={false} />
         </MemoryRouter>,
       ),
     )
 
-    const link = screen.getByRole('link', { name: 'Projects' })
+    const link = screen.getByRole('link', { name: 'Services' })
     expect(link).toHaveAttribute('aria-current', 'page')
-    expect(link).toHaveAttribute('title', 'Projects')
-    expect(screen.getByText('Projects')).toHaveClass('sr-only')
+    expect(link).toHaveAttribute('title', 'Services')
+    expect(screen.getByText('Services')).toHaveClass('sr-only')
   })
 
   it('keeps groups keyboard reachable with an explicit expanded state', () => {

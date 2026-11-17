@@ -16,7 +16,7 @@ vi.mock('../../policy/ModulePolicy', () => ({
   },
 }))
 
-const device = { id: 12, name: 'Compute 12', system: 'ERP', type: 'Server', status: 'Active' }
+const device = { id: 12, name: 'Compute 12', system: 'ERP', type: 'Server', status: 'Active', serial_number: 'SN-12-A', asset_tag: 'ASSET-012' }
 let client: QueryClient
 let serviceRequests = 0
 let knowledgeRequests = 0
@@ -36,7 +36,7 @@ beforeEach(() => {
   serviceRequests = 0
   knowledgeRequests = 0
   vi.mocked(apiFetch).mockImplementation(async (endpoint) => {
-    if (String(endpoint).startsWith('/api/v1/logical-services/')) {
+    if (String(endpoint).startsWith('/api/v1/logical-services?')) {
       serviceRequests += 1
       if (serviceRequests === 1) throw new Error('Service endpoint unavailable')
     }
@@ -62,7 +62,7 @@ it('rejects a successful response that is not a list', async () => {
 it('keeps failed asset reads in the inline recovery UI without duplicating them as global toasts', async () => {
   const failure = new Error('Asset registry unavailable') as Error & { silent?: boolean }
   vi.mocked(apiFetch).mockRejectedValue(failure)
-  await expect(fetchAssetArray('/api/v1/devices/?include_deleted=true')).rejects.toBe(failure)
+  await expect(fetchAssetArray('/api/v1/devices?include_deleted=true')).rejects.toBe(failure)
   expect(failure.silent).toBe(true)
 })
 
@@ -83,4 +83,13 @@ it('shows failed context data as unavailable and recovers through retry', async 
   expect(screen.getAllByText('0').length).toBeGreaterThan(0)
   expect(serviceRequests).toBe(2)
   expect(knowledgeRequests).toBe(2)
+})
+
+it('shows the selected asset serial number and asset tag in its identity summary', async () => {
+  renderDetails()
+
+  expect(await screen.findByText('SN-12-A')).toBeInTheDocument()
+  expect(screen.getByText('ASSET-012')).toBeInTheDocument()
+  expect(screen.getByText('Serial Number')).toBeInTheDocument()
+  expect(screen.getByText('Asset Tag')).toBeInTheDocument()
 })

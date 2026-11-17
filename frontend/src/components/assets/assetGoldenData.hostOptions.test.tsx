@@ -22,7 +22,7 @@ function workspace(primary: boolean | Promise<any[]> = false, cachedLive?: any[]
     if (malformedGraph && ['/api/v1/devices/relationships/all', '/api/v1/networks/connections'].includes(String(path))) {
       return { ok: true, json: async () => ({ detail: 'unexpected response shape' }) } as Response
     }
-    return { ok: true, json: async () => String(path) === '/api/v1/devices/' ? [active] : String(path) === '/api/v1/settings/options' ? configured : [] } as Response
+      return { ok: true, json: async () => String(path) === '/api/v1/devices' ? [active] : String(path) === '/api/v1/settings/options' ? configured : [] } as Response
   })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   if (cachedLive) client.setQueryData(['devices'], cachedLive)
@@ -38,7 +38,7 @@ it('supplies active hosts from the successful primary query while fallback stays
   const { result } = workspace()
   await waitFor(() => expect(result.current.allAssets).toHaveLength(2))
   expect(result.current.devices.map((row: any) => row.id)).toEqual([1])
-  expect(vi.mocked(apiFetch).mock.calls.some(([path]) => path === '/api/v1/devices/')).toBe(false)
+  expect(vi.mocked(apiFetch).mock.calls.some(([path]) => path === '/api/v1/devices')).toBe(false)
 })
 
 it('keeps recorded logical systems available when configured systems also exist', async () => {
@@ -79,7 +79,7 @@ it('does not report cached live devices as a failure while the primary request i
   act(() => resolve([active, archived]))
   await waitFor(() => expect(result.current.allAssets).toHaveLength(2))
   expect(result.current.dataState.notice).toBeUndefined()
-  expect(vi.mocked(apiFetch).mock.calls.some(([path]) => path === '/api/v1/devices/')).toBe(false)
+  expect(vi.mocked(apiFetch).mock.calls.some(([path]) => path === '/api/v1/devices')).toBe(false)
 })
 
 it('treats a successful empty primary response as authoritative over stale cached devices', async () => {

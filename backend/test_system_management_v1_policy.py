@@ -26,9 +26,13 @@ def test_catalog_is_single_versioned_non_executable_contract():
     catalog_path = Path(__file__).resolve().parents[1] / "contracts" / "system_management_v1.json"
     assert json.loads(catalog_path.read_text(encoding="utf-8")) == CATALOG
     assert set(CATALOG["stages"]) == {"production", "preview", "disabled", "retired"}
-    assert CATALOG["catalog_version"] == "sysgrid-system-management-v1.1"
+    assert CATALOG["catalog_version"] == "sysgrid-system-management-v1.2"
     assert len(CATALOG["modules"]) == 15
     assert all(module["profile_membership"] == "v1" and module["default_stage"] == "production" for module in CATALOG["modules"])
+    separate_app_ids = {"projects", "architecture", "research", "knowledge"}
+    assert {module["id"] for module in CATALOG["modules"] if module["application_owner"] == "separate_application"} == separate_app_ids
+    assert {module["id"] for module in CATALOG["modules"] if module["sysgrid_route_class"] == "retired_notice"} == separate_app_ids
+    assert all(module["application_owner"] == "sysgrid" and module["sysgrid_route_class"] == "active" for module in CATALOG["modules"] if module["id"] not in separate_app_ids)
     assert all("component" not in module and "executable" not in module for module in CATALOG["modules"])
     module_ids = {module["id"] for module in CATALOG["modules"]}
     assert set(CATALOG["api_ownership"]).issubset(module_ids)

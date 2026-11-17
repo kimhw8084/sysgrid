@@ -6,18 +6,34 @@ export const OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY = {
 
 export const OPERATIONAL_GRID_AUTO_SIZE_STRATEGY = OPERATIONAL_GRID_CONTENT_AUTO_SIZE_STRATEGY
 
-export const getOperationalGridHeaderHeight = (fontSize = 11) =>
-  Math.max(42, Math.ceil(fontSize + 31))
+// SysGrid's shared table contract sets 12px as the minimum effective body
+// size. Keep an older saved request intact, but never render below that floor.
+export const OPERATIONAL_GRID_MIN_FONT_SIZE = 12
+export const OPERATIONAL_GRID_MAX_FONT_SIZE = 14
 
-export const OPERATIONAL_GRID_ROW_HEIGHT_MIN = 18
+export const getEffectiveOperationalGridFontSize = (requested: unknown, fallback = OPERATIONAL_GRID_MIN_FONT_SIZE) => {
+  const safeFallback = Number.isFinite(fallback)
+    ? Math.max(OPERATIONAL_GRID_MIN_FONT_SIZE, fallback)
+    : OPERATIONAL_GRID_MIN_FONT_SIZE
+  if (typeof requested !== 'number' || !Number.isFinite(requested)) return safeFallback
+  return Math.max(OPERATIONAL_GRID_MIN_FONT_SIZE, requested)
+}
+
+export const getOperationalGridHeaderHeight = (fontSize = OPERATIONAL_GRID_MIN_FONT_SIZE) =>
+  Math.max(42, Math.ceil(getEffectiveOperationalGridFontSize(fontSize) + 30))
+
+// The project's shared operational-grid contract requires at least 40px per
+// desktop record. Density controls may add space, but may not compress rows
+// below the size needed for readable text and usable row actions.
+export const OPERATIONAL_GRID_ROW_HEIGHT_MIN = 40
 export const OPERATIONAL_GRID_ROW_HEIGHT_MAX = 48
 export const OPERATIONAL_GRID_ROW_DENSITY_MAX = 33
 
-export const getOperationalGridRowHeight = (fontSize = 11, rowDensity = 8) =>
-  Math.min(OPERATIONAL_GRID_ROW_HEIGHT_MAX, Math.max(OPERATIONAL_GRID_ROW_HEIGHT_MIN, Math.ceil(fontSize + rowDensity + 7)))
+export const getOperationalGridRowHeight = (fontSize = OPERATIONAL_GRID_MIN_FONT_SIZE, rowDensity = 8) =>
+  Math.min(OPERATIONAL_GRID_ROW_HEIGHT_MAX, Math.max(OPERATIONAL_GRID_ROW_HEIGHT_MIN, Math.ceil(getEffectiveOperationalGridFontSize(fontSize) + rowDensity + 6)))
 
-export const getOperationalGridRowDensityForHeight = (rowHeight: number, fontSize = 11) =>
-  Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Math.round(rowHeight - fontSize - 7)))
+export const getOperationalGridRowDensityForHeight = (rowHeight: number, fontSize = OPERATIONAL_GRID_MIN_FONT_SIZE) =>
+  Math.min(OPERATIONAL_GRID_ROW_DENSITY_MAX, Math.max(0, Math.round(rowHeight - getEffectiveOperationalGridFontSize(fontSize) - 6)))
 
 export const getOperationalCompactGridHeight = (
   visibleRowCount: number,
@@ -38,7 +54,7 @@ export const isOperationalAutoResizeSource = (source: string) => (
   source === 'flex'
 )
 
-const clampOperationalColumnWidth = (width: any, minWidth: any, maxWidth: any): any => {
+export const clampOperationalColumnWidth = (width: any, minWidth: any, maxWidth: any): any => {
   if (typeof width !== 'number' || !Number.isFinite(width)) return width
   const minimum = typeof minWidth === 'number' && Number.isFinite(minWidth) ? minWidth : 0
   const maximum = typeof maxWidth === 'number' && Number.isFinite(maxWidth) ? maxWidth : Number.POSITIVE_INFINITY
@@ -49,6 +65,7 @@ type OperationalColumnSizingMetadata = {
   autoSizeMinWidth?: number
   autoSizeMaxWidth?: number
   skipAutoSize?: boolean
+  userMinWidth?: number
 }
 
 export const OPERATIONAL_COLUMN_SIZING_CONTEXT_KEY = '__sysgridOperationalColumnSizing'
@@ -60,6 +77,7 @@ export const getOperationalColumnSizingMetadata = (column: Record<string, any> |
     autoSizeMinWidth: column.operationalAutoSizeMinWidth,
     autoSizeMaxWidth: column.operationalAutoSizeMaxWidth,
     skipAutoSize: column.operationalSkipAutoSize,
+    userMinWidth: column.operationalMinimumWidth,
   }
 }
 
@@ -75,16 +93,22 @@ const rememberOperationalColumnSizingMetadata = (
 
 export const normalizeOperationalColumnDefinition = (column: Record<string, any>) => {
   const inheritedMetadata = getOperationalColumnSizingMetadata(column)
+  const userMinWidth = column.operationalMinimumWidth ?? inheritedMetadata.userMinWidth
   const autoSizeMaxWidth = column.operationalAutoSizeMaxWidth ?? inheritedMetadata.autoSizeMaxWidth ?? column.maxWidth
   const autoSizeMinWidth = column.operationalAutoSizeMinWidth ?? inheritedMetadata.autoSizeMinWidth ?? column.minWidth
   const normalized: Record<string, any> = {
     ...column,
     resizable: true,
-    minWidth: OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
+    minWidth: typeof userMinWidth === 'number' && Number.isFinite(userMinWidth)
+      ? Math.max(OPERATIONAL_GRID_MIN_COLUMN_WIDTH, userMinWidth)
+      : OPERATIONAL_GRID_MIN_COLUMN_WIDTH,
   }
   const metadata: OperationalColumnSizingMetadata = {
     ...inheritedMetadata,
     ...(column.operationalSkipAutoSize !== undefined ? { skipAutoSize: column.operationalSkipAutoSize } : {}),
+    ...(typeof userMinWidth === 'number' && Number.isFinite(userMinWidth)
+      ? { userMinWidth: Math.max(OPERATIONAL_GRID_MIN_COLUMN_WIDTH, userMinWidth) }
+      : {}),
   }
   if (typeof autoSizeMaxWidth === 'number' && Number.isFinite(autoSizeMaxWidth)) {
     metadata.autoSizeMaxWidth = Math.max(OPERATIONAL_GRID_MIN_COLUMN_WIDTH, autoSizeMaxWidth)
@@ -99,6 +123,7 @@ export const normalizeOperationalColumnDefinition = (column: Record<string, any>
   delete normalized.operationalAutoSizeMinWidth
   delete normalized.operationalAutoSizeMaxWidth
   delete normalized.operationalSkipAutoSize
+  delete normalized.operationalMinimumWidth
   delete normalized.maxWidth
   delete normalized.operationalLockWidth
   if (typeof normalized.width === 'number') {
@@ -122,6 +147,24 @@ export const normalizeOperationalColumnDefinitions = (columnDefs?: any[] | null)
     : normalizeOperationalColumnDefinition(column))
   normalizedColumnDefinitionCache.set(source, normalized)
   return normalized
+}
+
+/** Keep AG Grid's initial content auto-size consistent with the operational skip-auto-size contract. */
+export const getOperationalContentAutoSizeStrategy = (strategy: any, columnDefs: any[] = []) => {
+  if (!strategy || strategy.type !== 'fitCellContents') return strategy
+  const candidates: string[] = []
+  const visit = (columns: any[]) => columns.forEach((column, index) => {
+    if (Array.isArray(column?.children)) {
+      visit(column.children)
+      return
+    }
+    const columnId = column?.colId ?? column?.field ?? column?.headerName ?? `column-${index}`
+    if (!getOperationalColumnSizingMetadata(column).skipAutoSize) candidates.push(String(columnId))
+  })
+  visit(columnDefs)
+  const requested = Array.isArray(strategy.colIds) ? new Set(strategy.colIds.map(String)) : null
+  const colIds = requested ? candidates.filter(columnId => requested.has(columnId)) : candidates
+  return colIds.length ? { ...strategy, colIds } : undefined
 }
 
 export const buildOperationalColumnSizingContext = (context: any, columnDefs: any[]) => {

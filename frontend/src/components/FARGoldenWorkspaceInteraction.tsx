@@ -7,6 +7,7 @@ import {
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
 import { getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import { useOperationalGroupedSelection } from './shared/OperationalGridInteractions'
+import { reconcileCollapsedOperationalGroups } from './shared/OperationalGrouping'
 import {
   FAR_GROUP_OPTIONS,
   FAR_RISK_BAND_OPTIONS,
@@ -119,16 +120,7 @@ export function FAROperationalGridView({
 
   useEffect(() => {
     if (groupBy === 'raw') return
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => {
-        if (!(section.key in next)) next[section.key] = false
-      })
-      Object.keys(next).forEach((key) => {
-        if (!groupedSections.some((section) => section.key === key)) delete next[key]
-      })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [groupBy, groupedSections])
 
   if (groupBy === 'raw' || loading || dataState?.kind !== 'ready' || rows.length === 0) {
@@ -186,7 +178,7 @@ export function FAROperationalGridView({
         </>
       }
       sections={groupedSections.map((section) => {
-        const isCollapsed = Boolean(collapsedGroups[section.key])
+        const isCollapsed = collapsedGroups[section.key]
         const selectedCount = section.items.filter((mode) => selected.has(Number(mode.id))).length
         return (
           <OperationalGroupedGridSection

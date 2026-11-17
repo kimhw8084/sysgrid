@@ -6,8 +6,10 @@ import { PageHeader } from './LayoutPrimitives'
 import { WorkspaceCommandBar } from './WorkspaceCommandBar'
 import { WorkspaceEmptyState, WorkspaceFloatingPanel } from './OperationalWorkspacePrimitives'
 import {
+  getEffectiveOperationalGridFontSize,
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
+  OPERATIONAL_GRID_MIN_FONT_SIZE,
   OPERATIONAL_GRID_ROW_HEIGHT_MAX,
   OPERATIONAL_GRID_ROW_HEIGHT_MIN,
 } from './OperationalGridSizing'
@@ -28,7 +30,7 @@ export const getOperationalGridSurfaceStyle = (
   fontSize: number,
   height?: string
 ): React.CSSProperties => ({
-  '--operational-grid-font-size': `${fontSize}px`,
+  '--operational-grid-font-size': `${getEffectiveOperationalGridFontSize(fontSize)}px`,
   '--ag-font-family': "'Inter', sans-serif",
   minHeight: '350px',
   ...(height ? { height } : {}),
@@ -215,22 +217,55 @@ export function OperationalGroupedGridSection({
   collapsed,
   onToggle,
   children,
+  estimatedHeight,
 }: {
   labelMeta: React.ReactNode
   label: React.ReactNode
   count: number
   countLabel: string
   selectedCount?: number
-  collapsed: boolean
+  collapsed?: boolean
   onToggle: () => void
   children?: React.ReactNode
+  estimatedHeight?: number
 }) {
+  // A newly selected grouping has no persisted collapse state on its first
+  // render. Keep it closed until the parent establishes the one-open default;
+  // otherwise every group mounts its own grid for a frame and defeats lazy loading.
+  const isCollapsed = collapsed ?? true
+  const contentRef = React.useRef<HTMLDivElement | null>(null)
+  const [isNearViewport, setIsNearViewport] = React.useState(false)
+
+  React.useEffect(() => {
+    if (isCollapsed || isNearViewport) return
+    const target = contentRef.current
+    if (!target || typeof IntersectionObserver === 'undefined') {
+      setIsNearViewport(true)
+      return
+    }
+
+    // Group tables live in this inner scroller, not the document viewport.
+    // Making it the observer root ensures rows mount as the user scrolls the
+    // grouped workspace and keeps offscreen AG Grids from slowing the view.
+    const scrollRoot = target.closest<HTMLElement>('[data-slot="workspace-body"]')
+
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return
+      setIsNearViewport(true)
+      observer.disconnect()
+    }, { root: scrollRoot, rootMargin: '160px 0px' })
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [isCollapsed, isNearViewport])
+
+  const placeholderHeight = Math.max(120, Math.min(600, estimatedHeight ?? count * 24 + 48))
+
   return (
     <section data-operational-group-section="true" className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)]">
       <button
         type="button"
         onClick={onToggle}
-        aria-expanded={!collapsed}
+        aria-expanded={!isCollapsed}
         className="flex min-h-14 w-full items-center justify-between gap-4 border-b border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3 text-left transition-colors hover:bg-[var(--surface-hover)]"
       >
         <div className="min-w-0">
@@ -242,10 +277,16 @@ export function OperationalGroupedGridSection({
         </div>
         <div className="flex items-center gap-3">
           <span className="rounded-md border border-[var(--border-default)] bg-[var(--surface-base)] px-2 py-1 text-[10px] font-semibold tabular-nums text-[var(--text-primary)]">{count}</span>
-          {collapsed ? <ChevronDown size={16} className="text-[var(--text-secondary)]" /> : <ChevronUp size={16} className="text-[var(--text-secondary)]" />}
+          {isCollapsed ? <ChevronDown size={16} className="text-[var(--text-secondary)]" /> : <ChevronUp size={16} className="text-[var(--text-secondary)]" />}
         </div>
       </button>
-      {children}
+      {!isCollapsed && (
+        <div ref={contentRef} data-operational-group-content="true">
+          {isNearViewport ? children : (
+            <div aria-hidden="true" className="bg-[var(--surface-base)]" style={{ height: placeholderHeight }} />
+          )}
+        </div>
+      )}
     </section>
   )
 }
@@ -308,14 +349,14 @@ export function OperationalDisplayPanel({
                 <div className="flex items-center gap-2">
                   <input
                     type="range"
-                    min="8"
+                    min={OPERATIONAL_GRID_MIN_FONT_SIZE}
                     max="14"
                     step="1"
-                    value={fontSize}
+                    value={getEffectiveOperationalGridFontSize(fontSize)}
                     onChange={(event) => onFontSizeChange(Number(event.target.value))}
                     className="h-1.5 w-28 cursor-pointer appearance-none rounded-lg bg-slate-800 accent-blue-500"
                   />
-                  <span className="w-8 text-right text-[10px] font-black tabular-nums text-white">{fontSize}px</span>
+                  <span className="w-8 text-right text-[10px] font-black tabular-nums text-white">{getEffectiveOperationalGridFontSize(fontSize)}px</span>
                 </div>
               </div>
               <div className="flex items-center justify-between gap-4">
@@ -344,6 +385,7 @@ export function OperationalDisplayPanel({
                 onChange={onGroupByChange as (value: string | string[]) => void}
                 options={groupOptions as Array<{ value: string; label: string }>}
                 label="Group By"
+                ariaLabel="Group By"
               />
             </div>
           ) : null}

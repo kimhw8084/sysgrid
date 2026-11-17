@@ -1,0 +1,109 @@
+{
+  "project_id": "sysgrid",
+  "profile_id": "sysgrid-source-observed-PROPOSED",
+  "profile_version": "0.2.0-intake",
+  "approval_status": "PROPOSED",
+  "reviewer_identity_reference": null,
+  "source_revision": "36a34cb659bf5fc05ec518d9b1910daeb79748cb",
+  "observed_source_repository": "kimhw8084/sysgrid",
+  "source_provenance": "Read-only GitHub file inspection. This is NOT an owner-approved design profile or an assessment of current local working-tree state.",
+  "component_registry": {
+    "button": "frontend/src/components/ui/button.tsx",
+    "dropdown_menu": "frontend/src/components/ui/dropdown-menu.tsx",
+    "badge": "frontend/src/components/ui/badge.tsx",
+    "input": "frontend/src/components/ui/input.tsx",
+    "select": "frontend/src/components/ui/select.tsx",
+    "tooltip": "frontend/src/components/ui/tooltip.tsx",
+    "record_grid": "frontend/src/components/FAR.tsx",
+    "monitoring_grid": "frontend/src/components/MonitoringGrid.tsx",
+    "projects": "frontend/src/components/ProjectsGolden.tsx",
+    "dashboard": "frontend/src/components/Dashboard.tsx",
+    "app_shell": "frontend/src/App.tsx"
+  },
+  "token_profile": {
+    "theme_stylesheets": [
+      "frontend/src/index.css",
+      "frontend/src/theme-compatibility.css",
+      "frontend/src/theme-surface-law.css"
+    ],
+    "observed_css_variables": {
+      "surface-base": "var(--bg-primary)",
+      "text-primary": "#f1f5f9 in root dark mode (validate theme overrides)",
+      "focus-ring": "var(--accent-primary)",
+      "accent-primary": "#3b82f6 in root (validate theme overrides)",
+      "grid-bg": "#020617 in root (validate theme overrides)",
+      "surface-elevated": "var(--glass-bg)"
+    },
+    "font_family": "Geist Variable, SF Pro Display, system-ui, sans-serif (observed frontend/src/index.css)",
+    "theme_identifiers_observed": [
+      "pure-clarity",
+      "light",
+      "default root dark"
+    ],
+    "approved_visual_identity": "UNKNOWN",
+    "source_contract_notes": "Token values above are observations, not declarations that a B2.1 palette is applied globally."
+  },
+  "density_modes": {
+    "observed_button_sizes": [
+      "xs h-7",
+      "sm h-8",
+      "default h-9",
+      "lg h-10",
+      "icon size-9"
+    ],
+    "requested_font_preferences": "unverified; prior project discussion mentions 8–14px user-requested values",
+    "grid_row_heights": "UNKNOWN_REQUIRES_ACTUAL_SOURCE_MEASUREMENT",
+    "default": "UNKNOWN_NEEDS_PROJECT_OWNER"
+  },
+  "accessibility_policy": {
+    "baseline": "Applicable WCAG 2.2 AA with context-specific exceptions verified",
+    "status": "NOT_RUN"
+  },
+  "supported_viewports": {
+    "desktop_only": "REPORTED_BY_CODEX_CRITIQUE_NOT_INDEPENDENTLY_ACCEPTED",
+    "widths": "UNKNOWN—extract project-supported desktop matrix",
+    "zoom": "applicable accessibility reflow/zoom requirements still need review"
+  },
+  "user_preferences": {
+    "known_source": "frontend/src/components/FAR.workspacePreference.ts",
+    "observed_behavior": "Server-backed user-settings via apiFetch, PATCH, debounce 400ms, verify actual state/edge cases locally",
+    "approved_schema": "UNKNOWN"
+  },
+  "geometry_baselines": [],
+  "quality_gate_map": {
+    "G1_DATA_TRUTH": "NOT_RUN",
+    "G2_API_CONTRACT": "NOT_RUN",
+    "G3_ACCESSIBILITY": "NOT_RUN",
+    "G4_RENDERED_CONTRAST": "NOT_RUN",
+    "G5_ELEMENT_GEOMETRY": "NOT_RUN",
+    "G6_EVIDENCE_AND_RULE_DELIVERY": "NOT_RUN"
+  },
+  "source_paths_to_verify": [
+    "frontend/src/App.tsx",
+    "frontend/src/index.css",
+    "frontend/src/theme-surface-law.css",
+    "frontend/src/components/FAR.workspaceState.ts",
+    "frontend/src/components/FAR.workspacePreference.ts",
+    "frontend/src/components/ProjectsGolden.tsx",
+    "frontend/src/components/Dashboard.tsx"
+  ],
+  "known_unknowns": [
+    "Actual local SysGrid HEAD and dirty worktree",
+    "Project-approved themes and profile ownership",
+    "Desktop supported width matrix, zoom exceptions",
+    "Complete component variants/tokens and theme semantics",
+    "Real baseline screenshots and geometry under each route/state",
+    "Approved user font and density persistence policy",
+    "Local CI and Playwright test matrix and required reviewer",
+    "Independent project-owner design profile approval"
+  ],
+  "promotion_controls": {
+    "authorization_preflight": "NOT_RUN",
+    "structural_review": "NOT_RUN",
+    "behavioral_review": "NOT_RUN",
+    "integration_review": "NOT_RUN",
+    "independent_review": "NOT_RUN",
+    "publication_review": "NOT_RUN"
+  },
+  "profile_digest": "76197115cf7d163bab4cbbe6e7d178685ca3076699e3cd08a10976f50701e53e"
+}

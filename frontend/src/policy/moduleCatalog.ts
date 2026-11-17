@@ -1,11 +1,11 @@
-import catalog from '../../../contracts/system_management_v1.json'
+import catalog from '../../../contracts/system_management_v1.json' with { type: 'json' }
 
 export type ModuleStage = 'production' | 'preview' | 'disabled' | 'retired'
 
-export const SYSGRID_SEPARATE_APP_MODULE_IDS = new Set(['projects', 'research', 'knowledge', 'architecture'])
-
 export type ModuleCatalogEntry = {
   id: string
+  application_owner: 'sysgrid' | 'separate_application'
+  sysgrid_route_class: 'active' | 'retired_notice'
   label: string
   canonical_route: string
   aliases: string[]
@@ -25,6 +25,10 @@ export const MODULE_CATALOG = catalog as {
   stages: ModuleStage[]
   modules: ModuleCatalogEntry[]
 }
+
+export const SYSGRID_SEPARATE_APP_MODULE_IDS = new Set(
+  MODULE_CATALOG.modules.filter((module) => module.application_owner === 'separate_application').map((module) => module.id),
+)
 
 export const MODULES_BY_ID = Object.fromEntries(
   MODULE_CATALOG.modules.map((module) => [module.id, module]),

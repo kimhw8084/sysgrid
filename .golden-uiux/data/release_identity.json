@@ -1,0 +1,95 @@
+{
+  "canonical_pattern_source": "data/patterns.json",
+  "canonical_proof_contract": "data/proof_schema.json",
+  "generated_human_pattern_copy": "source_spec/02_14_COMPLETE_PATTERN_CONTRACTS_NONFINAL.md",
+  "notes": [
+    "Local design-session context assembly proves only that the local CLI selected and hash-bound the listed contract and skill bodies. It does not prove a native client received or used them; G6 remains UNKNOWN.",
+    "The package is suitable only for controlled, authorized development-project experiments. No production or company-wide qualification is claimed.",
+    "Offline pilot smoke, package manifest verification, structural preflight, canonical pattern check, and owner-guide DOM interaction test were run for v0.2.6; exact results are in TEST_REPORT.txt. The smoke tests disposable Codex/OpenCode project-local install and rollback without opening either live client.",
+    "Two external candidate design sessions were source-context-bound to Harborline and SysGrid rack-spatial task inputs. Each changed one isolated workflows.html; sample data script bytes were verified unchanged. G1-G6 are NOT_RUN for both candidates, G6 delivery remains UNKNOWN, and rendered/visual quality is NOT_ASSESSED.",
+    "The rendered visual enforcement runner was exercised only on the unrelated, self-contained loopback fixture: 22 routes across 3 viewports and 2 themes. Six defect states were rejected, all 12 injected defect classes were detected, and 16 corrected/intentional controls passed. This is a detector-mechanics proof, not a SysGrid or product visual qualification.",
+    "The fixture contains a deliberately injected implementation and its corrected version in the same isolated test app. The independent runner found the injected failures; the agent correction plus runner false-positive fixes were rerun and passed on the exact declared routes. The system exposes findings; an invoking coding agent performs source repair. It does not call a model or claim an autonomous model API.",
+    "The current full Python suite is being rerun against the final source-bound package manifest; the five optional Python browser-dependent tests remain SKIPPED, while the authorized Node/Playwright browser suites run separately.",
+    "Actual SysGrid matrix R20 used 32 genuine browser states on 11 routes, 1440x900 (22 states), and 1366x768 (10 compact diagnostics), both themes, a real isolated frontend/backend and synthetic SQLite tenant. All 32 routes PASS with zero findings, zero unconfigured checks, and no missing required checks.",
+    "Real scroll probes exercised 82 rendered scroll axes with pointer-wheel input; all 82 moved and restored the original target and ancestor positions. Image checks were NOT_APPLICABLE_NO_VISIBLE_IMAGES in all 32 states.",
+    "R22 reran the unrelated 22-route fixture: all 12 declared defect codes were observed, 6 defective cases rejected, 16 corrected/intentional cases passed, and five policy/source/runtime controls remained BLOCKED. Harness PASS is distinct from the expected FAIL status of the fixture report.",
+    "The prior agent-authored fixture correction from contrast 3.545:1 FAIL to 17.599:1 PASS over five repaired routes is reused; the current iteration re-executes independent detector and application-browser tests, not the model-driven source-edit step.",
+    "SysGrid rendering uses a proposed, source-bound test policy, not owner-approved additions to the SysGrid profile. G1 full workflow data truth remains unqualified; G2 source-bound evidence was reused rather than repeated. G3 is partial and does not include screen-reader testing. G6 remains UNKNOWN; native client skill delivery remains NOT_RUN.",
+    "The declared matrix does not test all routes or all states, supported viewport bounds remain UNKNOWN, and cross-browser, screen-reader, production, and subjective aesthetic qualification remain NOT_RUN or NOT_ASSESSED."
+  ],
+  "package": "Golden Universal UI/UX Engineering",
+  "policy": "NO_ACTIVE_SYSGrid_EDITS_NO_CONSTITUTION_MODIFICATION_NO_PUBLICATION",
+  "qualification_states": {
+    "G1_DATA_TRUTH": "NOT_RUN_FOR_FULL_REAL_APPLICATION_WORKFLOWS",
+    "G2_API_CONTRACT": "EXISTING_SOURCE_BOUND_G2_EVIDENCE_REUSED_NOT_RERUN_IN_THIS_VISUAL_ITERATION",
+    "G3_ACCESSIBILITY": "PARTIAL_DECLARED_KEYBOARD_FOCUS_AND_FOCUS_RETURN_STATES;SCREEN_READER_NOT_RUN",
+    "G4_RENDERED_CONTRAST": "PASS_DECLARED_32_SYSGrid_STATES_ONLY",
+    "G5_ELEMENT_GEOMETRY": "PASS_DECLARED_32_SYSGrid_STATES_ONLY",
+    "G6_EVIDENCE_AND_RULE_DELIVERY": "UNKNOWN",
+    "backend_openapi_positive_negative_regressions": "PASS",
+    "composition_and_efficiency_workflow": "PASS",
+    "isolated_prototype_interaction_checks": "3_PASS_SOURCE_LEVEL",
+    "mode_aware_patch_exact_reversal_regressions": "PASS",
+    "multi_agent_live_delivery": "NOT_RUN_G6_UNKNOWN",
+    "native_codex_skill_discovery": "NOT_RUN",
+    "native_opencode_skill_discovery": "NOT_RUN",
+    "offline_cli_and_project_local_install_rollback": "PASS",
+    "package_integrity": "PASS_176_MANIFEST_FILES_VERIFIED",
+    "package_unit_tests": "PASS_313_TESTS_308_PASSED_5_SKIPPED",
+    "production_readiness": "NOT_ASSESSED",
+    "rendered_browser_qualification": "PASS_DECLARED_32_STATE_MATRIX_ONLY_NOT_EXHAUSTIVE",
+    "skip_link_and_focus_geometry_regressions": "PASS",
+    "source_bound_design_session_tests": "PASS",
+    "sysgrid_application_qualification": "PASS_FOR_32_DECLARED_RENDERED_STATES_ONLY",
+    "sysgrid_visual_enforcement": "BLOCKED_NO_PROFILE_VISUAL_POLICY_AND_NO_AUTHORIZED_APP_BROWSER_SESSION",
+    "visual_enforcement_agent_repair_workflow": "PASS_PREVIOUS_AGENT_AUTHORED_SOURCE_CORRECTION_REUSED; NO_EMBEDDED_MODEL_API",
+    "visual_enforcement_fixture_browser_matrix": "PASS_22_ROUTES_6_DEFECTIVE_REJECTED_16_VALID_CONTROLS_PASSED_12_DEFECT_CLASSES_DETECTED_R22",
+    "visual_enforcement_python_boundary_tests": "PASS_4",
+    "visual_enforcement_rendered_regressions": "PASS_17_OF_17_PINNED_CHROME",
+    "visual_enforcement_route_status_tests": "PASS_3",
+    "visual_enforcement_runtime_binding": "PASS_NODE_V26_13_0_PLAYWRIGHT_1_63_0_CHROMIUM_157_0_8103_51",
+    "visual_enforcement_scrolling": "PASS_82_OF_82_REAL_POINTER_WHEEL_AXES_WITH_POSITION_RESTORATION",
+    "visual_quality": "NOT_ASSESSED_SUBJECTIVE_AESTHETIC_REVIEW"
+  },
+  "release_manifest": "PACKAGE_SHA256.json",
+  "release_status": "EXPERIMENTAL_CANDIDATE_NOT_PRODUCTION_QUALIFIED",
+  "source_lineage": {
+    "approved_project_local_g2_carry_forward": {
+      "files": {
+        "golden_uiux/backend_contracts.py": {
+          "preserved_sha256": "751b61d8fedc3197f07c15c4f908672c347fde0dfee67750e046cdb28911e401",
+          "prior_receipt_base_sha256": "9a0352f695fb663b9f5d924f59b7577b08afef8ec449c2317c9fda4b6a15de14"
+        },
+        "golden_uiux/data_api_gates.py": {
+          "preserved_sha256": "c2d47b8cc7508354163c031fe79dea51a1d250ba0dac5ed240294d28310cb29e",
+          "prior_receipt_base_sha256": "1f4998d28a1f218e11d8c36469e746999fdb21fac597212fdd14b8aa7e14de71"
+        }
+      },
+      "qualification": "Preservation records provenance only. It does not upgrade G2 live-endpoint evidence; live identity/request remain NOT_RUN and G6 remains UNKNOWN.",
+      "status": "PRESERVED_IN_RECONCILED_EXPERIMENTAL_INTEGRATION"
+    },
+    "frozen_v024_distribution_sha256": "d6669775ba6729b1e85a7f9b478c33eec3c628da91aaa6d7656950a2e6a30cce",
+    "previous_candidate_manifest_sha256": "47e3c3d066f03da0fc4222b3b785b379139bb38343f06cb6a7f1959b5a09df04",
+    "previous_candidate_overlay_sha256": "13afe423d9867ab4069bb735b8f49589604ed96098cc10eae4eb1e830de4bf44",
+    "previous_isolated_candidate_tree_sha256": "11c1d040f9ce28ea6e8116e64ac918903af69cf1f7ab0697573f7e2ad9b495b3",
+    "previous_package_manifest_sha256": "051452faac1b3b2665e9c91d45ec71d8cd2ba17b39772a927676b14b7e9a97b2",
+    "previous_package_version": "0.2.5-experimental-pilot",
+    "tested_installer_fix_manifest_sha256": "1eecc4230792e69bbe7858f2916423d1875bfd26c1f3a9ae57b0a94aee5f9353",
+    "tested_installer_fix_sha256": "b0a8029370b0ea28e33b1a5e5ecf0f5e329e6f7333fa883bf382756f5349cfe8",
+    "this_revision": "0.2.6 experimental candidate builds on the exact 0.2.5 package manifest above. Adds backend-generated OpenAPI enforcement to G2, mode-aware complete patch replay/reversal, skip-link state-continuity and focus-indicator clipping checks, context/materiality-based composition work, and a lower-duplication agent workflow. v0.2.5 and the frozen v0.2.4 distribution remain unchanged. Adds a profile-bound, offline local Playwright visual enforcement runner and bounded model-independent repair instructions, validated against a deliberately defective unrelated UI fixture and intentional valid states. Latest isolated completion adds a real pointer-wheel proof for every measured scroll axis with exact scroll-ancestor restoration and verifies the source-bound 32-state SysGrid desktop matrix."
+  },
+  "verified_engineering_improvements": [
+    "Canonical G1-G6 identifiers shared by validators and reports",
+    "Structured intent-based pattern routing with irrelevant-pattern rejection",
+    "Rack/spatial P02 route covered by routing tests",
+    "Missing project profile behavior is explicitly defined and tested",
+    "Source-hash-bound design-session start/finish CLI assembles routed patterns and applicable skill bodies, detects real candidate diffs, and dispatches all six gates",
+    "Isolated Harborline work-order and SysGrid rack selection updates announce the selection and restore focus by stable identity after rerender",
+    "G2 dispatcher derives exact route/method/query/request/response/auth semantics from backend-generated OpenAPI and refuses manually asserted server-route fallback",
+    "Patch manifest binds complete source-tree diff, content hashes and file permission modes; disposable replay verifies exact postimages and refuses rollback over intervening edits",
+    "G3 skip-link acceptance checks route/filter/group/selection state continuity; focus acceptance checks same-state focus-indicator geometry against clipping ancestors",
+    "Design-session workflow adapts composition comparison effort to decision materiality and directs cheap-first, one-accountable-agent verification",
+    "Profile-bound browser visual enforcement with exact Node/Playwright/Chromium/source hashes; numerical collision, clipping, reachability, scroll, overflow, contrast, geometry, image, theme-token, focus, positioned-surface and temporal checks; loopback/write guards and bounded repair workflow"
+  ],
+  "version": "0.2.6-experimental-pilot"
+}

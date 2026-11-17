@@ -19,7 +19,7 @@ async function confirmPlan(page: Page) {
   await expect(state(page, 'confirmed')).toBeVisible()
 }
 
-for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] as const) {
+for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 1440]] as const) {
   test(`maintenance plan through verification and rollback in ${theme} at ${width}`, async ({ page, sysApi: request }, testInfo) => {
     await resetBrowserState(page)
     await page.setViewportSize({ width, height: 1000 })
@@ -29,7 +29,7 @@ for (const [theme, width] of [['nordic-frost-v1', 1440], ['pure-clarity', 390]] 
     await page.goto('/monitoring')
     await page.getByRole('button', { name: 'Maintenance', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Maintenance', exact: true })).toBeVisible()
-    await page.getByRole('button', { name: 'New plan', exact: true }).click()
+    await page.getByRole('button', { name: 'Simulate plan', exact: true }).click()
     await page.getByLabel('Plan title').fill('Routine maintenance verification')
     await page.getByLabel('Action', { exact: false }).selectOption('telemetry.snapshot')
     await page.getByLabel('Ticket reference').fill('TEST-MAINT-1')

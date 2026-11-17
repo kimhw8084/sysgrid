@@ -20,11 +20,13 @@ import { CredentialValue, credentialUpdatePayload } from './shared/CredentialVal
 import { AssetDataState, fetchAssetArray } from './assets/assetDataState'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import {
+  getEffectiveOperationalGridFontSize,
   getOperationalGridHeaderHeight,
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
   OPERATIONAL_GRID_ROW_HEIGHT_MAX,
   OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+  OPERATIONAL_GRID_MIN_FONT_SIZE,
 } from './shared/OperationalGridSizing'
 
 const SharedServiceModals = ({ 
@@ -107,7 +109,7 @@ const SharedServiceModals = ({
 export const AssetServicesTable = ({ deviceId, onViewDetails, onEdit }: { deviceId: number, onViewDetails: (s: any) => void, onEdit: (s: any) => void }) => {
   const servicesQuery = useQuery({
     queryKey: ['device-services', deviceId],
-    queryFn: () => fetchAssetArray(`/api/v1/logical-services/?device_id=${deviceId}`),
+    queryFn: () => fetchAssetArray(`/api/v1/logical-services?device_id=${deviceId}`),
   })
   const services = servicesQuery.data
   const isLoading = servicesQuery.isLoading
@@ -424,7 +426,7 @@ export const MetadataViewer = ({ data }: { data: any }) => {
 export const MiniMonitoringTable = ({ deviceId }: { deviceId: number }) => {
   const monitorsQuery = useQuery({
     queryKey: ['device-monitors', deviceId],
-    queryFn: () => fetchAssetArray(`/api/v1/monitoring/?device_id=${deviceId}`),
+    queryFn: () => fetchAssetArray(`/api/v1/monitoring?device_id=${deviceId}`),
   })
   const monitors = monitorsQuery.data
   const isLoading = monitorsQuery.isLoading
@@ -931,7 +933,7 @@ const AssetReportView = ({ assets, selectedId, onSelect, options, onEdit, onView
 export default function AssetGrid() {
   const queryClient = useQueryClient()
   const gridRef = React.useRef<any>(null)
-  const [fontSize, setFontSize] = useState(11)
+  const [fontSize, setFontSize] = useState(12)
   const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(true)
 
@@ -1237,7 +1239,6 @@ export default function AssetGrid() {
       <PageHeader
         eyebrow="Infrastructure Asset Registry"
         title="Assets"
-        titleIcon={HardDrive}
         subtitle="Manage logical and physical compute, storage, and networking resources."
         actions={
           <ToolbarGroup>
@@ -1378,11 +1379,11 @@ export default function AssetGrid() {
                         <span className="text-[9px] font-bold text-slate-500 uppercase">Font Size</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="8" max="14" step="1" 
-                            value={fontSize} onChange={e => setFontSize(Number(e.target.value))}
+                            type="range" min={OPERATIONAL_GRID_MIN_FONT_SIZE} max="14" step="1"
+                            value={getEffectiveOperationalGridFontSize(fontSize)} onChange={e => setFontSize(Number(e.target.value))}
                             className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span>
+                            <span className="text-[10px] text-white w-4 font-bold">{getEffectiveOperationalGridFontSize(fontSize)}px</span>
                         </div>
                      </div>
 

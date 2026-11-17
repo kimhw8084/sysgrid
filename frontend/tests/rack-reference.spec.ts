@@ -92,7 +92,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
     await expect(activeDevice).toHaveAttribute('title', /Active/)
     await page.screenshot({ path: testInfo.outputPath('racks-mounted-units.png'), animations: 'disabled' })
 
-    await page.getByRole('button', { name: `Open site ${coreSite.name}`, exact: true }).click()
+    await page.getByRole('button', { name: `Filter racks by site ${coreSite.name}`, exact: true }).click()
     await page.getByRole('button', { name: 'Spatial', exact: true }).click()
     const spatialCanvas = page.locator('[data-rack-spatial-canvas]')
     const spatialRack = spatialCanvas.locator('[data-spatial-rack-card]').first()
@@ -146,7 +146,7 @@ for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
 
     if (process.env.SYSGRID_DESKTOP_ONLY === '1') return
     await page.setViewportSize({ width: 390, height: 844 })
-    const search = page.getByPlaceholder('Search racks & devices...')
+    const search = page.getByRole('textbox', { name: 'Search racks, locations, systems, asset tags, and serial numbers' })
     await search.scrollIntoViewIfNeeded()
     await expect(search).toBeInViewport({ ratio: 0.9 })
     await search.fill(racks[1].name)

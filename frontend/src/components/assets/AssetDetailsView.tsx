@@ -11,6 +11,7 @@ import { AssetServicesTable, MetadataViewer, MiniMonitoringTable } from '../Asse
 import { ModulePolicyButton } from '../../policy/ModulePolicy'
 import { CredentialValue, credentialUpdatePayload } from '../shared/CredentialValue'
 import { AssetDataState, fetchAssetArray } from './assetDataState'
+import { orientAssetNetworkConnection } from './assetNetwork'
 
 const getAssetConsoleUrl = (asset: any) => {
   if (asset?.management_url) {
@@ -96,9 +97,8 @@ const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { devic
   const portsWithConnections = useMemo(() => {
     return ports.map((port) => {
       const activeLink = connections?.find((link: any) => {
-        const isSource = Number(link.source_device_id) === Number(device.id)
-        const isTarget = Number(link.target_device_id) === Number(device.id)
-        const localPort = isSource ? link.source_port : isTarget ? link.target_port : null
+        const endpoints = orientAssetNetworkConnection(device.id, link)
+        const localPort = endpoints.isSource || endpoints.isTarget ? endpoints.localPort : null
         if (!localPort) return false
 
         const normLocal = String(localPort).toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -114,20 +114,21 @@ const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { devic
       }
     })
   }, [ports, connections, device])
+  const hoveredEndpoints = hoveredPort?.link ? orientAssetNetworkConnection(device?.id, hoveredPort.link) : null
 
   return (
-    <div className="bg-slate-950/60 border border-white/5 rounded-lg p-4 space-y-4">
+    <div className="asset-network-panel border rounded-lg p-4 space-y-4">
       {/* 1U CHASSIS FACEPLATE */}
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 shadow-2xl relative select-none flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div onMouseLeave={() => setHoveredPort(null)} className="asset-network-chassis border rounded-lg p-4 shadow-xl relative select-none flex flex-col md:flex-row gap-4 items-center justify-between">
         
         {/* CHASSIS IDENT/LEFT SCREW RACK-EAR */}
-        <div className="hidden md:flex flex-col gap-1 items-center border-r border-slate-800 pr-4">
-          <div className="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 shadow-inner flex items-center justify-center">
-            <div className="w-1.5 h-0.5 bg-slate-600 rotate-45" />
+        <div className="asset-network-ear hidden md:flex flex-col gap-1 items-center border-r pr-4">
+          <div className="asset-network-screw w-3 h-3 rounded-full border shadow-inner flex items-center justify-center">
+            <div className="asset-network-screw-slot w-1.5 h-0.5 rotate-45" />
           </div>
-          <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest leading-none">1U UNIT</span>
-          <div className="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 shadow-inner flex items-center justify-center">
-            <div className="w-1.5 h-0.5 bg-slate-600 -rotate-45" />
+          <span className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest leading-none">1U UNIT</span>
+          <div className="asset-network-screw w-3 h-3 rounded-full border shadow-inner flex items-center justify-center">
+            <div className="asset-network-screw-slot w-1.5 h-0.5 -rotate-45" />
           </div>
         </div>
 
@@ -136,12 +137,12 @@ const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { devic
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Physical Interface Matrix</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Physical interface matrix</span>
             </div>
-            <span className="text-[8px] font-mono text-slate-500 uppercase">{device?.type || 'Switch'} // {device?.model || 'Generic Model'}</span>
+            <span className="max-w-[45%] truncate text-[10px] font-mono text-[var(--text-secondary)] uppercase" title={`${device?.type || 'Device'} · ${device?.model || 'Model not recorded'}`}>{device?.type || 'Device'} · {device?.model || 'Model not recorded'}</span>
           </div>
 
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2.5 bg-slate-950/80 p-3 rounded-md border border-slate-800 shadow-inner">
+          <div className="asset-network-port-grid grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2.5 p-3 rounded-md border shadow-inner">
             {portsWithConnections.map((port) => {
               const isActive = !!port.link
               return (
@@ -149,37 +150,26 @@ const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { devic
                   key={port.id}
                   className="flex flex-col items-center"
                   onMouseEnter={() => setHoveredPort(port)}
-                  onMouseLeave={() => setHoveredPort(null)}
                 >
                   {/* LINK LED */}
-                  <div className={`w-1.5 h-1.5 rounded-full mb-1 transition-all ${
-                    isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] animate-pulse' : 'bg-slate-800'
-                  }`} />
+                  <div data-connected={String(isActive)} className={`asset-network-link-led w-1.5 h-1.5 rounded-full mb-1 transition-all ${isActive ? 'animate-pulse' : ''}`} />
 
                   {/* PORT SOCKET */}
                   {port.type === 'RJ45' ? (
-                    <div className={`relative w-9 h-9 border rounded flex flex-col items-center justify-center transition-all duration-200 cursor-pointer ${
-                      isActive 
-                        ? 'border-emerald-500/50 bg-gradient-to-t from-emerald-950/30 to-slate-900 shadow-[inset_0_0_8px_rgba(16,185,129,0.2)] hover:border-emerald-400 hover:shadow-[0_0_12px_rgba(16,185,129,0.4)]' 
-                        : 'border-slate-800 bg-slate-950 hover:bg-slate-900/60'
-                    }`}>
+                    <div data-kind="rj45" data-connected={String(isActive)} aria-label={`${port.label}: ${isActive ? 'connected' : 'vacant'}`} className="asset-network-port relative w-9 h-9 border rounded flex flex-col items-center justify-center transition-all duration-200 cursor-default">
                       <div className="absolute top-1 flex gap-[2px] justify-center w-5 h-1 opacity-30">
                         {[...Array(8)].map((_, idx) => (
-                          <div key={idx} className="w-[1px] h-full bg-amber-400" />
+                          <div key={idx} className="asset-network-port-pin w-[1px] h-full" />
                         ))}
                       </div>
-                      <span className="text-[7px] font-mono font-bold text-slate-500 mt-1">{port.id}</span>
-                      <div className="absolute bottom-0.5 w-3 h-1 bg-slate-950 border-t border-slate-800 rounded-t-sm" />
+                      <span className="asset-network-port-label mt-1 text-[9px] font-mono font-semibold">{port.id}</span>
+                      <div className="absolute bottom-0.5 w-3 h-1 bg-black/25 border-t border-white/20 rounded-t-sm" />
                     </div>
                   ) : (
-                    <div className={`relative w-11 h-9 border rounded flex flex-col items-center justify-center transition-all duration-200 cursor-pointer ${
-                      isActive 
-                        ? 'border-cyan-500/50 bg-gradient-to-t from-cyan-950/30 to-slate-900 shadow-[inset_0_0_8px_rgba(6,182,212,0.2)] hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(6,182,212,0.4)]' 
-                        : 'border-slate-800 bg-slate-950 hover:bg-slate-900/60'
-                    }`}>
-                      <div className="absolute inset-1 border border-slate-700/20 rounded-sm pointer-events-none" />
-                      <span className="text-[7px] font-mono font-black text-cyan-400/80">{port.id}</span>
-                      {isActive && <div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-cyan-400 animate-ping" />}
+                    <div data-kind="sfp" data-connected={String(isActive)} aria-label={`${port.label}: ${isActive ? 'connected' : 'vacant'}`} className="asset-network-port relative w-11 h-9 border rounded flex flex-col items-center justify-center transition-all duration-200 cursor-default">
+                      <div className="absolute inset-1 border border-current/20 rounded-sm pointer-events-none" />
+                      <span className="asset-network-port-label text-[9px] font-mono font-semibold">{port.id}</span>
+                      {isActive && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
                     </div>
                   )}
                 </div>
@@ -189,57 +179,56 @@ const DevicePortGrid = ({ device, connections, onEditLink, onViewLink }: { devic
         </div>
 
         {/* LCD TELEMETRY CONSOLE ON RIGHT */}
-        <div className="w-full md:w-56 h-[92px] bg-emerald-950/20 border border-emerald-500/10 rounded-md p-2.5 font-mono flex flex-col justify-between text-left">
+        <div className="asset-network-console w-full md:w-64 min-h-[112px] border rounded-md p-3 font-mono flex flex-col justify-between text-left">
           {hoveredPort ? (
             <div className="animate-in fade-in duration-200 h-full flex flex-col justify-between text-[10px]">
               <div>
-                <div className="flex justify-between border-b border-emerald-500/10 pb-1 mb-1 text-[8px]">
-                  <span className="text-emerald-400 font-bold uppercase tracking-wider">{hoveredPort.label} ({hoveredPort.type})</span>
-                  <span className={hoveredPort.link ? "text-emerald-400 font-bold animate-pulse" : "text-slate-500"}>
+                <div className="asset-network-console-divider flex justify-between border-b pb-1 mb-1 text-[10px]">
+                  <span className="text-[var(--text-primary)] font-semibold">{hoveredPort.label} ({hoveredPort.type})</span>
+                  <span className={hoveredPort.link ? "text-[var(--state-success)] font-semibold" : "text-[var(--text-secondary)]"}>
                     {hoveredPort.link ? "CONNECTED" : "VACANT"}
                   </span>
                 </div>
                 {hoveredPort.link ? (
-                  <div className="space-y-0.5 text-[8px] text-slate-300">
-                    <p className="truncate"><span className="text-emerald-500 font-bold">PEER:</span> {hoveredPort.link.target_device_name || hoveredPort.link.source_device_name || 'N/A'}</p>
-                    <p className="truncate"><span className="text-emerald-500 font-bold">PORT:</span> {hoveredPort.link.source_port} → {hoveredPort.link.target_port}</p>
-                    <p><span className="text-emerald-500 font-bold">MEDIA:</span> {hoveredPort.type === 'RJ45' ? '1G BASE-T COPPER' : '10G SFP+ FIBER'}</p>
+                  <div className="asset-network-console-copy space-y-1 text-[10px]">
+                    <p className="truncate"><span className="font-semibold text-[var(--accent-primary)]">PEER:</span> {hoveredEndpoints?.peerName || 'Peer not recorded'}</p>
+                    <p className="truncate"><span className="font-semibold text-[var(--accent-primary)]">PORT:</span> {hoveredEndpoints?.localPort || 'Unknown'} → {hoveredEndpoints?.peerPort || 'Unknown'}</p>
+                    <p><span className="font-semibold text-[var(--accent-primary)]">MEDIA:</span> {hoveredPort.type === 'RJ45' ? 'RJ45 copper' : 'SFP fiber'} · recorded link</p>
                   </div>
                 ) : (
-                  <p className="text-[8px] text-slate-500 italic pt-1">No active cable linked.</p>
+                  <p className="text-[10px] text-[var(--text-secondary)] pt-1">No recorded cable on this port.</p>
                 )}
               </div>
               {hoveredPort.link && (
-                <div className="flex gap-2 text-[8px] justify-end border-t border-emerald-500/10 pt-1">
-                  <button onClick={() => onViewLink(hoveredPort.link)} title="View link detail" className="text-blue-400 hover:text-blue-300 font-bold uppercase">View</button>
-                  <button onClick={() => onEditLink(hoveredPort.link)} title="Edit link configuration" className="text-emerald-400 hover:text-emerald-300 font-bold uppercase">Edit</button>
+                <div className="asset-network-console-divider flex gap-3 text-[10px] justify-end border-t pt-1">
+                  <button onClick={() => onViewLink(hoveredPort.link)} title="View link detail" className="text-[var(--accent-primary)] hover:underline font-semibold">View link</button>
+                  <button onClick={() => onEditLink(hoveredPort.link)} title="Edit link configuration" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">Edit link</button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="h-full flex flex-col justify-between text-[8px] text-slate-400">
-              <div className="flex justify-between border-b border-emerald-500/10 pb-1 mb-1">
-                <span className="text-emerald-500/60 font-bold uppercase">INTERFACE SYS_MON</span>
-                <span className="text-emerald-500/40 font-bold">OK_STB</span>
+            <div className="asset-network-console-copy h-full flex flex-col justify-between text-[10px]">
+              <div className="asset-network-console-divider flex justify-between border-b pb-1 mb-1">
+                <span className="font-semibold text-[var(--text-primary)]">Port link state</span>
+                <span className="font-semibold text-[var(--text-secondary)]">Recorded</span>
               </div>
-              <div className="space-y-0.5 text-slate-400 italic">
-                <p>SYSGRID RACK TELEMETRY V2</p>
-                <p>HOVER ANY PHYSICAL PORT FOR</p>
-                <p>LINK-STATE INTERFACE CONSOLE</p>
+              <div className="space-y-0.5">
+                <p>Hover a port to inspect its saved connection.</p>
+                <p>Link data comes from the asset registry.</p>
               </div>
-              <div className="text-[8px] text-slate-500 text-right">SYSTEM ONLINE</div>
+              <div className="text-[10px] text-right">Live hardware telemetry is unavailable.</div>
             </div>
           )}
         </div>
 
         {/* RIGHT SCREW RACK-EAR */}
-        <div className="hidden md:flex flex-col gap-1 items-center border-l border-slate-800 pl-4">
-          <div className="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 shadow-inner flex items-center justify-center">
-            <div className="w-1.5 h-0.5 bg-slate-600 rotate-45" />
+        <div className="asset-network-ear hidden md:flex flex-col gap-1 items-center border-l pl-4">
+          <div className="asset-network-screw w-3 h-3 rounded-full border shadow-inner flex items-center justify-center">
+            <div className="asset-network-screw-slot w-1.5 h-0.5 rotate-45" />
           </div>
-          <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest leading-none">SYSGRID</span>
-          <div className="w-3 h-3 rounded-full bg-slate-950 border border-slate-800 shadow-inner flex items-center justify-center">
-            <div className="w-1.5 h-0.5 bg-slate-600 -rotate-45" />
+          <span className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest leading-none">SYSGRID</span>
+          <div className="asset-network-screw w-3 h-3 rounded-full border shadow-inner flex items-center justify-center">
+            <div className="asset-network-screw-slot w-1.5 h-0.5 -rotate-45" />
           </div>
         </div>
 
@@ -257,7 +246,7 @@ const NetworkingTab = ({ device, onEditLink, onViewLink }: { device: any, onEdit
   })
 
   if (connectionsQuery.isLoading) {
-    return <div className="p-8 text-center text-[10px] font-bold uppercase text-slate-500">Loading connectivity...</div>
+    return <div role="status" className="p-8 text-center text-sm font-medium text-[var(--text-secondary)]">Loading connectivity…</div>
   }
 
   if (connectionsQuery.isError) {
@@ -277,30 +266,33 @@ const NetworkingTab = ({ device, onEditLink, onViewLink }: { device: any, onEdit
       ) : (
         <div className="space-y-2">
           <div className="flex items-center gap-2 px-1">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Structured Connection Ledger</span>
+            <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Recorded network links</span>
           </div>
-          <div className="border border-white/5 rounded-lg overflow-hidden">
-            <table className="sg-data-table w-full text-[10px]">
-              <thead className="bg-white/5 border-b border-white/5 animate-fade-in">
+          <div className="overflow-hidden rounded-lg border border-[var(--border-default)]">
+            <table className="sg-data-table w-full text-[11px]">
+              <thead className="animate-fade-in border-b border-[var(--border-default)] bg-[var(--grid-header-bg)]">
                 <tr>
-                  <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Peer</th>
-                  <th className="px-4 py-2 text-left font-bold uppercase tracking-widest text-slate-500">Ports</th>
-                  <th className="px-4 py-2 text-center font-bold uppercase tracking-widest text-slate-500">Actions</th>
+                  <th className="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">Peer asset</th>
+                  <th className="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">Local port → peer port</th>
+                  <th className="px-4 py-2 text-center font-semibold text-[var(--text-secondary)]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 bg-slate-950/20">
-                {connections.map((link: any) => (
-                  <tr key={link.id} className="hover:bg-white/5">
-                    <td className="px-4 py-3 font-bold text-slate-200">{link.target_device_name || link.source_device_name || 'Peer'}</td>
-                    <td className="px-4 py-3 text-slate-400 font-mono">{`${link.source_port || 'n/a'} -> ${link.target_port || 'n/a'}`}</td>
+              <tbody className="divide-y divide-[var(--grid-row-divider)] bg-[var(--grid-bg)]">
+                {connections.map((link: any) => {
+                  const endpoints = orientAssetNetworkConnection(deviceId, link)
+                  return (
+                  <tr key={link.id} className="hover:bg-[var(--grid-row-hover)]">
+                    <td className="px-4 py-3 font-semibold text-[var(--text-primary)]">{endpoints.peerName || 'Peer not recorded'}</td>
+                    <td className="px-4 py-3 font-mono text-[var(--text-secondary)]">{`${endpoints.localPort || 'n/a'} → ${endpoints.peerPort || 'n/a'}`}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => onViewLink(link)} className="p-1.5 text-blue-400 hover:bg-blue-500/10 rounded-lg"><Eye size={14} /></button>
-                        <button onClick={() => onEditLink(link)} className="p-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg"><Edit2 size={14} /></button>
+                        <button aria-label="View network link" onClick={() => onViewLink(link)} className="rounded-lg p-1.5 text-[var(--accent-primary)] hover:bg-[var(--surface-hover)]"><Eye size={14} /></button>
+                        <button aria-label="Edit network link" onClick={() => onEditLink(link)} className="rounded-lg p-1.5 text-[var(--state-success)] hover:bg-[var(--surface-hover)]"><Edit2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -357,13 +349,13 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
 
     const hostedServicesQuery = useQuery({
       queryKey: ['device-services', device.id],
-      queryFn: () => fetchAssetArray(`/api/v1/logical-services/?device_id=${device.id}`),
+      queryFn: () => fetchAssetArray(`/api/v1/logical-services?device_id=${device.id}`),
       enabled: !!device.id
     })
 
     const monitoringQuery = useQuery({
       queryKey: ['device-monitors', device.id],
-      queryFn: () => fetchAssetArray(`/api/v1/monitoring/?device_id=${device.id}`),
+      queryFn: () => fetchAssetArray(`/api/v1/monitoring?device_id=${device.id}`),
       enabled: !!device.id
     })
 
@@ -477,6 +469,17 @@ export const AssetDetailsView = ({ device, options, onViewServiceDetails, onEdit
                             ))}
                         </div>
                     </div>
+
+                    <dl aria-label="Asset identifiers" className="mt-4 grid grid-cols-1 gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
+                        <div className="min-w-0">
+                            <dt className="text-[8px] font-bold uppercase tracking-widest text-slate-500">Serial Number</dt>
+                            <dd className="mt-1 break-all font-mono text-xs font-semibold text-[var(--text-primary)]">{device.serial_number || 'Not recorded'}</dd>
+                        </div>
+                        <div className="min-w-0">
+                            <dt className="text-[8px] font-bold uppercase tracking-widest text-slate-500">Asset Tag</dt>
+                            <dd className="mt-1 break-all font-mono text-xs font-semibold text-[var(--text-primary)]">{device.asset_tag || 'Not recorded'}</dd>
+                        </div>
+                    </dl>
 
                     <div className="mt-4 rounded-lg border border-amber-500/15 bg-amber-500/[0.05] p-4">
                         <div className="flex items-center justify-between gap-4">

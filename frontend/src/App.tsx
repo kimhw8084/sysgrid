@@ -1,11 +1,11 @@
 // SYSGRID_VISUAL_REPAIR_R4
 // SYSGRID_VISUAL_REPAIR_R3
 // SYSGRID_VISUAL_REPAIR_V1
-import React, { lazy, Suspense, useState, useEffect, useRef, Component, ErrorInfo, ReactNode } from "react"
+import React, { lazy, Suspense, useState, useEffect, useRef, useCallback, Component, ErrorInfo, ReactNode } from "react"
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
 import { Routes, Route, Link, useLocation, useNavigate, Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 import { motion, AnimatePresence, MotionConfig } from "framer-motion"
-import { Grid3X3, Globe, Search, Star, Moon, Sun } from "lucide-react"
+import { Grid3X3, Globe, Search, Star, Moon, Sun, Menu, X } from "lucide-react"
 import { Button as NovaButton } from "./components/ui/button"
 import { DropdownMenu, DropdownMenuItem } from "./components/ui/dropdown-menu"
 import { TooltipProvider } from "./components/ui/tooltip"
@@ -32,7 +32,7 @@ import { ShellHeader, ToolbarButton, PageHeader } from "./components/shared/Layo
 import { LiveShellHeaderTools, ShellFooter } from "./components/shared/ShellLiveRegions"
 import { FatalErrorState, PermissionDeniedState } from "./components/shared/ShellStates"
 import { SHELL_NAV_GROUPS, ShellNavGroup, ShellNavItem, isShellRouteActive } from "./components/shared/ShellNavigation"
-import { normalizeTheme } from "./components/shared/theme"
+import { applySysGridTheme, normalizeTheme, shouldInitializeThemeFromServer } from "./components/shared/theme"
 import { useRouteFocus } from "./components/shared/routeFocus"
 import { effectiveIdentityChanged, ModulePolicyGate, useModulePolicy } from './policy/ModulePolicy'
 
@@ -77,7 +77,7 @@ function RetiredWorkspaceNotice({ moduleName }: { moduleName: string }) {
 import { QueryCache, MutationCache } from "@tanstack/react-query"
 
 import { showWorkspaceToast, WorkspaceToaster } from "./components/shared/WorkspaceToast"
-import { readOptionalStorage, writeOptionalStorage } from './components/shared/optionalStorage'
+import { readOptionalStorage, removeOptionalStorage, writeOptionalStorage } from './components/shared/optionalStorage'
 import { PatchNotesModal, LinuxEnvModal } from './components/shared/ShellDialogs'
 
 const queryClient = new QueryClient({
@@ -197,13 +197,133 @@ function MainLayout() {
   const navigate = useNavigate(); 
   const mainContentRef = useRef<HTMLDivElement>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches)
+  const [isMobileNavigationOpen, setIsMobileNavigationOpen] = useState(false)
+  const mobileNavigationTriggerRef = useRef<HTMLButtonElement>(null)
+  const mobileNavigationFocusRestoreFrameRef = useRef<number | null>(null)
+  const openMobileNavigation = useCallback(() => {
+    if (mobileNavigationFocusRestoreFrameRef.current !== null) {
+      cancelAnimationFrame(mobileNavigationFocusRestoreFrameRef.current)
+      mobileNavigationFocusRestoreFrameRef.current = null
+    }
+    setIsMobileNavigationOpen(true)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const navigation = document.querySelector<HTMLElement>('[data-sg-app-sidebar]')
+      const primaryNavigation = navigation?.querySelector<HTMLElement>('nav[aria-label="Primary navigation"]')
+      const first = Array.from(primaryNavigation?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)') ?? [])
+        .find(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility === 'visible')
+      if (navigation?.dataset.sgNavOpen === 'true' && first && !navigation.contains(document.activeElement)) {
+        first.focus({ preventScroll: true })
+      }
+    }))
+  }, [])
+  const closeMobileNavigation = useCallback(() => {
+    setIsMobileNavigationOpen(false)
+    if (mobileNavigationFocusRestoreFrameRef.current !== null) {
+      cancelAnimationFrame(mobileNavigationFocusRestoreFrameRef.current)
+    }
+    mobileNavigationFocusRestoreFrameRef.current = requestAnimationFrame(() => {
+      mobileNavigationFocusRestoreFrameRef.current = null
+      const navigation = document.querySelector<HTMLElement>('[data-sg-app-sidebar]')
+      if (navigation?.dataset.sgNavOpen === 'false') mobileNavigationTriggerRef.current?.focus()
+    })
+  }, [])
   const [showPatchNotes, setShowPatchNotes] = useState(false);
   const [showLinuxEnv, setShowLinuxEnv] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState(normalizeTheme(readOptionalStorage('sysgrid-theme')));
+  const hasLocalThemePreferenceRef = useRef<boolean | null>(null);
+  const didInitializeServerThemeRef = useRef(false);
+  if (hasLocalThemePreferenceRef.current === null) {
+    hasLocalThemePreferenceRef.current = readOptionalStorage('sysgrid-theme') !== null;
+  }
   const modulePolicy = useModulePolicy()
+  const lastMobileNavigationPathRef = useRef(location.pathname)
 
   useRouteFocus(location, mainContentRef)
+
+  useEffect(() => {
+    const viewport = window.matchMedia('(max-width: 767px)')
+    const update = () => {
+      setIsMobileViewport(viewport.matches)
+      if (!viewport.matches) setIsMobileNavigationOpen(false)
+    }
+    update()
+    viewport.addEventListener('change', update)
+    return () => viewport.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
+    if (lastMobileNavigationPathRef.current === location.pathname) return
+    lastMobileNavigationPathRef.current = location.pathname
+    if (isMobileNavigationOpen) {
+      setIsMobileNavigationOpen(false)
+      requestAnimationFrame(() => mainContentRef.current?.focus({ preventScroll: true }))
+    }
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (isMobileViewport) return
+    const navigation = document.querySelector<HTMLElement>('[data-sg-app-sidebar] nav[aria-label="Primary navigation"]')
+    const currentLink = navigation?.querySelector<HTMLElement>('[aria-current="page"]')
+    if (!navigation || !currentLink) return
+
+    const navigationBounds = navigation.getBoundingClientRect()
+    const currentBounds = currentLink.getBoundingClientRect()
+    if (currentBounds.top < navigationBounds.top) {
+      navigation.scrollTop += currentBounds.top - navigationBounds.top
+    } else if (currentBounds.bottom > navigationBounds.bottom) {
+      navigation.scrollTop += currentBounds.bottom - navigationBounds.bottom
+    }
+  }, [location.pathname, isMobileViewport, isSidebarOpen])
+
+  useEffect(() => {
+    if (!isMobileViewport || !isMobileNavigationOpen) return
+    const navigation = document.querySelector<HTMLElement>('[data-sg-app-sidebar]')
+    const main = document.querySelector<HTMLElement>('[data-sg-app-main="true"]')
+    const previousInert = main?.inert ?? false
+    if (main) main.inert = true
+    const getFocusable = () => Array.from(navigation?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled),summary:not([aria-disabled="true"])') ?? [])
+      .filter(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility === 'visible')
+    let initialFocusFrame = requestAnimationFrame(() => {
+      initialFocusFrame = requestAnimationFrame(() => {
+        const active = document.activeElement
+        const primaryNavigation = navigation?.querySelector<HTMLElement>('nav[aria-label="Primary navigation"]')
+        const first = Array.from(primaryNavigation?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)') ?? [])
+          .find(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility === 'visible')
+        if (navigation?.dataset.sgNavOpen === 'true' && first && !navigation.contains(active)) {
+          first?.focus({ preventScroll: true })
+        }
+      })
+    })
+    const closeAndRestoreFocus = () => {
+      closeMobileNavigation()
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeAndRestoreFocus()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const controls = getFocusable()
+      if (!controls.length) return
+      const index = controls.indexOf(document.activeElement as HTMLElement)
+      if (event.shiftKey && index <= 0) {
+        event.preventDefault()
+        controls[controls.length - 1].focus()
+      } else if (!event.shiftKey && index === controls.length - 1) {
+        event.preventDefault()
+        controls[0].focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      cancelAnimationFrame(initialFocusFrame)
+      if (main) main.inert = previousInert
+    }
+  }, [closeMobileNavigation, isMobileViewport, isMobileNavigationOpen])
 
   useEffect(() => {
     document.title = getConfig('VITE_APP_TITLE', 'SYSGRID INFRASTRUCTURE');
@@ -241,43 +361,71 @@ function MainLayout() {
   });
 
   useEffect(() => {
-    if (userSettings?.theme) {
-      const normalizedTheme = normalizeTheme(userSettings.theme);
-      setCurrentTheme(normalizedTheme);
-      document.documentElement.setAttribute('data-theme', normalizedTheme);
-      writeOptionalStorage('sysgrid-theme', normalizedTheme);
-      const isLight = normalizedTheme === 'pure-clarity';
-      if (isLight) document.documentElement.classList.remove('dark');
-      else document.documentElement.classList.add('dark');
-    }
+    if (!userSettings?.theme) return;
+    const shouldInitializeFromServer = shouldInitializeThemeFromServer(
+      Boolean(hasLocalThemePreferenceRef.current),
+      didInitializeServerThemeRef.current,
+    );
+    didInitializeServerThemeRef.current = true;
+    // A late settings response must not undo the preference already painted
+    // from local storage, especially after a route change or settings refresh.
+    if (!shouldInitializeFromServer) return;
+    const normalizedTheme = normalizeTheme(userSettings.theme);
+    hasLocalThemePreferenceRef.current = true;
+    setCurrentTheme(normalizedTheme);
+    applySysGridTheme(normalizedTheme);
+    writeOptionalStorage('sysgrid-theme', normalizedTheme);
   }, [userSettings]);
+
+  useEffect(() => {
+    const handleThemeChange = (event: Event) => {
+      const requestedTheme = (event as CustomEvent<{ theme?: string }>).detail?.theme;
+      if (!requestedTheme) return;
+      const normalizedTheme = normalizeTheme(requestedTheme);
+      hasLocalThemePreferenceRef.current = true;
+      didInitializeServerThemeRef.current = true;
+      setCurrentTheme(normalizedTheme);
+      applySysGridTheme(normalizedTheme);
+    };
+    window.addEventListener('sysgrid-theme-change', handleThemeChange);
+    return () => window.removeEventListener('sysgrid-theme-change', handleThemeChange);
+  }, []);
 
   const THEMES = [
     { id: 'nordic-frost-v1', label: 'Dark Mode', color: 'bg-[#252525]' },
     { id: 'pure-clarity', label: 'Light Mode', color: 'bg-[#ffffff]' }
   ]
 
-  const changeTheme = (themeId: string) => {
+  const changeTheme = async (themeId: string) => {
     const normalizedTheme = normalizeTheme(themeId);
+    const previousTheme = currentTheme;
+    const previousLocalTheme = readOptionalStorage('sysgrid-theme');
+    const previouslyHadLocalTheme = hasLocalThemePreferenceRef.current;
+    const previouslyInitializedFromServer = didInitializeServerThemeRef.current;
+    hasLocalThemePreferenceRef.current = true;
+    didInitializeServerThemeRef.current = true;
     setCurrentTheme(normalizedTheme);
-    document.documentElement.setAttribute('data-theme', normalizedTheme);
-    
-    // Explicitly handle light/dark class for Tailwind and global styles
-    const isLight = normalizedTheme === 'pure-clarity';
-    if (isLight) {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
+    applySysGridTheme(normalizedTheme);
     
     writeOptionalStorage('sysgrid-theme', normalizedTheme);
-    toast.success(`Theme changed to ${THEMES.find(t => t.id === normalizedTheme)?.label}`);
-    
-    // Attempt to sync with backend if possible
-    apiFetch("/api/v1/settings/user/settings", {
-      method: "PATCH",
-      body: JSON.stringify({ theme: normalizedTheme })
-    }).catch(() => {});
+    try {
+      const response = await apiFetch("/api/v1/settings/user/settings", {
+        method: "PATCH",
+        body: JSON.stringify({ theme: normalizedTheme })
+      });
+      const savedPreference = await response.json();
+      if (response.status !== 200 || savedPreference?.status !== 'success') {
+        throw new Error('The server did not confirm saving the theme preference.');
+      }
+    } catch {
+      hasLocalThemePreferenceRef.current = previouslyHadLocalTheme;
+      didInitializeServerThemeRef.current = previouslyInitializedFromServer;
+      setCurrentTheme(previousTheme);
+      applySysGridTheme(previousTheme);
+      if (previousLocalTheme === null) removeOptionalStorage('sysgrid-theme');
+      else writeOptionalStorage('sysgrid-theme', previousLocalTheme);
+      toast.error('Theme could not be saved. Previous appearance was restored.');
+    }
   }
 
   const { errors, setOpen: setErrorConsoleOpen } = useErrors();
@@ -357,27 +505,33 @@ function MainLayout() {
   }, []);
 
   useEffect(() => { 
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    const isLight = currentTheme === 'pure-clarity';
-    if (isLight) document.documentElement.classList.remove('dark');
-    else document.documentElement.classList.add('dark');
+    applySysGridTheme(currentTheme);
   }, [currentTheme])
 
   return (
-    <div className="sg-app-shell nova-app-shell flex h-[100dvh] w-full min-w-0 overflow-hidden bg-[var(--background)] text-[var(--foreground)]" data-design-system="nova" data-theme={currentTheme}>
+    <div className="sg-app-shell nova-app-shell flex h-[100dvh] w-full min-w-0 overflow-hidden bg-[var(--background)] text-[var(--foreground)]" data-design-system="nova" data-theme={currentTheme} data-sg-mobile={isMobileViewport ? 'true' : undefined}>
       <a href="#sg-main-content" className="skip-link">Skip to content</a>
+      {isMobileViewport && isMobileNavigationOpen ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-10 cursor-default border-0 bg-black/55 p-0"
+          aria-label="Close application navigation"
+          onClick={closeMobileNavigation}
+        />
+      ) : null}
       <motion.aside
         initial={false}
         animate={{ width: isSidebarOpen ? 240 : 72 }}
         className="relative z-20 flex shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--sidebar-bg)]"
         aria-label="Application navigation"
         data-sg-app-sidebar="true"
-        data-sg-nav-open={isSidebarOpen ? "true" : "false"}
+        id="sg-application-navigation"
+        data-sg-nav-open={isMobileViewport ? (isMobileNavigationOpen ? 'true' : 'false') : (isSidebarOpen ? 'true' : 'false')}
       >
         <div className={`flex items-center border-b border-[var(--border-subtle)] p-4 ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
-          <Link to="/" className="group flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none" aria-label="SysGrid home">
-             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-[var(--primary)] shadow-sm transition-transform group-hover:scale-105">
-                <Grid3X3 size={20} aria-hidden="true" className="text-[var(--primary-foreground)]" />
+          <Link to="/" className="group flex min-w-0 items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]" aria-label="SysGrid home">
+             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/15 bg-[#034EA2] text-white shadow-sm transition-transform group-hover:scale-105">
+                <Grid3X3 size={20} aria-hidden="true" className="text-white" style={{ color: '#fff' }} strokeWidth={2.4} />
              </div>
              {isSidebarOpen && <span className="truncate text-lg font-bold tracking-[-0.01em] text-[var(--text-primary)]">SYSGRID</span>}
           </Link>
@@ -385,13 +539,20 @@ function MainLayout() {
             <NovaButton
               variant="ghost"
               size="icon"
-              onClick={() => setIsSidebarOpen(false)}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              aria-label="Collapse application navigation"
+              onClick={() => {
+                if (isMobileViewport) {
+                  closeMobileNavigation()
+                } else {
+                  setIsSidebarOpen(false)
+                }
+              }}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]"
+              aria-label={isMobileViewport ? 'Close application navigation' : 'Collapse application navigation'}
               aria-expanded="true"
-              title="Collapse navigation"
+              aria-controls="sg-application-navigation"
+              title={isMobileViewport ? 'Close navigation' : 'Collapse navigation'}
             >
-              <span aria-hidden="true">‹</span>
+              {isMobileViewport ? <X size={18} aria-hidden="true" /> : <span aria-hidden="true">‹</span>}
             </NovaButton>
           ) : null}
         </div>
@@ -455,7 +616,7 @@ function MainLayout() {
               showChevron={isSidebarOpen}
               label={(
                 <span className={isSidebarOpen ? "flex w-full items-center gap-2" : "flex items-center justify-center"}>
-                  {currentTheme === 'pure-clarity' ? <Sun size={14} aria-hidden="true" /> : <Moon size={14} aria-hidden="true" />}
+                  {currentTheme === 'pure-clarity' ? <Sun size={14} className="shrink-0" aria-hidden="true" /> : <Moon size={14} className="shrink-0" aria-hidden="true" />}
                   {isSidebarOpen && <span>{currentTheme === 'pure-clarity' ? 'Light appearance' : 'Dark appearance'}</span>}
                 </span>
               )}
@@ -488,6 +649,19 @@ function MainLayout() {
         <ShellHeader
           left={
             <>
+              {isMobileViewport ? (
+                <ToolbarButton
+                  ref={mobileNavigationTriggerRef}
+                  onClick={openMobileNavigation}
+                  className="md:hidden"
+                  ariaLabel="Open application navigation"
+                  ariaExpanded={isMobileNavigationOpen}
+                  ariaControls="sg-application-navigation"
+                  title="Open navigation"
+                >
+                  <Menu size={16} aria-hidden="true" />
+                </ToolbarButton>
+              ) : null}
               <ToolbarButton onClick={() => setShowPatchNotes(true)} aria-label="Patch Notes" title="Patch Notes"><Star size={16} aria-hidden="true" className="md:hidden" /><span className="hidden md:inline">Patch Notes</span></ToolbarButton>
               <button
                 onClick={() => setIsSearchOpen(true)}
@@ -506,7 +680,7 @@ function MainLayout() {
             pathname={location.pathname}
             errors={errors}
             onOpenErrorConsole={() => setErrorConsoleOpen(true)}
-            compact={false}
+            compact={isMobileViewport}
             onOpenPatchNotes={() => setShowPatchNotes(true)}
           />}
         />

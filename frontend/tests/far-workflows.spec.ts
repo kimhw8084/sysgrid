@@ -84,9 +84,11 @@ test.describe('FAR workflows', () => {
     await page.getByRole('button', { name: 'Close FAR tools', exact: true }).click()
     await expect(workspace.getByText('Reliability Index', { exact: true })).not.toBeVisible()
     await page.getByPlaceholder(/scan risk vectors/i).fill(far.title)
-    const centerRow = workspace.locator('.ag-center-cols-container .ag-row').filter({ hasText: far.title })
-    await expect(centerRow).toBeVisible()
-    const rowIndex = await centerRow.getAttribute('row-index')
+    // Failure Mode remains in the pinned identity pane; locate that rendered
+    // row, then use the synchronized action row by its stable row index.
+    const identityRow = workspace.locator('.ag-pinned-left-cols-container .ag-row').filter({ hasText: far.title })
+    await expect(identityRow).toBeVisible()
+    const rowIndex = await identityRow.getAttribute('row-index')
     if (rowIndex === null) throw new Error('FAR row is missing row-index')
     const actionRow = workspace.locator(`.ag-pinned-right-cols-container .ag-row[row-index="${rowIndex}"]`)
     await actionRow.getByTitle('Retire failure vector').click()
@@ -94,7 +96,7 @@ test.describe('FAR workflows', () => {
     await expect(page.getByRole('heading', { name: 'FAR bulk preview' })).toBeVisible()
     await expect(page.getByText('Retire failure vectors', { exact: true })).toBeVisible()
     await clickResilientButton(page, 'Cancel')
-    await expect(centerRow).toBeVisible()
+    await expect(identityRow).toBeVisible()
   })
 
   test('edits mitigation provenance and preserves FAR version history invariants', async ({ page, sysApi: request }) => {

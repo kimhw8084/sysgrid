@@ -1,0 +1,61 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:75f1019b-0414-4a26-891e-81683c423864",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "golden-universal-uiux",
+      "version": "0.2.6-experimental-pilot",
+      "description": "Offline-first UI/UX rules, optional browser evidence, read-only MCP; source-only candidate",
+      "bom-ref": "golden-universal-uiux@0.2.6-experimental-pilot"
+    },
+    "properties": [
+      {
+        "name": "release.status",
+        "value": "EXPERIMENTAL_NOT_PRODUCTION_QUALIFIED"
+      },
+      {
+        "name": "sbom.completeness",
+        "value": "DIRECT_DEPENDENCIES_ONLY_NOT_TRANSITIVE_OR_FINAL"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "Python",
+      "version": "3.10+",
+      "scope": "required",
+      "description": "Python 3.10+ standard library used by core/installer/MCP; actual deployed interpreter version to be locked"
+    },
+    {
+      "type": "library",
+      "name": "playwright",
+      "version": "UNPINNED_APPROVED_LOCAL_VERSION_REQUIRED",
+      "scope": "optional",
+      "description": "Python browser evidence collector optional dependency"
+    },
+    {
+      "type": "library",
+      "name": "Pillow",
+      "version": "UNPINNED_APPROVED_LOCAL_VERSION_REQUIRED",
+      "scope": "optional",
+      "description": "Optional screenshot image pixel comparison"
+    },
+    {
+      "type": "application",
+      "name": "Chromium",
+      "version": "UNPINNED_APPROVED_LOCAL_BINARY_REQUIRED",
+      "scope": "optional",
+      "description": "Browser binary must be installed/approved separately; not shipped here"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "golden-universal-uiux@0.2.6-experimental-pilot",
+      "dependsOn": []
+    }
+  ]
+}

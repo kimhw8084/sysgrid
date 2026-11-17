@@ -32,11 +32,9 @@ const MODULE_ICONS: Record<string, LucideIcon> = {
   settings: FileText,
 }
 
-const RETIRED_SYSGRID_MODULE_IDS = new Set(['projects', 'research', 'knowledge', 'architecture'])
-
 export const SHELL_NAV_GROUPS: ShellNavigationGroup[] = Array.from(
   MODULE_CATALOG.modules.reduce((groups, module) => {
-    if (RETIRED_SYSGRID_MODULE_IDS.has(module.id)) return groups
+    if (module.sysgrid_route_class !== 'active') return groups
     const group = groups.get(module.navigation_group) || []
     group.push({
       moduleId: module.id,
@@ -118,7 +116,7 @@ export function ShellNavItem({
     return (
       <Link
         to={path}
-        className="block rounded-md focus-visible:outline-none"
+        className="block rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]"
         aria-current={active ? 'page' : undefined}
         aria-label={isOpen ? undefined : displayLabel}
         title={!isOpen ? label : undefined}
@@ -134,7 +132,7 @@ export function ShellNavItem({
       to={path}
       disabled={isDisabled}
       disabledReason={reason}
-      className="block rounded-md focus-visible:outline-none"
+      className="block rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]"
       aria-current={active ? 'page' : undefined}
       aria-label={isOpen ? undefined : displayLabel}
       title={!isOpen ? label : undefined}
@@ -169,7 +167,7 @@ export function ShellNavGroup({
       data-sg-nav-group={label.toLowerCase()}
     >
       <summary
-        className="flex min-h-8 cursor-pointer list-none items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none"
+        className="flex min-h-8 cursor-pointer list-none items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)]"
         aria-controls={id}
         aria-expanded={isExpanded}
         onClick={(event) => {

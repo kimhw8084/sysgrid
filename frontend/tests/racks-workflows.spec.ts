@@ -61,12 +61,43 @@ test.describe('Racks workflows', () => {
     await expect(page.getByText('Live PDU load telemetry unavailable', { exact: true }).first()).toBeVisible()
   })
 
+  test('keeps impact analysis readable and inside the viewport beside rack actions', async ({ page, sysApi: request }, testInfo) => {
+    await resetBrowserState(page)
+    const { siteA, rackA1, devicePrimary } = await seedRackScenario(request)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/racks')
+    await page.getByRole('button', { name: `Filter racks by site ${siteA.name}`, exact: true }).click()
+
+    const rackCard = page.locator(`.glass-panel[data-rack-id="${rackA1.id}"]`)
+    const assetAction = rackCard.locator(`[data-device-id="${devicePrimary.id}"]`).first()
+      .getByRole('button', { name: new RegExp(`^Open ${devicePrimary.name},`) })
+    await assetAction.click()
+
+    const impact = page.getByRole('dialog', { name: 'Impact Analysis', exact: true })
+    await expect(impact).toBeVisible()
+    await expect(impact).toContainText(devicePrimary.name)
+    await expect(impact).toContainText('Network impact context')
+    await expect(impact).toContainText('Peer assets')
+    await expect(impact).toContainText('Known systems')
+    await expect(impact).toContainText('Recorded link paths')
+    await expect(impact).toContainText('This is network topology context only. Recorded links do not confirm service dependency or outage propagation.')
+
+    const panel = await impact.boundingBox()
+    expect(panel).not.toBeNull()
+    if (!panel) throw new Error('Impact analysis panel geometry unavailable')
+    expect(panel.x).toBeGreaterThanOrEqual(16)
+    expect(panel.x + panel.width).toBeLessThanOrEqual(1424)
+    expect(panel.y).toBeGreaterThanOrEqual(16)
+    expect(panel.y + panel.height).toBeLessThanOrEqual(884)
+    await page.screenshot({ path: testInfo.outputPath('rack-impact-analysis.png'), animations: 'disabled' })
+  })
+
   test('opens a contained asset through the typed relationship and returns to Rack context', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
     const { siteA, rackA1, devicePrimary } = await seedRackScenario(request)
 
     await page.goto('/racks')
-    await page.getByRole('button', { name: `Open site ${siteA.name}`, exact: true }).click()
+    await page.getByRole('button', { name: `Filter racks by site ${siteA.name}`, exact: true }).click()
     const rackCard = page.locator(`.glass-panel[data-rack-id="${rackA1.id}"]`)
     await expect(rackCard).toBeVisible()
     await rackCard.locator(`[data-device-id="${devicePrimary.id}"]`).first().getByRole('button', { name: new RegExp(`^Open ${devicePrimary.name},`) }).click()
@@ -91,7 +122,7 @@ test.describe('Racks workflows', () => {
     await page.goto('/racks')
     await expect(page.getByRole('heading', { name: 'Racks' })).toBeVisible()
 
-    const siteButton = page.getByRole('button', { name: `Open site ${siteA.name}`, exact: true })
+    const siteButton = page.getByRole('button', { name: `Filter racks by site ${siteA.name}`, exact: true })
     await expect(siteButton).toBeVisible({ timeout: 20000 })
     await siteButton.click()
     await expect(rackCard(rackA1.id)).toBeVisible()
@@ -104,13 +135,25 @@ test.describe('Racks workflows', () => {
     await siteChip.getByRole('button').nth(1).click({ force: true })
     await clickResilientButton(page, /Decommission/i)
     await clickResilientButton(page, 'Decommission Site')
+
+    const orphanedRacksResponse = await request.get('/api/v1/racks?include_deleted=true')
+    expect(orphanedRacksResponse.ok()).toBeTruthy()
+    const orphanedRacks = await orphanedRacksResponse.json()
+    expect(orphanedRacks).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: rackA1.id,
+        site_id: null,
+        site_name: `Prev: ${siteA.name}`,
+      }),
+    ]))
+
+    await page.getByRole('textbox', { name: 'Search racks, locations, systems, asset tags, and serial numbers' }).fill(rackA1.name)
     await expect(rackCard(rackA1.id)).toBeVisible()
 
     await page.getByRole('button', { name: 'View Plans', exact: true }).click()
     await clickResilientButton(page, /New Blank Plan/i)
     await expect(page.getByText('Ghost Planner')).toBeVisible()
 
-    await scrollRackIntoRailView(page, rackA1.id)
     await rackCard(rackA1.id).locator('[data-u="1"]').getByRole('button', { name: 'Mount or reserve at U1', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Mount Asset' })).toBeVisible()
     await page.getByPlaceholder('Filter by name, type, or system...').fill(devicePrimary.name)

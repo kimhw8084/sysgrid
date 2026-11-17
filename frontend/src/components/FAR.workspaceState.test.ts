@@ -60,6 +60,26 @@ describe('FAR golden workspace view state', () => {
     expect(FAR_PERSISTED_COLUMN_IDS.has('linked_rcas')).toBe(true)
   })
 
+  it('keeps primary FAR identity columns frozen while leaving type data scrollable', () => {
+    const result = sanitizeFarWorkspaceViewConfig({
+      columnLayoutState: [
+        { colId: 'id', width: 90, pinned: null },
+        { colId: 'system_name', width: 148, pinned: null },
+        { colId: 'failure_type', width: 112, pinned: null },
+        { colId: 'title', width: 260, pinned: null },
+        { colId: 'rpn', width: 130, pinned: null },
+      ],
+    })
+
+    expect(result.columnLayoutState.map(({ colId, pinned }: any) => [colId, pinned])).toEqual([
+      ['id', 'left'],
+      ['system_name', null],
+      ['failure_type', null],
+      ['title', 'left'],
+      ['rpn', null],
+    ])
+  })
+
   it('round-trips only the current versioned backend working-state preference', () => {
     const preference = buildFarWorkspacePreference({
       fontSize: 12,

@@ -101,18 +101,42 @@ describe('apiClient', () => {
     expect(options.headers['Content-Type']).toBeUndefined()
   })
 
-  it('does not send writes while offline and exposes a reviewable error', async () => {
+  it('does not send external writes while offline and exposes a reviewable error', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     const originalOnline = navigator.onLine
     Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
     try {
-      await expect(apiFetch('/api/v2/projects', { method: 'POST', body: '{}' })).rejects.toMatchObject({
+      await expect(apiFetch('https://external.example.com/api/v2/projects', { method: 'POST', body: '{}' })).rejects.toMatchObject({
         status: 0,
         offline: true,
         message: expect.stringContaining('was not sent'),
       })
       expect(fetchMock).not.toHaveBeenCalled()
+    } finally {
+      Object.defineProperty(navigator, 'onLine', { configurable: true, value: originalOnline })
+    }
+  })
+
+  it('attempts a configured API preference PATCH when the browser offline hint is false', async () => {
+    localStorage.setItem('SYSGRID_OVERRIDE_API_URL', 'http://127.0.0.1:8000')
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse({ status: 'success' }, { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const originalOnline = navigator.onLine
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    try {
+      const response = await apiFetch('/api/v1/settings/user/settings', {
+        method: 'PATCH',
+        body: JSON.stringify({ theme: 'pure-clarity' }),
+      })
+
+      expect(response.status).toBe(200)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(String(fetchMock.mock.calls[0][0])).toBe('http://127.0.0.1:8000/api/v1/settings/user/settings')
+      expect(fetchMock.mock.calls[0][1]).toMatchObject({
+        method: 'PATCH',
+        body: JSON.stringify({ theme: 'pure-clarity' }),
+      })
     } finally {
       Object.defineProperty(navigator, 'onLine', { configurable: true, value: originalOnline })
     }

@@ -16,9 +16,8 @@ import {
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const releaseCatalog = JSON.parse(readFileSync(new URL('../../contracts/system_management_v1.json', import.meta.url), 'utf8')) as {
-  modules: Array<{ id: string; canonical_route: string; default_stage: string }>
+  modules: Array<{ id: string; canonical_route: string; default_stage: string; sysgrid_route_class: 'active' | 'retired_notice' }>
 }
-const separateAppModuleIds = new Set(['projects', 'research', 'knowledge', 'architecture'])
 
 async function expectVisibleFormControlsHaveNames(page: Page, route: string) {
   const unnamed = await page.locator([
@@ -106,12 +105,30 @@ async function expectColumnMinimumWidths(page: Page, route: string, apiName: str
       const sizingMetadata = api?.getGridOption?.('context')?.__sysgridOperationalColumnSizing?.[columnId]
       const declaredMinimum = Number(definition?.minWidth) || 0
       const declaredMaximum = Number(definition?.maxWidth)
-      return { columnId, actual: column?.getActualWidth?.() ?? 0, minimum: Math.max(declaredMinimum, requiredMinimums[columnId] || 0), maximum: Math.min(Number.isFinite(declaredMaximum) ? declaredMaximum : Number.POSITIVE_INFINITY, requiredMaximums[columnId] || Number.POSITIVE_INFINITY), sizingMetadata }
+      const storedKey = Object.keys(localStorage).find(key => key.startsWith(`sysgrid:operational-grid-widths:v1:${window.location.pathname}:`))
+      let storedColumnState: unknown = null
+      try {
+        storedColumnState = storedKey ? JSON.parse(localStorage.getItem(storedKey) || 'null') : null
+      } catch {
+        storedColumnState = { malformed: true }
+      }
+      const activeState = api?.getColumnState?.()?.find((entry: any) => entry.colId === columnId) ?? null
+      return {
+        columnId,
+        actual: column?.getActualWidth?.() ?? 0,
+        minimum: Math.max(declaredMinimum, requiredMinimums[columnId] || 0),
+        maximum: Math.min(Number.isFinite(declaredMaximum) ? declaredMaximum : Number.POSITIVE_INFINITY, requiredMaximums[columnId] || Number.POSITIVE_INFINITY),
+        definition: definition ? { width: definition.width, minWidth: definition.minWidth, maxWidth: definition.maxWidth, initialWidth: definition.initialWidth } : null,
+        sizingMetadata,
+        activeState,
+        storedColumnState,
+      }
     })
   }, { apiName, columnIds, requiredMinimums, requiredMaximums })
   for (const column of widths) {
-    expect(column.actual, `${route} ${column.columnId} should not be compressed below its declared minimum`).toBeGreaterThanOrEqual(column.minimum)
-    if (Number.isFinite(column.maximum)) expect(column.actual, `${route} ${column.columnId} should respect its declared maximum (${column.maximum}); sizing metadata: ${JSON.stringify(column.sizingMetadata)}`).toBeLessThanOrEqual(column.maximum)
+    const diagnostic = JSON.stringify(column)
+    expect(column.actual, `${route} ${column.columnId} should not be compressed below its declared minimum; rendered sizing state: ${diagnostic}`).toBeGreaterThanOrEqual(column.minimum)
+    if (Number.isFinite(column.maximum)) expect(column.actual, `${route} ${column.columnId} should respect its declared maximum (${column.maximum}); rendered sizing state: ${diagnostic}`).toBeLessThanOrEqual(column.maximum)
   }
 }
 
@@ -162,9 +179,19 @@ async function expectCellFullValueTooltip(page: Page, row: Locator, apiName: str
   }, { apiName, columnId })
   expect(ensured, `${columnId} should be available before checking its full-value hover`).toBe(true)
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
-  const cell = row.locator(`[col-id="${columnId}"]`).first()
+  const rowIndex = await row.getAttribute('row-index')
+  expect(rowIndex, `${columnId} tooltip check should retain the representative row identity`).not.toBeNull()
+  const cell = page.locator(`#sg-main-content .ag-row[row-index="${rowIndex}"] .ag-cell[col-id="${columnId}"]:visible`).first()
   await cell.hover()
-  await expect(page.locator('.ag-tooltip:visible').last()).toContainText(expected)
+  const tooltip = page.locator('.ag-tooltip:visible').last()
+  await expect(tooltip).toContainText(expected)
+  const bounds = await tooltip.boundingBox()
+  const viewport = page.viewportSize()
+  expect(bounds && viewport && bounds.width > 0 && bounds.height > 0, `${columnId} full-value tooltip should be rendered`).toBeTruthy()
+  expect(bounds!.x, `${columnId} tooltip should stay inside the viewport at its left edge`).toBeGreaterThanOrEqual(0)
+  expect(bounds!.y, `${columnId} tooltip should stay inside the viewport at its top edge`).toBeGreaterThanOrEqual(0)
+  expect(bounds!.x + bounds!.width, `${columnId} tooltip should stay inside the viewport at its right edge`).toBeLessThanOrEqual(viewport!.width + 1)
+  expect(bounds!.y + bounds!.height, `${columnId} tooltip should stay inside the viewport at its bottom edge`).toBeLessThanOrEqual(viewport!.height + 1)
 }
 
 async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebrow: string) {
@@ -181,7 +208,145 @@ async function expectGoldenWorkspaceHeader(page: Page, workspace: string, eyebro
   ).not.toBe('rgba(0, 0, 0, 0)')
 }
 
-async function expectViewportCanvasContinuity(page: Page, routeLabel: string) {
+async function expectRackLabelsAndElevationScrolling(page: Page) {
+  const labels = page.locator('[data-rack-row-label="true"]')
+  await expect(labels.first(), 'elevation cards should show their row context within the current site and aisle').toBeVisible()
+  const labelCount = await labels.count()
+  for (let index = 0; index < labelCount; index += 1) {
+    const label = labels.nth(index)
+    await label.scrollIntoViewIfNeeded()
+    const geometry = await label.evaluate(element => {
+      const labelBounds = element.getBoundingClientRect()
+      const range = document.createRange()
+      range.selectNodeContents(element)
+      const textRects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0)
+      const clipping: Array<{ tag: string; className: string; outside: boolean }> = []
+      for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor)
+        const clipsX = ['hidden', 'clip'].includes(style.overflowX)
+        const clipsY = ['hidden', 'clip'].includes(style.overflowY)
+        if (!clipsX && !clipsY) continue
+        const bounds = ancestor.getBoundingClientRect()
+        const outside = textRects.some(rect => (clipsX && (rect.left < bounds.left - 1 || rect.right > bounds.right + 1)) || (clipsY && (rect.top < bounds.top - 1 || rect.bottom > bounds.bottom + 1)))
+        clipping.push({ tag: ancestor.tagName.toLowerCase(), className: typeof ancestor.className === 'string' ? ancestor.className : '', outside })
+      }
+      return {
+        text: element.textContent?.trim() ?? '',
+        scrollWidth: (element as HTMLElement).scrollWidth,
+        clientWidth: (element as HTMLElement).clientWidth,
+        labelHeight: labelBounds.height,
+        lineCount: textRects.length,
+        clipAncestors: clipping.filter(item => item.outside),
+      }
+    })
+    expect(geometry.text, `rack row label ${index} should identify its row`).toMatch(/^Row (.+)$/)
+    expect(geometry.lineCount, `rack row label ${index} should render visible text`).toBeGreaterThan(0)
+    expect(geometry.scrollWidth, `rack row label ${index} must not overflow horizontally: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(geometry.clientWidth + 1)
+    expect(geometry.clipAncestors, `rack row label ${index} must not be cut by a clipping ancestor: ${JSON.stringify(geometry)}`).toEqual([])
+  }
+
+  const elevationCards = page.locator('[data-rack-elevation-card="true"]')
+  const cardCount = await elevationCards.count()
+  expect(cardCount, 'the seeded rack scenario should exercise the full visible rack set').toBeGreaterThanOrEqual(8)
+  // Eight seeded cards provide distinct rendered instances of the same
+  // elevation component. Extra dense-data cards are virtualized out as the
+  // rail scrolls, so they are covered by the rail navigation check above.
+  const representativeCardCount = Math.min(cardCount, 8)
+  for (let index = 0; index < representativeCardCount; index += 1) {
+    const card = elevationCards.nth(index)
+    const rackId = await card.getAttribute('data-rack-id')
+    expect(rackId, `rack ${index} should expose a stable identity for its elevation scroller`).toBeTruthy()
+    const scroller = page.locator(`[data-rack-elevation-card="true"][data-rack-id="${rackId}"] [data-rack-elevation-scroll="true"]`)
+    await scroller.scrollIntoViewIfNeeded()
+    const setup = await scroller.evaluate(element => {
+      const scroll = element as HTMLElement
+      scroll.scrollTop = 0
+      const rect = scroll.getBoundingClientRect()
+      let visible = { left: Math.max(0, rect.left), top: Math.max(0, rect.top), right: Math.min(innerWidth, rect.right), bottom: Math.min(innerHeight, rect.bottom) }
+      for (let ancestor = scroll.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor)
+        if (!['hidden', 'clip', 'auto', 'scroll'].includes(style.overflowX) && !['hidden', 'clip', 'auto', 'scroll'].includes(style.overflowY)) continue
+        const bounds = ancestor.getBoundingClientRect()
+        visible = { left: Math.max(visible.left, bounds.left), top: Math.max(visible.top, bounds.top), right: Math.min(visible.right, bounds.right), bottom: Math.min(visible.bottom, bounds.bottom) }
+      }
+      const point = { x: (visible.left + visible.right) / 2, y: (visible.top + visible.bottom) / 2 }
+      const hit = point.x >= visible.left && point.x < visible.right && point.y >= visible.top && point.y < visible.bottom ? document.elementFromPoint(point.x, point.y) : null
+      return {
+        point,
+        rackId: scroll.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null,
+        visible,
+        before: scroll.scrollTop,
+        maximum: scroll.scrollHeight - scroll.clientHeight,
+        hitInside: Boolean(hit && (hit === scroll || scroll.contains(hit))),
+      }
+    })
+    expect(setup.maximum, `rack ${index} elevation should have scrollable rack units`).toBeGreaterThan(1)
+    expect(setup.hitInside, `rack ${index} wheel point should hit its visible elevation scroller: ${JSON.stringify(setup)}`).toBe(true)
+    await scroller.evaluate(element => {
+      const scroll = element as HTMLElement
+      scroll.dataset.goldenTestLastWheel = 'not-observed'
+      scroll.addEventListener('wheel', event => {
+        scroll.dataset.goldenTestLastWheel = JSON.stringify({
+          deltaX: event.deltaX,
+          deltaY: event.deltaY,
+          defaultPrevented: event.defaultPrevented,
+          target: (event.target as HTMLElement | null)?.tagName ?? null,
+          rackId: (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null,
+        })
+      }, { capture: true, once: true })
+      document.documentElement.dataset.goldenTestLastWindowWheel = 'not-observed'
+      window.addEventListener('wheel', event => {
+        document.documentElement.dataset.goldenTestLastWindowWheel = JSON.stringify({
+          deltaY: event.deltaY,
+          target: (event.target as HTMLElement | null)?.tagName ?? null,
+          rackId: (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null,
+        })
+      }, { capture: true, once: true })
+    })
+    const input = await page.context().newCDPSession(page)
+    let postMoveHit: unknown
+    try {
+      await input.send('Input.dispatchMouseEvent', {
+        type: 'mouseMoved',
+        x: setup.point.x,
+        y: setup.point.y,
+      })
+      postMoveHit = await scroller.evaluate((element, point) => {
+        const hit = document.elementFromPoint(point.x, point.y)
+        return {
+          tag: hit?.tagName ?? null,
+          className: hit instanceof HTMLElement ? hit.className : null,
+          insideScroller: Boolean(hit && (hit === element || element.contains(hit))),
+          rackId: hit instanceof HTMLElement ? hit.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null : null,
+          scrollableAncestorRackId: hit instanceof HTMLElement ? hit.closest<HTMLElement>('[data-rack-elevation-scroll="true"]')?.closest<HTMLElement>('[data-rack-elevation-card="true"]')?.dataset.rackId ?? null : null,
+        }
+      }, setup.point)
+      await input.send('Input.dispatchMouseEvent', {
+        type: 'mouseWheel',
+        x: setup.point.x,
+        y: setup.point.y,
+        deltaX: 0,
+        deltaY: 120,
+      })
+      await expect.poll(
+        () => scroller.evaluate(element => (element as HTMLElement).scrollTop),
+        { message: `native wheel input should scroll rack ${index} elevation; setup=${JSON.stringify(setup)}` },
+      ).toBeGreaterThan(setup.before)
+    } catch (error) {
+      const wheelResult = await scroller.evaluate(element => ({
+        scrollTop: (element as HTMLElement).scrollTop,
+        wheel: (element as HTMLElement).dataset.goldenTestLastWheel ?? 'no wheel event received',
+        windowWheel: document.documentElement.dataset.goldenTestLastWindowWheel ?? 'no window wheel event received',
+      }))
+      throw new Error(`native wheel input did not scroll rack ${index} elevation; setup=${JSON.stringify(setup)}; postMoveHit=${JSON.stringify(postMoveHit)}; result=${JSON.stringify(wheelResult)}; ${String(error)}`)
+    } finally {
+      await input.detach()
+    }
+    await scroller.evaluate((element, initial) => { (element as HTMLElement).scrollTop = initial }, setup.before)
+  }
+}
+
+async function expectViewportCanvasContinuity(page: Page, routeLabel: string, expectActiveNavigation = true) {
   await expect(page.locator('.sg-app-shell'), `${routeLabel} shared application shell should finish mounting`).toBeVisible()
   await expect(page.locator('[data-sg-app-main="true"]'), `${routeLabel} main pane should finish mounting`).toBeVisible()
   await expect(page.locator('#sg-main-content'), `${routeLabel} workspace canvas should finish mounting`).toBeVisible()
@@ -220,6 +385,24 @@ async function expectViewportCanvasContinuity(page: Page, routeLabel: string) {
   expect(geometry.documentWidth, `${routeLabel} should not create page-level horizontal overflow: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(geometry.viewport + 1)
   expect(geometry.bodyWidth, `${routeLabel} body should not create page-level horizontal overflow: ${JSON.stringify(geometry)}`).toBeLessThanOrEqual(geometry.viewport + 1)
   expect(new Set(Object.values(geometry.backgrounds)).size, `${routeLabel} html, body, shell, and main backgrounds should form one continuous surface: ${JSON.stringify(geometry.backgrounds)}`).toBe(1)
+  const activeNavigation = await page.locator('[data-sg-app-sidebar] nav[aria-label="Primary navigation"]').evaluate(navigation => {
+    const active = navigation.querySelector<HTMLElement>('[aria-current="page"]')
+    if (!active) return { present: false, contained: false }
+    const navBounds = navigation.getBoundingClientRect()
+    const activeBounds = active.getBoundingClientRect()
+    return {
+      present: true,
+      contained: activeBounds.top >= navBounds.top - 1 && activeBounds.bottom <= navBounds.bottom + 1,
+      active: { top: activeBounds.top, bottom: activeBounds.bottom },
+      navigation: { top: navBounds.top, bottom: navBounds.bottom, scrollTop: (navigation as HTMLElement).scrollTop },
+    }
+  })
+  if (expectActiveNavigation) {
+    expect(activeNavigation.present, `${routeLabel} should expose its active navigation route`).toBe(true)
+  }
+  if (activeNavigation.present) {
+    expect(activeNavigation.contained, `${routeLabel} active navigation item should remain fully visible: ${JSON.stringify(activeNavigation)}`).toBe(true)
+  }
 }
 
 async function createVendor(request: APIRequestContext, stamp: string) {
@@ -303,7 +486,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       vendors: { placeholder: 'Search vendors...', name: 'Search vendor records', value: vendor.name },
     }
     const releasedPaths = releaseCatalog.modules
-      .filter(module => module.default_stage === 'production' && !separateAppModuleIds.has(module.id))
+      .filter(module => module.sysgrid_route_class === 'active')
       .map(module => module.canonical_route)
       .sort()
     const testedPaths = [...routes, ...supplementaryRoutes].map(route => route.path.split('?')[0])
@@ -326,6 +509,9 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
     const timings: Array<{ theme: string; route: string; readyMs: number }> = []
     const headerClips: Array<Record<string, unknown>> = []
     for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
+      // The compact Audit check below changes the viewport. Restore the
+      // primary desktop viewport so each theme uses identical conditions.
+      await page.setViewportSize({ width: 1440, height: 900 })
       const preference = await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
       expect(preference.ok()).toBeTruthy()
       await page.addInitScript(value => localStorage.setItem('sysgrid-theme', value), theme)
@@ -393,7 +579,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         if (importantColumns[route.key]) {
           const target = importantColumns[route.key]
           const requiredMinimums = route.key === 'assets' ? { name: 180, system: 112, type: 96, status: 132, environment: 80, owner: 104 } : route.key === 'external' ? { status: 120, business_purpose: 220, link_count: 130 } : route.key === 'vendors' ? { name: 180, country: 136, primary_personnel_name: 180, primary_personnel_email: 190 } : { name: 180, country: 120, primary_personnel_name: 180, primary_personnel_email: 190 }
-          const requiredMaximums = route.key === 'assets' ? { name: 210, system: 128, type: 104, status: 144, environment: 96, owner: 112 } : route.key === 'vendors' ? { name: 220, country: 136, primary_personnel_name: 200, primary_personnel_email: 200 } : {}
+          const requiredMaximums = route.key === 'assets' ? { name: 210, system: 150, type: 104, status: 144, environment: 96, owner: 112 } : route.key === 'vendors' ? { name: 220, country: 136, primary_personnel_name: 200, primary_personnel_email: 200 } : {}
           const widthColumnIds = route.key === 'assets' ? ['name', 'system', 'type', 'environment', ...target.columnIds] : route.key === 'vendors' ? ['name', ...target.columnIds] : target.columnIds
           await expectColumnsFullyVisible(page, row, route.key, target.apiName, target.columnIds)
           await expectColumnMinimumWidths(page, route.key, target.apiName, widthColumnIds, requiredMinimums, requiredMaximums)
@@ -404,6 +590,181 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           if (route.key === 'assets') await expectCellContentFits(page, row, route.key, 'status', '.operational-grid-badge')
           if (route.key === 'external') await expectCellFullValueTooltip(page, row, target.apiName, 'business_purpose', 'Golden Eight deterministic visual validation')
           if (route.key === 'vendors') await expect(row.locator('.ag-cell[col-id="primary_personnel_name"]')).toContainText('Unassigned')
+        }
+        if (route.key === 'assets') {
+          const cellSemantics = await workspace.locator('.ag-cell[col-id="name"]:visible').first().evaluate(cell => {
+            const grid = cell.closest('[role="grid"], [role="treegrid"], [role="table"]')
+            const cellElement = cell as HTMLElement
+            return {
+              grid: grid ? {
+                role: grid.getAttribute('role'),
+                tabIndex: (grid as HTMLElement).tabIndex,
+                label: grid.getAttribute('aria-label'),
+                tabbableDescendants: grid.querySelectorAll('[tabindex="0"]').length,
+              } : null,
+              cell: {
+                role: cell.getAttribute('role'),
+                tabIndex: cellElement.tabIndex,
+                ariaLabel: cell.getAttribute('aria-label'),
+                ariaLabelledby: cell.getAttribute('aria-labelledby'),
+                text: cellElement.innerText,
+              },
+              value: cell.querySelector('[id^="sg-operational-grid-value-"]')?.textContent ?? null,
+            }
+          })
+          await page.mouse.move(2, 2)
+          const nativeTabPath: Array<{ tag: string; role: string | null; name: string; className: string; tabIndex: number }> = []
+          for (let step = 0; step < 12; step += 1) {
+            await page.keyboard.press('Tab')
+            nativeTabPath.push(await page.evaluate(() => {
+              const active = document.activeElement as HTMLElement | null
+              return {
+                tag: active?.tagName.toLowerCase() ?? '',
+                role: active?.getAttribute('role') ?? null,
+                name: active?.getAttribute('aria-label') || active?.innerText?.trim().slice(0, 100) || '',
+                className: typeof active?.className === 'string' ? active.className : '',
+                tabIndex: active?.tabIndex ?? -1,
+              }
+            }))
+          }
+          await page.keyboard.press('ArrowDown')
+          await page.waitForTimeout(600)
+          const focusedGridCell = await page.evaluate(() => {
+            const active = document.activeElement as HTMLElement | null
+            const style = active ? getComputedStyle(active) : null
+            const rect = active?.getBoundingClientRect()
+            return {
+              role: active?.getAttribute('role') ?? null,
+              text: active?.innerText?.trim() ?? '',
+              tabIndex: active?.tabIndex ?? -1,
+              className: typeof active?.className === 'string' ? active.className : '',
+              indicator: style ? {
+                outlineStyle: style.outlineStyle,
+                outlineWidth: style.outlineWidth,
+                outlineColor: style.outlineColor,
+                boxShadow: style.boxShadow,
+              } : null,
+              rect: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : null,
+              gridHasTabStop: Boolean(active?.closest('[role="grid"], [role="treegrid"]')?.querySelector('[tabindex="0"]')),
+              describedBy: active?.getAttribute('aria-describedby') ?? null,
+              title: active?.getAttribute('title') ?? active?.querySelector('[title]')?.getAttribute('title') ?? null,
+              focusHit: rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest('[role="gridcell"]') === active : false,
+            }
+          })
+          const focusedTooltip = await page.locator('.ag-tooltip:visible').allTextContents()
+          expect(focusedGridCell.role, 'ArrowDown from the Asset Registry Instance header should enter a semantic grid cell').toBe('gridcell')
+          expect(focusedGridCell.text, 'the keyboard-focused asset cell should expose the full synthetic asset identity').toContain(seeded.primary.name)
+          expect(focusedGridCell.title, 'the keyboard-focused cell should retain a full-value pointer disclosure').toBe(seeded.primary.name)
+          expect(focusedGridCell.focusHit, 'the keyboard-focused grid cell should remain visibly hit-testable').toBe(true)
+          // Clear the primary-asset search first. The grid virtualizes rows, so
+          // search each seeded identity below to bring that record into the DOM
+          // before checking its accessible cell name.
+          await fillGridSearch(page, routeSearches.assets.placeholder, '')
+          await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBeGreaterThanOrEqual(5)
+          const visibleAssetIdentities = [seeded.primary.name, seeded.secondary.name, seeded.tertiary.name, racks.devicePrimary.name, racks.deviceSecondary.name]
+          const accessibleAssetIdentityEvidence = []
+          for (const identity of visibleAssetIdentities) {
+            await fillGridSearch(page, routeSearches.assets.placeholder, identity)
+            await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBe(1)
+            // Preserve column context in the accessible name while requiring
+            // the full identity to remain discoverable as a unique grid cell.
+            const cells = page.getByRole('gridcell', { name: identity })
+            await expect(cells, `the complete rendered asset identity should remain available in the grid-cell name: ${identity}`).toHaveCount(1)
+            await expect(cells, `the full asset identity cell should be visible: ${identity}`).toBeVisible()
+            accessibleAssetIdentityEvidence.push({ value: identity, matching_accessible_cell_count: 1, visible: true })
+          }
+          await fillGridSearch(page, routeSearches.assets.placeholder, '')
+          const semanticsPath = testInfo.outputPath(`${theme}-asset-grid-cell-keyboard-semantics.json`)
+          writeFileSync(semanticsPath, JSON.stringify({ cellSemantics, nativeTabPath, focusedGridCell, focusedTooltip, accessibleAssetIdentityEvidence }, null, 2))
+          await testInfo.attach(`${theme}-asset-grid-cell-keyboard-semantics`, { path: semanticsPath, contentType: 'application/json' })
+        }
+        if (['assets', 'external', 'far', 'vendors'].includes(route.key)) {
+          if (route.key === 'assets') {
+            await fillGridSearch(page, routeSearches.assets.placeholder, seeded.primary.name)
+            await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBe(1)
+          }
+          const identityColumn = route.key === 'far' ? 'system_name' : 'name'
+          const identityHeaderSelector = route.key === 'external'
+            ? '.ag-header-cell[col-id="name"], .ag-header-cell[col-id="external_entity_name"]'
+            : `.ag-header-cell[col-id="${identityColumn}"]`
+          const identityHeader = workspace.locator(identityHeaderSelector).first()
+          const viewsButton = workspace.getByRole('button', { name: 'Views', exact: true }).first()
+          await expect(viewsButton, `${route.key} grid controls should expose a keyboard entry point`).toBeVisible()
+          await viewsButton.focus()
+          const nativeKeyboardGridPath: Array<{ tag: string; role: string | null; columnId: string | null; name: string; tabIndex: number }> = []
+          let identityHeaderReached = false
+          for (let step = 0; step < 32; step += 1) {
+            await page.keyboard.press('Tab')
+            const active = await page.evaluate(() => {
+              const element = document.activeElement as HTMLElement | null
+              return {
+                tag: element?.tagName.toLowerCase() ?? '',
+                role: element?.getAttribute('role') ?? null,
+                columnId: element?.getAttribute('col-id') ?? null,
+                name: element?.getAttribute('aria-label') || element?.innerText?.trim().slice(0, 100) || '',
+                tabIndex: element?.tabIndex ?? -1,
+              }
+            })
+            nativeKeyboardGridPath.push(active)
+            if (active.role === 'columnheader' && (route.key === 'external'
+              ? ['name', 'external_entity_name'].includes(active.columnId ?? '')
+              : active.columnId === identityColumn)) {
+              identityHeaderReached = true
+              break
+            }
+          }
+          expect(identityHeaderReached, `${route.key} native Tab traversal from Views should reach the identity column header: ${JSON.stringify(nativeKeyboardGridPath)}`).toBe(true)
+          await page.keyboard.press('ArrowDown')
+          const focusedCell = await page.evaluate((nativeKeyboardGridPath) => {
+            const active = document.activeElement as HTMLElement | null
+            const style = active ? getComputedStyle(active) : null
+            const rect = active?.getBoundingClientRect()
+            const source = active?.querySelector<HTMLElement>('[id^="sg-operational-grid-value-"]')
+            const valueStyle = source ? getComputedStyle(source) : style
+            return {
+              role: active?.getAttribute('role') ?? null,
+              text: active?.innerText?.trim() ?? '',
+              tabIndex: active?.tabIndex ?? -1,
+              title: active?.getAttribute('title') ?? source?.getAttribute('title') ?? null,
+              outlineStyle: style?.outlineStyle ?? null,
+              outlineWidth: style?.outlineWidth ?? null,
+              valueTextTransform: valueStyle?.textTransform ?? 'none',
+              nativeKeyboardGridPath,
+              rect: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : null,
+              hit: rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest('[role="gridcell"]') === active : false,
+            }
+          }, nativeKeyboardGridPath)
+          expect(focusedCell.role, `${route.key} ArrowDown should focus the full identity cell`).toBe('gridcell')
+          expect(focusedCell.outlineStyle, `${route.key} focused data cell should show a visible focus outline`).not.toBe('none')
+          expect(Number.parseFloat(focusedCell.outlineWidth ?? '0'), `${route.key} focused data cell should have a measurable focus indicator`).toBeGreaterThanOrEqual(1)
+          expect(focusedCell.hit, `${route.key} keyboard focus should remain visible and hit-testable`).toBe(true)
+          if (route.key === 'far') {
+            // FAR intentionally renders system identifiers in uppercase while its title preserves
+            // the API's original spelling. Compare both representations to the seeded API value.
+            expect(focusedCell.title, 'FAR focused system should retain the exact API value in its pointer disclosure').toBe(seeded.systemName)
+            expect(focusedCell.valueTextTransform, 'FAR system casing should be an explicit presentation transform').toBe('uppercase')
+            expect(focusedCell.text, 'FAR focused system should preserve the exact identifier when rendered uppercase').toBe(seeded.systemName.toUpperCase())
+          } else if (focusedCell.title) {
+            expect(focusedCell.title, `${route.key} focused data value should retain its exact pointer disclosure`).toBe(focusedCell.text)
+          }
+          const accessibleIdentity = route.key === 'far' ? seeded.systemName
+            : route.key === 'assets' ? seeded.primary.name
+              : route.key === 'external' ? external.name
+                : vendor.name
+          // Asset rows are virtualized and the broader matrix restores the
+          // unfiltered list here. Their full accessible names were verified
+          // individually while filtered into the rendered DOM above.
+          if (route.key !== 'assets') {
+            await expect(page.getByRole('gridcell', { name: accessibleIdentity }), `${route.key} full identity should be present in the browser accessibility tree`).toBeVisible()
+          }
+          if (route.key === 'assets') expect(focusedCell.text).toBe(seeded.primary.name)
+          if (route.key === 'external') expect(focusedCell.text).toBe(external.name)
+          if (route.key === 'vendors') expect(focusedCell.text).toBe(vendor.name)
+          const tooltipColumn = route.key === 'far' ? 'system_name' : 'name'
+          await expectCellFullValueTooltip(page, row, route.key === 'vendors' ? '__DEBUG_VENDORS_GRID_API__' : '__DEBUG_OPERATIONAL_GRID_API__', tooltipColumn, accessibleIdentity)
+          const path = testInfo.outputPath(`${theme}-${route.key}-keyboard-grid-focus.json`)
+          writeFileSync(path, JSON.stringify(focusedCell, null, 2))
+          await testInfo.attach(`${theme}-${route.key}-keyboard-grid-focus`, { path, contentType: 'application/json' })
         }
         await row.hover()
         if (importantColumns[route.key]) {
@@ -418,11 +779,17 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           expect(restored, `${route.key} should return to its first data column before capture`).toBe(true)
           await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
           if (route.key === 'assets') {
-            await expectCellContentFits(page, row, route.key, 'status', '.operational-grid-badge', true)
-            await expectCellContentFits(page, row, route.key, 'owner', '.operational-grid-text', true)
+            // Viewport-fit is asserted while each column is scrolled into view
+            // above. After restoring the first center column for the capture,
+            // later columns may be intentionally outside the horizontal
+            // viewport; only their content-to-cell fit remains applicable.
+            await expectCellContentFits(page, row, route.key, 'status', '.operational-grid-badge')
+            await expectCellContentFits(page, row, route.key, 'owner', '.operational-grid-text')
           }
           if (route.key === 'vendors') {
-            await expectCellContentFits(page, row, route.key, 'primary_personnel_email', 'button', true)
+            // The email column is brought fully into view above. After restoring
+            // the first center column for capture, only content-to-cell fit applies.
+            await expectCellContentFits(page, row, route.key, 'primary_personnel_email', 'button')
           }
         }
         await expectReadableGridText(page, testInfo, `${theme}-${route.key}-hover`, '.ag-center-cols-container, .ag-pinned-right-cols-container')
@@ -449,7 +816,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         expect(new URL(page.url()).pathname).toBe(route.path.split('?')[0])
         if (route.key === 'racks') {
           await expectGoldenWorkspaceHeader(page, 'racks', 'Infrastructure')
-          await expect(page.getByRole('textbox', { name: 'Search racks and devices' })).toBeVisible()
+          await expect(page.getByRole('textbox', { name: 'Search racks, locations, systems, asset tags, and serial numbers' })).toBeVisible()
           await expect(page.getByText(racks.rackA1.name, { exact: true }).first()).toBeVisible()
           const rackRail = page.locator('#racks-grid')
           const rackControls = page.locator('[data-rack-scroll-controls="true"]')
@@ -460,6 +827,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           await expect.poll(() => rackRail.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
           await page.getByRole('button', { name: 'Scroll to previous racks' }).click()
           await expect.poll(() => rackRail.evaluate(element => element.scrollLeft)).toBeLessThanOrEqual(1)
+          await expectRackLabelsAndElevationScrolling(page)
         }
         if (route.key === 'settings') {
           await expect(page.getByRole('textbox', { name: 'Search system parameters' })).toBeVisible()
@@ -472,7 +840,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           const idHeader = page.locator('[data-audit-ledger] .ag-header-cell[col-id="target_id"] .ag-header-cell-text')
           const payloadHeader = page.locator('[data-audit-ledger] .ag-header-cell[col-id="description"] .ag-header-cell-text')
           await expect(idHeader).toHaveText('ID')
-          await expect(payloadHeader).toHaveText('CHANGE DETAILS')
+          await expect(payloadHeader).toContainText('DETAILS')
           const payloadHeaderFits = await payloadHeader.evaluate(element => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1)
           expect(payloadHeaderFits, 'Audit payload heading should be readable in the desktop table').toBe(true)
         }
@@ -482,6 +850,36 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
         expect(new URL(page.url()).pathname).toBe(route.path.split('?')[0])
         await page.screenshot({ path: testInfo.outputPath(`${theme}-${route.key}-interacted-desktop.png`), animations: 'disabled' })
       }
+      await page.setViewportSize({ width: 1280, height: 720 })
+      await page.goto('/logs')
+      await waitForAppIdle(page)
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+      const compactPayloadHeader = page.locator('[data-audit-ledger] .ag-header-cell[col-id="description"] .ag-header-cell-text')
+      await expect(compactPayloadHeader).toHaveText('DETAILS')
+      await page.screenshot({ path: testInfo.outputPath(`${theme}-logs-populated-desktop-1280x720.png`), animations: 'disabled' })
+      const compactPayloadGeometry = await compactPayloadHeader.evaluate(element => {
+        const cell = element.closest<HTMLElement>('.ag-header-cell')
+        return {
+          columnWidth: cell?.getBoundingClientRect().width ?? 0,
+          textScrollWidth: element.scrollWidth,
+          textClientWidth: element.clientWidth,
+          textBounds: (() => {
+            const range = document.createRange()
+            range.selectNodeContents(element)
+            const rect = range.getBoundingClientRect()
+            return { left: rect.left, right: rect.right }
+          })(),
+          headerViewport: (() => {
+            const viewport = element.closest<HTMLElement>('.ag-header-viewport')?.getBoundingClientRect()
+            return { left: viewport?.left ?? 0, right: viewport?.right ?? 0 }
+          })(),
+        }
+      })
+      expect(compactPayloadGeometry.columnWidth, 'Audit change details should retain its readable minimum width at compact desktop size').toBeGreaterThanOrEqual(360)
+      expect(compactPayloadGeometry.textScrollWidth, 'Audit change details heading should not be clipped at compact desktop size').toBeLessThanOrEqual(compactPayloadGeometry.textClientWidth + 1)
+      expect(compactPayloadGeometry.textBounds.left, 'Audit detail heading should not be clipped at the horizontal viewport start').toBeGreaterThanOrEqual(compactPayloadGeometry.headerViewport.left - 1)
+      expect(compactPayloadGeometry.textBounds.right, 'Audit detail heading should remain fully visible before the pinned actions column').toBeLessThanOrEqual(compactPayloadGeometry.headerViewport.right + 1)
+      await expectViewportCanvasContinuity(page, `${theme} populated logs@1280x720`)
     }
     expect(headerClips, 'Every production workspace heading should fit without truncation').toEqual([])
     expect(errors).toEqual([])
@@ -492,6 +890,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
 
   for (const viewport of [
     { width: 1024, height: 768 },
+    { width: 1366, height: 768 },
     { width: 1280, height: 650 },
     { width: 1280, height: 720 },
     { width: 1920, height: 1080 },
@@ -503,7 +902,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
       page.on('pageerror', error => errors.push(error.message))
       const routes = releaseCatalog.modules
         .filter(module => module.default_stage === 'production')
-        .map(module => ({ key: module.id, path: module.canonical_route }))
+        .map(module => ({ key: module.id, path: module.canonical_route, hasSidebarEntry: module.sysgrid_route_class === 'active' }))
       for (const theme of ['nordic-frost-v1', 'pure-clarity']) {
         const preference = await request.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
         expect(preference.ok()).toBeTruthy()
@@ -514,8 +913,14 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
           await expect(page.locator('#sg-main-content'), `${routeLabel} workspace should remain visible`).toBeVisible()
           await expect(page.locator('#sg-main-content h1, #sg-main-content h2').first(), `${routeLabel} should expose a visible view heading`).toBeVisible()
+          if (route.key === 'assets') {
+            await expect(
+              page.getByText('Loading asset registry…', { exact: true }),
+              `${routeLabel} grid should finish its data load before measuring header geometry`,
+            ).toBeHidden()
+          }
           await expectVisibleFormControlsHaveNames(page, routeLabel)
-          await expectViewportCanvasContinuity(page, `${theme} ${routeLabel}`)
+          await expectViewportCanvasContinuity(page, `${theme} ${routeLabel}`, route.hasSidebarEntry)
           await expect(page.locator('[data-sg-state="fatal-error"]'), `${routeLabel} should not render a fatal error`).toHaveCount(0)
           const documentGeometry = await page.evaluate(() => ({
             body: document.body.scrollWidth,

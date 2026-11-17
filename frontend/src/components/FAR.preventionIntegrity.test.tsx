@@ -21,4 +21,14 @@ describe('FAR prevention execution convergence', () => {
       causes: [{ resolutions: [{}] }],
     })).toBe(4)
   })
+
+  it('handles missing or malformed evidence arrays without crashing', () => {
+    expect(getFarMaturityLevel(null)).toBe(0)
+    expect(getFarMaturityLevel({
+      status: 'Active',
+      prevention_actions: 'invalid',
+      mitigations: { mitigation_type: 'Monitoring' },
+      causes: [null, { resolutions: 'invalid' }],
+    } as any)).toBe(0)
+  })
 })

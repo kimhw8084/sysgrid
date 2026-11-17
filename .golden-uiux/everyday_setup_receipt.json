@@ -1,0 +1,66 @@
+{
+  "schema": "golden-everyday-install-receipt.v1",
+  "package_id": "golden-uiux-0.2.5-experimental-pilot",
+  "package_sha256": "89d3863536dac4928368bf706fb67253aebff09e9bb2997e57b4de347e2cf374",
+  "client": "both",
+  "source_lock_sha256": "315dff086f985dd29b94aaa577ae8ea44e566bbb88c1e69dafe45b82a87ed3b3",
+  "created_at_utc": "2026-11-09T03:20:09.049330+00:00",
+  "created_files": [
+    {
+      "path": ".golden-uiux/everyday_project.json",
+      "sha256": "70bbef6442110cf9d14a3caba3e74e1526bf88ec912035c5d1a3b3eb9705797b"
+    },
+    {
+      "path": ".golden-uiux/everyday_project_profile.json",
+      "sha256": "9768c68dc9a60a77d9a5bcfd367569069a896542fe0b7653598cffd4a70f4c21"
+    },
+    {
+      "path": ".golden-uiux/WORKFLOW.md",
+      "sha256": "7829b21694930f4f48118bfed074ad67cb3700c91ede020da244192c4844ebdd"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-accessibility-contract/SKILL.md",
+      "sha256": "d7f7972463aea1c20d7a8d04cb7c6f80266a3232c1be7e89abbb69366342224f"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-content-localization/SKILL.md",
+      "sha256": "582a39af5a96e75105f868da3f1bf15fd69a798f3fb1d6f5b603a2baa047623b"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-data-and-status/SKILL.md",
+      "sha256": "9a840d6b372a9a567dcf6fe42983a7ff78b5ba42c9a5f2b2b232d76d287d10de"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-design-adapter/SKILL.md",
+      "sha256": "e6a39bb97eac547d75ea57c0d8f281ea56fddb9b4e4b6c8167a6b4eb403c5436"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-evidence-gate/SKILL.md",
+      "sha256": "c40ec0d84da9314c7d8f337443ec64647c65acdb232c2daab4d95e347dd9d7a1"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-form-interactions/SKILL.md",
+      "sha256": "aa0d3ace4a77932aac13e013d8c1f2305b1ae26111bae53a8f3810b683840ce5"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-intent-router/SKILL.md",
+      "sha256": "ba13ccc59666f9d2cb9324f6f135c749b67d875ca0924bfbf39e5431d0199b95"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-pattern-resolution/SKILL.md",
+      "sha256": "05760717cfe8a01659c305d229d94676114dfb717d7113b74e3f3509fd5054bd"
+    },
+    {
+      "path": ".golden-uiux/opencode_skills/ui-responsive-geometry/SKILL.md",
+      "sha256": "e9e53b25c527bd4b446d2a0423b6362b63dea0cd5501d9035434d949ab1a16a6"
+    }
+  ],
+  "agents": {
+    "path": "AGENTS.md",
+    "created": true,
+    "original_sha256": null,
+    "managed_block_sha256": "0b52d04650f701ce92f66de90ec5cbed9090e61862045194c2c111f46b992413"
+  },
+  "base_install_owned_by_receipt": true,
+  "result": "EXPERIMENTAL_LOCAL_SETUP_NOT_APP_QUALIFICATION"
+}

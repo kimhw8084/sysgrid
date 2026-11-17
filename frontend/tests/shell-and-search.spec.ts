@@ -2,7 +2,7 @@ import { writeFile } from 'node:fs/promises'
 import { clickResilientButton } from './helpers/sysgrid';
 import { expect } from '@playwright/test';
 import { test } from './helpers/sysgrid-test';
-import { resetBrowserState, seedOperationalScenario, waitForAppIdle } from './helpers/sysgrid'
+import { createProject, resetBrowserState, seedOperationalScenario, waitForAppIdle } from './helpers/sysgrid'
 
 test.describe('App shell and global search', () => {
   test('loads the dashboard and feature audit HUD', async ({ page }) => {
@@ -19,6 +19,12 @@ test.describe('App shell and global search', () => {
   test('navigates to seeded records through global search', async ({ page, sysApi: request }) => {
     await resetBrowserState(page)
     const { service, monitoring, knowledge } = await seedOperationalScenario(request)
+    const project = await createProject(request, {
+      name: `PW-SEARCH-RETIRED-${Date.now()}`,
+      type: 'Strategic',
+      status: 'Planning',
+      priority: 'High',
+    })
     const searchInput = page.getByPlaceholder(/Search released and authorized records/i)
     const searchTrigger = page.locator('button').filter({ hasText: /Search released and authorized records/i }).first()
 
@@ -62,6 +68,15 @@ test.describe('App shell and global search', () => {
     const searchDialog = page.getByRole('dialog')
     await expect(searchDialog.getByRole('link', { name: new RegExp(knowledge.title) })).toHaveCount(0)
     await expect(searchDialog.getByText(`No released or authorized records found for "${knowledge.title}"`)).toBeVisible()
+
+    await page.goto('/')
+    await waitForAppIdle(page)
+    await searchTrigger.click()
+    await expect(searchInput).toBeVisible()
+    await searchInput.fill(project.name)
+    const projectSearchDialog = page.getByRole('dialog')
+    await expect(projectSearchDialog.getByRole('link', { name: new RegExp(project.name) })).toHaveCount(0)
+    await expect(projectSearchDialog.getByText(`No released or authorized records found for "${project.name}"`)).toBeVisible()
   })
 })
 

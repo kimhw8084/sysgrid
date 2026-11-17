@@ -28,7 +28,7 @@ export function DropdownMenu({
         className={cn('inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50', triggerClassName)}
       >
         {label}
-        {showChevron && <ChevronDown aria-hidden="true" className="size-3.5 text-muted-foreground" />}
+        {showChevron && <ChevronDown aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />}
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner align={align} sideOffset={5} className="z-[100] outline-none">

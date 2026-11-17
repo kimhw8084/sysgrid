@@ -1,0 +1,43 @@
+{
+  "project_id": "EXAMPLE_REPLACE_WITH_ACTUAL_PROJECT",
+  "profile_id": "profile-draft",
+  "profile_version": "0.0.0-draft",
+  "approval_status": "PROPOSED",
+  "reviewer_identity_reference": null,
+  "source_revision": "UNKNOWN",
+  "component_registry": {},
+  "token_profile": {},
+  "density_modes": {
+    "requested_user_setting": "PRESERVE",
+    "effective_implementation": "UNRESOLVED"
+  },
+  "accessibility_policy": {
+    "baseline": "WCAG 2.2 AA WHERE APPLICABLE",
+    "exceptions": "NONE_ASSERTED"
+  },
+  "geometry_baselines": [],
+  "quality_gate_map": {
+    "G1_DATA_TRUTH": "NOT_RUN",
+    "G2_API_CONTRACT": "NOT_RUN",
+    "G3_ACCESSIBILITY": "NOT_RUN",
+    "G4_RENDERED_CONTRAST": "NOT_RUN",
+    "G5_ELEMENT_GEOMETRY": "NOT_RUN",
+    "G6_EVIDENCE_AND_RULE_DELIVERY": "NOT_RUN"
+  },
+  "known_unknowns": [
+    "Actual project component inventory",
+    "Approved palette and typography",
+    "Required source revision and baseline",
+    "Accessible keyboard details",
+    "Owner-approved risk and Git scopes"
+  ],
+  "promotion_controls": {
+    "authorization_preflight": "NOT_RUN",
+    "structural_review": "NOT_RUN",
+    "behavioral_review": "NOT_RUN",
+    "integration_review": "NOT_RUN",
+    "independent_review": "NOT_RUN",
+    "publication_review": "NOT_RUN"
+  },
+  "profile_digest": "5f566584a751138434f49f44d9c0b1ec1e15dfd72f8ca1ee2b519d3bd471b43e"
+}

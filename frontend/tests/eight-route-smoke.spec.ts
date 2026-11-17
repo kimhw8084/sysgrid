@@ -2,27 +2,22 @@ import { expect, type ConsoleMessage, type Page, type Request, type TestInfo } f
 import { test } from './helpers/sysgrid-test'
 import { resetBrowserState } from './helpers/sysgrid'
 import { isExpectedTelemetryRequest } from '../src/observability/browserFailurePolicy'
+import { activeSysGridRouteMatrix } from './helpers/routeMatrix'
 
 const apiBase = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api/v1'
-type SmokeRoute = { path: string; key: string; retired?: string }
-const routes: SmokeRoute[] = [
-  { path: '/', key: 'home' },
-  { path: '/asset', key: 'assets' },
-  { path: '/monitoring', key: 'monitoring' },
-  { path: '/monitoring?workspace=maintenance', key: 'maintenance' },
-  { path: '/services', key: 'services' },
-  { path: '/external', key: 'external' },
-  { path: '/network', key: 'network' },
-  { path: '/racks', key: 'racks' },
-  { path: '/far', key: 'far' },
-  { path: '/vendors', key: 'vendors' },
-  { path: '/logs', key: 'audit' },
-  { path: '/settings', key: 'settings' },
-  { path: '/projects/42/timeline', key: 'retired-projects', retired: 'Projects' },
-  { path: '/research', key: 'retired-research', retired: 'Research' },
-  { path: '/knowledge?id=42', key: 'retired-knowledge', retired: 'Knowledge' },
-  { path: '/architecture?legacy=true', key: 'retired-architecture', retired: 'Architecture' },
-]
+type SmokeRoute = { path: string; key: string }
+const routeKeys: Record<string, string> = {
+  home: 'home', assets: 'assets', monitoring: 'monitoring', services: 'services',
+  external: 'external', network: 'network', racks: 'racks', far: 'far',
+  vendors: 'vendors', logs: 'audit', settings: 'settings',
+}
+const routes: SmokeRoute[] = activeSysGridRouteMatrix.flatMap(({ moduleId, path }) => {
+  const key = routeKeys[moduleId]
+  if (!key) throw new Error(`Missing visual-smoke route key for active module ${moduleId}`)
+  const entries: SmokeRoute[] = [{ path, key }]
+  if (moduleId === 'monitoring') entries.push({ path: `${path}?workspace=maintenance`, key: 'maintenance' })
+  return entries
+})
 
 async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, theme: string) {
   const themeResponse = await sysApi.patch(`${apiBase}/settings/user/settings`, { data: { theme } })
@@ -92,10 +87,8 @@ async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, t
       expect(shellLaw.gutterLeft, `${route.path} left content gutter`).toBe('32px')
       expect(shellLaw.gutterRight, `${route.path} right content gutter`).toBe('32px')
       expect(shellLaw.headerTopInset, `${route.path} header top alignment`).toBe(32)
-      if (!route.retired) {
-        const expectedActiveNavBackground = theme === 'pure-clarity' ? 'rgb(239, 246, 255)' : 'rgb(18, 59, 122)'
-        expect(shellLaw.activeNavBackground, `${theme} active navigation color`).toBe(expectedActiveNavBackground)
-      }
+      const expectedActiveNavBackground = theme === 'pure-clarity' ? 'rgb(239, 246, 255)' : 'rgb(18, 59, 122)'
+      expect(shellLaw.activeNavBackground, `${theme} active navigation color`).toBe(expectedActiveNavBackground)
       expect(shellLaw.headerLeftInset, `${route.path} header left alignment`).toBe(32)
       expect(shellLaw.headerRightInset, `${route.path} header right alignment`).toBe(32)
       if (route.key === 'home') {
@@ -118,7 +111,7 @@ async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, t
           return { position: style.position, top: style.top, right: style.right }
         })
         expect(notificationPlacement, 'theme notifications remain in the fixed upper-right stack').toEqual({ position: 'fixed', top: '16px', right: '16px' })
-        await expect(notificationRegion.locator('[data-workspace-toast]:visible').first()).toContainText('Theme changed to')
+        await expect(notificationRegion.locator('[data-workspace-toast]:visible').filter({ hasText: 'Theme changed to' })).toHaveCount(0)
         const activeNav = page.locator('[data-sg-app-sidebar="true"] a[aria-current="page"] > span').first()
         const expectedAlternateNavBackground = alternateTheme === 'pure-clarity' ? 'rgb(239, 246, 255)' : 'rgb(18, 59, 122)'
         await expect.poll(
@@ -143,10 +136,6 @@ async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, t
         expect(Number.parseFloat(reducedMotionDuration), 'reduced-motion transition duration').toBeLessThan(0.001)
         await page.emulateMedia({ reducedMotion: 'no-preference' })
       }
-      if (route.retired) {
-        await expect(page.getByRole('heading', { name: `${route.retired} is outside SysGrid`, exact: true })).toBeVisible()
-      }
-
       const pageHeaders = main.locator('[data-golden-page-header="true"]')
       await expect(pageHeaders, `${route.key} should use one shared page header`).toHaveCount(1)
       const pageHeader = pageHeaders.first()
@@ -173,14 +162,15 @@ async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, t
       }
 
       if (route.key === 'assets') {
-        const viewGroup = page.getByRole('group', { name: 'View selection' }).first()
-        await viewGroup.getByRole('button', { name: 'Grid', exact: true }).click()
+        // "View selection" is intentionally shared by registry-scope and view-surface groups.
+        // Target the unique action name so the smoke cannot wait forever inside the wrong group.
+        await page.getByRole('button', { name: 'Grid', exact: true }).click()
         await expect(page.locator('[data-golden-grid-surface="true"]')).toBeVisible()
         await capture('assets-grid')
-        await viewGroup.getByRole('button', { name: 'Report', exact: true }).click()
+        await page.getByRole('button', { name: 'Report', exact: true }).click()
         await expect(page.locator('[data-asset-report]')).toBeVisible()
         await capture('assets-report')
-        await viewGroup.getByRole('button', { name: 'Map', exact: true }).click()
+        await page.getByRole('button', { name: 'Map', exact: true }).click()
         const mapSurface = page.locator('[data-asset-map]')
         const emptyTopology = page.getByText('No asset topology available', { exact: true })
         await expect(mapSurface.or(emptyTopology)).toBeVisible()
@@ -202,7 +192,7 @@ async function captureRouteMatrix(page: Page, sysApi: any, testInfo: TestInfo, t
 
 test.describe('SysGrid data-hub desktop visual matrix', () => {
   for (const theme of ['nordic-frost-v1', 'pure-clarity'] as const) {
-    test(`${theme} views, title rails, and retirement routes`, async ({ page, sysApi }, testInfo) => {
+    test(`${theme} active SysGrid views and title rails`, async ({ page, sysApi }, testInfo) => {
       const preference = await sysApi.get(`${apiBase}/settings/user/settings`)
       expect(preference.ok(), 'the current appearance preference should be readable').toBeTruthy()
       const originalTheme = (await preference.json()).theme || 'nordic-frost-v1'

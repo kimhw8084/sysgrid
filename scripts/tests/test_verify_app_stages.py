@@ -217,12 +217,13 @@ def test_release_inventory_matches_current_app_ownership():
     release = set(suite['release_blocking'])
     root_preview = set(suite['root_preview'])
     separate_apps = set(suite['separate_app_ownership'])
+    retired_notices = set(suite['retired_route_notices'])
     deferred = set(suite['deferred_historical'])
     shared_released_workflows = {
         'external-workflows.spec.ts', 'far-workflows.spec.ts',
         'vendors-real-runtime.spec.ts',
     }
-    assert suite['version'] == 2
+    assert suite['version'] == 3
     assert release & root_preview == shared_released_workflows
     assert 'golden-eight-seeded-visual-matrix.spec.ts' in release
     assert 'golden-eight-mobile-routes.spec.ts' in deferred
@@ -239,6 +240,9 @@ def test_release_inventory_matches_current_app_ownership():
     } <= root_preview
     assert not (release & deferred) and not (root_preview & deferred)
     assert not (release & separate_apps) and not (root_preview & separate_apps) and not (deferred & separate_apps)
+    assert retired_notices == {'retired-route-notices.spec.ts'}
+    assert not (retired_notices & release) and not (retired_notices & root_preview)
+    assert not (retired_notices & deferred) and not (retired_notices & separate_apps)
     assert {
         'architecture-workflows.spec.ts', 'knowledge-workflows.spec.ts',
         'research-workflows.spec.ts', 'projects-creation-flow.spec.ts',
@@ -256,6 +260,8 @@ def test_release_inventory_matches_current_app_ownership():
     assert 'narrow[- ]screen' in normal_config and 'narrow[- ]screen' in root_config
     assert all(Path(spec).name.removesuffix('.spec.ts') in normal_config for spec in release)
     assert all(Path(spec).name.removesuffix('.spec.ts') in root_config for spec in root_preview)
+    assert all(Path(spec).name.removesuffix('.spec.ts') in normal_config for spec in retired_notices)
+    assert all(Path(spec).name.removesuffix('.spec.ts') not in root_config for spec in retired_notices)
     assert all(Path(spec).name.removesuffix('.spec.ts') not in normal_config for spec in root_preview - shared_released_workflows)
     assert all(Path(spec).name.removesuffix('.spec.ts') not in root_config for spec in release - shared_released_workflows)
     assert all(Path(spec).name.removesuffix('.spec.ts') not in normal_config for spec in deferred)

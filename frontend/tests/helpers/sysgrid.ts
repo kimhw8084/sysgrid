@@ -187,11 +187,11 @@ export async function resetBrowserState(page: Page) {
   try {
     await page.evaluate(() => {
       const keysToRemove = Object.keys(window.localStorage).filter((key) => (
-        key.startsWith('sysgrid_') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_')
+        key.startsWith('sysgrid_') || key.startsWith('sysgrid:operational-grid-widths:v1:') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_')
       ))
       keysToRemove.forEach((key) => window.localStorage.removeItem(key))
       Object.keys(window.sessionStorage)
-        .filter((key) => key.startsWith('sysgrid_') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_'))
+        .filter((key) => key.startsWith('sysgrid_') || key.startsWith('sysgrid:operational-grid-widths:v1:') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_'))
         .forEach((key) => window.sessionStorage.removeItem(key))
     })
   } catch (e) {
@@ -206,7 +206,7 @@ export async function resetBrowserState(page: Page) {
     const removeWorkspaceState = (storage: Storage) => {
       Array.from({ length: storage.length }, (_, index) => storage.key(index))
         .filter((key): key is string => key !== null && (
-          workspaceKeys.has(key) || key.startsWith('sysgrid_') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_')
+          workspaceKeys.has(key) || key.startsWith('sysgrid_') || key.startsWith('sysgrid:operational-grid-widths:v1:') || key.startsWith('SYSGRID_') || key.startsWith('__sysgrid_')
         ))
         .forEach((key) => storage.removeItem(key))
     }

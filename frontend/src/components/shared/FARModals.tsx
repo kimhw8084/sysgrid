@@ -343,7 +343,7 @@ export function ResolutionManagerModal({ isOpen, onClose, cause, modeId, modeVer
 
   const { data: bkms } = useQuery({ 
     queryKey: ['knowledge', 'bkms'], 
-    queryFn: async () => (await apiFetch('/api/v1/knowledge/?category=BKM')).json() 
+    queryFn: async () => (await apiFetch('/api/v1/knowledge?category=BKM')).json()
   })
 
   const filteredBkms = bkms?.filter((b: any) => 

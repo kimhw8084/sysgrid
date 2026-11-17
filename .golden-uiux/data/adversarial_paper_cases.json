@@ -1,0 +1,222 @@
+{
+  "status": "NON_FINAL_PAPER_ONLY_NOT_EXECUTED",
+  "all_case_outcomes": "EXPECTED_ONLY",
+  "cases": [
+    {
+      "id": "C01",
+      "pattern_id": "P01",
+      "case": "Deep link restores wrong tab after browser Back",
+      "expected_classification": "FAIL",
+      "reason": "route continuity and state restoration",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C02",
+      "pattern_id": "P02",
+      "case": "ARIA grid created for read-only table without arrow-key management",
+      "expected_classification": "FAIL",
+      "reason": "native table is preferred; unsupported custom grid",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C03",
+      "pattern_id": "P02",
+      "case": "Selection remains active for hidden rows after filter and bulk destructive action",
+      "expected_classification": "BLOCK",
+      "reason": "ambiguous record selection and destructive scope",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C04",
+      "pattern_id": "P03",
+      "case": "Archived record offers editable controls",
+      "expected_classification": "FAIL",
+      "reason": "enforced read-only state",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C05",
+      "pattern_id": "P04",
+      "case": "Server rejects save; UI nevertheless says Saved",
+      "expected_classification": "FAIL",
+      "reason": "authoritative persistence and recoverable draft",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C06",
+      "pattern_id": "P04",
+      "case": "Double-click submits two irreversible operations",
+      "expected_classification": "BLOCK",
+      "reason": "idempotency and task authorization",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C07",
+      "pattern_id": "P05",
+      "case": "Disabled action can be triggered by keyboard via a hidden event handler",
+      "expected_classification": "FAIL",
+      "reason": "permission and action-state consistency",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C08",
+      "pattern_id": "P06",
+      "case": "Dialog closes on Escape and loses a dirty draft without warning",
+      "expected_classification": "FAIL",
+      "reason": "unsaved state guard and focus recovery",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C09",
+      "pattern_id": "P07",
+      "case": "Trend chart truncates y-axis and hides aggregation units",
+      "expected_classification": "FAIL",
+      "reason": "accurate encoding and metric meaning",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C10",
+      "pattern_id": "P08",
+      "case": "Stale monitoring data painted as healthy green",
+      "expected_classification": "FAIL",
+      "reason": "status and freshness distinguishable without color",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C11",
+      "pattern_id": "P09",
+      "case": "403 unauthorized displayed as empty records",
+      "expected_classification": "FAIL",
+      "reason": "permission versus missing data semantics",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C12",
+      "pattern_id": "P09",
+      "case": "Timeout on non-idempotent action retries automatically without reconciliation",
+      "expected_classification": "BLOCK",
+      "reason": "unsafe write retry",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C13",
+      "pattern_id": "P10",
+      "case": "Theme-only patch increases global toolbar height by 8px",
+      "expected_classification": "FAIL",
+      "reason": "unauthorized geometry expansion",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C14",
+      "pattern_id": "P10",
+      "case": "Responsive layout hides the only Save button on 400% zoom",
+      "expected_classification": "FAIL",
+      "reason": "task access under zoom/reflow",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C15",
+      "pattern_id": "P11",
+      "case": "New dark theme has insufficient contrast for key state labels",
+      "expected_classification": "FAIL",
+      "reason": "applicable contrast obligation",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C16",
+      "pattern_id": "P12",
+      "case": "Custom combobox traps focus and has no usable keyboard selection",
+      "expected_classification": "FAIL",
+      "reason": "correct APG keyboard/focus semantics",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C17",
+      "pattern_id": "P12",
+      "case": "Claims 24px row violates target-size criterion without inspecting actual targets/exceptions",
+      "expected_classification": "UNKNOWN",
+      "reason": "actual target/spacing evidence required",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C18",
+      "pattern_id": "P13",
+      "case": "App migration clears a saved requested font size",
+      "expected_classification": "FAIL",
+      "reason": "requested settings persistence",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C19",
+      "pattern_id": "P13",
+      "case": "Concurrent save silently overwrites remote editor work",
+      "expected_classification": "BLOCK",
+      "reason": "unknown safe merge authority",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C20",
+      "pattern_id": "P14",
+      "case": "Translated destructive-action label has ambiguous consequence",
+      "expected_classification": "BLOCK",
+      "reason": "consequential copy approval",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C21",
+      "pattern_id": "P01",
+      "case": "User asks to invent new global app navigation without product approval",
+      "expected_classification": "ESCALATE",
+      "reason": "novel information architecture",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C22",
+      "pattern_id": "P11",
+      "case": "No approved greenfield profile; agent invents brand tokens",
+      "expected_classification": "ESCALATE",
+      "reason": "missing approved project identity",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C23",
+      "pattern_id": "P12",
+      "case": "Automated a11y scanner passes, screen reader modal focus fails",
+      "expected_classification": "FAIL",
+      "reason": "manual AT proof required",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    },
+    {
+      "id": "C24",
+      "pattern_id": "P13",
+      "case": "MCP approval receipt interpreted as final reviewer approval",
+      "expected_classification": "BLOCK",
+      "reason": "review submission is not independent authorization",
+      "execution_status": "NOT_RUN",
+      "reviewer_status": "NOT_REVIEWED"
+    }
+  ]
+}

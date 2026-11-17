@@ -1,0 +1,15 @@
+{
+  "context": {
+    "viewport": "1440x900",
+    "zoom": 1,
+    "font_px": 12,
+    "state": "default",
+    "route": "/demo",
+    "data_hash": "demo"
+  },
+  "measurements": {
+    "toolbar_height": 48,
+    "grid_row_height": 24,
+    "visible_rows": 20
+  }
+}

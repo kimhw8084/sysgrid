@@ -1,10 +1,12 @@
 {
-  "catalog_version": "sysgrid-system-management-v1.1",
+  "catalog_version": "sysgrid-system-management-v1.2",
   "profile_id": "system-management-v1",
   "stages": ["production", "preview", "disabled", "retired"],
   "modules": [
     {
       "id": "home",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Home",
       "canonical_route": "/",
       "aliases": [],
@@ -19,6 +21,8 @@
     },
     {
       "id": "projects",
+      "application_owner": "separate_application",
+      "sysgrid_route_class": "retired_notice",
       "label": "Projects",
       "canonical_route": "/projects",
       "aliases": [],
@@ -33,6 +37,8 @@
     },
     {
       "id": "monitoring",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Monitoring",
       "canonical_route": "/monitoring",
       "aliases": [],
@@ -58,6 +64,8 @@
     },
     {
       "id": "assets",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Assets",
       "canonical_route": "/asset",
       "aliases": ["/asset-real"],
@@ -87,6 +95,8 @@
     },
     {
       "id": "racks",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Racks",
       "canonical_route": "/racks",
       "aliases": [],
@@ -101,6 +111,8 @@
     },
     {
       "id": "services",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Services",
       "canonical_route": "/services",
       "aliases": [],
@@ -115,6 +127,8 @@
     },
     {
       "id": "external",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "External",
       "canonical_route": "/external",
       "aliases": [],
@@ -129,6 +143,8 @@
     },
     {
       "id": "network",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Network",
       "canonical_route": "/network",
       "aliases": ["/network-real"],
@@ -143,6 +159,8 @@
     },
     {
       "id": "architecture",
+      "application_owner": "separate_application",
+      "sysgrid_route_class": "retired_notice",
       "label": "Architecture",
       "canonical_route": "/architecture",
       "aliases": [],
@@ -157,6 +175,8 @@
     },
     {
       "id": "research",
+      "application_owner": "separate_application",
+      "sysgrid_route_class": "retired_notice",
       "label": "Research",
       "canonical_route": "/research",
       "aliases": [],
@@ -171,6 +191,8 @@
     },
     {
       "id": "far",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "FAR",
       "canonical_route": "/far",
       "aliases": [],
@@ -193,6 +215,8 @@
     },
     {
       "id": "vendors",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Vendors",
       "canonical_route": "/vendors",
       "aliases": ["/vendors-real"],
@@ -207,6 +231,8 @@
     },
     {
       "id": "knowledge",
+      "application_owner": "separate_application",
+      "sysgrid_route_class": "retired_notice",
       "label": "Knowledge",
       "canonical_route": "/knowledge",
       "aliases": [],
@@ -232,6 +258,8 @@
     },
     {
       "id": "logs",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Audit logs",
       "canonical_route": "/logs",
       "aliases": [],
@@ -246,6 +274,8 @@
     },
     {
       "id": "settings",
+      "application_owner": "sysgrid",
+      "sysgrid_route_class": "active",
       "label": "Settings / Access",
       "canonical_route": "/settings",
       "aliases": [],

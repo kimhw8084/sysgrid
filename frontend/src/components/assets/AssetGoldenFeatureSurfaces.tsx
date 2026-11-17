@@ -176,7 +176,7 @@ export function AssetGoldenFeatureSurfaces({
               count={section.items.length}
               countLabel="assets"
               selectedCount={selectedCountForSection}
-              collapsed={Boolean(isCollapsed)}
+              collapsed={isCollapsed}
               onToggle={() => onSetCollapsedGroups((current) => ({ ...current, [section.key]: !current[section.key] }))}
             >
               {!isCollapsed ? (

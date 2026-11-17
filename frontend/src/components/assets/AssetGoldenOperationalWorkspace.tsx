@@ -39,7 +39,7 @@ import { WorkspaceFloatingPanel, useWorkspaceAnchoredLayer } from '../shared/Ope
 import { AssetBulkActionsPanel } from './AssetBulkActionsPanel'
 import { AssetCompareModal } from './AssetCompareModal'
 import { OperationalBulkPreviewModal } from '../shared/OperationalBulkPreviewModal'
-import { buildOperationalGroupSections } from '../shared/OperationalGrouping'
+import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from '../shared/OperationalGrouping'
 import { useModulePolicy } from '../../policy/ModulePolicy'
 
 const GROUP_OPTIONS = [
@@ -94,8 +94,11 @@ export default function AssetGoldenOperationalWorkspace() {
   const { triggerRef: viewsMenuButtonRef, panelRef: viewsMenuPanelRef, panelStyle: viewsMenuStyle } = useWorkspaceAnchoredLayer(showViewsMenu, { minWidth: 420 })
   const { triggerRef: bulkMenuButtonRef, panelRef: bulkMenuPanelRef, panelStyle: bulkMenuStyle } = useWorkspaceAnchoredLayer(showBulkMenu, { minWidth: 340 })
   const { triggerRef: exportMenuButtonRef, panelRef: exportMenuPanelRef, panelStyle: exportMenuStyle } = useWorkspaceAnchoredLayer(showExportMenu, { minWidth: 260 })
+  const detailReturnFocusRef = useRef<HTMLElement | null>(null)
 
   const openDetailAsset = useCallback((asset: any) => {
+    const activeElement = document.activeElement
+    detailReturnFocusRef.current = activeElement instanceof HTMLElement ? activeElement : null
     setDetailAsset(asset)
     setSearchParams((current: URLSearchParams) => {
       const next = new URLSearchParams(current)
@@ -317,7 +320,15 @@ export default function AssetGoldenOperationalWorkspace() {
   ), [])
 
   const assetContextMenu = useMemo(() => ({ handleCellContextMenu }), [handleCellContextMenu])
-  const assetRowInteractions = useMemo(() => ({ handleRowClicked, handleRowDoubleClicked }), [handleRowClicked, handleRowDoubleClicked])
+  const handleAssetCellKeyDown = useCallback((event: any) => {
+    if (event?.event?.key !== 'Enter' || event?.column?.getColId?.() !== 'name' || !event?.data) return
+    const target = event.event.target as HTMLElement | null
+    if (target?.closest('button, a, input, textarea, select, [contenteditable="true"]')) return
+    if (event.api?.getEditingCells?.().length) return
+    event.event.preventDefault()
+    openDetailAsset(event.data)
+  }, [openDetailAsset])
+  const assetRowInteractions = useMemo(() => ({ handleRowClicked, handleRowDoubleClicked, handleCellKeyDown: handleAssetCellKeyDown }), [handleRowClicked, handleRowDoubleClicked, handleAssetCellKeyDown])
 
   useEffect(() => {
     if (workspace.groupBy === 'raw') return
@@ -327,16 +338,7 @@ export default function AssetGoldenOperationalWorkspace() {
       (asset: any) => asset?.[workspace.groupBy],
       'Unassigned',
     )
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => {
-        if (!(section.key in next)) next[section.key] = false
-      })
-      Object.keys(next).forEach((key) => {
-        if (!groupedSections.some((section) => section.key === key)) delete next[key]
-      })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [workspace.groupBy, workspace.visibleAssets])
 
   // Refresh favorite and watch columns immediately in AgGrid when changed
@@ -386,11 +388,11 @@ export default function AssetGoldenOperationalWorkspace() {
     <div className="space-y-3">
       {showFilterBar ? (
         <div className="grid w-full gap-3 md:grid-cols-5">
-          <AppDropdown value={workspace.activeLens} onChange={(value) => workspace.setActiveLens((value || 'all') as any)} options={LENS_OPTIONS} label="Lens Filter" placeholder="All Lenses" />
-          <AppDropdown multi value={workspace.filters.status} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, status: value || [] }))} options={statusOptions} label="Status Filter" placeholder="All statuses" />
-          <AppDropdown multi value={workspace.filters.system} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, system: value || [] }))} options={systemOptions} label="System Filter" placeholder="All systems" />
-          <AppDropdown multi value={workspace.filters.type} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, type: value || [] }))} options={typeOptions} label="Type Filter" placeholder="All types" />
-          <AppDropdown multi value={workspace.filters.owner} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, owner: value || [] }))} options={ownerOptions} label="Owner Filter" placeholder="All owners" />
+          <AppDropdown value={workspace.activeLens} onChange={(value) => workspace.setActiveLens((value || 'all') as any)} options={LENS_OPTIONS} label="Lens Filter" ariaLabel="Lens Filter" placeholder="All Lenses" />
+          <AppDropdown multi value={workspace.filters.status} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, status: value || [] }))} options={statusOptions} label="Status Filter" ariaLabel="Status Filter" placeholder="All statuses" />
+          <AppDropdown multi value={workspace.filters.system} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, system: value || [] }))} options={systemOptions} label="System Filter" ariaLabel="System Filter" placeholder="All systems" />
+          <AppDropdown multi value={workspace.filters.type} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, type: value || [] }))} options={typeOptions} label="Type Filter" ariaLabel="Type Filter" placeholder="All types" />
+          <AppDropdown multi value={workspace.filters.owner} onChange={(value) => workspace.setFilters((current: any) => ({ ...current, owner: value || [] }))} options={ownerOptions} label="Owner Filter" ariaLabel="Owner Filter" placeholder="All owners" />
         </div>
       ) : null}
     </div>
@@ -719,11 +721,18 @@ export default function AssetGoldenOperationalWorkspace() {
         farmOptions={workspace.farmOptions}
         cableTypeOptions={workspace.cableTypeOptions}
         onCloseDetails={() => {
+          const returnFocus = detailReturnFocusRef.current
+          detailReturnFocusRef.current = null
           workspace.setDetailAsset(null)
           workspace.setSearchParams((current: URLSearchParams) => {
             const next = new URLSearchParams(current)
             next.delete('id')
             return next
+          })
+          window.requestAnimationFrame(() => {
+            const searchFallback = document.querySelector<HTMLInputElement>('input[aria-label="Search assets"]')
+            const target = returnFocus?.isConnected ? returnFocus : searchFallback
+            target?.focus({ preventScroll: true })
           })
         }}
         onCloseEdit={() => workspace.setEditingAsset(null)}

@@ -69,6 +69,7 @@ export function buildVendorGoldenColumns({
       width: 190,
       minWidth: 190,
       maxWidth: 200,
+      operationalMinimumWidth: 190,
       fontSize,
       emptyValue: 'No email',
       onActivate: (params) => {

@@ -8,6 +8,7 @@ import { FormGuide } from './shared/FormGuide'
 import { useWorkspaceDialogLayer, useWorkspacePopupDismiss, WORKSPACE_LAYER_Z } from './shared/WorkspaceOverlay'
 import { getPointFloatingStyle } from './shared/OperationalGridInteractions'
 import { getRackImpactPopupLayout } from './rackPopupGeometry'
+import { buildRackImpactAnalysis } from './rackImpactAnalysis'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './shared/OperationalGridSizing'
 import { OperationalAgGrid } from './shared/OperationalAgGrid'
@@ -42,7 +43,8 @@ import { ModulePolicyLink } from '../policy/ModulePolicy'
 import { resolveOperationalAuditNavigation, resolveOperationalObjectReference } from './shared/OperationalObjectReference'
 import { useSearchParams } from 'react-router-dom'
 import { fetchRackArray, RackDataState } from './racksDataState'
-import { getRackUnitStatusKey } from './rackVisualState'
+import { getRackDeviceTypeTone, getRackUnitStatusKey } from './rackVisualState'
+import { searchRackCollection } from './rackSearch'
 
 // ─── Constants & Helpers ──────────────────────────────────────────────────────
 
@@ -80,7 +82,10 @@ const getStatusCfg = (s: string, isReservation?: boolean) => {
   if (isReservation) return STATUS_CONFIG['Reserved']
   return STATUS_CONFIG[s] ?? STATUS_CONFIG['Offline']
 }
-const getTypeCfg = (t: string) => TYPE_CONFIG[t?.toLowerCase()] ?? { color: 'text-[var(--text-secondary)]', short: t?.slice(0,3).toUpperCase() || 'UNK', tone: 'unknown' }
+const getTypeCfg = (t: string) => {
+  const tone = getRackDeviceTypeTone(t)
+  return TYPE_CONFIG[tone] ?? { color: 'text-[var(--text-secondary)]', short: String(t || '').slice(0,3).toUpperCase() || 'UNK', tone }
+}
 const RACK_CARD_GAP = 16
 const RACK_GROUP_GAP = 32
 
@@ -168,11 +173,12 @@ const MiniBar = ({ value, max, colorFn, label, unit, overflowLabel = 'CAPACITY A
   
   return (
     <div className="space-y-0.5 group/bar relative">
-      <div className="flex justify-between items-center">
-        <span className={`min-w-0 truncate text-[11px] font-medium ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>
-          {label} {isOverflow && <span title={overflowLabel} aria-label={overflowLabel} className="ml-1 rounded-sm border border-[var(--state-danger-border)] bg-[var(--state-danger-surface-strong)] px-1 py-px text-[7px] font-bold uppercase tracking-wide text-[var(--state-danger)]">Over</span>}
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <span className={`flex min-w-0 items-center gap-1 text-[11px] font-medium ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>
+          <span className="whitespace-nowrap" title={label}>{label}</span>
+          {isOverflow && <span title={overflowLabel} aria-label={overflowLabel} className="inline-flex shrink-0 whitespace-nowrap rounded-sm border border-[var(--state-danger-border)] bg-[var(--state-danger-surface-strong)] px-1 py-px text-[7px] font-bold uppercase tracking-wide text-[var(--state-danger)]">Over</span>}
         </span>
-        <span className={`text-[11px] font-semibold tabular-nums transition-colors ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-primary)]'}`}>
+        <span className={`shrink-0 whitespace-nowrap text-[11px] font-semibold tabular-nums transition-colors ${isOverflow ? 'text-[var(--state-danger)]' : 'text-[var(--text-primary)]'}`}>
           {value.toFixed(1)}<span className="text-[var(--text-secondary)] font-normal">/{max}{unit}</span>
         </span>
       </div>
@@ -525,6 +531,7 @@ const RackUnit = ({ uNumber, loc, isTop, isBottom, highlight, onSelect, onManage
       data-device-id={device?.id}
       data-u={uNumber}
       data-rack-state={rackState}
+      data-rack-type={typeCfg?.tone || 'unknown'}
       data-has-device={device ? 'true' : 'false'}
       data-rack-block-top={isTop ? 'true' : 'false'}
       data-rack-block-bottom={isBottom ? 'true' : 'false'}
@@ -819,7 +826,7 @@ const AuditLogModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                   hasData={Boolean(logs)}
                   onRetry={() => void auditQuery.refetch()}
                 />
-                <div className="flex-1 relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': '11px' } as React.CSSProperties}>
+                <div className="flex-1 relative ag-theme-alpine-dark" style={{ '--operational-grid-font-size': '12px' } as React.CSSProperties}>
                   {!logs && (auditQuery.isLoading || auditQuery.isError) ? (
                     <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 p-8 backdrop-blur-sm">
                       <RackDataState
@@ -950,6 +957,7 @@ interface RackElevationProps {
   onMove?: (dir: 'left' | 'right') => void
   onShowInfo?: (rack: any) => void
   searchTerm: string
+  matchedDeviceIds?: string[]
   onMount: (rackId: number, u: number) => void
   onManageDevice: (device: any, loc: any, rack: any, event: React.MouseEvent) => void
   isSelected: boolean
@@ -965,7 +973,7 @@ interface RackElevationProps {
   }
 
   const RackElevation = React.memo(({
-  rack, onDelete, onEdit, onMove, onShowInfo, searchTerm, onMount, onManageDevice,
+  rack, onDelete, onEdit, onMove, onShowInfo, searchTerm, matchedDeviceIds, onMount, onManageDevice,
   isSelected, onToggleSelect, onRestore, isDeleted,
   focusedDeviceId, connectedDeviceIds, diffMode, liveRack, showCheckbox = true,
   className = ''
@@ -1033,8 +1041,12 @@ interface RackElevationProps {
    return rack.max_power_kw || 10
   }, [rack.pdu_a_cap_kw, rack.pdu_b_cap_kw, rack.max_power_kw])
 
-  const isHighlighted = (device: any) =>
-   !!searchTerm && device?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const matchedDeviceIdSet = useMemo(() => new Set(matchedDeviceIds || []), [matchedDeviceIds])
+  const isHighlighted = (device: any) => !!searchTerm && (
+    matchedDeviceIdSet.has(String(device?.id))
+    || matchedDeviceIdSet.has(String(device?.device_id))
+    || device?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const isFillOver = occupiedU >= totalU
 
@@ -1058,13 +1070,13 @@ interface RackElevationProps {
       )}
 
       {/* Header - FIXED */}
-      <div className="flex h-[164px] shrink-0 flex-col gap-2 overflow-hidden border-b border-[var(--grid-border)] bg-[var(--grid-header-bg)] px-3 pb-3 pt-4">
-        <div className="flex h-10 min-h-10 items-start justify-between gap-2 pl-6">
+      <div className="flex h-[172px] shrink-0 flex-col gap-2 overflow-hidden border-b border-[var(--grid-border)] bg-[var(--grid-header-bg)] px-3 pb-3 pt-4">
+        <div className="flex min-h-[66px] items-start justify-between gap-2 pl-6">
           <div className="min-w-0 flex-1">
-            <h3 className="h-5 truncate text-sm font-semibold leading-5 text-[var(--text-primary)]" title={rack.name}>{rack.name}</h3>
-            <div className="mt-0.5 flex h-4 items-center gap-1.5">
-              <MapPin size={9} className="text-slate-600 shrink-0" />
-              <span className="text-[11px] text-[var(--text-secondary)] truncate" title={rack.site_name || 'Unassigned'}>{rack.site_name || 'Unassigned'}</span>
+            <h3 data-rack-focus-target="true" tabIndex={-1} className="line-clamp-3 min-h-12 break-words text-xs font-semibold leading-4 tracking-tight text-[var(--text-primary)]" title={rack.name}>{rack.name}</h3>
+            <div className="mt-0.5 flex min-w-0 items-start gap-1.5">
+              <MapPin size={9} className="mt-0.5 shrink-0 text-slate-600" />
+              <span data-rack-row-label="true" className="min-w-0 flex-1 break-all text-[10px] leading-3 text-[var(--text-secondary)]">Row {rack.row != null ? rack.row : 'not assigned'}</span>
             </div>
           </div>
 
@@ -1138,7 +1150,7 @@ interface RackElevationProps {
 
         {/* Capacity bars */}
         <div className="flex min-h-0 flex-1 flex-col justify-between px-0.5">
-          <div className="flex h-4 min-w-0 items-center justify-between gap-2 overflow-hidden px-0.5">
+          <div className="flex h-5 min-w-0 items-center justify-between gap-2 overflow-hidden px-0.5">
              <div className="flex min-w-0 items-center gap-2">
                 <span className="flex items-center gap-1 whitespace-nowrap text-[10px] font-medium text-[var(--text-secondary)]">
                    <Server size={8} /> {serverCount} SRV
@@ -1148,8 +1160,7 @@ interface RackElevationProps {
                 </span>
              </div>
              <div className="flex min-w-0 items-center justify-end gap-2 whitespace-nowrap">
-                <span className={`text-[10px] font-medium ${isFillOver ? 'text-[var(--state-danger)]' : 'text-[var(--text-secondary)]'}`}>{Math.round((occupiedU/totalU)*100)}% slot</span>
-                <span className="truncate text-[10px] font-medium text-[var(--text-secondary)]">{effectivePowerCapKw.toFixed(1)}kW cap</span>
+                <span aria-label={`Configured power capacity: ${effectivePowerCapKw.toFixed(1)} kilowatts`} title={`Configured power capacity: ${effectivePowerCapKw.toFixed(1)} kW`} className="truncate text-[10px] font-medium text-[var(--text-secondary)]">{effectivePowerCapKw.toFixed(1)}kW</span>
              </div>
           </div>
           <div className="space-y-1.5">
@@ -1158,7 +1169,7 @@ interface RackElevationProps {
               value={estimatedPowerKw}
               max={effectivePowerCapKw}
               colorFn={powerColor}
-              label="Typical estimate"
+              label="Estimate"
               unit="kW"
               overflowLabel="PLANNING ESTIMATE > CONFIGURED CEILING"
             />
@@ -1185,7 +1196,7 @@ interface RackElevationProps {
         />
 
         {/* Scrollable interior grid */}
-        <div ref={scrollRef} className="flex-1 min-h-[120px] overflow-y-auto custom-scrollbar px-5 py-2">
+        <div ref={scrollRef} data-rack-elevation-scroll="true" className="flex-1 min-h-[120px] overflow-y-auto custom-scrollbar px-5 py-2">
           <div className="bg-[var(--surface-base)] border border-[var(--grid-border)] rounded-lg overflow-hidden">
             {units.map(u => {
               const loc = locationsByUnit.get(u)
@@ -1265,29 +1276,10 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
     window.addEventListener('resize', clamp)
     return () => { observer.disconnect(); window.removeEventListener('resize', clamp) }
   }, [x, y, dialogLayer.ref])
-  const device = devices?.find(d => d.id === deviceId)
-  const deviceConns = connections?.filter(c => c.source_device_id === deviceId || c.target_device_id === deviceId) || []
-  
-  const distribution = useMemo(() => {
-    const stats: Record<string, Record<string, number>> = {
-      type: {},
-      status: {},
-      environment: {},
-      system: {}
-    }
-    deviceConns.forEach(c => {
-      const isSrc = c.source_device_id === deviceId
-      const peerId = isSrc ? c.target_device_id : c.source_device_id
-      const peer = devices?.find(d => d.id === peerId)
-      if (peer) {
-        stats.type[peer.type || 'Unknown'] = (stats.type[peer.type || 'Unknown'] || 0) + 1
-        stats.status[peer.status || 'Unknown'] = (stats.status[peer.status || 'Unknown'] || 0) + 1
-        stats.environment[peer.environment || 'Unknown'] = (stats.environment[peer.environment || 'Unknown'] || 0) + 1
-        stats.system[peer.system || 'Unknown'] = (stats.system[peer.system || 'Unknown'] || 0) + 1
-      }
-    })
-    return stats
-  }, [deviceConns, devices, deviceId])
+  const impact = useMemo(() => buildRackImpactAnalysis(deviceId, devices || [], connections || []), [deviceId, devices, connections])
+  const device = impact.device
+  const deviceConns = impact.connections
+  const distribution = impact.distribution
 
   return createPortal(
     <motion.div
@@ -1300,43 +1292,47 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="fixed top-0 left-0 z-[300] flex w-[450px] min-h-0 flex-col cursor-move overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-overlay)] shadow-2xl backdrop-blur-xl"
-    >       <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-default)] bg-[var(--surface-elevated)] px-6 py-4">
+    >       <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3">
           <div className="flex items-center gap-3">
              <div className="rounded-lg bg-[var(--accent-primary)] p-2 text-white shadow-lg">
                 <Activity size={16} />
              </div>
              <div>
-                <h3 className="text-xs font-black uppercase leading-none tracking-tight text-[var(--text-primary)]">Impact Analysis</h3>
-                <p className="mt-1.5 max-w-[200px] truncate text-[8px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">{device?.name}</p>
+                <h3 className="text-sm font-bold leading-none tracking-tight text-[var(--text-primary)]">Network impact context</h3>
+                <p className="mt-1.5 max-w-[240px] truncate text-[10px] font-medium text-[var(--text-secondary)]">{device?.name || `Asset ${deviceId}`}</p>
              </div>
           </div>
           <button aria-label="Close impact analysis" onClick={onClose} className="cursor-pointer rounded-lg p-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"><X size={16}/></button>
        </div>
 
-       <div className="min-h-0 flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-          <div className="grid grid-cols-2 gap-3">
+       <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+          <div className="grid grid-cols-3 gap-2">
              <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
-                <p className="mb-1 text-[7px] font-black uppercase text-[var(--text-muted)]">Recorded Connections</p>
+                <p className="mb-1 text-[10px] font-semibold text-[var(--text-secondary)]">Links</p>
                 <p className="text-xl font-black leading-none text-[var(--text-primary)]">{deviceConns.length}</p>
              </div>
              <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
-                <p className="mb-1 text-[7px] font-black uppercase text-[var(--text-muted)]">Connected Systems</p>
-                <p className="text-xl font-black leading-none text-[var(--accent-primary)]">{Object.keys(distribution.system).length}</p>
+                <p className="mb-1 text-[10px] font-semibold text-[var(--text-secondary)]">Peer assets</p>
+                <p className="text-xl font-black leading-none text-[var(--text-primary)]">{impact.peerCount}</p>
+             </div>
+             <div className="rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)] p-3">
+                <p className="mb-1 text-[10px] font-semibold text-[var(--text-secondary)]">Known systems</p>
+                <p className="text-xl font-black leading-none text-[var(--accent-primary)]">{impact.connectedSystemCount}</p>
              </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {Object.entries(distribution).map(([category, data]) => (
               <div key={category} className="space-y-2">
-                <h4 className="px-1 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">{category} Distribution</h4>
+                <h4 className="px-1 text-[10px] font-semibold capitalize text-[var(--text-secondary)]">Peer {category}</h4>
                 <div className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--surface-base)]">
                   {Object.entries(data).length === 0 ? (
-                    <p className="p-3 text-[8px] italic text-[var(--text-muted)]">None</p>
+                    <p className="p-3 text-[11px] text-[var(--text-secondary)]">No peer data recorded</p>
                   ) : (
                     Object.entries(data).sort((a,b) => b[1] - a[1]).map(([label, count]) => (
                       <div key={label} className="flex items-center justify-between border-b border-[var(--border-default)] px-3 py-1.5 last:border-0">
-                        <span className="max-w-[100px] truncate text-[9px] font-bold uppercase text-[var(--text-primary)]">{label}</span>
-                        <span className="text-[9px] font-black tabular-nums text-[var(--text-primary)]">{count}</span>
+                        <span title={label} className="max-w-[110px] truncate text-[11px] font-medium text-[var(--text-primary)]">{label}</span>
+                        <span className="text-[11px] font-semibold tabular-nums text-[var(--text-primary)]">{count}</span>
                       </div>
                     ))
                   )}
@@ -1346,39 +1342,38 @@ const AssetImpactWindow = ({ deviceId, devices, connections, onClose, coords }: 
           </div>
 
           <div className="space-y-2">
-             <h4 className="px-1 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Network Fabric Trace</h4>
+             <h4 className="px-1 text-[11px] font-semibold text-[var(--text-primary)]">Recorded link paths</h4>
              {deviceConns.length === 0 ? (
-               <p className="px-1 text-[10px] italic text-[var(--text-muted)]">No active connections for this asset.</p>
+               <p className="px-1 text-[11px] text-[var(--text-secondary)]">No network links are recorded for this asset.</p>
              ) : (
                <div className="space-y-1">
-                  {deviceConns.slice(0, 5).map((c: any) => {
-                    const isSrc = c.source_device_id === deviceId
-                    const peerId = isSrc ? c.target_device_id : c.source_device_id
-                    const peer = devices?.find(d => d.id === peerId)
+                  {impact.peers.slice(0, 5).map(({ connection: c, peer, localPort, peerPort }: any) => {
                     return (
-                      <div key={c.id} className="group flex items-center justify-between rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] p-2 transition-all hover:border-[var(--accent-primary)]">
-                         <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase leading-none text-[var(--accent-primary)]">{peer?.name || 'Unknown Peer'}</span>
-                            <span className="mt-1 text-[6px] font-bold uppercase text-[var(--text-secondary)]">{isSrc ? c.source_port : c.target_port} → {isSrc ? c.target_port : c.source_port}</span>
+                      <div key={c.id ?? `${c.source_device_id}:${c.source_port}:${c.target_device_id}:${c.target_port}`} className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--surface-elevated)] px-3 py-2 transition-colors hover:border-[var(--accent-primary)]">
+                         <div className="min-w-0">
+                            <span className="block truncate text-[11px] font-semibold text-[var(--text-primary)]">{peer?.name || 'Unknown peer'}</span>
+                            <span className="mt-1 block truncate font-mono text-[10px] text-[var(--text-secondary)]">{localPort || 'Port not recorded'} → {peerPort || 'Peer port not recorded'}</span>
+                            <span className="mt-1 block truncate text-[10px] text-[var(--text-secondary)]">{peer?.system || 'System not recorded'} · {peer?.status || 'Status not recorded'}</span>
                          </div>
-                         <div className="text-right">
-                            <span className="text-[8px] font-black uppercase text-[var(--text-primary)]">{c.speed_gbps}G</span>
+                         <div className="shrink-0 text-right">
+                            <span className="block text-[11px] font-semibold text-[var(--text-primary)]">{c.speed_gbps == null ? 'Speed n/r' : `${c.speed_gbps} Gbps`}</span>
+                            <span className="mt-1 block max-w-28 truncate text-[10px] text-[var(--text-secondary)]">{c.purpose || 'Purpose not recorded'}</span>
                          </div>
                       </div>
                     )
                   })}
                   {deviceConns.length > 5 && (
-                    <p className="pt-1 text-center text-[8px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">+{deviceConns.length - 5} additional vectors</p>
+                    <p className="pt-1 text-center text-[10px] text-[var(--text-secondary)]">+{deviceConns.length - 5} more recorded links</p>
                   )}
                </div>
              )}
           </div>
        </div>
 
-       <div className="flex shrink-0 items-center gap-3 border-t border-[var(--border-default)] bg-[var(--surface-elevated)] px-6 py-4">
+       <div className="flex shrink-0 items-start gap-3 border-t border-[var(--border-default)] bg-[var(--surface-elevated)] px-4 py-3">
           <AlertTriangle size={14} className="shrink-0 text-[var(--state-warning)]" />
-          <p className="text-[8px] font-bold leading-tight text-[var(--text-secondary)]">
-             Service impact is unknown. Recorded network links do not establish service dependencies or failure propagation.
+          <p className="text-[11px] leading-4 text-[var(--text-secondary)]">
+             This is network topology context only. Recorded links do not confirm service dependency or outage propagation.
           </p>
        </div>
     </motion.div>, document.body
@@ -1794,15 +1789,18 @@ const SiteCapacityBar = ({ racks }: { racks: any[] }) => {
 
 // ─── Floating Bulk Toolbar ─────────────────────────────────────────────────────
 
-const BulkToolbar = ({ count, onDelete, onRelocate, onCompare, onClear, isDeleted, onRestore, onGenerateLabels }:
-  { count: number; onDelete: () => void; onRelocate: () => void; onCompare: () => void; onClear: () => void; isDeleted: boolean; onRestore: () => void; onGenerateLabels: () => void }) => (
+const BulkToolbar = ({ count, hiddenCount = 0, onDelete, onRelocate, onCompare, onClear, isDeleted, onRestore, onGenerateLabels }:
+  { count: number; hiddenCount?: number; onDelete: () => void; onRelocate: () => void; onCompare: () => void; onClear: () => void; isDeleted: boolean; onRestore: () => void; onGenerateLabels: () => void }) => (
   <motion.div
     initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: 16 }}
     className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-5 py-3 bg-slate-950/95 backdrop-blur-xl border border-white/15 rounded-lg shadow-2xl"
   >
-    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest mr-2">{count} selected</span>
+    <span className="mr-2 flex flex-col gap-0.5">
+      <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{count} selected</span>
+      {hiddenCount > 0 && <span className="text-[10px] font-medium normal-case tracking-normal text-slate-300">{hiddenCount} hidden by current filters</span>}
+    </span>
     <div className="h-4 w-px bg-white/10" />
     {isDeleted ? (
       <>
@@ -1825,7 +1823,7 @@ const BulkToolbar = ({ count, onDelete, onRelocate, onCompare, onClear, isDelete
       </button>
     </>)}
     <div className="h-4 w-px bg-white/10" />
-    <button onClick={onClear} className="p-1.5 hover:bg-white/5 rounded-lg text-slate-500 hover:text-slate-300 transition-colors">
+    <button type="button" onClick={onClear} aria-label="Clear rack selection" title="Clear rack selection" className="p-1.5 hover:bg-white/5 rounded-lg text-slate-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] transition-colors">
       <X size={13} />
     </button>
   </motion.div>
@@ -2280,7 +2278,7 @@ const SpatialMap = React.memo(({ racks, onRackClick, siteColor }: { racks: any[]
                                 data-spatial-rack-card
                                 data-capacity-warning={isOver ? 'true' : undefined}
                                 className={`group relative flex h-36 w-52 flex-col overflow-hidden rounded-lg border bg-[var(--rack-spatial-card)] p-3 text-left shadow-sm transition-[transform,border-color,background-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-[var(--rack-spatial-card-hover)] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] ${isOver ? 'border-[var(--rack-spatial-danger)]' : 'border-[var(--rack-spatial-border)] hover:border-[var(--rack-spatial-accent)]'}`}
-                                aria-label={`${rack.name}, ${fillPct}% rack-unit capacity, ${typicalEstimatePct}% typical power estimate`}
+                                aria-label={`Rack ${rack.name}; site ${rack.site_name || 'Unassigned'}; aisle ${rack.aisle || 'not specified'}; row ${rack.row || 'not specified'}; ${realDevices} mounted devices${reservations ? ` and ${reservations} reservations` : ''}; ${fillPct}% rack-unit capacity; ${typicalEstimatePct}% typical power estimate. Open this rack in elevation view.`}
                               >
                                 <div aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${isOver ? 'bg-[var(--rack-spatial-danger)]' : 'bg-[var(--rack-spatial-accent)]'}`} style={!isOver && (rack.site_color || siteColor) ? { backgroundColor: rack.site_color || siteColor } : undefined} />
                                 
@@ -2351,13 +2349,15 @@ export default function Racks() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const devicesQuery = useQuery({ queryKey: ['devices'], queryFn: () => fetchRackArray('/api/v1/devices') })
-  const sitesQuery = useQuery({ queryKey: ['sites'], queryFn: () => fetchRackArray('/api/v1/sites/') })
+  const sitesQuery = useQuery({ queryKey: ['sites'], queryFn: () => fetchRackArray('/api/v1/sites') })
   const connectionsQuery = useQuery({ queryKey: ['connections'], queryFn: () => fetchRackArray('/api/v1/networks/connections') })
   const devices = devicesQuery.data
   const sites = sitesQuery.data
   const connections = connectionsQuery.data
 
   const [searchTerm, setSearchTerm] = useState('')
+  const rackSearchInputRef = useRef<HTMLInputElement>(null)
+  const pendingSpatialRackIdRef = useRef<string | null>(null)
   const [activeSite, setActiveSite] = useState<number | null>(null)
   const [activeSiteMenu, setActiveSiteMenu] = useState<number | null>(null)
   const siteMenu = useWorkspaceAnchoredLayer(activeSiteMenu !== null, { minWidth: 180 })
@@ -2544,7 +2544,7 @@ export default function Racks() {
 
   const racksQuery = useQuery({
     queryKey: ['racks-all'],
-    queryFn: () => fetchRackArray('/api/v1/racks/?include_deleted=true')
+    queryFn: () => fetchRackArray('/api/v1/racks?include_deleted=true')
   })
   const allRacks = racksQuery.data
 
@@ -2594,7 +2594,7 @@ export default function Racks() {
 
   const racks = activeTab === 'active' ? activeRacks : deletedRacks
 
-  const displayedRacks = useMemo(() => {
+  const rackSearchScope = useMemo(() => {
     let filtered = isPlanInitialized ? virtualRacks : racks
     
     // 1. Connection-specific filtering: If focusing a connection, only show involved racks
@@ -2614,15 +2614,18 @@ export default function Racks() {
     if (showOnlySandbox && !focusedConnection) {
       filtered = filtered.filter((r: any) => sandboxRackIds.includes(r.id))
     }
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase()
-      filtered = filtered.filter((r: any) =>
-        r.name.toLowerCase().includes(term) ||
-        r.device_locations?.some((l: any) => l.device?.name?.toLowerCase().includes(term))
-      )
-    }
     return filtered
-  }, [racks, virtualRacks, isPlanInitialized, activeSite, showCompareOnly, selectedRacks, searchTerm, activeTab, focusedConnection, showOnlySandbox, sandboxRackIds])
+  }, [racks, virtualRacks, isPlanInitialized, activeSite, showCompareOnly, selectedRacks, activeTab, focusedConnection, showOnlySandbox, sandboxRackIds])
+
+  const rackSearchResults = useMemo(
+    () => searchRackCollection(rackSearchScope, searchTerm, devices || []),
+    [rackSearchScope, searchTerm, devices],
+  )
+  const displayedRacks = useMemo(() => rackSearchResults.map(result => result.rack), [rackSearchResults])
+  const rackSearchMatchesByRackId = useMemo(() => new Map(
+    rackSearchResults.map(result => [String(result.rack.id), result.matchedDeviceIds]),
+  ), [rackSearchResults])
+  const rackSearchIsIncomplete = Boolean(searchTerm.trim()) && (devicesQuery.isError || !Array.isArray(devices))
 
   const availableDevices = useMemo(() => {
     let list = devices?.filter((d: any) => !d.is_deleted && d.status !== 'Decommissioned')
@@ -2638,6 +2641,12 @@ export default function Racks() {
     if (!isPlanInitialized) return displayedRacks
     return displayedRacks.filter((r: any) => sandboxRackIds.includes(r.id))
   }, [displayedRacks, isPlanInitialized, sandboxRackIds])
+  const renderedRackIdSet = useMemo(() => new Set(renderedRacks.map((rack: any) => String(rack.id))), [renderedRacks])
+  const matchedMountedAssetCount = useMemo(() => new Set(
+    rackSearchResults
+      .filter(result => renderedRackIdSet.has(String(result.rack.id)))
+      .flatMap(result => result.matchedDeviceIds),
+  ).size, [rackSearchResults, renderedRackIdSet])
   const isRackDiffActive = showDiff || !!diffBaseVersion
   const isRackGroupedView = viewMode === 'elevation'
     && !searchTerm
@@ -2661,6 +2670,37 @@ export default function Racks() {
       return group
     })
   }, [renderedRacks, rackWidth])
+  useEffect(() => {
+    const rackId = pendingSpatialRackIdRef.current
+    if (!rackId || viewMode !== 'elevation') return
+
+    if (!renderedRacks.some((rack: any) => String(rack.id) === rackId)) {
+      pendingSpatialRackIdRef.current = null
+      return
+    }
+
+    const targetGroupIndex = rackGroups.findIndex(group =>
+      group.groupRacks.some((rack: any) => String(rack.id) === rackId),
+    )
+    if (isRackGroupedView && targetGroupIndex >= 0
+      && (targetGroupIndex < visibleRackGroupRange.start || targetGroupIndex >= visibleRackGroupRange.end)) {
+      setVisibleRackGroupRange({ start: targetGroupIndex, end: Math.min(rackGroups.length, targetGroupIndex + 1) })
+      return
+    }
+
+    const rail = racksGridRef.current
+    const card = rail?.querySelector<HTMLElement>(`[data-rack-elevation-card="true"][data-rack-id="${rackId}"]`)
+    if (!card) return
+
+    pendingSpatialRackIdRef.current = null
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    const focusTarget = card.querySelector<HTMLElement>('input[type="checkbox"], [data-rack-focus-target="true"]')
+    try {
+      focusTarget?.focus({ preventScroll: true })
+    } catch {
+      focusTarget?.focus()
+    }
+  }, [isRackGroupedView, rackGroups, renderedRacks, viewMode, visibleRackGroupRange])
   const updateVisibleRackGroupRange = useCallback(() => {
     const rail = racksGridRef.current
     if (!rail || !isRackGroupedView || rackGroups.length === 0) return
@@ -2726,7 +2766,7 @@ export default function Racks() {
       
       // If reserving a new slot
       if (provisionMode === 'reserve') {
-        const resDev = await apiFetch('/api/v1/devices/', {
+        const resDev = await apiFetch('/api/v1/devices', {
           method: 'POST',
           body: JSON.stringify({
             name: reserveInfo.temporary_name || `RESERVE-${Date.now().toString().slice(-4)}`,
@@ -2815,7 +2855,7 @@ export default function Racks() {
     mutationFn: async (data: any) => {
       const res = data.id
         ? await apiFetch(`/api/v1/sites/${data.id}`, { method: 'PUT', body: JSON.stringify(data) })
-        : await apiFetch('/api/v1/sites/', { method: 'POST', body: JSON.stringify(data) })
+        : await apiFetch('/api/v1/sites', { method: 'POST', body: JSON.stringify(data) })
       if (!res.ok) throw new Error(await res.text())
       return res.json()
     },
@@ -2856,7 +2896,7 @@ export default function Racks() {
       const payload = data.id ? Object.fromEntries(Object.entries(data).filter(([key, value]) => !Object.is(value, baseline[key]))) : data
       const res = data.id
         ? await apiFetch(`/api/v1/racks/${data.id}`, { method: 'PUT', body: JSON.stringify(payload) })
-        : await apiFetch('/api/v1/racks/', { method: 'POST', body: JSON.stringify(payload) })
+        : await apiFetch('/api/v1/racks', { method: 'POST', body: JSON.stringify(payload) })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: res.statusText }))
         throw new Error(err.detail || 'Failed to save rack')
@@ -3028,8 +3068,8 @@ export default function Racks() {
   })
 
   const rackReorderMutation = useMutation({
-    mutationFn: async ({ siteId, ids }: { siteId: number; ids: number[] }) => 
-      apiFetch(`/api/v1/sites/${siteId}/racks/reorder`, { method: 'POST', body: JSON.stringify({ ids }) }),
+    mutationFn: async ({ ids }: { siteId: number; ids: number[] }) =>
+      apiFetch('/api/v1/racks/reorder', { method: 'POST', body: JSON.stringify({ ids }) }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['racks-all'] })
   })
 
@@ -3088,11 +3128,9 @@ export default function Racks() {
 
   const isMaskMode = isPlanInitialized || !!diffBaseVersion
   const handleSpatialRackClick = useCallback((rack: any) => {
+    pendingSpatialRackIdRef.current = String(rack.id)
     setActiveSite(rack.site_id)
     setViewMode('elevation')
-    window.setTimeout(() => {
-      document.querySelector(`[data-rack-id="${rack.id}"]`)?.scrollIntoView({ behavior: 'smooth', inline: 'center' })
-    }, 100)
   }, [])
   const spatialSiteColor = useMemo(
     () => activeSite ? sites?.find((site: any) => site.id === activeSite)?.color : undefined,
@@ -3109,7 +3147,6 @@ export default function Racks() {
     <PageHeader
       eyebrow="Infrastructure"
       title="Racks"
-      titleIcon={Server}
       subtitle="Physical capacity and spatial intelligence"
       className={isMaskMode ? 'opacity-40 grayscale pointer-events-none' : ''}
       actions={activeTab === 'active' && allRacks && !isMaskMode ? (
@@ -3300,9 +3337,22 @@ export default function Racks() {
             <ToolbarSearch 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search racks & devices..."
-              ariaLabel="Search racks and devices"
+              inputRef={rackSearchInputRef}
+              placeholder="Search racks or asset IDs…"
+              ariaLabel="Search racks, locations, systems, asset tags, and serial numbers"
             />
+            {searchTerm && (
+              <ToolbarIconButton
+                title="Clear rack search"
+                ariaLabel="Clear rack search"
+                onClick={() => {
+                  setSearchTerm('')
+                  rackSearchInputRef.current?.focus()
+                }}
+              >
+                <X size={14} />
+              </ToolbarIconButton>
+            )}
 
             {viewMode === 'elevation' && (rackScrollState.canScrollLeft || rackScrollState.canScrollRight) && (
               <div data-rack-scroll-controls="true" role="group" aria-label="Rack navigation" className="flex shrink-0 items-center gap-1">
@@ -3368,6 +3418,14 @@ export default function Racks() {
         onRetry={() => void racksQuery.refetch()}
       />
 
+      {searchTerm.trim() && (
+        <p role="status" aria-live="polite" className="shrink-0 text-xs leading-5 text-[var(--text-secondary)]">
+          {renderedRacks.length} rack{renderedRacks.length === 1 ? '' : 's'} match the current filters
+          {matchedMountedAssetCount > 0 ? ` · ${matchedMountedAssetCount} mounted asset${matchedMountedAssetCount === 1 ? '' : 's'} matched` : ''}.
+          {rackSearchIsIncomplete ? ' Linked device records are unavailable or still loading, so system, tag, and serial matches may be incomplete.' : ''}
+        </p>
+      )}
+
       {failedSupportQueries.length > 0 && (
         <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--state-warning-border)] bg-[var(--state-warning-surface)] px-4 py-3 text-sm text-[var(--text-primary)]">
           <p>
@@ -3396,7 +3454,10 @@ export default function Racks() {
         <div className="flex flex-col items-stretch gap-3 shrink-0 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1 custom-scrollbar items-center">
             <button
+              type="button"
               onClick={() => setActiveSite(null)}
+              aria-label="Filter racks by all sites"
+              aria-pressed={!activeSite}
               className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all whitespace-nowrap flex items-center gap-1.5 ${!activeSite ? 'bg-blue-600 border-blue-500 text-white' : 'border-white/[0.07] text-slate-500 hover:border-white/20 hover:text-slate-300'}`}
             >
               All
@@ -3414,8 +3475,10 @@ export default function Racks() {
               return (
                 <div key={s.id} className="relative group/site shrink-0">
                   <button
+                    type="button"
                     onClick={() => setActiveSite(s.id)}
-                    aria-label={`Open site ${s.name}`}
+                    aria-label={`Filter racks by site ${s.name}`}
+                    aria-pressed={isActive}
                     className={`pl-3 pr-9 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all whitespace-nowrap flex items-center gap-2 ${isActive ? 'bg-[#034EA2] border-blue-500 text-white' : 'border-white/[0.07] text-slate-500 hover:border-white/20 hover:text-slate-300'}`}
                     style={isActive && s.color ? { backgroundColor: s.color, borderColor: 'rgba(255,255,255,0.1)' } : {}}
                   >
@@ -3424,7 +3487,7 @@ export default function Racks() {
                       data-site-capacity-badge
                       data-capacity-level={siteFill >= 90 ? 'high' : siteFill >= 70 ? 'watch' : 'normal'}
                       title={`${siteFill}% of rack unit capacity used`}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-md border border-white/30 bg-slate-950/90 px-1.5 py-1 text-[8px] font-bold leading-none tabular-nums text-white shadow-sm"
+                      className="inline-flex min-h-5 shrink-0 items-center gap-1 whitespace-nowrap rounded-md border border-white/30 bg-slate-950/90 px-1.5 py-1 text-[8px] font-bold leading-none tabular-nums text-white shadow-sm"
                     >
                       {siteFill >= 90 ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-rose-400" /> : null}
                       {siteFill}%
@@ -3432,6 +3495,7 @@ export default function Racks() {
                   </button>
 
                   <button
+                    type="button"
                     aria-label={`Site actions for ${s.name}`}
                     aria-expanded={isMenuOpen}
                     onClick={e => {
@@ -3442,7 +3506,7 @@ export default function Racks() {
                       }
                       setActiveSiteMenu(isMenuOpen ? null : s.id)
                     }}
-                    className={`absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors opacity-0 group-hover/site:opacity-100 ${isActive ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-400'}`}
+                    className={`absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-[opacity,color,background-color] group-hover/site:opacity-100 group-focus-within/site:opacity-100 focus-visible:opacity-100 focus-visible:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] ${isActive ? 'text-white/75 hover:text-white hover:bg-white/10' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'}`}
                   >
                     <MoreVertical size={12} />
                   </button>
@@ -3483,7 +3547,7 @@ export default function Racks() {
         
         {viewMode === 'spatial' ? (
           <SpatialMap
-            racks={displayedRacks}
+            racks={renderedRacks}
             onRackClick={handleSpatialRackClick}
             siteColor={spatialSiteColor}
           />
@@ -3540,6 +3604,7 @@ export default function Racks() {
                                   <RackElevation
                                     rack={diffBaseVersion ? historicalRack : liveRack}
                                     searchTerm={searchTerm}
+                                    matchedDeviceIds={rackSearchMatchesByRackId.get(String(r.id))}
                                     isSelected={false}
                                     showCheckbox={false}
                                     onToggleSelect={noRackAction}
@@ -3557,6 +3622,7 @@ export default function Racks() {
                                   <RackElevation
                                     rack={diffTargetVersion ? secondRack : r}
                                     searchTerm={searchTerm}
+                                    matchedDeviceIds={rackSearchMatchesByRackId.get(String(r.id))}
                                     isSelected={false}
                                     showCheckbox={false}
                                     onToggleSelect={noRackAction}
@@ -3580,6 +3646,7 @@ export default function Racks() {
                         key={r.id}
                         rack={r}
                         searchTerm={searchTerm}
+                        matchedDeviceIds={rackSearchMatchesByRackId.get(String(r.id))}
                         isSelected={selectedRacks.includes(r.id)}
                         onToggleSelect={handleRackSelectionToggle}
                         onDelete={handleRackDelete}
@@ -3626,6 +3693,7 @@ export default function Racks() {
                         key={r.id}
                         rack={r}
                         searchTerm={searchTerm}
+                        matchedDeviceIds={rackSearchMatchesByRackId.get(String(r.id))}
                         isSelected={selectedRacks.includes(r.id)}
                         onToggleSelect={handleRackSelectionToggle}
                         onDelete={handleRackDelete}
@@ -3651,12 +3719,16 @@ export default function Racks() {
           })()}
         </>)}
 
-        {displayedRacks.length === 0 && (
+        {renderedRacks.length === 0 && (
           <div className="flex-1 flex items-center justify-center p-8">
             <WorkspaceEmptyState 
               icon={<Server size={32} />}
-              title={activeTab === 'deleted' ? 'No Purged Records' : searchTerm ? `No results for "${searchTerm}"` : 'No Racks in Scope'}
-              description="No physical assets found matching the current filters or site selection."
+              title={activeTab === 'deleted' ? 'No Purged Records' : searchTerm ? `No racks match "${searchTerm}"` : 'No Racks in Scope'}
+              description={searchTerm
+                ? rackSearchIsIncomplete
+                  ? 'No match was found in the loaded data. Linked device details are still loading or unavailable, so verify again after refreshing them.'
+                  : 'Try a rack name, site, aisle, row, mounted device, system, asset tag, or serial number.'
+                : 'No physical assets found matching the current filters or site selection.'}
             />
           </div>
         )}
@@ -3666,7 +3738,9 @@ export default function Racks() {
       <AnimatePresence>
         {selectedRacks.length > 0 && !isMaskMode && (
           <BulkToolbar
-            count={selectedRacks.length}            isDeleted={activeTab === 'deleted'}
+            count={selectedRacks.length}
+            hiddenCount={selectedRacks.filter(id => !renderedRackIdSet.has(String(id))).length}
+            isDeleted={activeTab === 'deleted'}
             onClear={() => setSelectedRacks([])}
             onCompare={() => setIsComparing(true)}
             onRelocate={() => setShowRelocateModal(true)}
@@ -3981,7 +4055,7 @@ export default function Racks() {
         }
       >
         {isProvisioning && (
-          <div className="space-y-6 pt-6">
+          <div className="space-y-4">
                 {/* Asset / Reserve Toggle */}
                 <div className="flex bg-black/40 p-1 rounded-lg border border-white/5">
                   <button 

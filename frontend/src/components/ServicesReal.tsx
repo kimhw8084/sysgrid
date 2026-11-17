@@ -66,7 +66,7 @@ import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { downloadOperationalImportFile } from './shared/OperationalImportExport'
 import { OperationalDataGrid } from './shared/OperationalDataGrid'
-import { buildOperationalGroupSections } from './shared/OperationalGrouping'
+import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from './shared/OperationalGrouping'
 import { resolveOperationalDataState } from './shared/OperationalDataState'
 import { fetchOperationalArray } from './shared/operationalArrayFetch'
 import DiagnosticStatusPill, { DataDiagnosticModal, buildOperationalDiagnosticDetail } from './shared/OperationalDataStatus'
@@ -1167,7 +1167,7 @@ export default function ServicesReal() {
 
   const { data: allItems, isLoading, isFetching, isError, error, refetch: retryServiceRegistry } = useQuery({
     queryKey: ['logical-services'],
-    queryFn: () => fetchOperationalArray('/api/v1/logical-services/?include_deleted=true', 'Service registry'),
+    queryFn: () => fetchOperationalArray('/api/v1/logical-services?include_deleted=true', 'Service registry'),
   })
 
 
@@ -1329,7 +1329,7 @@ export default function ServicesReal() {
   const activeServicesQueryError = isError ? error : null
 
   const servicesDiagnosticDetail = useMemo(() => buildOperationalDiagnosticDetail({
-    endpoint: '/api/v1/logical-services/?include_deleted=true',
+    endpoint: '/api/v1/logical-services?include_deleted=true',
     error: activeServicesQueryError,
     fallbackMessage: 'The services registry request failed.',
   }), [activeServicesQueryError])
@@ -1371,16 +1371,7 @@ export default function ServicesReal() {
 
   useEffect(() => {
     if (groupBy === 'raw') return
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => {
-        if (!(section.key in next)) next[section.key] = false
-      })
-      Object.keys(next).forEach((key) => {
-        if (!groupedSections.some((section) => section.key === key)) delete next[key]
-      })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [groupBy, groupedSections])
 
   const isRecentChange = useCallback((item: any) => {
@@ -1510,7 +1501,7 @@ export default function ServicesReal() {
 
   const { data: devices } = useQuery({
     queryKey: ['devices'],
-    queryFn: async () => (await apiFetch('/api/v1/devices/')).json()
+    queryFn: async () => (await apiFetch('/api/v1/devices')).json()
   })
 
   const serviceRowsRef = useRef<any[]>([])
@@ -1562,7 +1553,7 @@ export default function ServicesReal() {
         kind: 'identity',
         field: 'name',
         headerName: 'Name',
-        width: 220,
+        width: 230,
         hide: hiddenColumns.includes('name'),
       },
       {
@@ -1740,7 +1731,6 @@ export default function ServicesReal() {
       header={{
         eyebrow: "Services",
         title: 'Services',
-        titleIcon: Activity,
         subtitle: "Centralized logical service registry and operational ownership view",
         actions: (
           <>
@@ -2866,7 +2856,7 @@ function ServiceRecordForm({ item, devices, options, onClose, onSuccess }: any) 
     meta: { handlesErrorToast: true },
     mutationFn: async (payload: any) => {
       const sanitized = sanitizeServicePayload(payload)
-      const url = item?.id ? `/api/v1/logical-services/${item.id}` : '/api/v1/logical-services/'
+      const url = item?.id ? `/api/v1/logical-services/${item.id}` : '/api/v1/logical-services'
       const method = item?.id ? 'PUT' : 'POST'
       const res = await apiFetch(url, { method, body: JSON.stringify(withServiceEditRevision(sanitized, payload)) })
       if (!res.ok) throw Object.assign(new Error(await res.text()), { status: res.status })

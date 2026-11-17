@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { AppDropdown } from './AppDropdown'
 
@@ -43,6 +44,45 @@ describe('AppDropdown', () => {
 
     expect(onChange).toHaveBeenCalledWith('beta')
     expect(screen.queryByPlaceholderText('Search options...')).not.toBeInTheDocument()
+  })
+
+  it('exposes the visible filter label and current value as the dropdown accessible name', () => {
+    render(
+      <AppDropdown
+        value={['Qualification Sandbox']}
+        onChange={() => {}}
+        multi
+        label="System Filter"
+        ariaLabel="System Filter"
+        options={[{ value: 'Qualification Sandbox', label: 'Qualification Sandbox' }]}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'System Filter: Qualification Sandbox' })).toBeInTheDocument()
+  })
+
+  it('returns keyboard focus to the trigger after a single selection closes the menu', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(
+      <AppDropdown
+        value=""
+        onChange={onChange}
+        label="Group By"
+        ariaLabel="Group By"
+        placeholder="Raw Table"
+        options={[{ value: 'system', label: 'System' }]}
+      />
+    )
+
+    const trigger = screen.getByRole('button', { name: 'Group By: Raw Table' })
+    await user.click(trigger)
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'System' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    expect(onChange).toHaveBeenCalledWith('system')
+    await waitFor(() => expect(trigger).toHaveFocus())
   })
 
   it('supports multi-select labels and empty search states', () => {

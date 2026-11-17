@@ -82,3 +82,42 @@ it('keeps painted nodes, arrow clipping, and pointer geometry consistent for eve
   }
   expect(props.nodeLabel({ name: '<img src=x onerror=alert(1)>', type: 'Physical' })).toContain('&lt;img')
 })
+
+it('places selected work-signal labels below the node marker', () => {
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} })
+  const selected = { id: 1, name: 'Selected service', x: 40, y: 50, workSignal: { level: 'scheduled' } }
+  const peer = { id: 2, name: 'Connected peer', x: 180, y: 50, workSignal: { level: 'none' } }
+  render(<AssetTopologyCanvas graph={{ nodes: [selected, peer], links: [] }} selectedId={selected.id} />)
+  const props = captured.current
+  const layoutContext = { save: vi.fn(), restore: vi.fn(), measureText: (value: string) => ({ width: value.length * 6 }), font: '' } as any
+  props.onRenderFramePre(layoutContext, 1)
+  const paintContext = {
+    beginPath: vi.fn(), arc: vi.fn(), fill: vi.fn(), stroke: vi.fn(), fillRect: vi.fn(), fillText: vi.fn(),
+    measureText: (value: string) => ({ width: value.length * 6 }),
+    fillStyle: '', strokeStyle: '', lineWidth: 1, textAlign: '', textBaseline: '', font: '',
+  } as any
+  props.nodeCanvasObject(selected, paintContext, 1)
+  expect(paintContext.fillRect).toHaveBeenCalledOnce()
+  expect(paintContext.fillRect.mock.calls[0][1]).toBeGreaterThanOrEqual(selected.y + 12)
+})
+
+it('keeps topology labels clear of every node marker', () => {
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} })
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 320, height: 300 } as DOMRect)
+  const selected = { id: 1, name: 'Selected', x: 40, y: 50 }
+  const nearby = { id: 2, name: 'Nearby', x: 55, y: 65 }
+  render(<AssetTopologyCanvas graph={{ nodes: [selected, nearby], links: [] }} selectedId={selected.id} />)
+  const props = captured.current
+  const context = { save: vi.fn(), restore: vi.fn(), measureText: (value: string) => ({ width: value.length * 6 }), font: '' } as any
+  props.onRenderFramePre(context, 1)
+  const paintContext = {
+    beginPath: vi.fn(), arc: vi.fn(), fill: vi.fn(), stroke: vi.fn(), fillRect: vi.fn(), fillText: vi.fn(),
+    measureText: (value: string) => ({ width: value.length * 6 }),
+    fillStyle: '', strokeStyle: '', lineWidth: 1, textAlign: '', textBaseline: '', font: '',
+  } as any
+  props.nodeCanvasObject(selected, paintContext, 1)
+  expect(paintContext.fillText).not.toHaveBeenCalled()
+  props.nodeCanvasObject(nearby, paintContext, 1)
+  expect(paintContext.fillText).toHaveBeenCalledOnce()
+  expect(paintContext.fillText.mock.calls[0][0]).toBe('Nearby')
+})

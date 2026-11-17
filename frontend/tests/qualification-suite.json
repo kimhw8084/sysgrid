@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "release_blocking": [
     "assets-golden-evidence.spec.ts",
     "assets-revert.spec.ts",
@@ -97,5 +97,8 @@
   ],
   "role_matrix": [
     "role-matrix.spec.ts"
+  ],
+  "retired_route_notices": [
+    "retired-route-notices.spec.ts"
   ]
 }

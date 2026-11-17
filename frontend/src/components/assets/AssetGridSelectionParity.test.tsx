@@ -83,16 +83,18 @@ describe('Asset Grid Selection Parity (Blocker C)', () => {
     expect(grid.getAttribute('data-suppress')).toBe('false')
   })
 
-  it('proves grouped grid sections also render with suppressRowClickSelection={false}', () => {
+  it('proves grouping by system renders every section with selection enabled', async () => {
     const props = getMockProps()
     props.groupBy = 'system'
     props.groupOptions = [{ value: 'system', label: 'System Grouping' }]
-    props.collapsedGroups = { 'Sys-A': false }
+    props.collapsedGroups = { 'system:Sys-A': false, 'system:Sys-B': false }
 
     renderWithQueryClient(<AssetGoldenFeatureSurfaces {...props as any} />)
 
-    const grids = screen.getAllByTestId('mock-operational-grid')
-    expect(grids.length).toBeGreaterThan(0)
+    const grids = await screen.findAllByTestId('mock-operational-grid')
+    expect(grids).toHaveLength(2)
+    expect(screen.getByRole('heading', { name: 'Sys-A' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Sys-B' })).toBeInTheDocument()
 
     // Key assertion for grouped rows
     expect(grids[0].getAttribute('data-suppress')).toBe('false')

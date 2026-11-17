@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import { buildOperationalColumnSizingContext, isOperationalAutoResizeSource, normalizeOperationalColumnDefinitions } from './OperationalGridSizing'
+import { buildOperationalColumnSizingContext, clampOperationalColumnWidth, getOperationalContentAutoSizeStrategy, isOperationalAutoResizeSource, normalizeOperationalColumnDefinitions } from './OperationalGridSizing'
 import { readOptionalStorage, writeOptionalStorage } from './optionalStorage'
 
 const getOperationalGridColumnIds = (definitions: any[] = []) => {
@@ -39,20 +39,29 @@ export const OperationalAgGrid = React.forwardRef<any, any>(({ columnDefs, ...pr
     [normalizedColumnDefs, props.context],
   )
   const storageKey = useMemo(() => {
-    if (typeof window === 'undefined' || typeof props.onColumnResized === 'function') return null
+    if (typeof window === 'undefined') return null
     const ids = getOperationalGridColumnIds(columnDefs)
     if (!ids.length) return null
     return `sysgrid:operational-grid-widths:v1:${window.location.pathname}:${ids.join('|')}`
-  }, [columnDefs, props.onColumnResized])
+  }, [columnDefs])
   const storedWidths = useMemo(() => readStoredColumnWidths(storageKey), [storageKey])
-  const autoSizeStrategy = storedWidths.length ? undefined : props.autoSizeStrategy
+  const boundedAutoSizeStrategy = useMemo(
+    () => getOperationalContentAutoSizeStrategy(props.autoSizeStrategy, normalizedColumnDefs),
+    [normalizedColumnDefs, props.autoSizeStrategy],
+  )
+  const autoSizeStrategy = storedWidths.length ? undefined : boundedAutoSizeStrategy
 
   const onGridReady = (event: any) => {
     props.onGridReady?.(event)
     if (!storedWidths.length) return
     requestAnimationFrame(() => {
       if (event.api?.isDestroyed?.()) return
-      event.api?.applyColumnState?.({ state: storedWidths, applyOrder: false })
+      const boundedWidths = storedWidths.map((stored: any) => {
+        const definition = event.api?.getColumn?.(stored.colId)?.getColDef?.()
+        const width = clampOperationalColumnWidth(stored.width, definition?.minWidth, definition?.maxWidth)
+        return width === stored.width ? stored : { ...stored, width }
+      })
+      event.api?.applyColumnState?.({ state: boundedWidths, applyOrder: false })
     })
   }
 

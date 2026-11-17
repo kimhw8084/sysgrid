@@ -15,11 +15,13 @@ import { toast } from 'react-hot-toast'
 import { ConfirmationModal } from './shared/ConfirmationModal'
 import {
   OPERATIONAL_GRID_AUTO_SIZE_STRATEGY,
+  getEffectiveOperationalGridFontSize,
   getOperationalGridHeaderHeight,
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
   OPERATIONAL_GRID_ROW_HEIGHT_MAX,
   OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+  OPERATIONAL_GRID_MIN_FONT_SIZE,
 } from './shared/OperationalGridSizing'
 import { OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import { StyledSelect } from './shared/StyledSelect'
@@ -47,7 +49,7 @@ const InfoCard = ({ label, value, icon: Icon }: any) => (
 export default function Vendor() {
   const queryClient = useQueryClient()
   const gridRef = React.useRef<any>(null)
-  const [fontSize, setFontSize] = useState(11)
+  const [fontSize, setFontSize] = useState(12)
   const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(true)
   const [showColumnPicker, setShowColumnPicker] = useState(false)
@@ -374,11 +376,11 @@ export default function Vendor() {
                         <span className="text-[9px] font-bold text-slate-500 uppercase">Font Size</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="8" max="14" step="1" 
-                            value={fontSize} onChange={e => setFontSize(Number(e.target.value))}
+                            type="range" min={OPERATIONAL_GRID_MIN_FONT_SIZE} max="14" step="1"
+                            value={getEffectiveOperationalGridFontSize(fontSize)} onChange={e => setFontSize(Number(e.target.value))}
                             className="w-32 accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-white w-4 font-bold">{fontSize}px</span>
+                            <span className="text-[10px] text-white w-4 font-bold">{getEffectiveOperationalGridFontSize(fontSize)}px</span>
                         </div>
                      </div>
 

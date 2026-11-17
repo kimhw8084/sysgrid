@@ -3,6 +3,35 @@ import { OperationalAgGrid } from './OperationalAgGrid'
 import { OPERATIONAL_GRID_CLASSES, OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './OperationalGridContract'
 import { getOperationalGridHeaderHeight, getOperationalGridRowHeight } from './OperationalGridSizing'
 
+export function getOperationalColumnsToUnpinForOverflow(
+  leftColumns: any[],
+  rightColumns: any[],
+  viewportWidth: number,
+  centerSafetyWidth = 50,
+) {
+  const pinnedWidth = [...leftColumns, ...rightColumns].reduce(
+    (total, column) => total + (Number(column.getActualWidth?.()) || 0),
+    0,
+  )
+  let remainingWidth = pinnedWidth
+  const canUnpin = (column: any) => !column.getColDef?.().lockPinned && !column.getColDef?.().lockPosition
+  const isActionColumn = (column: any) => column.getColId?.() === 'row_actions'
+  const candidates = [
+    ...rightColumns.slice().reverse().filter((column) => canUnpin(column) && !isActionColumn(column)),
+    ...leftColumns.slice().reverse().filter(canUnpin),
+    ...rightColumns.filter((column) => canUnpin(column) && isActionColumn(column)),
+  ]
+  const toUnpin: any[] = []
+
+  for (const column of candidates) {
+    if (remainingWidth < viewportWidth - centerSafetyWidth) break
+    toUnpin.push(column)
+    remainingWidth -= Number(column.getActualWidth?.()) || 0
+  }
+
+  return toUnpin
+}
+
 export const OperationalGridMatrix = React.memo(({
   gridRef,
   rowData,
@@ -26,6 +55,7 @@ export const OperationalGridMatrix = React.memo(({
   onRowClicked,
   onRowDoubleClicked,
   onCellContextMenu,
+  onCellKeyDown: onCellKeyDownProp,
   getRowClass,
   onFirstDataRendered,
   onRowDataUpdated,
@@ -37,37 +67,29 @@ export const OperationalGridMatrix = React.memo(({
   const unpinFrame = useRef<number>()
   const handleCellKeyDown = useCallback((event: any) => {
     const key = event?.event?.key
-    if (!onCellContextMenu || !(key === 'ContextMenu' || (key === 'F10' && event.event.shiftKey))) return
-    event.event.preventDefault()
-    const cell = event.event.target as HTMLElement | null
-    const rect = cell?.getBoundingClientRect()
-    const pointEvent = {
-      target: event.event.target,
-      clientX: rect ? Math.round(rect.left + Math.min(rect.width / 2, 24)) : 0,
-      clientY: rect ? Math.round(rect.bottom) : 0,
-      preventDefault: () => event.event.preventDefault(),
+    if (onCellContextMenu && (key === 'ContextMenu' || (key === 'F10' && event.event.shiftKey))) {
+      event.event.preventDefault()
+      const cell = event.event.target as HTMLElement | null
+      const rect = cell?.getBoundingClientRect()
+      const pointEvent = {
+        target: event.event.target,
+        clientX: rect ? Math.round(rect.left + Math.min(rect.width / 2, 24)) : 0,
+        clientY: rect ? Math.round(rect.bottom) : 0,
+        preventDefault: () => event.event.preventDefault(),
+      }
+      onCellContextMenu({ ...event, event: pointEvent })
+      return
     }
-    onCellContextMenu({ ...event, event: pointEvent })
-  }, [onCellContextMenu])
+    onCellKeyDownProp?.(event)
+  }, [onCellContextMenu, onCellKeyDownProp])
   // AG Grid detects pinned overflow inside ResizeObserver delivery. Defer its
   // layout-changing unpin until the next frame to avoid same-frame resize loops.
-  const processUnpinnedColumns = useCallback(({ columns, api, viewportWidth }: any) => {
-    let overflowing = columns
-    if (columns.some((column: any) => column.getColId?.() === 'row_actions')) {
-      const left = api.getDisplayedLeftColumns()
-      const right = api.getDisplayedRightColumns()
-      let pinnedWidth = [...left, ...right].reduce((total, column) => total + column.getActualWidth(), 0)
-      // Keep row commands reachable when pinned columns threaten the center viewport.
-      // Release other pinned columns first, retaining the minimum center width.
-      const candidates = [...right].reverse().filter(column => column.getColId() !== 'row_actions')
-        .concat([...left].reverse(), right.filter((column: any) => column.getColId() === 'row_actions'))
-      overflowing = []
-      for (const column of candidates) {
-        if (pinnedWidth < viewportWidth - 50) break
-        overflowing.push(column)
-        pinnedWidth -= column.getActualWidth()
-      }
-    }
+  const processUnpinnedColumns = useCallback(({ api, viewportWidth }: any) => {
+    const left = api.getDisplayedLeftColumns?.() || []
+    const right = api.getDisplayedRightColumns?.() || []
+    // Identity and action columns marked lockPinned/lockPosition remain frozen;
+    // release only unlocked columns when the center viewport needs room.
+    const overflowing = getOperationalColumnsToUnpinForOverflow(left, right, viewportWidth)
     if (unpinFrame.current !== undefined) cancelAnimationFrame(unpinFrame.current)
     unpinFrame.current = requestAnimationFrame(() => {
       unpinFrame.current = undefined

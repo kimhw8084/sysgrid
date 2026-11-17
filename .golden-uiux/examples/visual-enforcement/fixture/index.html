@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Golden visual enforcement fixture</title>
+<style>
+:root{--surface:#ffffff;--text:#17191d;--muted:#60656f;--accent:#075dcc;--space-4:16px;color-scheme:light}
+:root[data-theme="dark"]{--surface:#101114;--text:#f3f4f6;--muted:#b5bac4;--accent:#8ab4ff;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--surface);color:var(--text);font:16px/1.45 system-ui,sans-serif;padding:24px;overflow-x:auto}
+main{max-width:720px;margin:auto;position:relative}.card{border:1px solid #777;border-radius:12px;padding:20px;margin-bottom:18px;position:relative}
+h1{font-size:24px;margin:0 0 18px}h2{font-size:18px;margin:0 0 8px}.row{display:flex;align-items:center;gap:12px;margin:12px 0}
+button{font:inherit;padding:8px 12px;border:1px solid #667085;border-radius:6px;background:var(--surface);color:var(--text)}
+#start:focus-visible,#focus-target:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#clipped-label{display:block;width:92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid #6b7280;padding:4px}
+#overlap-a,#overlap-b{position:static;margin:4px 0}
+#covered{position:static}
+#offscreen-cta{position:static}
+#icon{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:none}
+#low-contrast{color:var(--text)}
+#scroll-area{width:260px;height:76px;overflow-y:auto;border:1px solid #626975;position:relative}
+#scroll-spacer{height:180px}#scroll-target{display:block;margin:8px 0}
+#photo{display:block;width:160px;height:80px;object-fit:contain;border:1px solid #5d6674}
+#overflow-probe{width:100%;height:2px;background:transparent}
+#shifter{position:relative;left:0;width:100px;height:24px;background:#8ab4ff;margin:8px 0}
+#flash{display:none;position:fixed;inset:40% 20%;z-index:20;background:#cf273f;color:white;padding:20px;text-align:center}
+[data-case="defective"][data-run="active"] #shifter{animation:jitter 420ms ease-in-out 1}
+[data-case="defective"][data-run="active"] #flash{display:block;animation:flash 650ms ease-in-out 1}
+#intentional-trunc{display:block;width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#intentional-trunc:focus-visible,#tooltip-trigger:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#tooltip{display:none;position:absolute;top:-34px;left:0;background:#111;color:white;padding:4px 8px;border-radius:4px;z-index:4;white-space:nowrap}
+#tooltip-trigger:hover #tooltip,#tooltip-trigger:focus-within #tooltip{display:block}
+#badge{position:absolute;top:-7px;right:-7px;width:16px;height:16px;border-radius:50%;background:#c02742}
+dialog{width:min(340px,calc(100vw - 32px));border:1px solid #68707c;border-radius:12px;background:var(--surface);color:var(--text)}dialog::backdrop{background:rgba(0,0,0,.42)}
+[data-case="defective"] #clipped-label{width:92px}
+[data-case="defective"] #overlap-a,[data-case="defective"] #overlap-b{position:absolute;left:48px;top:146px;margin:0;width:360px}
+[data-case="defective"] #overlap-b{top:146px;color:#c02742}
+[data-case="defective"] #covered{position:absolute;left:62px;top:250px;width:180px;height:38px;z-index:2}
+[data-case="defective"] #offscreen-cta{position:fixed;left:1250px;top:16px}
+[data-case="defective"] #overflow-probe{width:120vw;background:#c02742}
+[data-case="defective"] button:focus-visible{outline:none;box-shadow:none}
+[data-case="defective"] #covered{top:108px}
+[data-case="defective"] #icon{width:8px;height:8px;vertical-align:top;margin-top:6px}
+[data-case="defective"] #low-contrast{color:#c2c2c2}
+[data-theme="dark"][data-case="defective"] #low-contrast{color:#777}
+[data-case="defective"] #scroll-area{overflow-y:hidden}
+[data-case="defective"] #photo{width:160px;height:30px;object-fit:fill}
+@keyframes jitter{0%{left:0}35%{left:34px}70%{left:-24px}100%{left:0}}
+@keyframes flash{0%,100%{opacity:0}15%,75%{opacity:.96}}
+[data-case="intentional"] #intentional-trunc{width:150px}
+[data-case="corrected"] #clipped-label{width:auto;max-width:100%;white-space:normal;overflow:visible;text-overflow:clip}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Service workspace</h1>
+  <section class="card" id="panel">
+    <h2>Current queue</h2>
+    <div class="row"><span id="overlap-a" data-golden-text>East service queue has 18 open requests</span></div>
+    <div class="row"><span id="overlap-b" data-golden-text>Priority response required for 4 requests</span></div>
+    <div class="row"><span id="clipped-label" data-golden-text>Unusually long equipment identifier SN-0193847-AZ</span></div>
+    <button id="covered" type="button">Covered action</button>
+    <div class="row"><span>Navigation</span><svg id="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M8 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span id="icon-label">Continue to details</span></div>
+    <p id="low-contrast">Open issues need operator review</p>
+    <button id="simulate-action" type="button">Simulate save</button>
+    <button id="start" type="button">Start keyboard path</button>
+    <button id="focus-target" type="button">Open details</button>
+    <button id="offscreen-cta" type="button">Save changes</button>
+    <div id="scroll-area" aria-label="Service results">
+      <div id="scroll-spacer"></div><button id="scroll-target" type="button">Open fourth result</button>
+    </div>
+    <img id="photo" alt="Blue equipment rack diagram" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40'%3E%3Crect width='80' height='40' fill='%233b82f6'/%3E%3C/svg%3E">
+    <div id="overflow-probe" aria-hidden="true"></div>
+    <div id="shifter" aria-hidden="true"></div><div id="flash" role="status">Saved</div>
+    <div class="row"><span id="intentional-trunc" tabindex="0" aria-label="Long equipment identifier SERIAL-ABC-0193847-AZ-001">Long equipment identifier SERIAL-ABC-0193847-AZ-001</span></div>
+    <div class="row"><span id="tooltip-trigger" tabindex="0" style="position:relative">More information<span id="tooltip" role="tooltip">Additional approved detail</span></span></div>
+    <span id="badge" data-golden-decorative="true" aria-hidden="true"></span>
+    <button id="open-dialog" type="button">Open review</button>
+  </section>
+  <dialog id="review-dialog" aria-labelledby="dialog-title"><h2 id="dialog-title">Review changes</h2><p>Confirm the service details.</p><button id="review-details" type="button">Review details</button><button id="close-dialog" type="button">Close</button></dialog>
+</main>
+<script>
+const query=new URLSearchParams(location.search),caseName=query.get('case')||'corrected',theme=query.get('theme')||'light';
+document.documentElement.dataset.case=caseName;document.documentElement.dataset.theme=theme;
+document.querySelector('#simulate-action').addEventListener('click',()=>{if(caseName==='defective')document.documentElement.dataset.run='active'});
+const dialog=document.querySelector('#review-dialog');document.querySelector('#open-dialog').addEventListener('click',()=>dialog.showModal());document.querySelector('#close-dialog').addEventListener('click',()=>dialog.close());
+</script>
+</body></html>

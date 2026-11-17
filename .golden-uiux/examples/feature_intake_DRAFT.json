@@ -1,0 +1,42 @@
+{
+  "user": "SysGrid authorized operations analyst (role must be verified locally)",
+  "job": "Find, filter and safely inspect table records without losing existing saved views",
+  "data": "Records, filters, permissions and persisted user view preferences",
+  "permissions": "READ_ONLY_FOR_INSPECTION; bulk changes require separate authorized task scope",
+  "intended_outcome": "A consistent table workflow using existing approved controls",
+  "consequential_behavior": "No destructive actions or source write authority implied",
+  "success_criteria": [
+    "Correct filtered record count",
+    "Keyboard focus preserved",
+    "Saved preferences unchanged",
+    "No unapproved geometry changes"
+  ],
+  "intent_spec": {
+    "intent_id": "rack_spatial_inventory",
+    "workflow_steps": [
+      "Search racks by stable identity",
+      "Filter by site and location",
+      "Select a rack",
+      "Inspect spatial/elevation facts and the mounted asset",
+      "Return without losing the selected rack"
+    ],
+    "component_needs": [
+      "spatial_map",
+      "rack_elevation",
+      "asset_details",
+      "record_search",
+      "selection_controls",
+      "responsive_layout",
+      "keyboard_accessible",
+      "theme_tokens",
+      "empty_error_states"
+    ],
+    "constraints": [
+      "responsive_viewports",
+      "preserve_visual_identity",
+      "keyboard_accessible",
+      "preserve_selection_context"
+    ],
+    "scope_mode": "isolated_prototype"
+  }
+}

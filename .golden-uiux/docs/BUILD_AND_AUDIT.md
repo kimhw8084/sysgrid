@@ -1,0 +1,11 @@
+# Build and audit log — executable candidate
+
+Artifact identity: Golden Universal UI/UX Engineering v0.2.6-experimental-pilot. This versioned experimental pilot descends from the preserved v0.2.4 distribution through the isolated visual-intelligence candidate. Its source-bound design-session workflow is local CLI orchestration; backend OpenAPI, mode-aware patch manifests, skip-link continuity and focus-indicator clipping are now executable checks. It does not authenticate live client delivery. All normative source texts are derived from the Round 48 corrected, NON-FINAL review bundle and are **not** represented as officially approved. The frozen v0.2.4 ZIP remains byte-for-byte unchanged. This pilot does not modify the active SysGrid checkout or Constitution. The source-bound interaction examples live only in external isolated session copies.
+
+Current pilot checks are recorded in `PILOT_VERIFICATION.md` and `TEST_REPORT.txt`. Local package checks cover offline CLI, manifest, installer and JSON-RPC behavior. They do **not** establish correctness of any SysGrid feature, browser rendering, keyboard interaction, or user satisfaction.
+
+Manifest: run `python3 install.py --verify-only` after release packaging. `PACKAGE_SHA256.json` is a SHA inventory; transfer provenance and organizational signature must be separately verified before company installation.
+
+Runtime trust: `golden_uiux/mcp.py` only advertises read-only tools; `golden_uiux/core.py` reads fixed bundled files and returns static assessment. No connection, telemetry, file-write API, secrets, Git control or approval authority is embedded in the server. The optional, explicitly gated browser evidence collector also writes screenshots/reports to its user-chosen evidence directory; the installer is the only component that intentionally creates or removes files in a target OpenCode/Codex project and only under explicit flags.
+
+Limitations: keyword-based routing is deterministic but not a universal semantic classifier. Project profile APPROVED claims in JSON aren't cryptographic proof of real governance. Passing local tests cannot prove that dynamic frontends comply with WCAG, preserve all geometry, or attain the lowest possible TAT. The receiving agent and independent test environment must prove those claims with actual source-bound evidence.

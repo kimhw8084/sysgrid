@@ -62,7 +62,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           const availableResults = Array.isArray(data.results) ? data.results : []
           setResults(availableResults.filter((result: SearchResult) => {
             const moduleId = result.module_id || getCatalogModuleForPath(result.path)?.id
-            return !SYSGRID_SEPARATE_APP_MODULE_IDS.has(moduleId || '') && result.type !== 'project' && result.type !== 'knowledge'
+            return !SYSGRID_SEPARATE_APP_MODULE_IDS.has(moduleId || '')
           }));
           setSelectedIndex(0);
         } catch (err) {
@@ -155,6 +155,7 @@ export const GlobalSearch = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     <AnimatePresence>
       {isOpen && (
         <div {...dialogProps} className="fixed inset-0 flex items-start justify-center px-4 pt-[15vh]" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
+          <h2 id="global-search-title" className="sr-only">Global search</h2>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

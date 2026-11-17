@@ -21,11 +21,13 @@ import {
 import { resolveOperationalObjectReference } from './shared/OperationalObjectReference'
 import { OPERATIONAL_GRID_BADGE_CLASS, OPERATIONAL_GRID_BADGE_TEXT_CLASS, OPERATIONAL_GRID_DEFAULT_COLUMN_DEF } from './shared/OperationalGridContract'
 import {
+  getEffectiveOperationalGridFontSize,
   getOperationalGridHeaderHeight,
   getOperationalGridRowDensityForHeight,
   getOperationalGridRowHeight,
   OPERATIONAL_GRID_ROW_HEIGHT_MAX,
   OPERATIONAL_GRID_ROW_HEIGHT_MIN,
+  OPERATIONAL_GRID_MIN_FONT_SIZE,
 } from './shared/OperationalGridSizing'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
@@ -35,6 +37,9 @@ const AUDIT_DEFAULT_COLUMN_DEF: ColDef = {
   menuTabs: ['filterMenuTab', 'generalMenuTab'],
 }
 
+const auditDescriptionDomId = (params: any) =>
+  `audit-change-description-${String(params?.node?.id ?? params?.data?.id ?? 'unknown').replace(/[^a-zA-Z0-9_-]/g, '-')}`
+
 export default function AuditLogs() {
   const reducedMotion = useReducedMotion()
   const navigate = useNavigate()
@@ -42,7 +47,7 @@ export default function AuditLogs() {
   const gridRef = React.useRef<any>(null)
   const [gridApi, setGridApi] = useState<any>(null)
   const [gridColumnApi, setGridColumnApi] = useState<any>(null)
-  const [fontSize, setFontSize] = useState(11)
+  const [fontSize, setFontSize] = useState(12)
   const [rowDensity, setRowDensity] = useState(8)
   const [showStyleLab, setShowStyleLab] = useState(false)
   const [showCharts, setShowCharts] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
@@ -111,10 +116,23 @@ export default function AuditLogs() {
     const api = gridRef.current?.api
     if (!api) return
     const timer = window.setTimeout(() => {
-      if (gridRef.current?.api === api && !api.isDestroyed()) api.autoSizeAllColumns()
+      if (gridRef.current?.api !== api || api.isDestroyed()) return
+      api.autoSizeAllColumns()
+      // AG Grid autosizing can narrow a heading below its readable text width
+      // after a viewport change. Reapply the declared header minimums after
+      // autosize; the grid can scroll horizontally instead of clipping labels.
+      const requiredHeaderWidths = ['action', 'user_id', 'description'].flatMap((key) => {
+        const column = api.getColumn(key)
+        const minimum = Number(column?.getColDef?.().minWidth)
+        const current = Number(column?.getActualWidth?.())
+        return column && Number.isFinite(minimum) && current < minimum
+          ? [{ key, newWidth: minimum }]
+          : []
+      })
+      if (requiredHeaderWidths.length) api.setColumnWidths(requiredHeaderWidths)
     }, 100)
     return () => window.clearTimeout(timer)
-  }, [fontSize, showCharts]) // Filtering and row density preserve manual widths and horizontal position.
+  }, [fontSize, isMobileLayout, showCharts]) // Filtering and row density preserve manual widths and horizontal position.
 
   const handleExportCSV = () => {
     if (gridRef.current?.api) {
@@ -157,7 +175,9 @@ export default function AuditLogs() {
       field: 'action', 
       headerName: 'OPERATION', 
       width: 120,
-      minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 'OPERATION'.length),
+      // Keep the complete heading visible after mobile column autosizing.
+      minWidth: 56 + Math.ceil(Math.max(10, fontSize - 1) * 'OPERATION'.length),
+      operationalMinimumWidth: 56 + Math.ceil(Math.max(10, fontSize - 1) * 'OPERATION'.length),
       filter: true,
       cellClass: 'text-center',
       headerClass: 'text-center',
@@ -177,7 +197,8 @@ export default function AuditLogs() {
         headerName: 'ADMINISTRATOR', 
         width: 152,
         // Short actor values must not let autosizing clip the full heading.
-        minWidth: 40 + Math.ceil(Math.max(10, fontSize - 1) * 'ADMINISTRATOR'.length),
+        minWidth: 56 + Math.ceil(Math.max(10, fontSize - 1) * 'ADMINISTRATOR'.length),
+        operationalMinimumWidth: 56 + Math.ceil(Math.max(10, fontSize - 1) * 'ADMINISTRATOR'.length),
         filter: true, 
         cellClass: 'text-center font-bold text-white', 
         headerClass: 'text-center',
@@ -207,16 +228,18 @@ export default function AuditLogs() {
     },
     { 
         field: 'description', 
-        headerName: 'CHANGE DETAILS',
-        headerTooltip: 'Transaction payload and architectural impact',
+        headerName: 'DETAILS',
+        headerTooltip: 'Change details: transaction payload and architectural impact',
         flex: 1,
         minWidth: 360,
+        operationalMinimumWidth: 360,
         filter: true, 
         cellClass: 'text-left font-bold text-slate-300', 
         headerClass: 'text-left',
-        cellRenderer: (p: any) => (
-            <span className="truncate" title={String(p.value ?? '')}>{p.value}</span>
-        )
+        cellRenderer: (p: any) => {
+          const description = String(p.value ?? '')
+          return <span id={auditDescriptionDomId(p)} className="block min-w-0 truncate" title={description}>{description}</span>
+        }
     },
     {
         headerName: 'ACTIONS',
@@ -241,7 +264,7 @@ export default function AuditLogs() {
               >
                 <Search size={14} />
               </ModulePolicyButton>
-              <button onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setActiveLog(params.data) }} className="p-0.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload" aria-label="View change payload">
+              <button onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setActiveLog(params.data) }} className="p-0.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-amber-400 transition-all" title="View change payload" aria-label="View change payload" aria-describedby={auditDescriptionDomId(params)}>
                 <Layers size={14} />
               </button>
             </div>
@@ -256,7 +279,6 @@ export default function AuditLogs() {
         <PageHeader
           eyebrow="Registry"
           title="Audit Ledger"
-          titleIcon={Zap}
           subtitle="Immutable record of system state changes and operator actions"
           meta={
             <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
@@ -421,11 +443,11 @@ export default function AuditLogs() {
                         <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase">Font Size</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min="8" max="14" step="1" aria-label="Audit font size"
-                            value={fontSize} onChange={e => setFontSize(Number(e.target.value))}
+                            type="range" min={OPERATIONAL_GRID_MIN_FONT_SIZE} max="14" step="1" aria-label="Audit font size"
+                            value={getEffectiveOperationalGridFontSize(fontSize)} onChange={e => setFontSize(Number(e.target.value))}
                             className="w-32 accent-[var(--accent-primary)] h-1.5 bg-[var(--grid-border)] rounded-lg appearance-none cursor-pointer"
                             />
-                            <span className="text-[10px] text-[var(--text-primary)] w-8 shrink-0 font-bold tabular-nums">{fontSize}px</span>
+                            <span className="text-[10px] text-[var(--text-primary)] w-8 shrink-0 font-bold tabular-nums">{getEffectiveOperationalGridFontSize(fontSize)}px</span>
                         </div>
                      </div>
 
@@ -433,7 +455,7 @@ export default function AuditLogs() {
                         <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase">Row height</span>
                         <div className="flex items-center space-x-2">
                             <input 
-                            type="range" min={OPERATIONAL_GRID_ROW_HEIGHT_MIN} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Audit row height"
+                            type="range" min={Math.max(OPERATIONAL_GRID_ROW_HEIGHT_MIN, fontSize + 7)} max={OPERATIONAL_GRID_ROW_HEIGHT_MAX} step="1" aria-label="Audit row height"
                             value={getOperationalGridRowHeight(fontSize, rowDensity)} onChange={e => setRowDensity(getOperationalGridRowDensityForHeight(Number(e.target.value), fontSize))}
                             className="w-32 accent-[var(--accent-primary)] h-1.5 bg-[var(--grid-border)] rounded-lg appearance-none cursor-pointer"
                             />

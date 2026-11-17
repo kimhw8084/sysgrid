@@ -66,8 +66,9 @@ import { WorkspaceCompareShell, WorkspaceDossierShell, WorkspaceHistoryShell } f
 import { WorkspaceShareHeader } from './shared/WorkspaceShareHeader'
 import { OperationalImportModal } from './shared/OperationalImportModal'
 import { OperationalGridMatrix } from './shared/OperationalGridMatrix'
-import { buildOperationalGroupSections } from './shared/OperationalGrouping'
+import { buildOperationalGroupSections, reconcileCollapsedOperationalGroups } from './shared/OperationalGrouping'
 import { OperationalDisplayPanel, OperationalGridSurface, OperationalGroupedGridSection, OperationalGroupedGridView, OperationalSavedViewsPanel, OperationalWorkspaceFrame } from './shared/OperationalWorkspaceShells'
+import { OperationalGridTextValue } from './shared/OperationalGridStandard'
 import { AssetDetailsView } from './assets/AssetDetailsView'
 import { ASSET_ENVIRONMENTS, ASSET_STATUSES, ASSET_TYPES, assetFilterOptions, fetchAssetSettingOptions } from './assets/assetRecordOptions'
 import {
@@ -1513,16 +1514,7 @@ export default function AssetReal() {
 
   useEffect(() => {
     if (groupBy === 'raw') return
-    setCollapsedGroups((current) => {
-      const next = { ...current }
-      groupedSections.forEach((section) => {
-        if (!(section.key in next)) next[section.key] = false
-      })
-      Object.keys(next).forEach((key) => {
-        if (!groupedSections.some((section) => section.key === key)) delete next[key]
-      })
-      return next
-    })
+    setCollapsedGroups((current) => reconcileCollapsedOperationalGroups(current, groupedSections))
   }, [groupBy, groupedSections])
 
   const isRecentChange = useCallback((item: any) => {
@@ -1788,13 +1780,11 @@ export default function AssetReal() {
   const columnDefs = useMemo(() => {
     const layoutById = new Map(columnLayoutState.map((column: any) => [column.colId, column]))
     const renderText = (value: any, className = '') => (
-      <span
-        title={value == null ? '' : String(value)}
+      <OperationalGridTextValue
+        value={value ?? 'N/A'}
         style={{ fontSize: `${fontSize}px` }}
         className={`block w-full min-w-0 truncate whitespace-nowrap overflow-hidden text-ellipsis ${className}`}
-      >
-        {value ?? 'N/A'}
-      </span>
+      />
     )
 
     const defs = [
@@ -2247,7 +2237,6 @@ export default function AssetReal() {
       header={{
         eyebrow: "Infrastructure",
         title: 'Assets',
-        titleIcon: HardDrive,
         subtitle: "Centralized asset registry and operational status",
         actions: (
           <HeaderScopeSwitch
@@ -2752,7 +2741,7 @@ export default function AssetReal() {
                 count={section.items.length}
                 countLabel="assets"
                 selectedCount={selectedCount}
-                collapsed={Boolean(isCollapsed)}
+                collapsed={isCollapsed}
                 onToggle={() => setCollapsedGroups((current) => ({ ...current, [section.key]: !current[section.key] }))}
               >
                 {!isCollapsed ? (
