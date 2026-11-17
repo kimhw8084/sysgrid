@@ -592,14 +592,16 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
           expect(focusedGridCell.text, 'the keyboard-focused asset cell should expose the full synthetic asset identity').toContain(seeded.primary.name)
           expect(focusedGridCell.title, 'the keyboard-focused cell should retain a full-value pointer disclosure').toBe(seeded.primary.name)
           expect(focusedGridCell.focusHit, 'the keyboard-focused grid cell should remain visibly hit-testable').toBe(true)
-          // The route-level search above intentionally narrows this grid to the
-          // primary asset. Clear it before asserting all five seeded identities;
-          // shared synthetic tenants may also contain other existing rows.
+          // Clear the primary-asset search first. The grid virtualizes rows, so
+          // search each seeded identity below to bring that record into the DOM
+          // before checking its accessible cell name.
           await fillGridSearch(page, routeSearches.assets.placeholder, '')
           await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBeGreaterThanOrEqual(5)
           const visibleAssetIdentities = [seeded.primary.name, seeded.secondary.name, seeded.tertiary.name, racks.devicePrimary.name, racks.deviceSecondary.name]
           const accessibleAssetIdentityEvidence = []
           for (const identity of visibleAssetIdentities) {
+            await fillGridSearch(page, routeSearches.assets.placeholder, identity)
+            await expect.poll(() => page.evaluate(() => (window as any).__DEBUG_OPERATIONAL_GRID_API__?.getDisplayedRowCount?.() ?? -1)).toBe(1)
             // Preserve column context in the accessible name while requiring
             // the full identity to remain discoverable as a unique grid cell.
             const cells = page.getByRole('gridcell', { name: identity })
@@ -607,6 +609,7 @@ test.describe('Golden Eight deterministic populated visual matrix', () => {
             await expect(cells, `the full asset identity cell should be visible: ${identity}`).toBeVisible()
             accessibleAssetIdentityEvidence.push({ value: identity, matching_accessible_cell_count: 1, visible: true })
           }
+          await fillGridSearch(page, routeSearches.assets.placeholder, '')
           const semanticsPath = testInfo.outputPath(`${theme}-asset-grid-cell-keyboard-semantics.json`)
           writeFileSync(semanticsPath, JSON.stringify({ cellSemantics, nativeTabPath, focusedGridCell, focusedTooltip, accessibleAssetIdentityEvidence }, null, 2))
           await testInfo.attach(`${theme}-asset-grid-cell-keyboard-semantics`, { path: semanticsPath, contentType: 'application/json' })
